@@ -1,0 +1,190 @@
+<bs-tab-container class="rs-page__navtabs--subtabs" default-active-key="summary">
+  <bs-row>
+    <bs-col>
+
+      <div class="rs-page__summary">
+        <bs-tab-content>
+          <bs-tab-pane unmount-on-exit="true" event-key="summary">
+            <div class="rs-page__tab-content" data-flex-layout="row-top-left">
+
+              <div class="rs-page__summary-sidebar layout__offset--sidebar-images">
+                <rs-object-representations query='SELECT ?label ?isMainRep ?imgURL
+                   WHERE {
+                        ?? rso:displayLabel ?label .
+  						          BIND (STR(??) as ?imgURL) .
+                        BIND (true as ?isMainRep) .
+                     } LIMIT 1'
+                   template='<img class="object-representations__image--rep" src="{{imgURL.value}}"/>'
+                >
+                </rs-object-representations>
+              </div><!--summary-sidebar-->
+
+              <div class="rs-page__summary-main" data-flex-self="size-x1">
+                <div class="table-responsive" data-flex-self="size-x1">
+                  <table class="metaphacts-table-widget-holder rs-page__object-summary table">
+                    <thead role="header">
+                    <tr>
+                      <th>Field</th>
+                      <th>Value</th>
+                      <th class="center"><div class="rs-page__icon--annotation fa fa-pencil"></div>Annotations</th>
+                      <th class="center"><div class="rs-page__icon--assertion"></div>Assertions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <!-- Title -->
+                    <tr class="rs-page__field">
+                      <td><span class="rs-page__field-label">Title</span></td>
+                      <td>
+                        <div class="rs-page__field-values">
+                          <semantic-query data-query='SELECT DISTINCT ?label
+                              WHERE {
+                                ?? rso:displayLabel ?label .
+                                FILTER ( lang(?label) = "en" )}'
+                                          data-template='{{#each bindings}}<div class="rs-page__field-value">{{label.value}}</div>{{/each}}'>
+                          </semantic-query>
+                        </div>
+                      </td>
+                      <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                      <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                    </tr>
+
+                    <!-- Description -->
+                    [[#if (ask 'ASK {?? crm:P3_has_note ?description . }')]]
+                    <tr class="rs-page__field">
+                      <td><span class="rs-page__field-label">Description</span></td>
+                      <td>
+                        <div class="rs-page__field-values style--readable">
+                          <semantic-query data-query='SELECT ?description
+                                WHERE {
+                                  ?? crm:P3_has_note ?description . } LIMIT 1'
+                                          data-template='{{#each bindings}}<span class="rs-page__field-value">{{description.value}}</span>{{/each}}'>
+                          </semantic-query>
+                        </div>
+                      </td>
+                      <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                      <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                    </tr>
+                    [[/if]]
+
+                    <!-- Asset ID -->
+                    [[#if (ask 'ASK {  ?? crm:P48_has_preferred_identifier ?identifier . ?identifier rdfs:label ?identifierLabel . ?identifier crm:P2_has_type ?idType . }')]]
+                    <tr class="rs-page__field">
+                      <td><span class="rs-page__field-label">Asset ID</span></td>
+                      <td>
+                        <div class="rs-page__field-values style--readable">
+                          <semantic-query data-query='SELECT ?label WHERE {
+                                                                  ?? crm:P48_has_preferred_identifier ?identifier .
+                                                                  ?identifier rdfs:label ?label .
+                                                              }'
+                                          data-template='{{#each bindings}}<span class="rs-page__field-value">{{label.value}}</span>{{/each}}'>
+                          </semantic-query>
+                        </div>
+                      </td>
+                      <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                      <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                    </tr>
+                    [[/if]]
+
+                    <!-- Representation of -->
+                    [[#if (ask 'ASK {  ?__this__ ^rso:PX_has_main_representation ?object . ?object rso:displayLabel ?label . }')]]
+                    <tr class="rs-page__field">
+                      <td><span class="rs-page__field-label">Representation Of</span></td>
+                      <td>
+                        <div class="rs-page__field-values style--readable">
+                          <semantic-query data-query='SELECT ?label ?objectStr WHERE {
+                                                      ?? ^rso:PX_has_main_representation ?object .
+                                                      ?object rso:displayLabel ?label .
+                                                      BIND(STR(?object) as ?objectStr) .
+                                                      } LIMIT 1'
+                                          data-template='{{#each bindings}}<semantic-link uri={{objectStr.value}}><span class="rs-page__field-value">{{label.value}}</span></semantic-link>{{/each}}'>
+                          </semantic-query>
+                        </div>
+                      </td>
+                      <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                      <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                    </tr>
+                    [[/if]]
+
+                    <!-- Rights Holder -->
+                    [[#if (ask 'ASK {?? crm:P105_right_held_by ?actor . ?actor a crm:E39_Actor; rso:displayLabel ?label . BIND(STR(?actor) as ?actorStr)}')]]
+                    <tr class="rs-page__field">
+                      <td><span class="rs-page__field-label">Rights Holder</span></td>
+                      <td>
+                        <div class="rs-page__field-values">
+                          <semantic-query data-query='SELECT ?label ?actorStr WHERE {
+                                  ?? crm:P105_right_held_by ?actor .
+                                  ?actor a crm:E39_Actor;
+                                  rso:displayLabel ?label .
+                                  BIND(STR(?actor) as ?actorStr) .
+                                }'
+                                          data-template='{{#each bindings}}<semantic-link uri={{actorStr.value}}><div class="rs-page__field-value">{{label.value}}</div></semantic-link>{{/each}}'>
+                          </semantic-query>
+                        </div>
+                      </td>
+                      <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                      <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                    </tr>
+                    [[/if]]
+
+                    </tbody>
+                  </table>
+                </div>
+              </div><!--summary-main-->
+
+            </div><!--tab-content-->
+          </bs-tab-pane>
+
+          <bs-tab-pane unmount-on-exit="true" event-key="all-properties">
+            <div class="rs-page__tab-content">
+              <div class="row">
+
+                <semantic-query data-query=' SELECT (COUNT(*) AS ?count) WHERE {
+                            ?? ?p ?o .
+                         }'
+                                data-template='{{#each bindings}}<div class="properties-total">{{count.value}} properties</div>{{/each}}'>
+                </semantic-query>
+                <semantic-table config='{
+                    "query":"
+                        SELECT ?pString (STR(?o) AS ?oString) WHERE {
+                            ?? ?p ?o .
+                            OPTIONAL {
+                              ?p (rdfs:label | rso:displayLabel) ?label
+                            }
+                            BIND ( COALESCE( CONCAT(\" (\", ?label, \")\"), \"\") AS ?labelStr) .
+                            BIND ( CONCAT(STR(?p), ?labelStr) as ?pString )
+                         } ORDER BY ASC(?pString)
+                     ",
+                     "columnConfiguration" : [
+                          {"variableName":"pString", "displayName":"Property"},
+                          {"variableName":"oString", "displayName":"Value", "cellTemplate": "<div class=\"style--readable\">{{oString.value}}</div>"}
+                     ],
+                     "layout":{
+                       "tupleTemplate": null,
+                       "options":{
+                          "showFilter": true,
+                          "resultsPerPage": 50
+                       }
+                      }
+                    }'>
+                </semantic-table>
+
+              </div><!--row-->
+            </div><!--tab-content-->
+          </bs-tab-pane>
+
+        </bs-tab-content>
+      </div><!--summary-->
+
+      <bs-nav bs-style="tabs">
+        <bs-nav-item event-key="all-properties">
+          All properties
+        </bs-nav-item>
+        <bs-nav-item event-key="summary">
+          Object summary
+        </bs-nav-item>
+      </bs-nav>
+
+    </bs-col>
+  </bs-row>
+</bs-tab-container>

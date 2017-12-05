@@ -1,0 +1,28 @@
+ SELECT ?type WHERE {
+           {
+             <{{iri.value}}> a ?type .
+             ?type a rso:FundamentalCategory .
+           } UNION {
+             <{{iri.value}}> a <http://www.ontodia.org/schema/v1#diagram> .
+             BIND(<http://www.ontodia.org/schema/v1#diagram> as ?type) .
+           } UNION {
+             <{{iri.value}}> a <http://www.metaphacts.com/ontologies/persist/PersistedComponent>.
+             <{{iri.value}}> <http://www.metaphacts.com/ontologies/persist/componentType> <http://www.metaphacts.com/ontologies/persist/components/semantic-chart> .
+             <{{iri.value}}> <http://www.metaphacts.com/ontologies/persist/componentProps>/<http://www.metaphacts.com/ontologies/persist/components/semantic-chart/type> ?type .
+           } UNION {
+             <{{iri.value}}> a rso:UserDefinedPage .
+             BIND(rso:UserDefinedPage as ?type) .
+           } UNION {
+             <{{iri.value}}> a rso:Annotation .
+             BIND(rso:Annotation as ?type) .
+           } UNION {
+             <{{iri.value}}> a sp:Query .
+             BIND(sp:Query as ?type) .
+           } UNION {
+             <{{iri.value}}> a crmdig:D9_Data_Object .
+             BIND(crmdig:D9_Data_Object as ?type) .
+           } UNION {
+             <{{iri.value}}> a rso:EX_Assertion .
+             BIND(rso:EX_Assertion as ?type) .
+           }
+          } LIMIT 1

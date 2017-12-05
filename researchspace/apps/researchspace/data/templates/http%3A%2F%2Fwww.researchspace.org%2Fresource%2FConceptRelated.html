@@ -1,0 +1,54 @@
+<semantic-query data-query = '
+                  PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                  PREFIX wd: <http://www.wikidata.org/entity/>
+                  PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                  PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                  SELECT DISTINCT ?material ?wikidata ?wikidataStr ?imageStr ?label WHERE {
+                    {
+                      SELECT DISTINCT ?material ?type ?wikidata ?wikidataStr ?imageStr ?label WHERE {
+                      ?? crm:P45_consists_of / skos:prefLabel ?material .
+                      ?? rso:Thing_has_type_Concept  / rso:displayLabel ?type .
+                      BIND(STRLANG(STR(?material),"en") as ?materialLabel) .
+                      BIND(STRLANG(STR(?type),"en") as ?typeLabel) .
+
+                       SERVICE <https://wikidata.metaphacts.com/sparql> {
+                        ?wikidataMaterial rdfs:label ?materialLabel .
+                        ?wikidata wdt:P186 ?wikidataMaterial .
+                        ?wikidata wdt:P18 ?image .
+                        ?wikidata rdfs:label ?label .
+                        BIND(STRAFTER(STR(?image), "Special:FilePath/") as ?imageStr) .
+                        BIND(STR(?wikidata) as ?wikidataStr) .
+                       }
+                      }  LIMIT 10
+                    }
+                  UNION
+                    {
+                      SELECT DISTINCT ?material ?wikidata ?wikidataStr ?imageStr ?label WHERE {
+                      ?? rso:Thing_has_type_Concept / rso:displayLabel ?material .
+                      BIND(STRLANG(STR(?material),"en") as ?materialLabel) .
+                      BIND(STRLANG(STR(?type),"en") as ?typeLabel) .
+
+                       SERVICE <https://wikidata.metaphacts.com/sparql> {
+                        ?wikidataMaterial  rdfs:label  ?materialLabel .
+                        ?wikidata wdt:P180 ?wikidataMaterial .
+                        ?wikidata wdt:P18 ?image .
+                        ?wikidata rdfs:label ?label .
+                        BIND(STRAFTER(STR(?image), "Special:FilePath/") as ?imageStr) .
+                        BIND(STR(?wikidata) as ?wikidataStr) .
+                       }
+                      } LIMIT 10
+                    }
+                  }
+                  ORDER BY DESC(?wikidataStr)'
+
+                      data-template='{{#each bindings}}<div class="text-center panel panel-default" style="font-size:12px;float:left;margin-left:10px;margin-right:10px">
+                      <div class="panel-body" style="height:180px;width:180px;">
+                      <a href="{{wikidataStr.value}}" target="_blank"><img src="https://commons.wikimedia.org/w/thumb.php?f={{imageStr.value}}&w=150" style="max-height:150px;max-width:150px;margin:0 auto;outline:none" class="img-rounded"></a>
+                      </div>
+                      <div class="panel-footer" style="width:180px;position:relative;border:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                        <a href="https://wikidata.metaphacts.com/resource/?uri={{wikidataStr.value}}" target="_blank">{{label.value}}</a>
+                      </div>
+                      </div>{{/each}}'
+
+                  ></semantic-query>

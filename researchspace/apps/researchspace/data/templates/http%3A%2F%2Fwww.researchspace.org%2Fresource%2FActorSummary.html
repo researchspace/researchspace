@@ -1,0 +1,45 @@
+<div data-flex-layout='row'>
+  [[> rsp:RecordImage]]
+
+  <div class='rs-page__summary' style='width:60%;'>
+    [[#*inline "values"]]
+    <div class='rs-entity-fields'>
+      <mp-panel bs-style='[[#if asserted]]info[[else]]success[[/if]]'>
+        <mp-panel-header>
+          <div data-flex-layout="row center-left">
+            <span>[[title]]</span>
+          </div>
+        </mp-panel-header>
+        <mp-panel-body>
+          <div class="rs-page__summary-content table-responsive">
+            <mp-field-visualization
+              subject='[[this]]'
+              fields='[[fieldDefinitionsFromQuery "SELECT ?field WHERE { ?field <http://www.metaphacts.com/ontology/fields#domain> crm:E21_Person . BIND(IF(?field = <http://www.researchspace.org/instances/fields/ActorHasName>, 0, 1) as ?order)} ORDER BY ASC(?order) ?field"]]'
+              template='{{> rsp:FieldBasedVisualization subject="[[this]]" [[#if asserted]]guess="true"[[/if]]}}'
+            ></mp-field-visualization>
+            <div style="margin-left:20px;">
+
+              <mp-overlay-dialog title="All available fields for [[singleValueFromSelect 'SELECT ?label WHERE {?? (rdfs:label | rso:displayLabel) ?label}']]" bs-size='lg'>
+                <mp-overlay-dialog-trigger>
+                  <strong><a>Assert new value...</a></strong>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                  <mp-page-loader iri="http://www.researchspace.org/resource/AllFieldsModal"></mp-page-loader>
+                </mp-overlay-dialog-content>
+              </mp-overlay-dialog>
+
+            </div>
+          </div>
+        </mp-panel-body>
+      </mp-panel>
+    </div>
+    [[/inline]]
+
+    [[> values title='British Museum']]
+
+    <semantic-context repository='assets'>
+      [[> values title='Community' asserted=true]]
+    </semantic-context>
+
+  </div>
+</div>

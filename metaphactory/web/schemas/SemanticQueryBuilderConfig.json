@@ -1,0 +1,148 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "ResourceSelectorConfig": {
+            "properties": {
+                "defaultQuery": {
+                    "description": "SPARQL Select query that is used for default autosuggestions.\n\nMandatory projection variables:\n   suggestion - should contain suggestion item IRI\n   label - should contain suggestion item label\n\nVariables that will be substituted with user selected value:\n   __token__ - user input represented as string literal\n   __domain__ - search domain category IRI\n   __range__ - conjunct range category IRI\n   __relation__ - conjunct relation IRI",
+                    "type": "string"
+                },
+                "noSuggestionsTemplate": {
+                    "description": "Handlebars template that is used when there are no results that match user input.",
+                    "type": "string"
+                },
+                "query": {
+                    "description": "SPARQL Select query that is used for autosuggestion.\n\nMandatory projection variables:\n   suggestion - should contain suggestion item IRI\n   label - should contain suggestion item label\n\nVariables that will be substituted with user selected value:\n   __token__ - user input represented as string literal\n   __domain__ - search domain category IRI\n   __range__ - conjunct range category IRI\n   __relation__ - conjunct relation IRI",
+                    "type": "string"
+                },
+                "suggestionTupleTemplate": {
+                    "description": "Handlebars template that is used to render suggestion items.\nTemplate has access to all SPARQL projection variables from the query.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "query",
+                "defaultQuery",
+                "noSuggestionsTemplate",
+                "suggestionTupleTemplate"
+            ],
+            "required": [
+                "noSuggestionsTemplate",
+                "query",
+                "suggestionTupleTemplate"
+            ],
+            "type": "object"
+        },
+        "SemanticTreeInputProps": {
+            "properties": {
+                "allowForceSuggestion": {
+                    "description": "Allow forced search with query less than MIN_SEARCH_TERM_LENGTH by pressing Enter *",
+                    "type": "boolean"
+                },
+                "childrenQuery": {
+                    "description": "Children query with [?parent] input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "className": {
+                    "description": "Optional custom class for the tree.",
+                    "type": "string"
+                },
+                "droppable": {
+                    "description": "Allows to drop entity if it satisfies ASK-query",
+                    "properties": {
+                    },
+                    "type": "object"
+                },
+                "multipleSelection": {
+                    "description": "Allows to select multiple items at the same time.",
+                    "type": "boolean"
+                },
+                "onSelectionChanged": {
+                    "description": "Callback invoked when tree selection changes.",
+                    "properties": {
+                    },
+                    "type": "object"
+                },
+                "openDropdownOnFocus": {
+                    "description": "Automatically open/close dropdown in full mode when input focused/blurred.",
+                    "type": "boolean"
+                },
+                "parentsQuery": {
+                    "description": "Parent nodes query with [?item] inputs through VALUES(...) clause\nand [?item, ?parent, ?parentLabel] outputs.",
+                    "type": "string"
+                },
+                "placeholder": {
+                    "description": "Empty field placeholder.",
+                    "type": "string"
+                },
+                "rootsQuery": {
+                    "description": "Tree roots query with no input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "searchQuery": {
+                    "description": "Search query with [?__token__] input and [?item, ?score, ?label, ?hasChildren] outputs.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "className",
+                "rootsQuery",
+                "childrenQuery",
+                "parentsQuery",
+                "searchQuery",
+                "droppable",
+                "multipleSelection",
+                "placeholder",
+                "onSelectionChanged",
+                "openDropdownOnFocus",
+                "allowForceSuggestion"
+            ],
+            "required": [
+                "childrenQuery",
+                "parentsQuery",
+                "rootsQuery",
+                "searchQuery"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "categoryViewTemplate": {
+            "description": "Handlebars template for category selection item. Can be customized to provide additional help information in the search interface, e.g tooltip with description of the category etc.\n\nBy default shows category thumbnail along with label.\n\nFor SPARQL Select binding variables available in the template,",
+            "type": "string"
+        },
+        "geoSelector": {
+            "$ref": "#/definitions/ResourceSelectorConfig",
+            "description": "Configuration for place autosuggestion that is used for relations of 'place' kind."
+        },
+        "projectionVariable": {
+            "description": "By default `subject` variable is used as projection variable for the generated query, however it is possible to override the default.\nIndependently from the projection variable in the base query, it is always possible to use `?subject` variable in the result visualizaiton query to refer to the result. If the projection variable in the base-query is not named `subject`, an additional bind clause will be injected to bind it to `?subject`.",
+            "type": "string"
+        },
+        "relationViewTemplate": {
+            "description": "Handlebars template for relation selection item. Can be customized to provide additional help\ninformation in the search interface, e.g tooltip with description of relation etc.\n\nBy default shows relation label only.\n\nFor SPARQL Select binding variables available in the template,",
+            "type": "string"
+        },
+        "resourceSelector": {
+            "$ref": "#/definitions/ResourceSelectorConfig",
+            "description": "Configuration for autosuggestion that is used to select values for relations of 'resource' kind."
+        },
+        "treeSelector": {
+            "$ref": "#/definitions/SemanticTreeInputProps",
+            "description": "Configuration for tree-based autosuggestion, that is used to select values for relations of 'resource' kind."
+        }
+    },
+    "propertyOrder": [
+        "resourceSelector",
+        "treeSelector",
+        "geoSelector",
+        "categoryViewTemplate",
+        "relationViewTemplate",
+        "projectionVariable"
+    ],
+    "required": [
+        "resourceSelector"
+    ],
+    "type": "object"
+}
+

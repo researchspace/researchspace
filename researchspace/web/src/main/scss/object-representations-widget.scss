@@ -1,0 +1,154 @@
+/*
+ * Copyright (C) 2015-2017, © Trustees of the British Museum
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+@import "~basic-styles.scss";
+@import "~researchspace/styling/variables.scss";
+
+.object-representations {
+
+  &__images {
+    display: flex;
+    flex-wrap: wrap;
+
+    &.fade-in-appear {
+      opacity: 0.01;
+    }
+
+    &.fade-in-appear.fade-in-appear-active {
+      opacity: 1;
+      transition: opacity .3s ease-in;
+    }
+  }
+
+  &__image--rep {
+    max-width: 60px;
+    max-height: 60px;
+    height: auto;
+    margin: $padding-base-vertical;
+    cursor:pointer;
+    float:left;
+    object-fit: contain;
+  }
+
+  &__image--active {
+    outline: $link-color solid;
+  }
+
+  &__image--focused {
+    min-width: 100px;
+    max-width: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transition: background-image 0.5s ease-out;
+    margin-bottom: $padding-base-vertical*3;
+    cursor:pointer;
+
+    .image--focused, .image--incoming {
+      max-width: 300px;
+      position: relative;
+    }
+
+    .cross-fade-leave {
+      opacity: 1;
+    }
+    .cross-fade-leave.cross-fade-leave-active {
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+    }
+
+    .cross-fade-enter {
+      opacity: 0;
+      position: absolute;
+    }
+
+    .cross-fade-enter.cross-fade-enter-active {
+      opacity: 1;
+      transition: opacity 0.3s ease-in;
+    }
+  }
+
+}
+
+.object-representations-modal {
+  width: auto!important;
+
+  .modal-body {
+    padding: 0;
+    user-select: none;
+  }
+
+  &__body {
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__nav {
+    padding: 10px;
+    font-size: 24px;
+    margin: 20px 0;
+    color: $rs-color-mediumgrey;
+    background-color: white;
+    opacity: 0.4;
+    cursor: pointer;
+
+    &.fade-in-enter {
+      opacity: 0.01;
+      transition: opacity .3s ease-in;
+    }
+
+    &.fade-in-enter.fade-in-enter-active {
+      opacity: 0.4;
+    }
+
+    &.fade-in-leave {
+      opacity: 0.4;
+      transition: opacity 0.3s ease-in;
+    }
+
+    &.fade-in-leave.fade-in-leave-active {
+      opacity: 0.01;
+      transition: opacity 0.3s ease-in;
+    }
+
+    &.fade-in-appear {
+      opacity: 0.01;
+      transition: opacity 0.3s ease-in;
+    }
+
+    &.fade-in-appear.fade-in-appear-active {
+      opacity: 0.4;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.modal-container {
+
+  .modal, .modal-backdrop {
+    position: absolute;
+  }
+}
+
+.modal-backdrop.in {
+  opacity: 0.7;
+}

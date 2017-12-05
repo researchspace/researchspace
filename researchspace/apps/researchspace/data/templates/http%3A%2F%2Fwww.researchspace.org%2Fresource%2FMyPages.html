@@ -1,0 +1,53 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li class="active">
+    My Pages
+  </li>
+</ol>
+
+<div class="page rs-page">
+
+[[!-- [[>rsp:ClipboardSidebar]] --]]
+[[#>rsp:ClipboardSidebar]]
+  <div class="page__header page__header--no-image">
+    <h2><i class="fa fa-file-text-o" style="margin-right:4px;"></i> My Pages</h2>
+  </div>
+  <div class='page__body--borderless'>
+          <div style="margin: 24px 0">
+            <i class="fa fa-file-text-o" style="margin-right:6px;"></i>
+            <semantic-link uri="http://www.researchspace.org/resource/UDPForm" urlqueryparam-back="[[this]]">
+              <strong>Create New Page...</strong>
+            </semantic-link>
+          </div>
+          <semantic-context repository='assets'>
+            <semantic-table config='{
+            "query": "select * where {
+              ?page a <http://www.researchspace.org/ontology/UserDefinedPage> ;
+                 rdfs:label ?label ;
+                 <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                 <http://www.w3.org/ns/prov#wasAttributedTo> ?__useruri__
+            }",
+            "columnConfiguration": [{
+              "variableName": "page",
+              "displayName": "Title",
+              "cellTemplate": "<mp-draggable iri=\"{{page.value}}\"><span>
+                <semantic-link uri=\"{{page.value}}\">{{label.value}}</semantic-link>
+              </span></mp-draggable>"
+            },{
+              "variableName": "time",
+              "displayName": "Modified",
+              "cellTemplate":"{{dateTimeFormat time.value \"LLL\"}}"
+            },{"displayName":"Actions", "cellTemplate": "<div>
+                          <mp-ldp-duplicate-resource-action iri=\"{{page.value}}\">
+                            <button class=\"btn btn-xs btn-default\" style=\"margin-right:8px;\"><i class=\"fa fa-files-o\" aria-hidden=\"true\"></i> Duplicate</button>
+                          </mp-ldp-duplicate-resource-action>
+                          <mp-ldp-remove-from-container-action data-iri=\"{{page.value}}\" data-container=\"http://www.researchspace.org/ontology/UserDefinedPage\">
+                            <button class=\"btn btn-xs btn-danger\" style=\"margin-right:8px;\"><i class=\"fa fa-trash\" aria-hidden=\"true\"></i> Delete</button>
+                          </mp-ldp-remove-from-container-action>
+                          </div>
+                                    "} ]
+              }'></semantic-table>
+            </semantic-context>
+        </div>
+[[/rsp:ClipboardSidebar]]
+</div>

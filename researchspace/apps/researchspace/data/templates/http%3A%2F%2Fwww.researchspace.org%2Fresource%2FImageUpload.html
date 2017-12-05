@@ -1,0 +1,51 @@
+<rs-image-upload
+  config='{
+  "createResourceQuery": "CONSTRUCT {
+              ?newId a rso:EX_Digital_Image.
+              ?newId a crmdig:D9_Data_Object.
+              ?newId dc:MediaType \"image/jpeg\".
+              ?newId crm:P102_has_title ?titleId.
+              ?newId                   rdfs:label ?title.
+              ?titleId a crm:E35_Title;
+                       rdfs:label ?title.
+              ?newId rdfs:label ?title.
+              ?newId rso:displayLabel ?title.
+              ?digIri a crmdig:D2_Digitization_Process;
+                crm:P14_carried_out_by ?person;
+                crmdig:L20_has_created ?newId.
+
+              ?digIri crm:P4_has_time-span ?digTimespanIri.
+              ?digTimespanIri crm:P82a_begin_of_the_begin ?date.
+              ?digTimespanIri crm:P82b_end_of_the_end ?date.
+              ?newId crm:P2_has_type ?type.
+              ?newId crm:P52_has_current_owner ?owner.
+              ?newId rso:PX_has_copyright ?copyright.
+              ?newId rso:PX_Image_Description ?description.
+              ?newId crm:P43_has_dimension ?widthId.
+              ?widthId a crm:E54_Dimension; crm:P2_has_type <http://collection.britishmuseum.org/id/thesauri/dimension/width>.
+              ?widthId crm:P90_has_value ?width; crm:P91_has_unit ?unit.
+              ?newId crm:P43_has_dimension ?heightId.
+              ?heightId a crm:E54_Dimension; crm:P2_has_type <http://collection.britishmuseum.org/id/thesauri/dimension/height>.
+              ?heightId crm:P90_has_value ?height; crm:P91_has_unit ?unit.
+              }
+              WHERE {
+               BIND(?__newId__ as ?newId)
+               BIND(URI(CONCAT(STR(?newId), \"/title\")) as ?titleId)
+               BIND(URI(CONCAT(STR(?newId), \"/width\")) as ?widthId)
+               BIND(URI(CONCAT(STR(?newId), \"/height\")) as ?heightId)
+               BIND(URI(CONCAT(STR(?newId), \"/dig\")) as ?digIri)
+               BIND(URI(CONCAT(STR(?newId), \"/dig/time\")) as ?digTimespanIri)
+              BIND(\"Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. \" as ?dummy1)
+               BIND(\"Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. \" as ?dummy2)
+               BIND(\"Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. \" as ?dummy3)
+               BIND(\"Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. \" as ?dummy4)
+               BIND(\"Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. Placeholder for query to be > 8k in size. \" as ?dummy5)
+              }LIMIT 1
+          
+          ",
+  "generateIdQuery": "SELECT ?newId WHERE {BIND(URI(CONCAT(CONCAT(STR(?__contextUri__), \"/\"), ?__sequence__)) as ?newId)}",
+  "contextUri":"[[this]]",
+  "storage": "iiifFolder",
+  "metadataExtractor": "org.researchspace.images.IIIFMetadataExtractor"
+ }'
+></rs-image-upload>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Trace log4j profile, logging to STDOUT and logs/metaphactory.log   -->
+<!--                                                                    -->
+<!-- The logger is configured to                                        -->
+<!-- (a) log out everthing >= TRACE for the metaphactory,               -->
+<!-- (b) log out everything >= WARNING for the key libraries, and       -->
+<!-- (c) log our everything >= WARNING for everything else.             -->
+<!--                                                                    -->
+<!-- This will result in a high amount of log messages and should be    -->
+<!-- be used only in development, to trace down issues. It should be    -->
+<!-- used to track down issues related to the metaphactory core.        -->
+<!--                                                                    -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!        -->
+<!--     !!!!!!!!!! DO NOT USE FOR PRODUCTION SYSTEMS !!!!!!!!!!        -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!        -->
+<!--                                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<Configuration>
+
+  <Appenders>
+  
+    <!-- Appender for metaphactory.log  -->
+    <RollingFile name="LOGFILE" fileName="logs/metaphactory.log"
+                 filePattern="logs/$${date:yyyy-MM}/service-%d{MM-dd-yyyy}-%i.log">
+      <PatternLayout>
+        <Pattern>%d %p [%t] %c - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="5000 KB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+    
+    <!-- Appender for STDOUT (console)  -->
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%5p [%t] (%F:%L) - %m%n"/>
+    </Console>
+    
+  </Appenders>
+
+  <Loggers>
+
+    <Logger name="com.metaphacts" level="trace" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+    <!-- https://issues.apache.org/jira/browse/BEANUTILS-477 -->
+    <Logger name="org.apache.commons.beanutils.FluentPropertyBeanIntrospector" level="error" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Root level="warn">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+
+  </Loggers>
+
+</Configuration>

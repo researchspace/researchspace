@@ -1,0 +1,44 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link uri="http://www.researchspace.org/resource/MyDiagrams">My Diagrams</semantic-link>
+  </li>
+  <li class="active">
+    <mp-label iri='[[this]]'></mp-label>
+  </li>
+</ol>
+
+[[#*inline "diagram"]]
+  <div class="page__header">
+    [[#if simplified]]
+      [[> rsp:Header subLabel="Simplified Diagram"]]
+    [[else]]
+      [[> rsp:Header subLabel="Detailed Diagram"]]
+    [[/if]]
+  </div>
+  <div class="page__body--borderless">
+    <div style="height: calc(100vh - 104px - 149px)">
+      <semantic-context repository="assets">
+        <ontodia diagram="[[this]]"
+                 readonly='[[readonly]]'
+                 [[#if simplified]] [[> rsp:FcFrOntodiaConfig ]] [[else]] [[> rsp:CidocOntodiaConfig ]] [[/if]]
+                 ></ontodia>
+      </semantic-context>
+    </div>
+  </div>
+[[/inline]]
+
+<div class="page rs-page">
+  [[#>rsp:ClipboardSidebar]]  
+    [[#> rsp:VisibilityCheck]]
+      [[#*inline "content"]]
+        [[> diagram readonly=true]]
+      [[/inline]]
+      [[#*inline "ownerContent"]]
+        [[> diagram readonly=false]]
+      [[/inline]]
+    [[/ rsp:VisibilityCheck]]
+  [[/rsp:ClipboardSidebar]]
+</div>

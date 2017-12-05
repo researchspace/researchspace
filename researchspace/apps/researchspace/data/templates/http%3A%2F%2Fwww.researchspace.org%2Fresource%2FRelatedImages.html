@@ -1,0 +1,39 @@
+<div class="rs-page__tab-content">
+  <div style="margin-bottom:24px;">
+    <strong>Related Image Regions</strong>
+  </div>
+  <semantic-context repository='assets'>
+    [[#if (ask 'ASK { ?iri a crmdig:D35_Area; crmdig:L49_is_primary_area_of ?? . }')]]
+    <div>
+      [[> rsp:ImageActions selection="my-images-selection-aggregator"]]
+      <semantic-table
+        query='SELECT ?iri WHERE {
+                    ?iri a crmdig:D35_Area;
+                    crmdig:L49_is_primary_area_of ?? .
+                }'
+        options='{"showFilter": false}'
+        column-configuration='[
+                    {"variableName":"iri", "displayName":"Image", "cellTemplate": "{{> iriTemplate}}"},
+                    {"displayName":"Thumbnail", "cellTemplate": "<semantic-link uri=\"{{iri.value}}\">{{> rsp:IIIFThumbnail}}</semantic-link>"}
+                  ]'
+      >
+        <template id='iriTemplate'>
+          <div>
+            <mp-selection-toggle selection="my-images-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+            <semantic-link style="margin-left: 10px;" uri='{{iri.value}}'></semantic-link>
+          </div>
+        </template>
+        <template id="actions">
+          <mp-ldp-remove-from-container-action iri="{{iri.value}}" container="http://www.metaphacts.com/ontologies/platform#fileContainer">
+            <button class="btn btn-xs btn-danger" style="margin-right:8px;"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>
+          </mp-ldp-remove-from-container-action>
+        </template>
+      </semantic-table>
+    </div>
+    [[else]]
+    <div>
+      <p>No related image regions found.</p>
+    </div>
+    [[/if]]
+  </semantic-context>
+</div>

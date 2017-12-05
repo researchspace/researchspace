@@ -1,0 +1,30 @@
+[{
+  "id": "alias1",
+  "label": "Test Field 1",
+  "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string",
+  "description": "Test Field 1 comment",
+  "minOccurs": "1",
+  "maxOccurs": "2",
+  "defaultValues": [],
+  "autosuggestionPattern":
+"SELECT DISTINCT ?value WHERE {
+  ?s rdfs:label ?value
+  FILTER(REGEX(str(?value),'*?token*','i'))
+} LIMIT 10",
+  "selectPattern":
+"SELECT $value WHERE {
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}",
+  "askPattern": "ASK { ?a ?b ?c }",
+  "valueSetPattern":
+"SELECT DISTINCT ?value ?label WHERE {
+  ?value rdfs:label ?label
+} LIMIT 10",
+  "insertPattern":
+"INSERT {
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}
+WHERE {}"
+}]

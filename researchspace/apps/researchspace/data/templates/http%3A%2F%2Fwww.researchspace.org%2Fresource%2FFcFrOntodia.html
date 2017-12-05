@@ -1,0 +1,42 @@
+<mp-event-proxy id='clipboard-update-on-save-diagram' on-event-source='ontodia'
+                proxy-event-type='Component.Refresh' proxy-targets='["clipboard-sidebar"]'
+></mp-event-proxy>
+
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li>
+    <semantic-link uri="http://www.researchspace.org/resource/MyDiagrams" urlqueryparam-tab="records">My Diagrams</semantic-link>
+  </li>
+  <li class="active">
+    New Diagram
+  </li>
+</ol>
+[[!-- [[>rsp:ClipboardSidebar]] --]]
+[[#>rsp:ClipboardSidebar]]
+<div class="rs-page style--base">
+  <div class="container-fluid">
+    <div class="rs-page__top">
+      <div class="row">
+        <div class="rs-page__header-elements">
+          <div style="margin-left:20px">
+            <div class="sub-title">
+              <h2 style="margin:0"><span class="icon-fc--header-title fa fa-sitemap"></span><small> New Simplified Diagram</small></h2>
+            </div>
+          </div>
+        </div>
+      </div><!--row-->
+    </div><!--top-->
+    <bs-row class="style--main style--border-top">
+      <bs-col sm=12 style="height: calc(100vh - 104px)">
+      <semantic-context repository="assets">
+        <ontodia id='ontodia' add-to-default-set=true
+                 [[#if (urlParam "diagram")]]diagram="[[urlParam "diagram"]]"[[/if]]
+                 [[#if (urlParam "instance")]]iri='[[urlParam "instance"]]'[[/if]]
+                 [[> rsp:FcFrOntodiaConfig ]]
+      ></ontodia>
+      </semantic-context>
+      </bs-col>
+    </bs-row>
+  </div>
+</div>
+[[/rsp:ClipboardSidebar]]

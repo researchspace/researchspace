@@ -1,0 +1,171 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li class="active">
+    Field Definition Catalog
+  </li>
+</ol>
+
+[[#if (hasPermission "api:config")]]
+
+
+<div class="page rs-page">
+  [[#>rsp:ClipboardSidebar]]
+  <div class="page__header page__header--no-image">
+    <h2><i class="fa fa-book" style="margin-right:4px;"></i> Field Definition Catalog</h2>
+  </div>
+
+  <div class='page__body--borderless'>
+    <bs-row>
+      <bs-col sm=8>
+        <div>
+          <bs-alert bs-style='info'>
+            <p>Prefixes should be defined and resolved using the system-wide <semantic-link uri="http://www.metaphacts.com/resource/admin/Namespaces">namespace registry</semantic-link>.</p>
+            <p>Please consult <semantic-link uri="[[resolvePrefix "Help:SemanticForm"]]">Semantic Form</semantic-link> help page for further details.<br></p>
+          </bs-alert>
+
+          <div style="margin: 24px 0">
+            <semantic-link uri="http://www.researchspace.org/resource/NewField"><strong>Create New Field...</strong></semantic-link>
+          </div>
+
+          <div style='float: right;'>
+            <mp-ldp-export-resource iri='http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer'>
+              <button class="btn btn-primary" style="margin-right: 6px;" title='Should be used for backup purpose only. Exported container can be imported into the root container on the new installation!'>
+                <i class='fa fa-download' aria-hidden='true'></i> Export All
+              </button>
+            </mp-ldp-export-resource>
+
+            <mp-ldp-import-resource container="http://www.metaphacts.com/ontologies/platform#rootContainer">
+              <button class="btn btn-primary" style="margin-right: 6px;"><i class="fa fa-upload" aria-hidden="true"></i> Import All</button>
+            </mp-ldp-import-resource>
+
+            <mp-ldp-remove-from-container-action iri="http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer" container="http://www.metaphacts.com/ontologies/platform#rootContainer">
+              <button class="btn btn-danger"><i class="fa fa-trash" aria-hidden=true></i> Delete All</button>
+            </mp-ldp-remove-from-container-action>
+          </div>
+
+          <div style='float: right; margin-right: 30px;'>
+            <mp-selection-action-choice id="field-definition-selection" title='With selected ...'>
+              <mp-ldp-export-resource><bs-menu-item>Export</bs-menu-item></mp-ldp-export-resource>
+            </mp-selection-action-choice>
+            <semantic-context repository='assets'>
+              <mp-ldp-import-resource container="http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer">
+                <button class="btn btn-primary" style="margin-left: 6px;"><i class="fa fa-upload" aria-hidden="true"></i> Import Fields</button>
+              </mp-ldp-import-resource>
+            </semantic-context>
+          </div>
+          <semantic-context repository='assets'>
+            <semantic-search optimizer='none'
+                             selector-mode='dropdown'
+                             search-profile='{
+              "defaultProfile": "<http://www.metaphacts.com/resource/wikidataCulturalHeritageProfileDefault>",
+              "categoriesQuery": "
+                prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                prefix owl: <http://www.w3.org/2002/07/owl#>
+                prefix wd: <http://www.wikidata.org/entity/>
+
+               SELECT (<http://www.metaphacts.com/resource/wikidataCulturalHeritageProfileDefault> as ?profile) ?category ?label ?description ?thumbnail WHERE {
+                } ORDER BY ?order
+                VALUES (?category ?label ?description ?thumbnail ?order) {
+                  (<http://www.metaphacts.com/ontology/fields#Field> \"Field\" \"Field\" \"\" 1)
+                  (rdfs:Class \"Type\" \"Type\" \"\" 2)
+                }
+              ",
+              "relationsQuery": "
+                prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                prefix wd: <http://www.wikidata.org/entity/>
+                prefix owl: <http://www.w3.org/2002/07/owl#>
+                prefix wdt: <http://www.wikidata.org/prop/direct/>
+
+               select (<http://www.metaphacts.com/resource/wikidataCulturalHeritageProfileDefault> as ?profile) ?relation ?label (\"\" as ?description) ?hasDomain ?hasRange where {
+                  VALUES (?hasDomain ?relation ?hasRange ?label) {
+                    ( <http://www.metaphacts.com/ontology/fields#Field> <http://www.metaphacts.com/ontology/fields#domain> rdfs:Class \"has domain\" )
+                    ( <http://www.metaphacts.com/ontology/fields#Field> <http://www.metaphacts.com/ontology/fields#range> rdfs:Class \"has range\" )
+                    ( <http://www.metaphacts.com/ontology/fields#Field> <http://www.metaphacts.com/ontology/fields#xsdDatatype> rdfs:Class \"has datatype\" )
+                  }
+                }
+             "
+            }'>
+              <semantic-search-query-constant
+                domain='<http://www.metaphacts.com/ontology/fields#Field>'
+                query='
+                  select ?subject {
+                    <http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains> ?subject .
+                  }
+                 '
+              ></semantic-search-query-constant>
+              <div data-flex-layout="row stretch-stretch">
+                <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+                  <semantic-search-facet
+                    value-relations='{
+                       "<http://www.metaphacts.com/ontology/fields#xsdDatatype>": {
+                         "kind": "resource",
+                         "valuesQuery": "
+                           SELECT ?value ?label (COUNT(DISTINCT $subject) AS ?count) WHERE {
+                              ?subject <http://www.metaphacts.com/ontology/fields#xsdDatatype> ?value .
+                              BIND(STRAFTER(STR(?value), \"#\") AS ?label) .
+                           }
+                           GROUP BY ?value ?label
+                           ORDER BY ?label
+                         ",
+                         "tupleTemplate": "<span><mp-highlight highlight=\"{{highlight}}\">{{label.value}}</mp-highlight> ({{count.value}})</span>"
+                       }
+                     }'
+                  ></semantic-search-facet>
+                </div>
+
+                <semantic-search-result-holder>
+                  <div data-flex-self="md-full">
+                    <semantic-search-result>
+                      <semantic-table
+                        id='field-results'
+                        number-of-displayed-rows=50
+                        query='SELECT ?subject ?ModificationDate ?label WHERE {
+                                   ?subject <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate ;
+                                     rdfs:label ?label .
+                                 }'
+                        column-configuration='[
+                                        {"displayName":"Field", "cellTemplate": "{{> field}}"},
+                                        {"displayName":"Modified", "cellTemplate": "{{dateTimeFormat ModificationDate.value \"LLL\"}}" },
+                                        {"displayName":"Delete", "cellTemplate": "{{> actions}}"}
+                                   ]'
+                      >
+                        <template id='field'>
+                            <span>
+                              <mp-selection-toggle selection="field-definition-selection" tag="{{subject.value}}"></mp-selection-toggle>
+                              <semantic-context repository='assets'>
+                                <semantic-link style='margin-left: 10px; max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' uri='{{subject.value}}' title='{{label.value}}'>{{label.value}}</semantic-link>
+                              </semantic-context>
+
+                            </span>
+                        </template>
+                        <template id='actions'>
+                          <div>
+                            <mp-ldp-duplicate-resource-action iri="{{subject.value}}" container="http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer">
+                              <button class="btn btn-xs btn-default" style="margin-right:8px;"><i class="fa fa-files-o" aria-hidden="true"></i> Duplicate</button>
+                            </mp-ldp-duplicate-resource-action>
+                            <mp-ldp-remove-from-container-action iri="{{subject.value}}" container="http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer">
+                              <button class="btn btn-xs btn-danger" style="margin-right:8px;"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>
+                            </mp-ldp-remove-from-container-action>
+                          </div>
+                        </template>
+                      </semantic-table>
+                    </semantic-search-result>
+                  </div>
+                </semantic-search-result-holder>
+              </div>
+            </semantic-search>
+          </semantic-context>
+        </div>
+      </bs-col>
+    </bs-row>
+  </div>
+  [[/rsp:ClipboardSidebar]]
+</div>
+
+
+[[else]]
+
+<p>No Permission</p>
+
+[[/if]]

@@ -1,0 +1,19 @@
+[[#if (ask 'ASK {{?? rso:PX_has_main_representation ?mainImage .} UNION {?? crm:P138i_has_representation ?representationImage .} BIND(COALESCE(?mainImage, ?representationImage) AS ?image) .}')]]
+<div class="rs-page__summary-image">
+  <rs-object-representations query='SELECT ?label (bound(?mainRepresentationImage) AS ?isMainRep) (STR(COALESCE(?mainRepresentationImage,?representationImage)) AS ?imgURL)
+                   WHERE {
+                     {
+                        ?? rso:displayLabel ?label .
+                     }
+                     UNION {
+                       ?? crm:P138i_has_representation ?representationImage .
+                     }
+                     UNION {
+                        ?? rso:PX_has_main_representation ?mainRepresentationImage .
+                     }
+                   }'
+                   template='<img class="object-representations__image--rep" src="{{imgURL.value}}"/>'
+                  >
+  </rs-object-representations>
+</div>
+[[/if]]

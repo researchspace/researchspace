@@ -1,0 +1,33 @@
+#!groovy
+node {
+    def nodeHome = tool 'node-6.2.0'
+    env.PATH="${nodeHome}/bin:${env.PATH}"
+	
+    try {
+		dir('tests') {
+			stage('Checkout'){
+				checkout scm
+			}
+			stage('Test'){
+				sh 'node -v'
+				sh 'yarn'
+				try {
+					withCredentials([usernamePassword(credentialsId: 'browserstack', passwordVariable: 'BROWSERSTACK_ACCESS_KEY', usernameVariable: 'BROWSERSTACK_USERNAME')]) {
+						withCredentials([usernamePassword(credentialsId: 'researchspace-ci', passwordVariable: 'RS_DEVELOP_PASSWORD', usernameVariable: 'RS_DEVELOP_USERNAME')]) {
+							sh './node_modules/.bin/ts-node index.ts jenkins > ./test.tap'
+						}
+					}
+				} finally {
+					step([$class: "TapPublisher", testResults: "**/test.tap", enableSubtests: true, flattenTapResult: true])
+					if (currentBuild.result == 'UNSTABLE')
+						currentBuild.result = 'FAILURE'
+				}
+			}
+			stage('Cleanup'){
+				sh 'rm node_modules -rf'
+			}
+		}
+    } catch (err) {
+        throw err
+    }
+}

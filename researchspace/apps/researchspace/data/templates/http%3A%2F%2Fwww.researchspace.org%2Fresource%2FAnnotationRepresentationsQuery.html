@@ -1,0 +1,13 @@
+SELECT DISTINCT ?image ?imageStr WHERE {
+{
+??  <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> ?obj .
+?obj rso:PX_has_main_representation ?mainImage .
+}
+UNION
+{
+??  <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> ?obj .
+?obj crm:P138i_has_representation ?hasRepresentationImage .
+}
+BIND(COALESCE(?mainImage, ?hasRepresentationImage) AS ?image) .
+BIND(STR(?image) AS ?imageStr) .
+} LIMIT 1

@@ -1,0 +1,28 @@
+<div>
+    <div data-flex-layout="row center-start">
+      <div style="margin-right: 5px;">Asserted Values: </div>
+        <ul>
+          {{#each fields as |field|}}
+            {{#each field.values as |value|}}
+              <semantic-if 
+                query='
+                  ASK { 
+                    {{../../assertion}} rso:PX_asserts/rso:PX_asserts_value {{value}} . 
+                  }
+                ' 
+                then='
+                 <li>
+                        {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#string"}}
+                          {{value.value}}
+                        {{/ifCond}}
+                        {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#anyURI"}} 
+                            <semantic-link uri="{{value.value}}" guess-repository=true></semantic-link>
+                        {{/ifCond}}
+                  </li>                                                                                                   
+              '>
+              </semantic-if>
+            {{/each}}
+          {{/each}}
+        </ul>
+      </div>
+</div>

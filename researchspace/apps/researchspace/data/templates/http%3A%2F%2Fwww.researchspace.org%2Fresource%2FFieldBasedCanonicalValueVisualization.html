@@ -1,0 +1,35 @@
+<div>
+  {{#each fields as |field|}}
+    {{#if field.values}}
+      <div data-flex-layout='row center-stretch'>
+        <div data-flex-self='size-x4'>
+          <div data-flex-layot='column center-center'>
+            {{#each field.values as |value|}}
+              <div data-flex-layout='row center-center' style='margin-bottom: 10px;'>
+                <div data-flex-self="size-x1" style='min-width: 300px;'>
+                  [[> rsp:FieldValueVisualization]]
+                </div>
+                <div data-flex-self='right' data-flex-layout='row center-right'>
+                  <semantic-link
+                                 class='btn btn-xs btn-info'
+                                 uri="http://www.researchspace.org/resource/Assertion"
+                                 urlqueryparam-field="{{../../fieldIri}}"
+                                 urlqueryparam-subject="{{../../subject}}"
+                                 urlqueryparam-agree="{{value.value}}"
+                  >Agree</semantic-link>
+                  <semantic-link
+                                 class='btn btn-xs btn-warning'
+                                 style='margin-left: 6px;'
+                                 uri="http://www.researchspace.org/resource/Assertion"
+                                 urlqueryparam-field="{{../../fieldIri}}"
+                                 urlqueryparam-subject="{{../../subject}}"
+                                 urlqueryparam-disagree="{{value.value}}"
+                  >Disagree</semantic-link>
+                </div>
+              </div>
+            {{/each}}
+          </div>
+      </div>
+    {{/if}}
+  {{/each}}
+</div>

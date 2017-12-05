@@ -1,0 +1,25 @@
+[[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK {?__this__ prov:wasAttributedTo ?creator . OPTIONAL { ?__this__ Platform:visibility ?vis . } OPTIONAL { ?__this__ Platform:visibleToGroups ?userGroups . ?__useruri__ Platform:hasGroup ?userGroups . } OPTIONAL { ?__useruri__ Platform:hasRole <http://www.metaphacts.com/security/roles/admin> . BIND(true as ?isAdmin) . } BIND(COALESCE(?vis,Platform:visibilityPrivate) as ?visibility) . FILTER(?__useruri__ = ?creator || (?visibility = Platform:visibilityPublic) || (?visibility = Platform:visibilityShared && ?__useruri__ != Platform:anonymousUser) || (?visibility = Platform:visibilityGroup && BOUND(?userGroups)) || ?isAdmin)}")]]
+
+<!-- Visibility switch is only available to admin and resource author-->
+[[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK {{?__this__ prov:wasAttributedTo ?__useruri__ .} UNION {?__useruri__ Platform:hasRole <http://www.metaphacts.com/security/roles/admin> .}}")]]
+
+<div class="rs-udp-visibility">
+<bs-dropdown id="visibility-dropdown-id">
+	<bs-dropdown-toggle style="padding:6px 9px;">
+  	<span><i className="fa fa-eye" style="margin-right:4px"></i><small>Visibility Options</small></span>
+	</bs-dropdown-toggle>
+  <bs-dropdown-menu>
+  	<rs-visibility id="rs-visibility" key="rs-visibility"></rs-visibility>
+  </bs-dropdown-menu>
+</bs-dropdown>
+
+</div>
+[[/if]]
+  [[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK {?__this__ prov:wasAttributedTo ?__useruri__ . }")]]
+    [[> ownerContent]]
+  [[else]]
+    [[> content ]]
+  [[/if]]
+[[else]]
+You don't have access to this resource.
+[[/if]]

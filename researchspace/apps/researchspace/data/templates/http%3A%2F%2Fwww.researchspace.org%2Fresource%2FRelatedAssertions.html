@@ -1,0 +1,48 @@
+<div class="rs-page__tab-content">
+  <div style="margin-bottom:24px;">
+    <strong>Related Assertions</strong>
+  </div>
+
+  [[#if (ask 'ASK {?belief <http://www.researchspace.org/ontology/PX_premise_target> ?? . ?premise <http://www.ics.forth.gr/isl/CRMinf/J1_used_as_premise> ?belief; <http://www.ics.forth.gr/isl/CRMinf/J2_concluded_that> ?belief2 . ?assertion <http://www.researchspace.org/ontology/PX_asserts> ?belief2; rdfs:label ?label; crm:P14_carried_out_by ?user; <http://www.w3.org/ns/prov#generatedAtTime> ?time . }')]]
+  <semantic-table config='{
+      "query": "SELECT * WHERE {
+              {
+                ?belief <http://www.researchspace.org/ontology/PX_premise_target> ?? .
+                ?premise <http://www.ics.forth.gr/isl/CRMinf/J1_used_as_premise> ?belief;
+                <http://www.ics.forth.gr/isl/CRMinf/J2_concluded_that> ?belief2 .
+                ?assertion <http://www.researchspace.org/ontology/PX_asserts> ?belief2;
+                rdfs:label ?label;
+                crm:P14_carried_out_by ?user;
+                <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                BIND (STRAFTER(STR(?user), \"user/\") AS ?userName) .
+              } UNION {
+                ?belief <http://www.researchspace.org/ontology/PX_premise_target> ?? .
+                ?premise <http://www.ics.forth.gr/isl/CRMinf/J6_adopted> ?belief;
+                <http://www.ics.forth.gr/isl/CRMinf/J2_concluded_that> ?belief2 .
+                ?assertion <http://www.researchspace.org/ontology/PX_asserts> ?belief2;
+                rdfs:label ?label;
+                crm:P14_carried_out_by ?user;
+                <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                BIND (STRAFTER(STR(?user), \"user/\") AS ?userName) .
+              }
+            }",
+      "columnConfiguration": [{
+        "variableName": "assertion",
+        "displayName": "Assertion title",
+        "cellTemplate": "<mp-draggable iri=\"{{assertion.value}}\"><span>
+          <semantic-link uri=\"{{assertion.value}}\">{{label.value}}</semantic-link>
+        </span></mp-draggable>"
+      },{
+        "variableName": "user",
+        "displayName": "Assertion author",
+        "cellTemplate":"{{userName.value}}"
+      },{
+        "variableName": "time",
+        "displayName": "Last modified",
+        "cellTemplate":"{{dateTimeFormat time.value \"LLL\"}}"
+      }]
+  }'></semantic-table>
+  [[else]]
+  <div><p>No related assertions found.</p></div>
+  [[/if]]
+</div>

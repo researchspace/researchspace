@@ -1,0 +1,58 @@
+[[#if (hasPermission "api:config")]]
+
+<ol class="page-breadcrumb">
+  <li>
+    <semantic-link title="Field Definition Catalog" uri="http://www.researchspace.org/resource/FieldCatalog">Field Definition Catalog</semantic-link>
+  </li>
+  <li class="active">Edit Field Definition: [[this.label]]</li>
+</ol>
+
+<div class="page rs-page">
+  [[#>rsp:ClipboardSidebar]]
+
+  <div class="page__header page__header--no-image">
+    <h2>Edit Field Definition</h2>
+  </div>
+
+  <div class='page__body--borderless'>
+    <bs-row>
+      <bs-col sm=8>
+        <div>
+          <field-editor field-instance-base-iri="http://www.researchspace.org/instances/fields/" data-field-iri='[[this]]' ></field-editor>
+
+          <h2>Field Preview</h2>
+          <hr><resource-editor-form debug='false' browser-persistence=false fields='[[jsonObjectArrayFromSelect "PREFIX field: <http://www.metaphacts.com/ontology/fields#> SELECT ?id ?label ?description ?insertPattern ?selectPattern ?askPattern ?minOccurs ?maxOccurs ?autosuggestionPattern ?valueSetPattern ?xsdDatatype WHERE {?? field:insertPattern [ sp:text ?insertPattern]. OPTIONAL{?? field:selectPattern [ sp:text ?selectPattern]}. OPTIONAL{?? field:valueSetPattern [ sp:text ?valueSetPattern]}. OPTIONAL{?? field:autosuggestionPattern [ sp:text ?autosuggestionPattern]}. OPTIONAL{?? field:minOccurs ?minOccurs.}. OPTIONAL{?? field:xsdDatatype ?xsdDatatype.}. OPTIONAL{?? field:maxOccurs ?maxOccurs.}. OPTIONAL{?? rdfs:comment ?description.}. OPTIONAL{?? field:askPattern [ sp:text ?askPattern]}. ?? rdfs:label ?label. BIND( ?? as ?id)  }"]]' >
+          <bs-tabs >
+            <bs-tab event-key="1" title="Plain Input">
+              <plain-text-input for='[[this]]' render-header=true></plain-text-input> <!--data-languages='{["ru", "en"]}' -->
+            </bs-tab>
+            <bs-tab event-key="2" title="Autocomplete Input">
+              <autocomplete-input for='[[this]]'></autocomplete-input>
+            </bs-tab>
+            <bs-tab event-key="3" title="Select Input">
+              <select-input data-for='[[this]]'></select-input>
+            </bs-tab>
+            <bs-tab event-key="4" title="Date Input">
+              <datetimepicker-text-input for='[[this]]'></datetimepicker-text-input>
+            </bs-tab>
+          </bs-tabs>
+        </resource-editor-form>
+
+          <h2>JSON Configuration Example</h2>
+          <hr>
+          <i style="color:red;font-size: 8px;">
+            Please be aware of that the "example" id needs to be replaced with the current IRI: "<b>[[this]]</b>"
+          </i>
+          <pre><code>[[fieldDefinitions example=(this)]]</code></pre>
+        </div>
+      </bs-col>
+    </bs-row>
+  </div>
+  [[/rsp:ClipboardSidebar]]
+</div>
+
+[[else]]
+
+<p>No Permission</p>
+
+[[/if]]

@@ -1,0 +1,35 @@
+<ol class="page-breadcrumb">
+  <li>
+     <a title="Portal" href="/">Portal</a>
+  </li>
+  <li class="active">Set: [[this.label]]</li>
+</ol>
+
+[[!-- [[>rsp:ClipboardSidebar]] --]]
+[[#>rsp:ClipboardSidebar]]
+
+<!--if: access -->
+[[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> PREFIX platform: <http://www.metaphacts.com/ontologies/platform#> ASK { ?? platform:visibility ?vis . BIND(COALESCE(?vis,platform:private) as ?visibility) FILTER ((?visibility!=platform:public) && (?__useruri__=platform:anonymousUser)) }")]]
+<!--start if: no-access -->
+Sorry, but this item is not shared with you.
+<!--start if: no-access -->
+[[else]]
+<!--start else branch: access -->
+
+[[#if (ask "ASK{?? <http://www.w3.org/ns/prov#wasAttributedTo> ?__useruri__}")]]
+	<rs-share-component></rs-share-component>
+[[else]]
+ This set is shared with you.
+[[/if]]
+  <div style="height: 100%;">
+      <div style="height: 100%; background: #f5f5f5; display: flex; flex-direction: column;">
+        <mp-set-management-single-set id='set-management' opened-set="[[this]]" [[> rsp:ClipboardConfig check=true]]>
+          [[> rsp:ImageActions selection="selection-aggregator"]]
+        </mp-set-management-single-set>        
+      </div>
+  </div>
+
+<!--end else branch: access-->
+[[/if]]
+
+[[/rsp:ClipboardSidebar]]

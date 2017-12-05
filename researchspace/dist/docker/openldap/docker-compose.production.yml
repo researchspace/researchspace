@@ -1,0 +1,26 @@
+version: '2'
+services:
+  openldap:
+    environment:
+      LDAP_LOG_LEVEL: "0"
+      LDAP_TLS: "true"
+      LDAP_TLS_ENFORCE: "true"
+    ports:
+      - "636:636"
+
+  pwm:
+    links:
+      - openldap
+    environment:
+      VIRTUAL_HOST: ${PWM_VIRTUAL_HOST}
+      VIRTUAL_PATH: "/pwm"
+      VIRTUAL_PORT: "8080"
+
+  phpldapadmin:
+    links:
+      - openldap
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "#PYTHON2BASH:[{'openldap': [{'server': [{'tls': True, 'port': 636}]}]}]"
+      # because we use nginx as frontend proxy we need to make sure that phpldap admin trusts X-Forwarded-Proto header
+      PHPLDAPADMIN_TRUST_PROXY_SSL: "true"
+      VIRTUAL_HOST: ${PHPLDAPADMIN_VIRTUAL_HOST}

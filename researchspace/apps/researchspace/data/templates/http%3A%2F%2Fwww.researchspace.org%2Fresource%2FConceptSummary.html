@@ -1,0 +1,52 @@
+<div data-flex-layout='row top-left'>
+ [[> rsp:RecordImage]]
+
+  <div class="rs-page__summary-content table-responsive">
+    <table class="table">
+      <thead role="header">
+        <tr>
+          <th>Field</th>
+          <th>Value</th>
+          <th class="center"><div class="rs-page__icon--annotation fa fa-pencil"></div>Annotations</th>
+          <th class="center"><div class="rs-page__icon--assertion"></div>Assertions</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Name -->
+        <tr class="rs-page__field">
+          <td><span class="rs-page__field-label">Name</span></td>
+          <td>
+            <div class="rs-page__field-values">
+              <semantic-query data-query='SELECT DISTINCT ?label WHERE {
+                                          ?? rso:displayLabel ?label .
+                                          FILTER ( lang(?label) = "en" )}'
+                              data-template='{{#each bindings}}<div class="rs-page__field-value">{{label.value}}</div>{{/each}}'>
+              </semantic-query>
+            </div>
+          </td>
+          <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+          <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+        </tr>
+
+        <!-- Description -->
+        [[#if (ask 'ASK {?? rso:PX_physical_description ?desc . FILTER ( lang(?desc) = "en" )}')]]
+        <tr class="rs-page__field">
+          <td><span class="rs-page__field-label"><a data-rdfa-about="#" class="rs-page__field-label" resource="#" title="Description" href="#">Description</a></span></td>
+          <td>
+            <div class="rs-page__field-values style--readable">
+              <semantic-query data-query='SELECT ?desc WHERE {
+                                          ?? rso:PX_physical_description ?desc . }'
+                              data-template='{{#each bindings}}<span class="rs-page__field-value">{{desc.value}}</span>{{/each}}'>
+              </semantic-query>
+            </div>
+          </td>
+          <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+          <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+        </tr>
+        [[/if]]
+
+      </tbody>
+    </table>
+  </div><!--summary-main-->
+</div><!--tab-content-->

@@ -1,0 +1,135 @@
+/*
+ * Copyright (C) 2015-2017, metaphacts GmbH
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+import * as Immutable from 'immutable';
+
+import { Rdf } from 'platform/api/rdf';
+
+import { FieldDefinition } from '../FieldDefinition';
+import { FieldValue, CompositeValue, EmptyValue } from '../FieldValues';
+
+export interface TriplestorePersistence {
+  persist(initialModel: CompositeValue, currentModel: CompositeValue): Kefir.Property<void>;
+}
+
+export interface ModelDiffEntry {
+  subject: Rdf.Iri;
+  definition: FieldDefinition;
+  deleted: ReadonlyArray<Rdf.Node>;
+  inserted: ReadonlyArray<Rdf.Node>;
+}
+
+export function computeModelDiff(
+  base: CompositeValue | EmptyValue,
+  changed: CompositeValue | EmptyValue,
+): ModelDiffEntry[] {
+  const result: ModelDiffEntry[] = [];
+  // replace placeholder models with an empty ones to correctly handle default values
+  // (otherwise fields with default values would be considered unchanged)
+  const namedBaseOrEmpty = isPlaceholderComposite(base) ? FieldValue.empty : base;
+  const namedChangedOrEmpty = isPlaceholderComposite(changed) ? FieldValue.empty : changed;
+  collectCompositeDiff(namedBaseOrEmpty, namedChangedOrEmpty, result);
+  return result;
+}
+
+function isPlaceholderComposite(value: FieldValue): value is CompositeValue {
+  return FieldValue.isComposite(value) && CompositeValue.isPlaceholder(value.subject);
+}
+
+const EMPTY_VALUES = Immutable.List<FieldValue>();
+
+function collectCompositeDiff(
+  base: CompositeValue | EmptyValue,
+  changed: CompositeValue | EmptyValue,
+  result: ModelDiffEntry[],
+) {
+  if (FieldValue.isComposite(base)) {
+    if (CompositeValue.isPlaceholder(base.subject)) {
+      throw new Error('Cannot compute diff with placeholder base composite');
+    }
+    base.fields.forEach((state, fieldId) => {
+      const definition = base.definitions.get(fieldId);
+      const changedValues = getFieldValues(changed, fieldId);
+      collectFieldDiff(base.subject, definition, state.values, changedValues, result);
+    });
+  }
+
+  if (FieldValue.isComposite(changed)) {
+    if (CompositeValue.isPlaceholder(changed.subject)) {
+      throw new Error('Cannot compute diff with placeholder changed composite');
+    }
+    changed.fields.forEach((state, fieldId) => {
+      if (FieldValue.isEmpty(base) || !base.fields.has(fieldId)) {
+        const definition = changed.definitions.get(fieldId);
+        collectFieldDiff(changed.subject, definition, EMPTY_VALUES, state.values, result);
+      }
+    });
+  }
+}
+
+function getFieldValues(
+  composite: CompositeValue | EmptyValue,
+  fieldId: string
+): Immutable.List<FieldValue> {
+  if (FieldValue.isEmpty(composite)) {
+    return EMPTY_VALUES;
+  }
+  const state = composite.fields.get(fieldId);
+  return state ? state.values : EMPTY_VALUES;
+}
+
+function collectFieldDiff(
+  subject: Rdf.Iri,
+  definition: FieldDefinition,
+  base: Immutable.List<FieldValue>,
+  changed: Immutable.List<FieldValue>,
+  result: ModelDiffEntry[],
+) {
+  const baseSet = base.map(FieldValue.asRdfNode).filter(node => node !== undefined).toSet();
+  const changedSet = changed.map(FieldValue.asRdfNode).filter(node => node !== undefined).toSet();
+
+  const deleted = baseSet.subtract(changedSet).toArray();
+  const inserted = changedSet.subtract(baseSet).toArray();
+
+  if (deleted.length > 0 || inserted.length > 0) {
+    result.push({subject, definition, deleted, inserted});
+  }
+
+  const baseComposites = pickComposites(base);
+  const changedComposites = pickComposites(changed);
+
+  baseComposites.forEach((baseComposite, subjectKey) => {
+    const changedComposite = changedComposites.get(subjectKey) || FieldValue.empty;
+    collectCompositeDiff(baseComposite, changedComposite, result);
+  });
+  changedComposites.forEach((changedComposite, subjectKey) => {
+    if (!baseComposites.has(subjectKey)) {
+      collectCompositeDiff(FieldValue.empty, changedComposite, result);
+    }
+  });
+}
+
+function pickComposites(values: Immutable.List<FieldValue>): Map<string, CompositeValue> {
+  const result = new Map<string, CompositeValue>();
+  values.forEach(value => {
+    if (FieldValue.isComposite(value) && !CompositeValue.isPlaceholder(value.subject)) {
+      result.set(value.subject.value, value);
+    }
+  });
+  return result;
+}

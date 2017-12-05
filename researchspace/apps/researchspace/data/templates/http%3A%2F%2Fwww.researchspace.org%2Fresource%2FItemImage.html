@@ -1,0 +1,36 @@
+<div style="width: 100%" class="rs-grid-element text-center panel panel-default">
+  <div style="width: 100%" class="panel-body">
+    <semantic-context repository='default'>
+      <mp-resource-thumbnail iri='{{iri.value}}' style="width: 100%" class="img-rounded">
+        <mp-resource-thumbnail-fallback>
+          <semantic-context repository='assets'>
+            <mp-resource-thumbnail iri='{{iri.value}}' style="width:100%; border: 3px dashed red" class="img-rounded">
+              <mp-resource-thumbnail-fallback>
+                <div>
+                  <mp-overlay-dialog title="New Image" bs-size='lg'>
+                    <mp-overlay-dialog-trigger>
+                      <button class='btn btn-xs btn-default'>
+                        <i class="fa fa-plus" aria-hidden="true"></i> Add Image
+                      </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                      <mp-page-loader iri="http://www.researchspace.org/resource/NewImageAssertion"
+                                      urlqueryparam-subject="{{iri.value}}"
+                      ></mp-page-loader>
+                    </mp-overlay-dialog-content>
+                  </mp-overlay-dialog>
+                  <img src='{{#if noImageThumbnail}} {{noImageThumbnail}} {{else}} https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg {{/if}}'>
+                </div>
+              </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+          </semantic-context>
+        </mp-resource-thumbnail-fallback>
+      </mp-resource-thumbnail>
+    </semantic-context>
+  </div> 
+    {{#> rsp:ItemCardFooter }}
+      {{#if @partial-block}}
+        {{> @partial-block }}
+      {{/if}}
+    {{/ rsp:ItemCardFooter }}
+</div>

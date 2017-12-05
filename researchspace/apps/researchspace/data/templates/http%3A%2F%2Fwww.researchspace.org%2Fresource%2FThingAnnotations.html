@@ -1,0 +1,42 @@
+<div class="rs-page__annotations">
+  <div class="container-fluid">
+
+    <bs-row class="style--main">
+      <bs-col sm=8>
+      <details class="create-new-annotation">
+        <summary><i class="fa fa-pencil"></i> <a>Create new annotation...</a></summary>
+        [[>rsp:AnnotationForm formCreateMode="true"]]
+      </details>
+
+        <semantic-table config='{
+          "options": {"showFilter": false},
+          "query": "select * where {
+            ?annotation a <http://www.researchspace.org/ontology/Annotation> ;
+               <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> ?? ;
+               rdfs:label ?label ;
+               <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+               <http://www.w3.org/ns/prov#wasAttributedTo> ?user;
+               BIND (STRAFTER(STR(?user), \"user/\") AS ?userName) .
+          }",
+          "columnConfiguration": [{
+            "variableName": "annotation",
+            "displayName": "Annotation",
+            "cellTemplate": "<mp-draggable iri=\"{{page.value}}\"><span>
+              <semantic-link uri=\"{{annotation.value}}\">{{label.value}}</semantic-link>
+            </span></mp-draggable>"
+          },{
+            "variableName": "user",
+            "displayName": "Author",
+            "cellTemplate":"{{userName.value}}"
+          },{
+            "variableName": "time",
+            "displayName": "Modified",
+            "cellTemplate":"{{dateTimeFormat time.value \"LLL\"}}"
+          }]
+        }'></semantic-table>
+      </bs-col>
+    </bs-row>
+
+</div><!--annotations-->
+
+

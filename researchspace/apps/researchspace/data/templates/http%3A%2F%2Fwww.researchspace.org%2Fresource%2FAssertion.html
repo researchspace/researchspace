@@ -1,0 +1,39 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li>
+    <semantic-link uri='[[urlParam "subject"]]'></semantic-link>
+  </li>
+  <li>
+    <semantic-link
+      uri="http://www.researchspace.org/resource/Field"
+      urlqueryparam-field='[[urlParam "field"]]'
+      urlqueryparam-subject='[[urlParam "subject"]]'
+    >
+      Field: <semantic-context repository='assets'><mp-label iri='[[urlParam "field"]]'></mp-label></semantic-context>
+    </semantic-link>
+  </li>
+  <li class='active'>
+    New Assertion
+  </li>
+</ol>
+
+<div class='page page--assertion'>
+  [[#>rsp:ClipboardSidebar]]
+    <div class='page__header'>
+      [[> rsp:NewAssertionHeader]]
+    </div>
+    <div class="page__body--borderless">
+        [[#if (hasPermission "forms:ldp:*")]]
+          <rs-new-argument target='[[urlParam "subject"]]'
+                       field-iri='[[urlParam "field"]]'
+                       [[#if (urlParam "agree")]] agree-with-value='[[urlParam "agree"]]' [[/if]]
+                       [[#if (urlParam "disagree")]] disagree-with-value='[[urlParam "disagree"]]' [[/if]]
+                       value-template='[[> rsp:FieldValueVisualization]]'
+                       form-template='[[> rsp:AssertionFormTemplate]]'
+          ></rs-new-argument>
+        [[else]]
+          <p>No Permission to create assertions. Please, login.</p>
+        [[/if]]
+    </div>
+  [[/rsp:ClipboardSidebar]]
+</div>

@@ -1,0 +1,243 @@
+<bs-tab-container class="rs-page__navtabs--subtabs" default-active-key="summary">
+  <bs-row>
+    <bs-col>
+
+      <div>
+        <bs-tab-content>
+          <bs-tab-pane unmount-on-exit="true" event-key="summary">
+            <div class="rs-page__tab-content" data-flex-layout="row-top-left">
+
+                <div class="rs-page__summary-sidebar [[>rsp:LayoutSidebarImagesOffset]]">
+                  <rs-object-representations query='SELECT (bound(?mainRepresentationImage) AS ?isMainRep) (STR(COALESCE(?mainRepresentationImage,?representationImage)) AS ?imgURL)
+                   WHERE {
+                     {
+                       ?? rso:PX_has_main_representation ?mainRepresentationImage .
+                     }
+                     UNION {
+                       ?? crm:P138i_has_representation ?representationImage .
+                     }
+                   }'
+                   template='<img class="object-representations__image--rep" src="{{imgURL.value}}"/>'
+                  >
+                  </rs-object-representations>
+                </div><!--summary-sidebar-->
+
+                <div class="rs-page__summary-main" data-flex-self="size-x1">
+                  <div class="table-responsive" data-flex-self="size-x1">
+                    <table class="metaphacts-table-widget-holder rs-page__object-summary table">
+                      <thead role="header">
+                        <tr>
+                          <th>Field</th>
+                          <th>Value</th>
+                          <th class="center"><div class="rs-page__icon--annotation fa fa-pencil"></div>Annotations</th>
+                          <th class="center"><div class="rs-page__icon--assertion"></div>Assertions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+
+                        <!-- Title -->
+                        <tr class="rs-page__field">
+                          <td><span class="rs-page__field-label">Title</span></td>
+                          <td>
+                            <div class="rs-page__field-values">
+                              <semantic-query data-query='SELECT DISTINCT ?label
+                              WHERE {
+                                ?? rso:displayLabel ?label .
+                                FILTER ( lang(?label) = "en" )}'
+                                data-template='{{#each bindings}}<div class="rs-page__field-value">{{label.value}}</div>{{/each}}'>
+                              </semantic-query>
+                            </div>
+                          </td>
+                          <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                          <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                        </tr>
+
+                        <!-- Description -->
+                        [[#if (ask 'ASK {?? rso:PX_physical_description ?description . }')]]
+                          <tr class="rs-page__field">
+                            <td><span class="rs-page__field-label">Description</span></td>
+                            <td>
+                              <div class="rs-page__field-values style--readable">
+                                <semantic-query data-query='SELECT ?description
+                                WHERE {
+                                  ??  rso:PX_physical_description ?description . } LIMIT 1'
+                                  data-template='{{#each bindings}}<span class="rs-page__field-value">{{description.value}}</span>{{/each}}'>
+                                </semantic-query>
+                              </div>
+                            </td>
+                            <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                            <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                          </tr>
+                        [[/if]]
+
+                        <!-- Creator -->
+                        [[#if (ask 'ASK {?? crm:P108i_was_produced_by ?production . ?production crm:P9_consists_of ?part . ?part crm:P14_carried_out_by ?creator . ?creator a crm:E21_Person; rso:displayLabel ?name . BIND(STR(?creator) as ?creatorStr)}')]]
+                          <tr class="rs-page__field">
+                            <td><span class="rs-page__field-label">Creator</span></td>
+                            <td>
+                              <div class="rs-page__field-values">
+                                <semantic-query data-query='SELECT ?label ?creatorStr WHERE {  ?? crm:P108i_was_produced_by ?production .
+                                  ?production crm:P9_consists_of ?part .
+                                  ?part crm:P14_carried_out_by ?creator .
+                                  ?creator a crm:E21_Person;
+                                  rso:displayLabel ?label .
+                                  BIND(STR(?creator) as ?creatorStr)
+                                }'
+                                data-template='{{#each bindings}}<semantic-link uri={{creatorStr.value}}><div class="rs-page__field-value">{{label.value}}</div></semantic-link>{{/each}}'>
+                                </semantic-query>
+                              </div>
+                            </td>
+                            <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                            <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                          </tr>
+                        [[/if]]
+
+                        <!-- Place of Production -->
+                        [[#if (ask 'ASK { ?? crm:P108i_was_produced_by ?production . ?production crm:P9_consists_of ?part . ?part crm:P7_took_place_at ?place . ?place rso:displayLabel ?placeName . }')]]
+                          <tr class="rs-page__field">
+                            <td><span class="rs-page__field-label">Place of Production</span></td>
+                            <td>
+                              <div class="rs-page__field-values">
+                                <semantic-query data-query='SELECT ?label ?place
+                                WHERE { ?? crm:P108i_was_produced_by ?production .
+                                        ?production crm:P9_consists_of ?part .
+                                        ?part crm:P7_took_place_at ?place .
+                                        ?place rso:displayLabel ?label .
+                                }'
+                                data-template='{{#each bindings}}<semantic-link uri={{place.value}}><div class="rs-page__field-value">{{label.value}}</div></semantic-link>{{/each}}'>
+                                </semantic-query>
+                              </div>
+                            </td>
+                            <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                            <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                          </tr>
+                        [[/if]]
+
+                        <!-- Date of Production -->
+                        [[#if (ask 'ASK { ?? crm:P108i_was_produced_by ?production . ?production crm:P9_consists_of ?part . ?part crm:P4_has_time-span ?timespan . ?timespan rso:displayLabel ?timespanLabel . }')]]
+                          <tr class="rs-page__field">
+                            <td><span class="rs-page__field-label">Date of Production</span></td>
+                            <td>
+                              <div class="rs-page__field-values">
+                                <semantic-query data-query='SELECT ?timespan ?label
+                                WHERE { ?? crm:P108i_was_produced_by ?production .
+                                           ?production crm:P9_consists_of ?part .
+                                           ?part crm:P4_has_time-span ?timespan .
+                                           ?timespan rso:displayLabel ?label .
+                                }'
+                                data-template='{{#each bindings}}<semantic-link uri={{timespan.value}}><div class="rs-page__field-value">{{label.value}}</div></semantic-link>{{/each}}'>
+                                </semantic-query>
+                              </div>
+                            </td>
+                            <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                            <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                          </tr>
+                        [[/if]]
+
+                        <!-- Collection / Acquisition -->
+                        [[#if (ask 'ASK { ?place a crm:E53_Place . ?? crm:P12i_was_present_at ?find . ?find a crm:E10_Transfer_of_Custody; crm:P2_has_type <http://collection.britishmuseum.org/id/thesauri/find/C>; crm:P7_took_place_at ?place . ?place rso:displayLabel ?label . }')]]
+                          <tr class="rs-page__field">
+                            <td><span class="rs-page__field-label">Collected From</span></td>
+                            <td>
+                              <div class="rs-page__field-values">
+                                <semantic-query data-query='SELECT ?place ?label
+                                WHERE {
+                                        ?place a crm:E53_Place .
+                                        ?? crm:P12i_was_present_at ?find .
+                                        ?find a crm:E10_Transfer_of_Custody;
+                                        crm:P2_has_type <http://collection.britishmuseum.org/id/thesauri/find/C>;
+                                        crm:P7_took_place_at ?place .
+                                        ?place rso:displayLabel ?label .
+                                }'
+                                data-template='{{#each bindings}}<semantic-link uri={{place.value}}><div class="rs-page__field-value">{{label.value}}</div></semantic-link>{{/each}}'>
+                                </semantic-query>
+                              </div>
+                            </td>
+                            <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                            <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                          </tr>
+                        [[/if]]
+
+                        <!-- Present at Exhibition or Event -->
+                        [[#if (ask 'ASK { ?? crm:P12i_was_present_at ?event . ?event a crm:E5_Event; crm:P2_has_type <http://collection.britishmuseum.org/id/thesauri/event/normal>; rdfs:label ?label . }')]]
+                        <tr class="rs-page__field">
+                          <td><span class="rs-page__field-label">Was at Exhibition or Event</span></td>
+                          <td>
+                            <div class="rs-page__field-values">
+                              <semantic-query data-query='SELECT ?event ?label
+                                WHERE {
+                                        ?? crm:P12i_was_present_at ?event .
+                                        ?event a crm:E5_Event;
+                                        crm:P2_has_type <http://collection.britishmuseum.org/id/thesauri/event/normal>;
+                                        rdfs:label ?label .
+                                }'
+                              data-template='{{#each bindings}}<semantic-link uri={{event.value}}><div class="rs-page__field-value">{{label.value}}</div></semantic-link>{{/each}}'>
+                              </semantic-query>
+                            </div>
+                          </td>
+                          <td class="center"><div class="rs-page__count--field-annotation"><span class="badge">0</span></div></td>
+                          <td class="center"><div class="rs-page__count--field-assertion"><span class="badge">0</span></div></td>
+                        </tr>
+                        [[/if]]
+
+                      </tbody>
+                    </table>
+                  </div>
+                </div><!--summary-main-->
+
+            </div><!--tab-content-->
+          </bs-tab-pane>
+
+          <bs-tab-pane unmount-on-exit="true" event-key="all-properties">
+            <div class="rs-page__tab-content">
+              <div class="row">
+
+                <semantic-query data-query=' SELECT (COUNT(*) AS ?count) WHERE {
+                          ?? ?p ?o .
+                       }'
+                       data-template='{{#each bindings}}<div class="properties-total">{{count.value}} properties</div>{{/each}}'>
+                </semantic-query>
+                <semantic-table config='{
+                  "query":"
+                      SELECT ?pString (STR(?o) AS ?oString) WHERE {
+                          ?? ?p ?o .
+                          OPTIONAL {
+                            ?p (rdfs:label | rso:displayLabel) ?label
+                          }
+                          BIND ( COALESCE( CONCAT(\" (\", ?label, \")\"), \"\") AS ?labelStr) .
+                          BIND ( CONCAT(STR(?p), ?labelStr) as ?pString )
+                       } ORDER BY ASC(?pString)
+                   ",
+                   "columnConfiguration" : [
+                        {"variableName":"pString", "displayName":"Property"},
+                        {"variableName":"oString", "displayName":"Value", "cellTemplate": "<div class=\"style--readable\">{{oString.value}}</div>"}
+                   ],
+                   "layout":{
+                     "tupleTemplate": null,
+                     "options":{
+                        "showFilter": true,
+                        "resultsPerPage": 50
+                     }
+                    }
+                  }'>
+                </semantic-table>
+
+              </div><!--row-->
+            </div><!--tab-content-->
+          </bs-tab-pane>
+
+        </bs-tab-content>
+      </div><!--summary-->
+
+      <bs-nav bs-style="tabs">
+        <bs-nav-item event-key="all-properties">
+          All properties
+        </bs-nav-item>
+        <bs-nav-item event-key="summary">
+          Collection summary
+        </bs-nav-item>
+      </bs-nav>
+
+    </bs-col>
+  </bs-row>
+</bs-tab-container>

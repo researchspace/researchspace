@@ -1,0 +1,96 @@
+dn: ou=users,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: users
+
+dn: uid=guest@example.com,ou=users,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+objectClass: pwmUser
+cn: User Guest
+sn: Guest
+mail: guest@example.com
+uid: geast@example.com
+userPassword:: e3NzaGE1MTJ9M1VCbUZ6VWw0bkRMVnp3Qit2N0xkRENvSzBjSHh1aGFFY0dhQ
+ XBpMDlMVkRkVmNoWWNBeHYzMG14VklMelpaOW5TbkltL2V1WDgxNFlCaStQN2E5OHlZc1lQbHZk
+ STln
+
+dn: uid=admin@example.com,ou=users,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+objectClass: pwmUser
+cn: admin
+sn: Admin
+mail: admin@example.com
+uid: admin@example.com
+userPassword:: e3NzaGE1MTJ9M1VCbUZ6VWw0bkRMVnp3Qit2N0xkRENvSzBjSHh1aGFFY0dhQ
+ XBpMDlMVkRkVmNoWWNBeHYzMG14VklMelpaOW5TbkltL2V1WDgxNFlCaStQN2E5OHlZc1lQbHZk
+ STln
+
+dn: uid=pwm-test-user@example.com,ou=users,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+objectClass: pwmUser
+cn: pwm-test-user
+sn: Admin
+mail: pwm-test-user@example.com
+uid: pwm-test-user@example.com
+userPassword:: e3NzaGE1MTJ9M1VCbUZ6VWw0bkRMVnp3Qit2N0xkRENvSzBjSHh1aGFFY0dhQ
+ XBpMDlMVkRkVmNoWWNBeHYzMG14VklMelpaOW5TbkltL2V1WDgxNFlCaStQN2E5OHlZc1lQbHZk
+ STln
+
+
+dn: ou=deployments,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: deployments
+
+dn: ou=platform.example.com,ou=deployments,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: platform.example.com
+
+dn: ou=platform,ou=platform.example.com,ou=deployments,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: platform
+
+dn: cn=guest,ou=platform,ou=platform.example.com,ou=deployments,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: guest
+uniqueMember: uid=guest@example.com,ou=users,{{ LDAP_BASE_DN }}
+
+dn: cn=admin,ou=platform,ou=platform.example.com,ou=deployments,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: admin
+uniqueMember: uid=admin@example.com,ou=users,{{ LDAP_BASE_DN }}
+
+dn: ou=system,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: top
+objectClass: organizationalUnit
+ou: system
+
+dn: cn=pwm-admins,ou=system,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: top
+objectClass: groupOfUniqueNames
+cn: pwm-admins
+uniqueMember: uid=admin@example.com,ou=users,{{ LDAP_BASE_DN }}

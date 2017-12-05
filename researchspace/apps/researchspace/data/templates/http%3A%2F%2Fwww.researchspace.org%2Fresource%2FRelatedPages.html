@@ -1,0 +1,34 @@
+<div class="rs-page__tab-content">
+  <div style="margin-bottom:24px;">
+    <strong>Related Pages</strong>
+  </div>
+  [[#if (ask 'ASK {?page a <http://www.researchspace.org/ontology/UserDefinedPage>; ?p ??; rdfs:label ?label; <http://www.w3.org/ns/prov#generatedAtTime> ?time . ?p rdfs:label ?plabel . FILTER(STRSTARTS(STR(?p), "http://purl.org/spar/cito/")) }')]]
+  <semantic-table config='{
+    "query": "SELECT * WHERE {
+              ?page a <http://www.researchspace.org/ontology/UserDefinedPage>;
+              ?p ??;
+              rdfs:label ?label;
+              <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+              ?p rdfs:label ?plabel .
+              FILTER(STRSTARTS(STR(?p), \"http://purl.org/spar/cito/\"))
+            }",
+    "columnConfiguration": [{
+      "variableName": "page",
+      "displayName": "Title",
+      "cellTemplate": "<mp-draggable iri=\"{{page.value}}\"><span>
+        <semantic-link uri=\"{{page.value}}\">{{label.value}}</semantic-link>
+      </span></mp-draggable>"
+    },{
+      "variableName": "plabel",
+      "displayName": "Page relation to current entity",
+      "cellTemplate":"{{plabel.value}}"
+    },{
+      "variableName": "time",
+      "displayName": "Page modified",
+      "cellTemplate":"{{dateTimeFormat time.value \"LLL\"}}"
+    }]
+}'></semantic-table>
+  [[else]]
+  <div><p>No related pages found.</p></div>
+  [[/if]]
+</div>

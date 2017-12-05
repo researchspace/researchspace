@@ -1,0 +1,67 @@
+             image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
+             settings="nostats"
+             metadata='<> a <http://www.researchspace.org/ontology/FcFrDiagram> .'
+             navigate-to='http://www.researchspace.org/resource/FcFrOntodia'
+             provider-settings='{
+						"defaultPrefix": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+ PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+ PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+ PREFIX wd: <http://www.wikidata.org/entity/>
+ PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+ PREFIX rso: <http://www.researchspace.org/ontology/>
+ PREFIX hint: <http://www.bigdata.com/queryHints#> 
+ ",
+            "dataLabelProperty": "rso:displayLabel",
+            "classTreeQuery": "
+              SELECT ?class ?label {
+                ?class a rso:FundamentalCategory ;
+                       rdfs:label ?label .
+              }
+            ",
+            "fullTextSearch": {
+                "prefix": "PREFIX bds: <http://www.bigdata.com/rdf/search#>
+",
+                "queryPattern": "
+                  ?inst rso:displayLabel ?searchLabel.
+                  SERVICE bds:search {
+                         ?searchLabel bds:search \"${text}*\" ;
+                                      bds:minRelevance \"0.5\" ;
+
+                                      bds:matchAllTerms \"true\";
+                                      bds:relevance ?score.
+                  }
+            ",
+                "extractLabel": false},
+            "elementInfoQuery": "
+              SELECT ?inst ?class ?label ?propType ?propValue
+              WHERE {
+                  OPTIONAL {?inst rdf:type ?class . ?class a rso:FundamentalCategory.}
+                  OPTIONAL {?inst ?labelProp ?label}
+                  OPTIONAL {?inst ?propType ?propValue.
+                  FILTER (isLiteral(?propValue)) }
+                  VALUES (?labelProp) { (rso:displayLabel) (rdfs:label) }
+                } VALUES (?inst) {${ids}}
+        "
+          , "linkTypesOfQuery": "
+            SELECT ?link (count(distinct ?outObject) as ?outCount) (count(distinct ?inObject) as ?inCount)
+            WHERE {
+            { ${elementIri} ?link ?outObject FILTER ISIRI(?outObject)}
+            UNION
+            { ?inObject ?link ${elementIri} FILTER ISIRI(?inObject)}
+            FILTER (EXISTS {?link rso:hasDomain ?someDomain})
+            } GROUP BY ?link
+          "
+         , "linksInfoQuery": "SELECT ?source ?type ?target
+          WHERE {
+          ?source ?type ?target.
+          FILTER (EXISTS {?type rso:hasDomain ?someDomain})
+          VALUES (?source) {${ids}}
+          VALUES (?target) {${ids}}
+          }"
+        , "filterElementInfoPattern": "
+            hint:Prior hint:runFirst true . 
+            ?inst rdf:type ?class. ?class a rso:FundamentalCategory.
+            OPTIONAL {
+              ?inst ${dataLabelProperty} ?label .
+            }"
+    }'

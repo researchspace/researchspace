@@ -1,0 +1,24 @@
+version: '2'
+services:
+  openldap:
+    environment:
+      LDAP_LOG_LEVEL: "64"
+      LDAP_TLS: "false"
+      LDAP_TLS_ENFORCE: "false"
+    ports:
+      - "636:636"
+      - "389:389"
+
+  pwm:
+    ports:
+      - 10089:8080
+    links:
+      - openldap
+
+  phpldapadmin:
+    ports:
+      - 10088:80
+    links:
+      - openldap
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "#PYTHON2BASH:[{'openldap': [{'server': [{'tls': False, 'port': 389}]}]}]"

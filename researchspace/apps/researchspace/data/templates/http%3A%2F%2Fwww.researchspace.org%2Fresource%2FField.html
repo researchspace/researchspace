@@ -1,0 +1,135 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li>
+    <semantic-link uri='[[urlParam "subject"]]'></semantic-link>
+  </li>
+  <li class="active">
+    Field: <semantic-context repository='assets'><mp-label iri='[[urlParam "field"]]'></mp-label></semantic-context>
+  </li>
+</ol>
+
+[[#*inline "newAssertionButton"]]
+<div style="padding-top:24px">
+  <i class="fa fa-plus" aria-hidden="true"></i>
+  <semantic-link
+    uri="http://www.researchspace.org/resource/Assertion"
+    urlqueryparam-field="[[urlParam "field"]]"
+  urlqueryparam-subject="[[urlParam "subject"]]"
+  ><span style="margin-left:6px;"><strong>Assert new value</strong></span>
+  </semantic-link>
+</div>
+[[/inline]]
+
+[[#*inline "assertions"]]
+<div class='rs-field-assertions'>
+  <div class='row'>
+    <bs-col sm=6>
+      <mp-panel collapsible=true default-expanded=true bs-style='success'>
+        <mp-panel-header>
+          <div data-flex-layout="row">
+            <span>British Museum Assertions</span>
+          </div>
+        </mp-panel-header>
+        <mp-panel-body>
+          <div>
+            <mp-field-visualization
+              subject='[[urlParam "subject"]]'
+              fields='[[fieldDefinitions field=(urlParam "field")]]'
+              template='{{> rsp:FieldBasedCanonicalValueVisualization fieldIri="[[urlParam "field"]]"}}'
+            ></mp-field-visualization>
+            <div>
+              [[> newAssertionButton]]
+            </div>
+          </div>
+        </mp-panel-body>
+      </mp-panel>
+    </bs-col>
+  </div>
+
+  <div class='row'>
+    <bs-col sm=6>
+      <mp-panel collapsible=true default-expanded=true bs-style='info'>
+        <mp-panel-header>
+          <div data-flex-layout="row">
+            <span>Community Assertions</span>
+          </div>
+        </mp-panel-header>
+        <mp-panel-body>
+          <semantic-context repository='assets'>
+            <semantic-query
+              query='
+                            SELECT DISTINCT ?assertion ?user ?time WHERE {
+                              ?assertion rso:targetsField <[[urlParam "field"]]> ;
+                                         rso:targetsRecord <[[urlParam "subject"]]> ;
+                                         prov:wasAttributedTo ?user ;
+                                         prov:generatedAtTime ?time .
+                            }
+                          '
+              template='{{> template}}'
+            >
+              <template id='template'>
+                <div>
+                  <ol>
+                    {{#each bindings}}
+                    <li>
+                      <p>
+                        Assertion <semantic-context repository='assets'><semantic-link uri='{{assertion.value}}'></semantic-link></semantic-context> about <semantic-context repository='assets'><mp-label iri='[[urlParam "field"]]' class="field-type-title"></mp-label></semantic-context> by <mp-label iri='{{user.value}}'></mp-label>, {{dateTimeFormat time.value "LLL"}}
+                      <p>
+                      <div>
+                        <mp-field-visualization
+                          subject='[[urlParam "subject"]]'
+                          fields='[[fieldDefinitions field=(urlParam "field")]]'
+                          template='{{> rsp:FieldBasedAssertedValueVisualization}}'
+                        ></mp-field-visualization>
+                      </div>
+                    </li>
+                    {{/each}}
+                  </ol>
+                  [[> newAssertionButton]]
+                </div>
+              </template>
+            </semantic-query>
+          </semantic-context>
+        </mp-panel-body>
+      </mp-panel>
+    </bs-col>
+  </div>
+</div>
+[[/inline]]
+
+
+<div class="page rs-page">
+  [[#> rsp:ClipboardSidebar]]
+  <div class="page__header-navtabs">
+    [[> rsp:FieldHeader]]
+  </div>
+
+  [[#if (urlParam "tab")]]
+  <bs-tab-container class="page__body-navtabs--borderless" default-active-key="[[urlParam 'tab']]">
+    [[else]]
+    <bs-tab-container class="page__body-navtabs--borderless" default-active-key="assertions">
+      [[/if]]
+      <div>
+        <bs-nav bs-style="tabs">
+          <bs-nav-item event-key="assertions">Assertions</bs-nav-item>
+          <bs-nav-item event-key="annotations">
+            Annotations <semantic-context repository='assets'><semantic-query query="SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {
+              ?s <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> <[[urlParam "field"]]>;
+            }"
+            template='{{#each bindings}}<span class="badge">{{count.value}}</span>{{/each}}'></semantic-query></semantic-context>
+          </bs-nav-item>
+        </bs-nav>
+
+        <bs-tab-content unmount-on-exit=true>
+          <bs-tab-pane event-key="assertions">
+            [[> assertions]]
+          </bs-tab-pane>
+          <bs-tab-pane event-key="annotations">
+            [[> rsp:FieldAnnotations]]
+          </bs-tab-pane>
+        </bs-tab-content>
+      </div>
+    </bs-tab-container>
+
+    [[/rsp:ClipboardSidebar]]
+</div>

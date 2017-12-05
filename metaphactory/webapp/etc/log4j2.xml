@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Default log4j profile, logging to STDOUT and logs/metaphactory.log -->
+<!--                                                                    -->
+<!-- The logger is configured to                                        -->
+<!-- (a) log out everthing >= WARNING for the metaphactory,             -->
+<!-- (b) log out everything >= WARNING for the key libraries, and       -->
+<!-- (c) log our everything >= ERROR for everything else.               -->
+<!--                                                                    -->
+<!-- This will result in a small amount of log messages, suitable       -->
+<!-- for deployments and stable production system where only critical   -->
+<!-- and potentially critical issues shall be logged.                   -->
+<!--                                                                    -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       -->
+<!--     !!!!!!!!!! RECOMMENDED FOR PRODUCTION SYSTEMS !!!!!!!!!!       -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       -->
+<!--                                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<Configuration>
+
+  <Appenders>
+  
+    <!-- Appender for metaphactory.log  -->
+    <RollingFile name="LOGFILE" fileName="logs/metaphactory.log"
+                 filePattern="logs/$${date:yyyy-MM}/service-%d{MM-dd-yyyy}-%i.log">
+      <PatternLayout>
+        <Pattern>%d %p [%t] %c - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="500 KB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+    
+    <!-- Appender for STDOUT (console)  -->
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%5p [%t] (%F:%L) - %m%n"/>
+    </Console>
+    
+  </Appenders>
+
+  <Loggers>
+
+    <Logger name="com.metaphacts" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+    <Logger name="httpclient.wire" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+      
+    <!-- 
+      Apache library configuration: show ERRORs only.
+      
+      The only exception is for beanutils, which we set to display errors only.
+      This is to avoid logging of errors in combination with apache configuration,
+      see https://issues.apache.org/jira/browse/BEANUTILS-477 (we may remove
+      th special handling for beanutils once the latter ticket has been resovled) 
+    -->
+    <Logger name="org.apache.commons.beanutils" level="error" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>    
+    
+    <Logger name="org.apache" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.eclipse" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+    <Logger name="sun" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+    <Logger name="org.glassfish.jersey" level="warn">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+    <Logger name="org.apache.shiro" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Root level="error">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+
+  </Loggers>
+
+</Configuration>

@@ -1,0 +1,67 @@
+version: '2'
+services:
+  openldap:
+    image: osixia/openldap-backup:1.1.9
+    container_name: openldap
+    command: "--copy-service"
+    environment:
+      LDAP_ORGANISATION: ${LDAP_ORGANISATION}
+      LDAP_DOMAIN: ${LDAP_DOMAIN}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
+      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD}
+      LDAP_BACKEND: "hdb"
+      LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME}
+      LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME}
+      LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME}
+      LDAP_TLS_VERIFY_CLIENT: "never"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_PROTOCOL_MIN: "3.1"
+      LDAP_REPLICATION: "false"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+      LDAP_READONLY_USER: "true"
+      LDAP_READONLY_USER_USERNAME: ${LDAP_READONLY_USER_USERNAME}
+      LDAP_READONLY_USER_PASSWORD: ${LDAP_READONLY_USER_PASSWORD}
+    volumes:
+      - openldap-database:/var/lib/ldap
+      - openldap-config:/etc/ldap/slapd.d
+      - openldap-backups:/data/backup
+      - ${LDAP_CERTS_HOST_LOCATION}:/container/service/slapd/assets/certs/
+      - ./schemas/pwm.ldif:/container/service/slapd/assets/config/bootstrap/schema/pwb.ldif
+      - ./ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    network_mode: bridge
+
+  pwm:
+    image: docker.metaphacts.com/researchspace/pwm:1.8.0-1
+    container_name: pwm
+    network_mode: bridge
+    ports:
+      - 10089:8080
+    links:
+      - openldap
+    volumes:
+      - pwm-data:/pwm-data
+      - pwm-config:/pwm-config
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.7.0
+    container_name: phpldapadmin
+    network_mode: bridge
+    ports:
+      - 10088:80
+    links:
+      - openldap
+    volumes:
+      - phpldapadmin-data:/var/www/phpldapadmin
+    environment:
+      # we disable HTTPS in phpldapadmin because the idea is that SSL is terminated on the nginx frontend
+      PHPLDAPADMIN_HTTPS: "false"
+
+
+volumes:
+  openldap-database:
+  openldap-config:
+  openldap-backups:
+  pwm-data:
+  pwm-config:
+  phpldapadmin-data:

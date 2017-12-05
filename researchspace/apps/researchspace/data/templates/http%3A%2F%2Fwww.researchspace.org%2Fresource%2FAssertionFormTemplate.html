@@ -1,0 +1,19 @@
+{{#ifCond field.range "==" "http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span"}}
+  {{> rsp:TimeSpanForm fieldId=field.id}}
+{{else}}
+  {{#ifCond field.range "==" "http://www.researchspace.org/ontology/EX_Digital_Image"}}
+    <semantic-form-text-input for="field" render-header=false placeholder="Add image URL..."> </semantic-form-text-input>
+  {{else}}
+    {{#ifCond field.xsdDatatype "===" "http://www.w3.org/2001/XMLSchema#anyURI"}}
+      <semantic-form-autocomplete-input
+        render-header=false placeholder="Add alternative value..."
+        for="field"
+      ></semantic-form-autocomplete-input>
+    {{else}}
+      <semantic-form-text-input
+        render-header=false placeholder="Add alternative value..."
+        for="field"
+      ></semantic-form-text-input>
+    {{/ifCond}}
+  {{/ifCond}}
+{{/ifCond}}

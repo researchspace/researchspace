@@ -1,0 +1,127 @@
+<div>
+
+  {{#each fields as |field|}}
+    {{#if field.values}}
+
+      {{#switch field.range.value}}
+        {{#case "http://www.cidoc-crm.org/cidoc-crm/E12_Production" break=true}}
+          {{#each field.values as |value|}}
+            {{#bind subj=value.value}}
+              <mp-field-visualization
+                subject='{{subj}}'
+                fields='[[fieldDefinitionsFromQuery "SELECT ?field WHERE { ?field <http://www.metaphacts.com/ontology/fields#domain> crm:E12_Production. BIND(IF(?field = <http://www.researchspace.org/instances/fields/ManMadeObjectTitle>, 0, 1) as ?order)} ORDER BY ASC(?order) ?field"]]'
+                template='{{> rsp:FieldBasedVisualizationNested subject=subj [[#if asserted]]guess="true"[[/if]]}}'
+              >
+              </mp-field-visualization>
+            {{/bind}}
+          {{/each}}
+        {{/case}}
+        {{#case "http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition" break=true}}
+          {{#each field.values as |value|}}
+            {{#bind subj=value.value}}
+              <mp-field-visualization
+                subject='{{subj}}'
+                fields='[[fieldDefinitionsFromQuery "SELECT ?field WHERE { ?field <http://www.metaphacts.com/ontology/fields#domain> crm:E8_Acquisition . BIND(IF(?field = <http://www.researchspace.org/instances/fields/ManMadeObjectTitle>, 0, 1) as ?order)} ORDER BY ASC(?order) ?field"]]'
+                template='{{> rsp:FieldBasedVisualizationNested subject=subj [[#if asserted]]guess="true"[[/if]]}}'
+              >
+              </mp-field-visualization>
+            {{/bind}}
+          {{/each}}
+        {{/case}}
+        {{#case "http://www.cidoc-crm.org/cidoc-crm/E34_Inscription" break=true}}
+          {{#each field.values as |value|}}
+            {{#bind subj=value.value}}
+              <mp-field-visualization
+                subject='{{subj}}'
+                fields='[[fieldDefinitionsFromQuery "SELECT ?field WHERE { ?field <http://www.metaphacts.com/ontology/fields#domain> crm:E34_Inscription . BIND(IF(?field = <http://www.researchspace.org/instances/fields/ManMadeObjectTitle>, 0, 1) as ?order)} ORDER BY ASC(?order) ?field"]]'
+                template='{{> rsp:FieldBasedVisualizationNested subject=subj [[#if asserted]]guess="true"[[/if]]}}'
+              >
+              </mp-field-visualization>
+            {{/bind}}
+          {{/each}}
+        {{/case}}
+        {{#default}}
+          <table>
+            <tbody>
+            <tr class="rs-page__field">
+              <td class="rs-page__field-label-holder">
+                      <span class="rs-page__field-label">
+                        {{field.label}}
+                      </span>
+              </td>
+              <td>
+                {{#ifCond (objectLength field.values) '>' 1}}
+                  <ol class="rs-page__field-values">
+                    {{#each field.values as |value|}}
+                    <li class="rs-page__field-value">
+                      {{> rsp:FieldValueVisualization field=field value=value guess=../../guess }}
+                    </li>
+                    {{/each}}
+                  </ol>
+                {{/ifCond}}
+                {{#ifCond (objectLength field.values) '===' 1}}
+                  {{#each field.values as |value|}}
+                    <span class="rs-page__field-value">{{> rsp:FieldValueVisualization field=field value=value guess=../../guess }}</span>
+                  {{/each}}
+                {{/ifCond}}
+              </td>
+              <td class="center rs-page__count--title">
+                <div class="rs-page__count--field-annotation">
+                  <semantic-link
+                    title="View existing annotations"
+                    uri="http://www.researchspace.org/resource/Field"
+                    urlqueryparam-tab="annotations"
+                    urlqueryparam-field="{{field.id}}"
+                    urlqueryparam-subject="{{../subject}}">
+                      <semantic-context repository="assets">
+                        <semantic-query
+                          query='SELECT (COUNT(DISTINCT ?annotation) AS ?count) WHERE {
+                              ?annotation <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> <{{field.id}}> .
+                            }'
+                          template='{{> template}}'
+                        >
+                          <template id='template'>
+                            <span class='badge{{#ifCond bindings.0.count.value ">" 0}} active{{/ifCond}}'>{{bindings.0.count.value}}</span>
+                          </template>
+                        </semantic-query>
+                      </semantic-context>
+                  </semantic-link>
+                </div>
+              </td>
+              <td class="center rs-page__count--title">
+                <div class="rs-page__count--field-assertion">
+                  <semantic-link
+                    title="View existing assertions"
+                    uri="http://www.researchspace.org/resource/Field"
+                    urlqueryparam-field="{{field.id}}"
+                    urlqueryparam-subject="{{../subject}}">
+                      <semantic-context repository="assets">
+                        <semantic-query
+                          query='
+                            SELECT (COUNT(DISTINCT ?assertion) AS ?count) WHERE {
+                              ?assertion a rso:EX_Assertion ;
+                                         rso:targetsField <{{field.id}}> ;
+                                         rso:targetsRecord <{{../subject}}> .
+                            }
+                          '
+                          template='{{> template}}'
+                        >
+                          <template id='template'>
+                            <span class='badge{{#ifCond bindings.0.count.value ">" 0}} active{{/ifCond}}'>{{bindings.0.count.value}}</span>
+                          </template>
+                        </semantic-query>
+                      </semantic-context>
+                  </semantic-link>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        {{/default}}
+      {{/switch}}
+
+    {{/if}}
+  {{/each}}
+  </table>
+
+</div>

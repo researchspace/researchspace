@@ -1,0 +1,130 @@
+<rs-semantic-narrative-editor
+  [[#if annotation]]
+    metadata='<> a <http://www.researchspace.org/ontology/Annotation> .'
+    [[#if edit]]
+      iri='[[urlParam "field"]]'
+    [[else]]
+      annotation-target='[[urlParam "field"]]'
+    [[/if]]
+  [[else]]
+    metadata='<> a <http://www.researchspace.org/ontology/UserDefinedPage> .'
+    [[#if edit]]
+      iri='[[urlParam "field"]]'
+    [[else if create]]
+    [[else]]
+      read-only='true'
+      iri='[[urlParam "field"]]'
+      [[#if (urlParam "back")]]
+        cancel-uri='[[urlParam "back"]]'
+      [[/if]]
+    [[/if]]
+  [[/if]]
+
+      drop-template-config='[{
+        "id": "data model diagram",
+        "type": "http://www.researchspace.org/ontology/CidocDiagram",
+        "label": "data model diagram",
+        "template": "{{> rsp:CidocOntodiaUdp}}"
+      }, {
+        "id": "record diagram",
+        "type": "http://www.researchspace.org/ontology/FcFrDiagram",
+        "label": "record diagram",
+        "template": "{{> rsp:FcFrOntodiaUdp}}"
+      }, {
+        "id": "result visualization",
+        "type": "http://www.metaphacts.com/ontologies/persist/PersistedComponent",
+        "label": "result visualization",
+        "template": "<semantic-context repository=\"default\"><mp-persisted-component iri=\"{{iri.value}}\"></mp-persisted-component></semantic-context>"
+      }, {
+        "id": "table of set items",
+        "type": "http://www.metaphacts.com/ontologies/platform#Set",
+        "label": "table of set items",
+        "template": "{{> rsp:UdpSetView}}"
+      }, {
+        "id": "thumbnail",
+        "type": "any",
+        "label": "thumbnail",
+        "template": "{{> rsp:ItemCard}}"
+      }, {
+        "id": "image",
+        "type": "any",
+        "label": "image",
+        "template": "{{> rsp:ItemImage}}"
+      },{
+        "id": "image thumbnail",
+        "type": "http://www.ics.forth.gr/isl/CRMdig/D9_Data_Object",
+        "label": "image thumbnail small",
+        "template": "{{> rsp:IIIFThumbnail width=200 height=400}}"
+      }, {
+        "id": "mirador",
+        "type": "http://www.ics.forth.gr/isl/CRMdig/D9_Data_Object",
+        "label": "mirador",
+        "template": "{{> rsp:Mirador}}"
+      }]'
+      rdfa-relation-query-config='{
+        "placeholder": "Search for Predicate",
+        "query": "
+          PREFIX owl: <http://www.w3.org/2002/07/owl#>
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          PREFIX bds: <http://www.bigdata.com/rdf/search#>
+          SELECT ?iri ?label WHERE {
+            ?iri a owl:ObjectProperty ;
+            rdfs:label ?label .
+            FILTER(regex(str(?iri), \"http://purl.org/spar/cito/\"))
+            SERVICE bds:search {
+              ?label bds:search \"*?token*\" ;
+              bds:relevance ?score .
+            }
+          }
+          ORDER BY DESC(?score)
+        ",
+        "defaultQuery": "
+          PREFIX owl: <http://www.w3.org/2002/07/owl#>
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT ?iri ?label WHERE {
+            ?iri a owl:ObjectProperty ;
+            rdfs:label ?label .
+            FILTER(regex(str(?iri), \"http://purl.org/spar/cito/\"))
+          }
+          ORDER BY ?label
+        ",
+        "defaultValue": "http://purl.org/spar/cito/cites",
+        "defaultValueLabel": "cites",
+        "uriBindingName": "iri",
+        "templates": {"suggestion": "<p title=\"{{label.value}}\" data-rdfa-about=\"{{iri.value}}\">{{label.value}}</p>"}
+      }'
+      object-selector-config='{
+        "typeSelector": {
+          "placeholder": "types",
+          "options": [
+            {"value": "http://xmlns.com/foaf/0.1/Organization", "label": "Organization"},
+            {"value": "http://xmlns.com/foaf/0.1/Project", "label": "Project"}
+          ]
+        },
+        "resourceSelector": {
+          "defaultQuery": "
+            SELECT DISTINCT ?iri ?label WHERE {
+              FILTER(regex(?label,\"?token\",\"i\"))
+              FILTER(?type=?t)
+              VALUES(?iri ?label ?t){
+                (<http://www.metaphacts.com> \"metaphacts\" <http://xmlns.com/foaf/0.1/Organization>)
+                (<http://www.researchspace.org> \"Researchspace\" <http://xmlns.com/foaf/0.1/Project>)
+              }
+            }
+          ",
+          "query": "
+            SELECT DISTINCT ?iri ?label WHERE {
+              FILTER(regex(?label,\"?token\",\"i\"))
+              FILTER(?type=?t)
+              VALUES(?iri ?label ?t){
+                (<http://www.metaphacts.com> \"metaphacts\" <http://xmlns.com/foaf/0.1/Organization>)
+                (<http://www.researchspace.org> \"Researchspace\" <http://xmlns.com/foaf/0.1/Project>)
+              }
+            }
+          ",
+          "tupleTemplate": "<p title=\"{{label.value}}\" data-rdfa-about=\"{{value.value}}\">{{label.value}}</p>",
+          "uriBindingName": "value",
+          "typeBindingName": "type",
+          "minimumInput": 0
+        }
+      }'></rs-semantic-narrative-editor>

@@ -1,0 +1,19 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix	sp : <http://spinrdf.org/sp#> .
+@prefix spl : <http://spinrdf.org/spl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+<http://www.test.de/query>
+	a 				sp:Query, sp:Select;
+	rdfs:label 		"Query Pattern : Person knowing other persons";
+	rdfs:comment 	"Select query pattern to match persons that have a name and know other persons.";
+	sp:text 		"""
+				        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+				        SELECT * WHERE{
+				        	?person a foaf:Person;
+				        		foaf:name	?name;
+				        		foaf:knows 	?friend.
+				        }
+		        	""".

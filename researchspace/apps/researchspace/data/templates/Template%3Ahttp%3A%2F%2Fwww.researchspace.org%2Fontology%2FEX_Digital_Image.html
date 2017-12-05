@@ -1,0 +1,68 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link uri="http://www.researchspace.org/resource/MyImages">My Images</semantic-link>
+  </li>
+  <li class="active">
+    <mp-label iri='[[this]]'></mp-label>
+  </li>
+</ol>
+
+[[#*inline "image"]]
+<div style="height: calc(100vh - 104px - 149px)">
+  <rs-iiif-mirador image-or-region="[[this]]" [[> rsp:IIIFConfig]] />
+</div>
+[[/inline]]
+
+[[#*inline "body"]]
+<div class="page__header-navtabs">
+  [[> rsp:Header fc=fc fcLabel=fcLabel]]
+</div>
+[[#if (urlParam "tab")]]
+<bs-tab-container class="page__body-navtabs--borderless" default-active-key="[[urlParam 'tab']]">
+  [[else]]
+  <bs-tab-container class="page__body-navtabs--borderless" default-active-key="viewer">
+    [[/if]]
+    <div>
+      <bs-nav bs-style="tabs">
+        <bs-nav-item event-key="viewer">Image Viewer</bs-nav-item>
+        <bs-nav-item event-key="annotations">
+          Annotations <semantic-context repository="assets"><semantic-query query="SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {
+              ?s <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> ??;
+              }"
+                                                                            template='{{#each bindings}}<span class="badge">{{count.value}}</span>{{/each}}'></semantic-query></semantic-context>
+        </bs-nav-item>
+        <bs-nav-item event-key="related">Explore Related</bs-nav-item>
+      </bs-nav>
+
+      <bs-tab-content unmount-on-exit=true>
+        <bs-tab-pane event-key="viewer">
+          [[> image]]
+        </bs-tab-pane>
+        <bs-tab-pane event-key="annotations">
+          [[> rsp:EntityAnnotations]]
+        </bs-tab-pane>
+        <bs-tab-pane class-name="vertical-nav-tabs" event-key="related">
+          [[#> rsp:ExploreRelated]]
+            [[> rsp:ThingRelated]]
+          [[/ rsp:ExploreRelated]]
+        </bs-tab-pane>
+      </bs-tab-content>
+    </div>
+  </bs-tab-container>
+  [[/inline]]
+
+  <div class="page rs-page">
+    [[#>rsp:ClipboardSidebar]]
+      [[#> rsp:VisibilityCheck]]
+        [[#*inline "ownerContent"]]
+          [[> body]]
+        [[/inline]]
+        [[#*inline "content"]]
+          [[> body]]
+        [[/inline]]
+      [[/ rsp:VisibilityCheck]]
+    [[/rsp:ClipboardSidebar]]
+  </div>

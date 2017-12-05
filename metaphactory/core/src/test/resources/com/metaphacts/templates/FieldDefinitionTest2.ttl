@@ -1,0 +1,38 @@
+@prefix field: <http://www.metaphacts.com/ontology/fields#>.
+@prefix sp: <http://spinrdf.org/sp#> .
+
+<> a field:Field ;
+
+	field:insertPattern [ sp:text
+"""INSERT {
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}
+WHERE {}""" ];
+
+	field:selectPattern [ sp:text
+"""SELECT $value WHERE {
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}""" ];
+
+	field:autosuggestionPattern [ sp:text
+"""SELECT DISTINCT ?value WHERE {
+  ?s rdfs:label ?value
+  FILTER(REGEX(str(?value),'*?token*','i'))
+} LIMIT 15""" ];
+
+	field:valueSetPattern [ sp:text
+"""SELECT DISTINCT ?value ?label WHERE {
+  ?value rdfs:label ?label
+} LIMIT 15""" ];
+
+	field:deletePattern [ sp:text """DELETE { $subject rdfs:label $value } WHERE {}""" ];
+	field:askPattern [ sp:text """ASK { ?a ?b ?c }""" ];
+
+  field:defaultValue "first default label" ;
+  field:defaultValue "second default label" ;
+
+	field:xsdDatatype xsd:string ;
+	rdfs:comment "Test Field 2 comment" ;
+	rdfs:label "Test Field 2" .

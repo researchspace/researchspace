@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "collapsed": {
+            "description": "Specifies if tree should be collapsed by default",
+            "type": "boolean"
+        },
+        "keysOpened": {
+            "description": "List of node IRIs that should be opened by default",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "noResultTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        },
+        "nodeBindingName": {
+            "description": "SPARQL Select projection variable name that is used to represent **child** value in parent-child relation.",
+            "type": "string"
+        },
+        "parentBindingName": {
+            "description": "SPARQL Select projection variable name that is used to represent **parent** value in parent-child relation",
+            "type": "string"
+        },
+        "query": {
+            "description": "SPARQL Select query. By default query should have at least two projection variables - `parent` and `node`. So basically tree structure is represented as list of parent-child relations. It is possible to override expected binding variables, see options bellow",
+            "type": "string"
+        },
+        "roots": {
+            "description": "List of node IRIs that should be used as a starting points for tree visualization.\nIf omitted default roots are calculated with the assumption that the node is root if it doesn't have any parent",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "tupleTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is used to render every tree node. Template has access to all projection variables for a single result tuple.\nBy default `<semantic-link>` component is used for node visualization.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "query",
+        "tupleTemplate",
+        "noResultTemplate",
+        "roots",
+        "parentBindingName",
+        "nodeBindingName",
+        "collapsed",
+        "keysOpened"
+    ],
+    "required": [
+        "query"
+    ],
+    "type": "object"
+}
+

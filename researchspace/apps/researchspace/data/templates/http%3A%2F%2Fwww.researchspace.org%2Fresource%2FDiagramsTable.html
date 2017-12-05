@@ -1,0 +1,37 @@
+<div style="padding-bottom: 40px;">
+  <semantic-context repository="assets">
+    <semantic-table query='
+                          prefix ontodia: <http://www.ontodia.org/schema/v1#>
+                          SELECT ?diagram ?label ?modified WHERE {
+                               ?diagram a ontodia:diagram, [[diagramType]];
+                                rdfs:label ?label;
+                                <http://www.w3.org/ns/prov#wasAttributedTo> ?__useruri__ ;
+                                <http://www.w3.org/ns/prov#generatedAtTime> ?modified
+                           }
+                       '
+                    options='{"showFilter": false}'
+                    column-configuration='[
+                            {"variableName":"diagram", "displayName":"Diagram"},
+                            {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" },
+                            {"displayName":"Actions", "cellTemplate": "{{> actions}}" }
+                       ]'
+    >
+      <template id="actions">
+        <div>
+          {{#ifCond "[[diagramType]]" "==" "rso:FcFrDiagram"}}
+            <mp-resource-link-container uri='http://www.researchspace.org/resource/CidocOntodia'  urlqueryparam-diagram="{{diagram.value}}" urlqueryparam-warning=true>
+              <button class="btn btn-xs btn-default" style="margin-right:8px;">Open as Detailed</button>
+            </mp-resource-link-container>
+          {{/ifCond}}
+
+          <mp-ldp-duplicate-resource-action iri="{{diagram.value}}" container="http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer">
+            <button class="btn btn-xs btn-default" style="margin-right:8px;"><i title="copy" class="fa fa-files-o" aria-hidden="true"></i> Duplicate</button>
+          </mp-ldp-duplicate-resource-action>
+          <mp-ldp-remove-from-container-action iri="{{diagram.value}}" container="http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer">
+            <button class="btn btn-xs btn-danger" style="margin-right:8px;"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>
+          </mp-ldp-remove-from-container-action>
+        </div>
+      </template>
+      </semantic-table>
+    </semantic-context>
+</div>

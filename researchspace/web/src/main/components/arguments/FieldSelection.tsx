@@ -1,0 +1,195 @@
+/*
+ * Copyright (C) 2015-2017, © Trustees of the British Museum
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+import * as React from 'react';
+import * as Maybe from 'data.maybe';
+import * as _ from 'lodash';
+import * as Kefir from 'kefir';
+import * as ReactSelect from 'react-select';
+
+import { Rdf } from 'platform/api/rdf';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+import { getArgumentsFieldDefinition } from './FieldUtils';
+import { ArgumentsFieldDefinition } from './ArgumentsApi';
+import { getRepositoryStatus } from 'platform/api/services/repository';
+
+export interface BaseFieldSelectionProps {
+  subject: Rdf.Iri
+  record: Rdf.Iri
+  types: Array<Rdf.Iri>
+  placeholder: string
+  onCancel: () => void
+  multiSelection: boolean;
+}
+export interface MultiFieldSelectionProps extends BaseFieldSelectionProps {
+  onSave: (fields: Array<ArgumentsFieldDefinition>) => void
+}
+export interface SingleFieldSelectionProps extends BaseFieldSelectionProps {
+  onSave: (field: ArgumentsFieldDefinition) => void
+}
+export type FieldSelectionProps = MultiFieldSelectionProps | SingleFieldSelectionProps;
+function isMultiSelection(props: FieldSelectionProps): props is MultiFieldSelectionProps {
+  return props.multiSelection;
+}
+
+interface SelectedField {
+  value: string;
+  label: string;
+}
+
+interface State {
+  fields: Data.Maybe<Array<ArgumentsFieldDefinition>>
+  selectedFields: Array<SelectedField> | SelectedField
+}
+
+/**
+ * Provides the ability to select multiple Fields for some Record.
+ * 1) Only fields that have range matching type of the Record can be selected.
+ * 2) Only fields with canonical values (values from default repository) for the give record can be selected.
+ */
+export class FieldSelection extends React.Component<FieldSelectionProps, State> {
+  private fieldSelection: ReactSelect.Component;
+  private repositories = getRepositoryStatus().map(repos => repos.keySeq().toArray());
+
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      fields: Maybe.Nothing<Array<ArgumentsFieldDefinition>>(),
+      selectedFields: []
+    };
+  }
+
+  componentDidMount() {
+    this.fetchFields(this.props);
+  }
+
+  componentWillReceiveProps(props: FieldSelectionProps) {
+    if (!_.isEqual(props, this.props)) {
+      this.fetchFields(props);
+    }
+  }
+
+  render() {
+    const { fields: maybeFields } = this.state;
+    return maybeFields.map(
+      fields =>
+        _.isEmpty(fields) ? <p>'No applicable field for the record'</p> : this.fieldsSelection(fields)
+    ).getOrElse(
+      <p>Loading fields ... </p>
+    );
+  }
+
+  private fieldsSelection = (fields: Array<ArgumentsFieldDefinition>) =>
+    <div style={{height: 400}}>
+      <ReactSelect
+        ref={component => this.fieldSelection = component}
+        multi={this.props.multiSelection} clearable={true}
+        onChange={this.onFieldSelectionChange(fields)}
+        options={fields.map(field => ({value: field.iri, label: field.label}))}
+        value={this.state.selectedFields} placeholder={this.props.placeholder}
+      />
+    </div>
+
+  private onFieldSelectionChange =
+    (fields: Array<ArgumentsFieldDefinition>) => (selected: Array<SelectedField> |  SelectedField) => {
+      this.fieldSelection.closeMenu();
+      this.setState({selectedFields: selected});
+      if (isMultiSelection(this.props)) {
+        const multiSelectd = selected as Array<SelectedField>;
+        const selectedFields =
+          fields.filter(field => _.some(multiSelectd, ({value}) => field.iri === value));
+        this.props.onSave(selectedFields);
+      } else {
+        const selectedField =
+          fields.find(field => (selected as SelectedField).value === field.iri);
+        this.props.onSave(selectedField);
+      }
+    }
+
+  private fetchFields =
+    (props: FieldSelectionProps) => {
+      const { subject, record, types } = props;
+      this.setState({fields: Maybe.Nothing<Array<ArgumentsFieldDefinition>>()});
+      this.getExistingFieldsForRecord(subject, record, types).onValue(
+        fields => this.setState({fields: Maybe.Just(fields)})
+      );
+    }
+
+  private getExistingFieldsForRecord =
+    (
+      subject: Rdf.Iri, record: Rdf.Iri, types: Array<Rdf.Iri>
+    ): Kefir.Property<Array<ArgumentsFieldDefinition>> => {
+      const allFields = this.getFieldsForRecord(record, types);
+      return allFields.flatMap(
+        fields => Kefir.combine(
+          fields.map(
+            field => this.checkField(field)
+                         .map<[ArgumentsFieldDefinition, boolean]>(check => [field, check])
+          )
+        )
+      ).map(
+        fields => fields.filter(([, check]) => check).map(([field]) => field)
+      ).toProperty();
+    }
+
+  private checkField = (field: ArgumentsFieldDefinition): Kefir.Property<boolean> => {
+    return this.repositories.flatMap(
+      repos =>
+        Kefir.combine(
+          repos.map(repo => this.executeFieldTestForRepository(field, repo))
+        )
+    ).map(_.some).toProperty();
+  }
+
+  private executeFieldTestForRepository =
+    (field: ArgumentsFieldDefinition, repository: string) => {
+      const query = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(field.selectPattern);
+      const askQuery: SparqlJs.AskQuery = {
+        prefixes: query.prefixes,
+        type: 'query',
+        queryType: 'ASK',
+        where: query.where,
+      };
+      return SparqlClient.ask(
+        SparqlClient.setBindings(askQuery, {'subject': this.props.subject}), {context: {repository: repository}}
+      );
+  }
+
+
+  private FIELDS_QUERY = SparqlUtil.Sparql`
+    SELECT ?field { ?field <http://www.metaphacts.com/ontology/fields#domain> ?__type__ }
+  ` as SparqlJs.SelectQuery;
+  private getFieldsForRecord =
+    (record: Rdf.Iri, types: Array<Rdf.Iri>): Kefir.Property<Array<ArgumentsFieldDefinition>> => {
+      const fieldIris =
+        SparqlClient.select(
+          SparqlClient.prepareParsedQuery(
+            types.map(type => ({'__type__': type}))
+          )(this.FIELDS_QUERY),
+          {context: {repository: 'assets'}}
+        ).map(
+          res => res.results.bindings.map(binding => binding['field'] as Rdf.Iri)
+        );
+
+      const fieldsData =
+        fieldIris.flatMap(
+          iris => Kefir.combine(iris.map(field => getArgumentsFieldDefinition(field)))
+        );
+      return fieldsData.toProperty();
+    }
+}

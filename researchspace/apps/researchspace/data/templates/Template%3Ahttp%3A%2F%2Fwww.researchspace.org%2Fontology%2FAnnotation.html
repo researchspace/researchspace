@@ -1,0 +1,44 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li>
+    <semantic-context repository="default">
+      <semantic-query data-query='SELECT ?label WHERE { <[[singleValueFromSelect "SELECT ?obj WHERE { ?? <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> ?obj . } LIMIT 1" ]]> rdfs:label ?label . } LIMIT 1'
+                      data-template='{{#each bindings}}<semantic-link uri="[[singleValueFromSelect "SELECT ?obj WHERE { ?? <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> ?obj . } LIMIT 1" ]]" urlqueryparam-tab="annotations">{{label.value}}</semantic-link>{{/each}}'>
+      </semantic-query>
+    </semantic-context>
+  </li>
+  <li>
+    <semantic-query data-query='SELECT ?label  WHERE { ?? rdfs:label ?label . } LIMIT 1'
+                    data-template='{{#each bindings}}{{label.value}}{{/each}}'>
+    </semantic-query>
+  </li>
+</ol>
+
+<div class="page rs-page">
+  [[#>rsp:ClipboardSidebar]]
+  [[#> rsp:VisibilityCheck]]
+  [[#*inline "content"]]
+  <div class="page__header page__header--no-image">
+    [[> rsp:Header thumbnail=false]]
+  </div>
+  <div class="page__body">
+    [[>rsp:UDPView]]
+  </div>
+  [[/inline]]
+  [[#*inline "ownerContent"]]
+  <div class="page__header-navtabs--no-image">
+    [[> rsp:Header]]
+  </div>
+  <bs-tabs class="page__body-navtabs--borderless-no-image" unmount-on-exit=true>
+    <bs-tab event-key="1" title="View">
+      [[>rsp:UDPView]]
+    </bs-tab>
+    <bs-tab event-key="2" title="Edit">
+      [[>rsp:AnnotationEdit]]
+    </bs-tab>
+  </bs-tabs>
+  [[/inline]]
+  [[/ rsp:VisibilityCheck]]
+  [[/rsp:ClipboardSidebar]]
+</div>
+

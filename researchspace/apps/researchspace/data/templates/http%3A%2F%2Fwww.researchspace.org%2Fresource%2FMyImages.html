@@ -1,0 +1,65 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li class="active">
+    My Images
+  </li>
+</ol>
+
+<div class="page">
+  [[#>rsp:ClipboardSidebar]]
+  <div class="page__header page__header--no-image">
+    <h2><i class="fa fa-file-image-o" style="margin-right:4px;"></i> My Images</h2>
+  </div>
+
+  <div class='page__body--borderless'>
+    <bs-row>
+      <bs-col sm="6">
+        <bs-panel-group data-accordion="true" data-default-active-key="2">
+          <bs-panel class="editable-panel-icon-link" id="upload-image-panel" data-header="Upload New Image" data-event-key="1">
+            [[> rsp:ImageUpload ]]
+          </bs-panel>
+        </bs-panel-group>
+      </bs-col>
+    </bs-row>
+    <bs-row>
+      <bs-col sm="8">
+        [[> rsp:ImageActions selection="my-images-selection-aggregator"]]
+        <semantic-context repository='assets'>
+          <semantic-table
+            query='SELECT ?iri ?modified WHERE {{
+                         ?iri a crmdig:D9_Data_Object;
+                         <http://www.w3.org/ns/prov#generatedAtTime> ?modified ;
+                         <http://www.w3.org/ns/prov#wasAttributedTo> ?__useruri__
+                       }
+                      UNION {
+                        ?iri a crmdig:D35_Area;
+                        <http://www.w3.org/ns/prov#generatedAtTime> ?modified ;
+                        <http://www.w3.org/ns/prov#wasAttributedTo> ?__useruri__
+                      }}
+                      '
+            options='{"showFilter": false}'
+            column-configuration='[
+                  {"variableName":"iri", "displayName":"Image", "cellTemplate": "{{> iriTemplate}}"},
+                  {"displayName":"Thumbnail", "cellTemplate": "<semantic-link uri=\"{{iri.value}}\">{{> rsp:IIIFThumbnail}}</semantic-link>"},
+                  {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" },
+                  {"displayName":"Actions", "cellTemplate": "{{> actions}}" }
+                ]'
+          >
+            <template id='iriTemplate'>
+              <div>
+                <mp-selection-toggle selection="my-images-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                <semantic-link style="margin-left: 10px;" uri='{{iri.value}}'></semantic-link>
+              </div>
+            </template>
+            <template id="actions">
+              <mp-ldp-remove-from-container-action iri="{{iri.value}}" container="http://www.metaphacts.com/ontologies/platform#fileContainer">
+                <button class="btn btn-xs btn-danger" style="margin-right:8px;"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>
+              </mp-ldp-remove-from-container-action>
+            </template>
+          </semantic-table>
+        </semantic-context>
+      </bs-col>
+    </bs-row>
+  </div>
+  [[/rsp:ClipboardSidebar]]
+</div>

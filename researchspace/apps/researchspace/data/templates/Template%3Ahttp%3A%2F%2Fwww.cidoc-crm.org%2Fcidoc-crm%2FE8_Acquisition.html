@@ -1,0 +1,99 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li class="active"><semantic-query data-query="[[>rsp:TrimmedTitleQuery]]"
+                                     data-template='{{#each bindings}}{{trimmedLabel.value}}{{/each}}'></semantic-query>
+  </li>
+</ol>
+
+[[!-- [[>rsp:ClipboardSidebar]] --]]
+[[#>rsp:ClipboardSidebar]]
+<div class="rs-page style--base">
+
+  <div class="container-fluid">
+    <div class="rs-page__top">
+      <div class="row">
+        <div class="rs-page__header-elements">
+          <div class="rs-page__header-thumbnail [[>rsp:LayoutImageOffset]]"><!--1column-->
+
+            <semantic-query data-query='[[>rsp:RepresentationsQuery]]'
+                            data-template='{{#each bindings}}<a href="{{imageStr.value}}" title="Click to view full-size image" target="_blank"><img src="{{imageStr.value}}" class="header-thumbnail"></a>{{/each}}'>
+            </semantic-query>
+          </div>
+
+          <div class="rs-page__header-body [[>rsp:LayoutImageOffset]]">
+            <div class="draggable-title">
+              <mp-draggable iri='[[this]]'>
+                      <span>
+                        <div class="gripper"></div>
+                        <span>
+                          <semantic-query data-query="[[>rsp:TrimmedTitleQuery]]"
+                                          data-template='<h2>{{#each bindings}}{{trimmedLabel.value}} {{/each}}</h2>'>
+                          </semantic-query>
+                        </span>
+                      </span>
+              </mp-draggable>
+            </div>
+            <div class="sub-title">
+              <h2><span class="icon-fc--header-title icon-fc--things"></span><small>Event (Acquisition) record, British Museum</small></h2>
+            </div>
+          </div>
+        </div><!--header-elements-->
+      </div><!--row-->
+    </div><!--top-->
+
+    [[#if (urlParam "tab")]]
+    <bs-tab-container class="rs-page__navtabs" default-active-key="[[urlParam 'tab']]">
+      [[else]]
+      <bs-tab-container class="rs-page__navtabs" default-active-key="summary">
+        [[/if]]
+        <bs-row>
+          <bs-col>
+            <bs-nav bs-style="tabs">
+              <bs-nav-item class="[[>rsp:LayoutImageOffset]]" event-key="summary">
+                Summary
+              </bs-nav-item>
+              <bs-nav-item event-key="annotations">
+                Annotations <semantic-query data-query="SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {
+                                                        ?s <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> ??;
+                                                      }"
+                data-template='{{#each bindings}}<span class="badge">{{count.value}}</span>{{/each}}'></semantic-query>
+              </bs-nav-item>
+              <bs-nav-item event-key="related">
+                Explore Related
+              </bs-nav-item>
+            </bs-nav>
+
+            <div class="rs-page__summary style--main">
+              <bs-tab-content>
+                <bs-tab-pane event-key="summary">
+                  <div class="rs-page__tab-content--subtabs">
+                    <div class="row">
+                      [[>"rsp:EventSummary"]]
+                    </div><!--row-->
+                  </div><!--tab-content-->
+                </bs-tab-pane>
+
+                <bs-tab-pane event-key="annotations">
+                  <div class="rs-page__tab-content">
+                    <div class="row">
+                      [[>"rsp:EntityAnnotations"]]
+                    </div><!--row-->
+                  </div><!--tab-content-->
+                </bs-tab-pane>
+
+                <bs-tab-pane event-key="related">
+                  <div class="rs-page__tab-content">
+                    <div class="row">
+                      [[>"rsp:EventRelated"]]
+                    </div><!--row-->
+                  </div><!--tab-content-->
+                </bs-tab-pane>
+              </bs-tab-content>
+            </div><!--summary-->
+          </bs-col>
+        </bs-row>
+      </bs-tab-container>
+
+  </div><!--container-fluid-->
+</div><!--rs-page-->
+[[/rsp:ClipboardSidebar]]

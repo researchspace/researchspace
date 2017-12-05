@@ -1,0 +1,69 @@
+<ol class="page-breadcrumb">
+  <li><a title="Home" href="/">Home</a></li>
+  <li class="active">
+    My Assertions
+  </li>
+</ol>
+
+[[!-- [[>rsp:ClipboardSidebar]] --]]
+[[#>rsp:ClipboardSidebar]]
+<div class="rs-page style--base">
+  <div class="container-fluid">
+
+    <div class="rs-page__top--system">
+      <bs-row>
+        <bs-col sm="6">
+          <h2><i class="fa fa-file-text-o" style="margin-right:4px;"></i> My Assertions</h2>
+        </bs-col>
+      </bs-row>
+    </div><!--top-->
+
+    <bs-row class="style--main style--border-top">
+      <bs-col sm=8 style="margin-left: 40px;">
+        <div class="rs-page__main">
+          <h3>Proposition Sets</h3>
+          <semantic-table config='{
+          "query": "select * where {
+            ?iri a <http://www.ics.forth.gr/isl/CRMinf/I4_Proposition_Set> ;
+               rdfs:label ?label .
+          }",
+          "columnConfiguration": [{
+            "variableName": "iri",
+            "displayName": "Title",
+            "cellTemplate": "<mp-draggable iri=\"{{iri.value}}\"><span>
+              <semantic-link uri=\"{{iri.value}}\">{{label.value}}</semantic-link>
+            </span></mp-draggable>"
+          },{"displayName":"Actions", "cellTemplate": "<div>
+                        <mp-ldp-remove-from-container-action data-iri=\"{{iri.value}}\" data-container=\"http://www.researchspace.org/ontology/Propositions.Container\">
+                          <button class=\"btn btn-xs btn-danger\" style=\"margin-right:8px;\"><i class=\"fa fa-trash\" aria-hidden=\"true\"></i> Delete</button>
+                        </mp-ldp-remove-from-container-action>
+                        </div>
+                                  "} ]
+            }'></semantic-table>
+          
+          <h3>Assertions</h3>
+          <semantic-table config='{
+          "query": "select * where {
+            ?iri a <http://www.researchspace.org/ontology/EX_Assertion> ;
+               rdfs:label ?label .
+          }",
+          "columnConfiguration": [{
+            "variableName": "iri",
+            "displayName": "Title",
+            "cellTemplate": "<mp-draggable iri=\"{{iri.value}}\"><span>
+              <semantic-link uri=\"{{iri.value}}\">{{label.value}}</semantic-link>
+            </span></mp-draggable>"
+          },{"displayName":"Actions", "cellTemplate": "<div>
+                        <mp-ldp-remove-from-container-action data-iri=\"{{iri.value}}\" data-container=\"http://www.researchspace.org/ontology/Propositions.Container\">
+                          <button class=\"btn btn-xs btn-danger\" style=\"margin-right:8px;\"><i class=\"fa fa-trash\" aria-hidden=\"true\"></i> Delete</button>
+                        </mp-ldp-remove-from-container-action>
+                        </div>
+                                  "} ]
+            }'></semantic-table>
+        </div>
+      </bs-col>
+    </bs-row>
+
+  </div>
+</div>
+[[/rsp:ClipboardSidebar]]

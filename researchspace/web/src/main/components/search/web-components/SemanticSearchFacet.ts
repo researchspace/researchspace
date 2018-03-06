@@ -22,8 +22,8 @@
  */
 
 import { DOM as D } from 'react';
-import * as _ from 'lodash';
 import * as classNames from 'classnames';
+import * as Maybe from 'data.maybe';
 
 import { Component, ComponentContext, ContextTypes } from 'platform/api/components';
 import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
@@ -35,6 +35,8 @@ import {
 import {
   FacetContext, FacetContextTypes,
 } from 'platform/components/semantic/search/web-components/SemanticSearchApi';
+import * as Model from 'platform/components/semantic/search/data/search/Model';
+
 import Facet from '../facet/Facet';
 import {
   FacetStore, FacetData, Actions,
@@ -46,8 +48,6 @@ interface State {
   facetData?: FacetData
   actions?: Actions
   showFacets?: boolean
-  updateFacetData?: boolean
-  loadingFacetData?: boolean
   bigResultSet?: boolean
 }
 
@@ -55,7 +55,7 @@ class SemanticSearchFacet extends Component<Props, State> {
   static contextTypes = { ...FacetContextTypes, ...ContextTypes};
   context: FacetContext & ComponentContext;
 
-  private currentBaseQuery: SparqlJs.SelectQuery | null;
+  private facetStore: FacetStore;
 
   constructor(props: Props, context) {
     super(props, context);
@@ -63,8 +63,6 @@ class SemanticSearchFacet extends Component<Props, State> {
       facetData: null,
       actions: null,
       showFacets: props.openByDefault,
-      updateFacetData: true,
-      loadingFacetData: false,
       bigResultSet: false
     };
   }
@@ -83,69 +81,61 @@ class SemanticSearchFacet extends Component<Props, State> {
     facetValuesThreshold: 10000,
   };
 
-  componentWillReceiveProps(props: Props, /* undocumented! */ context: FacetContext) {
-    const showFacets = this.state.showFacets;
-    const canUpdateFacets =
-      context.baseQuery.isJust && context.domain.isJust &&
-      // allow facets to update if they're visible or results already loaded
-      (showFacets || context.resultsStatus.loaded);
-
-    const nextBaseQuery = context.baseQuery.getOrElse(null);
-    const baseQueryChanged = !_.isEqual(this.currentBaseQuery, nextBaseQuery);
-
-    if (!nextBaseQuery) {
-      this.currentBaseQuery = null;
-      this.setState({
-        showFacets: props.openByDefault,
-        facetData: null,
-      });
-    } else if (baseQueryChanged && canUpdateFacets) {
-      this.currentBaseQuery = nextBaseQuery;
-      this.setState({updateFacetData: true});
-    }
-  }
-
-  shouldComponentUpdate(
-    nextProps: Props,
-    nextState: State,
-    /* undocumented! */
-    nextContext: FacetContext & ComponentContext
+  componentWillReceiveProps(
+    props: Props, /* undocumented! */ context: FacetContext & ComponentContext
   ) {
-    if ((nextState.showFacets || nextContext.resultsStatus.loaded) &&
-      nextState.updateFacetData && !nextState.loadingFacetData && this.currentBaseQuery
-    ) {
-      this.createFacetStore(nextContext);
+    const canUpdateFacets =
+      context.baseQuery.isJust && context.domain.isJust && context.resultsStatus.loaded;
+
+    if (!this.facetStore && canUpdateFacets) {
+      this.createFacetStore(context.baseQuery.get(), context);
+    } else if (canUpdateFacets) {
+      this.facetStore.facetActions().setBaseQuery(context.baseQuery.get());
+
+      if (props.listenToContextSwitch
+          && context.visualizationContext.isJust
+          && !this.isOldVisualizationContext(context.visualizationContext)
+         ) {
+        const relation = context.visualizationContext.get();
+        this.facetStore.facetActions().selectCategory(relation.hasRange);
+        this.facetStore.facetActions().selectRelation(relation);
+      }
+    } else if (context.baseQuery.isNothing) {
+      this.facetStore = null;
+      this.setState({facetData: null});
     }
-    return true;
   }
 
-  private createFacetStore(context: FacetContext & ComponentContext) {
-    const facetStore = new FacetStore({
+  private isOldVisualizationContext =
+    (visualizationContext: Data.Maybe<Model.Relation>) =>
+      Maybe.fromNullable(this.state.facetData)
+        .chain(fd => fd.viewState.relation)
+        .chain(o => visualizationContext.map(n => o.iri.equals(n.iri)))
+        .getOrElse(false);
+
+  private createFacetStore(
+    baseQuery: SparqlJs.SelectQuery, context: FacetContext & ComponentContext
+  ) {
+    this.facetStore = new FacetStore({
       domain: context.domain.get(),
       baseConfig: context.baseConfig,
-      baseQuery: this.currentBaseQuery,
+      baseQuery: baseQuery,
       initialAst: context.facetStructure.getOrElse(undefined),
       searchProfileStore: context.searchProfileStore.get(),
       config: this.props,
     }, context);
 
-    this.setState({
-      loadingFacetData: true,
-    });
-
-    facetStore.getFacetData().observe({
+    this.facetStore.getFacetData().observe({
       value: facetData => {
         this.setState({
-          actions: facetStore.facetActions(),
+          actions: this.facetStore.facetActions(),
           facetData: facetData,
-          updateFacetData: false,
-          loadingFacetData: false,
         });
         this.context.setFacetStructure(facetData.ast);
       },
     });
 
-    facetStore.getFacetedQuery().onValue(
+    this.facetStore.getFacetedQuery().onValue(
       query => this.context.setFacetedQuery(query)
     );
   }

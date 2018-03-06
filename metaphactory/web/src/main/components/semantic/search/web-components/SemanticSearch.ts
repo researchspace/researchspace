@@ -65,6 +65,7 @@ interface State {
   selectedDatasets?: Array<Dataset>
   selectedAlignment?: Data.Maybe<Alignment>
   isConfigurationEditable?: boolean
+  visualizationContext?: Data.Maybe<Model.Relation>
 }
 
 const SAVED_STATE_QUERY_KEY = 'semanticSearch';
@@ -110,6 +111,7 @@ export class SemanticSearch extends Component<Props, State> {
       selectedDatasets: this.getDefaultDatasets(availableDatasets),
       selectedAlignment: this.getDefaultAlignments(availableDatasets),
       isConfigurationEditable: true,
+      visualizationContext: Maybe.Nothing<Model.Relation>(),
     };
   }
 
@@ -147,6 +149,8 @@ export class SemanticSearch extends Component<Props, State> {
       setSelectedAlignment: this.setSelectedAlignment,
       isConfigurationEditable: this.state.isConfigurationEditable,
       availableDatasets: this.state.availableDatasets,
+      visualizationContext: this.state.visualizationContext,
+      setVisualizationContext: this.setVisualizationContext,
     };
     return {...super.getChildContext(), ...context};
   }
@@ -286,6 +290,9 @@ export class SemanticSearch extends Component<Props, State> {
 
   private setSelectedAlignment = (alignment: Data.Maybe<Alignment>) =>
     this.setState({selectedAlignment: alignment});
+
+  private setVisualizationContext = (visualizationContext: Data.Maybe<Model.Relation>) =>
+    this.setState({visualizationContext});
 
   private listenForResultsLoading() {
     this.loadingResults = this.cancellation.deriveAndCancel(this.loadingResults);

@@ -442,7 +442,7 @@ object PlatformBuildPlugin extends AutoPlugin {
       "SemanticGraphCoseBilkentLayoutConfig", "SemanticGraphPresetLayoutConfig",
       "SemanticGraphNavigatorExtensionConfig", "SemanticGraphPanZoomExtensionConfig",
       "SemanticGraphExpandCollapseExtensionConfig",
-      "SemanticQueryBuilderConfig"
+      "SemanticQueryBuilderConfig", "SemanticTimelineConfig"
     );
 
     for (interfaceName <- schemas) {

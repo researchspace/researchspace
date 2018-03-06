@@ -1,0 +1,159 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Alignments" uri="http://www.researchspace.org/resource/AlignmentsDashboard">Alignments</semantic-link>
+  </li>
+  <li class="active">
+    Alignment: [[label]]
+  </li>
+</ol>
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-compress fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>[[label]]</h2>
+      <p>
+        <b>URI</b>: <i>[[this]]</i>
+      </p>
+      <p>
+        <b>Source</b>: <i><semantic-query query='SELECT ?source WHERE { ?? rso:PX_source_terminology ?source }' template='<span>{{bindings.0.source.value}}</span>'></semantic-query></i>
+      </p>
+      <p>
+        <b>Target</b>: <i><semantic-query query='SELECT ?target WHERE { ?? rso:PX_target_terminology ?target }' template='<span>{{bindings.0.target.value}}</span>'></semantic-query></i>
+      </p>
+    </div>
+  </div>
+  <div class='page__body--borderless' style='height: 70vh;'>
+    <semantic-context repository='default'>
+      <rs-alignment-tool
+        alignment-container='[[this]]'
+        queries='{
+           "rootsQuery": "
+             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+             PREFIX gvp: <http://vocab.getty.edu/ontology#>
+             PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+             PREFIX dc: <http://purl.org/dc/elements/1.1/>
+             SELECT DISTINCT ?item ?label ?hasChildren
+             FROM <alignment:__graph__>
+             WHERE {
+               ?item a ?type .
+               FILTER((?type = gvp:Facet) || (?type = skos:Concept))
+               FILTER NOT EXISTS { ?item skos:broader | gvp:broader ?parent }
+               OPTIONAL {
+                 ?item skos:prefLabel ?labelX .
+                 FILTER(langMatches(lang(?labelX), \"en\") || LANG(?labelX) = \"\")
+               }
+
+               OPTIONAL {
+                 ?child skos:broader | gvp:broader ?item .
+               }
+               BIND(bound(?child) as ?hasChildren)
+               BIND(IF(CONTAINS(STR(?labelX),\"unauthorised\"), STR(?item) , ?labelX) as ?label)
+
+             }
+             ORDER BY ?label
+           ",
+           "childrenQuery": "
+             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+             PREFIX gvp: <http://vocab.getty.edu/ontology#>
+             PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+             PREFIX dc: <http://purl.org/dc/elements/1.1/>
+             SELECT DISTINCT ?item ?label ?hasChildren
+             FROM <alignment:__graph__>
+             WHERE {
+               {
+                 ?item a gvp:Subject .
+                 ?item gvp:broader ?parent
+               } UNION {
+                 ?item a skos:Concept .
+                 FILTER NOT EXISTS { ?item rdf:type gvp:Subject }
+                 ?item skos:broader ?parent .
+               }
+                 
+               ?item skos:prefLabel ?labelX .
+               FILTER(langMatches(lang(?labelX), \"en\") || LANG(?labelX) = \"\")
+                 
+               OPTIONAL {
+                 ?child skos:broader | gvp:broader ?item.
+               }
+               BIND(BOUND(?child) AS ?hasChildren)
+               BIND(IF(CONTAINS(STR(?labelX),\"unauthorised\"), STR(?item) , ?labelX) as ?label)
+             }
+             ORDER BY ?label
+           ",
+           "parentsQuery": "
+             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+             PREFIX gvp: <http://vocab.getty.edu/ontology#>
+             PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+             PREFIX dc: <http://purl.org/dc/elements/1.1/>
+             SELECT DISTINCT ?item ?parent ?parentLabel
+             FROM <alignment:__graph__>
+             WHERE {
+                 ?item (skos:broader | gvp:broader) ?parent .
+                 ?parent skos:prefLabel ?parentLabel .
+                 FILTER(langMatches(lang(?parentLabel), \"en\") || LANG(?parentLabel) = \"\")
+             } ORDER BY ?parentLabel
+           ",
+           "searchQuery": "
+                PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                PREFIX gvp: <http://vocab.getty.edu/ontology#>
+                PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+                PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+                SELECT DISTINCT ?item ?label ?score ?hasChildren
+                FROM <alignment:__graph__>
+                WHERE {
+                  ?item a ?type .
+                  FILTER((?type = gvp:Facet) || (?type = skos:Concept))
+                  ?item skos:prefLabel ?label .
+                  FILTER(langMatches(lang(?label), \"en\") || lang(?label) = \"\") .
+                  ?label bds:search ?__token__ ;
+                  bds:relevance ?score ;
+                  bds:minRelevance \"0.3\" ;
+                  bds:maxRank \"500\" ;
+                  bds:matchAllTerms \"true\"  .
+                  OPTIONAL {
+                   ?child gvp:broader | skos:broader ?item
+                  }
+                  BIND(BOUND(?child) AS ?hasChildren)
+                }
+                ORDER BY DESC(?score) ?label
+                LIMIT 200
+           ",
+           "nodeQuery": "
+             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+             PREFIX gvp: <http://vocab.getty.edu/ontology#>
+             PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
+             PREFIX dc: <http://purl.org/dc/elements/1.1/>
+             SELECT DISTINCT ?item ?label ?hasChildren
+             FROM <alignment:__graph__>
+             WHERE {
+               ?item skos:prefLabel ?labelX .
+               FILTER(langMatches(lang(?labelX), \"en\") || LANG(?labelX) = \"\")
+
+               OPTIONAL {
+                 ?child gvp:broader | skos:broader ?item
+               }
+               BIND(BOUND(?child) AS ?hasChildren)
+               BIND(IF(CONTAINS(STR(?labelX),\"unauthorised\"), STR(?item) , ?labelX) as ?label)
+             }
+             ORDER BY ?label
+           "
+        }'>
+      </rs-alignment-tool>
+    </semantic-context>
+  </div>
+</div>
+
+
+
+
+
+
+
+

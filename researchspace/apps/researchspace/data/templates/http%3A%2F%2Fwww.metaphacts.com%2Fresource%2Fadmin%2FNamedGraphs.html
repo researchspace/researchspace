@@ -1,0 +1,75 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="System Settings" data-uri="http://www.metaphacts.com/resource/admin/">System Settings</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Data Import and Export" uri="http://www.metaphacts.com/resource/admin/DataImportExport">Data Import and Export</semantic-link>
+  </li>
+  <li class="active">
+    Named Graph: [[urlParam "graph"]]
+  </li>
+</ol>
+
+
+<div class="page">
+  <div class="page__header-navtabs">
+    <div class='page__header-thumbnail'>
+      <h2><div class='btn btn-default component-page-toolbar__btn_show_graph' style='background-size: auto 55px; height: 64px; width: 100px;'></div></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Named Graph</h2>
+      <p>
+        <b>URI</b>: <i style="font-size: 12px;">[[urlParam "graph"]]</i>
+      </p>
+    </div>
+  </div>
+    <bs-tabs id="named-graph-tabs" class='page__body-navtabs' unmount-on-exit=true>
+        <bs-tab event-key="1" title="Preview" unmount-on-exit=true>
+          <h2> Statements </h2>
+         <semantic-query query='SELECT  (COUNT(DISTINCT *) as ?number) WHERE{ GRAPH <[[urlParam "graph"]]>{ {SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000 }} } LIMIT 1' 
+                          template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The table below is limited to show only a preview of <strong>1000 statements</strong> from the named graph. However, the absolute number of statements in the graph seems to be larger. </bs-alert>{{else}} <bs-alert bs-style="info"> The named graphs contains <strong>{{number.value}}</strong> distinct statements.</bs-alert> {{/ifCond}}{{/each}}'
+          >
+    			</semantic-query>
+          
+          <semantic-table config='{
+              "query":"SELECT ?s ?p ?o WHERE{ GRAPH <[[urlParam "graph"]]>{?s ?p ?o} } LIMIT 1000",
+              "columnConfiguration" : [
+                {"variableName":"s", "displayName":"Subject"},
+                {"variableName":"p", "displayName":"Property"},
+                {"variableName":"o", "displayName":"Object"}
+              ],
+              "layout":{
+                 "options":{
+                    "resultsPerPage":10
+                 }
+                }
+              }'>
+            </semantic-table>
+        </bs-tab>
+        <bs-tab event-key="2" title="Statistics" unmount-on-exit=true>
+          <h2> Statement Statistics </h2>
+          [[!-- to be listed in the includes [[>Admin:NamedGraphsStatistics]] --]]
+          <semantic-query query='SELECT  (COUNT(DISTINCT *) as ?number) WHERE{ GRAPH <[[urlParam "graph"]]>{ {SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000000 }} } LIMIT 1' 
+                          template='{{#each bindings}}{{#ifCond number.value ">=" 1000000}}<bs-alert bs-style="warning"> Statics are only available for named graph with less than 1.000.000 statements. However, the absolute number of statements in the graph seems to be larger. </bs-alert>{{else}} <mp-page-loader iri="http://www.metaphacts.com/resource/admin/NamedGraphsStatistics"></mp-page-loader> {{/ifCond}}{{/each}}'
+          >
+    			</semantic-query>
+        </bs-tab>
+        <bs-tab event-key="3" title="Graph" unmount-on-exit=true>
+          <semantic-query query='SELECT  (COUNT(DISTINCT *) as ?number) WHERE{ GRAPH <[[urlParam "graph"]]>{ {SELECT * WHERE{ ?s ?p ?o}  LIMIT 100 }} } LIMIT 1' 
+                          template='{{#each bindings}}{{#ifCond number.value ">=" 100}}<bs-alert bs-style="warning"> The table below is limited to show only a preview of <strong>100 statements</strong> from the named graph. However, the absolute number of statements in the graph seems to be larger and as such some edges or nodes might be missing.</bs-alert>{{else}}{{/ifCond}}{{/each}}'>
+    			</semantic-query>
+           <semantic-graph 
+              height='600px' 
+              query='CONSTRUCT { ?s ?p ?o } WHERE { GRAPH <[[urlParam "graph"]]>{?s ?p ?o} } LIMIT 100'
+            >
+						<semantic-graph-layout-cose-bilkent ideal-edge-length='50'></semantic-graph-layout-cose-bilkent>
+            <semantic-graph-extension-panzoom pan-indicator-min-opacity='0.1'></semantic-graph-extension-panzoom>
+        </semantic-graph>
+
+        </bs-tab>
+
+     </bs-tabs>
+</div>

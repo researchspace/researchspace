@@ -21,7 +21,8 @@ import * as ReactBootstrap from 'react-bootstrap';
 
 const Panel = createFactory(ReactBootstrap.Panel);
 
-type ErrorValue = string | { message: string; } | { responseText: string } | ErrorValues;
+type ErrorValue =
+  string | { message: string; } | { responseText: string } | { status: number; } | ErrorValues;
 interface ErrorValues extends ReadonlyArray<ErrorValue> {}
 
 export interface ErrorNotificationProps {
@@ -43,8 +44,17 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
     }
   }
 
+  private isTimeoutError(error: ErrorValue): boolean {
+    const {status} = error as { status: number };
+    return status && status === 504;
+  }
+
   render() {
-    const title = this.props.title || 'Error occurred! Click to see more details.';
+    const isTimeoutError = this.isTimeoutError(this.props.errorMessage);
+
+    const title = this.props.title || (
+      isTimeoutError ? 'Request Timeout' : 'Error occurred! Click to see more details.'
+    );
     const errorHeader = D.p({},
       D.i({
         className: 'fa fa-exclamation-triangle',
@@ -57,6 +67,7 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
         collapsible: true,
         header: errorHeader,
         className: this.props.className,
+        defaultExpanded: isTimeoutError,
       },
       this.props.errorMessage
         ? this.wrapError(this.props.errorMessage)
@@ -64,7 +75,12 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
   }
 
   private wrapError(error: ErrorValue): ReactElement<any> | string {
-    if (typeof error === 'object' && 'responseText' in error) {
+    if (this.isTimeoutError(error)) {
+      return (
+        `504 Gateway Timeout.
+         Probably there were too many results to retrieve in the available time.`
+      );
+    } else if (typeof error === 'object' && 'responseText' in error) {
       const {responseText} = error as { responseText: string };
       return D.iframe({srcDoc: responseText, width: '100%', height: 400});
     } else if (typeof error === 'object' && 'message' in error) {

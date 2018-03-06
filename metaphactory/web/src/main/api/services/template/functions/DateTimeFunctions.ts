@@ -25,10 +25,13 @@ export const DateTimeFunctions = {
    * It is possible to use any format supported by moment.js,
    * see http://momentjs.com/docs/#/displaying/ for more details.
    */
-  dateTimeFormat: function (dateTime, format) {
+  dateTimeFormat: function (dateTime, format, sourceFormat) {
     if (typeof format !== 'string') {
       format = 'LL';
     }
-    return moment(dateTime).format(format);
+    if (typeof sourceFormat !== 'string') {
+      sourceFormat = undefined;
+    }
+    return moment(dateTime, sourceFormat).format(format);
   },
 };

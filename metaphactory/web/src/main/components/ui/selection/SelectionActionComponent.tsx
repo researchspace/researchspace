@@ -30,7 +30,7 @@ type Props = MenuProps & ActionProps & TitleProps
 /**
  * Menu items for actions on selection
  */
-class SelectionActionComponent extends Component<Props, void> {
+export class SelectionActionComponent extends Component<Props, void> {
   render() {
     return <MenuItem
       eventKey={1}

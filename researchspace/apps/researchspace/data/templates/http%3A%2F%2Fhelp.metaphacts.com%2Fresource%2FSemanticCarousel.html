@@ -1,0 +1,91 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">Carousel Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Carousel Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        <p>Animated browsing through small collections of result items where individual result items can have an extended representation.</p>
+
+        <p>
+            Individual carousel items have a corresponding element in the final DOM and will be rendered lazily. However, the size and complexity of <code>tuple-template</code>(s) may impact the overall performance. 
+        </p>
+      </div>
+      <div class="documentation__intro__demo">
+          <semantic-carousel
+            query="[[>Help:SemanticCarouselSampleQuery]]"       
+            tuple-template='
+              <div class="text-center panel panel-default" style="border:none;margin-right:20px;font-size:12px;height:300px;width: 100%;">
+                <div class="panel-body" style="height: 280px;">
+                  <img src="{{thumbnail.value}}" style="max-height:260px; margin: 0 auto;" class="img-rounded">
+                </div>
+                <div class="panel-footer" style="position: relative;  border: none;">
+                  <semantic-link title="{{label.value}}" class="grid-resource-link" uri="{{subject.value}}">{{label.value}}</semantic-link>
+                </div>
+              </div>
+            ' >
+        </semantic-carousel>
+        </div>
+    </div>
+    <div style="clear:both;"></div>
+
+    <h2>Configuration</h2>
+
+    <mp-documentation type="SemanticCarouselConfig"></mp-documentation>
+
+    <h2>Examples </h2>
+
+    <h3>Simple <code>tuple-template</code></h3>
+    <div>
+      <mp-code-example>
+        <semantic-carousel
+          query="[[>Help:SemanticCarouselSampleQuery]]"
+          tuple-template='<img src="{{thumbnail.value}}" style="max-height:260px; margin: 0 auto;" class="img-rounded">'
+        ></semantic-carousel>
+      </mp-code-example>
+    </div>
+
+    <h3>Complex <code>tuple-template</code></h3>
+    <div>
+      <mp-code-example>
+        <semantic-carousel 
+          query="[[>Help:SemanticCarouselSampleQuery]]"
+          tuple-template='
+            <div class="text-center panel panel-default" style="border:none;margin-right:20px;font-size:12px;height:300px;width: 100%;">
+              <div class="panel-body" style="height: 280px;">
+                <img src="{{thumbnail.value}}" style="max-height:260px; margin: 0 auto;" class="img-rounded">
+              </div>
+              <div class="panel-footer" style="position: relative;  border: none;">
+                <semantic-link title="{{label.value}}" class="grid-resource-link" uri="{{subject.value}}">{{label.value}}</semantic>
+              </div>
+            </div>'
+        ></semantic-carousel>
+      </mp-code-example>
+    </div>
+
+    <h3>Passing slick specific options (e.g fade, disable infinite sliding)</h3>
+    <div>
+      <mp-code-example>
+        <semantic-carousel
+          query="[[>Help:SemanticCarouselSampleQuery]]"          
+          options='{ "infinite": false, "fade": true }'
+          tuple-template='<img src="{{thumbnail.value}}" style="max-height:260px; margin: 0 auto;" class="img-rounded">'
+        ></semantic-carousel>
+      </mp-code-example>
+    </div>
+  </div>
+</div>

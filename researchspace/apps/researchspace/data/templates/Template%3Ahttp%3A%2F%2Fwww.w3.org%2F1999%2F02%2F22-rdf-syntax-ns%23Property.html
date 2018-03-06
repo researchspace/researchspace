@@ -1,0 +1,89 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li class="active">
+    <mp-label iri='[[this]]'></mp-label>
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__header'>
+    [[> Platform:DefaultResourceHeader]]
+  </div>
+  <div class='page__body'>
+    <bs-tabs id="tabs" unmount-on-exit=true>
+            <bs-tab event-key="1" title="Taxonomy">
+               <semantic-tree 
+                           query="
+                            SELECT DISTINCT ?node ?parent WHERE {
+                              { ?? rdfs:subPropertyOf* ?node. }
+                              UNION
+                              { ?node rdfs:subPropertyOf* ?? . }
+                              OPTIONAL { ?node rdfs:subPropertyOf ?parent. FILTER(ISIRI(?parent)) }
+                              FILTER(ISIRI(?node))
+                            }
+                            ORDER BY ?node"                                    
+        			             collapsed="true"
+                           keys-opened='["[[this]]"]'
+                           parentBindingName="parent"
+                           nodeBindingName="node">
+         			  </semantic-tree> 
+                <br/>
+                <details>
+                  <summary><b>Subproperties</b></summary>
+                  <semantic-table query='SELECT ?Subproperty ?Relation WHERE { 
+                                            {
+                                              ?Subproperty rdfs:subPropertyOf ?? . BIND("direct" as ?Relation)
+                                            } UNION {
+                                              ?Subproperty rdfs:subPropertyOf+ ?? . BIND("inferred" as ?Relation)
+                                              FILTER NOT EXISTS { ?Subproperty rdfs:subPropertyOf ?? } 
+                                            }
+                                            FILTER( !isBlank(?Subproperty))
+                                         }'
+                                  options='{"showTableHeading":false, "filterPlaceholderText":"Filter Subproperteis"}'
+                                  no-result-template='<i>No subproperties of "<mp-label iri="[[this]]"></mp-label>".</i>'>
+                  </semantic-table>
+                </details>
+                <details>
+                  <summary><b>Superproperties</b></summary>
+                  <semantic-table query='SELECT ?Superproperty ?Relation WHERE { 
+                                          { 
+                                            ?? rdfs:subPropertyOf ?Superproperty . BIND("direct" as ?Relation)
+                                          } UNION {
+                                            ?? rdfs:subPropertyOf+ ?Superclass . BIND("inferred" as ?Relation)
+                                            FILTER NOT EXISTS { ?? rdfs:subPropertyOf ?Superproperty } 
+                                          }
+                                          FILTER( !isBlank(?Superproperty))
+                                        }'
+                                  options='{"showTableHeading":false, "filterPlaceholderText":"Filter Superproperties"}'
+                                  no-result-template='<i>No superproperties of "<mp-label iri="[[this]]"></mp-label>".</i>'>
+                  </semantic-table>
+                </details>
+            </bs-tab>
+      
+            <bs-tab event-key="2" title="Domains and Ranges">
+                <details>
+                  <summary><b>Domains for "<mp-label iri="[[this]]"></mp-label>"</b></summary>
+                  <semantic-table query='SELECT ?domain WHERE { ?? rdfs:domain ?domain }'
+                                  options='{"showTableHeading":false, "filterPlaceholderText":"Filter Properties"}'
+                                  no-result-template='<i>No classes within domain of "<mp-label iri="[[this]]"></mp-label>".</i>'>
+                  </semantic-table>
+                </details>
+                <details>
+                  <summary><b>Ranges for "<mp-label iri="[[this]]"></mp-label>"</b></summary>
+                  <semantic-table query='SELECT ?range WHERE { ?? rdfs:range ?range }'
+                                  options='{"showTableHeading":false, "filterPlaceholderText":"Filter Properties"}'
+                                  no-result-template='<i>No classes or datatypes within range of "<mp-label iri="[[this]]"></mp-label>".</i>'>
+                  </semantic-table>
+                </details>
+            </bs-tab>
+      
+            <bs-tab event-key="3" title="Usage">
+              <semantic-table query='SELECT ?Subject ?Object WHERE { ?Subject ?? ?Object }'
+                              no-result-template='<i>"<mp-label iri="[[this]]"></mp-label>" is not used in any predicate position.</i>'>
+              </semantic-table>
+            </bs-tab>
+     </bs-tabs>    
+  </div>
+</div>

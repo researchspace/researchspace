@@ -36,18 +36,13 @@ import { ClearableInput, ClearableInputProps, RemovableBadge } from 'platform/co
 import { Spinner } from 'platform/components/ui/spinner';
 import { Droppable } from 'platform/components/dnd';
 
-import { KeyedForest, OffsetPath } from './KeyedForest';
+import { KeyedForest, KeyPath } from './KeyedForest';
 import { TreeSelection, SelectionNode } from './TreeSelection';
 import { SingleFullSubtree, MultipleFullSubtrees } from './SelectionMode';
-import {
-  Node,
-  NodeTreeSelector,
-  NodeTreeProps,
-  EmptyForest,
-  queryMoreChildren,
-  RootsChange,
-  restoreForestFromLeafs,
-} from './NodeModel';
+import { TreeNode, ForestChange, queryMoreChildren } from './NodeModel';
+import { Node, SparqlNodeModel, sealLazyExpanding } from './SparqlNodeModel';
+import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
+
 import * as styles from './SemanticTreeInput.scss';
 
 export interface ComplexTreePatterns {
@@ -99,6 +94,8 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
   placeholder?: string;
   /** Callback invoked when tree selection changes. */
   onSelectionChanged?: (selection: TreeSelection<Node>) => void;
+  /** Callback invoked when user clicks on selected item badge. */
+  onSelectionClick?: (selection: TreeSelection<Node>, node: SelectionNode<Node>) => void;
   /** Automatically open/close dropdown in full mode when input focused/blurred. */
   openDropdownOnFocus?: boolean;
   /** Allow forced search with query less than MIN_SEARCH_TERM_LENGTH by pressing Enter **/
@@ -113,9 +110,7 @@ interface State {
   forest?: KeyedForest<Node>;
 
   loadError?: any;
-  rootsQuery?: SparqlJs.SelectQuery;
-  childrenQuery?: SparqlJs.SelectQuery;
-  parentsQuery?: SparqlJs.SelectQuery;
+  model?: SparqlNodeModel;
   searchQuery?: SparqlJs.SelectQuery;
 
   confirmedSelection?: TreeSelection<Node>;
@@ -209,22 +204,8 @@ interface SearchResult {
  * '></semantic-tree-input>
  */
 export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> {
-  private cancellation = new Cancellation();
-
-  private search = this.cancellation.cache<string, SearchResult>((text, cancellation) => {
-    const parametrized = SparqlClient.setBindings(
-      this.state.searchQuery, {'__token__': SparqlUtil.makeLuceneQuery(text)});
-    return Kefir.later(SEARCH_DELAY_MS, {})
-      .flatMap<SparqlClient.SparqlSelectResult>(() => SparqlClient.select(parametrized))
-      .flatMap<SearchResult>(result =>
-        this.restoreTreeFromLeafNodes(result.results.bindings, cancellation)
-        .map(forest => ({
-          forest,
-          matchedCount: result.results.bindings.length,
-          matchLimit: parametrized.limit,
-        }))
-      );
-  });
+  private readonly cancellation = new Cancellation();
+  private search = this.cancellation.derive();
 
   private overlayHolder: HTMLElement;
   private textInput: ClearableInput;
@@ -232,22 +213,44 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   constructor(props: SemanticTreeInputProps, context: any) {
     super(props, context);
     this.state = {
+      ...this.createQueryModel(this.props),
       mode: {type: 'collapsed'},
-      forest: EmptyForest.setRoot({
-        iri: undefined,
-        children: List<Node>(),
-        hasMoreItems: true,
-      }),
-      confirmedSelection: TreeSelection.empty(EmptyForest.keyOf),
+      forest: Node.readyToLoadForest,
+      confirmedSelection: TreeSelection.empty(Node.emptyForest),
     };
   }
 
   componentDidMount() {
-    this.load(this.props, this.setInitialSelection);
+    this.setInitialSelection();
   }
 
   componentWillReceiveProps(nextProps: SemanticTreeInputProps) {
-    this.load(nextProps);
+    const props = this.props;
+    const sameQueries = (
+      props.rootsQuery === nextProps.rootsQuery &&
+      props.childrenQuery === nextProps.childrenQuery &&
+      props.parentsQuery === nextProps.parentsQuery &&
+      props.searchQuery === nextProps.searchQuery
+    );
+    if (!sameQueries) {
+      this.setState(this.createQueryModel(nextProps));
+    }
+  }
+
+  private createQueryModel(props: SemanticTreeInputProps): State {
+    try {
+      const model = new SparqlNodeModel({
+        rootsQuery: SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.rootsQuery),
+        childrenQuery: SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.childrenQuery),
+        parentsQuery: SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.parentsQuery),
+        limit: ITEMS_LIMIT,
+        sparqlOptions: () => ({context: this.context.semanticContext}),
+      });
+      const searchQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.searchQuery);
+      return {model, searchQuery};
+    } catch (loadError) {
+      return {loadError};
+    }
   }
 
   /**
@@ -268,7 +271,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         label: labels.has(iri) ? Rdf.literal(labels.get(iri)) : undefined,
         hasChildren: Rdf.literal(true),
       }));
-      return this.restoreTreeFromLeafNodes(bindings, this.cancellation);
+      return this.restoreTreeFromLeafNodes(bindings);
     }).observe({
       value: forest => {
         const confirmedSelection = forest as TreeSelection<Node>;
@@ -278,31 +281,16 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     });
   }
 
-  private load(props: SemanticTreeInputProps, cb?: () => void) {
-    this.setState({
-      rootsQuery: SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.rootsQuery),
-      childrenQuery: SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.childrenQuery),
-      parentsQuery: SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.parentsQuery),
-      searchQuery: SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(props.searchQuery),
-    }, cb);
-  }
-
   componentWillUnmount() {
     this.cancellation.cancelAll();
   }
 
   render() {
-    const queriesLoaded =
-      this.state.rootsQuery &&
-      this.state.childrenQuery &&
-      this.state.parentsQuery &&
-      this.state.searchQuery;
-
     if (this.state.loadError) {
       return D.div({className: classnames(styles.holder, this.props.className)},
         createElement(ErrorNotification, {errorMessage: this.state.loadError})
       );
-    } else if (queriesLoaded) {
+    } else {
       const result = D.div(
         {
           ref: holder => this.overlayHolder = holder,
@@ -332,25 +320,21 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       } else {
         return result;
       }
-    } else {
-      return D.div({className: styles.holder}, createElement(Spinner));
     }
   }
 
   private setValue(iri: Rdf.Iri) {
     this.cancellation.map(LabelsService.getLabel(iri)).onValue(label => {
-      const newValue: TreeSelection<Node> = TreeSelection.empty(EmptyForest.keyOf).setRoot({
-        iri: undefined,
-        children: List<Node>([
-          {iri, label: Rdf.literal(label)},
-        ]),
-      } as SelectionNode<Node>);
+      const newSelection = TreeSelection.setToSingleTerminal(
+        TreeSelection.empty(this.state.forest),
+        {iri, label: Rdf.literal(label)}
+      );
       this.setState({
         mode: {type: 'collapsed'},
         searchText: undefined,
         searching: false,
         searchResult: undefined,
-        confirmedSelection: newValue,
+        confirmedSelection: newSelection,
       }, () => {
         if (this.props.onSelectionChanged) {
           this.props.onSelectionChanged(this.state.confirmedSelection);
@@ -390,12 +374,14 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       },
     };
 
-    const selectedItems = TreeSelection.leafs(this.state.confirmedSelection)
-      .sortBy(item => item.label.value);
+    const selection = this.state.confirmedSelection;
+    const selectedItems = TreeSelection.leafs(selection).sortBy(item => item.label.value);
 
+    const {onSelectionClick} = this.props;
     return createElement(ClearableInput, textFieldProps, selectedItems.map(item =>
       createElement(RemovableBadge, {
         key: item.iri.value,
+        onClick: onSelectionClick ? () => onSelectionClick(selection, item) : undefined,
         onRemove: () => {
           const previous = this.state.confirmedSelection;
           const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));
@@ -410,24 +396,27 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   private searchFor(text: string, force: boolean) {
-    const hasEnoughSearchText =
-      (this.props.allowForceSuggestion && force) || text.length >= MIN_SEARCH_TERM_LENGTH;
-    if (hasEnoughSearchText) {
-      this.setState({
-        searchText: text,
-        searchForce: force,
-        searching: hasEnoughSearchText,
-        mode: {type: 'search', selection: this.state.confirmedSelection},
-      });
+    const doForceSearch = this.props.allowForceSuggestion && force;
+    const hasEnoughSearchText = doForceSearch || text.length >= MIN_SEARCH_TERM_LENGTH;
 
-      this.search.compute(text, this.props.allowForceSuggestion && force)
-        .onValue(searchResult => {
-          this.setState({searchResult, searching: false});
-        }).onError(error => {
-          this.setState({searchResult: {error}, searching: false});
+    if (hasEnoughSearchText) {
+      const searchingSameText = this.state.searching && this.state.searchText === text;
+      if (!searchingSameText) {
+        this.setState({
+          searchText: text,
+          searchForce: force,
+          searching: hasEnoughSearchText,
+          mode: {type: 'search', selection: this.state.confirmedSelection},
         });
+
+        this.search = this.cancellation.deriveAndCancel(this.search);
+        this.search.map(this.performSearch(text)).observe({
+          value: searchResult => this.setState({searchResult, searching: false}),
+          error: error => this.setState({searchResult: {error}, searching: false}),
+        });
+      }
     } else {
-      this.search.cancel();
+      this.search.cancelAll();
 
       let mode = this.state.mode;
       if (text.length === 0 && !this.props.openDropdownOnFocus) {
@@ -441,6 +430,21 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         searchForce: force,
       });
     }
+  }
+
+  private performSearch(text: string) {
+    const parametrized = SparqlClient.setBindings(
+      this.state.searchQuery, {'__token__': SparqlUtil.makeLuceneQuery(text)});
+    return Kefir.later(SEARCH_DELAY_MS, {})
+      .flatMap<SparqlClient.SparqlSelectResult>(() => SparqlClient.select(parametrized))
+      .flatMap<SearchResult>(result =>
+        this.restoreTreeFromLeafNodes(result.results.bindings)
+        .map(forest => ({
+          forest,
+          matchedCount: result.results.bindings.length,
+          matchLimit: parametrized.limit,
+        }))
+      );
   }
 
   renderBrowseButton() {
@@ -459,7 +463,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           onClick: () => {
             const modeType = this.state.mode.type;
             if (modeType === 'collapsed' || modeType === 'search') {
-              this.search.cancel();
+              this.search.cancelAll();
               this.setState({
                 searchText: undefined,
                 searching: false,
@@ -480,7 +484,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   private closeDropdown(options: {saveSelection: boolean}) {
-    this.search.cancel();
+    this.search.cancelAll();
     this.setState((state: State, props: SemanticTreeInputProps): State => {
       const mode = state.mode;
       const newState: State = {
@@ -524,7 +528,11 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   private updateForest(
     displayingSearch: boolean,
-    update: (forest: KeyedForest<Node>, state: State, props: SemanticTreeInputProps) => KeyedForest<Node>,
+    update: (
+      forest: KeyedForest<Node>,
+      state: State,
+      props: SemanticTreeInputProps
+    ) => KeyedForest<Node>,
     callback?: () => void
   ) {
     this.setState((state: State, props: SemanticTreeInputProps): State => {
@@ -546,7 +554,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         return D.span({className: styles.searchMessage},
           `Minimum length of search term is ${MIN_SEARCH_TERM_LENGTH} characters.`);
       } else if (this.state.searching) {
-        return createElement(Spinner, {style: {margin: '10px 0;'}});
+        return createElement(Spinner, {className: styles.searchSpinner});
       } else if (this.state.searchResult.error) {
         return createElement(ErrorNotification, {errorMessage: this.state.searchResult.error});
       }
@@ -565,16 +573,15 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           {className: styles.searchMessage},
           `Only first ${matchedCount} matches are shown. Please refine your search.`
         );
-      } else if (forest.root.children.size === 0) {
-        noResultsMessage = D.span({className: styles.searchMessage}, `No results found.`);
+      } else if (!forest.root.children || forest.root.children.length === 0) {
+        return D.span({className: styles.searchMessage}, `No results found.`);
       }
     }
 
     return D.div(
       {className: styles.tree},
       this.renderTree(mode),
-      limitMessage,
-      noResultsMessage,
+      limitMessage
     );
   }
 
@@ -602,16 +609,18 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     const searchTerm = (inSearchMode && this.state.searchText)
       ? this.state.searchText.toLowerCase() : undefined;
 
-    return createElement<NodeTreeProps>(NodeTreeSelector, {
+    const config: LazyTreeSelectorProps<Node> = {
       forest: renderedForest,
       isLeaf: item => item.children
-        ? (item.children.size === 0 && !item.hasMoreItems) : undefined,
-      childrenOf: ({children, loading, hasMoreItems, error}) => ({
-        children, loading, hasMoreItems: hasMoreItems && !error,
+        ? (item.children.length === 0 && !this.state.model.hasMoreChildren(item)) : undefined,
+      childrenOf: item => ({
+        children: item.children,
+        loading: item.loading,
+        hasMoreItems: this.state.model.hasMoreChildren(item),
       }),
       renderItem: node => this.renderItem(node, searchTerm),
       requestMore: node => {
-        const path = renderedForest.getOffsetPath(node);
+        const path = renderedForest.getKeyPath(node);
         this.requestChildren(path, inSearchMode);
       },
       selectionMode: this.props.multipleSelection
@@ -625,12 +634,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       },
       isExpanded: node => node.expanded,
       onExpandedOrCollapsed: (item, expanded) => {
-        const path = renderedForest.getOffsetPath(item);
+        const path = renderedForest.getKeyPath(item);
         this.updateForest(inSearchMode, forest =>
-          forest.updateNode(path, node => Node.set(node, {expanded})
+          forest.updateNode(path, node => TreeNode.set(node, {expanded})
         ));
       },
-    });
+    };
+    return createElement(LazyTreeSelector, config);
   }
 
   private renderItem(node: Node, highlightedTerm: string) {
@@ -657,52 +667,43 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     }, ...parts);
   }
 
-  private requestChildren(path: OffsetPath, isSearching: boolean) {
-    const context = this.context.semanticContext;
-    let changePromise: RootsChange;
+  private requestChildren(path: KeyPath, isSearching: boolean) {
+    let changePromise: ForestChange<Node>;
     this.updateForest(isSearching, (forest, state) => {
       const [loadingForest, forestChange] = queryMoreChildren(
-        forest, path, state.rootsQuery, state.childrenQuery, ITEMS_LIMIT, {context});
+        parent => state.model.loadMoreChildren(parent), forest, path);
       changePromise = forestChange;
       return loadingForest;
     }, () => {
-      const cancellation = isSearching ? this.search.cancellation : this.cancellation;
+      const cancellation = isSearching ? this.search : this.cancellation;
       cancellation.map(changePromise)
         .onValue(change => this.updateForest(isSearching, change));
     });
   }
 
   private restoreTreeFromLeafNodes(
-    searchResult: SparqlClient.Bindings,
-    cancellation: Cancellation
+    searchResult: SparqlClient.Bindings
   ): Kefir.Property<KeyedForest<Node>> {
-    const leafs = List(searchResult).map<Node>(
-      ({item, score = Rdf.literal('0'), label, hasChildren}) => {
+    const leafs = searchResult.map(
+      ({item, score = Rdf.literal('0'), label, hasChildren}): Node => {
         if (!(item.isIri() && label.isLiteral())) { return undefined; }
         const certainlyLeaf = hasChildren.isLiteral() && hasChildren.value === 'false';
         return {
           iri: item,
           label: label,
           score: parseFloat(score.isLiteral() ? score.value : ''),
-          children: List<Node>(),
-          hasMoreItems: !certainlyLeaf,
+          children: [],
+          reachedLimit: certainlyLeaf,
         };
       }).filter(node => node !== undefined);
 
-    const context = this.context.semanticContext;
-    return restoreForestFromLeafs(
-      leafs, this.state.parentsQuery, cancellation, {context}
-    ).map(children => EmptyForest.setRoot({iri: undefined, children}));
+    return this.state.model.loadFromLeafs(leafs, {transitiveReduction: true})
+      .map(treeRoot => KeyedForest.create(Node.keyOf, sealLazyExpanding(treeRoot)));
   }
 }
 
 class OverlayProxy extends Component<{}, void> {
   render() { return Children.only(this.props.children); }
-}
-
-function leafsToCommaSeparatedValues(leafs: List<Node>) {
-  return leafs.map(node => node.label ? node.label.value : '')
-    .sort().join(', ');
 }
 
 export default SemanticTreeInput;

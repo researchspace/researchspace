@@ -1,0 +1,228 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li class="active">Client-side templating</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Client-side Templating Syntax and Helpers</h1>
+    <p>
+      Most of custom HTML5 components provided by the platform, support some way to customize the visualization of the component using client-side <a href='http://handlebarsjs.com/' target='_blank'>handlebars.js</a> template.
+    </p>
+    <p>
+      Depending on the context in which the template is used it can have access to different helper functions and variables. For example in <semantic-link uri='http://help.metaphacts.com/resource/SemanticQuery'></semantic-link>'s <code>template</code> has access to the full SPARQL Select query result set, in comparison to <semantic-link uri='http://help.metaphacts.com/resource/SemanticTable'></semantic-link>'s <code>tuple-template</code>, which has access only to single result set tuple.
+    </p>
+    <p>
+      But there are some properties of client-side templates that are independent from the context:
+    </p>
+
+    <ul>
+      <li>
+        we are using <code>{{ ... }}</code> delimiter in order to distinguish from <semantic-link uri='http://help.metaphacts.com/resource/BackendTemplating' >back-end template</semantic-link> expressions (<code>[[{{documentation}}]] [[ ... ]] [[{{/documentation}}]]</code>)
+      </li>
+      <li>
+        all <a href='http://handlebarsjs.com/builtin_helpers.html' target='_blank'>built-in handlebars.js helpers</a> are available out of the box
+      </li>
+      <li>
+        typically if template has access to SPARQL SELECT result bindings, binding value is accessible under <code>bindingName.value</code>. When the binding is a literal one can also access the literal's datatype as <code>bindingName.dataType.value</code>
+      </li>
+    </ul>
+
+    <bs-alert bs-style='warning'>
+      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> 
+      The template MUST have a single HTML root element, the same rule also applies to includes!
+    </bs-alert>
+    <h3>Named template definitions</h3>
+    <p>
+      It is possible to define named templates by adding <code><template id='template-name'>...</template></code> as a child to a markup element.
+      The template can be referenced from inline templates or another named template through Handlebars
+      <a href='http://handlebarsjs.com/partials.html'> partial call syntax</a>.
+    </p>
+    <bs-panel header='Example: named template' collapsible=true default-expanded=true>
+      <mp-code-example show-code=true>
+        <semantic-table query='SELECT * WHERE { VALUES(?object ?diameter) { ("Sun" 1391400) ("Moon" 3474) } }'
+                        column-configuration='[
+              {"variableName": "object", "displayName": "Planet"},
+              {"displayName": "Diameter", "cellTemplate": "{{> planet-diameter}}"}
+            ]'>
+          <template id='planet-diameter'><span>{{diameter.value}}&nbsp;<i>km</i></span></template>
+        </semantic-table>
+      </mp-code-example>
+    </bs-panel>
+    <p>
+      It is possible to nest named template definitions; parent bindings are automatically accessible in nested templates if not explicitly overriden.
+    </p>
+    <bs-panel header='Example: nested templates with access to the parent binding scope' collapsible=true default-expanded=true>
+      <mp-code-example show-code=true>
+        <semantic-query query='
+           SELECT ?object ?latin ("(latin)" as ?suffix) WHERE {
+             VALUES(?object ?latin) {
+               ("sun" "sol")
+               ("moon" "luna")
+               ("star" "stella")
+             }
+           }' template='{{> list}}'>
+          <template id='list'>
+            <div>
+              <b>Latin words for celestial objects:</b>
+              <ul>
+                {{#each bindings}}
+                  {{> object}}
+                {{/each}}
+              </ul>
+            </div>
+          </template>
+          <template id='object'>
+            {{> words eng=object.value lat=latin.value}}
+          </template>
+          <template id='words'>
+             <!-- both 'eng' and 'lat' parameters and 'suffix' binding are available here -->
+             <li><i class="fa fa-star-o"></i>{{eng}} - {{lat}} {{suffix.value}}</li>
+          </template>
+        </semantic-query>
+      </mp-code-example>
+    </bs-panel>
+    <p>
+      Resource IRIs are supported as template names, e.g. <code>{{> some:resource}}</code>.
+      These template references will be automatically resolved by fetching the template source from the corresponding resource page.
+      It is also possible to override a remote template by defining a named template with the same IRI.
+    </p>
+    <bs-panel header="Example: named template with reference and override" collapsible=true default-expanded=true>
+      <pre><code>
+  <!-- :planet resource markup (http://www.metaphacts.com/resource/planet) -->
+  <li><i class="fa fa-globe"></i>{{name.value}}</li>
+
+  <!-- Main markup -->
+
+  <!-- using remote :planet template -->
+  <semantic-query query='SELECT * WHERE { VALUES(?name) { ("Venus") ("Earth") ("Mars") } }'
+                  template='<div>{{#each bindings}} {{> :planet}} {{/each}}</div>'></semantic-query>
+
+  <!-- overriding remote template -->
+  <semantic-query query='SELECT * WHERE { VALUES(?name) { ("Venus") ("Earth") ("Mars") } }'
+                  template='<div>{{#each bindings}} {{> :planet}} {{/each}}</div>'>
+    <template id='http://www.metaphacts.com/resource/planet'>
+      <li><b>{{name.value}};</b></li>
+    </template>
+  </semantic-query>
+  </code></pre>
+    </bs-panel>
+
+    <h3>Semantic conditionals</h3>
+    <p>
+      There are two built-in components for branching based on query results with the template inputs:
+      <code>semantic-if</code> and <code>semantic-switch</code>.
+    </p>
+    <p>
+      <code>semantic-if</code> allows to conditionally render templates depending on whether the specified ASK query returns true or false.
+    </p>
+    <bs-panel header='Example: basic semantic-if usage' collapsible=true default-expanded=false>
+      <mp-code-example show-code=true>
+        <!-- full form -->
+        <semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }' then='{{> then}}' else='{{> else}}'>
+          <template id='then'>randomly true 1</template>
+          <template id='else'>randomly false 1</template>
+        </semantic-if>
+        <hr/>
+
+        <!-- same as above -->
+        <semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }'>
+          <template id='then'>randomly true 2</template>
+          <template id='else'>randomly false 2</template>
+        </semantic-if>
+        <hr/>
+
+        <!-- using inline templates -->
+        <semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }'
+                     then='randomly true 3' else='randomly false 3'>
+        </semantic-if>
+        <hr/>
+
+        <!-- leave 'else' template empty -->
+        <semantic-if query='ASK { BIND((RAND() > 0.5) as ?x) FILTER(?x) }' then='randomly true 4'></semantic-if>
+      </mp-code-example>
+    </bs-panel>
+    <bs-panel header='Example: nested semantic-if' collapsible=true default-expanded=false>
+      <mp-code-example show-code=true>
+        <semantic-if query='ASK { FILTER(false) }'>
+          <template id='else'>
+            <semantic-if query='ASK { }'>
+              <template id='then'><div style='color: green;'>Should be visible</div></template>
+            </semantic-if>
+          </template>
+        </semantic-if>
+      </mp-code-example>
+    </bs-panel>
+    <p>
+      <code>semantic-switch</code> can be useful to render, for example, different templates for different entity types.
+      It allows to choose a template to render from a list through executing a SELECT query with a single projection variable.
+    </p>
+    <bs-panel header='Example: basic semantic-switch usage' collapsible=true default-expanded=false>
+      <mp-code-example show-code=true>
+        <style>
+          .switch-sq { width: 50px; height: 50px; border: 1px dashed black; }
+        </style>
+
+        <!-- full form -->
+        <semantic-switch query='SELECT ("*" as ?x) {}'
+                         cases='{"red": "{{> red}}", "*": "{{> [*]}}", "default": "{{> default}}"}'>
+          <template id='red'><div class='switch-sq' style='background: red'></div></template>
+          <template id='*'><div class='switch-sq' style='background: violet'></div></template>
+          <template id='default'><div class='switch-sq' style='background: green'></div></template>
+        </semantic-switch>
+
+        <!-- same as above -->
+        <semantic-switch query='SELECT ("*" as ?x) {}'>
+          <template id='red'><div class='switch-sq' style='background: red'></div></template>
+          <template id='*'><div class='switch-sq' style='background: violet'></div></template>
+          <template id='default'><div class='switch-sq' style='background: green'></div></template>
+        </semantic-switch>
+
+        <!-- using inline templates -->
+        <semantic-switch query='SELECT ("*" as ?x) {}'
+                         cases='{
+                           "red": "<div class=\"switch-sq\" style=\"background: red\"></div>",
+                           "*": "<div class=\"switch-sq\" style=\"background: violet\"></div>",
+                           "default": "<div class=\"switch-sq\" style=\"background: green\"></div>"
+                        }'>
+        </semantic-switch>
+      </mp-code-example>
+    </bs-panel>
+
+    <h3>Additional helper functions</h3>
+    <h4><code>ifCond</code></h4>
+    <p>
+      Handlebars.js doesn't have any means to use comparison operators in templates. This function provides conditional if function for templates.
+    </p>
+    <p>
+      Function signature is <code>ifCond value1 operator value2</code>, where operator can be one of <code>"==", "===", "!==", "&lsaquo;", "&lsaquo;=", "&rsaquo;", "&rsaquo;=", "&amp;&amp;", "||"</code>
+    </p>
+    <bs-panel header="Example: ifCond" collapsible=true default-expanded=true>
+      <code>{{#ifCond value ">=" 0}}<div>some content</div>{{else}}<div>some other content</div>{{/ifCond}}</code>
+    </bs-panel>
+
+    <h4><code>dateTimeFormat</code></h4>
+    <p>
+      Date-time formating function. Default format is  "Month name, day of month, year" - e.g "September 4 1986". It is possible to use any format supported by moment.js, see <a href='http://momentjs.com/docs/#/displaying/' target='_blank'>Supported Formats</a> for more details.
+    </p>
+    <bs-panel header="Example: dateTimeFormat" collapsible=true default-expanded=true>
+      <code>{{dateTimeFormat "2014-09-08T08:02:17-05:00" "YYYY MM DD"}}</code>
+    </bs-panel>
+
+    <h4><code>isIri</code>, <code>isLiteral</code>, <code>isBnode</code></h4>
+    <p>
+      Returns true if specified argument is IRI, literal or blank node respectively.
+    </p>
+    <bs-panel header="Example: isIri" collapsible=true default-expanded=true>
+      <code>{{#if (isIri value)}} IRI: {{value.value)} {{/if}}</code>
+    </bs-panel>
+  </div>
+</div>

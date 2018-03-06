@@ -28,7 +28,7 @@ export interface BaseSplitPaneConfig {
    * Width of open sidebar
    * @default 300
    */
-  defaultSize: number;
+  defaultSize?: number;
   /**
    * SplitPane custom class name
    */

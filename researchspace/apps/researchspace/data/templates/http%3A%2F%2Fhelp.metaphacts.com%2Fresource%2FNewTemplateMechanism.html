@@ -1,0 +1,112 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" data-uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li class="active">New Template Mechanism</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>New Template Mechanism:</h1><br/>
+    <b>URI:</b> [[this]]
+    [[#if (ask "ASK {FILTER NOT EXISTS{?? a <http://www.researchspace.org/ontology/Thing>}}") ]] 
+
+      <h2> Permission </h2>
+        Has permission:<br>
+        [[#if (hasPermission "sparql:update")]]
+          Yes, has sparql update permission.
+      [[else]]
+        No, has no sparql update permission.
+        [[/if]]
+      <h2> IF Expression - True Branch</h2>
+      <h3>Including a Page: </h3> <br/><pre> [[> "http://help.metaphacts.com/resource/TestInclude"]] </pre>
+      <br/>
+      <h3>HTML5 Table-Component</h3>
+      <h4>... with plain JSON Configuration</h4>
+      <semantic-table 
+        query='
+                  prefix person: <http://example.com/person/> 
+                  prefix org: <http://example.com/org/> 
+                  prefix foaf: <http://xmlns.com/foaf/0.1/>
+                  SELECT * WHERE {                    
+                       VALUES (?s ?p ?o)
+                       { 
+                         (person:alice foaf:knows <[[this.value]]> )
+                         (person:alice foaf:knows person:carol)
+                         (person:carol foaf:knows person:mike)
+                         (person:mike foaf:knows person:carol)
+                         (person:bob foaf:knows person:carol)
+                         (person:alice foaf:member org:W3C)
+                         (person:mike foaf:member org:W3C)
+                       }
+                   }  
+         '
+          column-configuration='[
+                    {"variableName":"s", "displayName":"Subject"}, 
+                    {"variableName":"p", "displayName":"Predicate"},  
+                    {	"variableName":"o", 
+                      "displayName":"Object", 
+                      "cellTemplate": "{{> cellTemplate}}"
+                    }
+           ]'
+           options='{
+             "showFilter": false, 
+             "resultsPerPage": 2
+           }'
+      >
+        <template id='cellTemplate'>
+          <div>
+          <i class="fa fa-user" style="margin-right: 5px"></i>{{o.value}}
+          </div>
+        </template>
+      </semantic-table>
+      <semantic-graph height='600px' query='prefix person: <http://example.com/person/> 
+            prefix org: <http://example.com/org/> 
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+            CONSTRUCT {
+              ?s ?p ?o
+            } WHERE {                    
+             {
+               SELECT ?s ?p ?o WHERE {
+                 VALUES (?s ?p ?o)
+                 { 
+                   (person:alice foaf:knows person:bob)
+                   (person:alice foaf:knows person:carol)
+                   (person:carol foaf:knows person:mike)               
+                   (person:mike foaf:knows person:carol)
+                   (person:bob foaf:knows person:carol)               
+                   (person:alice foaf:knows person:mike)
+                   (person:alice foaf:member org:W3C)
+                   (person:mike foaf:member org:W3C)
+                 }
+               }
+             }
+           }'>
+        <semantic-graph-layout-cose ideal-edge-length='70'></semantic-graph-layout-cose>
+      </semantic-graph>
+
+        <h3>Active Tab per URL Param</h3>
+    Param: [[urlParam "tab"]]
+        <bs-tabs id="example-tabs" default-active-key="[[urlParam "tab"]]">
+          <bs-tab id="tab1" event-key="1" title="Tab 1" style="padding-top:20px;">
+        Tab 1 - Test
+          </bs-tab>
+          <bs-tab id="tab2" event-key="2" title="Tab 2" style="padding-top:20px;">
+        Tab 2 - Test
+          </bs-tab>
+          <bs-tab id="tab3" event-key="3" title="Tab 3" style="padding-top:20px;">
+            Tab 3 - Test
+          </bs-tab>
+        </bs-tabs>
+
+    [[else]] 
+
+      ASK FALSE 
+
+    [[/if]]
+
+  </div>
+</div>

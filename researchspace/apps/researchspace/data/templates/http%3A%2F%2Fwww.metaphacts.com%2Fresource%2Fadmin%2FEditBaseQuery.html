@@ -1,0 +1,29 @@
+
+
+<bs-row>
+		<bs-col sm=8 sm-offset=2 >
+      <ol class="breadcrumb" style="background:white;border:none;padding-left:0px;">
+        <li>
+          <semantic-link title="System Settings" uri="http://www.metaphacts.com/resource/admin/">System Settings</semantic-link>
+        </li>
+        <li>
+          <semantic-link title="System Settings" uri="http://www.metaphacts.com/resource/admin/QueryTemplates">Query Templates</semantic-link>
+        </li>
+        <li class="active">Edit Base Query</li>
+      </ol>
+      <h2>Edit Base Query</h2>
+      [[#if (urlParam "queryiri")]]
+        IRI: [[urlParam "queryiri"]]<br>
+        <hr>
+        [[#if (hasPermission "sparql:update")]]
+      		<semantic-context url-params='{"repository": "assets"}'>
+          	<mp-spin-query-editor iri=[[urlParam "queryiri"]]></mp-spin-query-editor>
+          </semantic-context>
+        [[else]]
+          No permission to edit or add items in Query Catalog.
+        [[/if]]
+      [[else]]
+      	<span style="color:red;">This page expects a url parameter "queryiri" for identifying the query template to be edited.</span>
+      [[/if]]
+   </bs-col>
+</bs-row>

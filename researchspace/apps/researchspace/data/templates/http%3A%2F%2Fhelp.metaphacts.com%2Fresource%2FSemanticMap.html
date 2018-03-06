@@ -1,0 +1,78 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">Map Component</li>
+</ol>
+
+<div class="page">
+    <div class='page__body'>
+      <h1> Map Component </h1> 
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+          Used for displaying spatial data on a map.
+          <ul>
+            <li>WKT point/polygons are supported, however, currently only be approximated as simple markers on the map. </li>
+            <li>Coordinates are assumed to be in EPSG:4326 (WGS84) and will be transformed internally to EPSG:3857</li>
+          </ul>
+      </div>
+      <div class="documentation__intro__demo" >
+        <semantic-map
+          query='
+            SELECT ?lat ?lng ?description ?link WHERE { 
+              VALUES(?lat ?lng ?description ?link) {
+                ("49.2928" "8.6484" "Metaphacts GmbH" <http://metaphacts.com>)
+                ("51.9500" "7.6240" "Munster City" <http://www.wikidata.org/wiki/Q2742>)
+              }
+            }
+          '
+        ></semantic-map>
+      </div>
+    </div>
+
+    <h2>Configuration </h2>
+    <mp-documentation type="SemanticMapConfig"></mp-documentation>
+
+
+    <h2>Examples </h2>
+    <h3>Latitude and Longitude Bindings </h3>
+    <div>
+      <mp-code-example>
+        <semantic-map
+          query='
+            SELECT ?lat ?lng ?description ?link WHERE { 
+              VALUES(?lat ?lng ?description ?link) {
+                ("49.2928" "8.6484" "Metaphacts GmbH" <http://metaphacts.com>)
+                ("51.9500" "7.6240" "Munster City" <http://www.wikidata.org/wiki/Q2742>)
+              }
+            }
+          '
+       ></semantic-map>
+      </mp-code-example>
+    </div>
+
+    <h3>WKT Point Literal </h3>
+    <div class="documentation">
+      <mp-code-example> 
+        <semantic-map
+            query='
+              SELECT ?wkt ?description ?link WHERE {
+                VALUES(?wkt ?description ?link) {
+                  ("Point( 8.65 49.3)" "Metaphacts GmbH"  <http://metaphacts.com>)
+                }     
+              }
+            '
+         ></semantic-map>
+       </mp-code-example>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<semantic-graph 
+  height='80vh' 
+  query='CONSTRUCT { ?? ?p_out ?out . ?in ?p_in ?? } WHERE { { ?? ?p_out ?out } UNION { ?in ?p_in ?? } } LIMIT 100'
+  no-result-template='No incoming or outgoing statements for resource [[this]].'
+  user-zooming-enabled=true
+>
+  [[#if (ask "ASK{ { SELECT (count(?p) as ?number) WHERE{{ ?? ?p ?out } UNION { ?in ?p ?? }}GROUP BY ?p } FILTER(?number>10)}")]]
+    <semantic-graph-layout-breadthfirst 
+        roots='["<[[this]]>"]'
+        circle="true"
+        spacing-factor=0.7
+    ></semantic-graph-layout-breadthfirst>
+ 	[[/if]]
+    <semantic-graph-extension-panzoom pan-indicator-min-opacity='0.1'></semantic-graph-extension-panzoom>
+</semantic-graph>

@@ -18,22 +18,30 @@
 
 import {
   Workspace,
+  RDFDataProvider,
   SparqlDataProvider,
   SparqlDataProviderSettings,
   OrganizationTemplate,
+  DPDefinition,
   PersonTemplate,
   OWLStatsSettings,
   WikidataSettings,
   OWLRDFSSettings,
   DBPediaSettings,
   DefaultElementTemplate,
-  SparqlDataProviderOptions
+  SparqlDataProviderOptions,
+  CompositeDataProvider,
 } from 'ontodia';
 
 import { SparqlUtil } from 'platform/api/sparql';
 
+const ENDPOINT_URL = '/sparql';
+export const RDF_DATA_PROVIDER_NAME = 'rdf';
+
 export interface OntodiaConfig {
-  getDataProvider(options: SparqlDataProviderOptions): SparqlDataProvider;
+  getDataProvider(
+    options: SparqlDataProviderOptions, repositories: string[], createRDFStorage?: boolean
+  ): SparqlDataProvider | CompositeDataProvider;
   customizeWorkspace(workspace: Workspace): void;
 }
 
@@ -45,34 +53,109 @@ const defaults = {
   extractLabel: false,
 };
 
+function createDataProvider(
+  params: {
+    options: SparqlDataProviderOptions;
+    repository: string;
+    settings: SparqlDataProviderSettings;
+  }
+): SparqlDataProvider {
+  const {repository, settings} = params;
+
+  const options = {
+    ...params.options,
+    endpointUrl: `${ENDPOINT_URL}?repository=${repository}`,
+  };
+
+  return new OptimizingDataProvider(options, settings);
+}
+
+function getDataProvider(
+  params: {
+    options: SparqlDataProviderOptions;
+    repositories: string[];
+    settings: SparqlDataProviderSettings;
+    createRDFStorage?: boolean;
+  }
+): SparqlDataProvider | CompositeDataProvider {
+  const {options, settings, repositories, createRDFStorage} = params;
+
+  if (repositories.length === 1 && !createRDFStorage) {
+    const repository = repositories[0];
+    return createDataProvider({options, repository, settings});
+  }
+
+  const dataProviders: DPDefinition[] = repositories.map(repository => ({
+    name: repository,
+    dataProvider: createDataProvider({options, repository, settings}),
+  }));
+
+  if (createRDFStorage) {
+    dataProviders.push({
+      name: RDF_DATA_PROVIDER_NAME,
+      dataProvider: new RDFDataProvider({data: [], parsers: {}}),
+    });
+  }
+
+  return new CompositeDataProvider(dataProviders);
+}
+
 function noStatsConfig(settings: SparqlDataProviderSettings): OntodiaConfig {
   return {
-    getDataProvider: options => new OptimizingDataProvider(
-      options, {...OWLRDFSSettings, ...defaults, ...settings}),
+    getDataProvider: (options, repositories, createRDFStorage) => {
+      const params = {
+        options,
+        repositories,
+        settings: {...OWLRDFSSettings, ...defaults, ...settings},
+        createRDFStorage,
+      };
+      return getDataProvider(params);
+    },
     customizeWorkspace: workspace => {/* just empty */},
   };
 }
 
 function dBPediaConfig(settings: SparqlDataProviderSettings): OntodiaConfig {
   return {
-    getDataProvider: options => new OptimizingDataProvider(
-      options, {...DBPediaSettings, ...settings}),
+    getDataProvider: (options, repositories, createRDFStorage) => {
+      const params = {
+        options,
+        repositories,
+        settings: {...DBPediaSettings, ...settings},
+        createRDFStorage,
+      };
+      return getDataProvider(params);
+    },
     customizeWorkspace: workspace => {/* just empty */},
   };
 }
 
 function defaultConfig(settings: SparqlDataProviderSettings): OntodiaConfig {
   return {
-    getDataProvider: options => new OptimizingDataProvider(
-      options, {...OWLStatsSettings, ...defaults, ...settings}),
+    getDataProvider: (options, repositories, createRDFStorage) => {
+      const params = {
+        options,
+        repositories,
+        settings: {...OWLStatsSettings, ...defaults, ...settings},
+        createRDFStorage,
+      };
+      return getDataProvider(params);
+    },
     customizeWorkspace: workspace => {/* just empty */},
   };
 }
 
 function wikidataConfig(settings: SparqlDataProviderSettings): OntodiaConfig {
   return {
-    getDataProvider: options => new OptimizingDataProvider(
-      options, {...WikidataSettings, ...settings}),
+    getDataProvider: (options, repositories, createRDFStorage) => {
+      const params = {
+        options,
+        repositories,
+        settings: {...WikidataSettings, ...settings},
+        createRDFStorage,
+      };
+      return getDataProvider(params);
+    },
     customizeWorkspace: workspace => {
       const diagram = workspace.getDiagram();
       diagram.registerTemplateResolver(types => {

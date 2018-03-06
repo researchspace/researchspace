@@ -19,6 +19,7 @@
 export * from './TreeSelection';
 export * from './SemanticTreeInput';
 export * from './NodeModel';
+export * from './SparqlNodeModel';
 export * from './LazyTreeSelector';
 export * from './SelectionMode';
 export * from './GraphAlgorithms';

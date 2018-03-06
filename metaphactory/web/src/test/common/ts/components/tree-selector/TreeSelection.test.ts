@@ -23,7 +23,7 @@ import { TreeSelection } from 'platform/components/semantic/lazy-tree';
 import { FOREST, toUnorderedJSON } from './Forests';
 
 describe('TreeSelection', () => {
-  const empty = TreeSelection.empty(FOREST.keyOf);
+  const empty = TreeSelection.empty(FOREST);
 
   it('selects and unselects one item', () => {
     const flowers = FOREST.getFirst('Flowers');

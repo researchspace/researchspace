@@ -48,7 +48,10 @@ export class Pagination extends Component<PaginationProps, {}> {
   }
 
   componentWillUpdate(nextProps: PaginationProps) {
-    if (this.props.onPageChange) {
+    if (
+      this.props.onPageChange &&
+      nextProps.externalCurrentPage !== this.props.externalCurrentPage
+    ) {
       // update page only in controlled mode
       this.updateCurrentPageIfRequested(nextProps);
     }

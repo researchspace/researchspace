@@ -39,6 +39,7 @@ export interface BaseSearchContext {
   selectedDatasets: Array<Dataset>
   selectedAlignment: Data.Maybe<Alignment>
   isConfigurationEditable: boolean
+  visualizationContext: Data.Maybe<Model.Relation>
 }
 
 export const BaseSearchContextTypes: Record<keyof BaseSearchContext, any> = {
@@ -49,6 +50,7 @@ export const BaseSearchContextTypes: Record<keyof BaseSearchContext, any> = {
   selectedDatasets: PropTypes.any.isRequired,
   selectedAlignment: PropTypes.any.isRequired,
   isConfigurationEditable: PropTypes.bool.isRequired,
+  visualizationContext: PropTypes.any.isRequired,
 };
 
 export interface ConfigurationContext extends BaseSearchContext {
@@ -114,6 +116,7 @@ export interface ResultContext extends BaseSearchContext {
   notifyResultLoading(operation: ResultOperation)
   resultState: { [componentId: string]: object }
   updateResultState(componentId: string, stateChange: object)
+  setVisualizationContext(relation: Data.Maybe<Model.Relation>)
 }
 
 export const ResultContextTypes: Record<keyof ResultContext, any> = {
@@ -126,4 +129,5 @@ export const ResultContextTypes: Record<keyof ResultContext, any> = {
   notifyResultLoading: PropTypes.func.isRequired,
   resultState: PropTypes.object.isRequired,
   updateResultState: PropTypes.func.isRequired,
+  setVisualizationContext: PropTypes.func.isRequired,
 };

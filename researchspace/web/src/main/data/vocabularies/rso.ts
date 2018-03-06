@@ -35,12 +35,21 @@ module rso {
   export const PX_premise_field = iri('PX_premise_field');
   export const PX_premise_target_repository = iri('PX_premise_target_repository');
 
+  export const Alignment = iri('Alignment');
+  export const PX_source_terminology = iri('PX_source_terminology');
+  export const PX_target_terminology = iri('PX_target_terminology');
+  export const PX_exact_match = iri('PX_exact_match');
+  export const PX_narrow_match = iri('PX_narrow_match');
+  export const PX_match_target = iri('PX_match_target');
+  export const PX_match_excludes = iri('PX_match_excludes');
+
   export const Thing = iri('Thing');
   export const EX_Assertion = iri('EX_Assertion');
   export const EX_Digital_Image = iri('EX_Digital_Image');
   export const EX_Digital_Image_Region = iri('EX_Digital_Image_Region');
   export const viewport = iri('viewport');
 
+  export const AlignmentContainer = iri('Alignment.Container');
   export const AnnotationsContainer = iri('Annotations.Container');
   export const PropositionsContainer = iri('Propositions.Container');
   export const AssertionsContainer = iri('Assertions.Container');

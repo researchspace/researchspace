@@ -18,19 +18,20 @@
 
 import { List } from 'immutable';
 
-import { KeyedForest } from 'platform/components/semantic/lazy-tree';
+import { KeyedForest, TreeNode, mapBottomUp } from 'platform/components/semantic/lazy-tree';
 
 export interface Node {
   readonly key: string;
-  readonly children: List<Node>;
+  readonly children: ReadonlyArray<Node>;
   readonly hasMoreChildren?: boolean;
+  readonly isExpanded?: boolean;
 }
 
 export function node(key: string, ...children: Node[]): Node {
-  return {key, children: List(children)};
+  return {key, children};
 }
 
-export const FOREST = KeyedForest.create(node => node.key || 'Life', node(undefined,
+export const FOREST = KeyedForest.create(item => item.key || 'Life', node(undefined,
   node('Bacteria',
     node('Cyanobacteria'),
     node('Proteobacteria'),
@@ -68,6 +69,11 @@ export const FOREST = KeyedForest.create(node => node.key || 'Life', node(undefi
   )
 ));
 
+export function cloneSubtree(forest: KeyedForest<Node>, key: string): Node {
+  const cloneRoot = forest.getFirst(key);
+  return mapBottomUp(cloneRoot, item => ({...item}));
+}
+
 export function toUnorderedJSON(forest: KeyedForest<Node>) {
   return nodesToUnorderedJSON(forest.root.children);
 }
@@ -76,11 +82,11 @@ interface JSONNode {
   [key: string]: JSONNode;
 }
 
-function nodesToUnorderedJSON(nodes: List<Node>): JSONNode {
+function nodesToUnorderedJSON(nodes: ReadonlyArray<Node>): JSONNode {
   if (!nodes) { return null; }
   const result: JSONNode = {};
-  nodes.forEach(node => {
-    result[node.key] = nodesToUnorderedJSON(node.children);
-  });
+  for (const {key, children} of nodes) {
+    result[key] = nodesToUnorderedJSON(children);
+  }
   return result;
 }

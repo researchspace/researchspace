@@ -16,11 +16,10 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { KeyedForest } from './KeyedForest';
+import { KeyedForest, KeyPath } from './KeyedForest';
 import { TreeSelection, SelectionNode } from './TreeSelection';
 
 export interface SelectionMode<T> {
-  readonly greyoutDefaultSelected?: boolean;
   readonly renderSelected: RenderSelected<T>;
   readonly change: ChangeSelection<T>;
 }
@@ -60,7 +59,7 @@ const singleFullSubtree: SelectionMode<{}> = {
   },
   change: (forest, previous, item, defaultSelected) => {
     const selected = TreeSelection.nodesFromKey(previous, forest.keyOf(item));
-    const empty = TreeSelection.empty(forest.keyOf);
+    const empty = TreeSelection.empty(forest);
     if (renderedAsChecked(selected)) {
       return empty;
     }
@@ -135,9 +134,13 @@ export function MultiplePartialSubtrees<T>() {
  * Can be used only with depth-lazy loading.
  */
 export class SinglePartialSubtree<T> implements SelectionMode<T> {
-  private _selectedRootKey: string;
-  get selectedRootKey(): string {
-    return this._selectedRootKey;
+  private _selectedRootPath: KeyPath | undefined;
+  get selectedRootPath(): KeyPath | undefined {
+    return this._selectedRootPath;
+  }
+  get selectedRootKey(): string | undefined {
+    const path = this._selectedRootPath;
+    return path ? path[path.length - 1] : undefined;
   }
 
   renderSelected(
@@ -168,8 +171,8 @@ export class SinglePartialSubtree<T> implements SelectionMode<T> {
     const selected = TreeSelection.nodesFromKey(previous, itemKey);
 
     if (itemKey === this.selectedRootKey) {
-      this._selectedRootKey = undefined;
-      return TreeSelection.empty(forest.keyOf);
+      this._selectedRootPath = undefined;
+      return TreeSelection.empty(forest);
     } else if (TreeSelection.childOfParent(forest, item, this.selectedRootKey)) {
       if (renderedAsChecked(selected)) {
         let next = TreeSelection.unselect(previous, itemKey);
@@ -182,8 +185,8 @@ export class SinglePartialSubtree<T> implements SelectionMode<T> {
         return TreeSelection.selectAndCollapseToTerminal(previous, forest, item);
       }
     } else {
-      this._selectedRootKey = forest.keyOf(item);
-      const empty = TreeSelection.empty(forest.keyOf);
+      this._selectedRootPath = forest.getKeyPath(item);
+      const empty = TreeSelection.empty(forest);
       return TreeSelection.selectTerminal(empty, forest.getNodePath(item));
     }
   }

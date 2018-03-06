@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 
-export class PanelFooter extends React.Component<void, void> {
+export class PanelFooter extends React.Component<React.Props<void>, void> {
   render() {
     return React.Children.only(this.props.children);
   }

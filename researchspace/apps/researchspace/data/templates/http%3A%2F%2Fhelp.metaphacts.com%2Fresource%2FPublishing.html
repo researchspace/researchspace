@@ -1,0 +1,116 @@
+<ol class="page-breadcrumb">
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li class="active">RDF Publishing</li>
+</ol>
+
+<div class="metaphacts_help">
+  <h1>RDF Publishing</h1>
+  
+  The platform can be configured as Linked Data server, to publish RDF for human users (i.e. browsing) as well as for consumption by machines (i.e. offering machine readable serializations) similarly to tools such as Disco, Tabulator, or Pubby.
+  
+  <h2>Content Negotiation</h2>
+  
+ <p>Content negotiation (c.f. <a href="https://www.w3.org/Protocols/rfc2616/rfc2616.txt" target='_blank'>HTTP specification - Section 12</a>) is enabled by default within the platform. That is a client can ask the platform for different "representations" of the same resource identified by one IRI and depending on the requested accept headers, he may get back a HTML page or any RDF-based serialization.</p>
+  
+ <p>
+   For the sake of example, we assume that the platform is deployed on localhost port 10214 i.e. reachable over http://localhost:10214 and that the <a href="http://xmlns.com/foaf/spec/index.rdf" target="_blank">FOAF Vocabulary</a> file has been <semantic-link uri='http://help.metaphacts.com/resource/WorkingWithData'>loaded</semantic-link> into the database. 
+ </p>
+ <p>
+  When we try to retrieve any entity described in the FOAF document using the browser, for example, <code>http://127.0.0.1:10214/resource/?uri=http://xmlns.com/foaf/0.1/Person</code> the browser will set the request accept header to something similar to: <br> <code>Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</code><br>
+  
+  asking <b>preferably</b> for an HTML representation of the entity <code>http://xmlns.com/foaf/0.1/Person</code>.
+ 	In this case, the platform will compile and serve an HTML page using its <semantic-link uri='http://help.metaphacts.com/resource/TemplateAndApplicationPages'> template mechanism</semantic-link>: e.g., you may see a custom rendering for instances of <code>owl:Class</code>.
+  </p>
+  
+ <p>
+   However, at the same time a different client, for example, <a href='https://curl.haxx.se/' target='_blank'>curl</a> may ask for an RDF-based serialization of exactly the same entity by setting a different accept header:<br>
+ 	<code>
+  curl -L --user admin:admin -H "Accept: text/turtle" http://127.0.0.1:10214/resource/?uri=http://xmlns.com/foaf/0.1/Person
+  </code><br>
+ 	This will return RDF statements about <code>http://xmlns.com/foaf/0.1/Person</code>, serialized in the <a href='https://www.w3.org/TR/turtle/' target='_blank'>turtle syntax</a>:
+  
+<pre><code mode='text/turtle'>@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix owl: &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix wgs84: &lt;http://www.w3.org/2003/01/geo/wgs84_pos#&gt; .
+@prefix vocab: &lt;http://www.w3.org/2003/06/sw-vocab-status/ns#&gt; .
+
+foaf:Person vocab:term_status "stable" ;
+	a rdfs:Class , owl:Class ;
+	rdfs:comment "A person." ;
+	rdfs:isDefinedBy foaf: ;
+	rdfs:label "Person" ;
+	rdfs:subClassOf wgs84:SpatialThing , foaf:Agent ;
+	owl:disjointWith foaf:Organization , foaf:Project ;
+	owl:equivalentClass &lt;http://schema.org/Person&gt; , &lt;http://www.w3.org/2000/10/swap/pim/contact#Person&gt; .
+  
+  ...
+</code></pre>  <br>
+ </p>
+  
+	<p>
+   Similarly a client can ask for N-Triples format:<br>
+  	<code>curl -L --user admin:admin -H "Accept: application/n-triples" http://127.0.0.1:10214/resource/?uri=http://xmlns.com/foaf/0.1/Person</code>
+	</p> 
+	Supported formats and respective mimetypes are:
+  <ul>	
+    <li>N-Triples (mimeTypes=text/plain)</li>
+    <li>BinaryRDF (mimeTypes=application/x-binary-rdf)</li> 
+    <li>RDF/XML (mimeTypes=application/rdf+xml, application/xml)</li> 
+    <li>Turtle (mimeTypes=text/turtle, application/x-turtle)</li>
+    <li>N3 (mimeTypes=text/n3, text/rdf+n3)</li>
+    <li>RDF/JSON (mimeTypes=application/rdf+json)</li> 
+    <li>TriG (mimeTypes=application/x-trig)</li> 
+    <li>N-Quads (mimeTypes=text/x-nquads)</li> 
+    <li>TriX (mimeTypes=application/trix)</li> 
+    <li>JSON-LD (mimeTypes=application/ld+json)</li>
+  </ul>
+
+	<p> 
+  	Content negotiation itself doesn't make RDF data available and <b>accessible</b> as Linked (Open) Data. First, in the examples above we are using <i>basic auth</i> to authenticate against the platform's security framework, assuming that as in the default configuration access is restricted. If you want to make your data openly available, you should configure the platform for anonymous access (c.f. <semantic-link uri='http://help.metaphacts.com/resource/BasicSystemConfiguration'>Basic System Configuration - Login Protection</semantic-link>).
+    Second, a fundamental principle is that IRIs are dereferencable and resolvable. 
+	</p>
+  <h2>Resolvable and dereferencable IRIs</h2>
+	<p>  
+Resolving refers usually to the procedure of determining the transport protocol (for example HTTP) and setting respective request parameters. That is why it is strongly recommended to choose HTTP URIs as identifiers within your knowledge graph, so that standard HTTP mechanisms can be used for resolution and dereferencing (i.e. content negotiation).
+	</p>
+	<p>
+    <a href="https://www.w3.org/TR/ld-bp/#HTTP-URIS">Design your URI schema</a> wisely, <b>before starting to create and publish data</b>. Ideally, you (a) control the host domain of <u>your</u> HTTP URIs and (b) can deploy the platform on the host, so that the URIs can be resolved physically and deferenced by the platform. 
+	</p>
+   Let's assume the following setting for the sake of example:
+  <ul>
+    <li>The platform is deployed on localhost port 10214 i.e. reachable over http://localhost:10214</li>
+    <li>We have decided for a URI schema, whereas <code>http://localhost:10214/</code> is our base namespace and we want to create and publish resources in the context path <code>/resource/person/</code> as well as <code>/resource/document/</code>.</li>
+     <li>You have added the following RDF statements to your database for publishing:<br/>
+      <pre><code mode='text/turtle'>@prefix person: &lt;http://localhost:10214/resource/person/&gt;.
+@prefix document: &lt;http://localhost:10214/resource/document/&gt;.
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+
+person:Bob a foaf:Person.
+
+document:LetterToBob a foaf:Document.
+</code></pre>
+    </li>
+   </ul>
+If we would have decided for a URI schema using the default context path <code>/resource</code> and without further nesting, for example, <code>http://localhost:10214/resource/person123</code> then it would be sufficient to just set the <b>Default</b> (:) namespace in the platform's namespace registry to <code>Default=http://localhost:10214/</code>. This needs to be done by modifying the <code>/config/namespaces.prop </code> and requires a restart. If this is feasible in your use-case and domain, then this is the easiest and recommended solution.<br>
+
+<br>
+However, assuming we have decided for a nested URI schema, we will need to enumerate the different context path patterns to instruct the 303 redirects within the platform's HTTP interface.
+This requires to set the following properties within <code>/config/environment.prop</code>:
+	<ul> 
+    <li> <code>platformBaseIri</code> to <code>platformBaseIri = http://localhost:10214</code>. This is particularly important when the host is hidden or re-written (for example, http to https re-writes) through a proxy.  </li>
+   <li> <code>pathsToRewrite</code> to <code>pathsToRewrite = /resource/document/,/resource/person/</code> enumerating ALL context path patterns.</li>
+ 	</ul>
+Trying to open <code>http://localhost:10214/resource/person/Bob</code> in the browser will redirect to <code>http://localhost:10214/resource/?uri=http://localhost:10214/resource/person/Bob</code> and rendering a HTML page for Bob using the <code>Template:foaf:Person</code> template.
+
+	<p>
+    As in the previous example, we can use <i>curl</i> again to ask for an RDF-based representation of the same resource:<br>
+    <code>curl -L --user admin:admin -H "Accept: application/n-triples" http://localhost:10214/resource/person/Bob</code><br>
+    The <code>-L</code> parameter is important, since it instructs <i>curl</i> to follow the redirect.
+  </p>
+</div>

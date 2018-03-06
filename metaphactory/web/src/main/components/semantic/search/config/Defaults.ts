@@ -160,6 +160,14 @@ export namespace DefaultFacetValuesQueries {
     `;
   }
 
+  export function forDateRange() {
+    return `
+      SELECT ?dateBeginValue ?dateEndValue WHERE {
+        FILTER(?${FACET_VARIABLES.RELATION_PATTERN_VAR})
+      } ORDER BY ?dateBeginValue
+    `;
+  }
+
   export const ResourceRelationPattern = `$subject ?${FACET_VARIABLES.RELATION_VAR} ?value`;
   export const LiteralRelationPattern = `$subject ?${FACET_VARIABLES.RELATION_VAR} ?literal`;
 }

@@ -1,0 +1,48 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Assets" data-uri="http://www.metaphacts.com/resource/assets/">Assets</semantic-link>
+  </li>
+  <li class="active">Diagrams</li>
+</ol>
+
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-object-group fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Diagrams</h2>
+    </div>
+  </div>
+  <div class='page__body'> 
+  	<semantic-context repository="assets">
+      <semantic-table query='
+                        prefix ontodia: <http://www.ontodia.org/schema/v1#>
+                        SELECT ?diagram ?label ?author ?modified WHERE {
+                             ?diagram a ontodia:diagram;
+                              rdfs:label ?label;
+                              <http://www.w3.org/ns/prov#wasAttributedTo> ?author;
+                              <http://www.w3.org/ns/prov#generatedAtTime> ?modified
+                         }
+                     '
+                     column-configuration='[
+                          {"variableName":"diagram", "displayName":"Diagram", "cellTemplate":"<semantic-link uri=\"http://www.metaphacts.com/resource/assets/OntodiaView\" urlqueryparam-diagram=\"{{diagram.value}}\">{{label.value}}</semantic-link>"},
+                          {"variableName":"author", "displayName":"Author", "cellTemplate":"<mp-label iri=\"{{author.value}}\"></mp-label>"},
+                          {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" },
+                					{"displayName":"Delete", "cellTemplate": "<mp-ldp-remove-from-container-action iri=\"{{diagram.value}}\" data-container=\"http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer\">
+                  <i class=\"fa fa-trash\" aria-hidden=\"true\"></i>
+                </mp-ldp-remove-from-container-action>" }
+                     ]'
+              >
+      </semantic-table>
+   </semantic-context>
+
+ 	 <mp-resource-link-container uri="http://www.metaphacts.com/resource/assets/OntodiaView"><button class="btn btn-primary">Create Diagram</button></mp-resource-link-container >  
+  </div>
+</div>
+
+

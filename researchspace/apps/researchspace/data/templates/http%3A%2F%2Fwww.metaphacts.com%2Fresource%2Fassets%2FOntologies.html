@@ -1,0 +1,99 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li><semantic-link title="Assets" data-uri="http://www.metaphacts.com/resource/assets/">Assets</semantic-link></li>
+  <li class="active">Ontologies</li>
+</ol>
+
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-sitemap fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Ontologies</h2>
+    </div>
+  </div>
+  <div class='page__body'> 
+          <semantic-search selector-mode='dropdown' optimizer='none'
+     categories='{
+      "<http://www.w3.org/2000/01/rdf-schema#Literal>": [{
+        "kind": "literal",
+        "queryPattern": "{
+
+          $subject ?__relation__ ?value FILTER(str(?__literal__)=str(?value)) .
+        }"
+      }]
+  }'                          
+                           
+        search-profile='{
+            "categories": [
+              {"iri": "<http://www.w3.org/2002/07/owl#Ontology>", "label": "Ontology"},
+              {"iri": "<http://www.w3.org/2000/01/rdf-schema#Resource>", "label": "Resource"},
+              {"iri": "<http://www.w3.org/2000/01/rdf-schema#Literal>", "label": "Literal"}                       
+                                           
+            ],
+            "relations": [
+              {"iri": "<http://purl.org/dc/elements/1.1/creator>", "label": "creator", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},
+              {"iri": "<http://purl.org/dc/elements/1.1/contributor>", "label": "contributor", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},                        
+              {"iri": "<http://www.w3.org/2002/07/owl#versionInfo>", "label": "version", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Literal>"},
+              {"iri": "<http://www.w3.org/2002/07/owl#imports>", "label": "imports", "hasDomain": "<http://www.w3.org/2002/07/owl#Ontology>", "hasRange": "<http://www.w3.org/2002/07/owl#Ontology>"}
+                                           ]
+          }'>
+             <semantic-search-query-constant
+               domain='<http://www.w3.org/2002/07/owl#Ontology>'
+               query='
+                select ?subject {
+                 ?subject a owl:Ontology.
+                }
+               '
+             ></semantic-search-query-constant>
+             <div data-flex-layout="row stretch-stretch">
+               <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+                 <semantic-search-facet
+     value-categories='{
+      "<http://www.w3.org/2000/01/rdf-schema#Literal>": {
+        "kind": "literal",
+        "valuesQuery": "SELECT ?literal (count(?subject) as ?count) WHERE {
+
+          $subject ?__relation__ ?literal .
+        }
+        GROUP BY ?literal"
+      }
+  }'                          
+                 ></semantic-search-facet>
+               </div>
+
+               <semantic-search-result-holder>
+                  <div data-flex-self="md-full">
+                    <semantic-search-result>
+                      <semantic-table
+                        id='field-results'
+                        number-of-displayed-rows=10
+                        query='SELECT ?subject ?version ?description WHERE {
+                                 OPTIONAL { ?subject owl:versionInfo ?version } 
+                               }'
+                        column-configuration='[
+                                      {"displayName":"Ontology", "cellTemplate": "{{> ontology}}"},
+                                      {"displayName":"Version", "cellTemplate": "{{> version}}" }
+                                 ]'
+                      >
+                        <template id='ontology'>
+                          <semantic-link style='max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' uri='{{subject.value}}' title='{{label.value}}'>{{label.value}}</semantic-link>
+                        </template>
+                        <template id='version'>
+													{{version.value}}
+                        </template>    
+                      </semantic-table>
+                    </semantic-search-result>
+                  </div>
+                </semantic-search-result-holder>
+            </div>
+          </semantic-search>
+    
+  	 <mp-resource-link-container uri="http://www.metaphacts.com/resource/admin/DataImportExport"><button class="btn btn-primary">Upload Ontology</button></mp-resource-link-container><br/><br/>
+      	 <mp-resource-link-container uri="http://www.metaphacts.com/resource/OntologySearch"><button class="btn btn-primary">Search for Ontology Elements</button></mp-resource-link-container>     
+  </div>
+</div>

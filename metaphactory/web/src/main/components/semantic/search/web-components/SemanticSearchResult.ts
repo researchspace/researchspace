@@ -182,7 +182,9 @@ class SemanticSearchResult extends Component<ResultComponentProps, State> {
             variable: ('?' + SEMANTIC_SEARCH_VARIABLES.PROJECTION_ALIAS_VAR) as SparqlJs.Term,
           });
         }
-        if (this.context.baseConfig.limit) {
+
+        // override limit only when query doesn't already have one
+        if (!baseQuery.limit && this.context.baseConfig.limit) {
           baseQuery.limit = context.baseConfig.limit;
         }
         const queryWithBindings = SparqlClient.setBindings(baseQuery, this.context.bindings);

@@ -1,0 +1,119 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">Table Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Table Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+          Tables are the most simple form rendering the result of SPARQL SELECT queries. Tables should be used whenever (but only if) tabular data needs to be displayed.
+
+          <p>Scales easily up to thousands of entities in a modern web browser, however, the size and complexity of custom <code>cellTemplate</code>(s) or <code>tuple-template</code>(s) may impact the overall performance.</p>
+      </div>
+      <div class="documentation__intro__demo">
+           <semantic-table
+             query="[[>Help:SemanticTableSampleQuery]]"
+             number-of-displayed-rows=2
+             column-configuration='[
+               {"variableName":"s", "displayName":"Subject"}, 
+               {"variableName":"p", "displayName":"Predicate"},  
+               {"variableName":"o", "displayName":"Object"}
+             ]'
+             options='{
+               "showFilter":false
+             }'
+           >
+           </semantic-table>
+        </div>
+    </div>
+    <div style="clear:both;"></div>
+
+    <h2>Configuration </h2>
+    <mp-documentation type="SemanticTableConfig"></mp-documentation>
+
+    <h2>Examples </h2>
+    <h3>Custom Column Configuration and Cell Templates </h3>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        Specifies custom column header names as well as uses a handlebars.js <code>cellTemplate</code> strings for custom rendering of the table cells.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-table 
+            query="[[>Help:SemanticTableSampleQuery]]"
+            column-configuration='[
+              {"variableName": "s", "displayName": "Subject"}, 
+              {"variableName": "p", "displayName": "Predicate"},  
+              {
+                "displayName": "Object", 
+                "cellTemplate": "<div><i class=\"fa fa-user\" style=\"margin-right: 5px\"></i>{{o.value}}</div>" 
+              }
+            ]'
+          ></semantic-table>
+        </mp-code-example>
+      </div>
+    </div>
+
+
+    <h3> Disabling Filter and Custom Pagination </h3>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        Passes on griddle specific configuration properties to the griddle table library to disable the filter and show only two results per pagination page.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-table
+            query="[[>Help:SemanticTableSampleQuery]]"
+            number-of-displayed-rows=2
+            options='{"showFilter": false}'
+          ></semantic-table>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Custom Tuple Template (Grid View) </h3>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        Specifying a custom <code>tuple-template</code> will render a grid, but offers all standard table functionality (e.g. filtering, pagination).
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-table
+            query="[[>Help:SemanticCarouselSampleQuery]]"
+            number-of-displayed-rows=2
+            tuple-template='
+              <div style="padding:10px;">
+                <div class="text-center panel panel-default" style="border:none;margin-right:20px;font-size:12px;height:120px;width: 100%;">
+                  <div class="panel-body" style="height: 100px;">
+                    <img src="{{thumbnail.value}}" style="max-width:100px; margin: 0 auto;" class="img-rounded">
+                  </div>
+                  <div class="panel-footer" style="position: relative;  border: none;">
+                    <semantic-link title="{{label.value}}" class="grid-resource-link" uri="{{subject.value}}">
+                      {{label.value}}
+                    </semantic-link>
+                  </div>
+                </div>
+              </div>
+            '
+          ></semantic-table>
+        </mp-code-example>
+      </div>
+    </div>
+  </div>
+</div>

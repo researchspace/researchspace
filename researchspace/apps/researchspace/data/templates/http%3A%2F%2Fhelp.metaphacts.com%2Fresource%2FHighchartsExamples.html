@@ -1,0 +1,195 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">Chart Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Highcharts Examples </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+          Examples how to use the features and styles specific to Highcharts.
+      </div>
+    </div>
+
+    <br>
+
+    <h3>Error bar chart</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description"></div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-chart provider="highcharts"
+      type="line"
+      query="
+        SELECT ?x ?value ?low ?high WHERE {
+          VALUES (?x ?value ?low ?high)
+          {
+            ('a' 1.1 0.1 2)
+            ('b' 2.1 1.2 3)
+            ('c' 3.1 2 4)
+            ('d' 4.1 3 5)
+            ('e' 5.1 4 6)
+          }
+        }"
+      sets='[
+        {"dataSetName": "Value", "category": "x", "y": "value"},
+        {"dataSetName": "Value", "category": "x", "y": "value"},
+        {"dataSetName": "Error", "category": "x", "x": "low", "y": "high"}]'
+      styles='[{
+        "provider": "highcharts",
+        "style": {
+          "series": [
+              {"type": "column"},
+              {"type": "line", "showInLegend": false},
+              {"type": "errorbar"}
+          ]
+        }
+      }]'>
+  </semantic-chart>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Bubble chart with labels</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description"></div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-chart provider="highcharts" type="bubble"
+            query="
+              PREFIX person: <http://example.com/person/>
+              SELECT ?person ?publications ?organizations (abs(?publications - ?organizations) as ?sum) WHERE {
+                VALUES (?person ?publications ?organizations)
+                {
+                  (person:alice 5 2)
+                  (person:bob 14 5)
+                  (person:carol 2 10)
+                  (person:mike 12 0)
+                  (person:eve 3 1)
+                  (person:mallory 8 7)
+                }
+              }"
+            sets='[{"dataSetName": "Persons", "category": "person", "x": "publications", "y": "organizations", "z": "sum"}]'>
+          </semantic-chart>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Line chart with multiple series</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description"></div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-chart 
+            type='line' 
+            provider='highcharts' 
+            query='
+              PREFIX person: <http://example.com/person/>
+              PREFIX org: <http://example.com/org/>
+              SELECT ?one (COUNT(distinct ?someone) as ?renown) (COUNT(distinct ?org) as ?memberships) WHERE {
+                {
+                    SELECT * WHERE {
+                      VALUES (?someone ?one)
+                      {
+                        (person:alice person:bob)
+                        (person:alice person:carol)
+                        (person:carol person:bob)
+                        (person:carol person:mike)
+                        (person:mike person:carol)
+                        (person:mike person:alice)
+                        (person:bob person:carol)
+                        (person:bob person:mike)
+                      }
+                  }
+                }
+                {
+                  SELECT * WHERE {
+                    VALUES (?one ?org)
+                    {
+                        (person:alice org:W3C)
+                        (person:alice org:IEEE)
+                        (person:alice org:IETF)
+                        (person:carol org:W3C)
+                        (person:mike org:IEEE)
+                        (person:mike org:IETF)
+                    }
+                  }
+                }
+            }
+              GROUP BY ?one
+              ORDER BY ?one
+          ' sets='[
+            {"dataSetName": "Renown", "category": "one", "value": "renown"},
+            {"dataSetName": "Memberships", "category": "one", "value": "memberships"}
+          ]'>
+          </semantic-chart>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Pivot example</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description"></div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+        <semantic-chart provider='highcharts' type='radar'
+          query='
+            PREFIX person: <http://example.com/person/>
+            PREFIX org: <http://example.com/org/>
+            SELECT ?someone ?org ?involvement WHERE {
+              VALUES (?someone ?org ?involvement)
+              {
+                (person:alice org:W3C 20)
+                (person:alice org:IEEE 10)
+                (person:alice org:IETF 30)
+                (person:carol org:W3C 80)
+                (person:carol org:IEEE 20)
+                (person:mike org:IEEE 50)
+                (person:mike org:IETF 50)
+              }
+            }
+            ORDER BY ?someone
+        ' multi-data-set='{"dataSetVariable": "someone", "category": "org", "value": "involvement"}'>
+        </semantic-chart>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Toggleable Chart Type</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description"></div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-chart type='line' provider='highcharts'
+    types='["line", "bar", "radar", "pie", "donut"]'
+    query='
+      PREFIX semanticPerson: <http://data.semanticweb.org/person/>
+      SELECT ?person ?articleCount (strlen(?foafName) as ?nameLength) WHERE {
+        VALUES (?person ?foafName ?articleCount)
+        {
+          (semanticPerson:abraham-bernstein "Abraham Bernstein" 22)
+          (semanticPerson:bijan-parsia "Bijan Parsia" 35)
+          (semanticPerson:enrico-motta "Enrico Motta" 22)
+          (semanticPerson:ian-horrocks "Ian Horrocks" 27)
+          (semanticPerson:stefan-decker "Stefan Decker" 23)
+        }
+      } ORDER BY DESC(?articleCount)'
+    sets='[{"dataSetName": "Articles per person", "category": "person", "y": "articleCount"}]'>
+  </semantic-chart>
+        </mp-code-example>
+      </div>
+    </div>
+  </div>
+</div>

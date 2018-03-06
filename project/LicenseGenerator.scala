@@ -162,7 +162,8 @@ object LicenseAggregator {
           licenseName = "ISC"
           licenseLink = ISC_LICENSE_LINK
         } else if (licenseName == "Apache 2.0" || licenseName == "Apache v2" ||
-          licenseName == "Apache License 2.0" || licenseName == "Apache-2.0" || licenseName == "Apache") {
+          licenseName == "Apache License 2.0" || licenseName == "Apache-2.0" || licenseName == "Apache" ||
+          licenseName == "(Apache-2.0 OR MIT)") {
           licenseName = "Apache License 2.0"
           licenseLink = APACHE2_LICENSE_LINK
         } else if (licenseName == "LGPL-2.1") {

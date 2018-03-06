@@ -97,6 +97,10 @@ class SemanticSearchContextualizedResult extends React.Component<Props, State> {
     ).getOrElse({} as any);
   }
 
+  componentDidMount() {
+    this.context.setVisualizationContext(this.state.relation);
+  }
+
   render() {
     return <div className={styles.holder}>
       <FormGroup className={styles.selectorGroup}>
@@ -149,8 +153,11 @@ class SemanticSearchContextualizedResult extends React.Component<Props, State> {
     />;
   }
 
-  private selectRelation = (option: {value: Model.Relation}) =>
-    this.setState({relation: Maybe.Just(option.value)});
+  private selectRelation = (option: {value: Model.Relation}) => {
+    const relation = Maybe.Just(option.value);
+    this.context.setVisualizationContext(relation);
+    this.setState({relation});
+  }
 
   private customValueRenderer = (template: string) => (option: any) => {
     return React.createElement(TemplateItem, {

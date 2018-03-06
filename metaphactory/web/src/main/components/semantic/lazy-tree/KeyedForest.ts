@@ -16,47 +16,43 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { List, Map, Set } from 'immutable';
-import { assign } from 'lodash';
+import * as Immutable from 'immutable';
 
-export type OffsetPath = ReadonlyArray<number>;
+export type KeyPath = ReadonlyArray<string>;
 export type NodePath<T> = ReadonlyArray<T>;
 
 export interface Traversable<T> {
-  children?: List<T>;
+  readonly children?: ReadonlyArray<T>;
 }
 
 interface ParentReference<T> {
-  parent: T;
-  index: number;
+  readonly parent: T;
+  readonly index: number;
 }
-
-const EMPTY_ROOT: any = {children: List<any>()};
 
 /**
  * Describes an immutable tree data structure
  * where every node has a string key.
  *
- * Tree assumes there is always a root node and
- * creates an empty one if there isn't.
+ * There could be multiple nodes with the same key but they should have
+ * different identities (determined by `Immutable.is()` value equality test).
  */
 export class KeyedForest<T extends Traversable<T>> {
   /**
    * Map which holds all tree nodes indexed by their keys.
-   * There could be multiple nodes with the same key.
    */
-  readonly nodes: Map<string, Set<T>>;
+  readonly nodes: Immutable.Map<string, Immutable.Set<T>>;
 
-  private readonly parents: Map<T, ParentReference<T>>;
+  private readonly parents: Immutable.Map<T, ParentReference<T>>;
 
   private constructor(
     public readonly keyOf: (node: T) => string,
-    public readonly root = KeyedForest.root<T>()
+    public readonly root: T
   ) {
-    const mutableNodes = Map<string, Set<T>>([
-      [keyOf(root), Set([root])],
+    const mutableNodes = Immutable.Map<string, Immutable.Set<T>>([
+      [keyOf(root), Immutable.Set([root])],
     ]).asMutable();
-    const mutableParents = Map<T, ParentReference<T>>([
+    const mutableParents = Immutable.Map<T, ParentReference<T>>([
       [root, {parent: undefined, index: 0}],
     ]).asMutable();
     computeMappingAndPaths(this.keyOf, mutableNodes, mutableParents, root);
@@ -66,26 +62,22 @@ export class KeyedForest<T extends Traversable<T>> {
 
   static create<T extends Traversable<T>>(
     keyOf: (node: T) => string,
-    root = KeyedForest.root<T>()
+    root: T
   ) {
     return new KeyedForest(keyOf, root);
-  }
-
-  static root<T extends Traversable<T>>(): T {
-    return EMPTY_ROOT as T;
   }
 
   /**
    * True if the node is a root of this tree; otherwise false.
    */
-  isRoot(node: T) {
+  isRoot(node: T): boolean {
     return node === this.root;
   }
 
   /**
    * Returns any node with the specified key.
    */
-  getFirst(key: string): T {
+  getFirst(key: string): T | undefined {
     const nodes = this.nodes.get(key);
     return nodes ? nodes.first() : undefined;
   }
@@ -96,30 +88,55 @@ export class KeyedForest<T extends Traversable<T>> {
    */
   getParent(node: T): T | undefined {
     const reference = this.parents.get(node);
-    return reference ? reference.parent : undefined;
+    if (!reference) {
+      throw new Error('Cannot get parent for node from another forest.');
+    }
+    return reference.parent;
   }
 
   /**
    * Returns a descending tree path from root to the specified node
-   * as children indexes for subsequent .children lists.
+   * represented by subsequent node keys.
    */
-  getOffsetPath(node: T): OffsetPath {
-    const path: number[] = [];
+  getKeyPath(node: T): KeyPath {
+    const path: string[] = [];
     let current = node;
     while (current) {
-      const {parent, index} = this.parents.get(current);
-      path.unshift(index);
+      const reference = this.parents.get(current);
+      if (!reference) {
+        throw new Error('Cannot compute path to node from another forest.');
+      }
+      const {parent} = reference;
+      if (parent) {
+        path.unshift(this.keyOf(current));
+      }
       current = parent;
     }
     return path;
   }
 
-  fromOffsetPath(path: OffsetPath): T {
+  fromKeyPath(path: KeyPath): T | undefined {
     let current = this.root;
-    for (let i = 1; i < path.length; i++) {
-      current = current.children.get(path[i]);
+    for (const childKey of path) {
+      const index = this.getChildIndex(current, childKey);
+      if (typeof index !== 'number') {
+        return undefined;
+      }
+      current = current.children[index];
+      if (!current) { break; }
     }
     return current;
+  }
+
+  getChildIndex(parent: T, childKey: string): number | undefined {
+    const candidates = this.nodes.get(childKey);
+    if (!candidates) { return undefined; }
+    let reference: ParentReference<T> | undefined;
+    candidates.find(child => {
+      reference = this.parents.get(child);
+      return reference && reference.parent === parent;
+    });
+    return reference ? reference.index : undefined;
   }
 
   /**
@@ -141,44 +158,82 @@ export class KeyedForest<T extends Traversable<T>> {
     return new KeyedForest(this.keyOf, root);
   }
 
-  updateNode(path: OffsetPath, update: (node: T) => T) {
-    if (path.length === 0) { throw new Error('OffsetPath cannot be empty'); }
-    const root = this.updateNodeAt(this.root, path, 1, update);
+  mapRoot(update: (root: T) => T) {
+    return this.setRoot(update(this.root));
+  }
+
+  updateNode(path: KeyPath, update: (node: T) => T) {
+    const root = this.updateNodeAt(this.root, path, 0, update);
     return this.setRoot(root);
   }
 
+  removeNode(path: KeyPath) {
+    if (path.length === 0) {
+      throw new Error('Cannot remove root node.');
+    }
+    const lastKeyIndex = path.length - 1;
+    const parentPath = path.slice(0, lastKeyIndex);
+    return this.updateNode(parentPath, parent => {
+      const index = this.getChildIndex(parent, path[lastKeyIndex]);
+      const children = [...parent.children];
+      children.splice(index, 1);
+      return {...parent as any, children} as T;
+    });
+  }
+
   private updateNodeAt(
-    node: T, path: OffsetPath, pathIndex: number, update: (node: T) => T
-  ) {
+    node: T, path: KeyPath, pathIndex: number, update: (node: T) => T
+  ): T {
     if (pathIndex === path.length) {
       return update(node);
     } else {
-      const index = path[pathIndex];
-      const children = node.children.update(
-        index, child => this.updateNodeAt(child, path, pathIndex + 1, update));
-      return assign({}, node, {children}) as T;
+      const childKey = path[pathIndex];
+      const index = this.getChildIndex(node, childKey);
+      const child = node.children[index];
+      const children = [...node.children];
+      children.splice(index, 1, this.updateNodeAt(child, path, pathIndex + 1, update));
+      return {...node as any, children} as T;
     }
   }
 
-  updateChildren(path: OffsetPath, update: (children: List<T>) => List<T>) {
-    if (path.length === 0) { throw new Error('OffsetPath cannot be empty'); }
-    return this.updateNode(path, node =>
-      assign({}, node, {children: update(node.children)}) as T);
+  updateChildren(path: KeyPath, update: (children: ReadonlyArray<T>) => ReadonlyArray<T>) {
+    return this.updateNode(path, node => (
+      {...node as any, children: update(node.children)} as T
+    ));
   }
 }
 
 function computeMappingAndPaths<T extends Traversable<T>>(
   keyOf: (node: T) => string,
-  mutableMapping: Map<string, Set<T>>,
-  mutableParents: Map<T, ParentReference<T>>,
+  mutableMapping: Immutable.Map<string, Immutable.Set<T>>,
+  mutableParents: Immutable.Map<T, ParentReference<T>>,
   parent: T
 ) {
   if (!parent.children) { return; }
 
   parent.children.forEach((node, index) => {
-    mutableParents.set(node, {parent, index});
-    mutableMapping.update(keyOf(node), Set<T>(), items => items.add(node));
+    mutableParents.update(node, existing => {
+      if (existing) {
+        throw new Error(
+          `Duplicate item '${keyOf(node)}' exists in both ` +
+          `'${keyOf(existing.parent)}' and '${keyOf(parent)}' parents`);
+      }
+      return {parent, index};
+    });
+    mutableMapping.update(keyOf(node), Immutable.Set<T>(), items => items.add(node));
 
     computeMappingAndPaths(keyOf, mutableMapping, mutableParents, node);
   });
+}
+
+export function mapBottomUp<T extends Traversable<T>>(root: T, mapper: (node: T) => T): T {
+  const mapNode = (node: T) => {
+    if (node.children) {
+      const children = node.children.map(mapNode);
+      return mapper({...node as any, children});
+    } else {
+      return mapper(node);
+    }
+  };
+  return mapNode(root);
 }

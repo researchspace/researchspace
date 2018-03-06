@@ -25,7 +25,7 @@ import { SearchProfileConfig, SemanticSearchConfig, isQuerySearchProfileConfig, 
 import { getCategoryTypes } from '../search/ModelUtils';
 import {
   Category, Categories,
-  Relations,
+  Relation, Relations,
   Profile, Profiles,
 } from './Model';
 
@@ -42,13 +42,13 @@ export class SearchProfileStore {
     this._profile = (this.availableProfiles as any).first();
 
     if (isQuerySearchProfileConfig(config.searchProfile)) {
-      const profileConfig = config.searchProfile as QuerySearchProfileConfig; 
+      const profileConfig = config.searchProfile as QuerySearchProfileConfig;
       if (profileConfig.defaultProfile) {
         this._profile = this._availableProfiles.get(
           Rdf.fullIri(profileConfig.defaultProfile)
         );
-      } 
-    } 
+      }
+    }
     this._config = config;
   }
 
@@ -65,9 +65,7 @@ export class SearchProfileStore {
   }
 
   public get domains(): Categories {
-    return this._profile.categories.filterNot(
-      category => _.includes(getCategoryTypes(this._config, category), 'text')
-    ) as Categories;
+    return this.filterCategories(rel => rel.hasDomain);
   }
 
   public get relations(): Relations {
@@ -75,9 +73,7 @@ export class SearchProfileStore {
   }
 
   public get ranges(): Categories {
-    return this.relations.mapEntries(
-      ([_, relation]) => [relation.hasRange.iri, relation.hasRange]
-    ) as Categories;
+    return this.filterCategories(rel => rel.hasRange);
   }
 
   public rangesFor = (domain: Category): Categories => {
@@ -110,6 +106,12 @@ export class SearchProfileStore {
         return domainMatch && rangeMatch;
       }
     ) as Relations;
+  }
+
+  private filterCategories(getCategory: (rel: Relation) => Category): Categories {
+    return this.categories.filter(category =>
+      this.relations.some(rel => getCategory(rel).iri.equals(category.iri))
+    ) as Categories;
   }
 }
 

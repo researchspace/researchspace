@@ -42,25 +42,31 @@ export class SpinnerComponent extends Component<SpinnerProps, SpinnerState> {
     messageDelay: 2000,
   };
 
-  private showSpinnerTimeout;
-  private showMessageTimeout;
+  private showSpinnerTimeout: any;
+  private showMessageTimeout: any;
 
   componentDidMount() {
-    this.showSpinnerTimeout =
-      setTimeout(
+    if (Number.isFinite(this.props.spinnerDelay)) {
+      this.showSpinnerTimeout = setTimeout(
         () => this.setState({showSpinner: true}),
         this.props.spinnerDelay
       );
-    this.showMessageTimeout =
-      setTimeout(
+    }
+    if (Number.isFinite(this.props.messageDelay)) {
+      this.showMessageTimeout = setTimeout(
         () => this.setState({showMessage: true}),
         this.props.messageDelay
       );
+    }
   }
 
   componentWillUnmount() {
-    clearTimeout(this.showSpinnerTimeout);
-    clearTimeout(this.showMessageTimeout);
+    if (typeof this.showSpinnerTimeout !== 'undefined') {
+      clearTimeout(this.showSpinnerTimeout);
+    }
+    if (typeof this.showMessageTimeout !== 'undefined') {
+      clearTimeout(this.showMessageTimeout);
+    }
   }
 
   constructor(props: SpinnerProps) {

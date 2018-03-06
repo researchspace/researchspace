@@ -22,6 +22,7 @@ import { Map } from 'immutable';
 import * as Maybe from 'data.maybe';
 
 import { Rdf } from 'platform/api/rdf';
+import { navigateToResource, refresh } from 'platform/api/navigation';
 import { invalidateAllCaches } from 'platform/api/services/cache';
 
 import { AssertionsComponent } from './AssertionsComponent';
@@ -30,13 +31,15 @@ import { getArgumentsFieldDefinition } from './FieldUtils';
 import { AssertedBelief, ArgumentsFieldDefinition } from './ArgumentsApi';
 
 export interface QuickAssertionComponentProps {
-  acceptEvidenceQuery?: string
-
   fieldIri: string;
   target: string
 
   valueTemplate: string
   formTemplate: string
+
+  postAction?: 'none' | 'reload' | 'redirect' | string;
+  editMode?: boolean
+  initialBeliefs?: Map<Rdf.Node, AssertedBelief>
 }
 
 interface State {
@@ -45,13 +48,18 @@ interface State {
 }
 
 export class QuickAssertionComponent extends React.Component<QuickAssertionComponentProps, State> {
-  constructor(props, context) {
+  constructor(props: QuickAssertionComponentProps, context) {
     super(props, context);
     this.state = {
-      beliefs: Map<Rdf.Node, AssertedBelief>(),
+      beliefs: props.initialBeliefs,
       field: Maybe.Nothing<ArgumentsFieldDefinition>(),
     };
   }
+
+  static defaultProps = {
+    editMode: true,
+    initialBeliefs: Map<Rdf.Node, AssertedBelief>(),
+  };
 
   componentDidMount() {
     getArgumentsFieldDefinition(Rdf.iri(this.props.fieldIri)).onValue(
@@ -68,7 +76,7 @@ export class QuickAssertionComponent extends React.Component<QuickAssertionCompo
           <AssertionsComponent {...this.props} field={field} target={Rdf.iri(this.props.target)}
             title='Assert new value' beliefs={this.state.beliefs}
             onBeliefsChange={this.onBeliefsChange}
-            quickAssertion={true}
+            quickAssertion={this.props.editMode}
           />
           <Button bsStyle='success' className='pull-right'
             onClick={this.saveAssertion(field)}>Save</Button>
@@ -82,12 +90,31 @@ export class QuickAssertionComponent extends React.Component<QuickAssertionCompo
     const beliefs = this.state.beliefs.valueSeq().toArray();
     const target = Rdf.iri(this.props.target);
     saveAssertion(
-      {iri: Maybe.Nothing<Rdf.Iri>(), field: field, target: target, title: 'New Image', note: '', beliefs}
+      {
+        iri: Maybe.Nothing<Rdf.Iri>(), field: field,
+        target: target, title: 'Quick Assertion', note: '', beliefs,
+      }
     ).flatMap(
-      () => invalidateAllCaches()
+      assertion => invalidateAllCaches().map(() => assertion)
     ).onValue(
-      () => window.location.reload()
+      assertion => this.performPostAction(assertion.assertion)
     );
+  }
+
+  private performPostAction = (assertion: Rdf.Iri) => {
+    if (this.props.postAction === 'none') { return; }
+
+    if (!this.props.postAction || this.props.postAction === 'reload') {
+      refresh();
+    } else if (this.props.postAction === 'redirect') {
+      navigateToResource(
+        assertion, {}, 'assets'
+      ).onValue(v => v);
+    } else {
+      navigateToResource(
+        Rdf.iri(this.props.postAction), {}, 'assets'
+      ).onValue(v => v);
+    }
   }
 }
 export default QuickAssertionComponent;

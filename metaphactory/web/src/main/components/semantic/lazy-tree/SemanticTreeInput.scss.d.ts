@@ -7,6 +7,7 @@ export const input: string;
 export const browseButton: string;
 export const dropdownFooter: string;
 export const dropdownButton: string;
+export const searchSpinner: string;
 export const searchMessage: string;
 export const error: string;
 export const highlighted: string;

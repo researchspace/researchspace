@@ -669,6 +669,14 @@ export interface SemanticFacetConfig {
    * @default 10000
    */
   facetValuesThreshold?: number
+
+  /**
+   * If true facet will automatically switch open relations based on the context relation used
+   * in the visualization .
+   *
+   * @default false
+   */
+  listenToContextSwitch?: boolean;
 }
 
 /**

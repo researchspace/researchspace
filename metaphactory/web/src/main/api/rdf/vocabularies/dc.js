@@ -1,0 +1,22 @@
+Object.defineProperty(exports, "__esModule", { value: true });
+var RDF = require("../core/Rdf");
+var dc;
+(function (dc) {
+    dc._NAMESPACE = 'http://purl.org/dc/elements/1.1/';
+    dc.contributor = RDF.iri(dc._NAMESPACE + 'contributor');
+    dc.coverage = RDF.iri(dc._NAMESPACE + 'coverage');
+    dc.creator = RDF.iri(dc._NAMESPACE + 'creator');
+    dc.date = RDF.iri(dc._NAMESPACE + 'date');
+    dc.description = RDF.iri(dc._NAMESPACE + 'description');
+    dc.format = RDF.iri(dc._NAMESPACE + 'format');
+    dc.identifier = RDF.iri(dc._NAMESPACE + 'identifier');
+    dc.language = RDF.iri(dc._NAMESPACE + 'language');
+    dc.publisher = RDF.iri(dc._NAMESPACE + 'publisher');
+    dc.relation = RDF.iri(dc._NAMESPACE + 'relation');
+    dc.rights = RDF.iri(dc._NAMESPACE + 'rights');
+    dc.source = RDF.iri(dc._NAMESPACE + 'source');
+    dc.subject = RDF.iri(dc._NAMESPACE + 'subject');
+    dc.title = RDF.iri(dc._NAMESPACE + 'title');
+    dc.type = RDF.iri(dc._NAMESPACE + 'type');
+})(dc || (dc = {}));
+exports.default = dc;

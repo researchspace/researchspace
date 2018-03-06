@@ -1,0 +1,189 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation Overview" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation Overview</semantic-link>
+  </li>
+  <li class="active">
+    Template and Application Pages
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Back-end Templating Syntax and Helpers</h1>
+    As already mentioned before, the entire front-end is based on client-side components using latest HTML5 technologies and standards. As such the most simple application and template pages can be made by assembling built-in or custom HTML5 components using standard HTML syntax. However, in some cases certain component parameters must be set before the client-side components are being initialized or - in other cases - it must be guaranteed that certain parts of a page or template never leave the backend (i.e. due to security restrictions). <br>
+
+    Therefore, we use handlebars.java with custom helper functions to provide a "<b>mostly logic-less</b>" templating backend. That is the backend templating syntax should only be used for:
+    <ul>
+      <li>Back-end parameterization of component inputs (simplified component inputs, restricted access to certain parameters).</li>
+      <li>Partial rendering of page or template sub-parts (i.e. according to security restrictions or availability of data). </li>
+      <li>Includes to void duplication and facilitate reused of pages or sub-parts.  </li>
+    </ul>
+    For different reasons (performance, complexity) <b>it is not recommend to use the backend templating syntax to query and format any query results in arbitrary ways </b>. All formatting should be done using purely client-side components.<br><br>
+
+    <b>Notes on handlebars.java syntax:</b>
+    <ul>
+      <li>We are using <code>[[{{documentation}}]] [[ [[{{/documentation}}]]</code> as start delimiter and <code>[[{{documentation}}]] ]] [[{{/documentation}}]]</code> as end delimiter in order to distinguish from client-side handlebars.js template expressions (<code>{{ .. }}</code> ) as being used in some components to format the result.</li>
+      <li>The hash <code>[[{{documentation}}]] [[#helpername &quot;arguments&quot;]][[{{/documentation}}]]</code> indicates a block helper and needs to be closed <code>[[{{documentation}}]] [[/helpername]] [[{{/documentation}}]]</code>.<br> Inline-helper start directly after the start delimiter:  <code>[[{{documentation}}]] [[helpername]] [[{{/documentation}}]]</code>. </li>
+      <li>
+        Comments <code>[[{{documentation}}]] [[!-- this is a comment --]][[{{/documentation}}]]</code> will never leave the backend.
+      </li>
+      <li>
+        When nesting helper functions (i.e. on helper is used as input argument for another helper), the inner helper functions need to be surrounded with simple parentheses only  <code>[[{{documentation}}]] [[#helpername (innerHelper &quot;innerArgument1&quot;) ]] [[{{/documentation}}]]</code> (c.f. also if-else examples below).
+      </li>
+    </ul>
+
+    <h3>Parameterization</h3>
+
+    <h4>jsonValueFromSelect Helper</h4>
+    Useful for parameterization of client-side components where the configuration needs to be parameterized with a single value depending on the context.
+    <ul>
+      <li>Expects as first argument an SPARQL SELECT query string.</li>
+      <li>Result will be a JSON escaped, double quoted value : <code>&quot;http://www.metaphacts.com/resource/result1&quot;</code></li>
+      <li>If no explicit parameter <code>binding=&quot;bindingVariable&quot;</code> is provided, the first projection variable from the result of the specified SPARQL SELECT result will be extracted.	</li>
+      <li>If the result of the SPARQL SELECT contains multiple tuples, only the first matching binding will be returned.</li>
+      <li>Returns <code>null</code> if result is empty.</li>
+    </ul>
+    <bs-panel header="Example: jsonValueFromSelect" collapsible=true default-expanded=true>
+      data-config='{...<br>
+      "depiction": <code>[[{{documentation}}]] [[jsonValueFromSelect &quot;SELECT ?depiction WHERE { ?p foaf:depiction ?depiction}&quot; ]][[{{/documentation}}]]</code>,<br>
+      ...}'<br>
+      <br>
+      .. will return the same result as:<br><br>
+      data-config='{...<br>
+      "depiction": <code>[[{{documentation}}]] [[jsonValueFromSelect &quot;SELECT ?p ?depiction WHERE { ?p foaf:depiction ?depiction}&quot; binding=&quot;depiction&quot; ]][[{{/documentation}}]]</code>,<br>
+      ...}'<br>
+    </bs-panel>
+
+    <!-- <h4>jsonObjectArrayFromSelect Helper</h4>
+t.b.d.
+<h4>jsonObjectFromSelect Helper</h4>
+t.b.d. -->
+    <h4>jsonArrayFromSelect Helper</h4>
+    To be used for parameterization of client-side components such as the semantic-graph or semantic-tree component which receive an optional argument, for example, "roots" being an array of IRIs defining the root nodes in the graph or tree. 
+    <ul>
+      <li>Expects as first argument an SPARQL SELECT query string.</li>
+      <li>Result will be an JSON array: <code> [[{{documentation}}]] [&quot;http://www.metaphacts.com/resource/result1&quot;, &quot;http://www.metaphacts.com/resource/result2&quot;][[{{/documentation}}]]</code> </li>
+      <li>If no explicit parameter <code>binding=&quot;bindingVariable&quot;</code> is provided, the first projection variable from the result of the specified SPARQL Select result will be extracted.</li>
+      <li>Returns an empty array if no result are present.</li>
+    </ul>
+
+    <bs-panel header="Example: jsonArrayFromSelect" collapsible=true default-expanded=true>
+      data-config='{...<br>
+      "roots": <code>[[{{documentation}}]] [[jsonArrayFromSelect "SELECT ?person ?someone WHERE { ?p a foaf:Person. FILTER EXISTS{?person foaf:knows ?someone} }" ]][[{{/documentation}}]]</code>,<br>
+      ...}'<br>
+      <br>
+      .. will return the same result as:<br><br>
+      data-config='{...<br>
+      "roots": <code>[[{{documentation}}]] [[jsonArrayFromSelect "SELECT ?someone ?person WHERE { ?p a foaf:Person. FILTER EXISTS{?person foaf:knows ?someone} }" binding="person" ]][[{{/documentation}}]]</code>,<br>
+      ...}'<br>
+    </bs-panel>
+
+    <h4>singleValueFromSelect Helper</h4>
+    Does basically the same as <code>jsonValueFromSelect</code> helper. However, value is not quoted and neither JSON nor HTML escaped. Should only be used in exceptional cases, if you need to have access to the result value as plain string.
+    <ul>
+      <li>Expects as first argument an SPARQL SELECT query string.</li>
+      <li>Result will be a plain, single (not escaped) value : <code>http://www.metaphacts.com/resource/result1</code></li>
+      <li>If no explicit parameter <code>binding=&quot;bindingVariable&quot;</code> is provided, the first projection variable from the result of the specified SPARQL SELECT result will be extracted.	</li>
+      <li>If the result of the SPARQL SELECT contains multiple tuples, only the first matching binding will be returned.</li>
+      <li>Returns an empty string if the result is empty.</li>
+    </ul>
+
+    <bs-panel header="Example: singleValueFromSelect" collapsible=true default-expanded=true>
+      Single value <code>[[{{documentation}}]] [[singleValueFromSelect &quot;SELECT ?test WHERE { BIND('Hello World' as ?test)}&quot; ]] [[{{/documentation}}]]</code> in the middle of the text.<br>
+      ... will render to:<br>
+      Single value <code>[[singleValueFromSelect "SELECT ?test WHERE { BIND('Hello World' as ?test)}" ]]</code> in the middle of the text.<br>
+    </bs-panel>
+
+    <h4>urlParam Helper</h4>
+    Helper to extract parameter(s) from the current URL. The following example extracts the value for the "tab" param <code>[[{{documentation}}]] &tab="value" [[{{/documentation}}]]</code> from the URL. Can be used, for example, to declare which tab should be opened in tabs-component. May also be useful when combined with if helper (c.f. section below).
+    <bs-panel header="Example: urlParm" collapsible=true default-expanded=true>
+      Param: <code>[[{{documentation}}]] 
+      [[urlParam &quot;tab&quot;]]</code>
+      [[{{/documentation}}]]
+    </bs-panel>
+
+    <h4>resolvePrefix Helper</h4>
+    Helper to resolve prefixed IRIs to full IRI string.
+    <bs-panel header="Example: urlParm" data-collapsible=true default-expanded=true>
+      <code>[[{{documentation}}]] 
+        [[resolvePrefix &quot;Help:Start&quot;]]
+        [[{{/documentation}}]]</code> <br>
+      ... will render to: <br>
+      <code>[[resolvePrefix "Help:Start"]]</code>
+
+
+    </bs-panel>
+
+    <h3>Conditional Helper & Boolean Helper</h3>
+    <h4>if-else Helper</h4>
+    The if-else helper will be most valuable when being combined with boolean helper such as the <b>ask</b> or <b>hasPermission</b> helper.
+    <ul>
+      <li>Expects as first argument an boolean string. Everything non-equal to an empty string will be interpreted as <code>false</code>.</li>
+    </ul>
+    <bs-panel header="Example: if-else block" data-collapsible=true default-expanded=true>
+      <code>[[{{documentation}}]] 
+        [[#if &quot;true&quot;]] 
+        [[{{/documentation}}]]</code><br/>
+      &emsp;This will be rendered.<br/>
+      <code>[[{{documentation}}]] 
+        [[else]]
+        [[{{/documentation}}]]</code><br/>
+      &emsp;This will not be rendered.<br/>
+      <code>[[{{documentation}}]] 
+        [[/if]]
+        [[{{/documentation}}]]</code><br/>
+    </bs-panel>
+
+    <h4>ask Helper</h4>
+    Helper to query the RDF database using ASK queries. Particularly useful with if (else) helper.
+    <ul>
+      <li>Expects as first argument an SPARQL Ask query string.</li>
+    </ul>
+    <bs-panel header="Example: if with nested ask" collapsible=true default-expanded=true>
+      <code>[[{{documentation}}]] 
+        [[#if (ask &quot;ASK {?? a foaf:Person}&quot;)]]
+        [[{{/documentation}}]]</code><br>
+      &emsp;This will be rendered if the current entity is of type foaf:Person<br/>
+      <code>[[{{documentation}}]] 
+        [[/if]]
+        [[{{/documentation}}]]</code>
+    </bs-panel>
+
+    <h4>hasPermission Helper</h4>
+    Helper to ask the backend whether the currently logged-in user has the specified shiro permission.  Particularly useful when combined with if (else) helper.
+    <ul>
+      <li>Expects as first argument an shiro permission string.</li>
+    </ul>
+    <bs-panel header="Example: if with nested hasPermission" data-collapsible=true default-expanded=true>
+      <code>[[{{documentation}}]] 
+        [[#if (hasPermission &quot;sparql:update&quot;)]]
+        [[{{/documentation}}]]</code><br>
+      &emsp;This will be rendered if the currently logged-in user has the permission "sparql:update"<br/>
+      <code>[[{{documentation}}]] 
+        [[/if]]
+        [[{{/documentation}}]]</code>
+    </bs-panel>
+
+    <h3>Includes</h3>
+    <code>[[{{documentation}}]] [[> &quot;fullIRI&quot;]] [[{{/documentation}}]]</code> includes other pages or templates identifier by their prefixed or full IRI. Full IRIs need to be quoted. 
+    <bs-panel header="Example: Includes" collapsible=true default-expanded=true>
+      Prefixed include:<br>
+      <code>[[{{documentation}}]] 
+        [[> :PageToInclude]]
+        [[{{/documentation}}]]</code>
+      <br>
+      Full IRI include:<br>
+      <code>[[{{documentation}}]] 
+        [[> &quot;http://www.metaphacts.com/resource/PageToInclude&quot;]]
+        [[{{/documentation}}]]</code>
+
+    </bs-panel>
+
+  </div>
+</div>

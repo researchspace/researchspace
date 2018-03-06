@@ -1,0 +1,556 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" data-uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">Graph Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Graph Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        <p>Useful for visualization of directed and undirected <a href="http://en.wikipedia.org/wiki/Graph_(mathematics)" target="blank"> graphs</a>.</p>
+
+        <p>Scales best for small to mid-size graphs with ideally not more than up to hundred nodes and edges depending on the layout. 
+          Custom styling of the graph is possible including dynamic access to bindings from the query result. 
+          However, access to external, dynamic functions (e.g. for computing a gradient) is not yet supported.
+        </p>
+      </div>
+      <div class="documentation__intro__demo">
+        <semantic-graph height='500px' 
+                        query='
+  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  prefix person: <http://example.com/person/> 
+  prefix org: <http://example.com/org/> 
+  prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+  CONSTRUCT {
+    ?s ?p ?o
+  } WHERE {
+    {
+      SELECT ?s ?p ?o WHERE {
+        VALUES (?s ?p ?o)
+        {
+          (person:alice foaf:knows person:bob)
+          (person:alice foaf:knows person:carol)
+          (person:carol foaf:knows person:mike)               
+          (person:mike foaf:knows person:carol)
+          (person:bob foaf:knows person:carol)               
+          (person:alice foaf:knows person:mike)
+          (person:alice foaf:member org:W3C)
+          (person:mike foaf:member org:W3C)
+          (person:alice rdf:type foaf:Person)
+          (person:carol rdf:type foaf:Person)               
+          (person:mike rdf:type foaf:Person)
+          (person:bob rdf:type foaf:Person)               
+        }
+      }
+    }
+  }' 
+                        hide-predicates='["<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"]' 
+                        graph-style='[
+                          {
+                            "selector": "node[property(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>) *= iri(<http://xmlns.com/foaf/0.1/Person>)]",
+                            "style": {          
+                              "background-color": "#2980b9",
+                              "text-background-color": "#2980b9"
+                            }
+                          },
+                          {
+                            "selector": "node[resource = iri(<http://example.com/person/alice>)]",
+                            "style": {          
+                              "background-color": "#27ae60",
+                              "background-fit": "cover",
+                              "text-background-color": "#27ae60",
+                              "shape": "ellipse"
+                            }
+                          },
+                          {		    
+                            "selector": "node[resource = iri(<http://example.com/org/W3C>)]",
+                            "style": {
+                              "background-image": "//upload.wikimedia.org/wikipedia/commons/thumb/e/ed/W3C%C2%AE_Icon.svg/210px-W3C%C2%AE_Icon.svg.png",
+                              "background-fit": "cover",
+                              "content": "",
+                              "height": "50",
+                              "width": "50"
+                            }
+                          },
+                          {		    
+                            "selector": "edge[resource = iri(<http://xmlns.com/foaf/0.1/knows>)]",
+                            "style": {
+                              "line-style": "dashed"
+                             }
+                           }
+                         ]'>
+          <semantic-graph-layout-breadthfirst animate=true roots='["<http://example.com/person/alice>"]' circle=true></semantic-graph-layout-breadthfirst>
+        </semantic-graph>
+      </div>
+    </div>
+
+    <h2> Configuration </h2>
+    <mp-documentation type="SemanticGraphConfig"></mp-documentation>
+
+    <h3> Graph Layouts </h3>
+    The function of a layout is to set the positions on the nodes in the graph. Graph extensions and custom layout algorithms are implemented as Web Components, to enable some specific layout one need to put the layout component inside the <code>semantic-graph</code>. <code>semantic-graph-layout-cose-bilkent</code> is used as a default layout.
+
+    <h4> CoSE (<code>semantic-graph-layout-cose</code>) </h4>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphCoseLayoutConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-cose ideal-edge-length=70></semantic-graph-layout-cose>
+  </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h4>CoSE bilkent - default layout (<code>semantic-graph-layout-cose-bilkent</code>)</h4>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphCoseBilkentLayoutConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-cose-bilkent ideal-edge-length=200></semantic-graph-layout-cose-bilkent>
+  </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>  
+
+    <h4> Circle (<code>semantic-graph-layout-circle</code>)</h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphCircleLayoutConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <bs-tabs id="circle-layout" unmount-on-exit=true>
+          <bs-tab event-key="1" title="Circle">
+            <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-circle></semantic-graph-layout-circle>
+  </semantic-graph>
+            </mp-code-example>
+          </bs-tab>
+          <bs-tab event-key="3" title="Circle (counterclockwise)">
+            <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-circle clockwise=false></semantic-graph-layout-circle>
+  </semantic-graph>
+            </mp-code-example>
+          </bs-tab>       
+          <bs-tab event-key="2" title="Circle (ordered)">
+            <mp-code-example>
+  <semantic-graph 
+    height='600px' 
+    query='
+  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  prefix person: <http://example.com/person/> 
+  prefix org: <http://example.com/org/> 
+  prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+  CONSTRUCT {
+    ?s ?p ?o
+  } WHERE {
+    {
+      SELECT ?s ?p ?o WHERE {
+        VALUES (?s ?p ?o)
+        {
+          (person:alice foaf:knows person:bob)
+          (person:alice foaf:knows person:carol)
+          (person:carol foaf:knows person:mike)               
+          (person:mike foaf:knows person:carol)
+          (person:bob foaf:knows person:carol)               
+          (person:alice foaf:knows person:mike)
+          (person:alice foaf:member org:W3C)
+          (person:mike foaf:member org:W3C)
+          (person:alice foaf:order 3)
+          (person:carol foaf:order 4)               
+          (person:mike foaf:order 5)
+          (person:bob foaf:order 2)  
+          (org:W3C foaf:order 1)
+        }
+      }
+    }
+  }
+  '
+    hide-predicates='["<http://xmlns.com/foaf/0.1/order>"]'
+  >
+    <semantic-graph-layout-circle sort-by='<http://xmlns.com/foaf/0.1/order>'></semantic-graph-layout-circle>
+  </semantic-graph>      
+            </mp-code-example>
+          </bs-tab>
+          <bs-tab event-key="4" title="Circle (start angle + radius + sweep)">
+            <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'
+  >
+    <semantic-graph-layout-circle start-angle='3.1415' radius='700' sweep='2'></semantic-graph-layout-circle>
+  </semantic-graph>      
+            </mp-code-example>
+          </bs-tab>        
+        </bs-tabs>
+      </div>
+    </div>
+
+    <h4> Concentric (<code>semantic-graph-layout-concentric</code>)</h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphConcentricLayoutConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <bs-tabs id="concentric-layout" unmount-on-exit=true>
+          <bs-tab event-key="1" title="Default">
+            <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-concentric min-node-spacing=70></semantic-graph-layout-concentric>
+  </semantic-graph>
+            </mp-code-example>
+          </bs-tab>
+          <bs-tab event-key="3" title="Concentric by property">
+            <mp-code-example>
+  <semantic-graph height='600px'
+    query = '
+          prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          prefix person: <http://example.com/person/> 
+          prefix org: <http://example.com/org/> 
+          prefix foaf: <http://xmlns.com/foaf/0.1/>
+          prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+          CONSTRUCT {
+            ?s ?p ?o
+          } WHERE {                    
+           {
+             SELECT ?s ?p ?o WHERE {
+               VALUES (?s ?p ?o)
+               { 
+                 (person:alice foaf:knows person:bob)
+                 (person:alice foaf:knows person:carol)
+                 (person:carol foaf:knows person:mike)               
+                 (person:mike foaf:knows person:carol)
+                 (person:bob foaf:knows person:carol)               
+                 (person:alice foaf:knows person:mike)
+                 (person:alice foaf:member org:W3C)
+                 (person:mike foaf:member org:W3C)
+
+
+                 (person:alice foaf:weight 10)
+                 (person:carol foaf:weight 10)               
+                 (person:mike foaf:weight 10)
+                 (person:bob foaf:weight 10)   
+                 (org:W3C foaf:weight 20)
+               }
+             }
+           }
+         }
+      '
+      hide-predicates = '["<http://xmlns.com/foaf/0.1/weight>"]' 
+  >
+    <semantic-graph-layout-concentric animate=true concentric = '<http://xmlns.com/foaf/0.1/weight>' min-node-spacing=70 equidistant=true></semantic-graph-layout-concentric>
+  </semantic-graph>
+            </mp-code-example>
+          </bs-tab>
+        </bs-tabs>
+      </div>
+    </div>
+
+
+    <h4> Breadthfirst (<code>semantic-graph-layout-breadthfirst</code>)</h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphBreadthFirstLayoutConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <bs-tabs id="breadthfirst-layout" unmount-on-exit=true>
+          <bs-tab event-key="1" title="Breadthfirst">
+            <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-breadthfirst roots='["<http://example.com/person/alice>"]'></semantic-graph-layout-breadthfirst>
+  </semantic-graph>
+            </mp-code-example>
+          </bs-tab>
+          <bs-tab event-key="2" title="Breadthfirst (circle)">
+            <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-breadthfirst roots='["<http://example.com/person/alice>"]' circle=true></semantic-graph-layout-breadthfirst>
+  </semantic-graph>      
+            </mp-code-example>
+          </bs-tab>
+        </bs-tabs>
+      </div>
+    </div>
+
+    <h4>Preset (<code>semantic-graph-layout-preset</code>)</h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphPresetLayoutConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-graph
+    query = '
+          prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          prefix person: <http://example.com/person/> 
+          prefix org: <http://example.com/org/> 
+          prefix foaf: <http://xmlns.com/foaf/0.1/>
+          prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+          CONSTRUCT {
+            ?s ?p ?o
+          } WHERE {                    
+           {
+             SELECT ?s ?p ?o WHERE {
+               VALUES (?s ?p ?o)
+               { 
+                 (person:alice foaf:knows person:bob)
+                 (person:alice foaf:knows person:carol)
+                 (person:carol foaf:knows person:mike)               
+                 (person:mike foaf:knows person:carol)
+                 (person:bob foaf:knows person:carol)               
+                 (person:alice foaf:knows person:mike)           
+
+                 (person:alice foaf:x 100)
+                 (person:carol foaf:x 400)               
+                 (person:mike foaf:x 100)
+                 (person:bob foaf:x 250)  
+
+                 (person:alice foaf:y 100)
+                 (person:carol foaf:y 200)               
+                 (person:mike foaf:y 300)
+                 (person:bob foaf:y 10)                            
+               }
+             }
+           }
+         }
+      '
+      height = 800
+      hide-predicates = '["<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://xmlns.com/foaf/0.1/x>", "<http://xmlns.com/foaf/0.1/y>"]' 
+  >
+    <semantic-graph-layout-preset animate=true position-x='<http://xmlns.com/foaf/0.1/x>' position-y='<http://xmlns.com/foaf/0.1/y>'></semantic-graph-layout-preset>
+  </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Compound Nodes (group-by)</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        Example of using <code>group-by</code> property to visualize the containment relation in the graph. In the given example there is a property which defines containment relation <code>foaf:group</code>. Nodes are nested according to the value of this property with the support for a deep nesting. As we can see in the example <b>A2</b> and <b>A3</b> are member of <b>A1</b>, but at the same time <b>A2</b> is also a group which has it's own members. Such kind of visualization can be also enhanced with <i>Collapse/Expand</i> extension (see below).
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-graph
+            query = '
+                  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                  prefix person: <http://example.com/person/> 
+                  prefix org: <http://example.com/org/> 
+                  prefix foaf: <http://xmlns.com/foaf/0.1/>
+                  prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+                  CONSTRUCT {
+                    ?s ?p ?o
+                  } WHERE {                    
+                   {
+                     SELECT ?s ?p ?o WHERE {
+                       VALUES (?s ?p ?o)
+                       {            
+                           (person:A4 foaf:group person:A2)
+                           (person:A5 foaf:group person:A2)
+                           (person:A2 foaf:group person:A1)
+                           (person:A3 foaf:group person:A1)
+                       }
+                     }
+                   }
+                 }
+              '
+              height = 600
+              group-by = '<http://xmlns.com/foaf/0.1/group>'
+              graph-style = '[
+                {
+                  "selector": "edge[resource = iri(<http://xmlns.com/foaf/0.1/group>)]",
+                  "style": {
+                    "visibility": "hidden"
+                   }
+                }
+              ]'
+          >
+          </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>
+    <h3>Styling</h3>
+
+    <div class="documentation__example">
+        <div class="documentation__example__description">
+            Example of applying custom styles to the graph visualization. In the given example all nodes which have type <code>http://xmlns.com/foaf/0.1/Person</code> are colored in blue colour. Resource with IRI <code>http://example.com/person/alice</code> has green colour and all <code>http://xmlns.com/foaf/0.1/knows</code> are dashed.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-graph height='500px' 
+    query='
+  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  prefix person: <http://example.com/person/> 
+  prefix org: <http://example.com/org/> 
+  prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+  CONSTRUCT {
+    ?s ?p ?o
+  } WHERE {
+    {
+      SELECT ?s ?p ?o WHERE {
+        VALUES (?s ?p ?o)
+        {
+          (person:alice foaf:knows person:bob)
+          (person:alice foaf:knows person:carol)
+          (person:carol foaf:knows person:mike)               
+          (person:mike foaf:knows person:carol)
+          (person:bob foaf:knows person:carol)               
+          (person:alice foaf:knows person:mike)
+          (person:alice foaf:member org:W3C)
+          (person:mike foaf:member org:W3C)
+          (person:alice rdf:type foaf:Person)
+          (person:carol rdf:type foaf:Person)               
+          (person:mike rdf:type foaf:Person)
+          (person:bob rdf:type foaf:Person)               
+        }
+      }
+    }
+  }' 
+    hide-predicates='["<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"]' 
+    graph-style='[
+      {
+        "selector": "node[property(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>) *= iri(<http://xmlns.com/foaf/0.1/Person>)]",
+        "style": {          
+          "background-color": "#2980b9",
+          "text-background-color": "#2980b9"
+         }
+      },
+      {
+        "selector": "node[resource = iri(<http://example.com/person/alice>)]",
+        "style": {          
+          "background-color": "#27ae60",
+          "background-fit": "cover",
+          "text-background-color": "#27ae60",
+          "shape": "ellipse"
+        }
+      },
+      {		    
+        "selector": "node[resource = iri(<http://example.com/org/W3C>)]",
+        "style": {
+          "background-image": "//upload.wikimedia.org/wikipedia/commons/thumb/e/ed/W3C%C2%AE_Icon.svg/210px-W3C%C2%AE_Icon.svg.png",
+          "background-fit": "cover",
+          "content": "",
+          "height": "50",
+          "width": "50"
+        }
+      },
+      {		    
+        "selector": "edge[resource = iri(<http://xmlns.com/foaf/0.1/knows>)]",
+        "style": {
+          "line-style": "dashed"
+        }
+      }
+    ]'>
+          <semantic-graph-layout-breadthfirst animate=true roots='["<http://example.com/person/alice>"]' circle=true></semantic-graph-layout-breadthfirst>
+        </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Extensions</h3>
+
+    <h4>Navigator (<code>semantic-graph-extension-navigator</code>)</h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphNavigatorExtensionConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-breadthfirst roots='["<http://example.com/person/alice>"]'></semantic-graph-layout-breadthfirst>
+    <semantic-graph-extension-navigator style="height: 150px; width: 150px;"></semantic-graph-extension-navigator>
+  </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>  
+    <h4>PanZoom (<code>semantic-graph-extension-panzoom</code>)</h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphPanZoomExtensionConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+  <semantic-graph height='600px' query='[[> Help:SemanticGraphSampleQuery]]'>
+    <semantic-graph-layout-breadthfirst roots='["<http://example.com/person/alice>"]'></semantic-graph-layout-breadthfirst>
+    <semantic-graph-extension-panzoom pan-indicator-min-opacity=0.1></semantic-graph-extension-panzoom>
+  </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h4>Collapse/Expand (<code>semantic-graph-extension-expand-collapse</code>)</h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <mp-documentation type="SemanticGraphExpandCollapseExtensionConfig"></mp-documentation>
+      </div>
+      <div class="documentation__example__demo">
+            <mp-code-example>
+  <semantic-graph
+    query = '
+          prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          prefix person: <http://example.com/person/> 
+          prefix org: <http://example.com/org/> 
+          prefix foaf: <http://xmlns.com/foaf/0.1/>
+          prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+          CONSTRUCT {
+            ?s ?p ?o
+          } WHERE {                    
+           {
+             SELECT ?s ?p ?o WHERE {
+               VALUES (?s ?p ?o)
+               {            
+                   (person:A4 foaf:group person:A2)
+                   (person:A5 foaf:group person:A2)
+                   (person:A2 foaf:group person:A1)
+                   (person:A3 foaf:group person:A1)
+               }
+             }
+           }
+         }
+      '
+      height = 600
+      group-by = '<http://xmlns.com/foaf/0.1/group>'
+      graph-style = '[
+        {
+          "selector": "edge[resource = iri(<http://xmlns.com/foaf/0.1/group>)]",
+          "style": {
+            "visibility": "hidden"
+           }
+        }
+      ]'
+  >
+    <semantic-graph-extension-expand-collapse animate=false></semantic-graph-extension-expand-collapse>
+  </semantic-graph>
+        </mp-code-example>
+      </div>
+    </div>
+  </div>
+</div>

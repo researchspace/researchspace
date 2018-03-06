@@ -183,6 +183,7 @@ public class FieldDefinitionSource {
             "(SAMPLE(?autosuggestionPattern) AS ?autosuggestionPattern)",
             "(SAMPLE(?valueSetPattern) AS ?valueSetPattern)",
             "(SAMPLE(?treePatterns) AS ?treePatterns)",
+            "(SAMPLE(?order) as ?order)",
             "WHERE {",
             "<" + FieldDefinitionContainer.IRI_STRING + "> <http://www.w3.org/ns/ldp#contains> ?field.",
             "?field a field:Field.",

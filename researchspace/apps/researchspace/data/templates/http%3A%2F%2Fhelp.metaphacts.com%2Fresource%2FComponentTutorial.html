@@ -1,0 +1,197 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li class="active">Simple Component Tutorial</li>
+</ol>
+
+<div class="metaphacts_help">
+  <h1> Simple Component Tutorial </h1>
+
+  <h2> Hello World Component </h2>
+  <p>The goal is to create the most simple "Hello World!"-like component.</p>
+
+  <p>First, we need to create the JavaScript implementation for our new component. Put the code below into <code>platform-web/src/main/common/ts/components/GreetingComponent.tsx</code> file. If this is your first encounter with React.js we recommend first to read <a href="https://facebook.github.io/react/docs/tutorial.html">React Getting Started</a>. The pretty HTML-like syntax we use is <a href="https://facebook.github.io/react/docs/introducing-jsx.html">JSX</a>, but it would work equally well <a href="https://facebook.github.io/react/docs/react-without-jsx.html">without it</a>.
+  </p>
+  <p>Please, keep in mind that we <a href="https://facebook.github.io/react/docs/jsx-in-depth.html#react-must-be-in-scope">have to</a> import <code>React</code> to make JSX syntax work. Some outdated JavaScript IDE may still claim that this <code>import</code> is extraneous, but it's not.</p>
+  <pre>
+    <code mode='application/typescript'>
+import * as React from 'react';
+import {Component} from 'platform/api/components';
+
+interface GreetingComponentProps {
+  name: string
+}
+
+interface GreetingComponentState {
+  addition: string
+}
+
+export class GreetingComponent extends Component&lt;GreetingComponentProps, GreetingComponentState&gt; {
+  constructor(props: GreetingComponentProps, context: any) {
+    super(props, context);
+    this.state = {
+      addition: ''
+    };
+    this.onAdditionChange = this.onAdditionChange.bind(this);
+  }
+
+  render() {
+    return &lt;div&gt;
+      &lt;div&gt;Hello {this.props.name}! {this.state.addition}&lt;/div&gt;
+      &lt;input type=&quot;text&quot; onChange={this.onAdditionChange} /&gt;
+    &lt;/div&gt;;
+  }
+
+  private onAdditionChange(event) {
+    this.setState({
+      addition: event.target.value,
+    });
+  }
+}
+
+// register GreetingComponent as the default export for this source file
+export default GreetingComponent;
+    </code>
+  </pre>
+  <p>
+    Now, we have to define our custom HTML tag that would display this component on the web page. Supposedly, we want to use the tag <code>greeting</code> for that. Then, we need to open the file <code>platform-web/component.json</code>. It defines a map that links the name of the custom tag with the source script file, specifically, with default exported class from this file (note the <code>export</code> statements at the end of our source file). Here we need to register the link between our tag name and the source file by adding a line to the map:
+  </p>
+  <pre>
+    <code>
+    ...
+    "greeting": "./src/main/common/ts/components/HelloWorldComponent.ts",
+    ...
+    </code>
+  </pre>
+  <p><em>NB!</em>Currently you have to restart the server when <code>platform-web/component.json</code> was changed.</p>
+  <p>Let's try to embed our new component into some page. Go to a new page, for example, <semantic-link title="HelloWorld" uri="[[resolvePrefix ":HelloWorld"]]">HelloWorld</semantic-link> and edit the page by clicking on the edit button. Copy and paste the component definition below into the page and save the page.</p>
+
+    <mp-code-example show-code='true'>
+<greeting name='World'></greeting>
+    </mp-code-example>
+
+
+  <h2> Gallery Component </h2>
+Let's create a component which retrieves some entities from the triplestore and visualizes them in a simple, floating grid. For this, please, first load the pre-requisite data as described <semantic-link title="Basic Tutorial" uri="[[resolvePrefix "Help:Tutorial"]]">here</semantic-link>.
+
+  
+  [[#if (ask "ASK {  <http://example.org/bob#me> a foaf:Person  }") ]]
+    <div style="color: green; font-weight: bold;">Check: It seems that you have already correctly loaded the sample data.</div>
+  [[else]]
+    <div style="color: red; font-weight: bold;">Check: It seems that you have not yet loaded the sample data.</div>
+  [[/if]]
+  
+  <p>As before, the first step involves creating a TypeScript file implementing the behaviour of our component and saving it as <code>platform-web/src/main/common/ts/components/GalleryComponent.tsx</code>.</p>
+  <p></p>
+  <pre>
+    <code mode='application/typescript'>
+// we need to import React, because TSX syntax implicitly uses React.createElement
+import * as React from 'react';
+import {DOM} from 'react';
+// extend our own Component class
+import {Component} from 'platform/api/components';
+
+// safe alternative to null values, similar to Optional in Java 8
+import * as maybe from 'data.maybe';
+
+// imports select query function from SparqlClient
+import {SparqlClient} from 'platform/api/sparql';
+
+// imports helper component which can render HTML Handlebars.js templates.
+import TemplateItem from '../../../common/ts/templates/components/TemplateItem';
+
+// Now we want to use a complex configuration with two parameters
+interface GalleryComponentProps {
+  query: string
+  tupleTemplate: string
+}
+
+interface GalleryComponentState {
+  queryResult: Data.Maybe&lt;SparqlClient.SparqlSelectResult&gt;
+}
+
+export class GalleryComponent extends Component&lt;GalleryComponentProps, GalleryComponentState&gt; {
+  constructor(props: GalleryComponentProps, context: any) {
+    super(props, context);
+    this.state = {
+      queryResult: maybe.Nothing&lt;SparqlClient.SparqlSelectResult&gt;(),
+    };
+  }
+
+  // this function is called by React when component is mounted to the DOM.
+  componentDidMount() {
+    // evaluate asynchronous sparql select query
+    SparqlClient.select(this.props.query).onValue(
+      res =&gt; this.setState({
+        queryResult: maybe.Just(res),
+      })
+    );
+  }
+
+  render() {
+    return this.state.queryResult.map(res =&gt;
+      &lt;div&gt;
+        {_.map(
+          res.results.bindings,
+          tuple =&gt; TemplateItem({
+            template: {
+              source: this.props.tupleTemplate,
+              options: tuple,
+            },
+            component: DOM.div,
+          })
+        )}
+        &lt;div style={{clear: 'both'}} /&gt;
+      &lt;/div&gt;
+    ).getOrElse(
+      &lt;div&gt;'Loading the data ...'&lt;/div&gt;
+    );
+  }
+}
+
+export default GalleryComponent;
+    </code>
+  </pre>
+  Now, we need to register the tag <code>gallery-component</code> and associate it with our TypeScript file.
+  <pre>
+    <code>
+...
+"gallery": "./src/main/common/ts/components/GalleryComponent.ts",
+...
+    </code>
+  </pre>
+  To see how our new gallery component looks like, let's add it to our <semantic-link title="HelloWorld" uri="[[resolvePrefix ":HelloWorld"]]">HelloWorld</semantic-link> page:
+    <mp-code-example show-code='true'>
+<gallery
+  query='SELECT ?uri ?thumbnail WHERE { ?uri <http://schema.org/thumbnail> ?thumbnail }'
+  tuple-template='<img style="float: left; height: 300px; margin: 10px; border: 1px solid;" src="{{thumbnail.value}}"/>'
+></gallery>
+    </mp-code-example>
+  <br/>
+  <p>
+  Here, we used a SPARQL query to select links to thumbnail images of the data instances from our repository. Then, we render each of these links as an image and display them in a row.
+  </p>
+
+  <h2>Dynamic Query Parameters</h2>
+  <p>Now let's check how our components can play nicely with the templating mechanism (refer to <semantic-link uri="[[resolvePrefix "Help:TemplateAndApplicationPages"]]">Templates and Application Pages</semantic-link> for more details about the templates concept).</p>
+  <p>Let's try to apply our new GalleryComponent to the <code>foaf:Person</code> template.
+    Now we want to show the thumbnail image of the Person on the page of each person.</p>
+
+<p>To do this, just navigate to the template page <a href="/resource/?action=edit&uri=Template%3Ahttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2FPerson">Template:foaf:Person</a> and copy/paste to add the component definition from below.
+  <mp-code-example show-code='true'>
+<gallery
+  query='SELECT ?label ?thumbnail WHERE { ?? rdfs:label ?label; <http://schema.org/thumbnail> ?thumbnail }'
+  tuple-template='<b>{{label.value}}</b><img style="float: left; height: 300px; margin: 10px; border: 1px solid;" src="{{thumbnail.value}}"/>'
+></gallery>
+  </mp-code-example>
+  To see your component in action, try to navigate to a page of some Person having a thumbnail image, e.g., in our case, <semantic-link uri="http://example.org/bob#me">bob#me</semantic-link>.
+
+The most interesting part of the component configuration from above is dynamic query parameter - ??. At runtime, this parameter will be bound to the selected resource. E.g., if you navigate to the <code>bob#me</code> page, ?? will be substituted with the <code>&lt;http://example.org/bob#me&gt;</code> URI.
+</div>

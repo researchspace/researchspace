@@ -1,0 +1,23 @@
+<bs-row>
+  <bs-col data-sm=8 data-xs-offset=2>
+    <h1>Field Definition Catalog</h1>
+    Prefixes should be defined and resolved using the system-wide&nbsp;
+    <semantic-link uri="http://www.metaphacts.com/resource/admin/Namespaces">namespace registry</semantic-link>.<br><br>
+    A help page is available at &nbsp;<a href="https://forms.grapphs.com/resource/rshelp:ResourceEditorForm">Help</a><br>
+    <hr>
+    <semantic-table data-config='{
+        "query":"SELECT ?Field ?Creator ?ModificationDate WHERE { <http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains> ?Field . ?Field  <http://www.w3.org/ns/prov#wasAttributedTo> ?Creator.
+      ?Field <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate .                }",
+             "columnConfiguration" : [
+                  {"variableName":"Field", "displayName":"Field"}, 
+                  {"variableName":"Creator", "displayName":"Modified By"},  
+                  {"variableName":"ModificationDate", "displayName":"Last Update", "cellTemplate": "{{dateTimeFormat ModificationDate.value \"LLL\"}}" },
+                  {"displayName":"Delete", "cellTemplate": "<mph-remove-from-container data-iri=\"{{Field.value}}\" data-container=\"http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer\">
+                  <i class=\"fa fa-trash\" aria-hidden=\"true\"></i>
+                </mph-remove-from-container>" }
+             ]
+      }'></semantic-table>
+    <h1>Field Editor</h1>
+    <hr><field-editor field-instance-base-iri="http://www.researchspace.org/instances/fields/"></field-editor>
+  </bs-col>
+</bs-row>

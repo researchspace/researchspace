@@ -22,7 +22,6 @@
 
 import * as React from 'react';
 import * as _ from 'lodash';
-import { uniq } from 'lodash';
 import { cloneElement } from 'react';
 import * as Kefir from 'kefir';
 
@@ -49,7 +48,7 @@ const QUERY = `
   }
 `;
 
-export default class TypedSelectionActionComponent extends Component<Props, State> {
+export class TypedSelectionActionComponent extends Component<Props, State> {
   constructor(props, context) {
     super(props, context);
     this.state = {
@@ -59,6 +58,8 @@ export default class TypedSelectionActionComponent extends Component<Props, Stat
 
   static defaultProps = {
     repositories: ['default'],
+    dialogType: 'lightbox',
+    checkQuery: QUERY,
   };
 
   componentDidMount() {
@@ -72,18 +73,18 @@ export default class TypedSelectionActionComponent extends Component<Props, Stat
   }
 
   private checkSelection = (props: Props) => {
-    // if there's no type requirements, we don't need to validate them
-    if (!props.selection || _.isEmpty(props.selection) || !props.types) {
+    // if there's no type requirements or checkQuery is undefined, we don't need to validate them
+    if (!props.selection || _.isEmpty(props.selection) || !props.types || !props.checkQuery) {
       return;
     }
-    this.executseCheck(props);
+    this.executesCheck(props);
    };
 
-  private executseCheck = (props: Props) => {
+  private executesCheck = (props: Props) => {
     const iris = props.selection.map((iri) => ({_iri: Rdf.iri(iri)}));
     const types = props.types.map((type) => ({_type: Rdf.iri(type)}));
     SparqlClient
-      .prepareQuery(QUERY, iris)
+      .prepareQuery(props.checkQuery, iris)
       .map(SparqlClient.prepareParsedQuery(types))
       .flatMap(
         query => Kefir.combine(
@@ -132,7 +133,8 @@ export default class TypedSelectionActionComponent extends Component<Props, Stat
       return <OverlayDialog
         show={true}
         title={this.props.title}
-        type='lightbox'
+        type={this.props.dialogType}
+        bsSize={this.props.dialogSize}
         onHide={closeDialog}
       >
         {this.props.renderDialog(selection)}
@@ -149,3 +151,5 @@ export default class TypedSelectionActionComponent extends Component<Props, Stat
 export function closeDialog() {
   getOverlaySystem().hide(ACTION_DIALOG_REF);
 }
+
+export default TypedSelectionActionComponent;

@@ -1,0 +1,49 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li class="active">
+    <mp-label iri='[[this]]'></mp-label>
+  </li>
+</ol>
+
+<div class="page">
+[[#if (ask "ASK { {SELECT * WHERE {?? ?p ?o}LIMIT 1}UNION {SELECT * WHERE {?s ?? ?o}LIMIT 1}UNION {SELECT * WHERE {?s ?p ??}LIMIT 1}UNION{ {SELECT * WHERE {?a ?p ?o. FILTER(??=<Template:http://www.w3.org/2000/01/rdf-schema#Resource> )} LIMIT 1} } }")]]
+  <div class='page__header'>
+    [[> Platform:DefaultResourceHeader]]
+  </div>
+  <div class='page__body'>
+    [[#*inline "table"]]
+      <semantic-table 
+        query='SELECT ?property ?[[projection]] ?graph WHERE { GRAPH ?graph { [[pattern]] } } LIMIT 1000'
+        column-configuration='[
+          {"variableName":"property", "displayName":"Property"},
+          {"variableName":"[[projection]]", "displayName":"[[label]]"},
+          {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> template}}"}                                
+        ]'
+        options='{
+          "resultsPerPage":10
+        }'
+      >
+        <template id='template'>
+          <semantic-link uri="[[resolvePrefix "Admin:NamedGraphs"]]" urlqueryparam-graph="{{graph.value}}">{{graph.value}}</semantic-link>
+        </template>
+      </semantic-table>
+    [[/inline]]
+    
+    <h2>Outgoing Statements</h2>
+    [[> table pattern='?? ?property ?object' projection='object' label='Object']]
+    <h2>Incoming Statements</h2>
+    [[> table pattern='?subject ?property ??' projection='subject' label='Subject']]
+  </div>
+    [[else]]
+      <div class='page__body'>
+        <p>
+          It seems that no entity with IRI <code>"[[this]]"</code> in any subject, predicate or object position is known in the knowledge graph. Also no static application page with this identifier can be found.
+        </p>
+        <p>
+         Click on the edit button (<i class="fa fa-pencil"></i>) in the top right of this page (<i>only visibile if the respective ACL permissions are being granted to you</i>) to create a new, static application page with this identifier.
+        </p>   
+      </div>
+    [[/if]]
+</div>

@@ -21,7 +21,7 @@ import { List } from 'immutable';
 
 import { KeyedForest } from 'platform/components/semantic/lazy-tree';
 
-import { Node, node } from './Forests';
+import { Node, node, cloneSubtree } from './Forests';
 
 describe('KeyedForest', () => {
   const bar1 = node('bar',
@@ -30,7 +30,7 @@ describe('KeyedForest', () => {
   const bar2 = node('bar',
     node('foo'));
 
-  const roots = List<Node>([
+  const roots: ReadonlyArray<Node> = [
     node('first',
       bar1,
       node('quax'),
@@ -43,9 +43,9 @@ describe('KeyedForest', () => {
     node('second'),
     node('third',
       bar2),
-  ]);
+  ];
 
-  const forest = KeyedForest.create(node => node.key, {key: 'root', children: roots});
+  const forest = KeyedForest.create(item => item.key, {key: 'root', children: roots});
 
   it('builds key mappings with duplicate keys', () => {
     const bars = forest.nodes.get('bar').toArray();
@@ -63,15 +63,15 @@ describe('KeyedForest', () => {
   it('reconcile after node updates', () => {
     const changedSubChild = node('frob.1',
       // swap children of frob.1
-      forest.getFirst('child2'),
-      forest.getFirst('child1')
+      cloneSubtree(forest, 'child2'),
+      cloneSubtree(forest, 'child1')
     );
 
-    const updated = forest.updateNode([0, 2], item =>
+    const updated = forest.updateNode(['third'], item =>
       node('frob',
         changedSubChild,
-        forest.getFirst('frob.2'),
-        forest.getFirst('frob.3')
+        cloneSubtree(forest, 'frob.2'),
+        cloneSubtree(forest, 'frob.3')
       ));
 
     it('updates mappings', () => {

@@ -24,27 +24,31 @@ import {
   Dictionary,
   ElementModel,
 } from 'ontodia';
+import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { rdf, rdfs, ldp, VocabPlatform } from 'platform/api/rdf/vocabularies/vocabularies';
 import { SparqlClient, QueryContext } from 'platform/api/sparql';
 import { LdpService } from 'platform/api/services/ldp';
+import {
+  Node as RDFExtNode,
+  RDFGraph as RDFExtGraph,
+  createGraph,
+  createNamedNode,
+  createLiteral,
+} from 'rdf-ext';
 
 import ontodiaNs from './ontodia-ns';
 
+export interface Node {
+  type: 'uri' | 'literal';
+  value: string;
+}
+
 export interface RDFGraph {
-  subject: {
-    type: string;
-    value: string;
-  };
-  predicate: {
-    type: string;
-    value: string;
-  };
-  object: {
-    type: string;
-    value: string;
-  };
+  subject: Node;
+  predicate: Node;
+  object: Node;
 }
 
 /**
@@ -84,9 +88,13 @@ export function getLayoutByDiagram(diagram: string, context: QueryContext): Prom
  * Returns graph to build diagram by sparql query
  * Will run on default context
  */
-export function getRDFGraphBySparqlQuery(query: string): Promise<RDFGraph[]> {
+export function getRDFGraphBySparqlQuery(
+  query: string, repositories: string[]
+): Promise<RDFGraph[]> {
   return new Promise((resolve, reject) => {
-    SparqlClient.construct(query).onValue(
+    Kefir.combine(repositories.map(repository =>
+      SparqlClient.construct(query, {context: {repository}})
+    )).map(_.flatten).onValue(
       g => {
         const graph: RDFGraph[] = [];
         g.forEach(function (triple) {
@@ -105,10 +113,28 @@ export function getRDFGraphBySparqlQuery(query: string): Promise<RDFGraph[]> {
             },
           });
         });
-        resolve(graph);
+
+        const uniqueGraph = _.uniqWith(graph, _.isEqual);
+        resolve(uniqueGraph);
       }
     );
   });
+}
+
+export function parseRDFGraphToRDFExtGraph(graph: RDFGraph[]): RDFExtGraph {
+  const triples = graph.map(({subject, predicate, object}) => ({
+    subject: parseNodeToRDFExtNode(subject),
+    predicate: parseNodeToRDFExtNode(predicate),
+    object: parseNodeToRDFExtNode(object),
+  }));
+
+  return createGraph(triples);
+}
+
+function parseNodeToRDFExtNode(node: Node): RDFExtNode {
+  const {type, value} = node;
+
+  return type === 'uri' ? createNamedNode(value) : createLiteral(value);
 }
 
 /**

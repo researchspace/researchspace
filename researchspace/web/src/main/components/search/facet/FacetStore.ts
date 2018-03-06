@@ -43,7 +43,9 @@ import {
 import * as SearchConfig from 'platform/components/semantic/search/config/SearchConfig';
 import * as SearchDefaults from 'platform/components/semantic/search/config/Defaults';
 import { Resource } from 'platform/components/semantic/search/data/Common';
-import { Category, Relation, Categories, Relations } from 'platform/components/semantic/search/data//profiles/Model';
+import {
+  Category, Relation, Categories, Relations
+} from 'platform/components/semantic/search/data//profiles/Model';
 import * as F from 'platform/components/semantic/search/data/facet/Model';
 import * as SearchModel from 'platform/components/semantic/search/data/search/Model';
 import SearchProfileStore from 'platform/components/semantic/search/data/profiles/SearchProfileStore';
@@ -87,6 +89,11 @@ export interface FacetViewState {
 
 export interface Actions {
   /**
+   * Update base query for the facets.
+   */
+  setBaseQuery: (query: SparqlJs.SelectQuery) => void
+
+  /**
    * Action which is triggered when user select category in the category filter.
    */
   selectCategory: (category: Category) => void
@@ -111,10 +118,6 @@ export interface Actions {
   deselectFacetValue: (relation: Relation) => (value: F.FacetValue) => void
 }
 
-interface FacetQueries {
-  baseQuery: SparqlJs.SelectQuery
-}
-
 /**
  * This class contains all logic for facet components.
  * The idea is to keep React components logic free and in spirit of React Flux.
@@ -124,12 +127,12 @@ interface FacetQueries {
 export class FacetStore {
   private context: SemanticContext & FacetContext;
   private config: FacetStoreConfig;
-  private queries: FacetQueries;
 
   /**
    * Property which contains current state of the facet at any given point in time.
    */
   private ast = Action<F.Ast>();
+  private baseQuery = Action<SparqlJs.SelectQuery>();
   private relations = Action<Relations>();
   private values =
     Action<{values: Array<F.FacetValue>; loading: boolean; error: boolean}>(
@@ -163,12 +166,9 @@ export class FacetStore {
     this.ast(initialAst);
     this.selectedValues = Action<SelectedValues>(this.initialValues(initialAst));
 
-    const baseQuery = _.clone(this.config.baseQuery);
-    // cleanup prefixes in the base query because it will be used as sub-query in other queries
-    baseQuery.prefixes = {};
-    this.queries = {
-      baseQuery: baseQuery,
-    };
+    this.baseQuery(_.clone(this.config.baseQuery));
+    const currentBaseQuery =
+      this.baseQuery.$property.skipDuplicates(_.isEqual);
 
     this.actions = {
       selectCategory: this.selectCategory,
@@ -177,6 +177,7 @@ export class FacetStore {
       deselectRelation: this.deselectRelation,
       selectFacetValue: this.selectFacetValue,
       deselectFacetValue: this.deselectFacetValue,
+      setBaseQuery: this.setBaseQuery,
     };
 
     const categories =
@@ -239,9 +240,12 @@ export class FacetStore {
     this.selectedValues.$property.map(this.buldAst).onValue(this.ast);
 
     // update faceted query when AST changes
-    this.ast.$property.onValue(
-      ast => {
-        this.facetedQuery(this.generateQuery(this.queries.baseQuery, ast.conjuncts));
+    Kefir.combine({
+      ast: this.ast.$property,
+      baseQuery: currentBaseQuery,
+    }).onValue(
+      ({ast, baseQuery}) => {
+        this.facetedQuery(this.generateQuery(baseQuery, ast.conjuncts));
         this.valuesCache = {};
       }
     );
@@ -250,10 +254,11 @@ export class FacetStore {
     Kefir.combine({
       ast: this.ast.$property,
       category: this.toggleCategoryAction.$property,
+      baseQuery: currentBaseQuery,
     }).onValue(
-      ({ast, category}) =>
+      ({ast, category, baseQuery}) =>
         this.fetchRelations(
-          this.queries.baseQuery, ast.conjuncts, category
+          baseQuery, ast.conjuncts, category
         ).onValue(this.relations)
     );
 
@@ -302,10 +307,11 @@ export class FacetStore {
     // update facet values when user select/deselect relation
     Kefir.combine({
       relation: this.toggleRelationAction.$property,
+      baseQuery: currentBaseQuery,
     }, {
       ast: this.ast.$property,
     }).onValue(
-      ({ast, relation}) => {
+      ({ast, relation, baseQuery}) => {
         if (relation.isNothing) {
           this.values({values: [], loading: false, error: false});
         } else {
@@ -315,7 +321,7 @@ export class FacetStore {
           if (this.valuesCache[relationIri]) {
             facetValues = Kefir.constant(this.valuesCache[relationIri]);
           } else {
-            facetValues = this.fetchFacetValues(ast.conjuncts, relation.get());
+            facetValues = this.fetchFacetValues(baseQuery, ast.conjuncts, relation.get());
           }
           facetValues
             .onValue(
@@ -406,6 +412,8 @@ export class FacetStore {
     return this.actions;
   }
 
+  private setBaseQuery = (query: SparqlJs.SelectQuery) => this.baseQuery(query);
+
   private selectCategory = (category: Category) => {
     this.toggleCategoryAction(
       maybe.Just(category)
@@ -455,7 +463,7 @@ export class FacetStore {
       );
     facetEnabledQuery.where.unshift(...baseQuery.where);
     facetEnabledQuery.where = facetEnabledQuery.where.concat(
-      this.generateQueryClause(conjuntcs)
+      this.generateQueryClause(baseQuery, conjuntcs)
     );
 
     const query = generateQueryForMultipleDatasets(
@@ -552,15 +560,18 @@ export class FacetStore {
   }
 
   private fetchFacetValues(
-    conjuncts: F.Conjuncts, relation: Relation
+    baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts, relation: Relation
   ): Kefir.Property<Array<F.FacetValue>> {
     const relationConfig = this.getFacetValuesQueryForRelation(this.config, relation);
     switch (relationConfig.kind) {
-      case 'resource': return this.fetchFacetResourceValues(conjuncts, relation, relationConfig);
-      case 'date-range': return this.fetchFacetDateRangeValues(conjuncts, relation, relationConfig);
-      case 'literal': return this.fetchFacetLiteralValues(conjuncts, relation, relationConfig);
-      case 'numeric-range':
-        return this.fetchFacetNumericRangeValues(conjuncts, relation, relationConfig);
+    case 'resource':
+      return this.fetchFacetResourceValues(baseQuery, conjuncts, relation, relationConfig);
+    case 'date-range':
+      return this.fetchFacetDateRangeValues(baseQuery, conjuncts, relation, relationConfig);
+    case 'literal':
+      return this.fetchFacetLiteralValues(baseQuery, conjuncts, relation, relationConfig);
+    case 'numeric-range':
+      return this.fetchFacetNumericRangeValues(baseQuery, conjuncts, relation, relationConfig);
     }
   }
 
@@ -593,9 +604,12 @@ export class FacetStore {
   }
 
   private fetchFacetResourceValues(
-    conjuncts: F.Conjuncts, relation: Relation, relationConfig: ResourceFacetValue
+    baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts,
+    relation: Relation, relationConfig: ResourceFacetValue
   ): Kefir.Property<Array<Resource>> {
-    return this.executeValuesQuery(conjuncts, relation, relationConfig.valuesQuery, true).map(
+    return this.executeValuesQuery(
+      baseQuery, conjuncts, relation, relationConfig.valuesQuery, true
+    ).map(
       res => res.results.bindings.map(
         binding => ({
           iri: binding[FACET_VARIABLES.VALUE_RESOURCE_VAR] as Rdf.Iri,
@@ -612,9 +626,10 @@ export class FacetStore {
   }
 
   private fetchFacetDateRangeValues(
-    conjuncts: F.Conjuncts, relation: Relation, relationConfig: DateRangeFacetValue
+    baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts,
+    relation: Relation, relationConfig: DateRangeFacetValue
   ): Kefir.Property<Array<F.DateRange>> {
-    return this.executeValuesQuery(conjuncts, relation, relationConfig.valuesQuery).map(
+    return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map(
       res => res.results.bindings.map(
         binding => ({
           begin: moment(
@@ -629,9 +644,10 @@ export class FacetStore {
   }
 
   private fetchFacetLiteralValues(
-    conjuncts: F.Conjuncts, relation: Relation, relationConfig: LiteralFacetValue
+    baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts,
+    relation: Relation, relationConfig: LiteralFacetValue
   ): Kefir.Property<Array<F.Literal>> {
-    return this.executeValuesQuery(conjuncts, relation, relationConfig.valuesQuery).map(
+    return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map(
       res => res.results.bindings.map(
         binding => ({
           literal: binding[FACET_VARIABLES.VALUE_LITERAL] as Rdf.Literal,
@@ -642,9 +658,10 @@ export class FacetStore {
   }
 
   private fetchFacetNumericRangeValues(
-    conjuncts: F.Conjuncts, relation: Relation, relationConfig: NumericRangeFacetValue
+    baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts,
+    relation: Relation, relationConfig: NumericRangeFacetValue
   ): Kefir.Property<Array<F.NumericRange>> {
-    return this.executeValuesQuery(conjuncts, relation, relationConfig.valuesQuery).map(
+    return this.executeValuesQuery(baseQuery, conjuncts, relation, relationConfig.valuesQuery).map(
       res => res.results.bindings.map(
         binding => ({
           begin: parseFloat(binding[FACET_VARIABLES.VALUE_LITERAL].value),
@@ -657,16 +674,17 @@ export class FacetStore {
 
 
   private executeValuesQuery(
-    conjuncts: F.Conjuncts, relation: Relation, facetValuesQuery: string, isResourceQuery = false
+    baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts,
+    relation: Relation, facetValuesQuery: string, isResourceQuery = false
   ) {
     const facetsQuery = rewriteProjectionVariable(
       SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(facetValuesQuery),
-      this.getProjectionVariable(this.queries.baseQuery)
+      this.getProjectionVariable(baseQuery)
     );
-    facetsQuery.where.unshift(...this.queries.baseQuery.where);
+    facetsQuery.where.unshift(...baseQuery.where);
     facetsQuery.where = facetsQuery.where.concat(
       this.generateQueryClause(
-        this.excludeClauseForRelation(conjuncts, relation.iri)
+        baseQuery, this.excludeClauseForRelation(conjuncts, relation.iri)
       )
     );
 
@@ -701,7 +719,7 @@ export class FacetStore {
   private generateQuery(
     baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts
   ): SparqlJs.SelectQuery {
-    const patterns = this.generateQueryClause(conjuncts);
+    const patterns = this.generateQueryClause(baseQuery, conjuncts);
     const query = _.clone(baseQuery);
     query.where = query.where.concat(patterns);
     return query;
@@ -728,10 +746,10 @@ export class FacetStore {
   }
 
   private generateQueryClause(
-    conjuncts: F.Conjuncts
+    baseQuery: SparqlJs.SelectQuery, conjuncts: F.Conjuncts
   ): Array<SparqlJs.Pattern> {
     return conjunctsToQueryPatterns(
-      this.config.baseConfig, this.getProjectionVariable(this.queries.baseQuery),
+      this.config.baseConfig, this.getProjectionVariable(baseQuery),
       this.config.domain, conjuncts
     );
   }
@@ -751,7 +769,9 @@ function generateFacetValuePatternFromRelation(
   config: FacetStoreConfig, relation: Relation
 ): FacetValuePattern {
   const relationPatterns = tryGetRelationPatterns(config.baseConfig, relation)
-    .filter(p => p.kind === 'resource' || p.kind === 'literal') as PatterConfig[];
+    .filter(p =>
+      p.kind === 'resource' || p.kind === 'literal' || p.kind === 'date-range'
+    ) as PatterConfig[];
 
   const patternConfig = relationPatterns.length === 1 ? relationPatterns[0] : undefined;
   if (relationPatterns.length > 1) {
@@ -778,6 +798,7 @@ function generateFacetValuePatternFromRelation(
   return (
     kind === 'resource' ? {kind: 'resource', valuesQuery} :
     kind === 'literal' ? {kind: 'literal', valuesQuery} :
+    kind === 'date-range' ? {kind: 'date-range', valuesQuery} :
     assertHandledEveryPatternKind(kind)
   );
 }
@@ -787,6 +808,7 @@ function getDefaultValuesQuery(config: SemanticFacetConfig, kind: PatternKind) {
   return (
     kind === 'resource' ? (config.defaultValueQueries.resource || defaultQueries.forResource()) :
     kind === 'literal' ? (config.defaultValueQueries.literal || defaultQueries.forLiteral()) :
+    kind === 'date-range' ? defaultQueries.forDateRange() :
     assertHandledEveryPatternKind(kind)
   );
 }
@@ -805,12 +827,97 @@ function transformRelationPatternForFacetValues(pattern: SparqlJs.Pattern[], kin
     binder = new VariableRenameBinder(
       SEMANTIC_SEARCH_VARIABLES.LITERAL_VAR,
       FACET_VARIABLES.VALUE_LITERAL);
+  } else if (kind === 'date-range') {
+    return transformDateRangePattern(pattern);
   } else {
     assertHandledEveryPatternKind(kind);
   }
 
   const clonedPattern = _.cloneDeep(pattern);
   clonedPattern.forEach(p => binder.pattern(p));
+  return clonedPattern;
+}
+
+/**
+ * Removes filters which restrict the dates.
+ * Finds the names of arguments of the filters expressions
+ * and renames them to use as part of facet values query.
+ *
+ * @example
+ * {
+ *    $subject ?__relation__ ?date .
+ *    ?date crm:P82a_begin_of_the_begin ?begin ;
+ *      crm:P82b_end_of_the_end ?end .
+ *    FILTER(?begin <= ?__dateEndValue__) .
+ *    FILTER(?end >= ?__dateBeginValue__) .
+ * }
+ *
+ * // result:
+ * {
+ *    $subject ?__relation__ ?date .
+ *    ?date crm:P82a_begin_of_the_begin ?dateBeginValue ;
+ *      crm:P82b_end_of_the_end ?dateEndValue .
+ * }
+ */
+function transformDateRangePattern(pattern: SparqlJs.Pattern[]) {
+  const clonedPattern = _.cloneDeep(pattern);
+
+  // Replace date range filters to an empty pattern
+  // Find variables names in the date range filters
+  const visitor = new (class extends QueryVisitor {
+    public begin;
+    public end;
+
+    private findVariableName(args: SparqlJs.Expression[], variable: string) {
+      return (
+        _.find(args, value => value !== variable) as SparqlJs.Term
+      ).substring(1);
+    }
+
+    filter(pattern: SparqlJs.FilterPattern): SparqlJs.Pattern {
+      const {type, operator, args} = pattern.expression as SparqlJs.OperationExpression;
+
+      if (type !== 'operation') {
+        return super.filter(pattern);
+      }
+
+      const begin = `?${SEMANTIC_SEARCH_VARIABLES.DATE_BEGING_VAR}`;
+      const end = `?${SEMANTIC_SEARCH_VARIABLES.DATE_END_VAR}`;
+
+      if (operator === '>=' && _.some(args, value => value === begin)) {
+        this.end = this.findVariableName(args, begin);
+        return {type: 'bgp', triples: []};
+      }
+
+      if (operator === '<=' && _.some(args, value => value === end)) {
+        this.begin = this.findVariableName(args, end);
+        return {type: 'bgp', triples: []};
+      }
+
+      return super.filter(pattern);
+    }
+  });
+
+  clonedPattern.forEach(p => visitor.pattern(p));
+
+  if (visitor.begin && visitor.end) {
+    const binders: QueryVisitor[] = [
+      new VariableRenameBinder(visitor.begin, FACET_VARIABLES.VALUE_DATE_RANGE_BEGIN_VAR),
+      new VariableRenameBinder(visitor.end, FACET_VARIABLES.VALUE_DATE_RANGE_END_VAR),
+    ];
+
+    clonedPattern.forEach(p =>
+      binders.forEach(binder => binder.pattern(p))
+    );
+  } else {
+    console.warn(
+      'The following query pattern',
+      JSON.stringify(pattern),
+      'can\'t be automatically used for selection of facet values,',
+      'pattern is expected to have two FILTERs which restrict the dates.',
+    );
+  }
+
   return clonedPattern;
 }
 

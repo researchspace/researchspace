@@ -1,0 +1,378 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">Chart Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Chart Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+          Powerful component for rendering line, bar, pie, donut or radar charts.
+      </div>
+      <div class="documentation__intro__demo" style="height:400px;">
+        <mp-component-toolbar>
+          <mp-component-toolbar-actions>
+            <semantic-chart-type-selector />
+          </mp-component-toolbar-actions>
+          <mp-component-toolbar-component>
+            <semantic-chart type='bar' query='
+              PREFIX person: <http://example.com/person/>
+              PREFIX org: <http://example.com/org/>
+              SELECT ?one (COUNT(distinct ?someone) as ?renown) (COUNT(distinct ?org) as ?memberships) WHERE {
+                  {
+                    SELECT * WHERE {
+                      VALUES (?someone ?one)
+                      {
+                        (person:alice person:bob)
+                        (person:alice person:carol)
+                        (person:carol person:bob)
+                        (person:carol person:mike)
+                        (person:mike person:carol)
+                        (person:mike person:alice)
+                        (person:bob person:carol)
+                        (person:bob person:mike)
+                      }
+                    }
+                  }
+                  {
+                    SELECT * WHERE {
+                      VALUES (?one ?org)
+                      {
+                        (person:alice org:W3C)
+                        (person:alice org:IEEE)
+                        (person:alice org:IETF)
+                        (person:carol org:W3C)
+                        (person:mike org:IEEE)
+                        (person:mike org:IETF)
+                      }
+                    }
+                }
+              }
+              GROUP BY ?one
+              ORDER BY ?one
+            ' sets='[
+              {"dataSetName": "Renown", "category": "one", "value": "renown"},
+              {"dataSetName": "Memberships", "category": "one", "value": "memberships"}
+            ]'></semantic-chart>
+          </mp-component-toolbar-component>
+        </mp-component-toolbar>
+      </div>
+    </div>
+
+    <h2>Recommended Usage</h2>
+    The chart widget is a simple, yet powerful tool, to visualize trends and relationships between numbers, ratios, or proportions.
+    As all data is being presented to the user at once, appropriate filtering or aggregation should be applied to limit the amount of data to be displayed.
+
+    <h2> Rendering libraries</h2>
+    Charts can be rendered by two libraries:
+    <ul>
+      <li>ChartJS <a href="http://chartjs.org/">chartjs.org</a></li>
+      <li>Highcharts <a href="http://highcharts.com">highcharts.com</a> (see <semantic-link title="Highcharts Examples" uri="http://help.metaphacts.com/resource/HighchartsExamples">additional examples</semantic-link>)</li>
+    </ul>
+
+    Data definition is the same among both libraries, but the provisioning of user styles is quite different. However, for the individual libraries the syntax and structure is the same as in the official library documentations (Highcharts 5.x, ChartJS 2.x) .
+    In any case, default styling is provided for each library and one could omit styling at all.
+
+    <div class="alert alert-info">
+      <strong>Info!</strong><br/>
+      Please note that Highcharts is a commercial library and requires appropriate licensing.
+      By default the platform <b>does not include or bundle</b> Highcharts.<br/>
+      In case you are inquiring for a bundled version including highcharts,
+      you have to take care of <a href="http://shop.highsoft.com/highcharts.html" target="_blank">licensing highcharts</a>.
+    </div>
+
+    <h3>Limitations</h3>
+    <ul>
+      <li>Both libraries will work reasonably fast if the quantity of data is limited based on visual perception limits.</li>
+    </ul>
+
+    <h2>Configuration</h2>
+    <mp-documentation type="SemanticChartConfig"></mp-documentation>
+
+    <h2>Examples</h2>
+    <h3>Sample dataset</h3>
+  <pre>
+
+    @prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+    @prefix person: &lt;http://example.com/person/&gt; .
+    @prefix org: &lt;http://example.com/org/&gt; .
+    @prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+
+
+    person:alice foaf:knows person:bob, person:carol, person:mike ;
+                 foaf:member org:W3C, org:IEEE, org:IETF;
+                 rdfs:label "alice" .
+
+    person:carol foaf:knows person:mike ;
+             foaf:member org:W3C;
+                 rdfs:label "carol" .
+
+    person:bob foaf:knows person:carol ;
+               rdfs:label "bob" .
+
+    person:mike foaf:member org:W3C, org:IEEE, org:IETF;
+                foaf:knows person:carol ;
+                rdfs:label "mike" .
+  </pre>
+
+
+    <h3>Simple bar chart</h3>
+    <div>
+        <mp-code-example>
+          <semantic-chart provider='chartjs' type='bar'
+            query='
+              PREFIX person: <http://example.com/person/>
+              PREFIX org: <http://example.com/org/>
+              PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              SELECT ?one (COUNT(distinct ?someone) as ?renown) WHERE {
+                VALUES (?someone ?predicate1 ?one)
+                {
+                  (person:alice foaf:knows person:bob)
+                  (person:alice foaf:knows person:carol)
+                  (person:carol foaf:knows person:bob)
+                  (person:carol foaf:knows person:mike)
+                  (person:mike foaf:knows person:carol)
+                  (person:mike foaf:knows person:alice)
+                  (person:bob foaf:knows person:carol)
+                  (person:bob foaf:knows person:mike)
+                }
+              }
+              GROUP BY ?one
+              ORDER BY ?one
+            ' 
+            sets='[{"dataSetName": "Renown", "category": "one", "value": "renown"}]'
+          ></semantic-chart>
+        </mp-code-example>
+    </div>
+
+    <h3>Simple pie chart</h3>
+    <div>
+        <mp-code-example>
+          <semantic-chart type='pie' types='["pie", "donut"]'
+            query='
+              PREFIX person: <http://example.com/person/>
+              PREFIX org: <http://example.com/org/>
+              PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+              SELECT ?one (COUNT(distinct ?someone) as ?renown) WHERE {
+                VALUES (?someone ?predicate1 ?one)
+                {
+                  (person:alice foaf:knows person:bob)
+                  (person:alice foaf:knows person:carol)
+                  (person:carol foaf:knows person:bob)
+                  (person:carol foaf:knows person:mike)
+                  (person:mike foaf:knows person:carol)
+                  (person:mike foaf:knows person:alice)
+                  (person:bob foaf:knows person:carol)
+                  (person:bob foaf:knows person:mike)
+                }
+              }
+              GROUP BY ?one
+              ORDER BY ?one
+            ' 
+            sets='[{"dataSetName": "Renown", "category": "one", "value": "renown"}]'
+          ></semantic-chart>
+        </mp-code-example>
+    </div>
+
+    <h3>Line chart with multiple series</h3>
+    <div>
+        <mp-code-example>
+          <semantic-chart 
+            type='line' 
+            query='
+              PREFIX person: <http://example.com/person/>
+              PREFIX org: <http://example.com/org/>
+              SELECT ?one (COUNT(distinct ?someone) as ?renown) (COUNT(distinct ?org) as ?memberships) WHERE {
+                {
+                    SELECT * WHERE {
+                      VALUES (?someone ?one)
+                      {
+                        (person:alice person:bob)
+                        (person:alice person:carol)
+                        (person:carol person:bob)
+                        (person:carol person:mike)
+                        (person:mike person:carol)
+                        (person:mike person:alice)
+                        (person:bob person:carol)
+                        (person:bob person:mike)
+                      }
+                  }
+                }
+                {
+                  SELECT * WHERE {
+                    VALUES (?one ?org)
+                    {
+                        (person:alice org:W3C)
+                        (person:alice org:IEEE)
+                        (person:alice org:IETF)
+                        (person:carol org:W3C)
+                        (person:mike org:IEEE)
+                        (person:mike org:IETF)
+                    }
+                  }
+                }
+            }
+              GROUP BY ?one
+              ORDER BY ?one
+          ' sets='[
+            {"dataSetName": "Renown", "category": "one", "value": "renown"},
+            {"dataSetName": "Memberships", "category": "one", "value": "memberships"}
+          ]'>
+          </semantic-chart>
+        </mp-code-example>
+    </div>
+
+    <h3>Bubble chart</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description"></div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-chart provider="chartjs" type="bubble"
+            query="
+              PREFIX person: <http://example.com/person/>
+              SELECT ?person ?publications ?organizations (abs(?publications - ?organizations) as ?sum) WHERE {
+                VALUES (?person ?publications ?organizations)
+                {
+                  (person:alice 5 2)
+                  (person:bob 14 5)
+                  (person:carol 2 10)
+                  (person:mike 12 0)
+                  (person:eve 3 1)
+                  (person:mallory 8 7)
+                }
+              }"
+            sets='[{"dataSetName": "Persons", "category": "person", "x": "publications", "y": "organizations", "z": "sum"}]'
+            styles='[{"provider": "chartjs", "style": {
+                "options": {
+                  "scales": {
+                    "xAxes": [{"scaleLabel": {"display": true, "labelString": "Publications"}}],
+                    "yAxes": [{"scaleLabel": {"display": true, "labelString": "Organizations"}}]
+                  }
+                }
+              }}]'>
+          </semantic-chart>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3>Pivot example</h3>
+    <div>
+        <mp-code-example>
+        <semantic-chart type='radar'
+          query='
+            PREFIX person: <http://example.com/person/>
+            PREFIX org: <http://example.com/org/>
+            SELECT ?someone ?org ?involvement WHERE {
+              VALUES (?someone ?org ?involvement)
+              {
+                (person:alice org:W3C 20)
+                (person:alice org:IEEE 10)
+                (person:alice org:IETF 30)
+                (person:carol org:W3C 80)
+                (person:carol org:IEEE 20)
+                (person:mike org:IEEE 50)
+                (person:mike org:IETF 50)
+              }
+            }
+            ORDER BY ?someone
+        ' multi-data-set='{"dataSetVariable": "someone", "category": "org", "value": "involvement"}'>
+        </semantic-chart>
+        </mp-code-example>
+    </div>
+
+    <h3>Styling example</h3>
+    <div>
+      <mp-code-example>
+  <semantic-chart type='line' query='
+      PREFIX person: <http://example.com/person/>
+      PREFIX org: <http://example.com/org/>
+      PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+      SELECT ?one (COUNT(distinct ?someone) as ?renown) WHERE {
+        VALUES (?someone ?predicate1 ?one)
+        {
+          (person:alice foaf:knows person:bob)
+          (person:alice foaf:knows person:carol)
+          (person:carol foaf:knows person:bob)
+          (person:carol foaf:knows person:mike)
+          (person:mike foaf:knows person:carol)
+          (person:mike foaf:knows person:alice)
+          (person:bob foaf:knows person:carol)
+          (person:bob foaf:knows person:mike)
+        }
+      }
+      GROUP BY ?one
+      ORDER BY ?one
+  '  
+    sets='[{"dataSetName": "Renown", "category": "one", "value": "renown"}]'
+    styles='[{
+    "provider": "chartjs",
+    "style": {
+      "options": {
+        "scales": {
+          "yAxes": [{
+            "ticks": {
+              "beginAtZero": false,
+              "reverse": true
+            }
+          }]
+        },
+        "elements": {
+          "line": {"tension": 0}
+        }
+      },
+      "data": {
+        "datasets": [{
+          "pointRadius": 10,
+          "pointHoverRadius": 12,
+          "pointHitRadius": 12,
+          "borderColor": "black"
+        }]
+      }
+    }
+  }]'>
+  </semantic-chart>
+        </mp-code-example>
+    </div>
+
+    <h3>Toggleable Chart Type</h3>
+    <div>
+        <mp-code-example>
+  <mp-component-toolbar>
+    <mp-component-toolbar-actions>
+      <semantic-chart-type-selector default="donut" types='["line", "bar", "radar", "pie", "donut"]' />
+    </mp-component-toolbar-actions>
+    <mp-component-toolbar-component>
+      <semantic-chart 
+        type = 'pie'
+        query='
+          PREFIX semanticPerson: <http://data.semanticweb.org/person/>
+          SELECT * WHERE {
+            VALUES (?person ?foafName ?articleCount)
+            {
+              (semanticPerson:abraham-bernstein "Abraham Bernstein" 22)
+              (semanticPerson:bijan-parsia "Bijan Parsia" 35)
+              (semanticPerson:enrico-motta "Enrico Motta" 22)
+              (semanticPerson:ian-horrocks "Ian Horrocks" 27)
+              (semanticPerson:stefan-decker "Stefan Decker" 23)
+            }
+          } ORDER BY DESC(?articleCount)'
+        sets='[{"dataSetName": "Articles per person", "category": "person", "value": "articleCount"}]'>
+      </semantic-chart>
+    </mp-component-toolbar-component>
+  </mp-component-toolbar>
+        </mp-code-example>
+    </div>
+  </div>
+</div>

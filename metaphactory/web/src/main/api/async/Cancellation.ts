@@ -17,7 +17,6 @@
  */
 
 import * as Kefir from 'kefir';
-import * as Immutable from 'immutable';
 
 /**
  * Utility object to propagate Kefir.Observable deactivation (cancellation).
@@ -101,17 +100,6 @@ export class Cancellation {
     }
     this.cancelHandlers = undefined;
   }
-
-  /**
-   * Create Cache with its requests would be cancelled when
-   * this Cancellation becomes cancelled.
-   */
-  cache<Input, Output>(
-    update: (input: Input, cancellation: Cancellation) => Kefir.Observable<Output>,
-    shouldUpdate?: (input: Input, lastInput: Input) => boolean
-  ) {
-    return new Cache<Input, Output>(update, this, shouldUpdate);
-  }
 }
 
 function subscribe<T>(source: Kefir.Observable<T>): {
@@ -147,68 +135,3 @@ function subscribe<T>(source: Kefir.Observable<T>): {
 }
 
 Cancellation.cancelled.cancelAll();
-
-/**
- * One element cache with cancellation for Kefir.Observable.
- *
- * @example
- *
- * const cache = new Cache(text => searchFor(text));
- *
- * cache.compute("foo").onValue(...);
- *
- * // previous request will be cancelled if it isn't finished yet
- * cache.compute("bar").onValue(...);
- *
- * // produces Kefir.never() because "bar" === "bar"
- * cache.compute("bar");
- *
- * // current request will be cancelled, if any
- * cache.cancel();
- */
-export class Cache<Input, Output> {
-  private hasLastInput = false;
-  private lastInput: Input;
-
-  private _cancellation: Cancellation;
-  get cancellation() { return this._cancellation; }
-
-  constructor(
-    private update: (input: Input, cancellation: Cancellation) => Kefir.Observable<Output>,
-    private parentCancellation?: Cancellation,
-    private shouldUpdate?: (input: Input, lastInput: Input) => boolean
-  ) {
-    this._cancellation = this.createCancellation();
-    if (!this.shouldUpdate) {
-      this.shouldUpdate = (input, last) => !Immutable.is(input, last);
-    }
-  }
-
-  private createCancellation() {
-    return this.parentCancellation
-      ? this.parentCancellation.derive() : new Cancellation();
-  }
-
-  compute(input: Input, force = false): Kefir.Property<Output> {
-    if (!this.hasLastInput || this.shouldUpdate(input, this.lastInput) || force) {
-      this._cancellation.cancelAll();
-      this._cancellation = this.createCancellation();
-      this._cancellation.onCancel(() => {
-        this.lastInput = undefined;
-        this.hasLastInput = false;
-      });
-
-      this.hasLastInput = true;
-      this.lastInput = input;
-      const observable = this.update(input, this.cancellation);
-      return this.cancellation.map(observable);
-    } else {
-      this.lastInput = input;
-      return Kefir.never<Output>().toProperty();
-    }
-  }
-
-  cancel() {
-    this.cancellation.cancelAll();
-  }
-}

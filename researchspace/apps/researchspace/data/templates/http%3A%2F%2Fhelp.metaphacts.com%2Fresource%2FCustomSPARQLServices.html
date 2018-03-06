@@ -1,0 +1,362 @@
+<div class="metaphacts_help">
+
+<h1>Implementing Custom SPARQL Services</h1>
+<p><b>Note: this feature is still experimental and is likely to change in subsequent versions</b></p>
+
+<p>There is often a need to augment the results retrieved from the main RDF triple store with information from other services. To achieve this, we need to:
+  <ol>
+    <li>Enable the service to be called using SPARQL and return results as SPARQL bindings.</li>
+    <li>Enable a SPARQL federation so that a service call can be combined with the data from the main repository.</li>
+	</ol>
+
+<h2>Implementing a custom service as RDF4J SAIL</h2>
+The platform uses the RDF4J API to access SPARQL repositories. The <a href="http://docs.rdf4j.org/programming/">RDF4J API</a> introduces in its architecture the concept of <a href="http://docs.rdf4j.org/sail/">SAIL</a> (Storage And Inference Layer): a collection of interfaces designed for low-level transactional access to RDF data, which serves to decouple the standard API functional modules (e.g., parsers, query engines) from the specific data store implementation. 
+
+The platform communicates with the RDF triple store via the <a href="http://docs.rdf4j.org/programming/#_the_repository_api">Repository</a> interface. 
+One implementation of the Repository interface is <a href="http://docs.rdf4j.org/javadoc/latest/?org/eclipse/rdf4j/repository/sail/SailRepository.html">SailRepository</a> that provides a wrapper over a specific <a href="http://docs.rdf4j.org/javadoc/latest/?org/eclipse/rdf4j/sail/Sail.html">SAIL</a> implementation. 
+
+In this two-layered mechanism, processing of a SPARQL query is performed in two steps: the SailRepository takes as input the query string, parses it, and passes the parsed query tree for execution to the SAIL layer. If we want to call a custom service using a SPARQL query, we need to provide a custom SAIL implementation that would:
+<ol>
+  <li>Extract the service input parameters and output variables from the SPARQL triple patterns.</li>
+  <li>Execute the service call.</li>
+  <li>Convert the service call results to the BindingSet objects which bind the output variables to the values returned by the service.</li>
+</ol>
+
+In this section we are going to use a simple example: the Wikidata entity lookup REST API service. This service is used on the <a href="http://www.wikidata.org">main Wikidata web site</a> to search for relevant entities based on the keyword entered by the user. For example, we want to be able to access this service via a SERVICE clause in a SPARQL query:
+<pre><code>
+PREFIX custom: &lt;http://www.metaphacts.com/ontology/hasWikidataSearchToken&gt;
+SELECT * WHERE {
+  BIND("japan" as ?token)
+  SERVICE &lt;http://www.metaphacts.com/ontologies/platform/repository/federation#wikidata-text&gt; { 
+		?uri custom:hasWikidataSearchToken ?token . 
+		?uri rdfs:label ?label .
+		?uri schema:description ?description .
+  }
+}
+</code></pre>
+
+To be able to do that, we would need to extract from the query information that the object of the <code>custom:hasWikidataSearchToken</code> property has to contain the string search token (the input of our call) and the variables <code>?uri</code>,<code>?label</code>, and <code>?description</code> must be bound to the service call outputs: the URI of the Wikidata entity, its label, and description respectively.
+
+To implement simple REST API wrappers, the platform contains two abstract classes: <code>com.metaphacts.sail.rest.AbstractRESTWrappingSail.AbstractRESTWrappingSail</code> and <code>com.metaphacts.sail.rest.AbstractRESTWrappingSailConnection</code>. They assume a basic scenario, in which the service can be accessed using the HTTP GET method and all input arguments are passed as request parameters. 
+
+To define a wrapper for our Wikidata lookup service, we declare the class <code>com.metaphacts.sail.rest.wikidata.WikidataSail</code>:
+<pre><code>
+public class WikidataSail extends AbstractRESTWrappingSail {
+	...
+  public WikidataSail(String url) {
+    super(url);
+  }
+  
+  @Override
+  protected SailConnection getConnectionInternal() throws SailException {
+    return new WikidataSailConnection(this);
+  }
+  ...
+}
+</code></pre>
+
+This class generates a <code>com.metaphacts.sail.rest.wikidata.WikidataSailConnection</code> object which is responsible for processing the service request:
+<pre><code>
+public class WikidataSail extends AbstractRESTWrappingSail {
+	...
+  public WikidataSailConnection(AbstractRESTWrappingSail sailBase) {
+        super(sailBase);
+    }
+
+  @Override
+  protected RESTParametersHolder extractInputsAndOutputs(List&lt;StatementPattern&gt; stmtPatterns)
+            throws SailException {
+    ...
+  }
+  ...
+  @Override
+  protected Collection&lt;BindingSet&gt; convertStream2BindingSets(InputStream inputStream,
+            RESTParametersHolder parametersHolder) throws SailException {
+    ...
+  }
+}
+</code></pre>
+The <code>com.metaphacts.sail.rest.wikidata.WikidataSailConnection</code> must implement two methods: <code>extractInputsAndOutputs(List&lt;StatementPattern&gt; stmtPatterns)</code>, which extracts input values and output variable names from the provided list of SPARQL basic triple patterns, and <code>convertStream2BindingSets(InputStream inputStream, RESTParametersHolder parametersHolder)</code>, which must process the <code>InputStream</code> returned by the REST call, assign the values to the output variables, and return the results as a list of binding sets.
+
+In our example, the method <code>extractInputsAndOutputs</code> must first take the statement pattern with the property <code>custom:hasWikidataSearchToken</code>, assign its object to the input parameter "search", and save the variable name of its subject, so that the Wikidata entity URI returned by the service will be assigned to it.
+  
+<pre><code>
+  @Override
+  protected RESTParametersHolder extractInputsAndOutputs(List&lt;StatementPattern&gt; stmtPatterns)
+            throws SailException {
+      RESTParametersHolder res = new RESTParametersHolder();
+    // extract the statement pattern containing custom:hasWikidataSearchToken as a predicate
+    List&lt;StatementPattern&gt; relevant = stmtPatterns.stream()
+              .filter(stmtPattern -&gt; stmtPattern.getPredicateVar().hasValue() &amp;&amp; stmtPattern
+                      .getPredicateVar().getValue().equals(HAS_WIKIDATA_SEARCH_TOKEN))
+              .collect(Collectors.toList());
+
+    if (relevant.isEmpty()) {
+          throw new SailException(
+                  "The search token was not provided, must be passed via the reserved &lt;"
+                          + HAS_WIKIDATA_SEARCH_TOKEN.stringValue() + "&gt; property.");
+    }
+
+    // check that the input parameter is a literal and the output is a variable without a value
+    if (relevant.stream()
+                .allMatch(stmtPattern -&gt; (stmtPattern.getObjectVar().getValue() instanceof Literal)
+                        &amp;&amp; !stmtPattern.getSubjectVar().hasValue())) {
+            relevant.stream().forEach(stmtPattern -&gt; {
+                // save the subject variable name as an output parameter
+                res.getOutputVariables().put(HAS_WIKIDATA_SEARCH_TOKEN,
+                        stmtPattern.getSubjectVar().getName());
+                // save the object value as an input parameter "search"
+                res.getInputParameters().put("search",
+                        stmtPattern.getObjectVar().getValue().stringValue());
+            });
+    } else {
+        throw new SailException("Illegally defined statement patterns");
+    }
+    ...
+    return res;
+  }
+</code></pre>
+Then, the method <code>convertStream2BindingSets</code> parses the JSON input and assigns the returned values to the output variables:
+<pre><code>
+  @Override
+  protected Collection&lt;BindingSet&gt; convertStream2BindingSets(InputStream inputStream,
+            RESTParametersHolder parametersHolder) throws SailException {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      // Parse the JSON result
+      HashMap&lt;String, Object&gt; map = (HashMap&lt;String, Object&gt;) mapper.readValue(inputStream,
+                    HashMap.class);
+      // Retrieve the list of answers in the JSON tree
+      List&lt;Object&gt; resList = (List&lt;Object&gt;) map.get("search");
+      List&lt;BindingSet&gt; outList = Lists.newArrayList();
+      int idx = 0;
+      for (Object resObj : resList) {
+        idx++;
+        Map&lt;String, Object&gt; resMap = (Map&lt;String, Object&gt;) resObj;
+        // Take the value of the "concepturi" key
+        IRI conceptURI = VF.createIRI((String) resMap.get("concepturi"));
+        MapBindingSet bs = new MapBindingSet();
+        // Assign to the output variable we saved in the extractInputsAndOutputs method.
+        bs.addBinding(parametersHolder.getOutputVariables().get(HAS_WIKIDATA_SEARCH_TOKEN),
+                        conceptURI);
+        ...
+        outList.add(bs);
+      }
+      return outList;
+    } catch (Exception e) {
+      throw new SailException(e);
+    }
+  }
+</code></pre>
+
+By default, the class <code>AbstractRESTWrappingSailConnection</code> assumes that the service is called using an HTTP GET request and its arguments are passed as URL parameters. If this is not the case, you can override the <code>submit</code> method which actually executes the service call.
+If your service is not a REST API request, you can write your own <code>Sail</code> and <code>SailConnection</code> implementations instead of reusing <code>AbstractRESTWrappingSailConnection</code>. 
+Most importantly, your implementation of <code>AbstractRESTWrappingSailConnection</code> must override the <code>evaluateInternal(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)</code> method:
+<pre><code>
+  @Override
+  protected CloseableIteration&lt;? extends BindingSet, QueryEvaluationException&gt; evaluateInternal(
+            TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+            throws SailException {
+    TupleExpr cloned = tupleExpr.clone();
+    // Important! You need to assign the values to the variables which were already bound in other clauses of the query
+    new BindingAssigner().optimize(cloned, dataset, bindings);
+    StatementPatternCollector collector = new StatementPatternCollector();
+    cloned.visit(collector);
+    List&lt;StatementPattern&gt; stmtPatterns = collector.getStatementPatterns();
+    
+    ...
+    // If you return the results as a list of BindingSet objects, you need to wrap them into a CollectionIteration.
+    return new CollectionIteration&lt;BindingSet, QueryEvaluationException&gt;(
+                convertStream2BindingSets(resultStream, parametersHolder));
+  }
+        
+</code></pre>
+  
+<h2>Registering the custom repository in the repository manager</h2>
+After implementing a custom <code>Sail</code>, we need to register it in the platform Repository Manager. The platform uses the RDF4J repository configuration mechanism where each repository is described in RDF using a Turtle file. To register our custom repository using the Repository Manager, we need to:
+<ol>
+  <li>Create a configuration descriptor for our repository.</li>
+  <li>Implement and register the factory which would create instances of our <code>WikidataSail</code></li>
+</ol>
+
+<h3>Creating a configuration descriptor</h3>
+
+A configuration descriptor for a custom repository is an RDF Turtle file. For a <code>SailRepository</code> it has to contain three objects:
+<ol>
+  <li><i>Repository instance</i> which has to carry the repository ID. Note that the repository ID must be the same as the name of the file: i.e., the descriptor of the repository "wikidata-text" must be stored in the file "wikidata-text.ttl".</li>
+  <li><i>Repository implementation config</i> which must specify the repository type. For a standard RDF4J <code>SailRepository</code> the repository type must equal "openrdf:SailRepository".</li>
+  <li><i>SAIL config</i> which carries the configuration of our custom SAIL. A mandatory parameter is the sail type. In our example, the only additional parameter is the URL of the REST service API.</li>
+</ol>
+  
+<pre><code>
+# Blank node denoting the repository instance
+[] a &lt;http://www.openrdf.org/config/repository#Repository&gt; ;
+  # Repository ID
+	&lt;http://www.openrdf.org/config/repository#repositoryID&gt; "wikidata-text" ;
+	&lt;http://www.w3.org/2000/01/rdf-schema#label&gt; "Repository to test the wikidata search service." ;
+  # Repository implementation config
+	&lt;http://www.openrdf.org/config/repository#repositoryImpl&gt; [
+    # Repository type
+		&lt;http://www.openrdf.org/config/repository#repositoryType&gt; "openrdf:SailRepository" ;
+    # Custom SAIL configuration
+ 		&lt;http://www.openrdf.org/config/repository/sail#sailImpl&gt; [
+      # Custom SAIL type
+			&lt;http://www.openrdf.org/config/sail#sailType&gt; "metaphacts:WikidataTextSearch" ;
+      # Service URL
+      &lt;http://www.metaphacts.com/ontologies/platform/repository#serviceURL&gt; "https://www.wikidata.org/w/api.php" ;
+    ];
+  ].
+</code></pre>
+
+  This configuration descriptor must be placed in the <i>config/repositories</i> subfolder of the platform installation.
+<h3>Implementing the SailFactory</h3>
+Now, we need to implement and register a <code>SailFactory</code> that would create instances of <code>WikidataSail</code> from the configuration descriptors. 
+For this, we need to implement a SAIL config class that would be able to extract SAIL parameters from the configuration descriptor.
+  
+<pre><code>
+public class WikidataSailConfig extends AbstractSailImplConfig {
+    String url = null;
+
+    public WikidataSailConfig() {
+
+    }
+
+    public WikidataSailConfig(String type) {
+        super(type);
+    }
+
+    // Validate the config object
+    @Override
+    public void validate() throws SailConfigException {
+        super.validate();
+        if (StringUtils.isEmpty(url)) {
+            throw new SailConfigException("REST service URL is not provided");
+        }
+    }
+
+    // Save the config values into the RDF model
+    @Override
+    public Resource export(Model model) {
+        Resource implNode = super.export(model);
+        if (!StringUtils.isEmpty(url)) {
+            model.add(implNode, MpRepositoryVocabulary.SERVICE_URL,
+                    SimpleValueFactory.getInstance().createLiteral(url));
+        }
+        return implNode;
+    }
+
+    // Parse the RDF model to read the custom parameters
+    @Override
+    public void parse(Model model, Resource implNode) throws SailConfigException {
+        super.parse(model, implNode);
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SERVICE_URL, null))
+                .ifPresent(lit -> setUrl(lit.stringValue()));
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+}
+</code></pre>
+
+The factory implementation must implement the RDF4J <code>SailFactory</code> interface and be able to create <code>WikidataSail</code> instances using the <code>WikidataSailConfig</code> objects.
+
+<pre><code>
+public class WikidataSailFactory implements SailFactory {
+    public static final String SAIL_TYPE = "metaphacts:WikidataTextSearch";
+    
+    public WikidataSailFactory() {
+        // TODO Auto-generated constructor stub
+    }
+
+    @Override
+    public String getSailType() {
+        return SAIL_TYPE;
+    }
+
+    @Override
+    public SailImplConfig getConfig() {
+        return new WikidataSailConfig();
+    }
+
+    @Override
+    public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
+        if (!(originalConfig instanceof WikidataSailConfig)) {
+            throw new SailConfigException(
+                    "Wrong config type: " 
+                            + originalConfig.getClass().getCanonicalName() + ". ");
+        }
+        WikidataSailConfig config = (WikidataSailConfig)originalConfig;
+        
+        WikidataSail sail = new WikidataSail(config.getUrl());
+        sail.setServiceID(config.getServiceID());
+        return sail;
+        
+    }
+}
+</code></pre>
+  
+Finally, we need to register our <code>WikidataSailFactory</code> in the RDF4J <code>ServiceRegistry</code>, so that it gets called for SAIL configs of type "metaphacts:WikidataTextSearch".
+For this, we need to add or edit a resource file <i>META-INF/services/org.eclipse.rdf4j.sail.config.SailFactory</i>, which must be accessible on the Java classpath, and add there one line with the fully qualified name of the factory class:
+<pre><code>
+com.metaphacts.sail.rest.wikidata.WikidataSailFactory
+</code></pre>
+After registering a custom repository in this way, the Repository Manager should be able to pick the configuration file, create a repository instance, and initialize it.
+You can check if it was able to do it successfully by checking the platform logs. When the platform starts, the following lines should appear:
+<pre><code>
+...
+INFO [main] (RepositoryManager.java:253) - Trying to initialize repository with id "wikidata-text"
+INFO [main] (RepositoryManager.java:268) - Repository with id "wikidata-text" successfully initialized
+...
+</code></pre>
+
+<h2>Calling custom services using SPARQL federation</h2>
+After registering a custom repository in the platform RepositoryManager, if we want to use it in federated SPARQL queries, we will need to setup a federation over repositories registered in the RepositoryManager. The federation engine of the platform is itself implemented as a SAIL, so you would need to add the following configuraion descriptor:
+<pre><code>
+[] a &lt;http://www.openrdf.org/config/repository#Repository&gt; ;
+	&lt;http://www.openrdf.org/config/repository#repositoryID&gt; "our-federation" ;
+	&lt;http://www.w3.org/2000/01/rdf-schema#label&gt; "Repository to test the local federation." ;
+	&lt;http://www.openrdf.org/config/repository#repositoryImpl&gt; [
+    &lt;http://www.openrdf.org/config/repository#repositoryType&gt; "openrdf:SailRepository" ;
+ 		&lt;http://www.openrdf.org/config/repository/sail#sailImpl&gt; [
+      # metaphactory federation sail 
+      &lt;http://www.openrdf.org/config/sail#sailType&gt; "metaphacts:Federation" ;
+      # the ID of the repository that serves as the default federation member
+		  &lt;http://www.metaphacts.com/ontologies/platform/repository#defaultMember&gt; "default" ;
+      # descriptors of the federation members
+			&lt;http://www.openrdf.org/config/sail/federation#member&gt; [
+        # repository ID
+			  &lt;http://www.metaphacts.com/ontologies/platform/repository#delegateRepositoryID&gt; "default" ;
+        # URI of the SPARQL SERVICE for this repository
+				&lt;http://www.metaphacts.com/ontologies/platform/repository#serviceReference&gt;	&lt;http://www.metaphacts.com/ontologies/platform/repository/federation#default&gt;
+		  ] ;
+			&lt;http://www.openrdf.org/config/sail/federation#member&gt; [
+        # repository ID
+				&lt;http://www.metaphacts.com/ontologies/platform/repository#delegateRepositoryID&gt; "wikidata-text" ;
+        # URI of the SPARQL SERVICE for this repository
+				&lt;http://www.metaphacts.com/ontologies/platform/repository#serviceReference&gt;	&lt;http://www.metaphacts.com/ontologies/platform/repository/federation#wikidata-text&gt;
+			] ;
+    ] ;
+  ] .
+</code></pre>
+
+The federation will become available as a separate repository with the id "our-federation". By accessing its SPARQL endpoint via the REST API(e.g., <code>http://localhost:10214/sparql?repository=our-federation</code>), one should be able to process federated queries involving our custom service:
+<pre><code>
+SELECT DISTINCT ?uri ?label ?description ?image WHERE {
+  BIND("japan" as ?token)
+  SERVICE &lt;http://www.metaphacts.com/ontologies/platform/repository/federation#wikidata-text&gt; { 
+	?uri &lt;http://www.metaphacts.com/ontology/hasWikidataSearchToken&gt; ?token. 
+	?uri &lt;http://www.w3.org/2000/01/rdf-schema#label&gt; ?label .
+	?uri &lt;http://schema.org/description&gt; ?description .
+  }
+  OPTIONAL {
+    ?uri (&lt;http://www.wikidata.org/prop/direct/P18&gt; | &lt;http://www.wikidata.org/prop/direct/P41&gt; | &lt;http://www.wikidata.org/prop/direct/P154&gt;) ?image.
+  }
+}
+</code></pre>
+  
+</div>

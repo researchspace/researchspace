@@ -16,17 +16,24 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { List, Set } from 'immutable';
+import { Set } from 'immutable';
 
 import { KeyedForest, Traversable, NodePath } from './KeyedForest';
 
 export type TreeSelection<T> = KeyedForest<SelectionNode<T>>;
-export type SelectionNode<T> = T & Traversable<T> & SelectionBrand;
+
 interface SelectionBrand { __selectionBrand: void; }
+export type SelectionNode<T> = T & Traversable<T> & SelectionBrand;
+export namespace SelectionNode {
+  export function set<T>(node: T, props: Partial<Traversable<T>>) {
+    return {...node as any, ...props} as SelectionNode<T>;
+  }
+}
 
 export namespace TreeSelection {
-  export function empty<T extends Traversable<T>>(keyOf: (node: T) => string): TreeSelection<T> {
-    return KeyedForest.create(keyOf as (node: SelectionNode<T>) => string);
+  export function empty<T extends Traversable<T>>(base: KeyedForest<T>): TreeSelection<T> {
+    const emptyRoot = {...base.root as Traversable<any>, children: []} as any as SelectionNode<T>;
+    return (base as TreeSelection<T>).setRoot(emptyRoot);
   }
 
   /**
@@ -43,19 +50,32 @@ export namespace TreeSelection {
    * (terminal nodes are also leafs).
    */
   export function isLeaf<T>(node: SelectionNode<T>) {
-    return isTerminal(node) || node.children.size === 0;
+    return isTerminal(node) || node.children.length === 0;
   }
 
   export function leafs<T>(selection: TreeSelection<T>) {
+    type MutableNodes = Map<string, Set<SelectionNode<T>>>;
     return selection.nodes
       .map(nodes => nodes.find(isLeaf))
       .filter(node => !(node === undefined || selection.isRoot(node)))
       .toList();
   }
 
-  export function nodesFromKey<T>(selection: TreeSelection<T>, key: string) {
+  export function nodesFromKey<T>(selection: TreeSelection<T> | undefined, key: string) {
     if (!selection) { return Set<SelectionNode<T>>(); }
-    return selection.nodes.get(key, Set<SelectionNode<T>>());
+    return selection.nodes.get(key) || Set<SelectionNode<T>>();
+  }
+
+  /**
+   * Replaces selection children with a single terminal node.
+   */
+  export function setToSingleTerminal<T extends Traversable<T>>(
+    selection: TreeSelection<T>, node: T
+  ) {
+    return selection.updateChildren(
+      selection.getKeyPath(selection.root),
+      () => [SelectionNode.set(node, {children: undefined})]
+    );
   }
 
   /**
@@ -72,7 +92,7 @@ export namespace TreeSelection {
     while (addedPath.length > 0) {
       const node = addedPath[0] as SelectionNode<T>;
       const key = selection.keyOf(node);
-      const candidates = selection.nodes.get(key, Set<SelectionNode<T>>());
+      const candidates = selection.nodes.get(key) || Set<SelectionNode<T>>();
       const selectedBranch = candidates.find(
         candidate => selection.getParent(candidate) === parent);
       if (!selectedBranch) { break; }
@@ -86,16 +106,18 @@ export namespace TreeSelection {
 
     // transform leftover part of path into selection forest node
     const addedNode = addedPath.reduceRight<SelectionNode<T>>((previous, node) =>
-      ({...node as any, children: List(previous ? [previous] : [])}), undefined);
+      SelectionNode.set(node, {children: previous ? [previous] : []}), undefined);
 
-    return selection.updateChildren(selection.getOffsetPath(parent),
-      children => addedNode ? children.push(addedNode) : undefined);
+    return selection.updateChildren(selection.getKeyPath(parent),
+      children => addedNode ? [...children, addedNode] : undefined);
   }
 
   export function makeTerminal<T>(selection: TreeSelection<T>, key: string): TreeSelection<T> {
     const removeChildren = () => undefined;
-    return selection.nodes.get(key, Set<SelectionNode<T>>()).reduce(
-      (acc, node) => acc.updateChildren(acc.getOffsetPath(node), removeChildren), selection);
+    return (selection.nodes.get(key) || Set<SelectionNode<T>>()).reduce(
+      (acc, node) => acc.updateChildren(acc.getKeyPath(node), removeChildren),
+      selection
+    );
   }
 
   export function selectTerminal<T>(selection: TreeSelection<T>, path: NodePath<T>) {
@@ -118,7 +140,7 @@ export namespace TreeSelection {
       if (current.isRoot(unselectedNode)) {
         // make root non-terminal when trying to unselect it
         return isTerminal(current.root)
-          ? current.setRoot({...current.root as any, children: List()})
+          ? current.setRoot(SelectionNode.set(current.root, {children: []}))
           : current;
       }
 
@@ -129,7 +151,7 @@ export namespace TreeSelection {
       let removedNode = pathToRemove.pop();
       for (const node of pathToRemove.reverse()) {
         if (current.isRoot(node)) { break; }
-        if (node.children && node.children.size > 1) { break; }
+        if (node.children && node.children.length > 1) { break; }
         removedNode = node;
       }
 
@@ -138,10 +160,11 @@ export namespace TreeSelection {
   }
 
   function excludeNode<T>(selection: TreeSelection<T>, node: SelectionNode<T>) {
-    const filterNode = (children: List<SelectionNode<T>>) => children
-      .filter(child => child !== node).toList();
     const parent = selection.getParent(node);
-    return selection.updateChildren(selection.getOffsetPath(parent), filterNode);
+    return selection.updateChildren(
+      selection.getKeyPath(parent),
+      children => children.filter(child => child !== node)
+    );
   }
 
   export function selectAndCollapseToTerminal<T extends Traversable<T>>(

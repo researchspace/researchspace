@@ -1,0 +1,489 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li class="active">Tutorial - Getting Started</li>
+</ol>
+
+<div class="page page-help">
+  <div class='page__body'>
+    <h1>Tutorial - Getting Started</h1>
+
+    Taking the first steps with the metaphacts platform? Take this introductory tutorial to learn:
+    <ul>
+      <li>How to load data into the system</li>
+      <li>How to query the data using SPARQL</li>
+      <li>How to visualize the data with rich HTML5 components</li>
+      <li>How to create a simple search interface</li>
+      <li>How to create simple templates to display data for a certain type</li>
+      <li>How to update and insert new data</li>
+      <!--    <li>How to author data using input forms</li>-->
+    </ul>
+    <br>
+    <p>
+      <b>Prerequisites:</b><br>
+      This tutorial assumes that you have installed your own instance of the metaphacts platform. 
+      If this is not the case, read the <semantic-link uri="[[resolvePrefix "Help:Installation"]]">installation manual</semantic-link>.
+    </p>
+
+    <div data-flex-layout="rows center-stretch" class="feature-row">
+      <!-- BOX: DATA LOADING & QUERYING -->
+      <div data-flex-self="center-stretch" class="feature-box text-center">
+        <div class="feature-box-image text-center">
+          <img class="metaphacts-icon" src="/images/help/tutorial/icon_kg_1b_final.png"/>
+        </div>
+        <div class="feature-box-title text-center">
+          DATA LOADING & QUERYING
+        </div>
+        <div class="feature-box-list">
+          <mp-anchor to="#loading-data">Loading data</mp-anchor><br/>
+          <mp-anchor to="#querying-data">Querying data</mp-anchor>
+        </div>
+      </div>
+
+      <!-- BOX: VISUALIZATION -->
+      <div data-flex-self="center-stretch" class="feature-box text-center">
+        <div class="feature-box-image text-center">
+          <img class="metaphacts-icon" src="/images/help/tutorial/visualization-orange-web.png"/>
+        </div>
+        <div class="feature-box-title text-center">
+          VISUALIZATION
+        </div>
+        <div class="feature-box-list">
+          <mp-anchor to="#visualization-table">Visualizing results in a table</mp-anchor><br/>
+          <mp-anchor to="#visualization-graph">Visualizing results in a graph</mp-anchor>
+        </div>
+      </div>
+
+      <!-- BOX: SEARCH -->  
+      <div data-flex-self="center-stretch" class="feature-box text-center">
+        <div class="feature-box-image text-center">
+          <img class="metaphacts-icon" src="/images/help/tutorial/search-orange-web.png"/>
+        </div>
+        <div class="feature-box-title text-center">
+          SEARCH
+        </div>
+        <div class="feature-box-list">
+         <mp-anchor to="#simple-search">Creating a simple search interface</mp-anchor>
+        </div>
+      </div>
+
+      <!-- BOX: AUTHORING -->  
+      <div data-flex-self="center-stretch" class="feature-box text-center">
+        <div class="feature-box-image text-center">
+          <img class="metaphacts-icon" src="/images/help/tutorial/authoring-orange-web.png"/>
+        </div>
+        <div class="feature-box-title text-center">
+          AUTHORING
+        </div>
+        <div class="feature-box-list">
+         <mp-anchor to="#creating-a-template">Creating a template</mp-anchor><br/>
+         <mp-anchor to="#inserting-updating">Inserting and updating data</mp-anchor><br/>  
+        </div>
+      </div>
+    </div>
+
+    <h2> Introduction </h2>
+    In this tutorial we use a small dataset from the <a href="http://www.w3.org/TR/rdf11-primer/"> RDF Primer document</a>.
+
+    The following figure shows an informal representation of the sample data as a graph:
+
+    <img src="http://www.w3.org/TR/rdf11-primer/example-graph.jpg" alt="Informal graph of the sample data"/><br>
+
+    You can download the sample data <a href="/metaphacts/samples/sample.ttl">here</a> .
+    <section id="loading-data">
+      <h2> Loading the data </h2>
+      First, please download the <a href="/metaphacts/samples/sample.ttl">sample data</a> (simple right click and save as).
+      You can now load this data into the backing store via the 
+      <semantic-link uri="[[resolvePrefix "Admin:DataImportExport"]]"> data import and export</semantic-link> administration page. 
+
+      <div>
+        [[#if (ask "ASK {  <http://example.org/bob#me> a <http://xmlns.com/foaf/0.1/Person>  }") ]] 
+        <span style="color:green;font-weight: bold; ">Check: It seems that you have already correctly loaded the sample data.</span>
+        [[else]]
+        <span style="color:red;font-weight: bold; ">Check: It seems that you have not yet loaded the sample data.</span>
+        [[/if]]
+      </div>
+    </section>
+
+    <section id="querying-data">
+      <h2> Querying the data </h2>
+      You can now query the data via the <a href="/sparql?query=SELECT+*+WHERE+%7B+%3Chttp%3A%2F%2Fexample.org%2Fbob%23me%3E+%3Fpredicate+%3Fobject+%7D" target="_blank">SPARQL endpoint</a>.
+      For example, you may want to issue a query  for all statements made about Bob as a subject:<br>
+
+      <code>SELECT * WHERE { &lt;http://example.org/bob#me&gt; ?predicate ?object }</code><br>
+
+      Simply copy the query and paste it into the editor field of the SPARQL endpoint, then click Execute.
+    </section>
+
+    <h2> Visualizing results </h2>
+
+    Let’s visualize the results of queries by embedding visualization components in a page.
+    <section id="visualization-table">
+      <h3> Tables </h3> 
+      <p>
+        We start by visualizing the results in a simple table. For this purpose, go to a new page, e.g. 
+        <semantic-link uri="[[resolvePrefix ":TableComponent"]]">TableComponent</semantic-link> and edit the page by clicking on the Edit button ( <i class="fa fa-pencil"></i>).
+      </p>
+      Copy and paste the component definition below into the page and save the page.
+      <div class="documentation__example">
+        <pre><code>
+    <semantic-table query='SELECT * WHERE { <http://example.org/bob#me> ?predicate ?object }'></semantic-table>
+        </code></pre>
+      </div>
+
+      <p>
+        Next, we want to customize the layout of a query result to not only show a plain table, but to also embed thumbnail images in the result visualization.
+        For this, we make use of the <code>tupleTemplate</code>, which is applied to every result tuple.
+      </p>
+
+      We start with the following SPARQL query, which asks for all resources together label and thumbnail:
+      <div class="documentation__example">
+       <code>
+         SELECT ?uri ?label ?thumbnail WHERE { ?uri rdfs:label ?label; &lt;http://schema.org/thumbnail &gt; ?thumbnail }
+       </code>
+      </div>
+
+      <p>
+        With the following component definition, we define a template that shows a result panel with thumbnails displayed as images, 
+        the labels of the resources as captions, and links to the individual resource pages:
+      </p>
+      <div class="documentation__example">
+        <pre><code>
+<semantic-table 
+      query='SELECT ?uri ?label ?thumbnail WHERE { ?uri rdfs:label ?label; <http://schema.org/thumbnail> ?thumbnail }' 
+      tuple-template='{{> tupleTemplate}}'
+>
+  <template id='tupleTemplate'>
+    <div style="height: 250px; width: 250px; margin: 10px;" class="panel panel-default">         
+      <div class="panel-heading" style="overflow: hidden; text-overflow: ellipsis;">
+        <a title="{{label.value}}" href="/resource/?uri={{uri.value}}">{{label.value}}</a>
+      </div>
+      <div class="panel-body">
+        <img 
+           class="img-responsive img-thumbnail"
+           style="max-height:130px;display:block;margin-left:auto;margin-right:auto;"
+           src="{{thumbnail.value}}"
+          />
+      </div>
+    </div>      
+  </template>
+</semantic-table>
+        </code></pre>
+      </div>
+
+      <p>
+        Again, copy and paste the component definition into a new page, e.g. <semantic-link uri="[[resolvePrefix ":TableComponent2"]]">TableComponent2</semantic-link>. 
+      </p>
+      <p> 
+        Here you can find further documentation about using the <semantic-link uri="[[resolvePrefix ":SemanticTable"]]">Table Component</semantic-link>.
+      </p>
+    </section>
+
+    <section id="visualization-graph">
+      <h3>Graphs</h3>
+      <p>	
+        Next, let’s visualize the graph structure of the sample data using the Graph component.
+        We start by visualizing all entities and their relationships in a single graph.
+      </p>
+
+      The SPARQL query to obtain the entire graph is simple:<br>
+      <code>CONSTRUCT WHERE { ?s ?p ?o }</code>
+
+      <p>
+        To visualize the graph, go to a new page, e.g. <semantic-link uri="[[resolvePrefix ":Graph"]]">Graph</semantic-link>, and embed the following snippet:
+      </p>
+
+      <div class="documentation__example">
+        <pre><code>
+<semantic-graph query='CONSTRUCT WHERE { ?s ?p ?o }'></semantic-graph>
+        </code></pre>
+      </div>
+
+    </section>
+
+    <!--  
+    <section id="ontodia">
+      <h3> Data exploration with Ontodia </h3>
+      <p>	
+        The graph visualization allowed us to create a fixed graph.  
+        Now, we want to explore the data and create a new visualization from scratch. We use Ontodia, a component for diagram-based data exploration and visualization.  For this, go to a new page, e.g. <semantic-link uri="[[resolvePrefix ":Ontodia"]]">Ontodia</semantic-link>, and embed the following snippet:
+      </p>
+
+        <div class="documentation__example">
+           <pre><code>
+      <div style="height: 800px">
+      <ontodia image-iris='["http://schema.org/thumbnail"]'></ontodia>
+      </div>  
+          </code></pre>
+        </div>
+    </section>
+    -->
+
+    <section id="simple-search">
+      <h2> A simple search interface</h2>
+      Let’s now create a simple search interface for querying the data.
+
+      <p>
+        For this purpose, go to a new page, e.g. <semantic-link uri="[[resolvePrefix ":Search"]]">Search</semantic-link> 
+        and edit the page by clicking on the Edit button ( <i class="fa fa-pencil"></i>). 
+        Copy and paste the component definition below into the page and save the page.
+      </p>
+      <div class="documentation__example">
+
+        <pre><code>
+<semantic-simple-search
+    query='
+      SELECT ?resource ?label WHERE {
+       FILTER REGEX(?label, ?__token__, "i")
+       ?resource rdfs:label ?label
+      } LIMIT 10'
+    template='<span style="color: blue;" title="{{resource.value}}">{{label.value}}</span>'
+    placeholder='Search for something e.g. "Bob"'>
+</semantic-simple-search>
+        </code></pre>
+
+      </div>
+    </section>
+
+  <section id="creating-a-template">    
+    <h2> Creating a template </h2>
+    Now, we want to create a template for resources of a particular type.
+    The general templating mechanism is described <semantic-link uri="[[resolvePrefix "Help:TemplateAndApplicationPages"]]"> here </semantic-link>.
+
+    In our example, we create a template for the class <code>foaf:Person</code>.
+    For every person, we want to display:
+    <ul>
+      <li>the person's name</li>
+      <li>an image, if available</li>
+      <li>his interests</li>
+      <li>his friendship relationship</li>
+    </ul>
+
+    To edit a template page, you have two choices:
+    <ul>
+      <li>either go the template page directly, i.e. <semantic-link uri="Template:http://xmlns.com/foaf/0.1/Person">Template:foaf:Person</semantic-link></li>
+
+      <li>or go an instance page, e.g. <semantic-link uri="http://example.org/bob#me">Bob</semantic-link>, 
+        click on the Edit button ( <i class="fa fa-pencil"></i>) and follow the link to the template page in the top of editor.
+      </li>
+    </ul>
+    Now copy and paste the following snippet into the template page:
+
+    <div class="documentation__example">
+     <pre><code>
+  <bs-row>
+    <bs-col sm-offset="2">
+      <h1> [[this.label]] </h1>
+    </bs-col>
+  </bs-row>
+  <bs-row>
+    <bs-col sm="3" sm-offset="2">
+      <semantic-query query="SELECT ?birth WHERE {??  <http://schema.org/birthDate> ?birth }" template="<p>Birthdate:{{#each bindings}}{{birth.value}}{{/each}}</p>"></semantic-query>
+      <semantic-query query="SELECT ?thumbnail WHERE {??  <http://schema.org/thumbnail> ?thumbnail }" template='{{#each bindings}}<img src="{{thumbnail.value}}">{{/each}}'></semantic-query>
+    </bs-col>
+
+    <bs-col sm="3">
+      <b>Friends</b>
+      <semantic-table
+              query='SELECT ?friend ?label ?thumbnail WHERE { ?? <http://xmlns.com/foaf/0.1/knows> ?friend. ?friend rdfs:label ?label; <http://schema.org/thumbnail> ?thumbnail }'
+              options='{"showFilter":false}'
+              tuple-template='{{> tupleTemplate}}'
+      >
+        <template id='tupleTemplate'>
+          <div style="height: 250px; width: 250px; margin: 10px;" class="panel panel-default">         
+            <div class="panel-heading" style="overflow: hidden; text-overflow: ellipsis;">
+              <semantic-link uri="{{friend.value}}">{{label.value}}</semantic-link>
+            </div>
+            <div class="panel-body">
+              <img class="img-responsive img-thumbnail" style="max-height: 130px;display: block;margin-left:auto;margin-right:auto;" src="{{thumbnail.value}}"/>
+            </div>
+          </div>
+        </template>
+      </semantic-table>
+    </bs-col>
+
+    <bs-col sm="3">
+      <b>Interests</b>
+      <semantic-table
+              query='SELECT ?topic ?label ?thumbnail WHERE { ?? <http://xmlns.com/foaf/0.1/topic_interest> ?topic. ?topic rdfs:label ?label; <http://schema.org/thumbnail> ?thumbnail }'
+              options='{"showFilter":false}'
+              tuple-template='{{> tupleTemplate}}'
+      >
+        <template id='tupleTemplate'>
+          <div style="height: 250px; width: 250px; margin: 10px;" class="panel panel-default">         
+            <div class="panel-heading" style="overflow: hidden; text-overflow: ellipsis;">
+              <semantic-link uri="{{topic.value}}">{{label.value}}</semantic-link>
+            </div>
+            <div class="panel-body">
+              <img class="img-responsive img-thumbnail" style="max-height: 130px;display: block;margin-left:auto;margin-right:auto;" src="{{thumbnail.value}}"/>
+            </div>
+          </div>
+        </template>
+      </semantic-table>
+    </bs-col>
+  </bs-row>
+      </code></pre>
+    </div>
+
+
+  Now look at the applied result on an instance pages, such as <semantic-link uri="http://example.org/bob#me">Bob</semantic-link>.
+  </section>
+    <section id="inserting-updating">     
+      <h2> Inserting and updating data </h2>
+      Next, we want to create and add  new instance data. We will do so via a SPARQL UPDATE operation against the <a href="/sparql" target="_blank">SPARQL endpoint</a>.
+      Add instance data about yourself, following the example below:
+      <div class="documentation__example">
+
+      <pre><code>  
+    BASE &lt;http://example.org/&gt;
+    PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+    PREFIX schema: &lt;http://schema.org/&gt;
+    PREFIX wd: &lt;http://www.wikidata.org/entity/&gt;
+    PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+    PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;
+
+    WITH &lt;http://www.metaphacts.com/tutorial/&gt;
+    INSERT {  
+      &lt;peter#me&gt; a foaf:Person ;
+      rdfs:label "Peter";
+      foaf:knows &lt;alice#me&gt; , &lt;bob#me&gt; ;
+      schema:birthDate "1976-05-31"^^xsd:date ;
+      foaf:topic_interest wd:Q12418;
+      schema:thumbnail "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Peter_Haase.jpg/220px-Peter_Haase.jpg".
+    } WHERE {}
+      </code></pre>
+
+      </div> 
+      The imported data will now show up as a named graph 
+      <semantic-link uri="[[resolvePrefix "Admin:NamedGraphs"]]" urlqueryparam-graph="http://www.metaphacts.com/tutorial/">&lt;http://www.metaphacts.com/tutorial/&gt;</semantic-link>
+      under <semantic-link uri="[[resolvePrefix "Admin:DataImportExport"]]">Admin:DataImportExport</semantic-link>.
+    </section>
+
+    <!--
+    <section id="input-form">     
+
+    <h2> Creating an input form </h2>
+    Finally, we want to create a form for editing existing data and creating new instance data via forms.
+    The general form mechanisms is described under <semantic-link uri="[[resolvePrefix "Help:SemanticForms"]]"> here </semantic-link>.
+
+    We start with a simple button that allows to create a new resource of a particular type.
+    To do so, just embed this snippet into a page:
+    <div class="documentation__example">
+  <pre><code>  
+    <mp-ldp-create-new-resource-action 
+    container="http://www.metaphacts.com/tutorial/person/records"   type="http://xmlns.com/foaf/0.1/Person">
+    <button>Create Person</button>
+  </mp-ldp-create-new-resource-action>
+  </code></pre>
+  </div>  
+    Or click on this button directly: 
+    <mp-ldp-create-new-resource-action 
+    container="http://www.metaphacts.com/tutorial/person/records"   type="http://xmlns.com/foaf/0.1/Person">
+    <button>Create Person</button>
+  </mp-ldp-create-new-resource-action>
+  <p>
+    Next, we create a form which we append to the existing template of <a href="/resource/Template:foaf:Person">Template:foaf:Person</a>.
+    Copy and paste the following snippet into the template page:
+  </p>
+    <div class="documentation__example">
+         <pre><code>
+  <bs-row>
+    <bs-col sm-offset="2" sm="8" >
+  <h2> Edit person data </h2> 
+
+  <semantic-form   subject='[[this]]' persistence='sparql' 
+                   fields='[
+
+            {
+              "id": "label",
+              "label": "Name",
+              "description": "The name / label of the person",
+              "xsdDatatype": "xsd:string",
+              "minOccurs": "1",
+              "maxOccurs": "1",
+              "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+              "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+              "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+            },
+            {
+              "id": "birthdate",
+              "label": "Birthdate",
+              "description": "Birthdate of the person",
+              "xsdDatatype": "xsd:date",
+              "minOccurs": "0",
+              "maxOccurs": "1",
+              "selectPattern": "SELECT $value WHERE { $subject schema:birthDate $value }",
+              "insertPattern": "INSERT { $subject schema:birthDate $value } WHERE {}",
+              "deletePattern": "DELETE { $subject schema:birthDate $value } WHERE {}"
+            },
+            {
+              "id": "friend",
+              "label": "Friend",
+              "description": "The friends of the person",
+              "xsdDatatype": "xsd:anyURI",
+              "selectPattern": "SELECT $value $label WHERE { $subject foaf:knows $value OPTIONAL { $value rdfs:label $label } }",
+              "valueSetPattern": "SELECT $value $label WHERE { $value a foaf:Person; rdfs:label $label}",                         
+              "insertPattern": "INSERT { $subject foaf:knows $value } WHERE {}",
+              "deletePattern": "DELETE { $subject foaf:knows $value } WHERE {}"
+            },
+            {
+              "id": "interest",
+              "label": "Interest",
+              "description": "The interest of the person",
+              "xsdDatatype": "xsd:anyURI",
+              "autosuggestionPattern": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                  PREFIX bds:  <http://www.bigdata.com/rdf/search#>
+
+                  SELECT distinct ?value ?label ?description ?instanceof WHERE {
+                    SERVICE <https://wikidata.metaphacts.com/sparql> {  
+                        ?value rdfs:label ?label; 
+                        <http://schema.org/description> ?description;
+                        <http://www.wikidata.org/prop/direct/P31> ?type.
+                        ?type rdfs:label ?instanceof.
+                        ?label bds:search \"?token*\" ;    
+                         bds:minRelevance \"0.5\" ;                
+                         bds:matchAllTerms \"true\"  .
+                         BIND( xsd:integer(substr(str(?value), 33)) as ?q)
+                   }  
+                 }	
+                ORDER BY ?q 
+                LIMIT 10",
+              "selectPattern": "SELECT $value $label WHERE { $subject foaf:topic_interest $value . SERVICE <https://wikidata.metaphacts.com/sparql> { $value rdfs:label ?label }}",
+              "insertPattern": "INSERT { $subject foaf:topic_interest $value. $value rdfs:label ?label } WHERE { }",
+              "deletePattern": "DELETE { $subject foaf:topic_interest $value } WHERE {}"
+            }
+
+
+          ]'>
+            <semantic-form-text-input for="label"></semantic-form-text-input>   
+            <semantic-form-datetime-input for="birthdate"> </semantic-form-datetime-input> 
+            <semantic-form-select-input for="friend"> </semantic-form-select-input>
+            <semantic-form-autocomplete-input template='{{label.value}} ({{instanceof.value}})<br><span style="font-size:8px;">{{description.value}}</span>' for='interest'></semantic-form-autocomplete-input>
+
+            <button name="submit">Save</button>
+            <button name="reset">Reset</button>
+          </semantic-form>
+      </bs-col>
+    </bs-row>  
+        </code></pre>
+
+    </div>
+    <div style="clear:both;"></div>
+
+    Now look at the applied result on an instance pages, such as <a href="/resource/?uri=http%3A%2F%2Fexample.org%2Fbob%23me">Bob</a>.
+    </section> 
+    -->
+
+    <h2> References </h2>
+    Copyright © 2014 W3C® (MIT, ERCIM, Keio, Beihang). 
+    This software or document includes material copied from or derived from <a href="http://www.w3.org/TR/rdf11-primer/" target="_blank">http://www.w3.org/TR/rdf11-primer/</a>.
+
+  </div>
+</div>

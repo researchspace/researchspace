@@ -1,0 +1,46 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Semantic Search" uri="http://help.metaphacts.com/resource/SemanticSearch">Semantic Search</semantic-link>
+  </li>
+  <li class="active">Keyword Search with Facets</li>
+</ol>
+
+<div class="page">
+  <div class="page__body">
+  [[> Help:StructuredSearchSampleDataCheck]]
+  <p>
+    Try to type <i>alice</i> to search for all people that know her.
+  </p>
+  <div class="rs-search">
+    <div>
+<mp-code-example>
+  [[#> Help:StructuredSearchExampleBase]]
+    <semantic-search-query-keyword 
+      domain='<http://xmlns.com/foaf/0.1/Person>'
+      query='
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        SELECT ?subject WHERE { 
+          ?subject foaf:knows ?friend. 
+          ?friend rdfs:label ?label .
+          FILTER REGEX(STR(?label), ?__token__, "i")
+        }
+      '
+    ></semantic-search-query-keyword>
+  [[/ Help:StructuredSearchExampleBase]]
+</mp-code-example>
+    </div>
+  </div>
+</div>
+</div>

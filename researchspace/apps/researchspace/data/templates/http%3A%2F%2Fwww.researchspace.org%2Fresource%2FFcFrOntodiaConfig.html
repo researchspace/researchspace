@@ -33,8 +33,11 @@
             ",
                 "extractLabel": false},
             "elementInfoQuery": "
-              SELECT ?inst ?class ?label ?propType ?propValue
-              WHERE {
+              CONSTRUCT {
+                  ?inst rdf:type ?class .
+                  ?inst rdfs:label ?label .
+                  ?inst ?propType ?propValue.
+              } WHERE {
                   OPTIONAL {?inst rdf:type ?class . ?class a rso:FundamentalCategory.}
                   OPTIONAL {?inst ?labelProp ?label}
                   OPTIONAL {?inst ?propType ?propValue.
@@ -43,13 +46,13 @@
                 } VALUES (?inst) {${ids}}
         "
           , "linkTypesOfQuery": "
-            SELECT ?link (count(distinct ?outObject) as ?outCount) (count(distinct ?inObject) as ?inCount)
+            SELECT DISTINCT ?link
             WHERE {
             { ${elementIri} ?link ?outObject FILTER ISIRI(?outObject)}
             UNION
             { ?inObject ?link ${elementIri} FILTER ISIRI(?inObject)}
             FILTER (EXISTS {?link rso:hasDomain ?someDomain})
-            } GROUP BY ?link
+            }
           "
          , "linksInfoQuery": "SELECT ?source ?type ?target
           WHERE {

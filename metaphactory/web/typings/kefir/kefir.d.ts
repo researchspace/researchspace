@@ -28,6 +28,17 @@ declare module Kefir {
      */
     pool<T>(): Pool<T>;
 
+    /**
+     * Calls the generator function which is supposed to return an observable.
+     * Emits values and errors from the spawned observable; when it ends, calls
+     * generator again to get a new one and so on.
+     *
+     * The generator function is called with one argument — iteration number
+     * starting from 0. If a falsy value is returned from the generator,
+     * the stream ends.
+     */
+    repeat<T>(generator: (iteration: number) => Observable<T> | false | null | undefined): Stream<T>;
+
     stream<T>(f: (emitter: Emitter<T>) => void | (() => void)): Stream<T>;
 
     /**
@@ -68,7 +79,7 @@ declare module Kefir {
      * delivered with the given `interval` in milliseconds.
      * Ends after all values are delivered.
      */
-    sequentially<T>(interval: number, values: T[]): Stream<T>;
+    sequentially<T>(interval: number, values: ReadonlyArray<T>): Stream<T>;
 
     /**
      * Creates a stream that polls the given `fn` function,
@@ -322,6 +333,14 @@ declare module Kefir {
 
     flatMapErrors<B>(fn: (el: any) => Observable<B>): Stream<B>;
 
+    /**
+     * Like `flatMapFirst`, but instead of ignoring new observables (if the
+     * previous one is still alive), it adds them to the queue. Then, when the
+     * current source ends, it takes the oldest observable from the queue, and
+     * switches to it.
+     */
+    flatMapConcat<B>(fn: (el: A) => Observable<B>): Stream<B>;
+
     ignoreEnd(): this;
 
 
@@ -432,6 +451,13 @@ declare module Kefir {
      * @see https://rpominov.github.io/kefir/#skip-while
      */
     skipWhile(predicate: (a: A) => boolean): this;
+
+    /**
+     * Skips duplicate values using === for comparison.
+     * Accepts an optional comparator function which is then used instead of ===.
+     * @see https://kefirjs.github.io/kefir/#skip-duplicates
+     */
+    skipDuplicates(comparator?: (a: A, b: A) => boolean): this;
 
     /**
      * Emits the first n values from the original observable, then ends.

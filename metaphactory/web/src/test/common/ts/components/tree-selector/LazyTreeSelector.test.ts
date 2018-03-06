@@ -16,10 +16,10 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { createElement, DOM as D } from 'react';
-import { expect } from 'chai';
+import { ReactElement, createElement, DOM as D } from 'react';
+import { expect, assert } from 'chai';
 import * as sinon from 'sinon';
-import { shallow } from 'enzyme';
+import { shallow, mount } from 'enzyme';
 import { assign } from 'lodash';
 
 import {
@@ -28,30 +28,39 @@ import {
 
 import { Node, FOREST } from './Forests';
 
-type Input = { new(props: LazyTreeSelectorProps<Node>): LazyTreeSelector<Node>; };
-const Input = LazyTreeSelector;
+function whileMounted(element: ReactElement<any>, callback: (wrapper: any) => void) {
+  const root = document.createElement('div');
+  document.body.appendChild(root);
+  const wrapper = mount(element, {attachTo: root});
+  callback(wrapper);
+  wrapper.unmount();
+  root.remove();
+}
 
 describe('LazyTreeSelector', () => {
   const baseProps: LazyTreeSelectorProps<Node> = {
+    style: {width: '800px', height: '800px'},
     selectionMode: SingleFullSubtree<Node>(),
     forest: FOREST,
     isLeaf: node => node.children === undefined,
-    childrenOf: node => ({children: node.children}),
+    childrenOf: node => ({children: node.children, hasMoreItems: node.hasMoreChildren}),
     requestMore: () => { /* nothing */ },
     renderItem: node => D.div({className: 'tree-node'}, node.key),
+    isExpanded: node => node.isExpanded,
+    onExpandedOrCollapsed: (node, expanded) => {/* ignore for test */},
   };
 
   it('renders tree', () => {
-    const treeInput = shallow(createElement(Input, baseProps));
-    const bacteria = treeInput.findWhere(child => child.key() === 'Bacteria');
-    expect(bacteria).to.has.lengthOf(1);
-    expect(bacteria.text().indexOf('Bacteria') >= 0);
+    whileMounted(createElement(LazyTreeSelector, baseProps), treeInput => {
+      const bacteria = treeInput.findWhere(child => child.text().indexOf('Bacteria') >= 0);
+      assert(bacteria.length > 0);
+    });
   });
 
   it('requests children on node expand', () => {
     const bacteriaNode = FOREST.getFirst('Bacteria');
     const forestWithoutBacteriaChildren = FOREST.updateNode(
-      FOREST.getOffsetPath(bacteriaNode),
+      FOREST.getKeyPath(bacteriaNode),
       node => ({key: node.key, children: undefined, hasMoreChildren: true}));
 
     const onRequestCallback = sinon.spy();
@@ -60,11 +69,16 @@ describe('LazyTreeSelector', () => {
       requestMore: onRequestCallback,
     }) as LazyTreeSelectorProps<Node>;
 
-    const treeInput = shallow(createElement(Input, props));
-    treeInput.findWhere(child =>
-      child.props().className === 'LazyTreeSelector--expandToggle' &&
-      child.parents().someWhere(parent => parent.key() === 'Bacteria')
-    ).simulate('click');
-    expect(onRequestCallback.called).to.be.true;
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+
+    whileMounted(createElement(LazyTreeSelector, props), treeInput => {
+      const expandButton = treeInput.findWhere(child =>
+        child.props().className === 'LazyTreeSelector--expandToggle' &&
+        child.parents().someWhere(parent => parent.text() === 'Bacteria')
+      );
+      expandButton.simulate('click');
+      assert(onRequestCallback.called);
+    });
   });
 });

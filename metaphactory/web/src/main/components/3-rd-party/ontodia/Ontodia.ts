@@ -16,13 +16,15 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import {createElement, ClassAttributes} from 'react';
+import {createElement, ClassAttributes, Component as ReactComponent} from 'react';
 import * as Kefir from 'kefir';
 import {
   Workspace,
   WorkspaceProps,
+  RDFDataProvider,
   SparqlDataProvider,
   SparqlDataProviderSettings,
+  CompositeDataProvider,
   GraphBuilder,
   Triple,
   Dictionary,
@@ -30,7 +32,11 @@ import {
   LayoutData,
   LinkTypeOptions,
   SparqlQueryMethod,
-  SparqlGraphBuilder,
+  TemplateProps,
+  ElementTemplate,
+  LinkMarkerStyle,
+  LinkStyle,
+  LinkTemplate,
 } from 'ontodia';
 
 import { Cancellation, WrappingError } from 'platform/api/async';
@@ -46,21 +52,25 @@ import { addNotification, ErrorNotification } from 'platform/components/ui/notif
 import {
   getLayoutByDiagram,
   getRDFGraphBySparqlQuery,
+  parseRDFGraphToRDFExtGraph,
   prepareImages,
   updateDiagram,
   saveDiagram,
   DiagramLayout,
+  RDFGraph,
 } from './ontodia-data';
 
-import { SupportedConfigName, getConfig } from './ontodia-configs';
-
-import 'jointjs/css/layout.css';
-import 'jointjs/css/themes/default.css';
+import { SupportedConfigName, getConfig, RDF_DATA_PROVIDER_NAME } from './ontodia-configs';
 
 import 'intro.js/introjs.css';
 import { Component } from 'platform/api/components';
+import { TemplateItem } from 'platform/components/ui/template';
 
-const ENDPOINT_URL = '/sparql';
+export interface EdgeStyle {
+  markerSource?: LinkMarkerStyle,
+  markerTarget?: LinkMarkerStyle,
+  linkStyle?: LinkStyle,
+}
 
 export interface OntodiaProps {
   /**
@@ -72,6 +82,10 @@ export interface OntodiaProps {
    * Diagram identifier to display saved diagram.
    */
   diagram?: string;
+  /**
+   * SPARQL query to store data that do not exist in the database
+   */
+  provisionQuery?: string;
   /**
    * SPARQL query to display data on layout.
    * If property diagram is defined, this property will be ignored.
@@ -123,7 +137,57 @@ export interface OntodiaProps {
    *
    * @default false
    */
-  addToDefaultSet?: boolean
+  addToDefaultSet?: boolean;
+
+  /**
+   * Custom templates of the elements
+   */
+  nodeTemplates?: {[type: string]: string};
+
+  /**
+   * Default custom template of the elements
+   */
+  defaultNodeTemplate?: string;
+
+  /**
+   * Custom styles of the links
+   */
+  edgeStyles?: {[linkTypeId: string]: EdgeStyle};
+
+  /**
+   * Default custom style of the links
+   */
+  defaultEdgeStyle?: EdgeStyle;
+
+  /**
+   * Links to group the nodes
+   */
+  groupBy?: {linkType: string; linkDirection: 'in' | 'out'}[];
+
+  /**
+   * Ids of repositories
+   */
+  repositories?: string[];
+
+  /**
+   * Custom options for the links
+   */
+  linkSettings?: LinkTypeOptions[];
+
+  /**
+   * Disable side panels
+   */
+  hidePanels?: boolean;
+
+  /**
+   * Disable toolbar
+   */
+  hideToolbar?: boolean;
+
+  /**
+   * Disable navigation
+   */
+  hideHalo?: boolean;
 }
 
 interface State {
@@ -227,25 +291,30 @@ export class Ontodia extends Component<OntodiaProps, State> {
     navigateTo: 'http://www.metaphacts.com/resource/assets/OntodiaView',
     addToDefaultSet: false,
     imageIris: Ontodia.preferredThumbnails,
+    nodeTemplates: {},
+    edgeStyles: {},
   };
 
   private readonly cancellation = new Cancellation();
   private parsedMetadata: Kefir.Property<ReadonlyArray<Rdf.Triple>>;
 
   private workspace: Workspace;
-  private dataProvider: SparqlDataProvider;
+  private dataProvider: SparqlDataProvider | CompositeDataProvider;
+  private nodeTemplates: {[type: string]: ElementTemplate} = {};
+  private defaultNodeTemplate: ElementTemplate;
 
   constructor(props: OntodiaProps, context: any) {
     super(props, context);
     this.state = {};
     this.parsedMetadata = this.parseMetadata();
+    this.prepareElementTemplates();
   }
 
   render() {
     if (this.state.configurationError) {
       return createElement(ErrorNotification, {errorMessage: this.state.configurationError});
     }
-    const {readonly} = this.props;
+    const {readonly, groupBy, hidePanels, hideToolbar, hideHalo} = this.props;
     const props: WorkspaceProps & ClassAttributes<Workspace> = {
       ref: this.initWorkspace,
       onSaveDiagram: readonly ? undefined : this.onSaveDiagramPressed,
@@ -256,8 +325,23 @@ export class Ontodia extends Component<OntodiaProps, State> {
         {code: 'de', label: 'German'},
         {code: 'ru', label: 'Russian'},
       ],
+      viewOptions: {
+        onIriClick: iri => navigateToResource(Rdf.iri(iri)).onValue(() => {/* nothing */}),
+        linkTemplateResolvers: [this.resolveLinkTemplates],
+        groupBy,
+      },
+      hidePanels,
+      hideToolbar,
+      hideHalo,
     };
     return createElement(Workspace, props);
+  }
+
+  private getRepositories = (): string[] => {
+    const {repository = 'default'} = this.context.semanticContext;
+    const {repositories = [repository]} = this.props;
+
+    return repositories;
   }
 
   /**
@@ -265,15 +349,18 @@ export class Ontodia extends Component<OntodiaProps, State> {
    */
   private initWorkspace = workspace => {
     if (workspace) {
-      const {imageQuery, imageIris} = this.props;
+      const {imageQuery, imageIris, provisionQuery} = this.props;
 
       this.workspace = workspace;
+
+      const diagram = workspace.getDiagram();
+      diagram.registerTemplateResolver(this.resolveTemplates);
 
       const config = getConfig(this.props.settings, this.props.providerSettings);
       config.customizeWorkspace(workspace);
 
-      this.dataProvider = config.getDataProvider({
-        endpointUrl: ENDPOINT_URL,
+      const options = {
+        endpointUrl: '',
         prepareImages: !imageQuery ? undefined : elementsInfo => {
           return prepareImages(elementsInfo, imageQuery);
         },
@@ -282,11 +369,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
         // GET allows for more caching, but does not run well with huge data sets
         queryMethod: SparqlQueryMethod.POST,
         acceptBlankNodes: true,
-      });
-
-      workspace.getModel().graph.on('action:iriClick', (url: string) => {
-        navigateToResource(Rdf.iri(url)).onValue(() => {/* nothing */});
-      });
+      };
+      const repositories = this.getRepositories();
+      const createRDFStorage = provisionQuery !== undefined;
+      this.dataProvider = config.getDataProvider(options, repositories, createRDFStorage);
 
       this.cancellation.map(Kefir.combine([
         Kefir.fromPromise(this.setLayout()),
@@ -338,24 +424,28 @@ export class Ontodia extends Component<OntodiaProps, State> {
    * Set diagram layout
    */
   private setLayout(): Promise<void> {
-    const {diagram, query, iri} = this.props;
-    if (diagram) {
-      return this.setLayoutByDiagram(diagram);
-    } else if (query) {
-      return this.setLayoutBySparqlQuery(query);
-    } else if (iri) {
-      return this.setLayoutByIri(iri);
-    } else {
-      return this.importModelLayout();
-    }
+    return this.importProvisionData().then(() => {
+      const {diagram, query, iri, linkSettings} = this.props;
+
+      if (diagram) {
+        return this.setLayoutByDiagram(diagram);
+      } else if (query) {
+        return this.setLayoutBySparqlQuery(query);
+      } else if (iri) {
+        return this.setLayoutByIri(iri);
+      } else {
+        return this.importModelLayout({linkSettings});
+      }
+    });
   }
 
   /**
    * Sets diagram layout by sparql query
    */
   private setLayoutBySparqlQuery(query: string): Promise<void> {
-    const loadingLayout = getRDFGraphBySparqlQuery(query).then(graph => {
-      const layoutProvider = new SparqlGraphBuilder(this.dataProvider);
+    const repositories = this.getRepositories();
+    const loadingLayout = getRDFGraphBySparqlQuery(query, repositories).then(graph => {
+      const layoutProvider = new GraphBuilder(this.dataProvider);
       return layoutProvider.getGraphFromRDFGraph(graph as Triple[]);
     });
     this.workspace.showWaitIndicatorWhile(loadingLayout);
@@ -364,6 +454,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
       this.importModelLayout({
         preloadedElements: res.preloadedElements,
         layoutData: res.layoutData,
+        linkSettings: this.props.linkSettings,
       })
     ).then(() => {
       this.workspace.forceLayout();
@@ -371,11 +462,42 @@ export class Ontodia extends Component<OntodiaProps, State> {
     });
   }
 
+  private importProvisionData = (): Promise<void> => {
+    const {provisionQuery} = this.props;
+
+    if (!provisionQuery) {
+      return Promise.resolve();
+    }
+
+    const repositories = this.getRepositories();
+
+    return getRDFGraphBySparqlQuery(provisionQuery, repositories).then(graph =>
+      this.addGraphToRDFDataProvider(graph)
+    );
+  }
+
+  private addGraphToRDFDataProvider = (graph: RDFGraph[]) => {
+    const rdfExtGraph = parseRDFGraphToRDFExtGraph(graph);
+
+    const dataProviders = (this.dataProvider as CompositeDataProvider).dataProviders;
+    let rdfDataProvider: RDFDataProvider;
+
+    for (const {name, dataProvider} of dataProviders) {
+      if (name !== RDF_DATA_PROVIDER_NAME) { continue; }
+
+      rdfDataProvider = dataProvider as RDFDataProvider;
+    }
+
+    if (rdfDataProvider) {
+      rdfDataProvider.addGraph(rdfExtGraph);
+    }
+  }
+
   /**
    * Sets diagram layout by diagram id
    */
   private setLayoutByDiagram(diagram: string): Promise<void> {
-    const loadingLayout = getLayoutByDiagram(diagram, this.context.semanticContext);
+    const loadingLayout = getLayoutByDiagram(diagram, {repository: 'assets'});
     this.workspace.showWaitIndicatorWhile(loadingLayout);
 
     return loadingLayout.then(res => {
@@ -395,6 +517,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     return buildingGraph.then(res => this.importModelLayout({
       preloadedElements: res.preloadedElements,
       layoutData: res.layoutData,
+      linkSettings: this.props.linkSettings,
     }).then(() => {
       this.workspace.forceLayout();
       this.workspace.zoomToFit();
@@ -454,6 +577,51 @@ export class Ontodia extends Component<OntodiaProps, State> {
       addNotification({level: 'error', message: `Error saving diagram ${label}`}, error);
       return error;
     }).toProperty();
+  }
+
+  private resolveTemplates = (types: string[]): ElementTemplate | undefined => {
+    for (let type of types) {
+      const template = this.nodeTemplates[type];
+      if (template) { return template; }
+    }
+
+    return this.defaultNodeTemplate;
+  }
+
+  private prepareElementTemplates = () => {
+    const {nodeTemplates, defaultNodeTemplate} = this.props;
+
+    Object.keys(nodeTemplates).forEach(type => {
+      const template = nodeTemplates[type];
+      this.nodeTemplates[type] = this.getElementTemplate(template);
+    });
+
+    if (defaultNodeTemplate) {
+      this.defaultNodeTemplate = this.getElementTemplate(defaultNodeTemplate);
+    }
+  }
+
+  private getElementTemplate = (template: string): ElementTemplate => {
+    return class extends ReactComponent<TemplateProps, void> {
+      render() {
+        return createElement(TemplateItem, {template: {source: template, options: this.props}});
+      }
+    };
+  }
+
+  private resolveLinkTemplates = (linkTypeId: string): LinkTemplate | undefined => {
+    const {edgeStyles, defaultEdgeStyle} = this.props;
+    const template = edgeStyles[linkTypeId] || defaultEdgeStyle;
+
+    if (!template) { return; }
+
+    const {markerSource, markerTarget, linkStyle = {}} = template;
+
+    return {
+      markerSource,
+      markerTarget,
+      renderLink: () => linkStyle,
+    };
   }
 }
 

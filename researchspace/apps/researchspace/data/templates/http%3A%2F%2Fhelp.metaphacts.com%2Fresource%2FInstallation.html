@@ -1,0 +1,68 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li class="active">Installation and Deployment</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Installation and Deployment</h1>
+
+    <h2>Deployment Modes</h2>
+    <p>For the time being three deployment artifacts are available:</p>
+    <ul>
+      <li><b>Docker Image</b>  - Recommended and well tested deployment mode. 
+        Easy to update and migrate once new releases are available. Takes just a few minutes to login to metaphacts registry, pull the platform image and start the container.
+      </li>
+      <li><b>ZIP Artifact</b> - No external dependencies. Simply unzip and run the start script (batch or shell). 
+        Recommended for quick getting started or for constrained environments. No automated upgrade procedures.
+      </li>
+    </ul>
+
+
+    <b>Please contact <a href="mailto:support@metaphacts.com">support@metaphacts.com</a> in order to request access to downloads and/or credentials for docker registry.</b>
+
+    <h2>Docker Deployment</h2>
+    <p>Within the docker environment, the platform and Blazegraph&trade; will run in two separate docker containers.</p>
+    <ol>
+      <li>Install Docker (see <a href="https://docs.docker.com/installation/" target="_blank"> official documentation</a>)</li>
+      <li>Login into Metaphacts docker registry: <code>docker login docker.metaphacts.com</code></li>
+      <li>Pull latest platform and Blazegraph&trade; image</li>
+      <ul>
+        <li><code>docker pull docker.metaphacts.com/snapshot/blazegraph:2.2.0-20160908.003514-6</code></li>
+        <li><code>docker pull docker.metaphacts.com/release/platform-data:2.0.2</code></li>
+        <li><code>docker pull docker.metaphacts.com/release/platform:2.0.2</code></li>
+      </ul>
+      <li>Prepare &amp; run Blazegraph&trade; container</li>
+      <ul>
+        <li>Create data (journal) container for Blazegraph&trade; container: <code>docker create --name blazegraph-journal -v /blazegraph-data ubuntu</code></li>
+        <li>Run Blazegraph&trade; container with data container mounted: 
+          <code>docker run --name blazegraph -d --restart=always -p 10080:8080 --env JAVA_OPTS="" --volumes-from blazegraph-journal docker.metaphacts.com/snapshot/blazegraph:2.2.0-20160908.003514-6</code>
+        </li>
+      </ul>
+      <li>Prepare &amp; Run Platform container</li>
+      <ul>
+        <li>Create platform data container from image: <code>docker create --name platform-data docker.metaphacts.com/release/platform-data:2.0.2</code></li>
+        <li>Run platform container with data container mounted: <code>docker run --name platform -d --restart=always -p 10214:8080 --link blazegraph:blazegraph --volumes-from platform-data --env JAVA_OPTS="-Dconfig.environment.sparqlEndpoint=http://blazegraph:8080/blazegraph/sparql -Dcom.metaphacts.config.baselocation=/config -DruntimeDirectory=/ -Dconfig.environment.appsDirectory=/apps" docker.metaphacts.com/release/platform:2.0.2 </code>
+        </li>
+      </ul>
+      <li>Open <a href="http://dockerip:10214/" target="_blank">http://dockerip:10214/</a> in your browser. If you are using Docker natively the dockerip will be usually the same as your host machine. If you are using, for example, <b>docker-machine</b> you can run <code>docker-machine ip</code> to get IP from docker-machine.</li>
+    </ol>
+
+    <h2>ZIP Artifact</h2>
+    <ol>
+      <li>Unzip artifact</li>
+      <li>Start platform: <code>sh start.sh</code> (Unix) or doubleclick <code>start.bat</code> (Windows)
+      <li>Open <a href="http://localhost:10214/" target="_blank">http://localhost:10214/</a> in your browser</li>
+      <li>Login with admin/admin.<br> <b>Please Note:</b> It is highly recommended to change the password after your first successful login (otherwise you will forget to change it later).  The help page <semantic-link title="Help" uri="http://help.metaphacts.com/resource/BasicSystemConfiguration"> basic system configuration</semantic-link> describes in detail how to change the standard login.</li>
+      <li>Please refer to <b>README.txt</b> (located in root folder of the artifact) for further information. </li>
+    </ol>
+  </div>
+</div>

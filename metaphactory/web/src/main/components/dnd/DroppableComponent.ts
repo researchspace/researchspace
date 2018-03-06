@@ -79,11 +79,6 @@ export interface DroppableProps {
     disabled?: CSSProperties
     disabledHover?: CSSProperties
   }
-  dropClasses?: {
-    enabled?: string
-    disabled?: string
-    hover?: string
-  }
   /**
    * Components that will be displayed inside Overlay with child element
    */
@@ -105,6 +100,11 @@ interface State {
  * Child element could be any HTML-element (not text node).
  * When a source has been dragged the component takes source's iri
  * and checks with SPARQL ASK query if it can be accepted or not.
+ *
+ * CSS classes for child component:
+ *  - `mp-droppable-enabled`
+ *  - `mp-droppable-disabled`
+ *  - `mp-droppable-hover`
  */
 export class Droppable extends Component<DroppableProps, State> {
   private target: Element;
@@ -187,7 +187,7 @@ export class Droppable extends Component<DroppableProps, State> {
           this.setState({isDropEnabledKnown: true, isDropEnabled: res});
         });
     } else {
-      this.setState({isDropEnabled: true});
+      this.setState({isDropEnabledKnown: true, isDropEnabled: true});
     }
   }
 
@@ -221,6 +221,10 @@ export class Droppable extends Component<DroppableProps, State> {
 
     if (!this.state.isDropEnabled) {
       e.dataTransfer.dropEffect = 'none';
+    }
+
+    if (!this.state.isHover && this.isEventInsideRect(e, this.target)) {
+      this.setState({isHover: true});
     }
 
     return false;

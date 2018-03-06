@@ -1,0 +1,309 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">Structured Search Component</li>
+</ol>
+
+<div class="page">
+  <div class="page__body">
+  <h1> Structured Search Component </h1>
+  <div class="documentation__intro">
+    <div class="documentation__intro__description">
+      Customizable interface for structured search that allows the user to:
+      <ul>
+        <li>define complex information needs in an incremental way</li>
+      	<li>refine the set of search results using facets</li>
+      	<li>visualize the search results in different ways</li>
+      </ul>
+      <p>Structured search is realized not by means of a single, monolithic component, but as an environment where different functionalities (e.g., query definition, faceted browsing of results, and visualization) can be dynamically composed and exchanged.</p>
+    </div>
+    <div class="documentation__intro__demo">
+			<img src="/images/help/structured-search-life-sciences.png" height=400px />
+    </div>
+  </div>
+  <div style="clear:both;"></div>
+  <h2> Structured Search Environment </h2>
+  <p>The structured search environment represents the main wrapper component defining the parameters of the whole search scenario. The environment consists of the following sections:</p>
+  <ul>
+    <li><b>Search definition</b> components that allow the user to express her information need and generate the initial query.</li>
+    <li><b>Faceted filtering</b> components which allow the user to further refine the search request by means of different faceted views.</li>
+    <li><b>Results visualization</b> components that visualize the search results in different ways.</li>
+  </ul>
+  <p>
+     Each of these sections can be realized in different ways and there is only loose coupling among the functionality blocks: e.g., s earch definition can be realized by a simple keyword search component as well as by a much more powerful structured search component. 
+     The only requirement is that the chosen components must produce a SPARQL query that would produce initial search results.
+  </p>
+  
+  <p>
+    It is possible to use any UI components inside semantic-search, e.g tabs, popups, alerts, etc, but when one strips down all these details, typically <code>semantic-search</code> definition looks like:
+  </p>
+  <pre>
+    <code>
+<semantic-search>
+  <semantic-search-query-builder></semantic-search-query-builder> <!-- 1. search definition -->
+
+  <semantic-search-facet></semantic-search-facet> <!-- 2. faceting -->
+
+  <semantic-search-result-holder>
+    <semantic-search-result> <!-- 3. result visualization -->
+      <semantic-table id='table'></semantic-table> <!-- it is possible to use any semantic-* visualization component to visualize search results, e.g semantic-table -->
+    </semantic-search-result>
+  </semantic-search-result-holder>
+</semantic-search>
+    </code>
+  </pre>
+
+  <p>Or in more simple case like:</p>
+  <pre>
+    <code>
+<semantic-search>
+  <semantic-search-query-keyword></semantic-search-query-keyword> <!-- 1. search definition -->
+  <!-- 2. facet is optional -->
+
+  <semantic-search-result-holder>
+    <semantic-search-result> <!-- 3. result visualization -->
+      <semantic-table id='table'></semantic-table>
+    </semantic-search-result>
+  </semantic-search-result-holder>
+</semantic-search>
+    </code>
+  </pre>
+  
+  <p><code>semantic-search</code> configuration:</p>
+  <mp-documentation type="SemanticSearchConfig"></mp-documentation>
+
+  
+  <h3> Search definition </h3>
+  <p>Search definition components help the user to express her information need. The UI components supporting search definition to capture this information need and express it as a SPARQL query to be executed against the graph database.</p>
+  <p>
+      Search definition can be realized by re-using component, that are designed of other search modalities such as the <code>semantic-search-query-keyword</code> or <code>semantic-search-query-constant</code> component. <br>
+      However, the platform provides a much more powerful mechanism for expressing the user’s request in an incremental way: structured search based on fundamental categories and relations (<code>semantic-search-query-builder</code>). Structured search assumes that the user wants to search for data instances classified into some fundamental categories: the most representative concepts within the domain.
+  </p>
+  
+  <p><code>semantic-search-query-builder</code> configuration:</p>
+  <mp-documentation type="SemanticQueryBuilderConfig"></mp-documentation>
+  
+  <p><code>semantic-search-query-keyword</code> configuration:</p>
+  <mp-documentation type="SemanticSearchKeywordConfig"></mp-documentation>
+  
+  <p><code>semantic-search-query-constant</code> configuration:</p>
+  <mp-documentation type="SemanticSearchQueryConstantConfig"></mp-documentation>
+
+  <h3>Faceted filtering</h3>
+  <p>
+    The search request entered by the user and translated into SPARQL by the search definition components produces the initial set of results. This initial set of results can be explored and further refined by the user by using the faceted filtering capabilities. The faceted filtering stage generates an additional search clauses, that will be added to the original SPARQL query.
+  </p>
+  <p>
+  <p>
+    Facets are populated based on the content of the initial result set and reflect the actual categories and relations of the instances returned by the original query. Depending on the  category ranges of the relations the facets can be visualized using different UI components (e.g., checkbox for resources and sliders for time and numerical values)
+  </p>
+
+  <p><code>semantic-search-facet</code> configuration:</p>
+  <mp-documentation type="SemanticFacetConfig"></mp-documentation>
+
+  <h3>Results visualization</h3>
+  <p>
+    Visualization of search results in the metaphactory platform does not require any special UI components and is performed using the standard components for query visualization: both generic ones (e.g., <semantic-link uri="http://help.metaphacts.com/resource/SemanticTable">table</semantic-link>) as well as datatype-specific (e.g., <semantic-link uri="http://help.metaphacts.com/resource/SemanticMap">map</semantic-link> or <semantic-link  uri="http://help.metaphacts.com/resource/SemanticChart">chart</semantic-link>). 
+  </p>
+  <p>
+    The chosen component must be able to visualize the results of a SPARQL query and have a <code>query</code> input parameter.
+    One difference from the normal usage of the component is the definition of the input query: while normally the query is defined as the parameter of the visualization component, in case of the structured search environment the query is instead injected as a sub-query into the component <code>query</code> parameter from the environment context. To achieve this, the visualization must be wrapped in the <code>semantic-search-result</code> component. 
+    <bs-alert bs-style='warning'>
+      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> 
+      HTML <code>id</code> attribute is mandatory for the visualization component that is used in <code>semantic-search-result</code>.
+    </bs-alert>
+  </p>
+  
+  <p>
+    The injected sub-query does always have only one projection variable, by convention <code>?subject</code> is used as a variable, however, this can be adjusted in the corresponding base query component. Independently from the projection variable in the base query, it is always possible to use <code>?subject</code> variable in the result visualizaiton query to refer to the result. If the projection variable in the base-query is not named <code>subject</code>, an additional bind clause will be injected to bind it to <code>?subject</code>.
+  </p>
+  
+  <p>
+    For example, let's say that we want to display all query results together with corresponding <code>rdfs:label</code> in the table. The config can look like:
+  </p>
+  <pre>
+    <code>
+<semantic-search-result>
+  <semantic-table it='table' query='SELECT ?subject ?label WHERE {?subject rdfs:label ?label}'></semantic-table>
+</semantic-search-result>
+    </code>
+  </pre> 
+  <p>
+    When the search is executed by the user, the actual query that will be executed by the table will look like:
+  </p>
+  <pre>
+    <code mode='application/sparql-query'>
+SELECT ?subject ?label WHERE {
+  {
+    SELECT ?subject {
+      # search query
+    }
+  }
+  ?subject rdfs:label ?label
+}
+    </code>
+  </pre>   
+
+  <h2> Search Profile </h2>
+  <p>
+    One of the core concepts behind <code>semantic-search</code> is so called <b>Search Profile</b> - well defined set of <b>Categories</b> and <b>Relations</b> between them. 
+  </p>
+  <p>
+    To define Category one needs to provide some basic metadata about it using some well known RDF vocabularies like RDFS (<code>rdfs:label</code>), schema.org (<code>schema:thumbnail</code>), as well as custom platform vocabulary (<code>ssp:Category</code>, <code>ssp:Relation</code>, <code>ssp:hasDomain</code>, <code>ssp:hasRange</code>, <code>ssp:Order</code>). See sample profile for Wikidata Life-science Data at the bottom of the page.
+  </p>
+  
+  <h3> Materialized Categories/Relations </h3>
+  <p>
+    In the simple case one can think about <b>category</b> as an instance of <a href="https://www.w3.org/TR/rdf-schema/#ch_class">rdfs:Class</a> or <a href="https://www.w3.org/TR/owl2-syntax/#Classes">owl:Class</a> and <b>relation</b> correspondingly <a href="https://www.w3.org/TR/rdf-schema/#ch_property">rdf:Property</a> or <a href="https://www.w3.org/TR/rdf-schema/#ch_property">owl:ObjectProperty</a>.
+    Basically the most simple kind of data schema.
+  </p>
+  
+  <h3> Virtual Categories/Relations </h3>
+  <p>It is also possible to use search over the data where there is no direct relation between data points, e.g where relations correspond to some property path in the data.</p>
+  
+  <h2> Examples </h2>
+  <h3>Simple Search</h3>
+  <p>
+    See how <code>semantic-search-query-keyword</code> can be used together with facets in in <b>Search with Facets</b> and <b>Wikidata Life Sciences</b> section.
+  </p>
+  <mp-code-example>
+<semantic-search>
+  <semantic-search-query-keyword 
+    query='
+      PREFIX person: <http://example.com/person/> 
+      SELECT ?subject WHERE {
+        FILTER REGEX(?label, ?__token__, "i")
+        VALUES(?subject ?label){
+          ( person:alice "Alice" )
+          ( person:carola "Carola" )      
+          ( person:bob "Bob" )
+          ( person:mike "Mike" )
+        }
+      }
+    '
+  ></semantic-search-query-keyword>
+
+  <semantic-search-result-holder>
+    <semantic-search-result>
+      <semantic-table 
+        id='table'
+        query='
+          PREFIX person: <http://example.com/person/> 
+          SELECT ?subject ?label ?image {
+               VALUES(?subject ?label ?image){
+                  ( person:alice "Alice" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )
+                  ( person:carola "Carola" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )      
+                  ( person:bob "Bob" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
+                  ( person:mike "Mike" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
+                }
+          }
+        '
+        tuple-template='{{>resultTemplate}}'
+        options='{"showFilter": false}'
+      >
+        <template id='resultTemplate'>
+          <div style="float:left;width:200px;height:170px;" class="panel panel-default text-center" title="{{subject.value}}">
+            <div class="panel-body"><img src="{{image.value}}" style="width:150px;"/></div>
+            <div class="panel-footer" style="position: relative">{{label.value}}</div>
+          </div>       
+        </template>
+      </semantic-table>
+    </semantic-search-result>
+  </semantic-search-result-holder>
+</semantic-search>
+  </mp-code-example>
+
+  <h3>Constant Search</h3>
+  <p>Useful to show different visualizations for the same base query, or show only facets without the main search.</p>
+  <p>
+    See how <code>semantic-search-query-constant</code> can be used together with facets in <b>Search with Facets</b> and <b>Wikidata Life Sciences</b> section.
+  </p>
+  <mp-code-example>
+<semantic-search>
+  <semantic-search-query-constant 
+    query='
+      PREFIX person: <http://example.com/person/> 
+      SELECT ?subject WHERE {
+        VALUES(?subject){
+          ( person:alice )
+          ( person:carola )      
+          ( person:bob )
+          ( person:mike )
+        }
+      }
+    '
+  ></semantic-search-query-constant>
+
+  <semantic-search-result-holder>
+    <semantic-search-result>
+      <semantic-table 
+        id='table'
+        query='
+          PREFIX person: <http://example.com/person/> 
+          SELECT ?subject ?label ?image {
+               VALUES(?subject ?label ?image){
+                  ( person:alice "Alice" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )
+                  ( person:carola "Carola" "//upload.wikimedia.org/wikipedia/commons/thumb/6/6c/User_icon_3.svg/200px-User_icon_3.svg.png" )      
+                  ( person:bob "Bob" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
+                  ( person:mike "Mike" "//upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/200px-User_icon_2.svg.png" )
+                }
+          }
+        '
+        tuple-template='{{>resultTemplate}}'
+        options='{"showFilter": false}'
+      >
+        <template id='resultTemplate'>
+          <div style="float:left;width:200px;height:170px;" class="panel panel-default text-center" title="{{subject.value}}">
+            <div class="panel-body"><img src="{{image.value}}" style="width:150px;"/></div>
+            <div class="panel-footer" style="position: relative">{{label.value}}</div>
+          </div>       
+        </template>
+      </semantic-table>
+    </semantic-search-result>
+  </semantic-search-result-holder>
+</semantic-search>
+  </mp-code-example>  
+    <br/>
+  <h3> Search with Facets </h3>
+  
+  <ul>
+    <li>
+      <semantic-link uri="http://help.metaphacts.com/resource/StructuredSearchExample">Structured search</semantic-link>
+    </li>
+    <li>
+      <semantic-link uri="http://help.metaphacts.com/resource/StructuredKeywordSearchExample">Keyword search with facets</semantic-link>
+    </li>
+    <li>
+      <semantic-link uri="http://help.metaphacts.com/resource/StructuredConstantSearchExample">Constant search with facets</semantic-link>
+    </li>
+  </ul>
+  
+  <h3> Wikidata Life Sciences </h3>
+  <p>
+   Examples of the structured semantic search environment configured for the life sciences domain data from <a href="http://www.wikidata.org/">Wikidata</a>.
+  </p>
+  
+  <ul>
+    <li>
+      <semantic-link uri="http://help.metaphacts.com/resource/StructuredSearchExampleWikidata">Structured search (Wikidata)</semantic-link>
+    </li>
+    <li>
+      <semantic-link uri="http://help.metaphacts.com/resource/StructuredKeywordSearchExampleWikidata">Keyword search with facets (Wikidata)</semantic-link>
+    </li>
+    <li>
+      <semantic-link uri="http://help.metaphacts.com/resource/StructuredConstantSearchExampleWikidata">Constant search with facets (Wikidata)</semantic-link>
+    </li>
+  </ul>
+  </div>
+</div>
+

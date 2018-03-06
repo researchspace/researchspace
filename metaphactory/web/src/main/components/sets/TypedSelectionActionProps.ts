@@ -47,6 +47,16 @@ export interface MenuTitleProps {
    * Menu item title
    */
   menuTitle: string
+
+  /**
+   * Type of the dialog for the action.
+   */
+  dialogType?: 'lightbox' | 'modal';
+
+  /**
+   * Size of the modal dialog.
+   */
+  dialogSize?: 'large' | 'small';
 }
 export type AllTitleProps = TitleProps & MenuTitleProps
 
@@ -58,6 +68,11 @@ export interface TypeProps {
    * Selection items are allowed to have these types
    */
   types?: string[]
+
+  /**
+   * Query that is used to check if selection is active. For the default value see TypedSelectionActionComponent. If `undefined` is explicitly specified then no check is performed.
+   */
+  checkQuery?: string
 
   repositories?: string[]
 }

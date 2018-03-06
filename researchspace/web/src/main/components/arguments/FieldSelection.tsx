@@ -35,6 +35,11 @@ export interface BaseFieldSelectionProps {
   placeholder: string
   onCancel: () => void
   multiSelection: boolean;
+
+  /**
+   * Show only fields that satisfy some condition.
+   */
+  fieldFilter?: (field: ArgumentsFieldDefinition) => Kefir.Property<boolean>;
 }
 export interface MultiFieldSelectionProps extends BaseFieldSelectionProps {
   onSave: (fields: Array<ArgumentsFieldDefinition>) => void
@@ -60,17 +65,18 @@ interface State {
 /**
  * Provides the ability to select multiple Fields for some Record.
  * 1) Only fields that have range matching type of the Record can be selected.
- * 2) Only fields with canonical values (values from default repository) for the give record can be selected.
+ * 2) Only fields with canonical values (values from default repository)
+ *    for the give record can be selected.
  */
 export class FieldSelection extends React.Component<FieldSelectionProps, State> {
   private fieldSelection: ReactSelect.Component;
   private repositories = getRepositoryStatus().map(repos => repos.keySeq().toArray());
 
-  constructor(props, context) {
+  constructor(props: FieldSelectionProps, context) {
     super(props, context);
     this.state = {
       fields: Maybe.Nothing<Array<ArgumentsFieldDefinition>>(),
-      selectedFields: []
+      selectedFields: props.multiSelection ? [] : null,
     };
   }
 
@@ -88,7 +94,8 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
     const { fields: maybeFields } = this.state;
     return maybeFields.map(
       fields =>
-        _.isEmpty(fields) ? <p>'No applicable field for the record'</p> : this.fieldsSelection(fields)
+        _.isEmpty(fields) ?
+          <p>'No applicable field for the record'</p> : this.fieldsSelection(fields)
     ).getOrElse(
       <p>Loading fields ... </p>
     );
@@ -106,7 +113,8 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
     </div>
 
   private onFieldSelectionChange =
-    (fields: Array<ArgumentsFieldDefinition>) => (selected: Array<SelectedField> |  SelectedField) => {
+    (fields: Array<ArgumentsFieldDefinition>) =>
+    (selected: Array<SelectedField> |  SelectedField) => {
       this.fieldSelection.closeMenu();
       this.setState({selectedFields: selected});
       if (isMultiSelection(this.props)) {
@@ -148,12 +156,16 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
     }
 
   private checkField = (field: ArgumentsFieldDefinition): Kefir.Property<boolean> => {
-    return this.repositories.flatMap(
-      repos =>
-        Kefir.combine(
-          repos.map(repo => this.executeFieldTestForRepository(field, repo))
-        )
-    ).map(_.some).toProperty();
+    if (this.props.fieldFilter) {
+      return this.props.fieldFilter(field);
+    } else {
+      return this.repositories.flatMap(
+        repos =>
+          Kefir.combine(
+            repos.map(repo => this.executeFieldTestForRepository(field, repo))
+          )
+      ).map(_.some).toProperty();
+    }
   }
 
   private executeFieldTestForRepository =
@@ -166,7 +178,10 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
         where: query.where,
       };
       return SparqlClient.ask(
-        SparqlClient.setBindings(askQuery, {'subject': this.props.subject}), {context: {repository: repository}}
+        SparqlClient.setBindings(
+          askQuery, {'subject': this.props.subject}
+        ),
+        {context: {repository: repository}}
       );
   }
 

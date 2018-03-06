@@ -82,7 +82,9 @@ module.exports = function(buildConfig, defaults) {
         "components/persistence",
         "components/collapsible",
         "components/dnd",
-        "components/arguments"
+        "components/arguments",
+        "components/timeline",
+        "components/alignment"
       ].map(
         dir => SRC_DIRS.map(src => path.resolve(src, dir))
       )

@@ -19,5 +19,6 @@
 export { default as crm } from './crm';
 export { default as crminf } from './crminf';
 export { default as crmsci } from './crmsci';
-export { default as rso } from './rso';
 export { default as crmdig } from './crmdig';
+export { default as rso } from './rso';
+export { default as skos } from './skos';

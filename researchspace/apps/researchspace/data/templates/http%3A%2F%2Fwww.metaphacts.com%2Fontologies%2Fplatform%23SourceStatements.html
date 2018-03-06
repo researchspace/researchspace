@@ -1,0 +1,32 @@
+<h3>Outgoing Statements</h3>
+<semantic-table
+  query='SELECT ?property ?object ?graph WHERE { GRAPH ?graph { ?? ?property ?object } } LIMIT 1000'
+  column-configuration='[
+  {"variableName":"property", "displayName":"Property"},
+  {"variableName":"object", "displayName":"Object"},
+  {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"<semantic-link uri=\"[[resolvePrefix "Admin:NamedGraphs"]]\" urlqueryparam-graph=\"{{graph.value}}\">{{graph.value}}</semantic-link>"}                                
+  ]'
+
+  no-result-template='Resource [[this]] is not used in a subject in any RDF statement.'
+></semantic-table>
+
+<br>	
+<mp-link url="/sparql" urlqueryparam-query='SELECT * WHERE { <[[this]]> ?predicate ?object}LIMIT 100'>Execute as SPARQL query<!--: SELECT * WHERE { &#60;[[this]]&#62; ?predicate ?object }--></mp-link>
+
+<h3>Incoming Statements</h3>
+<semantic-table 
+  query = 'SELECT ?property ?subject ?graph WHERE { GRAPH ?graph { ?subject ?property ?? } } LIMIT 1000'
+  column-configuration='[
+    {"variableName":"property", "displayName":"Property"},
+    {"variableName":"subject", "displayName":"Subject"},
+    {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"<semantic-link uri=\"[[resolvePrefix "Admin:NamedGraphs"]]\" urlqueryparam-graph=\"{{graph.value}}\">{{graph.value}}</semantic-link>"}   
+  ]'
+  no-result-template='Resource [[this]] is not used in an object in any RDF statement.'
+></semantic-table>
+
+<br>	
+<mp-link url="/sparql" urlqueryparam-query='SELECT * WHERE { ?subject ?predicate <[[this]]> }LIMIT 100'>Execute as SPARQL query <!--: SELECT * WHERE { ?subject ?predicate &#60;[[this]]&#62; }--></mp-link>
+
+<br>
+<br>
+<i>Please note that the tables above are limted to 1000 statements. </i>

@@ -1,0 +1,39 @@
+<semantic-context repository="default">
+ <div>
+    <ol class="page-breadcrumb">
+      <li>
+        <mp-link title="Home" url="/">Home</mp-link>
+      </li>
+      <li>
+        <semantic-link title="Assets" data-uri="http://www.metaphacts.com/resource/assets/">Assets</semantic-link>
+      </li>
+      <li>
+        <semantic-link title="Assets" data-uri="http://www.metaphacts.com/resource/assets/OntodiaDiagrams">Diagrams</semantic-link>
+      </li>
+      <li class="active">[[#if (urlParam "diagram")]]<mp-label iri="[[urlParam "diagram"]]"></mp-label>[[else]]New Diagram[[/if]]</li>
+    </ol>
+
+
+    <div class="page">
+      <div class="page__header">
+        <div class='page__header-thumbnail'>
+          <h2><i class="fa fa-object-group fa-2x"></i></h2>
+        </div>
+        <div class='page__header-body'>
+          <h2> [[#if (urlParam "diagram")]]Edit Diagram[[else]]New Diagram[[/if]]</h2>
+        </div>
+      </div>
+      <div class='page__body'> 
+
+        <div style="height: calc(100vh - 60px)">
+          <semantic-context repository="assets">
+            <mp-anonymous-hidden alt='<ontodia settings="nostats" [[#if (urlParam "diagram")]]diagram="[[urlParam "diagram"]]"[[/if]] readonly="true"></ontodia>'>
+              <ontodia settings='nostats' [[#if (urlParam "diagram")]]diagram="[[urlParam "diagram"]]"[[/if]]></ontodia>
+            </mp-anonymous-hidden>
+          </semantic-context>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</semantic-context>

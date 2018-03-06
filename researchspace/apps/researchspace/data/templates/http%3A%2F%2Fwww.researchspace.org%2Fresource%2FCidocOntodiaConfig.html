@@ -1,16 +1,25 @@
+             repositories='["default", "assets"]'     
              image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
+             link-settings='[{"id": "http://www.researchspace.org/ontology/group", "visible": false}, {"id": "http://www.researchspace.org/ontology/PX_asserts_value", "visible": false}]'
+             group-by='[{"linkType": "http://www.researchspace.org/ontology/group", "linkDirection": "in"}]'
              settings="nostats"
              metadata='<> a <http://www.researchspace.org/ontology/CidocDiagram>.'
              navigate-to='http://www.researchspace.org/resource/CidocOntodia'
+             node-templates='{
+               "http://www.ics.forth.gr/isl/CRMinf/I2_Belief": "{{> rsp:BeliefOntodiaTemplate}}",
+               "http://www.researchspace.org/ontology/Place": "{{> rsp:ItemOntodiaTemplate }}",
+               "http://www.researchspace.org/ontology/Thing": "{{> rsp:ItemOntodiaTemplate }}"
+             }'
              provider-settings='{
-						"defaultPrefix": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
- PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
- PREFIX wdt: <http://www.wikidata.org/prop/direct/>
- PREFIX wd: <http://www.wikidata.org/entity/>
- PREFIX owl:  <http://www.w3.org/2002/07/owl#>
- PREFIX rso: <http://www.researchspace.org/ontology/>
- PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
- ",
+              "defaultPrefix": "
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                PREFIX wd: <http://www.wikidata.org/entity/>
+                PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+                PREFIX rso: <http://www.researchspace.org/ontology/>
+                PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+             ",
             "dataLabelProperty": "rso:displayLabel",
             "classTreeQuery": "
               SELECT ?class ?label ?parent {
@@ -36,8 +45,11 @@
             ",
                "extractLabel": false },
             "elementInfoQuery": "
-            SELECT ?inst ?class ?label ?propType ?propValue
-            WHERE {
+              CONSTRUCT {
+                  ?inst rdf:type ?class .
+                  ?inst rdfs:label ?label .
+                  ?inst ?propType ?propValue.
+              } WHERE {
                 OPTIONAL {?inst rdf:type ?class . }
                 OPTIONAL {?inst ?labelProp ?label}
                 OPTIONAL {?inst ?propType ?propValue.

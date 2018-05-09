@@ -103,8 +103,11 @@ cd researchspace
 unzip example-data/blazegraph.jnl.zip -d example-data/
 unzip example-data/assets.zip -d metaphactory/data/
 docker run --name rs-blazegraph-default -d --restart=always -p 10080:8080 --env QUERY_TIMEOUT="30000" -v $(pwd)/example-data/:/blazegraph-data/:rw researchspace/blazegraph
+mkdir metaphactory/apps
+mkdir metaphactory/data/templates
+ln -s $(pwd)/researchspace/app $(pwd)/metaphactory/apps/researchspace
 echo "sparqlEndpoint=http://localhost:10080/blazegraph/sparql" >> runtime/config-dev/environment.prop
-echo "appsDirectory=$(pwd)/researchspace/apps" >> runtime/config-dev/environment.prop
+echo "appsDirectory=$(pwd)/metaphactory/apps" >> runtime/config-dev/environment.prop
 ./build.sh
 ```
 

@@ -11,18 +11,24 @@ ResearchSpace Platform
 * node
 * yarn
 ___
+### Browser compatibility
+
+The ResearchSpace platform runs in Google Chrome (minimum version 53) and Mozilla Firefox (minimum version 58)  
+Use of ResearchSpace in other browsers or older versions of Chrome or Firefox is not currently supported
+___
+
 ### Prerequisites Installation Guide - *Ubuntu 16.04 (Xenial Xerus)*
 
 #### Docker
 1. Update your local package index
 `sudo apt-get update`
-2. Download docker package 
+2. Download docker package
 `sudo apt-get install docker.io`
 3. Test the installation
 `sudo docker run hello-world`
 4. Enable docker to run without using sudo, read the following [instructions](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo)
 
-#### Git 
+#### Git
 `sudo apt-get install git`
 
 #### Java 8
@@ -33,13 +39,13 @@ ___
 #### Scala Interactive Build Tool
 1. Install Scala
 `sudo apt-get install scala`
-2. Enable apt-get to find the sbt package 
+2. Enable apt-get to find the sbt package
 `echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list`
 `sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823`
 `sudo apt-get update`
 `sudo apt-get install sbt`
 
-#### Node.js -- using version 6.x (higher versions will work as well)
+#### Node.js -- using version 6.x (versions 7 and 8 will also work)
 `curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh`
 `sudo bash nodesource_setup.sh`
 `sudo apt-get install nodejs`
@@ -110,7 +116,7 @@ This will:
 5. Start a Blazegraph instance in a docker container (with the sample database file mounted)
 6. Configure the platform to use this Blazegraph instance as its default repository
 7. Configure the platform to use the provided ResearchSpace App
-8. Start the SBT build environment in interactive mode. 
+8. Start the SBT build environment in interactive mode.
 
 SBT will resolve some dependencies and present the SBT prompt.
 

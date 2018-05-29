@@ -13,7 +13,7 @@ ResearchSpace Platform
 ___
 ### Browser compatibility
 
-The ResearchSpace platform runs in Google Chrome (minimum version 53) and Mozilla Firefox (minimum version 58)  
+The ResearchSpace platform runs in Google Chrome (minimum version 53) and Mozilla Firefox (minimum version 58)
 Use of ResearchSpace in other browsers or older versions of Chrome or Firefox is not currently supported
 ___
 
@@ -54,6 +54,7 @@ ___
 `curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -`
 `echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list`
 `sudo apt-get update && sudo apt-get install yarn`
+
 ___
 
 ### Prerequisites Installation Guide -  *MacOS Sierra*
@@ -77,18 +78,37 @@ Note, that by default Homebrew will install Java 9. Here are details of [how to 
 `brew tap caskroom/versions`
 `brew cask install java8`
 
+
+
 #### Scala Interactive Build Tool
 `brew install sbt`
 
+
+
 #### Node.js
-`brew install node`
+We will use nvm to install node.
+
+`brew install nvm`
+`mkdir ~/.nvm`
+
+Add the following to ~/.bash_profile or your desired shell configuration file:
+
+```
+export NVM_DIR="$HOME/.nvm"
+ . "/usr/local/opt/nvm/nvm.sh"
+```
+
+Install node 8:
+
+`nvm install v8.11.1`
+
+
 
 #### Yarn
+
 `brew install yarn`
-___
 
-
-
+----
 
 
 
@@ -110,6 +130,11 @@ echo "sparqlEndpoint=http://localhost:10080/blazegraph/sparql" >> runtime/config
 echo "appsDirectory=$(pwd)/metaphactory/apps" >> runtime/config-dev/environment.prop
 ./build.sh
 ```
+
+
+
+
+
 
 This will:
 1. Check out this code
@@ -147,3 +172,33 @@ followed by
 ```
 
 You can then go to `http://localhost:10214/` in your browser, and log in with `admin:admin`
+
+
+
+___
+
+
+
+## Troubleshooting
+
+**Security certificate issues when building the platform**
+
+If you are working in an institutional network and experience difficulties at the build stage due to security certificate errors, you may need to add your institution's security certificate to your computer's keychain, and to the keystore in your Java installation.
+For example you may experience errors when trying to download Maven dependencies.
+
+To add the certificate to your java keystore:
+
+`keytool -import -alias example -keystore  /path/to/cacerts -file example.der`
+
+You may also need to disable strict ssl settings in yarn:
+
+`yarn config set strict-ssl "false"`
+
+
+
+**Java version**
+
+Mac users reported issues building the platform using Java 10. Setup of ResearchSpace is tested and working with Java 8. You are recommended to use [jEnv](http://www.jenv.be/) to manage multiple versions of Java if required.
+
+
+

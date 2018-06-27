@@ -1,5 +1,9 @@
 # ResearchSpace
-ResearchSpace Platform
+
+
+**Please note**, the following documentation covers the setting up of the ResearchSpace Platform in **development** mode.  
+Detailed documentation about deploying the platform for production will follow soon.
+
 
 ### Prerequisites
 
@@ -72,8 +76,7 @@ ___
 `docker run hello-world`
 
 #### Java 8
-Note, that by default Homebrew will install Java 9. Here are details of [how to install Java 8](http://www.lonecpluspluscoder.com/2017/10/08/installing-other-versions-of-the-java-jdk-via-homebrew/
-)
+Note, that by default Homebrew will install Java 9. Here are details of [how to install Java 8](http://www.lonecpluspluscoder.com/2017/10/08/installing-other-versions-of-the-java-jdk-via-homebrew/)
 
 `brew tap caskroom/versions`
 `brew cask install java8`
@@ -132,11 +135,8 @@ echo "appsDirectory=$(pwd)/metaphactory/apps" >> runtime/config-dev/environment.
 ```
 
 
-
-
-
-
 This will:
+
 1. Check out this code
 2. Compile and initialise the some files using SBT in batch mode
 3. Extract a sample Blazegraph database file

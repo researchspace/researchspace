@@ -1,4 +1,4 @@
-FROM docker.metaphacts.com/release/jetty-jre8-alpine:9.3.9
+FROM jetty:9.3.9-jre8-alpine
 MAINTAINER metaphacts support@metaphacts.com
 
 ADD ROOT.war /var/lib/jetty/webapps/ROOT.war

@@ -301,7 +301,7 @@ public class RDFGraphStoreEndpoint {
         try(RepositoryConnection con = getRepository(repository).getConnection()){
             con.remove(null,null,null, new Resource[]{uri});
         }catch(Exception e){
-            logger.error("Failed to delete GRPAH \""+ uri +"\": "+e.getMessage());
+            logger.error("Failed to delete GRAPH \""+ uri +"\": "+e.getMessage());
             logger.debug("Details:" , e);
             return Response.serverError().entity(e.getMessage()).build();
         }

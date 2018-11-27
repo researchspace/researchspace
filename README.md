@@ -524,7 +524,7 @@ docker images
 Get the most recent Docker image of Blazegraph:
 
 ```bash
-docker pull docker.metaphacts.com/researchspace/blazegraph:2.2.0-RC-2016_12_09-researchspace-geo
+docker pull researchspacepublic/blazegraph:2.2.0-RC-2016_12_09-researchspace-geo
 ```
 
 
@@ -534,7 +534,7 @@ docker pull docker.metaphacts.com/researchspace/blazegraph:2.2.0-RC-2016_12_09-r
 sudo docker create --name rs-blazegraph-journal -v /blazegraph-data ubuntu
 
 # Create a container for the blazegraph app itself, making reference to the empty volume that we previously created
-sudo docker run --name rs-blazegraph -d --restart=always -p 10080:8080 --env QUERY_TIMEOUT="30000" --env JAVA_OPTS="" --volumes-from rs-blazegraph-journal docker.metaphacts.com/researchspace/blazegraph:2.2.0-RC-2016_12_09-researchspace-geo
+sudo docker run --name rs-blazegraph -d --restart=always -p 10080:8080 --env QUERY_TIMEOUT="30000" --env JAVA_OPTS="" --volumes-from rs-blazegraph-journal researchspacepublic/blazegraph:2.2.0-RC-2016_12_09-researchspace-geo
 
 # Create the researchspace app container
 docker create --name rs-app researchspace/researchspace-app:latest

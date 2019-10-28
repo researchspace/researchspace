@@ -78,7 +78,7 @@ class SemanticSearchResultInner extends React.Component<InnerProps, State> {
     const {context: nextContext} = nextProps;
     if (
       !_.isEqual(nextContext.resultQuery.getOrElse(null), context.resultQuery.getOrElse(null)) ||
-      !_.isEqual(nextContext.bindings, context.bindings) || !_.isEqual(this.state, nextState) ||
+      !_.isEqual(nextContext.visualizationContext.getOrElse(null), context.visualizationContext.getOrElse(null)) || !_.isEqual(this.state, nextState) ||
       !nextContext.availableDomains.isEqual(context.availableDomains)
     ) {
       return true;
@@ -200,13 +200,20 @@ class SemanticSearchResultInner extends React.Component<InnerProps, State> {
         if (!baseQuery.limit && this.props.context.baseConfig.limit) {
           baseQuery.limit = context.baseConfig.limit;
         }
+
         // if context is set for result visualization we also need to
         // rewrite the query to take into account virtual relations
-        if (_.has(context.bindings, RESULT_VARIABLES.CONTEXT_RELATION_VAR)) {
-          this.bindRelationPattern(baseQuery, context.bindings);
-        }
+        const queryWithBindings = context.visualizationContext.map(
+          vc => {
+            const bindings = {
+              [RESULT_VARIABLES.CONTEXT_RELATION_VAR]: vc.iri,
+              [SEMANTIC_SEARCH_VARIABLES.RELATION_VAR]: vc.iri,
+            }
+            this.bindRelationPattern(baseQuery, bindings);
+            return SparqlClient.setBindings(baseQuery, bindings);
+          }
+        ).getOrElse(baseQuery);
 
-        const queryWithBindings = SparqlClient.setBindings(baseQuery, this.props.context.bindings);
         return SparqlUtil.serializeQuery(
           generateQueryForMultipleDatasets(
             queryWithBindings, context.selectedDatasets, context.baseConfig.datasetsConfig

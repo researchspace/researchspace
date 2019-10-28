@@ -107,21 +107,6 @@ class SemanticSearchContextualizedResultInner extends React.Component<InnerProps
     this.state = initialState;
   }
 
-  getChildContext() {
-    return _.assign({}, this.context, {
-      bindings: this.getBindings(),
-    });
-  }
-
-  private getBindings = () => {
-    return this.state.relation.map(
-      relation => ({
-        [RESULT_VARIABLES.CONTEXT_RELATION_VAR]: relation.iri,
-        [SEMANTIC_SEARCH_VARIABLES.RELATION_VAR]: relation.iri,
-      })
-    ).getOrElse({} as any);
-  }
-
   componentDidMount() {
     this.props.context.setVisualizationContext(this.state.relation);
   }

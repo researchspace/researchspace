@@ -83,7 +83,6 @@ export interface ResultContext extends BaseSearchContext {
   useInExtendedFcFrSearch(
     item: { value: ExtendedSearchValue; range: Model.Category }
   ): void;
-  readonly bindings: { [variable: string]: Rdf.Node };
   notifyResultLoading(operation: ResultOperation): void;
   readonly resultState: { [componentId: string]: object };
   updateResultState(componentId: string, stateChange: object): void;

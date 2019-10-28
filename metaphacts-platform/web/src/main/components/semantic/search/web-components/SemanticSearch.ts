@@ -141,7 +141,6 @@ export class SemanticSearch extends Component<Props, State> {
       setFacetActions: this.setFacetActions,
       resultQuery: this.state.resultQuery,
       searchProfileStore: this.state.searchProfileStore,
-      bindings: {},
       notifyResultLoading: this.notifyResultLoading,
       resultState: this.state.resultState,
       updateResultState: this.updateResultState,

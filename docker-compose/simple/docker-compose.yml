@@ -1,0 +1,27 @@
+version: "2.2"
+services:
+
+  researchspace:
+    image: "researchspacepublic/researchspace:3.2.1"
+    mem_limit: 1g
+    ports:
+      - "10214:8080"
+    restart: unless-stopped
+    environment:
+      - PLATFORM_OPTS=-Dlog4j.configurationFile=file:///var/lib/jetty/webapps/etc/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000 -Dconfig.environment.sparqlEndpoint=http://blazegraph:8080/blazegraph/sparql
+      - JAVA_OPTS=
+    depends_on:
+      - blazegraph
+
+  blazegraph:
+    image: "researchspacepublic/blazegraph:2.2.0-RC-2016_12_09-researchspace-geo"
+    ports:
+      - "10080:8080"
+    restart: unless-stopped
+    volumes:
+      - blazegraph-data:/blazegraph-data
+    environment:
+      - JAVA_OPTS=-Xmx1g
+
+volumes:
+  blazegraph-data:

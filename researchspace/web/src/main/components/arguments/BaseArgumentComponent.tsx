@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,6 +33,7 @@ import {
 import { navigateToResource, refresh } from 'platform/api/navigation';
 import { DropArea } from 'platform/components/dnd/DropArea';
 import { ResourceLinkComponent } from 'platform/api/navigation/components';
+import { getPreferredLabel } from 'platform/components/forms';
 import { addNotification } from 'platform/components/ui/notification';
 
 import {
@@ -115,7 +116,9 @@ export class BaseArgumentsComponent extends Component<ArgumentsProps, BaseArgume
           <ResourceLinkComponent uri='http://www.researchspace.org/resource/Field'
                                  urlqueryparamSubject={this.state.target.value}
                                  urlqueryparamField={field.iri}>
-            <span className='field-type-title'>{field.label}</span>
+            <span className='field-type-title'>
+              {getPreferredLabel(field.label)}
+            </span>
           </ResourceLinkComponent>
         </SemanticContextProvider> of <ResourceLinkComponent uri={this.state.target.value}
                                                              guessRepository={true} />
@@ -365,7 +368,6 @@ export class BaseArgumentsComponent extends Component<ArgumentsProps, BaseArgume
         />;
       case InferenceType:
         return <InferenceMakingComponent
-          subject={this.state.target}
           logicTypeQuery={this.props.logicTypeQuery}
           acceptEvidenceQuery={this.props.acceptEvidenceQuery}
           onCancel={this.cancelNewArgument}
@@ -374,7 +376,6 @@ export class BaseArgumentsComponent extends Component<ArgumentsProps, BaseArgume
         />;
       case BeliefAdoptionType:
         return <BeliefAdoptionComponent
-          subject={this.state.target}
           acceptRecordQuery={this.props.acceptEvidenceQuery}
           onCancel={this.cancelNewArgument}
           onSave={this.addArgument}

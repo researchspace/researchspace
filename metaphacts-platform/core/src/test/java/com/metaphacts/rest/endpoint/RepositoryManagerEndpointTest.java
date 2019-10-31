@@ -1,0 +1,172 @@
+/*
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+package com.metaphacts.rest.endpoint;
+
+import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.util.Map;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import org.apache.commons.io.IOUtils;
+import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
+import com.github.sdorra.shiro.ShiroRule;
+import com.github.sdorra.shiro.SubjectAware;
+import com.google.inject.Inject;
+import com.metaphacts.cache.CacheManager;
+import com.metaphacts.data.rdf.container.LDPApiInternal;
+import com.metaphacts.junit.MetaphactsJerseyTest;
+import com.metaphacts.querycatalog.QueryCatalogRESTServiceRegistryRule;
+import com.metaphacts.repository.RepositoryManager;
+
+public class RepositoryManagerEndpointTest extends MetaphactsJerseyTest {
+    
+    protected final String qaasPermissionShiroFile = 
+            "classpath:com/metaphacts/security/shiro-repositories-rights.ini";
+
+    @Rule // required to initialize the security manager
+    public ShiroRule shiroRule = new ShiroRule();
+    
+    @Inject
+    @Rule
+    public QueryCatalogRESTServiceRegistryRule registryRule;
+    
+    @Inject
+    public CacheManager cacheManager;
+    
+    private ValueFactory VF = SimpleValueFactory.getInstance();
+
+    public RepositoryManagerEndpointTest() {
+
+    }
+
+    @Override
+    protected void register(ResourceConfig resourceConfig) {
+        resourceConfig.register(RepositoryManagerEndpoint.class);
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        cacheManager.deregisterAllCaches();
+        namespaceRule.set("test", "http://metaphacts.com/test/");
+        registryRule.setLDPRepository(RepositoryManager.ASSET_REPOSITORY_ID);
+        
+        try (RepositoryConnection con = repositoryRule.getAssetRepository().getConnection()) {
+            con.add(LDPApiInternal.class.getResourceAsStream("testQueryTemplateContainer.trig"), 
+                    "", RDFFormat.TRIG);
+            con.add(LDPApiInternal.class.getResourceAsStream("testQueryTemplateContainerConstruct.trig"), 
+                    "", RDFFormat.TRIG);
+            con.add(LDPApiInternal.class.getResourceAsStream("testQueryTemplateContainerUpdate.trig"), 
+                    "", RDFFormat.TRIG);
+        }
+        
+        try (RepositoryConnection con = repositoryRule.getRepository().getConnection()) {
+            con.add(this.getClass().getResourceAsStream("dummyData.ttl"), 
+                    "", RDFFormat.TURTLE);
+        }
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        repositoryRule.delete();
+    }
+    
+    private Response addTestTurtleRepositoryConfig(String id) throws Exception {
+        StringWriter writer = new StringWriter();
+        IOUtils.copy(RepositoryManager.class.getResourceAsStream(id + ".ttl"),
+                writer, Charset.forName("utf-8"));
+        String strRepoConfig = writer.toString();
+        return target("/repositories/config/" + id).request()
+                .post(Entity.entity(strRepoConfig, MediaType.TEXT_PLAIN));
+    }
+    
+    @SubjectAware(
+            username = "admin",
+            password = "admin",
+            configuration = qaasPermissionShiroFile 
+        )
+    @Test
+    public void testAddRepository() throws Exception {
+        Map<String, Boolean> repoConfigsMap = repositoryRule.getRepositoryManager().getAvailableRepositoryConfigs();
+        Assert.assertEquals(3, repoConfigsMap.size());
+        Response res = addTestTurtleRepositoryConfig("test-sail-memory-repository");
+        Assert.assertEquals(Status.OK, res.getStatusInfo());
+        repoConfigsMap = repositoryRule.getRepositoryManager().getAvailableRepositoryConfigs();
+        Assert.assertEquals(4, repoConfigsMap.size());
+        
+        Repository repo = repositoryRule.getRepositoryManager().getRepository("test-sail-memory-repository");
+        try (RepositoryConnection conn = repo.getConnection()) {
+            conn.add(VF.createStatement(VF.createBNode(), RDFS.LABEL, VF.createLiteral("label")));
+            Assert.assertEquals(1, Iterations.asList(conn.getStatements(null, null, null)).size());
+        }
+    }
+    
+    @SubjectAware(
+            username = "admin",
+            password = "admin",
+            configuration = qaasPermissionShiroFile 
+        )
+    @Test
+    public void testDeleteRepository() throws Exception {
+        Map<String, Boolean> repoConfigsMap = repositoryRule.getRepositoryManager().getAvailableRepositoryConfigs();
+        Assert.assertEquals(3, repoConfigsMap.size());
+        Response res = addTestTurtleRepositoryConfig("test-sail-memory-repository");
+        Assert.assertEquals(Status.OK, res.getStatusInfo());
+        repoConfigsMap = repositoryRule.getRepositoryManager().getAvailableRepositoryConfigs();
+        Assert.assertEquals(4, repoConfigsMap.size());
+        
+        Repository repo = repositoryRule.getRepositoryManager().getRepository("test-sail-memory-repository");
+        try (RepositoryConnection conn = repo.getConnection()) {
+            conn.add(VF.createStatement(VF.createBNode(), RDFS.LABEL, VF.createLiteral("label")));
+            Assert.assertEquals(1, Iterations.asList(conn.getStatements(null, null, null)).size());
+        }
+        
+        res = target("/repositories/config/test-sail-memory-repository").request().delete();
+        Assert.assertEquals(Status.OK, res.getStatusInfo());
+        repoConfigsMap = repositoryRule.getRepositoryManager().getAvailableRepositoryConfigs();
+        Assert.assertEquals(3, repoConfigsMap.size());
+        try {
+            try (RepositoryConnection conn = repo.getConnection()) {
+                Assert.fail("Repository not shut down properly");
+            } 
+        } catch (IllegalStateException e) {
+            // no-op
+        }
+        
+    }
+
+}

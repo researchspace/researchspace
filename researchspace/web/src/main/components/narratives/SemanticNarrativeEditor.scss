@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,17 +18,38 @@
 
 @import "~basic-styles.scss";
 
+.udp-nav-tabs {
+  display: flex;
+  align-items: flex-end;
+  padding-top: $padding-base-vertical * 2;
+}
+
+.container.udp-container {
+  border: 1px solid #CCC;
+  background-color: white;
+}
+
+.row.udp-row {
+  margin: 20px 10px;
+}
+
 .semantic-narrative-editor {
-  &__toolbars {
-    background-color: $rs-color-verylightgrey;
-    margin-bottom: $padding-base-vertical *2;
+
+  &__title-and-toolbars {
+    background-color: white;
+    z-index: $zindex-breadcrumb;
     position: sticky;
     top: $breadcrumb-bar-height + $nav-height;
+  }
+
+  &__toolbars {
+    background-color: $color-verylightgrey;
+    margin-bottom: $padding-base-vertical *2;
     z-index: $zindex-input-element;
     box-shadow: 0 2px 6px #ccc;
   }
   &__toolbar {
-    border:1px solid $rs-color-lightgrey;
+    border:1px solid $color-lightgrey;
   }
   &__toolbar--first {
     border-bottom: none;
@@ -38,7 +59,7 @@
     justify-content: center;
     align-items: center;
     width: 28px;
-    background-color: $rs-color-mediumgrey;
+    background-color: $color-mediumgrey;
   }
   &__toolbar-title {
     color: white;
@@ -48,21 +69,31 @@
     font-weight: 600;
   }
   &__mode-toggle {
-    padding-left: 8px;
+    display: flex;
+    padding-left: 10px;
   }
   &__toolbar-section {
     display: flex;
     align-items: center;
     padding: 10px 2px;
+
+    & .btn {
+      padding: 10px;
+    }
   }
   &__toolbar-divider {
-    border-left: 1px solid lighten($rs-color-lightgrey, 40%);
-    border-right: 1px solid $rs-color-lightgrey;
+    border-left: 1px solid lighten($color-lightgrey, 40%);
+    border-right: 1px solid $color-lightgrey;
     min-height: 100%;
     align-self: flex-start;
   }
   &__mode-toggle-description {
-    margin-right: $padding-base-horizontal * 2;
+    margin-right: $padding-base-horizontal;
+    margin-left: $padding-base-horizontal;
+  }
+
+  .btn-success {
+    box-shadow: 0 2px 6px #ccc;
   }
 }
 
@@ -92,30 +123,43 @@
   display: none;
 }
 
+.ory-controls-mode-toggle-button-inner {
+  display: flex;
+  align-items: center;
+  margin: 0 8px 0 0;
+}
+
 .ory-controls-mode-toggle-button-inner > div {
   border-radius: 0!important;
   box-shadow: none!important;
 
   & > button {
     border-radius: 0!important;
-    width: 26px!important;
-    height: 26px!important;
+    width: 30px!important;
+    height: 30px!important;
 
     & > div > div > svg {
-      width: 18px!important;
-      height: 26px!important;
+      width: 20px!important;
+      height: 30px!important;
     }
   }
 }
 
 .semantic-narrative-editor .ory-controls-mode-toggle-button {
-  margin-right: 4px;
   display: flex;
   width: auto;
 }
 
-.ory-controls-trash ory-controls-trash-active > div > button {
-  background-color: $brand-danger;
+.ory-controls-trash.ory-controls-trash-active {
+  display: flex;
+  background-color: #FAFAFA;
+  align-items: center;
+  border: 1px solid #CCC;
+  border-radius: 4px;
+
+  span {
+    padding: 0 6px;
+  }
 }
 
 .ory-toolbar-item-drag-handle {
@@ -124,15 +168,20 @@
 }
 
 .ory-toolbar-item-drag-handle-button {
+  padding: 0!important;
   left: 14px!important;
-  margin: 0!important;
+  margin: 0 6px 0 0!important;
+
+  .ory-toolbar-draggable {
+    padding: 10px;
+  }
 
   &:hover {
     .draggable-gripper {
       background-image: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 5 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><rect x="0" y="0" width="2" height="2" style="fill:%23333;"/><rect x="0" y="8" width="2" height="2" style="fill:%23333;"/><rect x="0" y="16" width="2" height="2" style="fill:%23333;"/><rect x="3" y="0" width="2" height="2" style="fill:%23333;"/><rect x="3" y="8" width="2" height="2" style="fill:%23333;"/><rect x="3" y="16" width="2" height="2" style="fill:%23333;"/><rect x="3" y="4" width="2" height="2" style="fill:%23333;"/><rect x="3" y="12" width="2" height="2" style="fill:%23333;"/><rect x="3" y="20" width="2" height="2" style="fill:%23333;"/><rect x="0" y="4" width="2" height="2" style="fill:%23333;"/><rect x="0" y="12" width="2" height="2" style="fill:%23333;"/><rect x="0" y="20" width="2" height="2" style="fill:%23333;"/></svg>');
     }
     .ory-toolbar-item-drag-handle {
-      background-color: $rs-color-darkgrey!important;
+      background-color: $color-darkgrey!important;
     }
   }
 }
@@ -143,12 +192,25 @@
   font-weight: bold;
 }
 
-.ory-toolbar-item {
-  padding: 8px 16px 8px 70px !important;
+.ory-toolbar-item-plugin-text {
+  margin-left: 6px;
 }
 
 .ory-cell {
   padding: 10px;
+}
+
+.ory-cell-draggable-overlay {
+  border: 1px solid rgba(0, 0, 0, 0.5)!important;
+}
+
+.ory-cell-draggable-overlay-description span {
+  border-radius: 0 0 4px 4px;
+  padding: 4px 18px;
+}
+
+.ory-cell-draggable-overlay:hover .ory-cell-draggable-overlay-description span {
+  border: 1px solid $btn-default-border;
 }
 
 .ory-cell-resizable.react-resizable > .react-resizable-handle:after,
@@ -158,11 +220,11 @@
 }
 
 .ory-cell-resizable.react-resizable > .react-resizable-handle {
-  background-color: $rs-color-lightgrey!important;
+  background-color: $color-lightgrey!important;
   width: 8px!important;
   cursor: col-resize!important;
   &:hover {
-    background-color: $rs-color-mediumgrey!important;
+    background-color: $color-mediumgrey!important;
     width: 8px!important;
   }
 }
@@ -195,6 +257,16 @@
   height: 8px!important;
 }
 
+// placeholder to show droppable destination
+.ory-cell-droppable-is-over-above,
+.ory-cell-droppable-is-over-below,
+.ory-cell-droppable-leaf.ory-cell-droppable-is-over-above,
+.ory-cell-droppable-leaf.ory-cell-droppable-is-over-below,
+.ory-row-is-hovering-above,
+.ory-row-is-hovering-below {
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
 .ory-cell-droppable-is-over-left-of:before,
 .ory-cell-droppable-is-over-right-of:before,
 .ory-cell-droppable-leaf.ory-cell-droppable-is-over-left-of:before,
@@ -202,4 +274,13 @@
 .ory-row-is-hovering-left-of:before,
 .ory-row-is-hovering-right-of:before {
   width: 8px!important;
+}
+
+.ory-cell-droppable-is-over-left-of,
+.ory-cell-droppable-is-over-right-of,
+.ory-cell-droppable-leaf.ory-cell-droppable-is-over-left-of,
+.ory-cell-droppable-leaf.ory-cell-droppable-is-over-right-of,
+.ory-row-is-hovering-left-of,
+.ory-row-is-hovering-right-of {
+  border: 1px solid rgba(0, 0, 0, 0.4);
 }

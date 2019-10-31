@@ -1,0 +1,23 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+@prefix mpqa: <http://www.metaphacts.com/ontologies/qa#>.
+@prefix example: <http://example.org/> .
+
+example:TestPatternRange a mpqa:ShaclPattern ;
+	mpqa:shapeType sh:NodeShape ;
+	sh:targetObjectsOf [ mpqa:parameter "P1" ] ;
+	sh:sparql [
+		sh:message "Missing assignment of type {@T1} required by the range of the property {@P1}" ;
+		sh:select """
+			SELECT $this ?path WHERE {
+				FILTER NOT EXISTS {
+					$this a ?T1 .
+				}
+				BIND (rdf:type as ?path)
+			}
+		""" ;
+	] ;
+	.		

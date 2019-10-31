@@ -1,0 +1,356 @@
+[[#*inline "spinTemplate"]]
+<div data-flex-layout='row center-center' style='border: 1px dashed gray; background-color: white; margin-bottom: .5rem; padding-right: 1rem; opacity: 1;'>
+  <div data-flex-self="size-x1" style='overflow: hidden;'>
+    <mp-query-catalog-template iri='{{iri.value}}'>
+      <div style='padding: 1rem 1rem'>
+        <div style='display:inline; float:left'>
+          <mp-label iri='{{iri.value}}' highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label> -&nbsp;
+        </div>
+        <semantic-query query='SELECT ?desc WHERE { <{{iri.value}}> rdfs:comment ?desc }' 
+                        template='{{> description }}'
+        >
+          <template id='description'>
+            <mp-highlight highlight="{{highlight}}">{{bindings.0.desc.value}}</mp-highlight>
+          </template>
+        </semantic-query>
+      </div>
+      <semantic-query query='SELECT DISTINCT ?subject WHERE { <{{iri.value}}> <http://purl.org/dc/terms/subject>/rdfs:label ?subject }'
+                      style='margin-top:5px;' 
+                      template='{{> categories}}'
+      >
+        <template id='categories'>
+          <div style='padding: 0 1rem'>{{#each bindings}}<span class='query_category'>{{subject.value}}</span>{{/each}}</div>
+        </template>
+      </semantic-query>
+    </mp-query-catalog-template>
+  </div>
+  <mp-anonymous-hidden>
+    <div class='set-management__item-actions' style='margin-left: auto;'>
+      <bs-dropdown-button pull-right=true bs-style=link title='' id='set-item-actions-{{iri.value}}'>
+        [[> @partial-block ]]
+        <mp-copy-to-clipboard text='{{iri.value}}' message='Query Template IRI has been copied to clipboard!'>
+          <bs-menu-item event-key=copy>
+            <span style='height:20px;'>Copy Query Template IRI</span>
+          </bs-menu-item>
+        </mp-copy-to-clipboard>
+      </bs-dropdown-button>
+    </div>
+  </mp-anonymous-hidden>
+</div>
+[[/inline]]
+
+
+<style>
+  /*
+      auto size for code mirror within yasqe
+      we should make this default in the SparqlEditor component
+  */
+  .yasqe .CodeMirror {height: auto!important;}
+
+  /*
+      hide page toolbar i.e. sparql endpoint is special page
+  		that is not supposed to be edited
+  */
+  .component-page-toolbar{
+      display:none;
+  }
+
+</style>
+
+<style>
+  #queries-pane-1.active, #queries-pane-2.active, #queries-pane-3.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+  }
+
+  .split-pane__leftsidebar--sparql .split-pane__leftsidebar-footer{
+    position:relative;
+  }
+  .set-management__sets {
+    z-index: 0;
+  }
+  .set-management__set-items {
+    padding-top: 5px;
+  }
+  .set-management--list-view, .list-group {
+    overflow-y: auto;
+  }
+  .set-management--list-view .set-management__set-item {
+    padding: 2.5px 10px;
+	}
+  .set-management__footer{
+    display:none;
+  }
+  .set-management__search {
+    padding-top: 0;
+  }
+  .set-management__search-and-filters {
+   	background-color: #fff;
+  }
+  .set-management .Select-menu-outer {
+    opacity: 0.9;
+    filter: alpha(opacity=90);
+  }
+
+  /*
+  	categories
+  */
+  .query_category{
+    background-color: #008cba;
+    color: white;
+    border-radius: 2px;
+    margin-right: 5px;
+    cursor: pointer;
+    padding: 1px 3px;
+    font-size: 90%;
+    white-space: nowrap;
+    margin-bottom: 5px;
+    float: left;
+  }
+</style>
+
+<style>
+  .open-sidebar {
+	  flex: 1;
+  	display: flex;
+  	flex-direction: column;
+  }
+  .open-sidebar__tabs {
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    height: 100%;
+  }
+  .open-sidebar__tabs .tab-content {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+  } 
+  
+  .open-sidebar__tabs .tab-pane {
+    height: 100%;
+  } 
+  
+  .Pane1{
+  	height:100%;
+  }
+  .Pane2{
+  	padding-top: 43px;
+  }
+  .split-pane__leftsidebar--sparql {
+    width: inherit;
+    border-right: 1px solid #a2a2a2;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li class="active">SPARQL</li>
+</ol>
+<div class='page'>
+    <mp-sparql-query-editor-context>
+        <mp-splitpane min-size=35 default-size=500 dock=true persist-resize=true snap-threshold=165 fixed-key='querycatalog-sidebar'>
+          <div class="split-pane__leftsidebar--sparql">
+            <mp-splitpane-toggle-on>
+              <div class="split-pane__leftsidebar-caption">Query Catalog</div>
+            </mp-splitpane-toggle-on>
+            <mp-splitpane-sidebar-open class="open-sidebar">
+              <bs-tabs default-active-key='[[#if (urlParam "tab")]] [[urlParam "tab"]][[else]]3[[/if]]'  id='queries' class='open-sidebar__tabs'>
+                <bs-tab title="Global Queries" event-key='1'>
+                  <semantic-context repository='assets'>
+                    <mp-set-management style='flex: auto' accept-resource-query='ASK { FILTER(false) }'
+                      root-set-iri='http://www.metaphacts.com/ontologies/platform#queryTemplateContainer'
+                      default-set-iri='http://www.metaphacts.com/ontologies/platform#queryTemplateContainer'
+                      set-items-query='
+                          PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                          PREFIX prov: <http://www.w3.org/ns/prov#>
+                          SELECT ?item ?itemHolder ?parent ?modificationDate ?kind WHERE {
+                            {
+                              FILTER(?__isSearch__) .
+                              ?__rootSet__ ldp:contains ?item .
+                              BIND(?item as ?itemHolder)
+                              BIND(?__rootSet__ as ?parent)
+                              FILTER(?__filterPatterns__)
+                            } UNION {
+                              FILTER(!(?__isSearch__)) .
+                              {
+                                ?__rootSet__ ldp:contains ?itemHolder .
+                                OPTIONAL {
+                                  ?itemHolder <http://purl.org/dc/terms/subject> ?category .
+                                }
+                              } UNION {
+                                ?itemHolder <http://purl.org/dc/terms/subject> ?__rootSet__ .
+                              }
+                              BIND(COALESCE(?category, ?itemHolder) AS ?item)
+                              BIND(?__rootSet__ as ?parent)
+                              OPTIONAL {
+                                ?item a skos:Concept .
+                                BIND(skos:Concept as ?type)
+                              }
+                            }
+                            FILTER EXISTS {?itemHolder prov:wasAttributedTo <http://www.metaphacts.com/resource/user/querycatalog>}
+                            BIND(COALESCE(?type, <http://spinrdf.org/spin#Template>) AS ?kind) .
+                          }'
+                      set-count-query='
+                        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                        SELECT ?set (COUNT(?item) as ?count) WHERE {
+                           ?__rootSet__ ldp:contains ?item .
+                           ?item <http://purl.org/dc/terms/subject> ?set .
+                        } GROUP BY ?set
+                      '
+                      keyword-filter='{
+                                        "placeholder": "Search for queries ...",
+                                        "placeholderInSet": "Search for queries ...",
+                                        "queryPattern": "
+                                          ?item rdfs:label|rdfs:comment|(<http://purl.org/dc/terms/subject>/rdfs:label) ?itemLabel .
+                                          FILTER REGEX(STR(?itemLabel), \"(.*?)?__token__\", \"i\")"
+                                      }'
+                      item-config='{
+                        "<http://www.w3.org/2004/02/skos/core#Concept>": {
+                           "isSet": true,
+                           "listTemplate": "<mp-label iri={{iri.value}}></mp-label>"
+                        },
+                        "<http://spinrdf.org/spin#Template>": {
+                          "isSet": false,
+                          "listTemplate": "{{> globalSpinTemplate}}"
+                        }
+                      }'
+                      filters='[{
+                        "placeholder": "Filter by category",
+                        "queryPattern": "?item <http://purl.org/dc/terms/subject> ?__value__",
+                        "suggestionsQuery": "
+                          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                          PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                          SELECT DISTINCT ?value ?label WHERE {
+                            ?value a skos:Concept ;
+                              rdfs:label ?label .
+                            FILTER(REGEX(STR(?label), $__token__, \"i\")) .
+                          } LIMIT 100"
+                      }]'>
+                      <template id='globalSpinTemplate'>
+                        [[#> spinTemplate ]][[/spinTemplate]]
+                      </template>
+                    </mp-set-management>
+                  </semantic-context>
+                </bs-tab>
+                <bs-tab title="Personal Queries" event-key='2'>
+                  <semantic-context repository='assets'>
+                    <mp-set-management style='flex: auto' accept-resource-query='ASK { FILTER(false) }'
+                      root-set-iri='http://www.metaphacts.com/ontologies/platform#queryTemplateContainer'
+                      default-set-iri='http://www.metaphacts.com/ontologies/platform#queryTemplateContainer'
+                      set-items-query='
+                          PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                          PREFIX prov: <http://www.w3.org/ns/prov#>
+                          SELECT ?item ?itemHolder ?parent ?modificationDate ?kind WHERE {
+                            {
+                              FILTER(?__isSearch__) .
+                              ?__rootSet__ ldp:contains ?item .
+                              BIND(?item as ?itemHolder)
+                              BIND(?__rootSet__ as ?parent)
+                              FILTER(?__filterPatterns__)
+                            } UNION {
+                              FILTER(!(?__isSearch__)) .
+                              {
+                                ?__rootSet__ ldp:contains ?itemHolder .
+                                OPTIONAL {
+                                  ?itemHolder <http://purl.org/dc/terms/subject> ?category .
+                                }
+                              } UNION {
+                                ?itemHolder <http://purl.org/dc/terms/subject> ?__rootSet__ .
+                              }
+                              BIND(COALESCE(?category, ?itemHolder) AS ?item)
+                              BIND(?__rootSet__ as ?parent)
+                              OPTIONAL {
+                                ?item a skos:Concept .
+                                BIND(skos:Concept as ?type)
+                              }
+                            }
+                            FILTER EXISTS {?itemHolder prov:wasAttributedTo ?__useruri__}
+                            BIND(COALESCE(?type, <http://spinrdf.org/spin#Template>) AS ?kind) .
+                          }'
+                      set-count-query='
+                        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                        SELECT ?set (COUNT(?item) as ?count) WHERE {
+                           ?__rootSet__ ldp:contains ?item .
+                           ?item <http://purl.org/dc/terms/subject> ?set .
+                        } GROUP BY ?set
+                      '
+                      keyword-filter='{
+                                        "placeholder": "Search for queries ...",
+                                        "placeholderInSet": "Search for queries ...",
+                                        "queryPattern": "
+                                          ?item rdfs:label|rdfs:comment|(<http://purl.org/dc/terms/subject>/rdfs:label) ?itemLabel .
+                                          FILTER REGEX(STR(?itemLabel), \"(.*?)?__token__\", \"i\")"
+                                      }'
+                      item-config='{
+                        "<http://www.w3.org/2004/02/skos/core#Concept>": {
+                           "isSet": true,
+                           "listTemplate": "<mp-label iri={{iri.value}}></mp-label>"
+                        },
+                        "<http://spinrdf.org/spin#Template>": {
+                          "isSet": false,
+                          "listTemplate": "{{> spinTemplate }}"
+                        }
+                      }'
+                      filters='[{
+                        "placeholder": "Filter by category",
+                        "queryPattern": "?item <http://purl.org/dc/terms/subject> ?__value__",
+                        "suggestionsQuery": "
+                          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                          PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                          SELECT DISTINCT ?value ?label WHERE {
+                            ?value a skos:Concept ;
+                              rdfs:label ?label .
+                            FILTER(REGEX(STR(?label), $__token__, \"i\")) .
+                          } LIMIT 100"
+                      }]'>
+                      <template id='spinTemplate'>
+                        [[#> spinTemplate ]]
+                          <mp-ldp-remove-from-container-action container='http://www.metaphacts.com/ontologies/platform#queryTemplateContainer' iri='{{iri.value}}'>
+                            <bs-menu-item event-key=remove><span style='height:20px;'>Remove</span></bs-menu-item>
+                          </mp-ldp-remove-from-container-action>
+                          <bs-menu-item event-key=edit>
+                            <mp-overlay-dialog title='Edit Query Template' type='modal' bs-size='large'>
+                              <mp-overlay-dialog-trigger><span style='display: block;height:20px;'>Edit</span></mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-content>
+                                <div>
+                                  <semantic-context repository='assets'>
+                                    <mp-spin-query-template-editor iri='{{iri.value}}'></mp-spin-query-template-editor>
+                                  </semantic-context>
+                                </div>
+                              </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
+                          </bs-menu-item>
+                        [[/spinTemplate]]
+                      </template>
+                    </mp-set-management>
+                  </semantic-context>
+                </bs-tab>
+                <bs-tab title="Recent Queries" event-key='3'>
+                  <mp-recent-queries></mp-recent-queries>
+                </bs-tab>
+              </bs-tabs>
+            </mp-splitpane-sidebar-open>
+            <div class="split-pane__leftsidebar-footer">
+              <mp-splitpane-toggle-on>
+                <div class="split-pane__leftsidebar-toggle">&raquo;</div>
+              </mp-splitpane-toggle-on>
+              <mp-splitpane-toggle-off>
+                <div class="split-pane__leftsidebar-toggle" >&laquo;</div>
+              </mp-splitpane-toggle-off>
+            </div>
+          </div>
+          <div>
+            <semantic-context repository='default'>
+              <mp-sparql-query-editor query="SELECT * WHERE {?a ?b ?c} LIMIT 10"></mp-sparql-query-editor>
+            </semantic-context>
+          </div>
+      </mp-splitpane>
+    </mp-sparql-query-editor-context>
+  </div>

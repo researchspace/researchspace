@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,25 @@
 
 import * as React from 'react';
 import {findDOMNode} from 'react-dom';
-import 'openlayers/css/ol.css';
-import * as ol from 'openlayers';
+import 'ol/ol.css';
+import Map from 'ol/map';
+import View from 'ol/view';
+import Vector from 'ol/source/vector';
+import OSM from 'ol/source/osm';
+import TileLayer from 'ol/layer/tile';
+import VectorLayer from 'ol/layer/vector';
+import Style from 'ol/style/style';
+import Stroke from 'ol/style/stroke';
+import Circle from 'ol/style/circle';
+import Fill from 'ol/style/fill';
+import LineString from 'ol/geom/linestring';
+import CircleGeometry from 'ol/geom/circle';
+import PolygonGeometry from 'ol/geom/polygon';
+import SimpleGeometry from 'ol/geom/simplegeometry';
+import proj from 'ol/proj';
+import control from 'ol/control';
+import Draw from 'ol/interaction/draw';
+import Sphere from 'ol/sphere';
 import * as _ from 'lodash';
 import * as classNames from 'classnames';
 
@@ -66,10 +83,10 @@ const MAP_REF = 'metaphacts-map-selection';
  * coordinate systems used for selection and for actual search.
  */
 export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSelectionState> {
-  currentDraw: ol.interaction.Draw;
-  map: ol.Map;
-  vectorSource: ol.source.Vector;
-  view: ol.View;
+  currentDraw: Draw;
+  map: Map;
+  vectorSource: Vector;
+  view: View;
 
   constructor(props: OLMapSelectionProps) {
     super(props);
@@ -80,41 +97,41 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
 
   componentDidMount() {
 
-    this.vectorSource = new ol.source.Vector({wrapX: false});
-    let vectorStyle = new ol.style.Style({
-      fill: new ol.style.Fill({
+    this.vectorSource = new Vector({wrapX: false});
+    let vectorStyle = new Style({
+      fill: new Fill({
         color: 'rgba(255, 255, 255, 0.2)',
       }),
-      stroke: new ol.style.Stroke({
+      stroke: new Stroke({
         color: '#ffcc33',
         width: 2,
       }),
-      image: new ol.style.Circle({
+      image: new Circle({
         radius: 7,
-        fill: new ol.style.Fill({
+        fill: new Fill({
           color: '#ffcc33',
         }),
       }),
     });
 
-    let vector_draw = new ol.layer.Vector({
+    let vector_draw = new VectorLayer({
       source: this.vectorSource,
       style: vectorStyle,
     });
 
-    this.view = new ol.View({
-        center: ol.proj.fromLonLat([0, 0], undefined),
+    this.view = new View({
+        center: proj.fromLonLat([0, 0], undefined),
         zoom: 3,
       });
 
-    this.map = new ol.Map({
-      target: findDOMNode(this.refs[MAP_REF]),
+    this.map = new Map({
+      target: findDOMNode(this.refs[MAP_REF]) as Element,
       layers: [
-        new ol.layer.Tile({
-          source: new ol.source.OSM(),
+        new TileLayer({
+          source: new OSM(),
         }), vector_draw,
       ],
-      controls: ol.control.defaults({
+      controls: control.defaults({
         attributionOptions: ({
           collapsible: false,
         }),
@@ -134,7 +151,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
   componentWillReceiveProps(props: OLMapSelectionProps) {
     if (props.zoomTo) {
       this.view.setCenter(
-        ol.proj.transform([props.zoomTo.long, props.zoomTo.lat], 'EPSG:4326', 'EPSG:3857'));
+        proj.transform([props.zoomTo.long, props.zoomTo.lat], 'EPSG:4326', 'EPSG:3857'));
       this.view.setZoom(props.zoomTo.zoomLevel);
     }
   }
@@ -144,7 +161,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
    * @param metacor
    */
   transformToWGS84(metacor: Coord): Coord {
-    let wgs84 = ol.proj.transform(metacor, 'EPSG:3857', 'EPSG:4326') as Coord;
+    let wgs84 = proj.transform(metacor, 'EPSG:3857', 'EPSG:4326') as Coord;
     return wgs84;
   }
 
@@ -184,7 +201,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
     let selectedArea: SelectedArea;
     switch (this.state.selectionTool) {
       case SelectType.Box:
-        let olCoords = (feature.getGeometry() as ol.geom.LineString).getCoordinates()[0];
+        let olCoords = (feature.getGeometry() as LineString).getCoordinates()[0];
         let coords = _.map(olCoords, this.transformToWGS84);
         const firstPoint: Coordinate = {lat: coords[0][1], long: coords[0][0]};
         const secondPoint: Coordinate = {lat: coords[2][1], long: coords[2][0]};
@@ -208,7 +225,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
         }};
         break;
       case SelectType.Circle: {
-        const circle = feature.getGeometry() as ol.geom.Circle;
+        const circle = feature.getGeometry() as CircleGeometry;
         const olCenter = circle.getCenter() as Coord;
         const olRadius = circle.getRadius();
 
@@ -216,7 +233,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
         // will have large error up to 30%. We calculate a distance to eastern side of the circle
         const edgeCoordinate = this.transformToWGS84([olCenter[0] + olRadius, olCenter[1]]);
 
-        const wgs84Sphere = new ol.Sphere(6378137);
+        const wgs84Sphere = new Sphere(6378137);
         const center = this.transformToWGS84(olCenter);
         const radius = wgs84Sphere.haversineDistance(
           center,
@@ -239,7 +256,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
     if (this.currentDraw) {
       this.map.removeInteraction(this.currentDraw);
     }
-    this.currentDraw = new ol.interaction.Draw({
+    this.currentDraw = new Draw({
       source: this.vectorSource,
       type: this.state.selectionTool === SelectType.Box ? 'LineString' : 'Circle',
       geometryFunction: (
@@ -258,9 +275,9 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
     }
   }
   geometryFunction =
-  (coordinates: ol.Coordinate[], geometry: ol.geom.Polygon) : ol.geom.Geometry => {
+  (coordinates: Coord[], geometry: PolygonGeometry) : SimpleGeometry => {
     if (!geometry) {
-      geometry = new ol.geom.Polygon(null);
+      geometry = new PolygonGeometry(null);
     }
     let start = coordinates[0];
     let end = coordinates[1];

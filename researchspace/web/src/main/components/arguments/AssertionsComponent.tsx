@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,17 +24,19 @@ import { Map } from 'immutable';
 import * as Maybe from 'data.maybe';
 
 import { Rdf, vocabularies } from 'platform/api/rdf';
+import { ModuleRegistry } from 'platform/api/module-loader';
+import { CapturedContext } from 'platform/api/services/template';
 
 import {
-  Component, ComponentContext, TemplateContext, TemplateContextTypes, SemanticContextProvider,
+  Component, ComponentContext, ComponentChildContext,
+  TemplateContext, TemplateContextTypes, SemanticContextProvider,
 } from 'platform/api/components';
 import { TemplateItem } from 'platform/components/ui/template';
 import { ResourceLabel } from 'platform/components/ui/resource-label';
-import { ModuleRegistry } from 'platform/api/module-loader';
 
 import {
   ResourceEditorForm, FieldValue, CompositeValue, LdpPersistence, normalizeFieldDefinition,
-  computeModelDiff,
+  computeModelDiff, getPreferredLabel,
 } from 'platform/components/forms';
 import {
   FieldBasedVisualization, FieldDefinitionWithData,
@@ -70,6 +72,7 @@ interface State {
   addingNewValue: boolean;
   newValues: Array<Rdf.Node>;
   formTemplate: Data.Maybe<React.ReactNode>;
+  capturedDataContext?: CapturedContext;
 }
 
 export class AssertionsComponent extends Component<AssertionsProps, State> {
@@ -94,10 +97,11 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
     ...TemplateContextTypes,
   };
 
-  getChildContext() {
+  getChildContext(): ComponentChildContext & ArgumentsContext {
     const superContext = super.getChildContext();
     return {
       ...superContext,
+      templateDataContext: this.state.capturedDataContext,
       changeBelief: this.onBeliefChange,
       removeBelief: this.removeBelief,
       getBeliefValue: this.getBeliefValue,
@@ -105,14 +109,18 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
   }
 
   componentDidMount() {
-    const {templateDataContext = () => undefined} = this.context;
+    const {templateDataContext} = this.context;
+    const capturer = CapturedContext.inheritAndCapture(templateDataContext);
     this.appliedTemplateScope.compile(this.props.formTemplate).then(
       template => ModuleRegistry.parseHtmlToReact(
-        template({field: this.props.field}, templateDataContext)
+        template({field: this.props.field}, {capturer, parentContext: templateDataContext})
       )
-    ).then(
-      formTemplate => this.setState({formTemplate: Maybe.Just(formTemplate)})
-    );
+    ).then(formTemplate => {
+      this.setState({
+        formTemplate: Maybe.Just(formTemplate),
+        capturedDataContext: capturer.getResult(),
+      });
+    });
   }
 
   render() {
@@ -127,7 +135,7 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
                   ${valueTemplate}
                 </div>
                 <div data-flex-self='right'>
-                  <rs-argument-simple-belief-selector for-value='{{value.value}}' is-canonical='{{#if ../../isNotCanonical}}false{{else}}true{{/if}}'>
+                  <rs-argument-simple-belief-selector for-value='{{value.value.value}}' is-canonical='{{#if ../../isNotCanonical}}false{{else}}true{{/if}}'>
                   </rs-argument-simple-belief-selector>
                 </div>
               </div>
@@ -137,7 +145,7 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
 `;
 
     const fieldClone = _.cloneDeep(field) as any;
-    fieldClone.values = this.state.newValues;
+    fieldClone.values = this.state.newValues.map(value => ({value}));
     fieldClone.minOccurs = 1;
     fieldClone.maxOccurs = 1;
 
@@ -207,7 +215,7 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
         <ResourceLabel iri={subject.value} />
       </div>
       <div className={styles.field}>
-        {field.label}
+        {getPreferredLabel(field.label)}
       </div>
     </div>
 
@@ -308,14 +316,14 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
 
   private persistCompositeValue(
     initialModel: CompositeValue, currentModel: CompositeValue
-  ): Kefir.Property<Array<Rdf.Node>> {
+  ): Kefir.Property<ReadonlyArray<Rdf.Node>> {
     const entries = computeModelDiff(FieldValue.empty, currentModel);
     if (entries.length > 1) {
       const topLevelFieldValue =
         _.find(entries, entry => entry.subject.equals(this.props.target));
       const nestedValues =
         _.filter(entries, entry => !entry.subject.equals(this.props.target));
-      return LdpPersistence.default
+      return new LdpPersistence()
         .persistModelUpdates(nestedValues[0].subject, nestedValues)
         .map(() => topLevelFieldValue.inserted);
     } else {

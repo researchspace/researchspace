@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-which-directory-it-is-stored-in/246128#246128
@@ -18,5 +18,5 @@ LOG4J2="file://$JETTYFOLDER/webapps/ROOT/etc/log4j2.xml"
 # whitespace encoding for filepath
 LOG4J2="$(echo $LOG4J2 | sed 's/ /%%20/g')"
 
-java -jar "$JETTYFOLDER/start.jar" jetty.base="$JETTYFOLDER" -Dorg.eclipse.jetty.server.Request.maxFormContentSize=100000000 -Djetty.port=10214 -Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile="$SCRIPTPATH/RWStore.properties" -Dcom.metaphacts.config.baselocation="$SCRIPTPATH/config" -DruntimeDirectory="$SCRIPTPATH/" -Dlog4j.configurationFile="$LOG4J2"
+java -jar "$JETTYFOLDER/start.jar" jetty.base="$JETTYFOLDER" --module=logging-jetty  -Dorg.eclipse.jetty.server.Request.maxFormContentSize=100000000 -Djetty.http.port=10214 -Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile="$SCRIPTPATH/RWStore.properties" -Dcom.metaphacts.config.baselocation="$SCRIPTPATH/runtime-data/config" -DruntimeDirectory="$SCRIPTPATH/runtime-data" -DappsDirectory="$SCRIPTPATH/apps" -Dconfig.environment.shiroConfig="$SCRIPTPATH/runtime-data/config/shiro.ini" -Dlog4j.configurationFile="$LOG4J2"
 

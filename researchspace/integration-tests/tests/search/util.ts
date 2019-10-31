@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,9 +54,8 @@ export class Search {
   constructor(driver: WebDriver, t: Test) {
     this.driver = driver;
     this.t = t;
-    //enableDnD(driver, 1000);
   }
-  
+
   /**
    * Start new search
    */
@@ -64,7 +63,7 @@ export class Search {
     await get(this.driver, url);
     await waitElement(this.driver, '.QueryBuilder--searchArea');
   }
-  
+
   /**
    * Select item from dropdown list
    * @param parentSelector selector for the frame
@@ -107,7 +106,7 @@ export class Search {
   async setRelation(relation: string) {
     await this.selectItem('.QueryBuilder--relationSelector', '.ItemSelector--itemHolder', relation);
   }
-  
+
   /**
    * Select date input format
    * @param name either of Date, DateRange, DateDeviation, Year, YearRange, YearDeviation
@@ -125,11 +124,12 @@ export class Search {
    * Set year into a year selection control
    */
   async setYearByElement(t: Test, element: WebElement, value: string) {
-    const parts = value.split("/");
-    await t.ok(parts.length == 2, 'year and era are separated by slash');
+    const parts = value.split('/');
+    await t.ok(parts.length === 2, 'year and era are separated by slash');
     const year = parts[0], era = parts[1];
     const input = await findOnlyChild(this.driver, t, element, 'input');
     await scrollIntoElement(this.driver, input);
+    await input.clear();
     await input.sendKeys(year);
     if (era !== 'AD') {
       const select = await findOnlyChild(this.driver, t, element, 'select');
@@ -145,19 +145,19 @@ export class Search {
    */
   async setYearRange(from: string, upto: string) {
     const elements = await this.driver.findElements(By.css('.YearInput--holder'));
-    await this.t.ok(elements.length == 2, `date range has two inputs`);
+    await this.t.ok(elements.length === 2, `date range has two inputs`);
     await this.setYearByElement(this.t, elements[0], from);
     await this.setYearByElement(this.t, elements[1], upto);
     await this.clickDateSelectButton();
   }
-  
+
   /**
    * Set year
    * @param exact the only value
    */
   async setYear(exact: string) {
     const elements = await this.driver.findElements(By.css('.YearInput--holder'));
-    await this.t.ok(elements.length == 1, `date range has two inputs`);
+    await this.t.ok(elements.length === 1, `date range has two inputs`);
     await this.setYearByElement(this.t, elements[0], exact);
     await this.clickDateSelectButton();
   }
@@ -168,7 +168,7 @@ export class Search {
     await wait(500);
     await button.click();
   }
-  
+
   // identifiers of already found clauses
   private knownClauses: {[clause: string]: boolean} = {};
 
@@ -178,14 +178,14 @@ export class Search {
   public async getLastClause() {
     await this.getNumResults();
     const newClauses = await this.driver.findElements(By.css('.QueryBuilder--searchClause'));
-    const addedClauses = await asyncQ.filterSeries(newClauses, async (newClause: WebElement) => 
+    const addedClauses = await asyncQ.filterSeries(newClauses, async (newClause: WebElement) =>
       !this.knownClauses[await newClause.getAttribute('id')]
     );
     const id = await addedClauses[0].getAttribute('id');
     this.knownClauses[id] = true;
     return `#${id}`;
   }
-  
+
   private async hoverAndClick(elementToHover: WebElement, button: WebElement) {
     await this.driver.actions().mouseMove(elementToHover).perform();
     await wait(200);
@@ -222,15 +222,15 @@ export class Search {
   addAndClause(clause: string) {
     return this.addClause(clause, '.QueryBuilder--addConjunctButton');
   }
-  
+
   private async findSet(nameOfSet: string) {
     await waitElement(this.driver, '.set-management__set-caption span > span');
     await wait(500);
     const items = await asyncQ.filterSeries(
       await this.driver.findElements(By.css('.set-management__set-caption span > span')),
-      async (element: WebElement) => await getText(element) == nameOfSet
+      async (element: WebElement) => await getText(element) === nameOfSet
     );
-    await this.t.ok(items.length == 1, `only one set in clipboard with name "${nameOfSet}" (got ${items.length})`);
+    await this.t.ok(items.length === 1, `only one set in clipboard with name "${nameOfSet}" (got ${items.length})`);
     return items[0];
   }
 
@@ -263,10 +263,10 @@ export class Search {
     const draggable = await this.driver.executeScript(`return arguments[0].parentNode.parentNode.parentNode.parentNode.parentNode;`, setSpan) as WebElement;
     let droppables = [];
     droppables = await this.driver.findElements(By.css('.SemanticTreeInput--holder.QueryBuilder--hierarchySelector')) as WebElement[];
-    if (droppables.length == 0) {
+    if (droppables.length === 0) {
       droppables = await this.driver.findElements(By.css('.QueryBuilder--resourceSelector')) as WebElement[];
     }
-    this.t.ok(droppables.length == 1, 'there should be an item to drop onto');
+    this.t.ok(droppables.length === 1, 'there should be an item to drop onto');
     const droppable = droppables[0];
     await debugElement(draggable, 'set');
     await debugElement(droppable, 'input');
@@ -298,14 +298,14 @@ export class Search {
             '.LazyTreeSelector--itemExpanded > div > span, .LazyTreeSelector--itemCollapsed > div > span'
           )
         ).filter(function (element) {
-          return element.textContent == value;
+          return element.textContent === value;
         });
       })(arguments[0]);
     `, value) as WebElement[];
     const checkboxes = await this.driver.executeScript(`
       return Array.prototype.slice.call(
         arguments[0].parentNode.parentNode.children
-      ).filter(x => x.tagName.toLowerCase() == 'input');
+      ).filter(x => x.tagName.toLowerCase() === 'input');
     `, items[0]) as WebElement[];
     await scrollIntoElement(this.driver, checkboxes[0]);
     await checkboxes[0].click();
@@ -317,12 +317,12 @@ export class Search {
   async submitRangeTree() {
     const buttons = await asyncQ.filterSeries(
       await this.driver.findElements(By.css('.SemanticTreeInput--dropdownButton')),
-      async (element: WebElement) => await getText(element) == 'Select'
+      async (element: WebElement) => await getText(element) === 'Select'
     );
-    await this.t.ok(buttons.length == 1, `only one Select button (got ${buttons.length})`);
+    await this.t.ok(buttons.length === 1, `only one Select button (got ${buttons.length})`);
     await buttons[0].click();
   }
-  
+
   /**
    * Get search results from "Table" view. Scan all pages.
    */
@@ -333,7 +333,7 @@ export class Search {
     await waitLoaders(this.driver);
     const results = [];
     results.push(await this.getSearchResultsPage());
-    const limit = numResults == null ? 100 : Math.ceil(numResults / 10) - 1;
+    const limit = numResults === null ? 100 : Math.ceil(numResults / 10) - 1;
     if (limit !== 0) {
       const button = await this.findNextPageBtn();
       await scrollIntoElement(this.driver, button);
@@ -344,7 +344,8 @@ export class Search {
       if (btnClass === 'disabled') {
         break;
       }
-      await button.click();
+      const buttonInner = await findOnlyChild(this.driver, this.t, button, 'a');
+      await buttonInner.click();
       results.push(await this.getSearchResultsPage());
     }
     const output = _.flatten(results).sort();
@@ -360,28 +361,30 @@ export class Search {
     await waitLoaders(this.driver);
     await waitElement(this.driver, '.num-results');
     const element = await findOnlyElement(this.driver, this.t, '.num-results');
-    if (!element) return;
+    if (!element) {
+      return null;
+    }
     const text = await getText(element);
-    const matches = text.match(/^Found ([0-9]+) matches$/);
-    await this.t.ok(matches != null, `correct message with result count`);
-    if (matches == null) return null;
-    return parseInt(matches[1], 10);
+    if (text === null) {
+      return null;
+    }
+    return parseInt(text, 10);
   }
-  
+
   /**
    * Switch mode in which search results are displayed
    * @param mode text on the tab that enables the mode
    */
   private async switchResultMode(mode: string) {
     const tabs = await this.driver.findElements(By.css('#search-results .nav.nav-tabs li'));
-    const tableTabs = await asyncQ.filterSeries(tabs, async (tab: WebElement) => await getText(tab) == mode);
-    await this.t.ok(tableTabs.length == 1, `only one ${mode} tab (got ${tableTabs.length})`);
+    const tableTabs = await asyncQ.filterSeries(tabs, async (tab: WebElement) => await getText(tab) === mode);
+    await this.t.ok(tableTabs.length === 1, `only one ${mode} tab (got ${tableTabs.length})`);
     const tableTab = tableTabs[0];
     await scrollIntoElement(this.driver, tableTab);
     await tableTab.click();
     await wait(200);
   }
-  
+
   /**
    * Find a button that goes to next page in paginator
    */
@@ -389,12 +392,12 @@ export class Search {
     await waitElement(this.driver, '.pagination li a span');
     const pageNavs = await asyncQ.filterSeries(
       await this.driver.findElements(By.css('.pagination li a span')),
-      async (nav: WebElement) => await getText(nav) == '»'
+      async (nav: WebElement) => await getText(nav) === '»'
     );
     const result = await this.driver.executeScript(`return arguments[0].parentNode.parentNode;`, pageNavs[0]) as WebElement;
     return result;
   }
-  
+
   /**
    * Ge one page of search results
    */
@@ -420,7 +423,7 @@ export class Search {
     });
     return uris;
   }
-  
+
   /**
    * Remove "and" (conjunctive) clause
    */
@@ -428,12 +431,12 @@ export class Search {
     await this.removeClause(text);
     const buttons = await asyncQ.filterSeries(
       await this.driver.findElements(By.css('.QueryBuilder--removeConjunctButton')),
-      async (button: WebElement) => await getText(button) == 'cancel'
+      async (button: WebElement) => await getText(button) === 'cancel'
     );
-    await this.t.ok(buttons.length == 1, `only one button to cancel conjunction edit (got ${buttons.length})`);
+    await this.t.ok(buttons.length === 1, `only one button to cancel conjunction edit (got ${buttons.length})`);
     await buttons[0].click();
   }
-  
+
   /**
    * Remove any part of any clause by name
    * @param text text on the part; must be unique
@@ -444,7 +447,7 @@ export class Search {
     await this.driver.actions().mouseMove(button).perform();
     await button.click();
   }
-  
+
   /**
    * Find search clause by its text (disregarding the type)
    * @param text text on the part; must be unique
@@ -454,10 +457,10 @@ export class Search {
     const clauses = await asyncQ.filterSeries(elements, async (element: WebElement) => {
       return await getText(element) === text;
     });
-    await this.t.ok(clauses.length == 1, `only one clause with such text`);
+    await this.t.ok(clauses.length === 1, `only one clause with such text`);
     return clauses[0];
   }
-  
+
   /**
    * Start nested search
    */
@@ -465,7 +468,7 @@ export class Search {
     const button = await findOnlyElement(this.driver, this.t, '.QueryBuilder--nestedSearchButton');
     await button.click();
   }
-  
+
   /**
    * Show filter facet
    */
@@ -473,8 +476,11 @@ export class Search {
     const button = await findOnlyElement(this.driver, this.t, '.show-facet-button');
     await button.click();
     await waitElement(this.driver, '.facet');
+
+    // make sure that the relations has been rendered
+    await this.waitFacetUpdated();
   }
-  
+
   /**
    * Filter nodes by text on them, counts ignored
    * @param list array of elements
@@ -486,123 +492,140 @@ export class Search {
       async (item: WebElement) => {
         const text = await getText(item);
         const matches = text.match(/^(.*) \([0-9]+\)$/);
-        return matches != null && matches[1] == name;
+        return matches != null && matches[1] === name;
       }
     );
   }
-  
+
+  /**
+   * Filter relations by name
+   * @param list array of elements
+   * @param name text to find
+   */
+  private async filterRelationsByName(list: WebElement[], name: string) {
+    return await asyncQ.filterSeries(
+      list,
+      async (item: WebElement) => {
+        const text = await getText(item);
+        return text === name;
+      }
+    );
+  }
+
   /**
    * Choose relation in search facet
    * @param name relation name
    * @return relation parent element
    */
   async openFacetRelation(name: string) {
-    const relations = await this.filterByName(
+    const relations = await this.filterRelationsByName(
       await this.driver.findElements(By.css('.facet-relation__content')),
       name
     );
-    await this.t.ok(relations.length == 1, `only one "${name}" relation (got ${relations.length})`);
+    await this.t.ok(relations.length === 1, `only one "${name}" relation (got ${relations.length})`);
     const relation = await this.driver.executeScript(`return arguments[0].parentNode.parentNode;`, relations[0]) as WebElement;
     const icon = await relation.findElements(By.css('.facet__relation__header__icon'));
-    if (icon.length == 1) {
+    if (icon.length === 1) {
       await scrollIntoElement(this.driver, relation);
       await relation.click();
-      await waitChildElement(relation, '.facet__relation__values');
+      await waitChildElement(relation, '.facet__relation__body');
     }
     return await this.driver.executeScript(`return arguments[0].parentNode;`, relation) as WebElement;
   }
-  
+
   /**
    * Find checkbox inside of relation accordion in search facet
    * @param relation element that contains relation accordion
    * @param name text on checkbox
    */
   async clickFacetCheckbox(relation: WebElement, name: string) {
-    const input = await findOnlyChild(this.driver, this.t, relation, '.facet__relation__values__filter > input');
+    const input = await findOnlyChild(this.driver, this.t, relation, '.facet__relation__values__filter input');
+    await input.clear();
     await input.sendKeys(name);
     await waitElement(this.driver, '.facet__relation__values__value.checkbox');
     const checkboxes = await this.filterByName(
       await relation.findElements(By.css('.facet__relation__values__value.checkbox')),
       name
     );
-    await this.t.ok(checkboxes.length == 1, `only one "${name}" checkbox (got ${checkboxes.length})`);
+    await this.t.ok(
+      checkboxes.length === 1, `only one "${name}" checkbox (got ${checkboxes.length})`
+    );
     await scrollIntoElement(this.driver, checkboxes[0]);
     await checkboxes[0].click();
+
+    // make sure that the relations has been updated
+    await this.waitFacetUpdated();
+  }
+
+  async setFacetYearRange(relation: WebElement, from: string, upto: string) {
+    const elements = await relation.findElements(By.css('.YearInput--holder'));
+    await this.t.ok(elements.length === 2, `date range has two inputs`);
+    await this.setFacetYearByElement(elements[0], from);
+    await this.setFacetYearByElement(elements[1], upto);
+  }
+
+  async setFacetYearByElement(element: WebElement, value: string) {
+    await this.setYearByElement(this.t, element, value);
+    await this.waitFacetUpdated();
+  }
+
+  async waitFacetUpdated() {
+    await waitElementRemoved(this.driver, '.facet .system-spinner');
   }
 
   async saveSet(nameOfSet: string) {
     await clickButtonByCaption(this.driver, this.t, 'Save As Set');
-    const input = await findOnlyElement(this.driver, this.t, '.save-as-dataset-modal__form__collection-name');
+    const input =
+      await findOnlyElement(this.driver, this.t, '.save-as-dataset-modal__form__collection-name');
     await input.sendKeys(nameOfSet);
-    const submit = await findOnlyElement(this.driver, this.t, '.save-as-dataset-modal__form__save-button');
+    const submit =
+      await findOnlyElement(this.driver, this.t, '.save-as-dataset-modal__form__save-button');
     await submit.click();
     await waitElement(this.driver, '.set-management__set');
   }
 
   async deleteSet(nameOfSet: string) {
     const setSpan = await this.findSet(nameOfSet);
-    const parent = await this.driver.executeScript(`return arguments[0].parentNode.parentNode.parentNode;`, setSpan) as WebElement;
+    const parent = await this.driver.executeScript(
+      `return arguments[0].parentNode.parentNode.parentNode;`, setSpan
+    ) as WebElement;
     const button = await findOnlyChild(this.driver, this.t, parent, 'button');
     await this.hoverAndClick(setSpan, button);
     const links = await asyncQ.filterSeries(
       await parent.findElements(By.css('a')),
-      async (element: WebElement) => await getText(element) == 'Remove set'
+      async (element: WebElement) => await getText(element) === 'Remove set'
     );
-    this.t.ok(links.length == 1, `only one link to remove set (got ${links.length})`);
+    this.t.ok(links.length === 1, `only one link to remove set (got ${links.length})`);
     await links[0].click();
     const yesButtons = await asyncQ.filterSeries(
       await parent.findElements(By.css('.btn-toolbar > button')),
-      async (element: WebElement) => await getText(element) == 'yes'
+      async (element: WebElement) => await getText(element) === 'yes'
     );
-    this.t.ok(yesButtons.length == 1, `only one yes button (got ${yesButtons.length})`);
+    this.t.ok(yesButtons.length === 1, `only one yes button (got ${yesButtons.length})`);
     const yesButton = yesButtons[0];
     await yesButton.click();
     await waitElementRemoved(this.driver, '.dropdown.open.btn-group.btn-group-link');
   }
 }
 
-export class DatasetLoader {
-  private ds: string;
-  constructor(ds: string) {
-    this.ds = ds;
-  }
-  /**
-   * Read JSON data from file
-   * @param fileName name of the file
-   */
-  async readData(fileName: string) {
-    return JSON.parse(await readFile(join(__dirname, '..', '..', 'data', this.ds, fileName + '.json'), {encoding: 'utf8'}))
-  }
+export async function readData(file: string) {
+  return JSON.parse(
+    await readFile(file, {encoding: 'utf8'})
+  );
 }
+
 
 /**
  * Setup search
  */
-export async function testSearch(
-  driver: WebDriver, 
-  t: Test, 
-  options: Options, 
-  f: (arg: Search, d: DatasetLoader) => Promise<any>
-) {
-  const d = new DatasetLoader(options.dataset);
-  const s = new Search(driver, t);
-  await s.startSearch(options.searchUrl);
-  await f(s, d);
-}
-
-/**
- * Setup search by example
- */
-export async function testByExample<T>(
+export function testSearch(
   driver: WebDriver,
   t: Test,
-  options: Options,
-  examples: { [key: string]: T; },
-  f: (arg: Search, d: DatasetLoader, example: T) => Promise<any>
+  searchUrl: string
 ) {
-  await asyncQ.mapSeries(_.toPairs(examples), async ([key, example]: [string, T]) => {
-    await t.test(`${key}`, async (t: Test) => await testSearch(driver, t, options, async (s, d) => {
-      await f(s, d, example);
-    }));
-  });
+  return async function(f: (arg: Search) => Promise<any>): Promise<any> {
+    const s = new Search(driver, t);
+    await s.startSearch(searchUrl);
+    await f(s);
+  };
 }

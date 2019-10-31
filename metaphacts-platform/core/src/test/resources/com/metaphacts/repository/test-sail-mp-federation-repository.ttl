@@ -1,0 +1,26 @@
+[] a <http://www.openrdf.org/config/repository#Repository> ;
+	<http://www.openrdf.org/config/repository#repositoryID> "test-sail-mp-federation-repository" ;
+	<http://www.w3.org/2000/01/rdf-schema#label> "Test Federation Sail Description" ;
+	<http://www.w3.org/2000/01/rdf-schema#comment> "Test Federation Sail Description with the main repository 'default' and the 'assets' and 'wikidata-text' repositories accessible as a service" ;
+	<http://www.openrdf.org/config/repository#repositoryImpl> [
+		<http://www.openrdf.org/config/repository#repositoryType> "openrdf:SailRepository" ;
+		<http://www.openrdf.org/config/repository/sail#sailImpl> [
+			<http://www.openrdf.org/config/sail#sailType> "metaphacts:Federation";
+			<http://www.metaphacts.com/ontologies/platform/ephedra#defaultMember> "default" ;
+			<http://www.openrdf.org/config/sail/federation#member> [
+				<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "default" ;
+				<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>
+						<http://www.metaphacts.com/ontologies/platform/repository/federation#default>
+			] ;
+			<http://www.openrdf.org/config/sail/federation#member> [
+				<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "wikidata-text" ;
+				<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>
+						<http://www.metaphacts.com/ontologies/platform/repository/federation#wikidata-text>
+			] ;
+			<http://www.openrdf.org/config/sail/federation#member> [
+				<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "assets" ;
+				<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>
+						<http://www.metaphacts.com/ontologies/platform/repository/federation#assets>
+			] .
+		];
+	].

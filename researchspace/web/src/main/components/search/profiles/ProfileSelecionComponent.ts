@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
  * @author Artem Kozlov <ak@metaphacts.com>
  */
 
-import { Component, DOM as D, createFactory } from 'react';
-import * as ReactSelectComponent from 'react-select';
+import { Component, createFactory } from 'react';
+import ReactSelectComponent, { Options as ReactSelectOptions } from 'react-select';
 import { OrderedSet } from 'immutable';
 import * as _ from 'lodash';
 
@@ -39,7 +39,7 @@ interface Props {
 }
 
 interface State {
-  options: ReactSelect.Options
+  options: ReactSelectOptions<string>
   selectedValues: string[]
 }
 
@@ -73,7 +73,7 @@ export class ProfileSelectionComponent extends Component<Props, State> {
     });
   }
 
-  private onChange(strVal: string, options: ReactSelect.Options) {
+  private onChange(strVal: string, options: ReactSelectOptions<string>) {
     const values = _.map(options, v => v.value);
     const selectedProfiles =
         <Profiles>this.props.profiles.filter(

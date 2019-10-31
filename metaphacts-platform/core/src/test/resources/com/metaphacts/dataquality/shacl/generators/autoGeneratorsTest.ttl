@@ -1,0 +1,25 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix rlog: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/rlog#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdqv: <http://rdfunit.aksw.org/ns/rdqv#> .
+
+@prefix mpqa: <http://www.metaphacts.com/ontologies/qa#> .
+@prefix example: <http://example.org/> .
+
+
+##########################################
+#### rdfs:range pattern
+##########################################
+
+# Class range wrongly defined
+example:TestGenerator a mpqa:ShaclGenerator ;
+    rdfs:comment """Test generator""" ;
+    mpqa:generatorQuery """ select distinct ?P1  ?T1  ?DESCRIPTION where {
+                              ?P1 rdfs:range ?T1 .
+                              BIND (concat(str(?P1),' has different range from: ', str(?T1)) AS ?DESCRIPTION)} """ ;
+    mpqa:basedOnPattern example:TestPatternRange .
+
+    
+ 

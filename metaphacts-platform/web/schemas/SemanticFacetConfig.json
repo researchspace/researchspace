@@ -1,0 +1,252 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "DateRangeFacetValue": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "date-range"
+                    ],
+                    "type": "string"
+                },
+                "valuesQuery": {
+                    "description": "Base search query will be injected as a sub-query with $subject as projection variable.\n\nExpected projection variables:\n   * `?dateBeginValue` - begin of the date range interval\n   * `?dateEndValue` - end of the date range interval\n\nInjected variables:\n   * `__domain__` - search domain IRI\n   * `__range__` - facet relation range IRI\n   * `__relation__` - facet relation IRI",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "valuesQuery"
+            ],
+            "required": [
+                "kind",
+                "valuesQuery"
+            ],
+            "type": "object"
+        },
+        "FacetCategoryConfig": {
+            "properties": {
+                "tupleTemplate": {
+                    "description": "HTML template defining how each category link will be displayed in the sidebar.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "tupleTemplate"
+            ],
+            "required": [
+                "tupleTemplate"
+            ],
+            "type": "object"
+        },
+        "FacetRelationConfig": {
+            "properties": {
+                "tupleTemplate": {
+                    "description": "HTML template defining how each category link will be displayed in the sidebar.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "tupleTemplate"
+            ],
+            "required": [
+                "tupleTemplate"
+            ],
+            "type": "object"
+        },
+        "FacetValuePatterns": {
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "$ref": "#/definitions/ResourceFacetValue"
+                    },
+                    {
+                        "$ref": "#/definitions/DateRangeFacetValue"
+                    },
+                    {
+                        "$ref": "#/definitions/LiteralFacetValue"
+                    },
+                    {
+                        "$ref": "#/definitions/NumericRangeFacetValue"
+                    }
+                ]
+            },
+            "description": "Mapping of categories/relations IRIs (fully qualified IRI enclosed in <>) to corresponding UI input components and generated query pattern.\n\nCurrently supported kinds of categories/relations:\n1) `resource` - any RDF resource, selection of value is performed with checkbox.\n2) `date-range` - date range values, selection of value is performed with slider.",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "LiteralFacetValue": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "literal"
+                    ],
+                    "type": "string"
+                },
+                "tupleTemplate": {
+                    "type": "string"
+                },
+                "valuesQuery": {
+                    "default": "see FacetConfig.defaultValueQueries.literal",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "valuesQuery",
+                "tupleTemplate"
+            ],
+            "required": [
+                "kind",
+                "valuesQuery"
+            ],
+            "type": "object"
+        },
+        "NumericRangeFacetValue": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "numeric-range"
+                    ],
+                    "type": "string"
+                },
+                "valuesQuery": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "valuesQuery"
+            ],
+            "required": [
+                "kind",
+                "valuesQuery"
+            ],
+            "type": "object"
+        },
+        "ResourceFacetValue": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "resource"
+                    ],
+                    "type": "string"
+                },
+                "tupleTemplate": {
+                    "type": "string"
+                },
+                "valuesQuery": {
+                    "default": "see FacetConfig.defaultValueQueries.resource",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "valuesQuery",
+                "tupleTemplate"
+            ],
+            "required": [
+                "kind"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "categories": {
+            "$ref": "#/definitions/FacetCategoryConfig",
+            "description": "Settings determining the display of categories in the sidebar."
+        },
+        "defaultValueQueries": {
+            "description": "Query that is used to get values for relations, if no custom value query is specified\nin 'valueCategories' or 'valueRelations' mappings.",
+            "properties": {
+                "literal": {
+                    "default": "```\nSELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {\nFILTER(?__facetRelationPattern__)\n}\nGROUP BY ?literal\nORDER BY ?literal\n```\nwhere `FILTER(?__facetRelationPattern__)` will be replaced by a relation pattern if exists\nor the default pattern:\n```\n$subject ?__relation__ ?literal\n```",
+                    "type": "string"
+                },
+                "resource": {
+                    "default": "```\nSELECT ?value ?label (COUNT(DISTINCT $subject) AS ?count) WHERE {\nFILTER(?__facetRelationPattern__)\n?value rdfs:label|skos:prefLabel ?label .\n}\nGROUP BY ?value ?label\nORDER BY ?label\n```\nWhere `FILTER(?__facetRelationPattern__)` will be replaced by a relation pattern if exists\nor the default pattern:\n```\n$subject ?__relation__ ?value\n```",
+                    "description": "By default it uses 'preferredLabels' properties from the system ui configuration.\nE.g if `preferredLabels=rdfs:label,skos:prefLabel` default query will be -",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "resource",
+                "literal"
+            ],
+            "type": "object"
+        },
+        "defaultValueTemplate": {
+            "default": "```\n<mp-highlight highlight=\"{{highlight}}\">{{label.value}}</mp-highlight> ({{count.value}})\n```",
+            "description": "Default Handlebars template for facet value visualization. Can be overridden for\nindividual categories/relations in 'valueCategories'/'valueRelations' mappings.",
+            "properties": {
+                "literal": {
+                    "type": "string"
+                },
+                "resource": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "resource",
+                "literal"
+            ],
+            "required": [
+                "literal",
+                "resource"
+            ],
+            "type": "object"
+        },
+        "facetValuesThreshold": {
+            "default": 10000,
+            "description": "Maximal number of the facet values to show.",
+            "type": "number"
+        },
+        "id": {
+            "description": "Unique HTML id that is used by all nested search-related components, used when one need to have multiple search interfaces on the same page.",
+            "type": "string"
+        },
+        "listenToContextSwitch": {
+            "default": false,
+            "description": "If true facet will automatically switch open relations based on the context relation used\nin the visualization .",
+            "type": "boolean"
+        },
+        "openByDefault": {
+            "default": false,
+            "description": "Flag to open the facet by default.",
+            "type": "boolean"
+        },
+        "relations": {
+            "$ref": "#/definitions/FacetRelationConfig",
+            "description": "Settings determining the display of relations in the sidebar."
+        },
+        "selectFirstCategory": {
+            "default": false,
+            "description": "Flag to select first category in the categories filter by default.\n\nCan be used in situations with many categories to reduce facets loading time.",
+            "type": "boolean"
+        },
+        "valueCategories": {
+            "$ref": "#/definitions/FacetValuePatterns",
+            "description": "Specialization of the categories to be used in the facet.\n\nIf not specified otherwise, by default, all categories are treated as `resource` kind."
+        },
+        "valueRelations": {
+            "$ref": "#/definitions/FacetValuePatterns",
+            "description": "Specialization of the relations to be used in the facet.\n\nIf not specified otherwise, by default, all relations inherit configuration from categories."
+        }
+    },
+    "propertyOrder": [
+        "id",
+        "openByDefault",
+        "selectFirstCategory",
+        "categories",
+        "relations",
+        "valueCategories",
+        "valueRelations",
+        "defaultValueQueries",
+        "defaultValueTemplate",
+        "facetValuesThreshold",
+        "listenToContextSwitch"
+    ],
+    "type": "object"
+}
+

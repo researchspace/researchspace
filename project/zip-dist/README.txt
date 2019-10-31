@@ -1,10 +1,10 @@
 README
 
 1. Start platform
-   Linux/Unix: 
+   Linux/Unix:
         chmod +x start.sh
-        sh start.sh
-   Windows: 
+        ./start.sh
+   Windows:
         start.bat
 2. Open http://localhost:10214/ in your browser
 3. Login with admin/admin

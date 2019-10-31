@@ -1,0 +1,46 @@
+    [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer>:read:any")]]
+      <semantic-context repository="assets">
+        <semantic-table query='
+                          prefix ontodia: <http://ontodia.org/schema/v1#>
+                          SELECT ?diagram ?label ?author ?modified WHERE {
+                                VALUES ?ontodiaClass {ontodia:Diagram <http://www.ontodia.org/schema/v1#diagram>}
+                                ?diagram a ?ontodiaClass;
+                                rdfs:label ?label;
+                                <http://www.w3.org/ns/prov#wasAttributedTo> ?author;
+                                <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
+                               
+                               [[#if (urlParam "ontologyIri")]]
+                                 ?diagram Platform:diagramForOntology <[[urlParam "ontologyIri"]]> .  
+                               [[/if]]
+                           }
+                       '
+                       column-configuration='[
+                            {"variableName":"diagram", "displayName":"Diagram", "cellTemplate":"{{> view}}"},
+                            {"variableName":"author", "displayName":"Author", "cellTemplate":"<mp-label iri=\"{{author.value}}\"></mp-label>"},
+                            {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" }
+                            [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer>:delete:any")]]
+                              ,{"displayName":"Delete", "cellTemplate": "<mp-ldp-remove-from-container-action iri=\"{{diagram.value}}\" data-container=\"http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer\">
+                    <i class=\"fa fa-trash\" aria-hidden=\"true\"></i>
+                  </mp-ldp-remove-from-container-action>" }
+                            [[/if]]
+                       ]'
+       >
+          <template id='view'>
+              <semantic-context repository=default>
+                <semantic-link iri='http://www.metaphacts.com/resource/assets/OntodiaView' urlqueryparam-diagram='{{diagram.value}}' 
+                              [[#if (urlParam "ontologyIri")]] urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]' [[/if]]
+                >{{label.value}}</semantic-link>
+              </semantic-context>
+          </template>
+       </semantic-table>
+     </semantic-context>
+
+     [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer>:create:any")]]
+       <mp-resource-link-container 
+         uri="http://www.metaphacts.com/resource/assets/OntodiaView" 
+         [[#if (urlParam "ontologyIri")]] urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]' [[/if]]
+       >
+         <button class="btn btn-primary">Create Diagram</button>
+       </mp-resource-link-container>
+     [[/if]]
+    [[/if]]

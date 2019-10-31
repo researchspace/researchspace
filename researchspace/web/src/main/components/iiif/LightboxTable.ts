@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,8 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { Component, createElement, DOM as D, createFactory } from 'react';
+import { Component, createElement, createFactory } from 'react';
+import * as D from 'react-dom-factories';
 import { MenuItem, DropdownButton } from 'react-bootstrap';
 import { assign } from 'lodash';
 import * as block from 'bem-cn';
@@ -24,6 +25,7 @@ import * as ReactBootstrap from 'react-bootstrap';
 import * as maybe from 'data.maybe';
 import { List, Set } from 'immutable';
 import * as classNames from 'classnames';
+import * as Kefir from 'kefir';
 
 import { Rdf } from 'platform/api/rdf';
 import { SemanticTable, SemanticTableConfig } from 'platform/components/semantic/table';

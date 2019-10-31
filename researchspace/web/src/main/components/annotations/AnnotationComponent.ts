@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,10 +16,8 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import {
-  DOM as D, createFactory, createElement,
-  MouseEvent, KeyboardEvent
-} from 'react';
+import { createFactory, createElement, MouseEvent } from 'react';
+import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as maybe from 'data.maybe';
 
@@ -30,12 +28,14 @@ import {
   factory as AnnotationTextEditor, component as AnnotationTextEditorComponent
 } from './AnnotationTextEditorComponent';
 import {
-  LdpAnnotationService, Annotation, RdfaLink,
+  LdpAnnotationServiceClass, Annotation, RdfaLink,
 } from '../../services/LDPAnnotationService';
 import {
   Error, Alert, AlertType, AlertConfig,
 } from 'platform/components/ui/alert';
 import { TemplateItem } from 'platform/components/ui/template';
+
+import { rso } from '../../data/vocabularies/vocabularies';
 
 import '../../scss/annotation-component.scss';
 
@@ -106,26 +106,28 @@ export class AnnotationComponentClass extends Component<Props, State> {
   componentWillMount() {
     if (this.props.annotationTarget && this.props.annotationToEdit) {
       this.setState(state => {
-        state.initalizationError = maybe.Just(
+        const initalizationError = maybe.Just(
           `Wrong configuration: Only annotationTarget or
             annotationToEdit can be set at the same time.`
         );
-        return state;
+        return {initalizationError};
       });
     } else if (this.props.annotationTarget) {
       this.setState(state => {
-        state.target = maybe.Just(Rdf.iri(this.props.annotationTarget.replace(/<|>/g, '')));
-        return state;
+        const target = maybe.Just(Rdf.iri(this.props.annotationTarget.replace(/<|>/g, '')));
+        return {target};
       });
     } else if (this.props.annotationToEdit) {
-      LdpAnnotationService.getAnnotation(
+      new LdpAnnotationServiceClass(
+        rso.AnnotationsContainer.value, this.context.semanticContext
+      ).getAnnotation(
         Rdf.iri(this.props.annotationToEdit.replace(/<|>/g, ''))
       ).onValue((annotation: Annotation) => {
         this.setState(state => {
-          state.target = maybe.fromNullable(annotation.target);
-          state.label = annotation.label;
-          state.initText = annotation.html;
-          return state;
+          const target = maybe.fromNullable(annotation.target);
+          const label = annotation.label;
+          const initText = annotation.html;
+          return {target, label, initText};
         });
       });
     }
@@ -145,7 +147,7 @@ export class AnnotationComponentClass extends Component<Props, State> {
           placeholder: 'Title',
           onChange: (e) => {
             const newValue = (e.target as any).value;
-            this.setState(state => { state.label = newValue; return state; });
+            this.setState(state => { return {label: newValue}; });
           },
           value: this.state.label ? this.state.label : '',
         }),
@@ -195,8 +197,8 @@ export class AnnotationComponentClass extends Component<Props, State> {
     }
     if (messages.length) {
       this.setState(state => {
-        state.alert = maybe.Just({ alert: AlertType.DANGER, message: messages.join('. ') });
-        return state;
+        const alert = maybe.Just({ alert: AlertType.DANGER, message: messages.join('. ') });
+        return {alert};
       });
       return;
     }
@@ -209,26 +211,30 @@ export class AnnotationComponentClass extends Component<Props, State> {
       metadata: this.props.metadata,
     };
 
+    const ldpAnnotationService = new LdpAnnotationServiceClass(
+      rso.AnnotationsContainer.value, this.context.semanticContext
+    );
+
     if (this.isEditMode()) {
-      LdpAnnotationService.updateAnnotation(
+      ldpAnnotationService.updateAnnotation(
         Rdf.iri(this.props.annotationToEdit.replace(/<|>/g, '')), annotation
       ).onValue(annotationUri =>
         refresh()
       ).onError(err => {
         this.setState(state => {
-          state.alert = maybe.Just({ alert: AlertType.DANGER, message: err.response.text });
-          return state;
+          const alert = maybe.Just({ alert: AlertType.DANGER, message: err.response.text });
+          return {alert};
         });
       });
     } else {
-      LdpAnnotationService.addAnnotation(
+      ldpAnnotationService.addAnnotation(
         annotation
       ).onValue(annotationUri =>
         this.isNavigateToNew() ? navigateToResource(annotationUri).onValue(v => v) : refresh()
       ).onError(err => {
         this.setState(state => {
-          state.alert = maybe.Just({ alert: AlertType.DANGER, message: err.response.text });
-          return state;
+          const alert = maybe.Just({ alert: AlertType.DANGER, message: err.response.text });
+          return {alert};
         });
       });
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,79 +16,105 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-var path = require('path'),
-    glob = require('glob'),
-    fs = require('fs'),
-    _ = require('lodash'),
-    webpack = require('webpack'),
-    autoprefixer = require('autoprefixer'),
-    MergePlugin = require('merge-webpack-plugin'),
-    HappyPack = require('happypack'),
-    ThemePlugin = require('./ThemePlugin');
+const path = require('path');
+const fs = require('fs');
+const webpack = require('webpack');
+const AssetsPlugin = require('assets-webpack-plugin');
+const autoprefixer = require('autoprefixer');
+const HappyPack = require('happypack');
+const resolveTheme = require('./theme');
 
-var RuntimeAnalyzerPlugin = require('webpack-runtime-analyzer');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-module.exports = function(buildConfig, defaults) {
+// GS:
+const getRepoInfo = require('git-repo-info');
+
+/**
+ * @param {ReturnType<import('./defaults')>} defaults
+ * @returns {import('webpack').Configuration}
+ */
+module.exports = function (defaults) {
     const {
-        ROOT_DIR,
-        METAPHACTORY_ROOT_DIR,
-        METAPHACTORY_DIRS,
-        DIST,
-        TEST_DIRS,
-        EXTENSIONS_WEB_DIRS,
-        ALL_ROOT_DIRS,
-        SRC_DIRS,
-        EXTENSION_ALIASES
+      WEB_PROJECTS,
+      ROOT_DIR,
+      METAPHACTORY_ROOT_DIR,
+      METAPHACTORY_DIRS,
+      GRAPHSCOPE_ROOT_DIR,
+      GRAPHSCOPE_SOURCE_DIR,
+      GRAPHSCOPE_NEW_SOURCE_DIR,
+      DIST,
+      TEST_DIRS,
+      SRC_DIRS
     } = defaults;
 
-    // generate combined component.json
-    const components = EXTENSIONS_WEB_DIRS.concat(METAPHACTORY_ROOT_DIR)
-        .map(dir => path.join(dir, 'component.json'))
-        .filter(dir => fs.existsSync(dir))
-        .reduce((res, component) => Object.assign(res, JSON.parse(fs.readFileSync(component, 'utf8'))), {});
-    fs.writeFileSync(path.join(__dirname, '.component.json'), JSON.stringify(components), 'utf8');
-    //
+    console.log('Building the following web projects: ' + WEB_PROJECTS.map(p => p.name).join(', '));
 
-    var entries = {};
-    entries['app'] = [path.join(METAPHACTORY_DIRS.src, 'app', 'ts', 'app.ts')];
-    entries['api-commons'] = [
-        path.join(METAPHACTORY_DIRS.src, 'app', 'ts', 'bootstrap.ts'),
-        // apis
-        'platform/api/async', 'platform/api/events', 'platform/api/module-loader',
-        'platform/api/navigation', 'platform/api/sparql', 'platform/api/rdf', 'platform/api/components',
+    /**
+     * Env
+     * Get npm lifecycle event to identify the environment
+     */
+    var ENV = process.env.npm_lifecycle_event;
+    var isTest = ENV === 'test' || ENV === 'test-watch';
+    var isProd = ENV === 'build';
+    var info = getRepoInfo(); //git repo info  // This is needed for the version file.
 
-        // services
-        'platform/api/services/config', 'platform/api/services/config-holder',
-        'platform/api/services/ldp', 'platform/api/services/page',
-        'platform/api/services/resource-label', 'platform/api/services/resource-thumbnail',
+    /** @type {{ [entryKey: string]: Array<string> }} */
+    const entries = {};
+    /** @type {Array<string>} */
+    let extensions = [];
+    /** @type {Array<string>} */
+    const cssModulesBasedComponents = [];
+    /**
+     * Mapping from schemaName -> import path for JSON file
+     * @type {{ [schemaName: string]: string }}
+     */
+    const jsonSchemas = {};
+    /** @type {{ [componentTag: string]: string }} */
+    const components = {};
 
-        // components
-        'platform/components/ui/template', 'platform/components/ui/overlay', 'platform/components/ui/spinner'
-    ];
+    for (const project of WEB_PROJECTS) {
+      if (project.entries) {
+        Object.keys(project.entries).forEach(key => {
+          const entryPath = project.entries[key];
+          entries[key] = [path.join(project.webDir, entryPath)];
+        });
+      }
 
-    const cssModulesBasedComponents =
-    _.flatten(
-      [
-        //path.resolve(dirs.src, "common/ts/components"),
-        "components/semantic/lazy-tree",
-        "components/semantic/tree",
-        "components/search/query-builder",
-        "components/search/date",
-        "components/search/facet/slider",
-        "components/search/web-components",
-        "components/search/configuration",
-        "components/sets/views",
-        "components/ui/highlight",
-        "components/persistence",
-        "components/collapsible",
-        "components/dnd",
-        "components/arguments",
-        "components/timeline",
-        "components/alignment"
-      ].map(
-        dir => SRC_DIRS.map(src => path.resolve(src, dir))
-      )
-    );
+      if (project.cssModulesBasedComponents) {
+        for (const componentDir of project.cssModulesBasedComponents) {
+          cssModulesBasedComponents.push(
+            path.resolve(project.webDir, componentDir)
+          );
+        }
+      }
+
+      if (project.extensions) {
+        extensions = [...extensions, ...project.extensions];
+      }
+
+      if (project.generatedJsonSchemas) {
+        for (const schemaName of project.generatedJsonSchemas) {
+          const schemaPath = `${project.schemasAlias}/${schemaName}.json`;
+          jsonSchemas[schemaName] = schemaPath;
+        }
+      }
+
+      const componentsJsonPath = path.join(project.webDir, 'component.json');
+      if (fs.existsSync(componentsJsonPath)) {
+        const componentsJson = JSON.parse(fs.readFileSync(componentsJsonPath, 'utf8'));
+        Object.assign(components, componentsJson);
+      }
+    }
+
+    // generate combined .mp-extensions JSON
+    fs.writeFileSync(path.join(__dirname, '.mp-extensions'), JSON.stringify(extensions), 'utf8');
+    // generate combined .mp-components JSON
+    fs.writeFileSync(path.join(__dirname, '.mp-components'), JSON.stringify(components), 'utf8');
+    // generate combined .mp-schemas JSON
+    fs.writeFileSync(path.join(__dirname, '.mp-schemas'), JSON.stringify(jsonSchemas), 'utf8');
+
+    const {themeDir} = resolveTheme(defaults);
+    console.log('Using theme directory: ' + themeDir);
 
     const config = {
         resolveLoader: {
@@ -103,7 +129,7 @@ module.exports = function(buildConfig, defaults) {
             publicPath: '/assets/'
         },
         module: {
-            noParse: [],
+            /** @type {any[]} */
             rules: [
                 // order of ts and scss loader matters, we detect it by id in webpack.dev file
                 {
@@ -116,34 +142,45 @@ module.exports = function(buildConfig, defaults) {
                         }
 
                     }],
-                    include: SRC_DIRS.concat(TEST_DIRS)
+                    include: [SRC_DIRS.concat(TEST_DIRS), GRAPHSCOPE_NEW_SOURCE_DIR],
+                    exclude: GRAPHSCOPE_SOURCE_DIR
                 },
                 {
                     test: /\.scss$/,
                     include: cssModulesBasedComponents,
                     use: [{
                         loader: 'happypack/loader?id=scss-modules'
-                    }, ]
+                    }, ],
+                    exclude: GRAPHSCOPE_SOURCE_DIR
                 },
                 {
                     test: /\.scss$/,
                     use: [{
                         loader: 'happypack/loader?id=scss'
                     }],
-                    exclude: cssModulesBasedComponents
+                    exclude: [cssModulesBasedComponents, GRAPHSCOPE_SOURCE_DIR]
                 },
                 {
                     test: /\.css$/,
                     use: [{
                         loader: 'happypack/loader?id=css'
-                    }]
+                    }],
+                    exclude: GRAPHSCOPE_SOURCE_DIR
                 },
                 {
-                    test: /\.component\.json$/,
-                    use: [{
-                        loader: 'components-loader'
-                    }],
-                    exclude: /node_modules/
+                    test: /\.mp-components$/,
+                    use: [{loader: 'loaders/components-loader'}],
+                    exclude: [/node_modules/]
+                },
+                {
+                    test: /\.mp-extensions$/,
+                    use: [{loader: 'loaders/extensions-loader'}],
+                    exclude: [/node_modules/]
+                },
+                {
+                    test: /\.mp-schemas$/,
+                    use: [{loader: 'loaders/schemas-loader'}],
+                    exclude: [/node_modules/]
                 },
 
                 {
@@ -154,11 +191,13 @@ module.exports = function(buildConfig, defaults) {
                             limit: 100000,
                             mimetype: 'image/png'
                         }
-                    }]
+                    }],
+                    exclude: GRAPHSCOPE_SOURCE_DIR
                 },
                 {
                     test: /\.gif$/,
-                    loader: "file-loader"
+                    loader: "file-loader",
+                    exclude: GRAPHSCOPE_SOURCE_DIR
                 },
 
                 // exclude highcharts
@@ -167,7 +206,7 @@ module.exports = function(buildConfig, defaults) {
                     use: process.env.BUNDLE_HIGHCHARTS ? [] : [{
                         loader: 'noop-loader'
                     }],
-                    exclude: /node_modules/
+                    exclude: [/node_modules/, GRAPHSCOPE_SOURCE_DIR]
                 },
                 {
                     test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -177,52 +216,185 @@ module.exports = function(buildConfig, defaults) {
                             limit: 10000,
                             mimetype: 'application/font-woff'
                         }
-                    }]
+                    }],
+                    exclude: GRAPHSCOPE_SOURCE_DIR
                 },
                 {
                     test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                    loader: "file-loader"
+                    loader: "file-loader",
+                    exclude: [GRAPHSCOPE_SOURCE_DIR, /.*ketcher\.svg$/, /.*library\.svg$/]
                 },
 
                 {
                     test: path.join(METAPHACTORY_ROOT_DIR, 'node_modules/codemirror/lib/codemirror.js'),
-                    loader: "expose-loader?CodeMirror"
+                    loader: "expose-loader?CodeMirror",
+                    exclude: GRAPHSCOPE_SOURCE_DIR
                 },
-                // load images for simile timeline
+                // graphscope
+                // .ts
+                // {
+                //   test: /\.ts$/,
+                //   include: GRAPHSCOPE_SOURCE_DIR,
+                //   enforce: "pre",
+                //   use: isTest ? [] : [{
+                //     loader: "tslint-loader",
+                //     options: {
+                //       emitErrors: false,
+                //       failOnHint: false
+                //     }
+                //   }],
+                //   // always exclude .e2e.ts, if not testing also exclude .spec.ts and .livespec.ts
+                //   exclude: [isTest ? /\.(e2e)\.ts$/ : /\.(livespec|spec|e2e)\.ts$/, /node_modules\/(?!(ng2-.+))/]
+                // },
                 {
-                    test: /.*red-circle\.png$/,
-                    loader: 'file-loader?name=[name].[ext]&context=src/main/components/semantic/timeline/lib/timeline_2.3.0/timeline_js/images',
-                    include: [path.join(METAPHACTORY_DIRS.src, 'components/semantic/timeline')]
+                  test: /\.ts$/,
+                  include: GRAPHSCOPE_SOURCE_DIR,
+                  use: [{
+                    loader: "ts-loader",
+                    options: {
+                      transpileOnly: true
+                    }
+                  }],
+                  // always exclude .e2e.ts, if not testing also exclude .spec.ts and .livespec.ts
+                  exclude: [isTest ? /\.(e2e)\.ts$/ : /\.(livespec|spec|e2e)\.ts$/, /node_modules\/(?!(ng2-.+))/]
+                },
+                // assets not in public, moved to dist/fonts
+                {
+                  test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico)$/,
+                  include: GRAPHSCOPE_SOURCE_DIR,
+                  use: [{
+                    loader: "file-loader",
+                    options: {
+                      name: "fonts/[name].[hash].[ext]?"
+                    }
+                  }]
+                },
+                // .html maybe specific loader?
+                {
+                  test: /\.html$/,
+                  include: GRAPHSCOPE_SOURCE_DIR,
+                  use: [{
+                    loader: "raw-loader"
+                  }]
+                },
+                // Support for CSS as raw text
+                // use 'null' loader in test mode (https://github.com/webpack/null-loader)
+                // all css in src/style will be bundled in an external css file
+                {
+                  test: /\.css$/,
+                  include: GRAPHSCOPE_SOURCE_DIR,
+                  exclude: path.join(GRAPHSCOPE_SOURCE_DIR, 'app'),
+                  use: isTest ? 'null' : [{
+                        loader: "css-loader",
+                        options: {
+                          sourceMap: "true"
+                        }
+                      },
+                      {
+                        loader: "postcss-loader",
+                        options: {
+                          options: {}
+                        }
+                      }
+                    ]
+                },
+                // all css required in src/app files will be merged in js files
+                {
+                  test: /\.css$/,
+                  include: path.join(GRAPHSCOPE_SOURCE_DIR, 'app'),
+                  use: [{
+                      loader: "raw-loader"
+                    },
+                    {
+                      loader: "postcss-loader",
+                      options: {
+                        options: {}
+                      }
+                    }
+                  ]
+                },
+
+                // support for .scss files
+                // use 'null' loader in test mode (https://github.com/webpack/null-loader)
+                // all css in src/style will be bundled in an external css file
+                {
+                  test: /\.scss$/,
+                  include: GRAPHSCOPE_SOURCE_DIR,
+                  exclude: path.join(GRAPHSCOPE_SOURCE_DIR, 'app'),
+                  use: isTest ? 'null' : [{
+                        loader: "css-loader",
+                        options: {
+                          sourceMap: "true"
+                        }
+                      },
+                      {
+                        loader: "postcss-loader",
+                        options: {
+                          options: {}
+                        }
+                      }
+                    ]
+                },
+                // all css required in src/app files will be merged in js files
+                {
+                  test: /\.scss$/,
+                  include: path.join(GRAPHSCOPE_SOURCE_DIR, 'app'),
+                  use: [{
+                      loader: "raw-loader"
+                    },
+                    {
+                      loader: "sass-loader"
+                    }
+                  ]
                 },
                 {
-                    test: /.*copyright-vertical\.png$/,
-                    loader: 'file-loader?name=images/[name].[ext]&context=src/main/components/semantic/timeline/lib/timeline_2.3.0/timeline_js/images',
-                    include: [path.join(METAPHACTORY_DIRS.src, 'components/semantic/timeline')]
+                  test: /\.(js|ts)$/,
+                  enforce: "post",
+                  include: GRAPHSCOPE_SOURCE_DIR,
+                  use: isTest ? [] : [{
+                    loader: 'istanbul-instrumenter-loader'
+                  }],
+                  exclude: [/\.spec\.ts$/, /\.livespec\.ts$/, /\.e2e\.ts$/, /node_modules/]
                 },
                 {
-                    test: /.*progress-running\.gif$/,
-                    loader: 'file-loader?name=images/[name].[ext]&context=src/main/components/semantic/timeline/lib/timeline_2.3.0/timeline_js/images',
-                    include: [path.join(METAPHACTORY_DIRS.src, 'components/semantic/timeline')]
+                  test: /.*ketcher\.svg$/,
+                  loader: 'raw-loader',
+                  exclude: GRAPHSCOPE_SOURCE_DIR
+                },
+                {
+                  test: /.*library\.svg$/,
+                  loader: 'raw-loader',
+                  exclude: GRAPHSCOPE_SOURCE_DIR
+                },
+                {
+                  test: /.*library\.sdf$/,
+                  loader: 'raw-loader',
+                  exclude: GRAPHSCOPE_SOURCE_DIR
                 }
-            ]
+              ],
+              noParse: [/.+zone\.js\/dist\/.+/, /.+angular2\/bundles\/.+/, /angular2-polyfills\.js/]
         },
         resolve: {
-            modules: ['node_modules'].concat(ALL_ROOT_DIRS.map(dir => path.resolve(dir, 'node_modules'))),
+            modules: ['node_modules'].concat(
+              WEB_PROJECTS.map(project => path.resolve(project.webDir, 'node_modules'))
+            ),
             unsafeCache: true,
-            alias: Object.assign({
-                "platform/app": path.join(METAPHACTORY_DIRS.src, 'app/ts'),
-                'platform/api': path.join(METAPHACTORY_DIRS.src, 'api'),
-                'platform/components': path.join(METAPHACTORY_DIRS.src, 'components'),
-                'basic-styles.scss': path.join(METAPHACTORY_DIRS.src, 'styling/basic.scss'),
-
-                'custom-components': path.join(__dirname, '.component.json'),
+            alias: Object.assign(
+              defaults.ALIASES,
+              {
+                'platform-components': path.join(__dirname, '.mp-components'),
+                'platform-extensions': path.join(__dirname, '.mp-extensions'),
+                'platform-schemas': path.join(__dirname, '.mp-schemas'),
+                'platform-theme': themeDir,
                 _: 'lodash',
                 'basil.js': 'basil.js/src/basil.js',
                 'handlebars': 'handlebars/dist/handlebars.js',
-                'highcharts': 'highcharts/js/highcharts.src.js',
-                'highcharts-more': path.join(METAPHACTORY_ROOT_DIR, 'node_modules/highcharts/js/highcharts-more.src.js'),
-                'highcharts-css': path.join(METAPHACTORY_ROOT_DIR, 'node_modules/highcharts/css/highcharts.css')
-            }, EXTENSION_ALIASES),
+                'ketcher.svg': path.join(METAPHACTORY_ROOT_DIR, 'node_modules/ketcher/dist/ketcher.svg'),
+                'library.sdf': path.join(METAPHACTORY_ROOT_DIR, 'node_modules/ketcher/dist/library.sdf'),
+                'library.svg': path.join(METAPHACTORY_ROOT_DIR, 'node_modules/ketcher/dist/library.svg'),
+                'jsonld': path.join(METAPHACTORY_ROOT_DIR, 'node_modules/jsonld/dist/jsonld.js'),
+              },
+            ),
             extensions: ['.ts', '.tsx', '.js']
         },
         externals: {
@@ -236,88 +408,14 @@ module.exports = function(buildConfig, defaults) {
         plugins: [
             // order matters see karma.config.js
             new webpack.DllReferencePlugin({
+                /** @type {any} */
                 manifest: require("./assets/dll-manifest/vendor-manifest.json"),
                 context: path.resolve(METAPHACTORY_DIRS.src)
             }),
             new webpack.DllReferencePlugin({
+                /** @type {any} */
                 manifest: require("./assets/dll-manifest/basic_styling-manifest.json"),
                 context: path.resolve(METAPHACTORY_DIRS.src)
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                names: ['api-commons'],
-                minChunks: function(module) {
-                    return module.context && module.context.indexOf("node_modules") !== -1;
-                }
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'graphs-commons',
-                chunks: [
-                    'semantic-graph',
-                    'semantic-graph-extension-expand-collapse',
-                    'semantic-graph-extension-navigator',
-                    'semantic-graph-extension-panzoom',
-                    'semantic-graph-layout-breadthfirst',
-                    'semantic-graph-layout-circle',
-                    'semantic-graph-layout-concentric',
-                    'semantic-graph-layout-cose-bilkent',
-                    'semantic-graph-layout-cose',
-                    'semantic-graph-layout-grid',
-                    'semantic-graph-layout-preset'
-                ],
-                minChunks: 2
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'yasqe-commons',
-                chunks: [
-                    'mp-sparql-query-editor', 'mp-spin-query-template-editor', 'field-editor', 'mp-spin-query-editor'
-                ]
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'code-highlight-commons',
-                chunks: [
-                    'mp-code-example', 'mp-code-highlight'
-                ]
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'codemirror-commons',
-                chunks: [
-                    'mp-internal-page-editor', 'yasqe-commons', 'code-highlight-commons'
-                ]
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'openlayers-commons',
-                chunks: [
-                    'semantic-search-query-builder', 'semantic-map'
-                ]
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'splitpane-commons',
-                chunks: [
-                    'mp-splitpane',
-                    'mp-splitpane-sidebar-closed',
-                    'mp-splitpane-sidebar-open',
-                    'mp-splitpane-toggle-on',
-                    'mp-splitpane-toggle-off'
-                ],
-                minChunks: 1
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'print-commons',
-                chunks: [
-                    'mp-print', 'mp-print-section'
-                ]
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'popover-commons',
-                chunks: [
-                    'mp-popover', 'mp-popover-trigger', 'mp-popover-content'
-                ]
-            }),
-            new webpack.optimize.CommonsChunkPlugin({
-                async: 'mirador-commons',
-                chunks: [
-                    'rs-iiif-mirador', 'rs-iiif-mirador-side-by-side-comparison'
-                ]
             }),
 
             new webpack.LoaderOptionsPlugin({
@@ -341,13 +439,14 @@ module.exports = function(buildConfig, defaults) {
                 'jQuery': "jquery"
             }),
 
-            //do not bundle images from dataTables in YASQR
-            new webpack.NormalModuleReplacementPlugin(/\.\.\/images\/sort_[a-z]+(_disabled)?\.png$/, 'node-noop'),
-            new webpack.NormalModuleReplacementPlugin(/\.\/images\/ui-.*/, 'node-noop'),
+            //do not bundle mirador images
+          new webpack.NormalModuleReplacementPlugin(/\.\/images\/ui-.*/, 'node-noop'),
 
-            new webpack.NormalModuleReplacementPlugin(/\.\/table\.js/, 'node-noop'),
-            new webpack.NormalModuleReplacementPlugin(/\.\/pivot\.js/, 'node-noop'),
-            new webpack.NormalModuleReplacementPlugin(/\.\/gchart\.js/, 'node-noop'),
+          new webpack.WatchIgnorePlugin([
+              /scss\.d\.ts$/
+          ]),
+
+         // new BundleAnalyzerPlugin(),
 
             new HappyPack({
                 id: 'scss-modules',
@@ -391,47 +490,18 @@ module.exports = function(buildConfig, defaults) {
                     'css-loader'
                 ]
             }),
-            new ThemePlugin(buildConfig, defaults)
 
-
-            // new RuntimeAnalyzerPlugin({
-            //   // Can be `standalone` or `publisher`.
-            //   // In `standalone` mode analyzer will start rempl server in exclusive publisher mode.
-            //   // In `publisher` mode you should start rempl on your own.
-            //   mode: 'standalone',
-            //   // Port that will be used in `standalone` mode to start rempl server.
-            //   // When set to `0` a random port will be chosen.
-            //   port: 0,
-            //   // Automatically open analyzer in the default browser. Works for `standalone` mode only.
-            //   open: false,
-            //   // Use analyzer only when Webpack run in a watch mode. Set it to `false` to use plugin
-            //   // in any Webpack mode. Take into account that a building process will not be terminated
-            //   // when done since the plugin holds a connection to the rempl server. The only way
-            //   // to terminate building process is using `ctrl+c` like in a watch mode.
-            //   watchModeOnly: true
-            // })
-
+            /*
+             * Generate json files with bundle - hashed bundle file names,
+             * so we can properly refer to bundles in main.hbs and login.hbs files
+             */
+            new AssetsPlugin({
+              // TODO: use this generated file even in local dev builds
+              filename: 'bundles-manifest.json',
+              path: defaults.DIST
+            })
         ]
     };
-
-    const addVendor = function(name, path) {
-        config.resolve.alias[name + '$'] = path;
-        config.module.noParse.push(new RegExp(path));
-    };
-
-
-    var minifiedLibs = [
-        ['simile-ajax-bundle', path.join(METAPHACTORY_DIRS.src, 'components/semantic/timeline/lib/timeline_2.3.0/timeline_ajax/simile-ajax-bundle.js')],
-        ['timeline-bundle', path.join(METAPHACTORY_DIRS.src, 'components/semantic/timeline/lib/timeline_2.3.0/timeline_js/timeline-bundle.js')],
-        ['openlayers', path.join(METAPHACTORY_ROOT_DIR, 'node_modules/openlayers/dist/ol.js')]
-    ];
-
-    _.forEach(
-        minifiedLibs,
-        function(lib) {
-            addVendor(lib[0], lib[1]);
-        }
-    );
 
     return config;
 };

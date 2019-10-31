@@ -1,5 +1,5 @@
 /*!
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,6 +33,7 @@ import java.util.Map
 import java.util.Set
 import java.util.TreeMap
 import java.util.TreeSet
+import java.util.Collections
 import scala.collection.JavaConversions._
 import scala.io.Source
 
@@ -46,8 +47,14 @@ object LicenseAggregator {
 
   val PLACEHOLDER_UNKNOWN_LICENSE_LINK = "_UNKNOWN_LINK_"
 
+  // DO NOT use this generally, i.e. only in well-informed cases
+  val NO_EXPLICIT_LICENSE_LINK = "_NO_EXPLICIT_LICENSE_LINK_"
+
   val HIGHCHARTS_OEM_LICENSE = "Highcharts OEM License, version 5.0"
   val HIGHCHARTS_OEM_LICENSE_LINK = "https://shop.highsoft.com/media/highsoft/Standard-License-Agreement-7.0.pdf"
+
+  val SPUTNIQ_LICENSE = "Sputniq Reseller License"
+  val SPUTNIQ_LICENSE_LINK = "https://metaphacts.com/images/sputniq_license.txt"
 
   val MIT_LICENSE_LINK = "http://opensource.org/licenses/mit-license.php"
 
@@ -65,7 +72,8 @@ object LicenseAggregator {
 
   val WTFPL_LICENSE_LINK = "http://www.wtfpl.net/txt/copying/"
 
-
+  val MPL_2_LICENSE_LINK = "http://opensource.org/licenses/MPL-2.0"
+  
   /**
    * Statically defined licensed (incorporated directly)
    */
@@ -91,7 +99,7 @@ object LicenseAggregator {
   }
 
 
-  private def gatherCoreLibraries(licenseFileCore: String, lics: List[ThirdPartyLibInfo], strictMode: Boolean, skipGroup: String): Int = {
+  private def gatherCoreLibraries(licenseFileCore: String, lics: List[ThirdPartyLibInfo], strictMode: Boolean, skipGroup: String, includeFromLibraries: Set[String]): Int = {
     val lines:scala.collection.immutable.List[String] = readFile(licenseFileCore)
 
     var last: ThirdPartyLibInfo = null
@@ -121,8 +129,12 @@ object LicenseAggregator {
           last.licenseLink == cur.licenseLink) {
           last.appendSubPackageInfo(cur.librarySubpackage)
         } else {
-          if(!cur.libraryName.contains(skipGroup))
+          if (
+            (includeFromLibraries.contains("metaphacts-platform"))
+            || (!cur.libraryName.contains("metaphacts") && !cur.libraryName.contains("graphscope"))) {
             lics.add(cur)
+          }
+
           last = cur
         }
         coreCtr += 1
@@ -190,6 +202,12 @@ object LicenseAggregator {
         } else if (licenseName == "https://www.highcharts.com/license") {
           licenseName = HIGHCHARTS_OEM_LICENSE
           licenseLink = HIGHCHARTS_OEM_LICENSE_LINK
+        } else if (licenseName == "https://sputniq.space/license") {
+          licenseName = SPUTNIQ_LICENSE
+          licenseLink = SPUTNIQ_LICENSE_LINK
+        } else if (licenseName == "MPL-2.0") {
+          licenseName = "MPL-2.0"
+          licenseLink = MPL_2_LICENSE_LINK
         } else if (licenseName == "n/a") {
           if (libraryName == "typeahead.js" && libraryVersion == "0.10.5") {
             licenseName = "MIT"
@@ -233,6 +251,9 @@ object LicenseAggregator {
           } else if (libraryName == "draft-js") {
             licenseName = "BSD"
             licenseLink = "https://raw.githubusercontent.com/facebook/draft-js/master/LICENSE"
+          } else if (libraryName == "scriptjs") {
+            licenseName = "MIT"
+            licenseLink = "https://github.com/ded/script.js/blob/v2.5.8/src/header.js"
           } else if (libraryName == "draft-js-export-html") {
             licenseName = "ISC"
             licenseLink = ISC_LICENSE_LINK
@@ -289,11 +310,15 @@ object LicenseAggregator {
         } else {
           System.err.println(msg)
         }
+      } else if (licenseLink == NO_EXPLICIT_LICENSE_LINK) {
+        // NOTHING to append
       } else {
         tmpBuf.append("<i>Click ")
         tmpBuf.append("<a href=\"")
         tmpBuf.append(licenseLink)
-        tmpBuf.append("\">here</a> to see full license.</i>")
+        tmpBuf.append("\">")
+        tmpBuf.append(licenseLink)
+        tmpBuf.append("</a> to see full license.</i>")
       }
       tmpBuf.append("<br/><br/>\n")
       tmpBuf.append("<table border=\"1\"><tr><th>Library</th><th>Version</th><th>Subpackage(s)</th></tr>\n")
@@ -373,10 +398,11 @@ object LicenseAggregator {
       licenseFileCore: String,
       licenseFileOut: String,
       strictMode: Boolean,
-      skipGroup: String
+      skipGroup: String,
+      includeFromLibraries: Set[String]
   ) :File ={
     val licsCore = new ArrayList[ThirdPartyLibInfo]()
-    val coreCtr = gatherCoreLibraries(licenseFileCore, licsCore, strictMode, skipGroup)
+    val coreCtr = gatherCoreLibraries(licenseFileCore, licsCore, strictMode, skipGroup, includeFromLibraries)
     println("Gathered " + coreCtr + " libs in core " + "(excluding subpackages: " +
       licsCore.size +
       ")...")
@@ -395,10 +421,11 @@ object LicenseAggregator {
     println("Gathered " + staticCtr + " static libs " + "(excluding subpackages: " +
       licsStatic.size + ")...")
 
-    val libs = new ArrayList[ThirdPartyLibInfo]()
+    var libs = new ArrayList[ThirdPartyLibInfo]()
     libs.addAll(licsCore)
     libs.addAll(licsWeb)
     libs.addAll(licsStatic)
+    Collections.sort(libs);
 
     println("-> " + (coreCtr + webCtr + staticCtr) + " including subpackages in overall.")
     println("-> " + libs.size + " excluding subpackages in overall.")
@@ -479,7 +506,7 @@ object LicenseAggregator {
       var librarySubpackage: String,
       var libraryVersion: String,
       var licenseName: String,
-      var licenseLink: String) {
+    var licenseLink: String) extends Comparable[ThirdPartyLibInfo] {
 
     var subPackageCounter: Int = 1
 
@@ -495,6 +522,22 @@ object LicenseAggregator {
     def appendSubPackageInfo(librarySubpackage: String) {
       this.librarySubpackage = if (this.librarySubpackage == null || this.librarySubpackage.isEmpty) librarySubpackage else this.librarySubpackage + ", " + librarySubpackage
       subPackageCounter += 1
+    }
+
+    override def compareTo(other: ThirdPartyLibInfo): Int = {
+      if (this.libraryName != null) {
+        val libraryCompare = this.libraryName.compareTo(other.libraryName);
+        if (libraryCompare != 0) {
+          return libraryCompare;
+        }
+
+        if (this.librarySubpackage != null) {
+          this.librarySubpackage.compareTo(other.librarySubpackage);
+        } else {
+          return -1;
+        }
+      }
+      return -1;
     }
 
     override def toString(): String = {

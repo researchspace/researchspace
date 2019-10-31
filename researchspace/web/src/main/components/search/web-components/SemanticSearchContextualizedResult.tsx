@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@
  */
 
 import * as React from 'react';
-import * as ReactSelect from 'react-select';
+import ReactSelect, { ReactSelectProps } from 'react-select';
 import * as _ from 'lodash';
 import * as Maybe from 'data.maybe';
 import { FormGroup, ControlLabel } from 'react-bootstrap';
@@ -29,22 +29,23 @@ import { FormGroup, ControlLabel } from 'react-bootstrap';
 import { Rdf } from 'platform/api/rdf';
 import { TemplateItem } from 'platform/components/ui/template';
 
-import { RESULT_VARIABLES } from 'platform/components/semantic/search/config/SearchConfig';
 import {
-  ResultContext, ResultContextTypes,
+  RESULT_VARIABLES, SEMANTIC_SEARCH_VARIABLES,
+} from 'platform/components/semantic/search/config/SearchConfig';
+import {
+  SemanticSearchContext, ResultContext,
 } from 'platform/components/semantic/search/web-components/SemanticSearchApi';
-import SearchProfileStore from 'platform/components/semantic/search/data/profiles/SearchProfileStore';
+import {
+  SearchProfileStore
+} from 'platform/components/semantic/search/data/profiles/SearchProfileStore';
 import * as Model from 'platform/components/semantic/search/data/search/Model';
 import * as styles from './SemanticSearchContextualizedResult.scss';
 
-interface Props extends React.Props<SemanticSearchContextualizedResult> {
+const RelationSelector: React.ComponentClass<ReactSelectProps<Model.Relation>> = ReactSelect;
+
+interface SemanticSearchContextualizedResultProps {
   ranges: string [];
   tupleTemplate?: string;
-}
-
-interface State {
-  relation?: Data.Maybe<Model.Relation>
-  relations?: Array<Model.Relation>
 }
 
 /**
@@ -52,11 +53,32 @@ interface State {
  * In case of virtual FRs one cane use `FILTER(?__contextRelationPattern__)` placeholder that
  * will be replaced with the corresponding FR pattern.
  */
-class SemanticSearchContextualizedResult extends React.Component<Props, State> {
-  static contextTypes = ResultContextTypes;
-  static childContextTypes = ResultContextTypes;
-  context: ResultContext;
+class SemanticSearchContextualizedResult
+  extends React.Component<SemanticSearchContextualizedResultProps> {
 
+  render() {
+    return (
+      <SemanticSearchContext.Consumer>
+        {context => (
+          <SemanticSearchContextualizedResultInner {...this.props}
+            context={context}
+          />
+        )}
+      </SemanticSearchContext.Consumer>
+    );
+  }
+}
+
+interface InnerProps extends SemanticSearchContextualizedResultProps {
+  context: ResultContext;
+}
+
+interface State {
+  relation?: Data.Maybe<Model.Relation>
+  relations?: Array<Model.Relation>
+}
+
+class SemanticSearchContextualizedResultInner extends React.Component<InnerProps, State> {
   static defaultProps = {
     tupleTemplate:
       `
@@ -72,10 +94,10 @@ class SemanticSearchContextualizedResult extends React.Component<Props, State> {
     `,
   };
 
-  constructor(props: Props, context: ResultContext) {
-    super(props, context);
+  constructor(props: InnerProps) {
+    super(props);
     const initialState =
-      context.searchProfileStore.map(
+      this.props.context.searchProfileStore.map(
         profileStore => this.initialState(profileStore, props.ranges.map(Rdf.iri))
       ).getOrElse({
         relation: Maybe.Nothing<Model.Relation>(),
@@ -93,19 +115,22 @@ class SemanticSearchContextualizedResult extends React.Component<Props, State> {
 
   private getBindings = () => {
     return this.state.relation.map(
-      relation => ({[RESULT_VARIABLES.CONTEXT_RELATION_VAR]: relation.iri})
+      relation => ({
+        [RESULT_VARIABLES.CONTEXT_RELATION_VAR]: relation.iri,
+        [SEMANTIC_SEARCH_VARIABLES.RELATION_VAR]: relation.iri,
+      })
     ).getOrElse({} as any);
   }
 
   componentDidMount() {
-    this.context.setVisualizationContext(this.state.relation);
+    this.props.context.setVisualizationContext(this.state.relation);
   }
 
   render() {
     return <div className={styles.holder}>
       <FormGroup className={styles.selectorGroup}>
         <ControlLabel>Visualization Context</ControlLabel>
-        {this.context.searchProfileStore.map(this.contextSelector).getOrElse(<span />)}
+        {this.props.context.searchProfileStore.map(this.contextSelector).getOrElse(<span />)}
       </FormGroup>
       {React.Children.only(this.props.children)}
     </div>;
@@ -133,7 +158,7 @@ class SemanticSearchContextualizedResult extends React.Component<Props, State> {
       profileStore.categories.get(range)
     );
     return profileStore.relationsFor({
-      domain: this.context.domain,
+      domain: this.props.context.domain,
       range: rangeCategory,
     }).valueSeq().toJS();
   }
@@ -141,7 +166,7 @@ class SemanticSearchContextualizedResult extends React.Component<Props, State> {
   private contextSelector = (profileStore: SearchProfileStore) => {
     const relationsOptions =
       _.map(this.state.relations, relation => ({value: relation, label: relation.label}));
-    return <ReactSelect
+    return <RelationSelector
       className={styles.contextSelector}
       options={relationsOptions}
       clearable={false}
@@ -155,7 +180,7 @@ class SemanticSearchContextualizedResult extends React.Component<Props, State> {
 
   private selectRelation = (option: {value: Model.Relation}) => {
     const relation = Maybe.Just(option.value);
-    this.context.setVisualizationContext(relation);
+    this.props.context.setVisualizationContext(relation);
     this.setState({relation});
   }
 

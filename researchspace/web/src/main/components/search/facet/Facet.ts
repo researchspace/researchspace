@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,16 +22,20 @@
  * @author Andrey Nikolov <an@metaphacts.com>
  */
 
-import { Component, DOM as D, createFactory, createElement } from 'react';
+import { Component, createFactory, createElement } from 'react';
+import * as D from 'react-dom-factories';
 import * as _ from 'lodash';
 
+import { trigger } from 'platform/api/events';
 import { Spinner } from 'platform/components/ui/spinner';
 
 import CategorySelector from '../query-builder/CategorySelector';
 import RelationFacet from './RelationFacet';
-import { Actions, FacetData } from './FacetStore';
+import { FacetData } from './FacetStore';
 import { Category } from 'platform/components/semantic/search/data/profiles/Model';
 import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
+import { Actions } from 'platform/components/semantic/search/data/facet/Model';
+import { SearchFacetCategorySelected } from '../query-builder/SearchEvents';
 
 import './Facet.scss';
 
@@ -98,6 +102,11 @@ export class FacetComponent extends Component<FacetProps, {}> {
       this.props.actions.deselectCategory();
     } else {
       this.props.actions.selectCategory(clas);
+      trigger({
+        eventType: SearchFacetCategorySelected,
+        source: this.props.config.id,
+        data: clas.iri.value,
+      });
     }
   }
 }

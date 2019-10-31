@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,42 +17,34 @@
  */
 
 import * as React from 'react';
-
+import { Button } from 'react-bootstrap';
 import { Component } from 'platform/api/components';
 
 import Provider from 'ory-editor-ui/lib/Provider';
 
-import ToggleEdit from 'ory-editor-ui/lib/DisplayModeToggle/ToggleEdit';
-import ToggleInsert from 'ory-editor-ui/lib/DisplayModeToggle/ToggleInsert';
-import ToggleLayout from 'ory-editor-ui/lib/DisplayModeToggle/ToggleLayout';
-import TogglePreview from 'ory-editor-ui/lib/DisplayModeToggle/TogglePreview';
-import ToggleResize from 'ory-editor-ui/lib/DisplayModeToggle/ToggleResize';
+import ToggleEdit from './ToggleEdit';
+import ToggleLayout from './ToggleLayout';
+import ToggleResize from './ToggleResize';
+import ToggleInsert from './ToggleInsert';
 
 export interface ModeToggleProps {
   editor: any;
 }
 
 export class ModeToggle extends Component<ModeToggleProps, {}> {
+
   render() {
     return (
       <Provider editor={this.props.editor}>
         <div className='semantic-narrative-editor__mode-toggle' style={{display: 'flex'}}>
           <div className='semantic-narrative-editor__toolbar-section'>
-            <TogglePreview /><span className='semantic-narrative-editor__mode-toggle-description'>Preview</span>
-            <div className='semantic-narrative-editor__toolbar-divider'/>
+            <ToggleEdit />
           </div>
           <div className='semantic-narrative-editor__toolbar-section'>
-            <ToggleEdit /><span className='semantic-narrative-editor__mode-toggle-description'>Edit</span>
-            <div className='semantic-narrative-editor__toolbar-divider'/>
-          </div>
-          {/*<ToggleInsert />*/}
-          <div className='semantic-narrative-editor__toolbar-section'>
-            <ToggleLayout /><span className='semantic-narrative-editor__mode-toggle-description'>Move/Delete</span>
-            <div className='semantic-narrative-editor__toolbar-divider'/>
+            <ToggleLayout />
           </div>
           <div className='semantic-narrative-editor__toolbar-section'>
-            <ToggleResize /><span className='semantic-narrative-editor__mode-toggle-description'>Resize</span>
-            <div className='semantic-narrative-editor__toolbar-divider'/>
+            <ToggleResize />
           </div>
         </div>
       </Provider>

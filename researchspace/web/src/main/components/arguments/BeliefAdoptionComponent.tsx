@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@ import { BeliefSelection } from './BeliefSelection';
 import { ExistingBeliefContentView } from './ExistingBeliefView';
 
 export interface BeliefAdoptionComponentProps {
-  subject: Rdf.Iri;
   acceptRecordQuery?: string
   onCancel: () => void
   onSave: (argument: BeliefAdoption) => void
@@ -126,7 +125,6 @@ export class BeliefAdoptionComponent extends React.Component<BeliefAdoptionCompo
     };
     return <BeliefSelection
       multiSelection={false}
-      subject={this.props.subject}
       messages={messages}
       acceptRecordQuery={this.props.acceptRecordQuery}
       onSelect={this.onFieldsSelection}

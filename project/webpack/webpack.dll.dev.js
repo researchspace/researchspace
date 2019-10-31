@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,23 +16,18 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-var path = require('path'),
-    glob = require('glob'),
-    webpack = require('webpack'),
-    defaults = require('./defaults'),
-    utils = require('./utils');
+const path = require('path');
+const defaults = require('./defaults');
 
-module.exports = function(env) {
-  const buildConfig = utils.parseArgs(env.buildConfig);
-  var config = require('./webpack.dll.js')(buildConfig, defaults(buildConfig));
+/**
+ * @param {{ [key: string]: string }} env
+ */
+module.exports = function (env) {
+  var config = require('./webpack.dll.js')(defaults());
+  config.mode = 'development';
 
-  config.entry['hot'] = ['webpack/hot/dev-server', 'webpack-dev-server/client?http://localhost:3000'];
   config.output.publicPath = 'http://localhost:3000/assets/no_auth/';
-  config.plugins.push(
-    new webpack.HotModuleReplacementPlugin()
-  );
   config.resolve.modules.push(path.resolve(__dirname, 'node_modules'));
-
 
   config.devtool = 'cheap-module-eval-source-map';
 

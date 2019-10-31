@@ -1,5 +1,4 @@
-'[
-    [{
+<rs-guided-tour id='guided-tour-search' steps='[{
       "title": "ResearchSpace Semantic Search",
       "text": "<p>Welcome to this guided tour of ResearchSpace Semantic Search.</p><p>Click <strong>Next</strong> to continue.</p><p>You can click on <strong>Skip Tour</strong> at any time to finish.</p>",
       "selector": ".QueryBuilder--guideLinks li:nth-of-type(2)",
@@ -24,8 +23,7 @@
       "selector": ".QueryBuilder--categorySelectionItem",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "Thing"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Thing"}
     },
     {
       "title": "Select Place",
@@ -33,8 +31,7 @@
       "selector": ".QueryBuilder--rangeSelection li:nth-of-type(3)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "Place"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Place"}
     },
     {
       "title": "Select Relationship",
@@ -42,8 +39,7 @@
       "selector": ".QueryBuilder--relationSelector li[aria-label=refers\\ to]",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "refers to"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Thing_refers_to_Place"}
     },
     {
       "title": "Enter a Place",
@@ -51,15 +47,13 @@
       "selector": ".QueryBuilder--hierarchySelector input",
       "position": "left",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectTreeInput",
-      "label": "Vesuvius, Mount"
+      "progressEvent": {"eventType": "Search.TreeInputSelected", "source": "semantic-query-builder", "data": "http://collection.britishmuseum.org/id/place/x26329"}
     },
     {
       "title": "Fetching results",
       "text": "Loading...",
       "selector": ".QueryBuilder--searchAreaHolder",
-      "progressEvent": "Component.Loaded",
-      "label": "semantic-search-result-grid",
+      "progressEvent": {"eventType": "Component.Loaded", "source": "semantic-search-result-grid"},
       "style": {"button": {"display": "none"}},
       "position": "none"
     },
@@ -81,7 +75,7 @@
       "selector": ".QueryBuilder--addConjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem",
       "position": "bottom",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectAndConjunct"
+      "progressEvent": {"eventType": "Search.AndConjunctSelected", "source": "semantic-query-builder"}
     },
     {
       "title": "Create New Clause",
@@ -89,8 +83,7 @@
       "selector": ".ItemSelector--itemSelector.QueryBuilder--rangeSelection li:nth-of-type(4)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "Time"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Time"}
     },
     {
       "title": "Choose Relationship",
@@ -98,8 +91,7 @@
       "selector": ".QueryBuilder--relationSelector li[aria-label=created\\ on]",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "created on"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Thing_created_on_Time"}
     },
     {
       "title": "Select Date Format",
@@ -107,7 +99,7 @@
       "selector": ".DateFormatSelector--dateFormatSelect",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.OpenSelectDateFormat"
+      "progressEvent": {"eventType": "Search.SelectDateFormatOpened", "source": "semantic-query-builder"}
     },
     {
       "title": "Select Range Of Years",
@@ -115,8 +107,7 @@
       "selector": ".Select-menu div:nth-of-type(5)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectDateFormat",
-      "label": "YearRange"
+      "progressEvent": {"eventType": "Search.DateFormatSelected", "source": "semantic-query-builder", "data": "YearRange"}
     },
     {
       "title": "Enter Year Range",
@@ -124,7 +115,7 @@
       "selector": ".YearInput--year",
       "position": "bottom",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SubmitDateFormat"
+      "progressEvent": {"eventType": "Search.DateFormatSubmitted", "source": "semantic-query-builder"}
     },
     {
       "title": "Results Updated",
@@ -137,7 +128,7 @@
       "text": "<p>Now let&apos;s have a look at facets.</p><p>The relationships in facets are used to drill down into the details of the results. They give us a way of filtering the data we&apos;ve just retrieved.</p><p>Click here to show the facet panel.</p>",
       "selector": ".show-facet-button",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.ToggleFilter",
+      "progressEvent": {"eventType": "Search.FilterToggled", "source": "semantic-search-facet"},
       "position": "right"
     },
     {
@@ -146,8 +137,7 @@
       "selector": ".facet__category-selector-holder",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.FacetSelected",
-      "label": "Concept"
+      "progressEvent": {"eventType": "Search.FacetCategorySelected", "source": "semantic-search-facet", "data": "http://www.researchspace.org/ontology/Concept"}
     },
     {
       "title": "Select Relationship",
@@ -155,15 +145,13 @@
       "selector": ".facet-relations div:nth-of-type(3)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.FacetPropertySelected",
-      "label": "has type"
+      "progressEvent": {"eventType": "Search.FacetPropertySelected", "source": "semantic-search-facet", "data": "http://www.researchspace.org/ontology/Thing_has_type_Concept"}
     },
     {
       "title": "Fetching results",
       "text": "Loading...",
       "selector": ".facet-relations div:nth-of-type(3)",
-      "progressEvent": "Component.Loaded",
-      "label": "ThingConcepthastype",
+      "progressEvent": {"eventType": "Component.Loaded", "source": "semantic-search-facet"},
       "style": {"button": {"display": "none"}},
       "position": "none"
     },
@@ -173,26 +161,23 @@
       "selector": ".facet__relation__values .facet__relation__values__value:nth-of-type(5)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Component.Loaded",
-      "label": "semantic-search-result-grid"
+      "progressEvent": {"eventType": "Component.Loaded", "source": "semantic-search-result-grid"}
     },
     {
       "title": "Select Chart View",
       "text": "Now choose the Chart view. This displays statistical visualisations of our results.",
       "selector": "#search-results li:nth-of-type(3)",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Component.Loaded",
-      "position": "bottom",
-      "label": "search-result-chart"
+      "progressEvent": {"eventType": "Component.Loaded", "source": "search-result-chart"},
+      "position": "bottom"
     },
     {
       "title": "View Pie Chart",
       "text": "We can switch between different visualisations. Click here to view a Pie Chart of the results.",
       "selector": ".semantic-chart__type-button.chart-type-pie",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectChartType",
-      "position": "top",
-      "label": "pie"
+      "progressEvent": {"eventType": "Chart.TypeSelected", "source": "search-result-chart-type-selector", "data": "pie"},
+      "position": "top"
     },
     {
       "title": "Select Visualization Context",
@@ -205,18 +190,15 @@
       "text": "<p>That&apos;s the end of this short introductory tour of semantic search. See the Example Resources menu at the top of the page for examples of further search features.</p><p>Enjoy exploring ResearchSpace!</p>",
       "selector": "#search-results",
       "position": "none"
-    }],
+    }]'></rs-guided-tour>
 
-
-
-    [{
+<rs-guided-tour id='guided-tour-actor-search' steps='[{
       "title": "Select Actor",
       "text": "<p>With your mouse click on the category <strong>Actor</strong>. This first category defines what you are looking for (the <strong>domain</strong>).</p><p><strong>Actors</strong> can be individuals, institutions or groups. e.g:</p><ul><li>Michelangelo</li><li>The British Museum</li><li>Factory of Bordeaux Porcelain</li><li>Royal Astronomical Society</li></ul>",
       "selector": ".QueryBuilder--categorySelectionItem:nth-of-type(2)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "Actor"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Actor"}
     },
     {
       "title": "Select Place",
@@ -224,8 +206,7 @@
       "selector": ".QueryBuilder--searchArea li:nth-of-type(3)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "Place"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Place"}
     },
     {
       "title": "Select Relationship",
@@ -233,8 +214,7 @@
       "selector": ".QueryBuilder--relationSelector li[aria-label=refers\\ to]",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "refers to"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Actor_refers_to_Place"}
     },
     {
       "title": "Enter a Place",
@@ -242,15 +222,13 @@
       "selector": ".QueryBuilder--hierarchySelector input",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectTreeInput",
-      "label": "Greece"
+      "progressEvent": {"eventType": "Search.TreeInputSelected", "source": "semantic-query-builder", "data": "http://collection.britishmuseum.org/id/place/x21667"}
     },
     {
       "title": "Fetching results",
       "text": "Loading...",
       "selector": ".QueryBuilder--searchAreaHolder",
-      "progressEvent": "Component.Loaded",
-      "label": "semantic-search-result-grid",
+      "progressEvent": {"eventType": "Component.Loaded", "source": "semantic-search-result-grid"},
       "style": {"button": {"display": "none"}},
       "position": "none"
     },
@@ -266,7 +244,7 @@
       "selector": ".QueryBuilder--addDisjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem",
       "position": "bottom",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectOrDisjunct"
+      "progressEvent": {"eventType": "Search.OrDisjunctSelected", "source": "semantic-query-builder"}
     },
     {
       "title": "Enter Alternative Place",
@@ -274,15 +252,13 @@
       "selector": ".QueryBuilder--hierarchySelector input",
       "position": "left",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectTreeInput",
-      "label": "Cyprus"
+      "progressEvent": {"eventType": "Search.TreeInputSelected", "source": "semantic-query-builder", "data": "http://collection.britishmuseum.org/id/place/x22683"}
     },
     {
       "title": "Fetching results",
       "text": "Loading...",
       "selector": ".QueryBuilder--searchAreaHolder",
-      "progressEvent": "Component.Loaded",
-      "label": "semantic-search-result-grid",
+      "progressEvent": {"eventType": "Component.Loaded", "source": "semantic-search-result-grid"},
       "style": {"button": {"display": "none"}},
       "position": "none"
     },
@@ -298,7 +274,7 @@
       "selector": ".QueryBuilder--addConjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem",
       "position": "bottom",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectAndConjunct"
+      "progressEvent": {"eventType": "Search.AndConjunctSelected", "source": "semantic-query-builder"}
     },
     {
       "title": "Create New Clause",
@@ -306,8 +282,7 @@
       "selector": ".ItemSelector--itemSelector.QueryBuilder--rangeSelection li:nth-of-type(4)",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "Time"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Time"}
     },
     {
       "title": "Choose Relationship",
@@ -315,8 +290,7 @@
       "selector": ".QueryBuilder--relationSelector li[aria-label=was\\ brought\\ into\\ existence\\ at]",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectCategoryOrRelation",
-      "label": "was brought into existence at"
+      "progressEvent": {"eventType": "Search.CategoryOrRelationSelected", "source": "semantic-query-builder", "data": "http://www.researchspace.org/ontology/Actor_was_brought_into_existence_at_Time"}
     },
     {
       "title": "Select Date Format",
@@ -324,7 +298,7 @@
       "selector": ".DateFormatSelector--dateFormatSelect",
       "position": "right",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.OpenSelectDateFormat"
+      "progressEvent": {"eventType": "Search.SelectDateFormatOpened", "source": "semantic-query-builder"}
     },
     {
       "title": "Select Year",
@@ -332,8 +306,7 @@
       "selector": ".Select-menu div:nth-of-type(4)",
       "position": "left",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SelectDateFormat",
-      "label": "Year"
+      "progressEvent": {"eventType": "Search.DateFormatSelected", "source": "semantic-query-builder", "data": "Year"}
     },
     {
       "title": "Enter Year",
@@ -341,7 +314,7 @@
       "selector": ".YearInput--year",
       "position": "bottom",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Search.SubmitDateFormat"
+      "progressEvent": {"eventType": "Search.DateFormatSubmitted", "source": "semantic-query-builder"}
     },
     {
       "title": "Select Table View",
@@ -349,22 +322,12 @@
       "selector": "#search-results li:nth-of-type(2)",
       "position": "bottom",
       "style": {"button": {"display": "none"}},
-      "progressEvent": "Component.Loaded",
-      "position": "bottom",
-      "label": "semantic-search-result-table"
+      "progressEvent": {"eventType": "Component.Loaded", "source": "semantic-search-result-table"},
+      "position": "bottom"
     },
     {
       "title": "Select Table View",
       "text": "<p>Here we can see Actors, whose records refer to Greece or Cyprus, and who were born around 1754. You can click on a record to see the details of that Actor.</p><p>Try adding or removing clauses to experiment with the results returned.</p>",
       "selector": ".griddle-body .table",
       "position": "right"
-    }],
-
-
-    [{
-    "title": "Example Resources",
-    "text": "<p>You can view example resources here at any time.</p>",
-    "selector": ".navbar-right li.dropdown",
-    "position": "bottom"
-    }]
-]'
+    }]'></rs-guided-tour>

@@ -1,0 +1,32 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix	ex: <http://www.example.com/> .
+@prefix	sp : <http://spinrdf.org/sp#> .
+@prefix spin : <http://spinrdf.org/spin#> .
+@prefix spl : <http://spinrdf.org/spl#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.test.de/queryTemplate>
+      a       spin:Template, spin:SelectTemplate ;
+      rdfs:label "Persons that know another a particular person."^^xsd:string ;
+      rdfs:comment "Selects persons having the exact ?name and know the given ?friend ."^^xsd:string ;
+      spin:labelTemplate "Person with the name {?name} that know {?friend}"^^xsd:string ;
+      spin:body <http://www.test.de/query>;
+      spin:constraint <http://www.test.de/arg1>,<http://www.test.de/arg2>.
+
+<http://www.test.de/arg1> a spl:Argument ;
+              	rdfs:label 		"The friend to be known."^^xsd:string ;
+                rdfs:comment 	"""Argument to bind the ?friend variable of the query.
+The value of the argument must be of type xsd:Resource."""^^xsd:string ;
+                spl:predicate ex:friend ;
+                spl:optional true ;
+                spl:valueType rdfs:Resource.
+
+<http://www.test.de/arg2> a spl:Argument ;
+                rdfs:label "The name of the person."^^xsd:string ;
+                rdfs:comment  """Argument to bind the ?name variable of the query.
+The value of the argument must be of type xsd:string."""^^xsd:string ;
+                spl:predicate ex:name ;
+                spl:valueType xsd:string.
+

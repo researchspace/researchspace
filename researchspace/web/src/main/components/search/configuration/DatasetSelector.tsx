@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@
  */
 
 import * as React from 'react';
-import * as ReactSelect from 'react-select';
+import ReactSelect, { Options } from 'react-select';
 import * as _ from 'lodash';
 
 import { Dataset } from 'platform/components/semantic/search/data/datasets/Model';
@@ -33,7 +33,7 @@ export interface DatasetSelectorProps {
   disabled?: boolean
 }
 
-export class DatasetSelector extends React.Component<DatasetSelectorProps, void> {
+export class DatasetSelector extends React.Component<DatasetSelectorProps, {}> {
 
   render() {
     return this.props.availableDatasets.length > 0 ? this.datasetSelector() : null;
@@ -58,7 +58,7 @@ export class DatasetSelector extends React.Component<DatasetSelectorProps, void>
     />;
   }
 
-  private datasetsToOptions = (datasets: Array<Dataset>): ReactSelect.Options =>
+  private datasetsToOptions = (datasets: Array<Dataset>): Options =>
     _.map(datasets, dataset => {
       const alignmentsLabels =
         _.map(dataset.alignments, alignment => alignment.label).join(', ');
@@ -68,7 +68,7 @@ export class DatasetSelector extends React.Component<DatasetSelectorProps, void>
       };
     });
 
-  private selectDatasets = (options: ReactSelect.Options) => {
+  private selectDatasets = (options: Options) => {
     const { availableDatasets } = this.props;
     this.props.onDatasetsSelection(
       _.map(

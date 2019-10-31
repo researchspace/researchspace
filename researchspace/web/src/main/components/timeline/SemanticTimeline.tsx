@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,16 +28,18 @@ import {
   Timeline,
   TimelineAlignType,
   TimelineOptionsDataAttributesType,
+  TimelineOptionsTemplateFunction,
   TimelineTimeAxisScaleType,
   HeightWidthType,
 } from 'vis';
 
+import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Component } from 'platform/api/components';
 import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
-import { Rdf } from 'platform/api/rdf';
+import { Rdf, vocabularies } from 'platform/api/rdf';
 import * as LabelsService from 'platform/api/services/resource-label';
 
 import 'vis/dist/vis-timeline-graph2d.min.css';
@@ -463,9 +465,9 @@ export interface TimelineGroup {
   showNested?: boolean;
 }
 
-export interface SemanticTimelineConfig {
+interface SemanticTimelineConfigBase {
   /**
-   * SPARQL select query. The required variables are <code>?start</code> and <code>?end</code>. The expected date format is <code>YYYY-MM-DD</code>.
+   * SPARQL select query. The required variables are <code>?start</code> and <code>?end</code>. The expected date formats are <code>YYYY-MM-DD</code>, <code>YYYY-MM-DDTHH:mm:ss</code> and <code>HH:mm:ss</code>.
    */
   query: string;
   /**
@@ -506,12 +508,39 @@ export interface SemanticTimelineConfig {
    */
   className?: string;
   /**
+   * Parsing format.
+   * By default, the <code>Y-MM-DD</code> format is used.
+   * If dates have type <code>xsd:dateTime</code>, the <code>Y-MM-DDTHH:mm:ss</code> format will be used.
+   * If dates have type <code>xsd:time</code>, the <code>HH:mm:ss</code> format will be used.
+   */
+  dateFormat?: string;
+}
+
+/*
+ * This interface is used to generate JSON-Schema for typings. Where user actually provides
+ * string as a value for style, which then is parsed automatically to React.CSSProperties.
+ */
+
+export interface SemanticTimelineConfig extends SemanticTimelineConfigBase {
+  /**
+   * CSS styles for component holder element.
+   */
+  style?: string;
+}
+
+export interface SemanticTimelineConfigProps extends SemanticTimelineConfigBase {
+  /**
    * CSS styles for component holder element.
    */
   style?: React.CSSProperties;
+  /**
+   * ID for issuing component events.
+   */
+  id?: string;
 }
 
-export type SemanticTimelineProps = SemanticTimelineConfig & React.Props<SemanticTimeline>;
+
+export type SemanticTimelineProps = SemanticTimelineConfigProps & React.Props<SemanticTimeline>;
 
 export type TimelineDataSet = DataSet<DataItem & any>;
 
@@ -523,6 +552,10 @@ interface SemanticTimelineState {
   tupleTemplate: Data.Maybe<HandlebarsTemplateDelegate>;
   errorMessage: Data.Maybe<string | Error>;
 }
+
+const DEFAULT_OPTIONS = {
+  orientation: 'top',
+};
 
 export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticTimelineState> {
   public static defaultProps: Partial<SemanticTimelineProps> = {
@@ -566,14 +599,24 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     }
   }
 
-  private parseDate(date: Rdf.Node): moment.Moment | undefined {
+  private parseDate(date: Rdf.Literal): moment.Moment | undefined {
     if (!date) { return; }
 
-    return moment(date.value, 'Y-MM-DD');
+    let format = 'Y-MM-DD';
+    const {dateFormat} = this.props;
+    if (dateFormat) {
+      format = dateFormat;
+    } else if (date.datatype.equals(vocabularies.xsd.dateTime)) {
+      format = 'Y-MM-DDTHH:mm:ss';
+    } else if (date.datatype.equals(vocabularies.xsd.time)) {
+      format = 'HH:mm:ss';
+    }
+    return moment(date.value, format);
   }
 
-  private prepareData(props: SemanticTimelineConfig) {
-    const stream = SparqlClient.select(props.query);
+  private prepareData(props: SemanticTimelineConfigProps) {
+    const context = this.context.semanticContext;
+    const stream = SparqlClient.select(props.query, {context});
 
     stream.onValue(res => {
       if (SparqlUtil.isSelectResultEmpty(res)) {
@@ -590,6 +633,20 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     });
 
     stream.onError(error => this.setState({errorMessage: maybe.Just(error), isLoading: false}));
+
+    stream.onEnd(() => {
+      if (this.props.id) {
+        trigger({eventType: BuiltInEvents.ComponentLoaded, source: this.props.id});
+      }
+    });
+
+    if (this.props.id) {
+      trigger({
+        eventType: BuiltInEvents.ComponentLoading,
+        source: this.props.id,
+        data: stream,
+      });
+    }
   }
 
   private validateDates(start: moment.Moment, end: moment.Moment, type: string): Error | undefined {
@@ -618,8 +675,8 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     const data = [];
 
     for (const binding of res.results.bindings) {
-      const start = this.parseDate(binding.start);
-      const end = this.parseDate(binding.end);
+      const start = this.parseDate(binding.start as Rdf.Literal);
+      const end = this.parseDate(binding.end as Rdf.Literal);
       const type = binding.type ? binding.type.value : defaultItemOptions.type;
 
       const error = this.validateDates(start, end, type);
@@ -650,7 +707,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     };
   }
 
-  private getTimelineItemTemplate = (item, element) => {
+  private getTimelineItemTemplate = makeVisJsTemplateFunction(this, item => {
     const {tupleTemplate, tupleTemplateHeight} = this.props;
     // restore initial values that were in the result
     const options = {
@@ -658,32 +715,18 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
       start: item._start,
       end: item._end,
     };
-    const templateItem = (
+    return (
       <div style={{height: tupleTemplateHeight}}>
         <TemplateItem template={{source: tupleTemplate, options}} />
       </div>
     );
-    const timelineItem = ReactDOM.unstable_renderSubtreeIntoContainer(this, templateItem, element);
+  });
 
-    // cast return type to any as
-    // there is incomplete function type definition of TimelineOptionsTemplateFunction,
-    // the documentation states that the function can return string or ReactDOM.render() result
-    return timelineItem as any;
-  }
-
-  private getTimelineGroupTemplate = (group, element) => {
+  private getTimelineGroupTemplate = makeVisJsTemplateFunction(this, group => {
     const {groupTemplate} = this.props.options;
-
     if (!groupTemplate) { return group.content; }
-
-    const templateItem = <TemplateItem template={{source: groupTemplate, options: group}} />;
-    const timelineGroup = ReactDOM.unstable_renderSubtreeIntoContainer(this, templateItem, element);
-
-    // cast return type to any as
-    // there is incomplete function type definition of TimelineOptionsTemplateFunction,
-    // the documentation states that the function can return string or ReactDOM.render() result
-    return timelineGroup as any;
-  }
+    return <TemplateItem template={{source: groupTemplate, options: group}} />;
+  });
 
   private renderFitButton = () => {
     if (this.state.isDrawing) { return null; }
@@ -708,6 +751,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
   private getTimelineOptions = () => {
     const {options} = this.props;
     return {
+      ...DEFAULT_OPTIONS,
       ...options,
       template: this.getTimelineItemTemplate,
       groupTemplate: this.getTimelineGroupTemplate,
@@ -787,6 +831,25 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
       </div>
     );
   }
+}
+
+function makeVisJsTemplateFunction(
+  parent: React.Component,
+  renderData: (item: any) => JSX.Element
+): TimelineOptionsTemplateFunction {
+  return (item: any, element: Element, changedData?: any) => {
+    if (!changedData) { return; }
+    const markup = renderData(item);
+    ReactDOM.unstable_renderSubtreeIntoContainer(parent, markup, element);
+    // Cast return type to any as
+    // there is incomplete function type definition of TimelineOptionsTemplateFunction,
+    // the documentation states that the function can return string or ReactDOM.render() result.
+    //
+    // In React 16.x rendering using ReactDOM always returns null inside lifecycle methods,
+    // however if we return a non-Element object, Vis.js will call template function again
+    // without `changedData` specified.
+    return {} as any;
+  };
 }
 
 export default SemanticTimeline;

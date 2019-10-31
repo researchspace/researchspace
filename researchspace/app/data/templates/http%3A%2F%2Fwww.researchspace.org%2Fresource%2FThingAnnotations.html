@@ -3,11 +3,14 @@
 
     <bs-row class="style--main">
       <bs-col sm=8>
-      <details class="create-new-annotation">
-        <summary><i class="fa fa-pencil"></i> <a>Create new annotation...</a></summary>
-        [[>rsp:AnnotationForm formCreateMode="true"]]
-      </details>
-
+        [[#if (hasPermission "forms:ldp:*")]]
+          <details class="create-new-annotation">
+          <summary><i class="fa fa-pencil"></i> <a>Create new annotation...</a></summary>
+          [[>rsp:AnnotationForm formCreateMode="true"]]
+            </details>
+        [[else]]
+            <p>No permission to create annotations. Please login.</p>
+        [[/if]]
         <semantic-table config='{
           "options": {"showFilter": false},
           "query": "select * where {

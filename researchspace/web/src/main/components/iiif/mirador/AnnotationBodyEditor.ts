@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,14 +16,12 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import * as React from 'react';
+import * as D from 'react-dom-factories';
 import { render as renderReactToDOM } from 'react-dom';
 
 import {
   OARegionAnnotation, getAnnotationTextResource,
 } from '../../../data/iiif/LDPImageRegionService';
-
-const D = React.DOM;
 
 interface MiradorAnnotationBodyEditor {
   show(selector: string): void;

@@ -65,6 +65,9 @@
                 } UNION {
                   <{{iri.value}}> a crmdig:D9_Data_Object .
                   BIND(crmdig:D9_Data_Object as ?type) .
+                } UNION {
+                  <{{iri.value}}> a rs:EX_Digital_Image_Region .
+                  BIND(rs:EX_Digital_Image_Region as ?type) .
                 }
               } LIMIT 1
             '
@@ -97,6 +100,11 @@
 
             <!-- iiif image -->
             <template id="http://www.ics.forth.gr/isl/CRMdig/D9_Data_Object">
+              <semantic-link uri="{{iri.value}}">{{> rsp:IIIFThumbnail }}</semantic-link>
+            </template>
+
+            <!-- iiif image region -->
+            <template id="http://www.researchspace.org/ontology/EX_Digital_Image_Region">
               <semantic-link uri="{{iri.value}}">{{> rsp:IIIFThumbnail }}</semantic-link>
             </template>
 

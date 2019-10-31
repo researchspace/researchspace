@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -128,8 +128,8 @@ export async function waitElement(driver: WebDriver, selector: string) {
  * Wait for a child element to show on the page
  */
 export async function waitChildElement(parent: WebElement, selector: string) {
-  await awaitFor(parent.getDriver(), async () => 
-    (await parent.findElements(By.css(selector))).length == 0
+  await awaitFor(parent.getDriver(), async () =>
+    (await parent.findElements(By.css(selector))).length !== 0
   );
 }
 
@@ -137,8 +137,8 @@ export async function waitChildElement(parent: WebElement, selector: string) {
  * Wait for an element to disappear from the page
  */
 export async function waitElementRemoved(driver: WebDriver, selector: string) {
-  await awaitFor(driver, async () => 
-    (await driver.findElements(By.css(selector))).length == 0
+  await awaitFor(driver, async () =>
+    (await driver.findElements(By.css(selector))).length === 0
   );
 }
 

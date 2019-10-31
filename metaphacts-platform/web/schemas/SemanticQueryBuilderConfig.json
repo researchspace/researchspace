@@ -1,0 +1,194 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "ComplexTreePatterns": {
+            "properties": {
+                "childrenQuery": {
+                    "description": "Children query with [?parent] input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "parentsQuery": {
+                    "description": "Parent nodes query with [?item] inputs through VALUES(...) clause\nand [?item, ?parent, ?parentLabel] outputs.",
+                    "type": "string"
+                },
+                "rootsQuery": {
+                    "description": "Tree roots query with no input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "searchQuery": {
+                    "description": "Search query with [?__token__] input and [?item, ?score, ?label, ?hasChildren] outputs.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "rootsQuery",
+                "childrenQuery",
+                "parentsQuery",
+                "searchQuery"
+            ],
+            "required": [
+                "childrenQuery",
+                "parentsQuery",
+                "rootsQuery",
+                "searchQuery"
+            ],
+            "type": "object"
+        },
+        "LightwightTreePatterns": {
+            "properties": {
+                "relationPattern": {
+                    "description": "Output bindings: `?item`, `?parent`",
+                    "type": "string"
+                },
+                "scheme": {
+                    "description": "Binds to `?__scheme__` variable in the `schemePattern`",
+                    "type": "string"
+                },
+                "schemePattern": {
+                    "description": "Input bindings: `?__scheme__`\nOutput bindings: `?item`",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "scheme",
+                "schemePattern",
+                "relationPattern"
+            ],
+            "type": "object"
+        },
+        "ResourceSelectorConfig": {
+            "properties": {
+                "defaultQuery": {
+                    "description": "SPARQL Select query that is used for default autosuggestions.\n\nMandatory projection variables:\n   suggestion - should contain suggestion item IRI\n   label - should contain suggestion item label\n\nVariables that will be substituted with user selected value:\n   __token__ - user input represented as string literal\n   __domain__ - search domain category IRI\n   __range__ - conjunct range category IRI\n   __relation__ - conjunct relation IRI",
+                    "type": "string"
+                },
+                "escapeLuceneSyntax": {
+                    "default": true,
+                    "description": "A flag determining whether any special Lucene syntax must be escaped.\nBy default Lucene syntax is escaped and user input is tokenized into words prefixed by `*`.\nE.g for the search `Hello World` -> `Hello* World*`.\nWhen `false` user input is propagated unchanged to the query.",
+                    "type": "boolean"
+                },
+                "noSuggestionsTemplate": {
+                    "description": "Handlebars template that is used when there are no results that match user input.",
+                    "type": "string"
+                },
+                "query": {
+                    "description": "SPARQL Select query that is used for autosuggestion.\n\nMandatory projection variables:\n   suggestion - should contain suggestion item IRI\n   label - should contain suggestion item label\n\nVariables that will be substituted with user selected value:\n   __token__ - user input represented as string literal\n   __domain__ - search domain category IRI\n   __range__ - conjunct range category IRI\n   __relation__ - conjunct relation IRI",
+                    "type": "string"
+                },
+                "suggestionTupleTemplate": {
+                    "description": "Handlebars template that is used to render suggestion items.\nTemplate has access to all SPARQL projection variables from the query.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "query",
+                "escapeLuceneSyntax",
+                "defaultQuery",
+                "noSuggestionsTemplate",
+                "suggestionTupleTemplate"
+            ],
+            "required": [
+                "noSuggestionsTemplate",
+                "query",
+                "suggestionTupleTemplate"
+            ],
+            "type": "object"
+        },
+        "ResourceSelectorPatterns": {
+            "additionalProperties": {
+                "$ref": "#/definitions/ResourceSelectorConfig"
+            },
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "TreeSelectorPatterns": {
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "$ref": "#/definitions/ComplexTreePatterns"
+                    },
+                    {
+                        "$ref": "#/definitions/LightwightTreePatterns"
+                    }
+                ]
+            },
+            "propertyOrder": [
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "categoryViewTemplate": {
+            "description": "Handlebars template for category selection item. Can be customized to provide additional help information in the search interface, e.g tooltip with description of the category etc.\n\nBy default shows category thumbnail along with label.\n\nFor SPARQL Select binding variables available in the template,",
+            "type": "string"
+        },
+        "geoSelector": {
+            "$ref": "#/definitions/ResourceSelectorConfig",
+            "description": "Configuration for place autosuggestion that is used for relations of 'place' kind."
+        },
+        "id": {
+            "description": "Id is used when triggering events.",
+            "type": "string"
+        },
+        "projectionVariable": {
+            "default": "subject",
+            "description": "By default `subject` variable is used as projection variable for the generated query, however it is possible to override the default.\nIndependently from the projection variable in the base query, it is always possible to use `?subject` variable in the result visualizaiton query to refer to the result. If the projection variable in the base-query is not named `subject`, an additional bind clause will be injected to bind it to `?subject`.",
+            "type": "string"
+        },
+        "relationViewTemplate": {
+            "description": "Handlebars template for relation selection item. Can be customized to provide additional help\ninformation in the search interface, e.g tooltip with description of relation etc.\n\nBy default shows relation label only.\n\nFor SPARQL Select binding variables available in the template,",
+            "type": "string"
+        },
+        "resourceSelector": {
+            "$ref": "#/definitions/ResourceSelectorConfig",
+            "description": "Default configuration for autosuggestion that is used to select values for relations of 'resource' kind."
+        },
+        "resourceSelectorCategories": {
+            "$ref": "#/definitions/ResourceSelectorPatterns",
+            "description": "Override configuration for resource selector based on the range of the selected relation."
+        },
+        "resourceSelectorRelations": {
+            "$ref": "#/definitions/ResourceSelectorPatterns",
+            "description": "Override configuration for resource selector based on the selected relation."
+        },
+        "treeSelector": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/ComplexTreePatterns"
+                },
+                {
+                    "$ref": "#/definitions/LightwightTreePatterns"
+                }
+            ],
+            "description": "Default configuration for tree-based autosuggestion, that is used to select values for any relations of 'hierarchy' kind."
+        },
+        "treeSelectorCategories": {
+            "$ref": "#/definitions/TreeSelectorPatterns",
+            "description": "Override configuration for tree selector based on the range of the selected relation."
+        },
+        "treeSelectorRelations": {
+            "$ref": "#/definitions/TreeSelectorPatterns",
+            "description": "Override configuration for tree selector based on the selected relation."
+        }
+    },
+    "propertyOrder": [
+        "id",
+        "resourceSelector",
+        "resourceSelectorCategories",
+        "resourceSelectorRelations",
+        "treeSelector",
+        "treeSelectorCategories",
+        "treeSelectorRelations",
+        "geoSelector",
+        "categoryViewTemplate",
+        "relationViewTemplate",
+        "projectionVariable"
+    ],
+    "required": [
+        "id",
+        "resourceSelector"
+    ],
+    "type": "object"
+}
+

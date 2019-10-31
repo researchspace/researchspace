@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -152,9 +152,9 @@ function evaluateAssertion(context: EvaluationContext, baseIri: Rdf.Iri) {
       _.map(beliefsPgs,
         beliefPg =>
           Rdf.union(
-            Rdf.graph(
-              Rdf.triple(assertionIri, rso.PX_asserts, beliefPg.pointer)
-            ),
+            Rdf.graph([
+              Rdf.triple(assertionIri, rso.PX_asserts, beliefPg.pointer),
+            ]),
             beliefPg.graph
           )
       );
@@ -188,11 +188,11 @@ function createAssertionTimeSpan(): Rdf.PointedGraph {
   const label = Rdf.literal(time.format('LL'));
   return Rdf.pg(
     timeIri,
-    Rdf.graph(
+    Rdf.graph([
       Rdf.triple(timeIri, crm.P82a_begin_of_the_begin, timeLiteral),
       Rdf.triple(timeIri, crm.P82a_end_of_the_end, timeLiteral),
       Rdf.triple(timeIri, rso.displayLabel, label),
-      Rdf.triple(timeIri, vocabularies.rdfs.label, label)
-    )
+      Rdf.triple(timeIri, vocabularies.rdfs.label, label),
+    ])
   );
 }

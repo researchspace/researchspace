@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,8 +25,8 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.researchspace.vocabulary.CRMdig;
 
 import com.google.common.base.Throwables;
 import com.google.inject.Provider;
@@ -34,6 +34,7 @@ import com.metaphacts.data.rdf.PointedGraph;
 import com.metaphacts.data.rdf.container.AbstractLDPContainer;
 import com.metaphacts.data.rdf.container.LDPR;
 import com.metaphacts.data.rdf.container.RootContainer;
+import com.metaphacts.repository.MpRepositoryProvider;
 import com.metaphacts.vocabulary.LDP;
 
 /**
@@ -56,8 +57,8 @@ public class LinkContainer extends AbstractLDPContainer {
     @Inject
     private Provider<RootContainer> rootContainer;
     
-    public LinkContainer(IRI iri, Repository repository) {
-        super(iri, repository);
+    public LinkContainer(IRI iri, MpRepositoryProvider repositoryProvider) {
+        super(iri, repositoryProvider);
     }
     
     public void initialize() {
@@ -72,5 +73,10 @@ public class LinkContainer extends AbstractLDPContainer {
                 throw Throwables.propagate(e);
             }
         }
+    }
+    
+    @Override
+    public IRI getResourceType() {
+    	return CRMdig.D29_ANNOTATION_OBJECT_CLASS;
     }
 }

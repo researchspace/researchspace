@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,7 @@
  * @author Philip Polkovnikov
  */
 export interface Options {
-  dataset: string;
-  loginUrl?: string;
-  searchUrl: string;
+  baseUrl: string;
   username?: string;
   password?: string;
   noLogin?: boolean;

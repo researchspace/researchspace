@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@
 
 import * as Kefir from 'kefir';
 import * as Immutable from 'immutable';
+import * as SparqlJs from 'sparqljs';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf, turtle } from 'platform/api/rdf';
@@ -48,7 +49,7 @@ export interface ToolState {
   readonly savedMatches: Immutable.Map<string, Immutable.Map<string, MatchEntry>>;
   readonly matches: Immutable.Map<string, Immutable.Map<string, MatchEntry>>;
   readonly metadata: AlignmentMetadata;
-  readonly draggedNode?: AlignmentNode;
+  readonly draggedNodes?: ReadonlyArray<AlignmentNode>;
 }
 
 export enum AlignementRole {
@@ -131,11 +132,15 @@ export class ToolController {
     const targetQueries = createQueries(queries, target);
 
     const sourceModel = new SparqlNodeModel({
-      ...sourceQueries.queries,
+      rootsQuery: sourceQueries.queries.rootsQuery,
+      childrenQuery: sourceQueries.queries.childrenQuery,
+      parentsQuery: sourceQueries.queries.parentsQuery,
       sparqlOptions: this.getSparqlOptions,
     });
     const targetModel = new SparqlNodeModel({
-      ...targetQueries.queries,
+      rootsQuery: targetQueries.queries.rootsQuery,
+      childrenQuery: targetQueries.queries.childrenQuery,
+      parentsQuery: targetQueries.queries.parentsQuery,
       sparqlOptions: this.getSparqlOptions,
     });
 
@@ -305,39 +310,49 @@ export class ToolController {
     });
   }
 
-  alignNode({base, excludeFromAlignment}: AlignmentNode, targetPath: KeyPath, kind: AlignKind) {
-    if (kind === AlignKind.ExactMatch) {
-      this.enqueueStateUpdate(toolState => {
-        const {target} = toolState;
+  alignNodes(
+    targetPath: KeyPath,
+    alignments: ReadonlyArray<{
+      kind: AlignKind;
+      sourceNode: AlignmentNode;
+    }>,
+  ) {
+    this.enqueueStateUpdate(toolState => {
+      const {target} = toolState;
+      let forest = target.forest;
+
+      for (const {kind, sourceNode} of alignments) {
+        const {base, excludeFromAlignment} = sourceNode;
         if (!this.validate(target.forest, targetPath, base, kind)) {
-          return null;
+          const targetNode = forest.fromKeyPath(targetPath);
+          const targetIri = targetNode ? `<${forest.keyOf(targetNode)}>` : '<?>';
+          console.warn(`Invalid alignment: ${base.iri} ${AlignKind[kind]} ${targetIri}`);
+          continue;
         }
-        const forest = target.forest.updateNode(
-          targetPath, node => AlignmentNode.setExactMatch(node, base, excludeFromAlignment)
-        );
-        this.enqueueStateUpdate(syncDecoratorsAndMatches);
-        return PanelState.mergeIn(toolState, AlignementRole.Target, {forest});
-      }, resultState => {
+        if (kind === AlignKind.ExactMatch) {
+          forest = target.forest.updateNode(
+            targetPath, node => AlignmentNode.setExactMatch(node, base, excludeFromAlignment)
+          );
+        } else if (kind === AlignKind.NarrowerMatch) {
+          forest = forest.updateNode(targetPath, node => {
+            const aligned = AlignmentNode.addNarrowMatches(node, [
+              asNarrowMatch(base, excludeFromAlignment),
+            ]);
+            return TreeNode.set(aligned, {expanded: true});
+          });
+        } else {
+          throw new Error(`Invalid alignment relation type '${AlignKind[kind]}'`);
+        }
+      }
+
+      this.enqueueStateUpdate(syncDecoratorsAndMatches);
+      return PanelState.mergeIn(toolState, AlignementRole.Target, {forest});
+    }, resultState => {
+      const reloadTarget = alignments.some(({kind}) => kind === AlignKind.ExactMatch);
+      if (reloadTarget) {
         this.requestMore(AlignementRole.Target, targetPath);
-      });
-    } else if (kind === AlignKind.NarrowerMatch) {
-      this.enqueueStateUpdate(toolState => {
-        const state = toolState.target;
-        if (!this.validate(state.forest, targetPath, base, kind)) {
-          return null;
-        }
-        const forest = state.forest.updateNode(targetPath, node => {
-          const aligned = AlignmentNode.addNarrowMatches(node, [
-            asNarrowMatch(base, excludeFromAlignment),
-          ]);
-          return TreeNode.set(aligned, {expanded: true});
-        });
-        this.enqueueStateUpdate(syncDecoratorsAndMatches);
-        return PanelState.mergeIn(toolState, AlignementRole.Target, {forest});
-      });
-    } else {
-      throw new Error(`Invalid alignment relation type '${AlignKind[kind]}'`);
-    }
+      }
+    });
   }
 
   private validate(
@@ -387,12 +402,14 @@ function syncDecoratorsAndMatches(toolState: ToolState): Partial<ToolState> {
     const withSources = mapBottomUp<AlignmentNode>(root, node => {
       const entry = sources.get(AlignmentNode.keyOf(node));
       if (entry) {
+        // update decorators and match info
         const excluded = entry.targetAligned.excludeFromAlignment;
         const decorated = decorateMatchChildren(
           node, node => !excluded.has(AlignmentNode.keyOf(node)));
         const matchedTargetNode = entry.targetBase.base;
         return AlignmentNode.set(decorated, {matchedTargetNode});
       } else if (node.matchedTargetNode) {
+        // clear decorators and remove match info
         const decorated = decorateMatchChildren(node, () => false);
         return AlignmentNode.set(decorated, {matchedTargetNode: undefined});
       } else {
@@ -422,9 +439,16 @@ function decorateMatchChildren(
 
 function decorateMatchParent(root: AlignmentNode): AlignmentNode {
   return mapBottomUp<AlignmentNode>(root, node => {
-    const decorateAlignParent = node.children.some(child => Boolean(
-      child.aligned || child.matchedTargetNode || child.decorateAlignParent
-    ));
+    const decorateAlignParent = node.children.some(child => {
+      return Boolean(
+        // source node is aligned
+        child.matchedTargetNode ||
+        // non-aligned target node is a parent of aligned child
+        !node.aligned && child.aligned ||
+        // node is a parent of decorated child
+        child.decorateAlignParent
+      );
+    });
     return AlignmentNode.set(node, {decorateAlignParent});
   });
 }

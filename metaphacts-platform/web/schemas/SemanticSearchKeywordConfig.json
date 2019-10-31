@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "className": {
+            "description": "Custom css classes for the input element",
+            "type": "string"
+        },
+        "debounce": {
+            "default": 300,
+            "description": "Number of milliseconds to wait after the last keystroke before sending the query.",
+            "type": "number"
+        },
+        "defaultQuery": {
+            "description": "SPARQL SELECT query string. If present will be used to show default suggestions without the need for the user to type anything.",
+            "type": "string"
+        },
+        "domain": {
+            "description": "Specify search domain category IRI (full IRI enclosed in <>). Required, if component is used together with facets.",
+            "type": "string"
+        },
+        "escapeLuceneSyntax": {
+            "default": true,
+            "description": "A flag determining whether any special Lucene syntax must be escaped.\nBy default Lucene syntax is escaped and user input is tokenized into words prefixed by `*`.\nE.g for the search `Hello World` -> `Hello* World*`.\nWhen `false` user input is propagated unchanged to the query.",
+            "type": "boolean"
+        },
+        "minSearchTermLength": {
+            "default": 3,
+            "description": "Minimum number of input characters that triggers the search.",
+            "type": "number"
+        },
+        "placeholder": {
+            "description": "Input placeholder.",
+            "type": "string"
+        },
+        "query": {
+            "description": "SPARQL SELECT query string. Needs to have a variable named as `__token__`(can be customized with searchTermVariable) that will be replaces with the user input.",
+            "type": "string"
+        },
+        "searchTermVariable": {
+            "default": "__token__",
+            "description": "User input variable name.",
+            "type": "string"
+        },
+        "style": {
+            "description": "Custom css styles for the input element",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "style",
+        "className",
+        "domain",
+        "debounce",
+        "query",
+        "defaultQuery",
+        "searchTermVariable",
+        "minSearchTermLength",
+        "placeholder",
+        "escapeLuceneSyntax"
+    ],
+    "required": [
+        "query"
+    ],
+    "type": "object"
+}
+

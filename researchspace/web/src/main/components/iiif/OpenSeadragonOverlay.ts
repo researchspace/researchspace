@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,8 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { Component, DOM as D} from 'react';
+import { Component } from 'react';
+import * as D from 'react-dom-factories';
 import * as OpenSeadragon from 'openseadragon';
 import * as Immutable from 'immutable';
 

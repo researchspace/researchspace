@@ -1,0 +1,91 @@
+[[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer>:read:any")]]
+
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li><semantic-link title="Assets" uri="http://www.metaphacts.com/resource/assets/">Assets</semantic-link></li>
+  <li><semantic-link title="Assets" uri="http://www.metaphacts.com/resource/assets/Fields">Fields</semantic-link></li>
+  <li class="active"><mp-label iri='[[this]]'></mp-label></li>
+</ol>
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-list-ul fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Field: <mp-label iri='[[this]]'></mp-label></h2>
+    </div>
+  </div>
+  <div class='page__body'> 
+    <div class='pull-right'>
+      [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer>:export:any")]]
+        <mp-ldp-export-resource iri='[[this]]'>
+          <button class="btn btn-default" style='margin-left: 10px'>
+            <i class='fa fa-download' aria-hidden='true'></i> Export
+          </button>
+        </mp-ldp-export-resource>
+      [[/if]]
+      
+      [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer>:create:any")]]
+        <mp-ldp-duplicate-resource-action iri="[[this]]" container="http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer">
+          <button class="btn btn-default" style="margin-right:8px;"><i class="fa fa-files-o" aria-hidden="true"></i> Duplicate</button>
+        </mp-ldp-duplicate-resource-action>
+      [[/if]]
+      
+      [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer>:delete:any")]]
+        <mp-ldp-remove-from-container-action iri="[[this]]" container="http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer" 
+                                             post-action='http://www.metaphacts.com/resource/assets/Fields'>
+          <button class="btn btn-danger" style="margin-right:8px;"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>
+        </mp-ldp-remove-from-container-action>
+      [[/if]]
+    </div>
+    <div style='clear: both;'></div>
+    
+    <field-editor field-iri='[[this]]' ></field-editor>
+    
+    <h2>Field Preview</h2>
+    <hr>
+    <semantic-form 
+      debug='false' 
+      browser-persistence=false 
+      fields='[[fieldDefinitionsFromQuery "SELECT ?field { BIND(?? AS ?field) }"]]'
+    >
+      <bs-tabs>
+        <bs-tab event-key="1" title="Plain Input">
+          <semantic-form-text-input for='[[this]]' render-header=true></semantic-form-text-input>
+        </bs-tab>
+        <bs-tab event-key="2" title="Autocomplete Input">
+          <semantic-form-autocomplete-input for='[[this]]'></semantic-form-autocomplete-input>
+        </bs-tab>
+        <bs-tab event-key="3" title="Select Input">
+          <semantic-form-select-input data-for='[[this]]'></semantic-form-select-input>
+        </bs-tab>
+        <bs-tab event-key="4" title="Date Input">
+          <semantic-form-datetime-input for='[[this]]'></semantic-form-datetime-input>
+        </bs-tab>
+        <bs-tab event-key="5" title="Tree Input">
+          <semantic-form-tree-picker-input for="[[this]]"></semantic-form-tree-picker-input>
+        </bs-tab>
+      </bs-tabs>
+    </semantic-form>
+
+    <h2>JSON Configuration Example</h2>
+    <hr>
+    <i style="color:red;font-size: 10px;">
+      Please be aware of that the "example" id needs to be replaced with the current IRI: "<b>[[this]]</b>"
+    </i>
+    <mp-code-block mode='application/json'>
+<![CDATA[
+[[fieldDefinitions example=(this)]]
+]]>
+    </mp-code-block>
+  </div>
+</div>
+[[else]]
+
+<p>No Permission</p>
+
+[[/if]]
+

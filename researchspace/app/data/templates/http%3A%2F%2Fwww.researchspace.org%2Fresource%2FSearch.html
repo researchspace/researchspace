@@ -1,6 +1,7 @@
 <ol class="page-breadcrumb">
   <li class="active">Home</li>
 </ol>
+
 <mp-event-proxy id='clipboard-update-on-save-set' on-event-source='save-set-result-action'
                 proxy-event-type='Component.Refresh' proxy-targets='["clipboard-sidebar"]'
 ></mp-event-proxy>
@@ -13,13 +14,19 @@
                 proxy-event-type='Component.Refresh' proxy-targets='["clipboard-sidebar"]'
 ></mp-event-proxy>
 
+[[>rsp:SearchTourSteps]]
+<mp-event-proxy id='guided-tour-run' on-event-type='Component.Loaded' on-event-source='semantic-search'
+  proxy-event-type='GuidedTour.RunIfNotSeen' proxy-targets='["guided-tour-search"]'>
+</mp-event-proxy>
+
 <div class="page">
-[[#>rsp:ClipboardSidebar]]
+  [[#>rsp:ClipboardSidebar]]
   <div class='page__body--borderless'>
-  <semantic-search
-    limit=50000
-    optimizer=blazegraph
-    categories='{
+    <semantic-search
+      id='semantic-search'
+      limit=50000
+      optimizer=blazegraph
+      categories='{
     "<http://www.researchspace.org/ontology/Concept>": [
       {
         "kind": "hierarchy",
@@ -91,7 +98,7 @@
       }
     ]
   }'
-  search-profile='{
+    search-profile='{
     "defaultProfile": "<http://www.researchspace.org/profile/all>",
     "categoriesQuery": "
         SELECT DISTINCT ?profile ?category ?label ?thumbnail ?description WHERE {
@@ -163,325 +170,10 @@
         }
         ORDER BY ?orderLabel ?label
     "
-  }'
-
-  tour-steps = '[
-                [{
-                  "title": "ResearchSpace Semantic Search",
-                  "text": "<p>Welcome to this guided tour of ResearchSpace Semantic Search.</p><p>The ResearchSpace platform will feature additional tools in future. Visit the <a href=\"/resource/Features\">ResearchSpace Features</a> page for more information.</p><p>Click <strong>Next</strong> to continue.</p><p>You can click on <strong>Skip Tour</strong> at any time to finish.</p>",
-                  "selector": ".QueryBuilder--guideLinks li:nth-of-type(2)",
-                  "position": "none"
-                },
-                {
-                  "title": "Context",
-                  "text": "<p>In this tour we are going to search for artifacts which make reference to a specific place, and which were created within a particular time span.</p>
-                  <p>This will help to demonstrate the power of semantic search. A <strong>keyword</strong> search might bring up many results related to a specified place, but within those results it would be difficult to distinguish between items which <strong>refer to</strong> that place, those <strong>created</strong> there, those <strong>exhibited</strong> there, and so on.</p><p>With our <strong>semantic</strong> search we can specify the relationship to the place, and we can be similarly specific about the relationship to the <strong>time period</strong> we target in the search.</p>",
-                  "selector": ".QueryBuilder--searchAreaHolder",
-                  "position": "none"
-                },
-                {
-                  "title": "The Category Menu",
-                  "text": "<p>The menu consists of general categories. These categories represent a whole range of more specialised categories found in the data.</p><p>Let&apos;s try a search.</p>",
-                  "selector": ".QueryBuilder--domainSelection",
-                  "position": "bottom"
-                },
-                {
-                  "title": "Select Thing",
-                  "text": "With your mouse choose the category <strong>Thing</strong>. This first category defines what you are looking for.",
-                  "selector": ".QueryBuilder--categorySelectionItem",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "Thing"
-                },
-                {
-                  "title": "Select Place",
-                  "text": "Now choose a category that will be used to define the context of the search. For this example choose <strong>Place</strong>.",
-                  "selector": ".QueryBuilder--rangeSelection li:nth-of-type(3)",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "Place"
-                },
-                {
-                  "title": "Select Relationship",
-                  "text": "<p>Now choose the contextual relationship.</p><p>In this case we want to search for place as a subject of thing, rather than the place where the thing was created or found.</p><p>So for this example choose <strong>refers to</strong>.</p>",
-                  "selector": ".QueryBuilder--relationSelector li[aria-label=refers\\ to]",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "refers to"
-                },
-                {
-                  "title": "Enter a Place",
-                  "text": "Now type a place in the box. Type \"Vesuvius\" and select <strong>Vesuvius, Mount</strong> from the list.",
-                  "selector": ".QueryBuilder--hierarchySelector input",
-                  "position": "left",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "newResults"
-                },
-                {
-                  "title": "Results Displayed",
-                  "text": "Here you have a result with a title.",
-                  "selector": ".rs-grid-element",
-                  "position": "bottom"
-                },
-                {
-                  "title": "Save Search Options",
-                  "text": "Logged in users will have the options to save the search to their own clipboard space, add the results to a new set or add them to an existing set.",
-                  "selector": ".metaphacts-table-widget-holder",
-                  "position": "top"
-                },
-                {
-                  "title": "Extend the Search",
-                  "text": "Let&apos;s extend the search! Move the mouse arrow over the end of the search bar, and click <strong>AND</strong>",
-                  "selector": ".QueryBuilder--addConjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem",
-                  "position": "bottom",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "andConjunction"
-                },
-                {
-                  "title": "Create New Clause",
-                  "text": "...and another search bar is initiated. This time let&apos;s narrow the search by <strong>Time</strong>.",
-                  "selector": ".ItemSelector--itemSelector.QueryBuilder--rangeSelection li:nth-of-type(4)",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "Time"
-                },
-                {
-                  "title": "Choose Relationship",
-                  "text": "<p>And choose <strong>created on</strong> as the new relationship.</p><p><strong>Created on</strong> relates to the date of the production of the things we&apos;re searching for.</p>",
-                  "selector": ".QueryBuilder--relationSelector li[aria-label=created\\ on]",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "created on"
-                },
-                {
-                  "title": "Select Date Format",
-                  "text": "Now select a date format to use...",
-                  "selector": ".DateFormatSelector--dateFormatSelect",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "selectDateType"
-                },
-                {
-                  "title": "Select Range Of Years",
-                  "text": "...and choose the <strong>year to year</strong> range.",
-                  "selector": ".Select-menu div:nth-of-type(5)",
-                  "position": "left",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "selectDateTypeOption"
-                },
-                {
-                  "title": "Enter Year Range",
-                  "text": "Type 1700 in the first box and 1760 in the second and click <strong>Select</strong>.",
-                  "selector": ".YearInput--year",
-                  "position": "bottom",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "selectDate"
-                },
-                {
-                  "title": "Results Updated",
-                  "text": "The results were updated to reflect the date range you just added.",
-                  "selector": ".rs-grid-element",
-                  "position": "bottom-right"
-                },
-                {
-                  "title": "Explore Facets",
-                  "text": "<p>Now let&apos;s have a look at facets.</p><p>The relationships in facets are used to drill down into the details of the results. They give us a way of filtering the data we&apos;ve just retrieved.</p><p>Click here to show the facet panel.</p>",
-                  "selector": ".show-facet-button",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "toggleFilter",
-                  "position": "right"
-                },
-                {
-                  "title": "Select Facet Category",
-                  "text": "<p>The facets are arranged according to the same categories as those we used at the start of the search. You can limit the facets to particular categories by clicking on their icons.</p><p>Click the <strong>Concept</strong> icon: <div style=\"display:inline-block;width:38px;height:38px\"><img src=\"/images/fcs/concepts.svg\"></div></p>",
-                  "selector": ".btn.btn-default.category-item-holder[title=Concept]",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "facetSelected",
-                  "label": "Concept"
-                },
-                {
-                  "title": "Select Relationship",
-                  "text": "Now open up the <strong>has type</strong> relationship.",
-                  "selector": ".facet-relations div:nth-of-type(3)",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "facetPropertySelected",
-                  "label": "has type"
-                },
-                {
-                  "title": "Select Facets",
-                  "text": "Choose the facet <strong>Intaglio Print</strong>. The list of results is updated, according to your selection.",
-                  "selector": ".facet__relation__values div",
-                  "position": "right"
-                },
-                {
-                  "title": "Select Chart View",
-                  "text": "Now choose the Chart view. This displays statistical visualisations of our results.",
-                  "selector": "#search-results li:nth-of-type(3)",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "chartWidgetLoaded",
-                  "position": "bottom",
-                  "label": "bar"
-                },
-                {
-                  "title": "View Pie Chart",
-                  "text": "We can switch between different visualisations. Click here to view a Pie Chart of the results.",
-                  "selector": ".semantic-chart__type-button.chart-type-pie",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "chartWidgetLoaded",
-                  "position": "top",
-                  "label": "pie"
-                },
-                {
-                  "title": "Select Visualization Context",
-                  "text": "<p>In the Visualization Context, select <strong>Refers To Actor</strong> <div style=\"display:inline-block;width:38px;height:38px\"><img src=\"/images/fcs/actors.svg\"></div></p><p>This limits the visualisation of our results to the selected relationship. Mouse over a sector in the chart to see the relevant value.</p><p>With any of the visualisations, we can click on the coloured boxes in the legend above the graph to toggle a value on or off.</p>",
-                  "selector": ".SemanticSearchContextualizedResult--contextSelector",
-                  "position": "top"
-                },
-                {
-                  "title": "Explore ResearchSpace",
-                  "text": "<p>That&apos;s the end of this short introductory tour. We&apos;ve just scratched the surface of what is possible with ResearchSpace.</p><p>We will be releasing a series of new features over the coming months.</p><p>Enjoy exploring ResearchSpace!</p>",
-                  "selector": "#search-results",
-                  "position": "none"
-                }],
-                [{
-                  "title": "Select Actor",
-                  "text": "<p>With your mouse click on the category <strong>Actor</strong>. This first category defines what you are looking for (the <strong>domain</strong>).</p><p><strong>Actors</strong> can be individuals, institutions or groups. e.g:</p><ul><li>Michelangelo</li><li>The British Museum</li><li>Factory of Bordeaux Porcelain</li><li>Royal Astronomical Society</li></ul>",
-                  "selector": ".QueryBuilder--searchArea li:nth-of-type(2)",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "Actor"
-                },
-                {
-                  "title": "Select Place",
-                  "text": "Now click on the category <strong>Place</strong>. This will be the context of the search (the <strong>range</strong>).",
-                  "selector": ".QueryBuilder--searchArea li:nth-of-type(3)",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "Place"
-                },
-                {
-                  "title": "Select Relationship",
-                  "text": "<p>Choose <strong>refers to</strong> for the relationship between Actor and Place.</p>",
-                  "selector": ".QueryBuilder--relationSelector li[aria-label=refers\\ to]",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "refers to"
-                },
-                {
-                  "title": "Enter a Place",
-                  "text": "<p>Next type a place in the box. Type \"greece\" and select <strong>Greece</strong> from the list.</p><p>The available places are listed in a hierarchical tree structure, which reflects geographical context. Choose the Greece displayed under Europe.</p>",
-                  "selector": ".QueryBuilder--hierarchySelector input",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "newResults"
-                },
-                {
-                  "title": "Number of Results",
-                  "text": "<p>The number of results retrieved is displayed here.</p><p>We&apos;ll view the results in a moment.</p>",
-                  "selector": ".num-results",
-                  "position": "bottom-left"
-                },
-                {
-                  "title": "Add an Alternative Place",
-                  "text": "For this search we will add an alternative place. Mouse over the search bar and click on <strong>OR</strong>.",
-                  "selector": ".QueryBuilder--addDisjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem",
-                  "position": "bottom",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "orDisjunction"
-                },
-                {
-                  "title": "Enter Alternative Place",
-                  "text": "Type \"cyprus\" and select <strong>Cyprus</strong> from the list.",
-                  "selector": ".QueryBuilder--hierarchySelector input",
-                  "position": "left",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "newResults"
-                },
-                {
-                  "title": "Number of Results",
-                  "text": "The number of results has increased, now that we&apos;re searching in the data both for records which refer to Greece <strong>AND</strong> records which refer to Cyprus.",
-                  "selector": ".num-results",
-                  "position": "bottom-left"
-                },
-                {
-                  "title": "Add a Second Search Clause",
-                  "text": "Move the mouse arrow over the end of the search bar, and click on <strong>AND</strong>.",
-                  "selector": ".QueryBuilder--addConjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem",
-                  "position": "bottom",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "andConjunction"
-                },
-                {
-                  "title": "Create New Clause",
-                  "text": "An additional search clause is initiated. This time let&apos;s narrow the search by <strong>Time</strong>.",
-                  "selector": ".ItemSelector--itemSelector.QueryBuilder--rangeSelection li:nth-of-type(4)",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "Time"
-                },
-                {
-                  "title": "Choose Relationship",
-                  "text": "<p>And choose <strong>was brought into existence at</strong> as the new relationship.</p><p>For an individual, this would refer to their birth date.</p>",
-                  "selector": ".QueryBuilder--relationSelector li[aria-label=was\\ brought\\ into\\ existence\\ at]",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "itemSelected",
-                  "label": "was brought into existence at"
-                },
-                {
-                  "title": "Select Date Format",
-                  "text": "Now select a date format to use.",
-                  "selector": ".DateFormatSelector--dateFormatSelect",
-                  "position": "right",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "selectDateType"
-                },
-                {
-                  "title": "Select Year",
-                  "text": "<p>...and choose the <strong>year</strong> type:</p><div style=\"border:1px solid #888;font-size: 12px;height: 21px;width: 110px;padding: 2px;\">year</div>",
-                  "selector": ".Select-menu div:nth-of-type(4)",
-                  "position": "left",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "selectDateTypeOption"
-                },
-                {
-                  "title": "Enter Year",
-                  "text": "Type 1754 into the box and click <strong>Select</strong>.",
-                  "selector": ".YearInput--year",
-                  "position": "bottom",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "selectDate"
-                },
-                {
-                  "title": "Select Table View",
-                  "text": "For now, not all Actors have images, so click on the Table tab to see the results.",
-                  "selector": "#search-results li:nth-of-type(2)",
-                  "position": "bottom",
-                  "style": {"button": {"display": "none"}},
-                  "progressEvent": "tableWidgetLoaded",
-                  "position": "bottom"
-                },
-                {
-                  "title": "Select Table View",
-                  "text": "<p>Here we can see Actors, whose records refer to Greece or Cyprus, and who were born around 1754. You can click on a record to see the details of that Actor.</p><p>Try adding or removing clauses to experiment with the results returned.</p>",
-                  "selector": ".griddle-body .table",
-                  "position": "right"
-                }]
-    ]'
-  >
-    <semantic-search-query-builder
-      relation-template='
+  }'>
+      <semantic-search-query-builder
+        id='semantic-query-builder'
+        relation-template='
       <div style="margin-left: {{order.value}}px">{{label}}</div>
     '
       resource-selector='{
@@ -534,7 +226,7 @@
      "noSuggestionsTemplate": "<div class=\"suggestion-no-matches\">no matches found</div>"
    }'
 
-      tree-selector='{
+     tree-selector='{
      "rootsQuery": "
         select distinct ?item ?label ?hasChildren where {
          <http://www.bigdata.com/queryHints#Query> <http://www.bigdata.com/queryHints#optimizer> \"None\".
@@ -584,7 +276,7 @@
                     BIND(CONCAT(\"(\",LCASE(?__token__),\")\") as ?lcasetoken)
                     SERVICE <http://www.bigdata.com/rdf/fts#search> {
                       ?item <http://www.bigdata.com/rdf/fts#search> ?lcasetoken.
-                      ?item <http://www.bigdata.com/rdf/fts#endpoint> \"http://autocomplete.researchspace.org/public\".
+                      ?item <http://www.bigdata.com/rdf/fts#endpoint> \"[[solrEndpoint]]\".
                       ?item <http://www.bigdata.com/rdf/fts#params> ?sFC.
                       ?item <http://www.bigdata.com/rdf/fts#scoreField> \"score\".
                       ?item <http://www.bigdata.com/rdf/fts#score> ?score.
@@ -596,7 +288,7 @@
                 }
                 <http://www.bigdata.com/queryHints#Prior> <http://www.bigdata.com/queryHints#runFirst> \"true\"^^<http://www.w3.org/2001/XMLSchema#boolean>.
                 ?item rso:displayLabel ?label.
-                ?item skos:inScheme ?schema .
+                OPTIONAL {?item skos:inScheme ?schema .}
               } LIMIT 500
             }
             OPTIONAL { ?child ?broader ?item. }
@@ -655,13 +347,39 @@
          } ORDER BY DESC(?score)  LIMIT 20
      "
    }'
-    ></semantic-search-query-builder>
-    <div data-flex-layout="row stretch-stretch">
-      <div data-flex-self="size-1of3" style="flex: 0 0 0;">
-        <semantic-search-facet
-          listen-to-context-switch=true
-          select-first-category=true
-          value-categories='{
+      >
+        <div class='QueryBuilder--guideHolder'>
+          <div class='QueryBuilder--guidePanel'>
+            <div class='QueryBuilder--panelHeader'>Getting Started</div>
+            <ul class='QueryBuilder--guideLinks'>
+              <li>
+                <semantic-link uri='http://www.researchspace.org/resource/Features'>Explore ResearchSpace features</semantic-link>
+              </li>
+              <li>
+                <mp-event-trigger id='guided-tour-search-start' type='GuidedTour.Start' targets='["guided-tour-search"]'>
+                  <a>Take a guided tour of search</a>
+                </mp-event-trigger>
+              </li>
+            </ul>
+          </div>
+          <div class='QueryBuilder--guidePanel'>
+            <div class='QueryBuilder--panelHeader'>Example Searches</div>
+            <ul class='QueryBuilder--guideLinks'>
+              <li>
+                <mp-event-trigger id='guided-tour-actor-search-start' type='GuidedTour.Start' targets='["guided-tour-actor-search"]'>
+                  <a>Actor Search</a>
+                </mp-event-trigger>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </semantic-search-query-builder>
+      <div data-flex-layout="row stretch-stretch">
+        <div data-flex-self="size-1of3" style="flex: 0 0 0;">
+          <semantic-search-facet
+            id='semantic-search-facet'
+            select-first-category=true
+            value-categories='{
     "<http://www.researchspace.org/ontology/Time>": {
       "kind": "date-range",
       "valuesQuery": "
@@ -672,61 +390,64 @@
       } ORDER BY ?dateBeginValue"
      }
     }'
-      ></semantic-search-facet>
-      </div>
-      <semantic-search-result-holder>
-        <div data-flex-self="md-full">
-          <semantic-search-result>
-            <mp-sparql-result-counts id='search-result-count' query="SELECT DISTINCT ?subject {}"
-                                     template='{{> template}}'
-            >
-              <template id='template'>
-                {{#if hasLimit}}
+          ></semantic-search-facet>
+        </div>
+        <semantic-search-result-holder>
+          <div data-flex-self="md-full">
+            <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+            <semantic-search-result id='semantic-search-result'>
+              <mp-sparql-result-counts id='semantic-search-result-count' query="SELECT DISTINCT ?subject {}"
+                                       template='{{> template}}'
+              >
+                <template id='template'>
+                  {{#if hasLimit}}
                   <bs-alert bs-style="warning" class="search-results__alert">
                     <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
                     <span class="num-results">Found {{numberOfResults}} matches</span> of {{totalNumberOfResults}} matches. <strong>Please, refine your search.</strong>
                   </bs-alert>
-                {{else}}
+                  {{else}}
                   <span class="num-results">Found {{numberOfResults}} matches</span>
-                {{/if}}
-              </template>
-            </mp-sparql-result-counts>
-          </semantic-search-result>
-          <bs-tabs unmount-on-exit=true id='search-results' animation=false class='tabs-right'>
-            <bs-tab event-key="1" title="Grid">
-              <semantic-search-result>
-                <semantic-table
-                  id='search-result-grid'
-                  query='
+                  {{/if}}
+                </template>
+              </mp-sparql-result-counts>
+            </semantic-search-result>
+            <bs-tabs unmount-on-exit=true id='search-results' animation=false class='tabs-right'>
+              <bs-tab event-key="1" title="Grid">
+                <semantic-search-result>
+                  <semantic-table
+                    id='semantic-search-result-grid'
+                    query='
                     SELECT DISTINCT ?subject ?iri WHERE {
                       FILTER EXISTS { ?subject (rdfs:label | rso:displayLabel) ?label }
-                      OPTIONAL {?subject rso:PX_has_main_representation ?image}
+                      OPTIONAL {?subject (rs:PX_has_main_representation | crm:P138i_has_representation) ?image}
                       BIND(?subject as ?iri) .
                     } ORDER BY DESC(?image)
                   '
-                  tuple-template='{{> gridItem }}',
-                  options='{"showFilter":false, "resultsPerPage":16}'
-                >
-                  <template id='gridItem'>
-                    <mp-draggable iri="{{iri.value}}">
-                      {{#> rsp:ItemCard}}
+                    tuple-template='{{> gridItem }}',
+                    options='{"showFilter":false, "resultsPerPage":16}'
+                  >
+                    <template id='gridItem'>
+                      <mp-draggable iri="{{iri.value}}">
+                        {{#> rsp:ItemCard}}
                         <bs-dropdown-button bs-style="link" title="" id="result-item-action-{{iri.value}}">
                           <semantic-search-action-use-result-item-in-extended-search iri='{{iri.value}}'>
                             <bs-menu-item event-key="explore">Start search</bs-menu-item>
                           </semantic-search-action-use-result-item-in-extended-search>
 
-                          <mp-overlay-dialog title="New Image" bs-size='lg'>
-                            <mp-overlay-dialog-trigger>
-                              <bs-menu-item>
-                                Add Image
-                              </bs-menu-item>
-                            </mp-overlay-dialog-trigger>
-                            <mp-overlay-dialog-content>
-                              <mp-page-loader iri="http://www.researchspace.org/resource/NewImageAssertion"
-                                              urlqueryparam-subject="{{iri.value}}"
-                              ></mp-page-loader>
-                            </mp-overlay-dialog-content>
-                          </mp-overlay-dialog>
+                          <mp-anonymous-hidden>
+                            <mp-overlay-dialog title="New Image" bs-size='lg'>
+                              <mp-overlay-dialog-trigger>
+                                <bs-menu-item>
+                                  Add Image
+                                </bs-menu-item>
+                              </mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-content>
+                                <mp-page-loader iri="http://www.researchspace.org/resource/NewImageAssertion"
+                                                urlqueryparam-subject="{{iri.value}}"
+                                ></mp-page-loader>
+                              </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
+                          </mp-anonymous-hidden>
 
                           <mp-resource-link-container uri='http://www.researchspace.org/resource/FcFrOntodia' urlqueryparam-instance='{{iri.value}}'>
                             <bs-menu-item event-key="explore">Explore (Simple)</bs-menu-item>
@@ -735,111 +456,111 @@
                             <bs-menu-item event-key="explore">Explore (Detailed)</bs-menu-item>
                           </mp-resource-link-container>
                         </bs-dropdown-button>
-                      {{/ rsp:ItemCard}}
-                    </mp-draggable>
-                  </template>
-                </semantic-table>
-              </semantic-search-result>
-            </bs-tab>
-            <bs-tab event-key="2" title="Table">
-              <semantic-search-result>
-                <semantic-table id='search-result-table'
-                  query='SELECT DISTINCT ?subject WHERE { } ORDER BY ?subject'
-                  options='{"showFilter":false, "resultsPerPage":10}'
-                >
-                </semantic-table>
-              </semantic-search-result>
-            </bs-tab>
-            <bs-tab event-key="3" title="Chart">
-              <semantic-search-result-context ranges='["http://www.researchspace.org/ontology/Concept", "http://www.researchspace.org/ontology/Place", "http://www.researchspace.org/ontology/Actor"]'>
+                        {{/ rsp:ItemCard}}
+                      </mp-draggable>
+                    </template>
+                  </semantic-table>
+                </semantic-search-result>
+              </bs-tab>
+              <bs-tab event-key="2" title="Table">
                 <semantic-search-result>
-                  <mp-component-toolbar>
-                    <mp-component-toolbar-actions>
-                      <semantic-chart-type-selector default="bar" types='["line", "bar", "radar", "pie", "donut"]' style='margin-right: 10px;'></semantic-chart-type-selector>
-                      <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
-                      <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
-                    </mp-component-toolbar-actions>
-                    <mp-component-toolbar-component>
-                      <semantic-chart
-                                      id='search-result-chart'
-                                      query='
+                  <semantic-table id='semantic-search-result-table'
+                                  query='SELECT DISTINCT ?subject WHERE { } ORDER BY ?subject'
+                                  options='{"showFilter":false, "resultsPerPage":10}'
+                  >
+                  </semantic-table>
+                </semantic-search-result>
+              </bs-tab>
+              <bs-tab event-key="3" title="Chart">
+                <semantic-search-result-context ranges='["http://www.researchspace.org/ontology/Concept", "http://www.researchspace.org/ontology/Place", "http://www.researchspace.org/ontology/Actor"]'>
+                  <semantic-search-result id='semantic-search-result-chart'>
+                    <mp-component-toolbar>
+                      <mp-component-toolbar-actions>
+                        <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]' style='margin-right: 10px;'></semantic-chart-type-selector>
+                        <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
+                        <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                      </mp-component-toolbar-actions>
+                      <mp-component-toolbar-component>
+                        <semantic-chart
+                          id='search-result-chart'
+                          query='
                                              SELECT ?object (COUNT(DISTINCT ?subject) as ?count) WHERE {
                                                OPTIONAL { ?subject ?__contextRelation__ ?object }
                                                BIND(IF(BOUND(?object), ?object, "Unknown") as ?object)
                                              } GROUP BY ?object ORDER BY DESC(?count)
                                              '
-                                      sets='[{
+                          sets='[{
                                               "category": "object",
                                               "value": "count"
                                             }]'>
-                      </semantic-chart>
-                    </mp-component-toolbar-component>
-                  </mp-component-toolbar>
-                </semantic-search-result>
-              </semantic-search-result-context>
-            </bs-tab>
-            <bs-tab event-key="4" title="Timeline">
-              <div>
-                <semantic-search-result>
-                  <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
-                                           template='{{> template}}'
-                                           >
-                    <template id='template'>
-                      {{#if hasLimit}}
-                      <bs-alert bs-style="warning" class="search-results__alert">
-                        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-                        <span class="num-results">
+                        </semantic-chart>
+                      </mp-component-toolbar-component>
+                    </mp-component-toolbar>
+                  </semantic-search-result>
+                </semantic-search-result-context>
+              </bs-tab>
+              <bs-tab event-key="4" title="Timeline">
+                <div>
+                  <semantic-search-result>
+                    <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
+                                             template='{{> template}}'
+                    >
+                      <template id='template'>
+                        {{#if hasLimit}}
+                        <bs-alert bs-style="warning" class="search-results__alert">
+                          <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                          <span class="num-results">
                           There were {{totalNumberOfResults}} results. Only 100 can be visualised on the timeline at once!
                         </span>
-                      </bs-alert>
-                      {{/if}}
-                    </template>
-                  </mp-sparql-result-counts>
-                </semantic-search-result>
+                        </bs-alert>
+                        {{/if}}
+                      </template>
+                    </mp-sparql-result-counts>
+                  </semantic-search-result>
 
-                <semantic-search-result-context ranges='["http://www.researchspace.org/ontology/Time"]'>
-                  <semantic-search-result>
-                    <mp-component-toolbar>
-                      <mp-component-toolbar-actions>
-                        <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
-                      </mp-component-toolbar-actions>
-                      <mp-component-toolbar-component>
-                        <semantic-timeline
-                          id='search-result-timeline'
-                          query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                  <semantic-search-result-context ranges='["http://www.researchspace.org/ontology/Time"]'>
+                    <semantic-search-result>
+                      <mp-component-toolbar>
+                        <mp-component-toolbar-actions>
+                          <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                        </mp-component-toolbar-actions>
+                        <mp-component-toolbar-component>
+                          <semantic-timeline
+                            id='search-result-timeline'
+                            query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
                                  SELECT DISTINCT ?start ?end ?iri WHERE {
-                                    { ?subject ?__contextRelation__ ?object. }
-                                    ?object crm:P82a_begin_of_the_begin ?start.
-                                    ?object crm:P82b_end_of_the_end ?end.
+                                    FILTER(?__contextRelationPattern__)
+                                    BIND(?__dateBeginValue__ AS ?start)
+                                    BIND(?__dateEndValue__ AS ?end)
                                     BIND(?subject as ?iri) .
                                  }
                                  ORDER BY ?subject
                                  LIMIT 100
                                  '
-                          tuple-template='{{> timelineItem}}'
-                          tuple-template-height=50>
-                          <template id='timelineItem'>
-                            <mp-popover>
-                              <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
-                                <div data-flex-layout='column top-left'>
-                                  <p>{{start.value}} - {{end.value}}</p>
-                                  <semantic-link uri='{{iri.value}}'></semantic-link>
-                                </div>
-                              </mp-popover-trigger>
-                              <mp-popover-content>{{> rsp:ItemCard}}</mp-popover-content>
-                            </mp-popover>
-                          </template>
-                        </semantic-timeline>
-                      </mp-component-toolbar-component>
-                    </mp-component-toolbar>
-                  </semantic-search-result>
-                </semantic-search-result-context>
-              </div>
-            </bs-tab>
-          </bs-tabs>
+                            tuple-template='{{> timelineItem}}'
+                            tuple-template-height=50>
+                            <template id='timelineItem'>
+                              <mp-popover>
+                                <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
+                                  <div data-flex-layout='column top-left'>
+                                    <p>{{start.value}} - {{end.value}}</p>
+                                    <semantic-link uri='{{iri.value}}'></semantic-link>
+                                  </div>
+                                </mp-popover-trigger>
+                                <mp-popover-content>{{> rsp:ItemCard}}</mp-popover-content>
+                              </mp-popover>
+                            </template>
+                          </semantic-timeline>
+                        </mp-component-toolbar-component>
+                      </mp-component-toolbar>
+                    </semantic-search-result>
+                  </semantic-search-result-context>
+                </div>
+              </bs-tab>
+            </bs-tabs>
 
-          <hr>
-            <div class="pull-right" style="display: flex;">
+            <hr>
+            <div class="semantic-search-results-actions pull-right" style="display: flex;">
               <semantic-search-result>
                 <mp-sparql-download id='csv-result' query="SELECT ?subject WHERE { }"
                                     header="text/csv"
@@ -859,17 +580,21 @@
               <semantic-search-action-use-result-in-extended-search>
                 <button class="btn btn-default" style="margin-right:10px">Use in Search</button>
               </semantic-search-action-use-result-in-extended-search>
-              <semantic-search-action-save-set-result id='save-set-result-action'>
-                <button class="btn btn-default" style="margin-right:10px">Save As Set</button>
-              </semantic-search-action-save-set-result>
-              <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
-                <button class="btn btn-default" style="margin-right:10px">Save As Search</button>
-              </semantic-search-action-save-search-result>
+              <mp-anonymous-hidden>
+                <semantic-search-action-save-set-result id='save-set-result-action'>
+                  <button class="btn btn-default" style="margin-right:10px">Save As Set</button>
+                </semantic-search-action-save-set-result>
+              </mp-anonymous-hidden>
+              <mp-anonymous-hidden>
+                <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
+                  <button class="btn btn-default" style="margin-right:10px">Save As Search</button>
+                </semantic-search-action-save-search-result>
+              </mp-anonymous-hidden>
             </div>
-        </div>
-      </semantic-search-result-holder>
-    </div>
-  </semantic-search>
+          </div>
+        </semantic-search-result-holder>
+      </div>
+    </semantic-search>
   </div>
-[[/rsp:ClipboardSidebar]]
+  [[/rsp:ClipboardSidebar]]
 </div>

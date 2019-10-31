@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,9 @@
 package org.researchspace.ldp;
 
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.repository.Repository;
-
 import com.metaphacts.data.rdf.container.DefaultLDPResource;
 import com.metaphacts.data.rdf.container.LDPR;
+import com.metaphacts.repository.MpRepositoryProvider;
 
 /**
  * Specific LDP implementation for handling proposition sets as LDP resources
@@ -39,8 +38,8 @@ public class I4_Proposition_Set extends DefaultLDPResource {
     public static final String IRI_STRING = "http://www.ics.forth.gr/isl/CRMinf/I4_Proposition_Set";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
     
-    public I4_Proposition_Set(IRI iri, Repository repository) {
-        super(iri, repository);
+    public I4_Proposition_Set(IRI iri, MpRepositoryProvider repositoryProvider) {
+        super(iri, repositoryProvider);
     }
     
     @Override

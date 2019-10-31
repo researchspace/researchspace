@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,21 +21,21 @@
  * @author Denis Ostapenko
  */
 
-import { PureComponent, DOM as D, createFactory, Props, createElement } from 'react';
+import { PureComponent, createFactory, Props, createElement } from 'react';
+import * as D from 'react-dom-factories';
 import * as maybe from 'data.maybe';
 import * as InfiniteComponent from 'react-infinite';
 import * as classnames from 'classnames';
 import * as nlp from 'nlp_compromise';
 import * as _ from 'lodash';
 
+import { trigger } from 'platform/api/events';
 import { TemplateItem } from 'platform/components/ui/template';
 import { Spinner } from 'platform/components/ui/spinner';
 import { ClearableInput } from 'platform/components/ui/inputs';
 
 import { Resource } from 'platform/components/semantic/search/data/Common';
-import {
-  Actions, FacetData, FacetViewState,
-} from './FacetStore';
+import { FacetData, FacetViewState } from './FacetStore';
 import { Relation } from 'platform/components/semantic/search/data/profiles/Model';
 import * as F from 'platform/components/semantic/search/data/facet/Model';
 import * as Model from 'platform/components/semantic/search/data/search/Model';
@@ -44,11 +44,14 @@ import FacetValue from './FacetValue';
 import { FacetSlider, SliderRange } from './slider/FacetSlider';
 import {Literal, NumericRange, DateRange} from 'platform/components/semantic/search/data/search/Model';
 import { SemanticFacetConfig } from 'platform/components/semantic/search/config/SearchConfig';
+import {
+  SearchFacetPropertySelected,
+} from 'researchspace/components/search/query-builder/SearchEvents';
 
 interface RelationFacetProps extends Props<RelationFacetComponent> {
   relation: Relation
   data: FacetData
-  actions: Actions
+  actions: F.Actions
   config: SemanticFacetConfig
 }
 
@@ -97,8 +100,12 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
         }),
         this.isSelectedRelation() && this.props.data.viewState.values.loading ? createElement(Spinner) : D.span({})
       ),
-      this.isSelectedRelation() && !this.props.data.viewState.values.loading ?
-        this.renderRelationFacetBody(this.props.data.viewState) : D.div({})
+      this.isSelectedRelation() && !this.props.data.viewState.values.loading ? (
+        D.div(
+          {className: 'facet__relation__body'},
+          this.renderRelationFacetBody(this.props.data.viewState)
+        )
+      ) : D.div({})
     );
 
   private isSelectedRelation = () =>
@@ -207,6 +214,11 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
       if (this.isSelectedRelation()) {
         this.props.actions.deselectRelation();
       } else {
+        trigger({
+          eventType: SearchFacetPropertySelected,
+          source: this.props.config.id,
+          data: this.props.relation.iri.value,
+        });
         this.props.actions.selectRelation(
           this.props.relation
         );

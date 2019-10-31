@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@
 import * as _ from 'lodash';
 import * as Kefir from 'kefir';
 import * as maybe from 'data.maybe';
+import * as SparqlJs from 'sparqljs';
 
 import {
   SparqlClient, SparqlUtil, PatternBinder, cloneQuery,

@@ -1,0 +1,114 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" iri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li class="active">App Deployment</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+	
+  	<h1>App Deployment</h1>
+    
+    <p>Using <semantic-link title="Apps" iri="[[resolvePrefix "Help:Apps"]]">Apps</semantic-link>, new functionality and content can be added to the platform. Below options for the deployment of such app artifacts are discussed.</p>
+      
+    <p>While all options have different advantages and disadvantages, <b>Option 1</b> is recommended for the general case (one-shot, immutable app deployment) and <b>Option 2</b> if you want to streamline the platform lifecycle and development experiecne.</p>
+    
+    <h2>1. Uploading a ZIP artifact</h2>
+    
+    <p> In case you have root permissions, go to the <b> System Administration -> <semantic-link title="Apps" iri="[[resolvePrefix "Admin:Apps"]]">Apps</semantic-link></b> and upload your zip app artifact via drag and drop. Restart your platform instance afterwards to install the app properly.</p>
+    
+    Please note that :
+    <ul>
+      <li>The zip artifact <b>must</b> contain a single directory, which contains all the app contents in the correct structure, i.e. as decribed in <semantic-link title="Apps" iri="[[resolvePrefix "Help:Apps"]]">Apps Mechanism</semantic-link> </li>
+      <li>The name of the zip <b>must</b> be identical to the directory that it contains  AND <b>must</b> contain a <code>plugin.properties</code>, which contains an entry <code>plugin.id=appid</code>, where the <code>appid</code> must be equal to the name of the zip and directory.</li>
+       <li>A restart of the platform is <b>required</b> </li>
+    </ul>
+    
+    <h2>2. Mounting an app as Docker volume</h2>
+  
+ 		<p>For this option an app is physically available on the host machine in a certain folder (e.g. from a GIT checkout, or just an extracted zip of the app).</p>
+    
+    <p>The docker volume concept can be used to mount the local source location (on the host) to the target location within the container. In the container apps need to be mounted to the <i>/apps</i> folder, e.g. <i>/apps/&lt;my-app&gt;</i></p>
+    
+    <p>Advantages:</p>
+    
+    <ul>
+    	<li>Supports version control of the app (e.g. using GIT as storage layer)</li>
+      <li>Sustainable due to configuration in the deployment descriptor (i.e. docker compose)</li>
+    </ul>
+    
+    <p>Disadvantages:</p>
+    
+    <ul>
+    	<li>Requires an adjustment of the deployment (i.e. need to adjust docker compose)</li>
+    </ul>
+    
+    <p>Assuming the app is locally available at <i>/Users/home/demo/apps/my-app/</i>, the docker volume mount can be specified as <i>/Users/home/demo/apps/myApp:/apps/myApp</i>. This can be done in the <i>docker-compose.override.xml</i> file of the deployment:</p>
+
+<pre>
+<code>
+metaphactory:
+  
+  #metaphactory-overwites here
+    volumes:
+      - /Users/home/demo/apps/myApp:/apps/myApp
+    ports:
+      - "10214:8080"
+</code>
+</pre>
+    
+    
+    <h2>3. Copying the app into the container</h2>
+    
+    <p>In this option the app is physically copied into the persistent volume of the container, i.e. the container volume itself is modified. This is achieved using the <i>docker cp</i> command.</p>
+
+    <p>Advantages:</p>
+    
+    <ul>
+    	<li>Simple to use one-time deployment of an app</li>
+    </ul>
+    
+    <p>Disadvantages:</p>
+    
+    <ul>
+      <li>Requires a persistent volume of the container (i.e. <i>/apps</i> needs to be a persistent volume)</li>
+    	<li>App lifecycle and updates become difficult</li>
+    </ul>
+    
+    <p>Assuming the app is locally available at <i>/Users/home/demo/apps/my-app/</i>, and the deployment name is <i>my-deployment</i>, the app content can be copied to the container using the following command.</p>
+    
+    <pre>
+    <code>
+    docker cp /Users/home/demo/apps/my-app my-deployment-metaphactory:/apps
+    </code>
+    </pre>
+    
+    
+    
+      <h2>4. Deploy from a read-only docker image</h2>
+    
+    <p>In this option the app is packaged into its own <i>data-only</i> docker image and the volume is mounted into the container using <i>volume-from</i>.</p>
+
+    <p>Advantages:</p>
+    
+    <ul>
+    	<li>Possibility to re-use an existing docker registry for app versioning</li>
+    </ul>
+    
+    <p>Disadvantages:</p>
+    
+    <ul>
+      <li>The <i>volumes_from</i> functionality is deprecated and removed in docker 3</li>
+      <li>The functionality is not supported in all docker environments</li>
+      <li>Requires an adjustment of the deployment (i.e. need to adjust docker compose)</li>
+    </ul>
+    
+   <p>For details refer to the docker documentation for <a href="https://docs.docker.com/compose/compose-file/compose-file-v2/#volumes_from">volumes_from</a>.</p>
+    
+    
+  </div>
+</div>

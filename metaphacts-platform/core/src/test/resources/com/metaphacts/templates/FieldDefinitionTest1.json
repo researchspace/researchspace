@@ -1,0 +1,41 @@
+[{
+  "id": "alias1",
+  "iri": "http://www.metaphacts.com/field/testinstance/fieldDefinitionContainer/fieldInstance1",
+  "order": 0,
+  "label": "Test Field 1",
+  "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string",
+  "description": "Test Field 1 comment",
+  "minOccurs": "1",
+  "maxOccurs": "2",
+  "defaultValues": [],
+  "domain": [],
+  "range": [],
+  "autosuggestionPattern":
+"SELECT DISTINCT ?value WHERE {
+  ?s rdfs:label ?value
+  FILTER(REGEX(str(?value),'*?token*','i'))
+} LIMIT 10",
+  "selectPattern":
+"SELECT $value WHERE {
+  # select field 1
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}",
+  "askPattern": "ASK { ?a ?b ?c }",
+  "valueSetPattern":
+"SELECT DISTINCT ?value ?label WHERE {
+  ?value rdfs:label ?label
+} LIMIT 10",
+  "insertPattern":
+"INSERT {
+  # insert field 1
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}
+WHERE {}",
+  "deletePattern":"DELETE { $subject rdfs:label $value. } WHERE {}",
+  "treePatterns":{
+    "type":"simple",
+    "schemePattern":"?item a <http://example.com/treeItem>"
+  }
+}]

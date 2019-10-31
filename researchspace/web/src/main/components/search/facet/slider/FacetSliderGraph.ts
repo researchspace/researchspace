@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  * @author Denis Ostapenko
  */
 
-import { DOM as D, Props, Component } from 'react';
+import { Props, Component } from 'react';
+import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
-
 
 export class GraphEvent {
   public begin: number;
@@ -110,8 +110,8 @@ export class FacetSliderGraph extends Component<FacetSliderGraphProps, {}> {
   }
 
   updateCanvas() {
-    const canvas = findDOMNode<HTMLCanvasElement>(this.refs['canvas']);
-    canvas.width = (<HTMLElement>this.refs['canvas-container']).clientWidth;
+    const canvas = findDOMNode(this.refs['canvas']) as HTMLCanvasElement;
+    canvas.width = (this.refs['canvas-container'] as HTMLElement).clientWidth;
     const h = canvas.height;
     const w = canvas.width;
     const ctx = canvas.getContext('2d');

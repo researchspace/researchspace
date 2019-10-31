@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Trace log4j profile, logging to STDOUT and logs/platform.log       -->
+<!--                                                                    -->
+<!-- The logger is configured to                                        -->
+<!-- (a) log out everthing >= TRACE for the platform,                   -->
+<!-- (b) log out everything >= WARNING for the key libraries, and       -->
+<!-- (c) log our everything >= WARNING for everything else.             -->
+<!--                                                                    -->
+<!-- This will result in a high amount of log messages and should be    -->
+<!-- be used only in development, to trace down issues. It should be    -->
+<!-- used to track down issues related to the platform     core.        -->
+<!--                                                                    -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!        -->
+<!--     !!!!!!!!!! DO NOT USE FOR PRODUCTION SYSTEMS !!!!!!!!!!        -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!        -->
+<!--                                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<Configuration xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="log4j-xinclude-appenders.xml" />
+
+  <Loggers>
+
+    <Logger name="com.metaphacts" level="trace" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <!-- https://issues.apache.org/jira/browse/BEANUTILS-477 -->
+    <Logger name="org.apache.commons.beanutils.FluentPropertyBeanIntrospector" level="error" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Root level="warn">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+
+  </Loggers>
+
+</Configuration>

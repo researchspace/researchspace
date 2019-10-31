@@ -1,0 +1,763 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "TimelineAlignType": {
+            "enum": [
+                "auto",
+                "center",
+                "left",
+                "right"
+            ],
+            "type": "string"
+        },
+        "TimelineFormatLabelsOption": {
+            "properties": {
+                "day": {
+                    "type": "string"
+                },
+                "hour": {
+                    "type": "string"
+                },
+                "millisecond": {
+                    "type": "string"
+                },
+                "minute": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string"
+                },
+                "second": {
+                    "type": "string"
+                },
+                "week": {
+                    "type": "string"
+                },
+                "weekday": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "millisecond",
+                "second",
+                "minute",
+                "hour",
+                "weekday",
+                "day",
+                "week",
+                "month",
+                "year"
+            ],
+            "type": "object"
+        },
+        "TimelineFormatOption": {
+            "properties": {
+                "majorLabels": {
+                    "$ref": "#/definitions/TimelineFormatLabelsOption",
+                    "description": "Custom date format for the major labels. Default value:\n<pre>\n{\n     millisecond:'HH:mm:ss',\n     second:     'D MMMM HH:mm',\n     minute:     'ddd D MMMM',\n     hour:       'ddd D MMMM',\n     weekday:    'MMMM YYYY',\n     day:        'MMMM YYYY',\n     week:       'MMMM YYYY',\n     month:      'YYYY',\n     year:       ''\n}\n</pre>"
+                },
+                "minorLabels": {
+                    "$ref": "#/definitions/TimelineFormatLabelsOption",
+                    "description": "Custom date format for the minor labels. Default value:\n<pre>\n{\n     millisecond:'SSS',\n     second:     's',\n     minute:     'HH:mm',\n     hour:       'HH:mm',\n     weekday:    'ddd D',\n     day:        'D',\n     week:       'w',\n     month:      'MMM',\n     year:       'YYYY'\n}\n</pre>"
+                }
+            },
+            "propertyOrder": [
+                "minorLabels",
+                "majorLabels"
+            ],
+            "type": "object"
+        },
+        "TimelineGroup": {
+            "properties": {
+                "className": {
+                    "description": "A className can be used to give groups an individual css style.",
+                    "type": "string"
+                },
+                "content": {
+                    "description": "The contents of the group. This can be plain text, html code or an html element.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "An id for the group. The group will display all items having a property group which matches the id of the group.",
+                    "type": "string"
+                },
+                "nestedGroups": {
+                    "description": "Array of group ids nested in the group. Nested groups will appear under this nesting group.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "showNested": {
+                    "description": "Assuming the group has nested groups, this will set the initial state of the group - shown or collapsed. The 'showNested' is defaulted to 'true'.",
+                    "type": "boolean"
+                },
+                "style": {
+                    "description": "A css text string to apply custom styling for an individual group label.",
+                    "type": "string"
+                },
+                "subgroupOrder": {
+                    "description": "Order the subgroups by a field name or custom sort function. By default, groups are ordered by first-come, first-show.",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "A title for the group, displayed when holding the mouse on the groups label. The title can only contain plain text.",
+                    "type": "string"
+                },
+                "visible": {
+                    "description": "Provides a means to toggle the whether a group is displayed or not. Defaults to 'true'.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "className",
+                "content",
+                "id",
+                "style",
+                "subgroupOrder",
+                "title",
+                "visible",
+                "nestedGroups",
+                "showNested"
+            ],
+            "required": [
+                "content",
+                "id"
+            ],
+            "type": "object"
+        },
+        "TimelineHiddenDateOption": {
+            "properties": {
+                "end": {
+                    "description": "The end date",
+                    "type": "string"
+                },
+                "repeat": {
+                    "enum": [
+                        "daily",
+                        "monthly",
+                        "weekly",
+                        "yearly"
+                    ],
+                    "type": "string"
+                },
+                "start": {
+                    "description": "The start date",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "start",
+                "end",
+                "repeat"
+            ],
+            "required": [
+                "end",
+                "start"
+            ],
+            "type": "object"
+        },
+        "TimelineItem": {
+            "properties": {
+                "align": {
+                    "$ref": "#/definitions/TimelineAlignType",
+                    "description": "If set this overrides the global align configuration option for this item."
+                },
+                "className": {
+                    "description": "A className can be used to give items an individual css style.",
+                    "type": "string"
+                },
+                "content": {
+                    "description": "The contents of the item. This can be plain text or html code.",
+                    "type": "string"
+                },
+                "group": {
+                    "description": "When the group column is provided, all items with the same group are placed on one line. A vertical axis is displayed showing the groups."
+                },
+                "id": {
+                    "description": "An id for the item. Using an id is not required but highly recommended. An id is needed when dynamically adding, updating, and removing items in a DataSet.",
+                    "type": "string"
+                },
+                "limitSize": {
+                    "description": "Some browsers cannot handle very large DIVs so by default range DIVs can be truncated outside the visible area. Setting this to 'false' will cause the creation of full-size DIVs.",
+                    "type": "boolean"
+                },
+                "style": {
+                    "description": "A css text string to apply custom styling for an individual item.",
+                    "type": "string"
+                },
+                "subgroup": {
+                    "description": "The id of a subgroup. Groups all items within a group per subgroup, and positions them on the same height instead of staking them on top of each other. can be ordered by specifying the option 'subgroupOrder' of a group.",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Add a title for the item, displayed when holding the mouse on the item. The title can be an HTML element or a string containing plain text or HTML.",
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/TimelineItemType",
+                    "description": "The type of the item. Can be 'box' (default), 'point', 'range', or 'background'. Types 'box' and 'point' need a start date, the types 'range' and 'background' needs both a start and end date."
+                }
+            },
+            "propertyOrder": [
+                "className",
+                "align",
+                "content",
+                "group",
+                "id",
+                "style",
+                "subgroup",
+                "title",
+                "type",
+                "limitSize"
+            ],
+            "type": "object"
+        },
+        "TimelineItemType": {
+            "enum": [
+                "background",
+                "box",
+                "point",
+                "range"
+            ],
+            "type": "string"
+        },
+        "TimelineItemsAlwaysDraggableOption": {
+            "properties": {
+                "item": {
+                    "description": "If true, all items in the Timeline are draggable without being selected. If false, only the selected item(s) are draggable.",
+                    "type": "boolean"
+                },
+                "range": {
+                    "description": "If true, range of all items in the Timeline is draggable without being selected. If false, range is only draggable for the selected item(s). Only applicable when option <code>itemsAlwaysDraggable.item</code> is set <code>true</code>.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "item",
+                "range"
+            ],
+            "type": "object"
+        },
+        "TimelineMarginItem": {
+            "properties": {
+                "horizontal": {
+                    "description": "The minimal horizontal margin in pixels between items.",
+                    "type": "number"
+                },
+                "vertical": {
+                    "description": "The minimal vertical margin in pixels between items.",
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "horizontal",
+                "vertical"
+            ],
+            "type": "object"
+        },
+        "TimelineMarginOption": {
+            "properties": {
+                "axis": {
+                    "description": "The minimal margin in pixels between items and the time axis.",
+                    "type": "number"
+                },
+                "item": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/TimelineMarginItem"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "description": "The minimal margin in pixels between items in both horizontal and vertical direction."
+                }
+            },
+            "propertyOrder": [
+                "axis",
+                "item"
+            ],
+            "type": "object"
+        },
+        "TimelineOptions": {
+            "properties": {
+                "align": {
+                    "$ref": "#/definitions/TimelineAlignType",
+                    "description": "Alignment of items with type <code>box</code>, <code>range</code>, and <code>background</code>. For <code>box</code> items, the <code>auto</code> alignment is <code>center</code>. For <code>range</code> items, the auto alignment is dynamic: positioned left and shifted such that the contents is always visible on screen."
+                },
+                "autoResize": {
+                    "description": "If true, the Timeline will automatically detect when its container is resized, and redraw itself accordingly. If false, the Timeline can be forced to repaint after its container has been resized using the function <code>redraw()</code>.",
+                    "type": "boolean"
+                },
+                "clickToUse": {
+                    "description": "When a Timeline is configured to be <code>clickToUse</code>, it will react to mouse and touch events only when active. When active, a blue shadow border is displayed around the Timeline. The Timeline is set active by clicking on it, and is changed to inactive again by clicking outside the Timeline or by pressing the ESC key.",
+                    "type": "boolean"
+                },
+                "configure": {
+                    "description": "When true, a configurator is loaded where all configuration options of the Timeline can be changed live.",
+                    "type": "boolean"
+                },
+                "dataAttributes": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": [
+                                "string",
+                                "boolean"
+                            ]
+                        }
+                    ],
+                    "description": "An array of fields optionally defined on the timeline items that will be appended as <code>data-</code> attributes to the DOM element of the items. If value is <code>'all'</code> then each field defined on the timeline item will become a <code>data-</code> attribute."
+                },
+                "end": {
+                    "description": "The initial end date for the axis of the timeline. If not provided, the latest date present in the items set is taken as end date.",
+                    "type": "string"
+                },
+                "format": {
+                    "$ref": "#/definitions/TimelineFormatOption",
+                    "description": "Apply custom date formatting of the labels on the time axis."
+                },
+                "groupOrder": {
+                    "description": "Order the groups by a field name. By default, groups are ordered by a property <code>order</code> (if set). If no <code>order</code> properties are provided, the order will be undetermined.",
+                    "type": "string"
+                },
+                "groupTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the groups contents.\n**The template MUST have a single HTML root element.**\nThe variables that available in the template are following:\n<pre>\n{\n     className?: string;\n     content: string;\n     id: string;\n     style?: string;\n     subgroupOrder?: string;\n     title?: string;\n     visible?: boolean;\n     nestedGroups?: string[];\n     showNested?: boolean;\n}\n</pre>",
+                    "type": "string"
+                },
+                "height": {
+                    "description": "The height of the timeline in pixels or as a percentage. When height is undefined or null, the height of the timeline is automatically adjusted to fit the contents. It is possible to set a maximum height using option maxHeight to prevent the timeline from getting too high in case of automatically calculated height.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "hiddenDates": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/TimelineHiddenDateOption"
+                        },
+                        {
+                            "items": {
+                                "$ref": "#/definitions/TimelineHiddenDateOption"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "description": "This option allows you to hide specific timespans from the time axis. The dates can be supplied as an object: <code>{start: '2014-03-21 00:00:00', end: '2014-03-28 00:00:00', [repeat:'daily']}</code> or as an Array of these objects. The repeat argument is optional. The possible values are (case-sensitive): <code>daily, weekly, monthly, yearly</code>. To hide a weekend, pick any Saturday as start and the following Monday as end and set repeat to weekly."
+                },
+                "horizontalScroll": {
+                    "description": "This option allows you to scroll horizontally to move backwards and forwards in the time range. Only applicable when option <code>zoomCtrl</code> is defined or <code>zoomable</code> is <code>false</code>.",
+                    "type": "boolean"
+                },
+                "itemsAlwaysDraggable": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/TimelineItemsAlwaysDraggableOption"
+                        },
+                        {
+                            "type": "boolean"
+                        }
+                    ],
+                    "description": "When a boolean, applies the value only to <code>itemsAlwaysDraggable.item</code>."
+                },
+                "locale": {
+                    "description": "Select a locale for the Timeline.",
+                    "type": "string"
+                },
+                "locales": {
+                    "description": "A map with i18n locales."
+                },
+                "margin": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/TimelineMarginOption"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "description": "When a number, applies the margin to <code>margin.axis</code>, <code>margin.item.horizontal</code>, and <code>margin.item.vertical</code>."
+                },
+                "max": {
+                    "description": "Set a maximum Date for the visible range. It will not be possible to move beyond this maximum.",
+                    "type": "string"
+                },
+                "maxHeight": {
+                    "description": "Specifies the maximum height for the Timeline.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "maxMinorChars": {
+                    "description": "Specifies the maximum number of characters that should fit in minor grid labels. If larger, less and wider grids will be drawn.",
+                    "type": "number"
+                },
+                "min": {
+                    "description": "Set a minimum Date for the visible range. It will not be possible to move beyond this minimum.",
+                    "type": "string"
+                },
+                "minHeight": {
+                    "description": "Specifies the minimum height for the Timeline.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "moveable": {
+                    "description": "Specifies whether the Timeline can be moved and zoomed by dragging the window.",
+                    "type": "boolean"
+                },
+                "multiselect": {
+                    "description": "If true, multiple items can be selected using ctrl+click, shift+click, or by holding items. Only applicable when option <code>selectable</code> is <code>true</code>.",
+                    "type": "boolean"
+                },
+                "multiselectPerGroup": {
+                    "description": "If true, selecting multiple items using shift+click will only select items residing in the same group as the first selected item. Only applicable when option <code>selectable</code> and <code>multiselect</code> are <code>true</code>.",
+                    "type": "boolean"
+                },
+                "orientation": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/TimelineOrientationOption"
+                        },
+                        {
+                            "enum": [
+                                "both",
+                                "bottom",
+                                "none",
+                                "top"
+                            ],
+                            "type": "string"
+                        }
+                    ],
+                    "description": "Orientation of the timelines axis and items. When orientation is a string, the value is applied to both items and axis."
+                },
+                "rollingMode": {
+                    "$ref": "#/definitions/TimelineRollingModeOption",
+                    "description": "Specify how the timeline implements rolling mode."
+                },
+                "rtl": {
+                    "description": "If true, the timeline will be right-to-left.",
+                    "type": "boolean"
+                },
+                "selectable": {
+                    "description": "If true, the items on the timeline can be selected. Multiple items can be selected by long pressing them, or by using ctrl+click or shift+click.",
+                    "type": "boolean"
+                },
+                "showCurrentTime": {
+                    "description": "Show a vertical bar at the current time.",
+                    "type": "boolean"
+                },
+                "showMajorLabels": {
+                    "description": "By default, the timeline shows both minor and major date labels on the time axis. For example the minor labels show minutes and the major labels show hours. When <code>showMajorLabels</code> is <code>false</code>, no major labels are shown.",
+                    "type": "boolean"
+                },
+                "showMinorLabels": {
+                    "description": "By default, the timeline shows both minor and major date labels on the time axis. For example the minor labels show minutes and the major labels show hours. When <code>showMinorLabels</code> is <code>false</code>, no minor labels are shown. When both <code>showMajorLabels</code> and <code>showMinorLabels</code> are false, no horizontal axis will be visible.",
+                    "type": "boolean"
+                },
+                "showTooltips": {
+                    "description": "If true, items with titles will display a tooltip. If false, item tooltips are prevented from showing.",
+                    "type": "boolean"
+                },
+                "stack": {
+                    "description": "If true (default), items will be stacked on top of each other such that they do not overlap.",
+                    "type": "boolean"
+                },
+                "stackSubgroups": {
+                    "description": "If true (default), subgroups will be stacked on top of each other such that they do not overlap.",
+                    "type": "boolean"
+                },
+                "start": {
+                    "description": "The initial start date for the axis of the timeline. If not provided, the earliest date present in the events is taken as start date.",
+                    "type": "string"
+                },
+                "timeAxis": {
+                    "$ref": "#/definitions/TimelineTimeAxisOption",
+                    "description": "Specify a fixed scale and step size for the time axis."
+                },
+                "tooltip": {
+                    "$ref": "#/definitions/TimelineTooltipOption",
+                    "description": "Specify how the tooltip is positioned."
+                },
+                "type": {
+                    "$ref": "#/definitions/TimelineItemType",
+                    "description": "Specifies the default type for the timeline items. Note that individual items can override this default type. If undefined, the Timeline will auto detect the type from the items data: if a start and end date is available, a 'range' will be created, and else, a 'box' is created."
+                },
+                "verticalScroll": {
+                    "description": "Show a vertical scroll on the side of the group list and link it to the scroll event when zoom is not triggered. Notice that defining this option as <code>true</code> will NOT override <code>horizontalScroll</code>. The scroll event will be vertically ignored, but a vertical scrollbar will be visible.",
+                    "type": "boolean"
+                },
+                "width": {
+                    "description": "The width of the timeline in pixels or as a percentage.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "zoomKey": {
+                    "$ref": "#/definitions/TimelineZoomKey",
+                    "description": "Specifies whether the Timeline is only zoomed when an additional key is down. Only applicable when option <code>moveable</code> is set <code>true</code>."
+                },
+                "zoomMax": {
+                    "description": "Set a maximum zoom interval for the visible range in milliseconds. It will not be possible to zoom out further than this maximum. Default value equals about 10000 years.",
+                    "type": "number"
+                },
+                "zoomMin": {
+                    "description": "Set a minimum zoom interval for the visible range in milliseconds. It will not be possible to zoom in further than this minimum.",
+                    "type": "number"
+                },
+                "zoomable": {
+                    "description": "Specifies whether the Timeline can be zoomed by pinching or scrolling in the window. Only applicable when option <code>moveable</code> is set <code>true</code>.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "align",
+                "autoResize",
+                "clickToUse",
+                "configure",
+                "dataAttributes",
+                "end",
+                "format",
+                "groupOrder",
+                "groupTemplate",
+                "height",
+                "hiddenDates",
+                "horizontalScroll",
+                "itemsAlwaysDraggable",
+                "locale",
+                "locales",
+                "margin",
+                "max",
+                "maxHeight",
+                "maxMinorChars",
+                "min",
+                "minHeight",
+                "moveable",
+                "multiselect",
+                "multiselectPerGroup",
+                "orientation",
+                "rollingMode",
+                "rtl",
+                "selectable",
+                "showCurrentTime",
+                "showMajorLabels",
+                "showMinorLabels",
+                "showTooltips",
+                "stack",
+                "stackSubgroups",
+                "start",
+                "timeAxis",
+                "type",
+                "tooltip",
+                "verticalScroll",
+                "width",
+                "zoomable",
+                "zoomKey",
+                "zoomMax",
+                "zoomMin"
+            ],
+            "type": "object"
+        },
+        "TimelineOrientationOption": {
+            "properties": {
+                "axis": {
+                    "$ref": "#/definitions/TimelineOrientationType",
+                    "description": "Orientation of the timeline axis. If orientation is <code>bottom</code>, the time axis is drawn at the bottom. When <code>top</code>, the axis is drawn on top. When <code>both</code>, two axes are drawn, both on top and at the bottom. In case of <code>none</code>, no axis is drawn at all."
+                },
+                "item": {
+                    "description": "Orientation of the timeline items. Determines whether items are aligned to the top or bottom of the Timeline.",
+                    "enum": [
+                        "bottom",
+                        "top"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "axis",
+                "item"
+            ],
+            "type": "object"
+        },
+        "TimelineOrientationType": {
+            "enum": [
+                "both",
+                "bottom",
+                "none",
+                "top"
+            ],
+            "type": "string"
+        },
+        "TimelineRollingModeOption": {
+            "properties": {
+                "follow": {
+                    "description": "If true, the timeline will initial in a rolling mode - the current time will always be centered. I the user drags the timeline, the timeline will go out of rolling mode and a toggle button will appear. Clicking that button will go back to rolling mode. Zooming in rolling mode will zoom in to the center without consideration of the mouse position.",
+                    "type": "boolean"
+                },
+                "offset": {
+                    "description": "Set how far from the left the rolling mode is implemented from. A percentage (i.e. a decimal between 0 and 1). Defaults to the middle or 0.5 (50%)",
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "follow",
+                "offset"
+            ],
+            "type": "object"
+        },
+        "TimelineTimeAxisOption": {
+            "properties": {
+                "scale": {
+                    "$ref": "#/definitions/TimelineTimeAxisScaleType",
+                    "description": "Set a fixed scale for the time axis of the Timeline."
+                },
+                "step": {
+                    "description": "Set a fixed step size for the time axis. Only applicable when used together with <code>timeAxis.scale</code>. Choose for example 1, 2, 5, or 10.",
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "scale",
+                "step"
+            ],
+            "type": "object"
+        },
+        "TimelineTimeAxisScaleType": {
+            "enum": [
+                "day",
+                "hour",
+                "millisecond",
+                "minute",
+                "month",
+                "second",
+                "weekday",
+                "year"
+            ],
+            "type": "string"
+        },
+        "TimelineTooltipOption": {
+            "properties": {
+                "followMouse": {
+                    "description": "If true, tooltips will follow the mouse as they move around in the item.",
+                    "type": "boolean"
+                },
+                "overflowMethod": {
+                    "description": "Set how the tooltip should act if it is about to overflow out of the timeline. If it is set to <code>cap</code>, the tooltip will just cap its position to inside to timeline. While if it is set to <code>flip</code>, the position of the tooltip will flip around the cursor so that a corner is at the cursor, and the rest of it is visible.",
+                    "enum": [
+                        "cap",
+                        "flip"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "followMouse",
+                "overflowMethod"
+            ],
+            "required": [
+                "followMouse",
+                "overflowMethod"
+            ],
+            "type": "object"
+        },
+        "TimelineZoomKey": {
+            "anyOf": [
+                {
+                },
+                {
+                    "enum": [
+                        "altKey",
+                        "ctrlKey",
+                        "metaKey"
+                    ],
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "properties": {
+        "className": {
+            "description": "CSS classes for component holder element.",
+            "type": "string"
+        },
+        "dateFormat": {
+            "description": "Parsing format.\nBy default, the <code>Y-MM-DD</code> format is used.\nIf dates have type <code>xsd:dateTime</code>, the <code>Y-MM-DDTHH:mm:ss</code> format will be used.\nIf dates have type <code>xsd:time</code>, the <code>HH:mm:ss</code> format will be used.",
+            "type": "string"
+        },
+        "defaultItemOptions": {
+            "$ref": "#/definitions/TimelineItem",
+            "description": "Default options of the items"
+        },
+        "groups": {
+            "description": "Groups that are used for the items grouping.\nIf an item has a group which is not defined in the <code>groups</code>, that group will be created automatically.",
+            "items": {
+                "$ref": "#/definitions/TimelineGroup"
+            },
+            "type": "array"
+        },
+        "loadingTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> of a loading which is applied when items are drawn.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        },
+        "noResultTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        },
+        "options": {
+            "$ref": "#/definitions/TimelineOptions",
+            "description": "Options that are used to customize the timeline."
+        },
+        "query": {
+            "description": "SPARQL select query. The required variables are <code>?start</code> and <code>?end</code>. The expected date formats are <code>YYYY-MM-DD</code>, <code>YYYY-MM-DDTHH:mm:ss</code> and <code>HH:mm:ss</code>.",
+            "type": "string"
+        },
+        "style": {
+            "description": "CSS styles for component holder element.",
+            "type": "string"
+        },
+        "tupleTemplate": {
+            "default": "{{start.value}} - {{end.value}}",
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the items contents.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        },
+        "tupleTemplateHeight": {
+            "description": "Height of the items contents.",
+            "type": [
+                "string",
+                "number"
+            ]
+        }
+    },
+    "propertyOrder": [
+        "style",
+        "query",
+        "noResultTemplate",
+        "tupleTemplate",
+        "tupleTemplateHeight",
+        "loadingTemplate",
+        "options",
+        "defaultItemOptions",
+        "groups",
+        "className",
+        "dateFormat"
+    ],
+    "required": [
+        "groups",
+        "query"
+    ],
+    "type": "object"
+}
+

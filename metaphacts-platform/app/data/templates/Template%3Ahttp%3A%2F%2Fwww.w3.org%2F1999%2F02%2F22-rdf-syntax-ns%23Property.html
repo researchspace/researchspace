@@ -1,0 +1,135 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  [[> http://www.metaphacts.com/resource/assets/OntologyBreadcrumbs ]]
+  <li class="active">
+    <mp-label iri='[[this]]'></mp-label>
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__header'>
+    [[> Platform:DefaultResourceHeader]]
+  </div>
+  <div class='page__body'>
+    <bs-tabs id="tabs" unmount-on-exit=true>
+            <bs-tab event-key="1" title="Taxonomy">
+              <bs-row>
+                <bs-col md=6>
+                  <mp-collapsible-div>
+                    <mp-collapsible-div-trigger>
+                      <b>Subproperties</b>
+                    </mp-collapsible-div-trigger>
+                    <mp-collapsible-div-content>
+                      <semantic-table query='SELECT DISTINCT ?Subproperty ?Relation WHERE { 
+                                              {
+                                                ?Subproperty rdfs:subPropertyOf ?? . 
+                                                BIND("direct" as ?Relation)
+                                              } UNION {
+                                                ?Subproperty rdfs:subPropertyOf+ ?? . 
+                                                BIND("inferred" as ?Relation)
+                                                FILTER NOT EXISTS { ?Subproperty rdfs:subPropertyOf ?? } 
+                                              }
+                                              FILTER( !isBlank(?Subproperty))
+                                           }'
+                                    options='{
+                                             "showTableHeading":false,
+                                             "filterPlaceholderText":"Filter Subproperteis"
+                                             }'
+                                    no-result-template='<i>No subproperties.</i>'
+                                    number-of-displayed-rows=5>
+                      </semantic-table>
+                    </mp-collapsible-div-content>
+                  </mp-collapsible-div>
+
+                  <mp-collapsible-div>
+                    <mp-collapsible-div-trigger>
+                      <b>Superproperties</b>
+                    </mp-collapsible-div-trigger>
+                    <mp-collapsible-div-content>
+                      <semantic-table query='SELECT DISTINCT ?Superproperty ?Relation WHERE { 
+                                            { 
+                                              ?? rdfs:subPropertyOf ?Superproperty . 
+                                              BIND("direct" as ?Relation)
+                                            } UNION {
+                                              ?? rdfs:subPropertyOf+ ?Superclass . 
+                                              BIND("inferred" as ?Relation)
+                                              FILTER NOT EXISTS { ?? rdfs:subPropertyOf ?Superproperty } 
+                                            }
+                                            FILTER( !isBlank(?Superproperty))
+                                          }'
+                                    options='{
+                                             "showTableHeading":false, 
+                                             "filterPlaceholderText":"Filter Superproperties"
+                                             }'
+                                    no-result-template='<i>No superproperties.</i>'
+                                    number-of-displayed-rows=5>
+                      </semantic-table>
+                    </mp-collapsible-div-content>
+                  </mp-collapsible-div>
+                </bs-col>
+                <bs-col md=6>
+                  <semantic-tree 
+                           query="
+                            SELECT DISTINCT ?node ?parent WHERE {
+                              { ?? rdfs:subPropertyOf* ?node. }
+                              UNION
+                              { ?node rdfs:subPropertyOf* ?? . }
+                              OPTIONAL { ?node rdfs:subPropertyOf ?parent. FILTER(ISIRI(?parent)) }
+                              FILTER(ISIRI(?node))
+                            }
+                            ORDER BY ?node"                                    
+        			             collapsed="true"
+                           keys-opened='["[[this]]"]'
+                           parentBindingName="parent"
+                           nodeBindingName="node">
+         			  	</semantic-tree> 
+                </bs-col>
+              </bs-row>
+
+            </bs-tab>
+      
+            <bs-tab event-key="2" title="Domains and Ranges">
+                <mp-collapsible-div>
+                	<mp-collapsible-div-trigger>
+                    <span>Domains for <b>"<mp-label iri="[[this]]"></mp-label>"</b></span>
+                 	</mp-collapsible-div-trigger>
+                 	<mp-collapsible-div-content>
+                  	<semantic-table 
+                   		query='SELECT DISTINCT ?domain WHERE { ?? rdfs:domain ?domain }'
+                      options='{"showTableHeading":false, "filterPlaceholderText":"Filter Properties"}'
+                      no-result-template='<i>No classes within the domain of this property.'
+                      number-of-displayed-rows=5>
+                  	</semantic-table>
+                 	</mp-collapsible-div-content>
+                </mp-collapsible-div>
+               
+								<mp-collapsible-div>
+                  <mp-collapsible-div-trigger>
+                    <span>Ranges for <b>"<mp-label iri="[[this]]"></mp-label>"</b></span>
+                  </mp-collapsible-div-trigger>
+                 <mp-collapsible-div-content>
+                  <semantic-table 
+                  	query='SELECT DISTINCT ?range WHERE { ?? rdfs:range ?range }'
+                    options='{"showTableHeading":false, "filterPlaceholderText":"Filter Properties"}'
+                    no-result-template='<i>No classes or datatypes within the range this property.'
+                    number-of-displayed-rows=5>
+                  </semantic-table>
+                 </mp-collapsible-div-content>
+                </mp-collapsible-div>
+            </bs-tab>
+      
+            <bs-tab event-key="3" title="Usage">
+							<semantic-query query='SELECT  (COUNT(*) as ?number) WHERE{ {SELECT * WHERE{ ?Subject ?? ?Object. FILTER(ISIRI(?Subject) && [[#if checkfn]][[checkfn]][[else]]!isBlank[[/if]](?Object)) }   LIMIT 1000 } }' 
+                          template='{{#each bindings}}{{#ifCond number.value ">" 0}} 
+                                    	{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The table below is limited to show only a preview of <strong>1000 triples</strong>. However, the absolute number of triples with the property <strong>[[this.label]]</strong> in predicate position seems to be larger. </bs-alert>{{else}} <bs-alert bs-style="info"> <strong>{{number.value}}</strong> triples with the property <strong>[[this.label]]</strong> in predicate position. Blank nodes are not considered.</bs-alert> {{/ifCond}}{{/ifCond}}{{/each}} '
+          >
+    					</semantic-query>
+              <semantic-table query='SELECT ?Subject ?Object WHERE { ?Subject ?? ?Object. FILTER(ISIRI(?Subject) && [[#if checkfn]][[checkfn]][[else]]!isBlank[[/if]](?Object))} LIMIT 1000'
+                              no-result-template='<i>"<mp-label iri="[[this]]"></mp-label>" is not used in any predicate position. Blank nodes are not considered.</i>'>
+              </semantic-table>
+            </bs-tab>
+     </bs-tabs>    
+  </div>
+</div>

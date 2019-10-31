@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "Bird's eye view pan and zoom control for `semantic-graph` component",
+    "properties": {
+        "dblClickDelay": {
+            "default": 200,
+            "description": "Double-click delay in milliseconds",
+            "type": "number"
+        },
+        "rerenderDelay": {
+            "default": 100,
+            "description": "Milliseconds to throttle rerender updates to the panzoom for performance",
+            "type": "number"
+        },
+        "style": {
+            "description": "Additional CSS styles for navigation container",
+            "type": "string"
+        },
+        "thumbnailEventFramerate": {
+            "default": 30,
+            "description": "Max thumbnail's updates per second triggered by graph updates",
+            "type": "number"
+        },
+        "thumbnailLiveFramerate": {
+            "anyOf": [
+                {
+                    "enum": [
+                        false
+                    ],
+                    "type": "boolean"
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "default": false,
+            "description": "Max thumbnail's updates per second. Set false to disable"
+        },
+        "viewLiveFramerate": {
+            "anyOf": [
+                {
+                    "enum": [
+                        false
+                    ],
+                    "type": "boolean"
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "default": 0,
+            "description": "Set `false` to update graph pan only on drag end; set `0` to do it instantly; set a number (frames per second) to update not more than N times per second"
+        }
+    },
+    "propertyOrder": [
+        "style",
+        "viewLiveFramerate",
+        "thumbnailEventFramerate",
+        "thumbnailLiveFramerate",
+        "dblClickDelay",
+        "rerenderDelay"
+    ],
+    "type": "object"
+}
+

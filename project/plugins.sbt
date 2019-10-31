@@ -1,8 +1,8 @@
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.1.0")
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.2.4")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 
-addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "3.0.1")
+addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "4.0.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-license-report" % "1.1.0")
 

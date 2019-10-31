@@ -1,0 +1,272 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "anyOf": [
+        {
+            "$ref": "#/definitions/BaseConfig"
+        },
+        {
+            "$ref": "#/definitions/ColumnConfig"
+        },
+        {
+            "$ref": "#/definitions/RowConfig"
+        }
+    ],
+    "definitions": {
+        "BaseConfig": {
+            "description": "The simplest table configuration can be used to show all SPARQL result set projection variables.\nThe SPARQL projection variable name is used as column header. IRIs will be rendered as resolvable links using the `<semantic-link>` component or as a simple string otherwise.",
+            "properties": {
+                "currentPage": {
+                    "description": "In controlled mode sets current page in the table;\nin uncontrolled mode only sets initial page.",
+                    "type": "number"
+                },
+                "id": {
+                    "description": "ID for issuing component events.",
+                    "type": "string"
+                },
+                "linkParams": {
+                    "description": "Add parameters to URLs. This option is applicable only to default cell templates.",
+                    "properties": {
+                    },
+                    "type": "object"
+                },
+                "noResultTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results\n**The template MUST have a single HTML root element.**",
+                    "type": "string"
+                },
+                "numberOfDisplayedRows": {
+                    "default": 10,
+                    "description": "Number of rows to show on the one page",
+                    "type": "number"
+                },
+                "options": {
+                    "$ref": "#/definitions/Options",
+                    "description": "various ui options."
+                },
+                "query": {
+                    "description": "SPARQL Select query.",
+                    "type": "string"
+                },
+                "showLiteralDatatype": {
+                    "default": false,
+                    "description": "Enable displaying datatypes of literals. This option is applicable only to default cell templates.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "query",
+                "numberOfDisplayedRows",
+                "noResultTemplate",
+                "options",
+                "id",
+                "showLiteralDatatype",
+                "linkParams",
+                "currentPage"
+            ],
+            "required": [
+                "query"
+            ],
+            "type": "object"
+        },
+        "ColumnConfig": {
+            "description": "More advanced configuration that can be used to restrict the set of columns to be visualized, to modify the column headings or to provide custom cell visualization templates",
+            "properties": {
+                "columnConfiguration": {
+                    "description": "List of columns to display. If specified table shows only columns explicitly specified in the configuration",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/SimpleColumnConfig"
+                            },
+                            {
+                                "$ref": "#/definitions/CustomColumnConfig"
+                            }
+                        ]
+                    },
+                    "type": "array"
+                },
+                "currentPage": {
+                    "description": "In controlled mode sets current page in the table;\nin uncontrolled mode only sets initial page.",
+                    "type": "number"
+                },
+                "id": {
+                    "description": "ID for issuing component events.",
+                    "type": "string"
+                },
+                "linkParams": {
+                    "description": "Add parameters to URLs. This option is applicable only to default cell templates.",
+                    "properties": {
+                    },
+                    "type": "object"
+                },
+                "noResultTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results\n**The template MUST have a single HTML root element.**",
+                    "type": "string"
+                },
+                "numberOfDisplayedRows": {
+                    "default": 10,
+                    "description": "Number of rows to show on the one page",
+                    "type": "number"
+                },
+                "options": {
+                    "$ref": "#/definitions/Options",
+                    "description": "various ui options."
+                },
+                "query": {
+                    "description": "SPARQL Select query.",
+                    "type": "string"
+                },
+                "showLiteralDatatype": {
+                    "default": false,
+                    "description": "Enable displaying datatypes of literals. This option is applicable only to default cell templates.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "columnConfiguration",
+                "query",
+                "numberOfDisplayedRows",
+                "noResultTemplate",
+                "options",
+                "id",
+                "showLiteralDatatype",
+                "linkParams",
+                "currentPage"
+            ],
+            "required": [
+                "columnConfiguration",
+                "query"
+            ],
+            "type": "object"
+        },
+        "CustomColumnConfig": {
+            "description": "Custom column configuration that can be used when one needs to override default cell visualization template.",
+            "properties": {
+                "cellTemplate": {
+                    "description": "Custom cell visualization <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>template</semantic-link>. Template has access to all projection variables for a single result tuple.\n**The template MUST have a single HTML root element.**",
+                    "type": "string"
+                },
+                "displayName": {
+                    "description": "Cell heading label",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "cellTemplate",
+                "displayName"
+            ],
+            "required": [
+                "displayName"
+            ],
+            "type": "object"
+        },
+        "Options": {
+            "properties": {
+                "enableSort": {
+                    "default": true,
+                    "description": "Determines if sorting is enabled",
+                    "type": "boolean"
+                },
+                "showFilter": {
+                    "default": true,
+                    "description": "Whether or not to display table filter",
+                    "type": "boolean"
+                },
+                "showTableHeading": {
+                    "default": true,
+                    "description": "Determines if the table heading should be displayed",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "showFilter",
+                "showTableHeading",
+                "enableSort"
+            ],
+            "type": "object"
+        },
+        "RowConfig": {
+            "description": "The most advanced table configuration that provides the ability to customize the rendering of an entire table row via tuple templates.",
+            "properties": {
+                "currentPage": {
+                    "description": "In controlled mode sets current page in the table;\nin uncontrolled mode only sets initial page.",
+                    "type": "number"
+                },
+                "id": {
+                    "description": "ID for issuing component events.",
+                    "type": "string"
+                },
+                "linkParams": {
+                    "description": "Add parameters to URLs. This option is applicable only to default cell templates.",
+                    "properties": {
+                    },
+                    "type": "object"
+                },
+                "noResultTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results\n**The template MUST have a single HTML root element.**",
+                    "type": "string"
+                },
+                "numberOfDisplayedRows": {
+                    "default": 10,
+                    "description": "Number of rows to show on the one page",
+                    "type": "number"
+                },
+                "options": {
+                    "$ref": "#/definitions/Options",
+                    "description": "various ui options."
+                },
+                "query": {
+                    "description": "SPARQL Select query.",
+                    "type": "string"
+                },
+                "showLiteralDatatype": {
+                    "default": false,
+                    "description": "Enable displaying datatypes of literals. This option is applicable only to default cell templates.",
+                    "type": "boolean"
+                },
+                "tupleTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.\nThe template has access to all projection variables for a single result tuple\n**The template MUST have a single HTML root element.**",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "tupleTemplate",
+                "query",
+                "numberOfDisplayedRows",
+                "noResultTemplate",
+                "options",
+                "id",
+                "showLiteralDatatype",
+                "linkParams",
+                "currentPage"
+            ],
+            "required": [
+                "query",
+                "tupleTemplate"
+            ],
+            "type": "object"
+        },
+        "SimpleColumnConfig": {
+            "description": "Simple column configuration that can be used to override column header but still use default cell visualization.",
+            "properties": {
+                "displayName": {
+                    "description": "Cell heading label",
+                    "type": "string"
+                },
+                "variableName": {
+                    "description": "SPARQL projection variable name that this column is bind to.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "variableName",
+                "displayName"
+            ],
+            "required": [
+                "displayName",
+                "variableName"
+            ],
+            "type": "object"
+        }
+    }
+}
+

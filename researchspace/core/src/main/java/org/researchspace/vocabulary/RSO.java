@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,6 +33,8 @@ public class RSO {
      */
     public static final IRI EX_DIGITAL_IMAGE_REGION_CLASS;
     public static final IRI THING_CLASS;
+    public static final IRI EX_Assertion;
+    public static final IRI ALIGNMENT;
 
     /*
      * PROPERTIES
@@ -47,6 +49,8 @@ public class RSO {
         // classes
         THING_CLASS = f.createIRI(NAMESPACE, "Thing");
         EX_DIGITAL_IMAGE_REGION_CLASS = f.createIRI(NAMESPACE, "EX_Digital_Image_Region");
+        EX_Assertion = f.createIRI(NAMESPACE, "EX_Assertion");
+        ALIGNMENT = f.createIRI(NAMESPACE, "Alignment");
 
         OVERLAY_IMAGESOURCE_PROPERTY = f.createIRI(NAMESPACE, "Overlay_Image_Source");
         OVERLAY_ORDER_PROPERTY = f.createIRI(NAMESPACE, "Overlay_Order");

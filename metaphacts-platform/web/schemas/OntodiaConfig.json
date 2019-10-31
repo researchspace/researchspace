@@ -1,0 +1,744 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "EdgeStyle": {
+            "properties": {
+                "editable": {
+                    "type": "boolean"
+                },
+                "linkStyle": {
+                    "$ref": "#/definitions/LinkStyle"
+                },
+                "markerSource": {
+                    "$ref": "#/definitions/LinkMarkerStyle"
+                },
+                "markerTarget": {
+                    "$ref": "#/definitions/LinkMarkerStyle"
+                }
+            },
+            "propertyOrder": [
+                "markerSource",
+                "markerTarget",
+                "linkStyle",
+                "editable"
+            ],
+            "type": "object"
+        },
+        "FullTextSearchSettings": {
+            "description": "Full text search settings,\ndeveloper could use anything from search extensions of triplestore to regular expressions match\nSee wikidata and dbpedia examples for reusing full text search capabilities of Blazegraph and Virtuozo",
+            "properties": {
+                "extractLabel": {
+                    "description": "try to extract label from IRI for usage in search purposes.\nIf you have no labels in the dataset and want to search, you\ncan use ?extractedLabel as something to search for.",
+                    "type": "boolean"
+                },
+                "prefix": {
+                    "description": "prefix to use in FTS queries",
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "description": "query pattern should return ?inst and ?score for given ${text}.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "prefix",
+                "queryPattern",
+                "extractLabel"
+            ],
+            "required": [
+                "prefix",
+                "queryPattern"
+            ],
+            "type": "object"
+        },
+        "LinkConfiguration": {
+            "description": "Link abstraction configuration.",
+            "properties": {
+                "id": {
+                    "description": "IRI of the \"virtual\" link",
+                    "type": "string"
+                },
+                "inverseId": {
+                    "description": "IRI of the inverse",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "Sparql pattern connecting $source to $target. It's required to use those specific variables.",
+                    "type": "string"
+                },
+                "properties": {
+                    "description": "Additional sparql patterns can be used for getting properties of the link. (propValue propType should be bound)",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "id",
+                "inverseId",
+                "path",
+                "properties"
+            ],
+            "required": [
+                "id",
+                "path"
+            ],
+            "type": "object"
+        },
+        "LinkLabel": {
+            "properties": {
+                "attrs": {
+                    "properties": {
+                        "rect": {
+                            "properties": {
+                                "fill": {
+                                    "type": "string"
+                                },
+                                "stroke": {
+                                    "type": "string"
+                                },
+                                "stroke-width": {
+                                    "type": "number"
+                                }
+                            },
+                            "propertyOrder": [
+                                "fill",
+                                "stroke",
+                                "stroke-width"
+                            ],
+                            "type": "object"
+                        },
+                        "text": {
+                            "properties": {
+                                "fill": {
+                                    "type": "string"
+                                },
+                                "font-family": {
+                                    "type": "string"
+                                },
+                                "font-size": {
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
+                                },
+                                "font-weight": {
+                                    "anyOf": [
+                                        {
+                                            "enum": [
+                                                "bold",
+                                                "bolder",
+                                                "lighter",
+                                                "normal"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "stroke": {
+                                    "type": "string"
+                                },
+                                "stroke-width": {
+                                    "type": "number"
+                                },
+                                "text": {
+                                    "items": {
+                                        "$ref": "#/definitions/LocalizedString"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "propertyOrder": [
+                                "fill",
+                                "stroke",
+                                "stroke-width",
+                                "font-family",
+                                "font-size",
+                                "font-weight",
+                                "text"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "propertyOrder": [
+                        "rect",
+                        "text"
+                    ],
+                    "type": "object"
+                },
+                "position": {
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "position",
+                "attrs"
+            ],
+            "type": "object"
+        },
+        "LinkMarkerStyle": {
+            "properties": {
+                "d": {
+                    "type": "string"
+                },
+                "fill": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "number"
+                },
+                "stroke": {
+                    "type": "string"
+                },
+                "strokeWidth": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "fill",
+                "stroke",
+                "strokeWidth",
+                "d",
+                "width",
+                "height"
+            ],
+            "type": "object"
+        },
+        "LinkStyle": {
+            "properties": {
+                "connection": {
+                    "properties": {
+                        "fill": {
+                            "type": "string"
+                        },
+                        "stroke": {
+                            "type": "string"
+                        },
+                        "stroke-dasharray": {
+                            "type": "string"
+                        },
+                        "stroke-width": {
+                            "type": "number"
+                        }
+                    },
+                    "propertyOrder": [
+                        "fill",
+                        "stroke",
+                        "stroke-width",
+                        "stroke-dasharray"
+                    ],
+                    "type": "object"
+                },
+                "connector": {
+                    "properties": {
+                        "args": {
+                            "properties": {
+                            },
+                            "type": "object"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "propertyOrder": [
+                        "name",
+                        "args"
+                    ],
+                    "type": "object"
+                },
+                "label": {
+                    "$ref": "#/definitions/LinkLabel"
+                },
+                "properties": {
+                    "items": {
+                        "$ref": "#/definitions/LinkLabel"
+                    },
+                    "type": "array"
+                }
+            },
+            "propertyOrder": [
+                "connection",
+                "label",
+                "properties",
+                "connector"
+            ],
+            "type": "object"
+        },
+        "LocalizedString": {
+            "properties": {
+                "datatype": {
+                    "description": "Equals `xsd:string` if not defined.",
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "text",
+                "lang",
+                "datatype"
+            ],
+            "required": [
+                "lang",
+                "text"
+            ],
+            "type": "object"
+        },
+        "PropertyConfiguration": {
+            "description": "Specifies property abstraction configuration",
+            "properties": {
+                "id": {
+                    "description": "IRI of the \"virtual\" link",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "Sparql pattern connecting $subject to $value. It's required to use those specific variables.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "id",
+                "path"
+            ],
+            "required": [
+                "id",
+                "path"
+            ],
+            "type": "object"
+        },
+        "SparqlDataProviderSettings": {
+            "description": "this is dataset-schema specific settings",
+            "properties": {
+                "classTreeQuery": {
+                    "description": "query to retreive class tree. Should return class, label, parent, instcount (optional)",
+                    "type": "string"
+                },
+                "dataLabelProperty": {
+                    "description": "property to use as instance label\ntodo: make it an array",
+                    "type": "string"
+                },
+                "defaultPrefix": {
+                    "description": "default prefix to be used in every query",
+                    "type": "string"
+                },
+                "elementInfoQuery": {
+                    "description": "query for fetching all information on element: labels, classes, properties",
+                    "type": "string"
+                },
+                "filterAdditionalRestriction": {
+                    "description": "imposes additional filtering on elements within filter",
+                    "type": "string"
+                },
+                "filterElementInfoPattern": {
+                    "description": "how to fetch elements info when fetching data.",
+                    "type": "string"
+                },
+                "filterRefElementLinkPattern": {
+                    "description": "when fetching all links from element, we could specify additional filter",
+                    "type": "string"
+                },
+                "filterTypePattern": {
+                    "description": "filter by type pattern. One could use transitive type resolution here.",
+                    "type": "string"
+                },
+                "fullTextSearch": {
+                    "$ref": "#/definitions/FullTextSearchSettings",
+                    "description": "full-text search settings"
+                },
+                "imageQueryPattern": {
+                    "description": "this should return image URL for ?inst as instance and ?linkType for image property IRI\ntodo: move to runtime settings instead? proxying is runtime thing",
+                    "type": "string"
+                },
+                "linkConfigurations": {
+                    "description": "Abstract links configuration - one could abstract a property path as a link on the diagram\nIf you choose to set linkConfiguration, please ensure you'll have corresponding handling of linkConfiguration in\nlinkTypeOf query, refElement* queries, linkInfos query.",
+                    "items": {
+                        "$ref": "#/definitions/LinkConfiguration"
+                    },
+                    "type": "array"
+                },
+                "linkTypesOfQuery": {
+                    "description": "link types of returns possible link types from specified instance with statistics",
+                    "type": "string"
+                },
+                "linkTypesPattern": {
+                    "description": "link types pattern - what to consider a link on initial fetch",
+                    "type": "string"
+                },
+                "linkTypesStatisticsQuery": {
+                    "description": "link types of stats returns statistics of a link type for specified resource.\nTo support blank nodes, query should use ?inObject and ?outObject variables for counting incoming and\noutgoing links, and provide ${navigateElementFilterOut} and ${navigateElementFilterIn} variables,\nsee OWLRDFSSettings for example",
+                    "type": "string"
+                },
+                "linksInfoQuery": {
+                    "description": "Query on all links between said instances. Should return source type target",
+                    "type": "string"
+                },
+                "propertyConfigurations": {
+                    "description": "Abstract property configuration similar to abstract link configuration. Not type-specific yet.",
+                    "items": {
+                        "$ref": "#/definitions/PropertyConfiguration"
+                    },
+                    "type": "array"
+                },
+                "schemaLabelProperty": {
+                    "description": "property to use as label in schema (classes, properties)",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "defaultPrefix",
+                "schemaLabelProperty",
+                "dataLabelProperty",
+                "fullTextSearch",
+                "classTreeQuery",
+                "linkTypesPattern",
+                "elementInfoQuery",
+                "linksInfoQuery",
+                "imageQueryPattern",
+                "linkTypesOfQuery",
+                "linkTypesStatisticsQuery",
+                "filterRefElementLinkPattern",
+                "filterTypePattern",
+                "filterElementInfoPattern",
+                "filterAdditionalRestriction",
+                "linkConfigurations",
+                "propertyConfigurations"
+            ],
+            "required": [
+                "classTreeQuery",
+                "dataLabelProperty",
+                "defaultPrefix",
+                "elementInfoQuery",
+                "filterAdditionalRestriction",
+                "filterElementInfoPattern",
+                "filterRefElementLinkPattern",
+                "filterTypePattern",
+                "fullTextSearch",
+                "imageQueryPattern",
+                "linkConfigurations",
+                "linkTypesOfQuery",
+                "linkTypesPattern",
+                "linkTypesStatisticsQuery",
+                "linksInfoQuery",
+                "propertyConfigurations",
+                "schemaLabelProperty"
+            ],
+            "type": "object"
+        },
+        "SupportedConfigName": {
+            "enum": [
+                "dbpedia",
+                "default",
+                "nostats",
+                "wikidata"
+            ],
+            "type": "string"
+        }
+    },
+    "properties": {
+        "acceptBlankNodes": {
+            "default": false,
+            "description": "Allow blank nodes in navigation queries. Significantly increases complexity of the queries\nand may lead to unexpected query execution plans and timeouts in triple stores.",
+            "type": "boolean"
+        },
+        "addToDefaultSet": {
+            "default": false,
+            "description": "`true` if persisted component should be added to the default set of the current user",
+            "type": "boolean"
+        },
+        "authoringMode": {
+            "description": "Switches Ondodia to authoring mode.\n\nAuthoring mode requires entity metadata to be specified (using semantic forms as children)\nin order to work.",
+            "type": "boolean"
+        },
+        "autoZoom": {
+            "description": "If true zoomToFit to call on each addElements event.",
+            "type": "boolean"
+        },
+        "collapseNavigator": {
+            "description": "Collapse navigator panel by default",
+            "type": "boolean"
+        },
+        "defaultEdgeStyle": {
+            "$ref": "#/definitions/EdgeStyle",
+            "description": "Default custom style of the links"
+        },
+        "defaultNodeTemplate": {
+            "description": "Default custom template of the elements",
+            "type": "string"
+        },
+        "diagram": {
+            "description": "Diagram identifier to display saved diagram.",
+            "type": "string"
+        },
+        "edgeStyles": {
+            "additionalProperties": {
+                "$ref": "#/definitions/EdgeStyle"
+            },
+            "description": "Custom styles of the links",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "findRelationshipQuery": {
+            "description": "Sparql query to find a relationship between two elements.",
+            "type": "string"
+        },
+        "groupBy": {
+            "description": "Links to group the nodes",
+            "items": {
+                "properties": {
+                    "linkDirection": {
+                        "enum": [
+                            "in",
+                            "out"
+                        ],
+                        "type": "string"
+                    },
+                    "linkType": {
+                        "type": "string"
+                    }
+                },
+                "propertyOrder": [
+                    "linkType",
+                    "linkDirection"
+                ],
+                "required": [
+                    "linkDirection",
+                    "linkType"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "hideHalo": {
+            "description": "Disable navigation",
+            "type": "boolean"
+        },
+        "hideNavigationConfirmation": {
+            "description": "Disable navigation confirmation dialog, resource links will be followed without confirmation.",
+            "type": "boolean"
+        },
+        "hideNavigator": {
+            "description": "Disable navigator panel",
+            "type": "boolean"
+        },
+        "hidePanels": {
+            "description": "Disable side panels",
+            "type": "boolean"
+        },
+        "hideScrollBars": {
+            "description": "Disable scrollbars",
+            "type": "boolean"
+        },
+        "hideToolbar": {
+            "description": "Disable toolbar",
+            "type": "boolean"
+        },
+        "id": {
+            "description": "Used as source id for emitted events.",
+            "type": "string"
+        },
+        "imageIris": {
+            "description": "Array of link types to get images of elements.\nIf property imageQuery is defined, this property will be ignored.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "imageQuery": {
+            "description": "Sparql SELECT query to get images of elements.\n\nParametrized with `VALUES(?element) {...}` and should contains the following bindings:\n  - `?element`: IRI of element on graph;\n  - `?image`: image of the element.",
+            "type": "string"
+        },
+        "iri": {
+            "description": "Iri to be used as a single diagram element\nIf property diagram or query is defined, this will be ignored.",
+            "type": "string"
+        },
+        "iris": {
+            "description": "Elements to display on initialization",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "linkSettings": {
+            "description": "Custom options for the links",
+            "items": {
+                "properties": {
+                    "property": {
+                        "type": "string"
+                    },
+                    "showLabel": {
+                        "type": "boolean"
+                    },
+                    "visible": {
+                        "type": "boolean"
+                    }
+                },
+                "propertyOrder": [
+                    "property",
+                    "visible",
+                    "showLabel"
+                ],
+                "required": [
+                    "property",
+                    "visible"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "metadata": {
+            "description": "Additional turtle data that will be parsed and attached to the saved diagram.",
+            "type": "string"
+        },
+        "navigateTo": {
+            "description": "URI to navigate after diagram created.\nNewly created diagram IRI will be appended as `diagram` query parameter.",
+            "type": "string"
+        },
+        "nodeStyles": {
+            "additionalProperties": {
+                "properties": {
+                    "color": {
+                        "type": "string"
+                    },
+                    "image": {
+                        "type": "string"
+                    }
+                },
+                "propertyOrder": [
+                    "image",
+                    "color"
+                ],
+                "required": [
+                    "color",
+                    "image"
+                ],
+                "type": "object"
+            },
+            "description": "Custom images and colors of the elements",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "nodeTemplates": {
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "Custom templates of the elements",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "persistChangesLabel": {
+            "description": "Custom label for \"Save data\" button.",
+            "type": "string"
+        },
+        "postSaving": {
+            "description": "Controls whether Ontodia should navigate to a newly saved diagram.",
+            "enum": [
+                "navigate",
+                "none"
+            ],
+            "type": "string"
+        },
+        "propertySuggestionQuery": {
+            "description": "Sparql query to get suggested properties of elements.",
+            "type": "string"
+        },
+        "providerSettings": {
+            "$ref": "#/definitions/SparqlDataProviderSettings",
+            "description": "Sparql data provider settings to override default settings.\nSee definition of `SparqlDataProviderSettings`."
+        },
+        "provisionQuery": {
+            "description": "SPARQL query to store data that do not exist in the database",
+            "type": "string"
+        },
+        "query": {
+            "description": "SPARQL query to display data on layout.\nIf property diagram is defined, this property will be ignored.",
+            "type": "string"
+        },
+        "queryParams": {
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "Query parameters that will be appended to URL after diagram created.",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "readonly": {
+            "description": "When true saving the diagram is disabled and side panels are collapsed by default.",
+            "type": "boolean"
+        },
+        "repositories": {
+            "description": "Ids of repositories",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "saveDiagramLabel": {
+            "description": "Custom label for \"Save diagram\" button.",
+            "type": "string"
+        },
+        "settings": {
+            "$ref": "#/definitions/SupportedConfigName",
+            "default": "'default'",
+            "description": "Configs are predefined configs for particular data sets.\nConfig specifies data provider to run and elements customizations to apply.\nLater customizations could be brought to the level of component configuration if needed."
+        },
+        "zoomRequireCtrl": {
+            "description": "Set if zoom operation need ctrl or not",
+            "type": "boolean"
+        }
+    },
+    "propertyOrder": [
+        "id",
+        "diagram",
+        "provisionQuery",
+        "query",
+        "iri",
+        "iris",
+        "imageQuery",
+        "imageIris",
+        "settings",
+        "providerSettings",
+        "metadata",
+        "navigateTo",
+        "queryParams",
+        "readonly",
+        "addToDefaultSet",
+        "nodeTemplates",
+        "defaultNodeTemplate",
+        "nodeStyles",
+        "edgeStyles",
+        "defaultEdgeStyle",
+        "groupBy",
+        "repositories",
+        "linkSettings",
+        "hidePanels",
+        "hideNavigator",
+        "collapseNavigator",
+        "hideToolbar",
+        "zoomRequireCtrl",
+        "hideScrollBars",
+        "autoZoom",
+        "hideHalo",
+        "propertySuggestionQuery",
+        "acceptBlankNodes",
+        "saveDiagramLabel",
+        "persistChangesLabel",
+        "authoringMode",
+        "findRelationshipQuery",
+        "hideNavigationConfirmation",
+        "postSaving"
+    ],
+    "type": "object"
+}
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@
 
 import * as Kefir from 'kefir';
 import * as Immutable from 'immutable';
+import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
@@ -40,7 +41,10 @@ export interface AlignmentNode extends TreeNode {
   readonly alignKind: AlignKind;
   /** Keys of excluded from aligned subtree nodes. */
   readonly excludeFromAlignment: Immutable.Set<string>;
-  /** True if node is an ancestor of either aligned or decorated as aligned child. */
+  /**
+   * True if node is an ancestor of either aligned or decorated as aligned child.
+   * ("Term has aligned descedants.")
+   */
   readonly decorateAlignParent?: boolean;
   /** Corresponding target node for nodes in source tree. */
   readonly matchedTargetNode?: Node;

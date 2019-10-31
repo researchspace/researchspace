@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,22 +19,19 @@
 package org.researchspace.ldp;
 
 
-import javax.inject.Inject;
-
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.google.common.base.Throwables;
-import com.google.inject.Provider;
 import com.metaphacts.data.rdf.PointedGraph;
 import com.metaphacts.data.rdf.container.AbstractLDPContainer;
 import com.metaphacts.data.rdf.container.LDPR;
-import com.metaphacts.data.rdf.container.RootContainer;
+import com.metaphacts.repository.MpRepositoryProvider;
 import com.metaphacts.vocabulary.LDP;
+import org.researchspace.vocabulary.RSO;
 
 /**
  * LDP container for researchspace terminology alignments.
@@ -46,8 +43,8 @@ public class AlignmentContainer extends AbstractLDPContainer {
     public static final String IRI_STRING = "http://www.researchspace.org/ontology/Alignment.Container";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
-    public AlignmentContainer(IRI iri, Repository repository) {
-        super(iri, repository);
+    public AlignmentContainer(IRI iri, MpRepositoryProvider repositoryProvider) {
+        super(iri, repositoryProvider);
     }
 
     public void initialize() {
@@ -62,5 +59,10 @@ public class AlignmentContainer extends AbstractLDPContainer {
                 throw Throwables.propagate(e);
             }
         }
+    }
+
+    @Override
+    public IRI getResourceType() {
+    	return RSO.ALIGNMENT;
     }
 }

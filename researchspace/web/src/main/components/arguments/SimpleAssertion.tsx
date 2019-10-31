@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ import * as Kefir from 'kefir';
 import * as _ from 'lodash';
 import { FormGroup, ControlLabel, Button } from 'react-bootstrap';
 import * as Maybe from 'data.maybe';
-import * as ReactSelect from 'react-select';
+import ReactSelect, { Option, Options } from 'react-select';
 import * as Immutable from 'immutable';
 
 import { Rdf } from 'platform/api/rdf';
@@ -91,8 +91,8 @@ export class SimpleAssertion extends React.Component<SimpleAssertionConfig, void
 export default SimpleAssertion;
 
 interface State {
-  targetOptions: ReactSelect.Options;
-  targetValue?: ReactSelect.Option;
+  targetOptions: Options;
+  targetValue?: Option<string>;
   targetTypes: Array<Rdf.Iri>;
   valueTypes: Array<Rdf.Iri>;
   values: Array<Rdf.Iri>;
@@ -182,7 +182,6 @@ class SimpleAssertionDialog extends Component<SimpleAssertionConfig, State> {
       <FieldSelection multiSelection={false}
         placeholder='Select field for assertion'
         record={Rdf.iri(targetValue.value)}
-        subject={Rdf.iri(targetValue.value)}
         types={this.state.targetTypes}
         onCancel={() => this.onFieldSelectionChange(null)}
         onSave={this.onFieldSelectionChange}
@@ -219,7 +218,7 @@ class SimpleAssertionDialog extends Component<SimpleAssertionConfig, State> {
     this.setState({field});
   }
 
-  private onTargetSelectionChange = (targetValue: ReactSelect.Option) => {
+  private onTargetSelectionChange = (targetValue: Option<string>) => {
     if (targetValue) {
       const values =
         _.map(
@@ -292,6 +291,6 @@ class SimpleAssertionDialog extends Component<SimpleAssertionConfig, State> {
       SparqlClient.setBindings(
         this.TYPES_QUERY, {'__resource__': resource}), {context: {repository: repository}}
       ).map(
-        result => result.results.bindings.map(binding => binding['type'])
+        result => result.results.bindings.map(binding => binding['type'] as Rdf.Iri)
     );
 }

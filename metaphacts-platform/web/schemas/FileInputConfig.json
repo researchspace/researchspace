@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "acceptPattern": {
+            "description": "Media type pattern to allow only specific types of files.\nSee https://github.com/okonet/attr-accept for more information.",
+            "type": "string"
+        },
+        "generateIriQuery": {
+            "description": "SPARQL select query which is used to generate unique IRI for the uploaded file.\nThe query should have only one projection variable `?resourceIri` with the IRI.\n\nAlso the query can use some variables which will be bound with values at runtime:\n* `?__mediaType__`: media type: `image/png`, etc\n* `?__fileName__`: file name, including extension",
+            "type": "string"
+        },
+        "mediaTypePredicateIri": {
+            "description": "Required to be specified if media type predicate in the `resource-query`\nis different from the default.",
+            "type": "string"
+        },
+        "namePredicateIri": {
+            "description": "Required to be specified if file name predicate in the `resource-query`\nis different from the default.",
+            "type": "string"
+        },
+        "placeholder": {
+            "description": "Placeholder for the drop zone. It's also possible to provide\ncustom placeholder by passing a child component.",
+            "type": "string"
+        },
+        "resourceQuery": {
+            "description": "SPARQL construct query which is used to generate extra data that should be associated with\nuploaded file.\n\nAlso the query can use some variables which will be bound with values at runtime:\n* `?__resourceIri__`: IRI generated with `generate-id-query`\n* `?__mediaType__`: media type: `image/png`, etc\n* `?__fileName__`: file name, including extension",
+            "type": "string"
+        },
+        "storage": {
+            "description": "Target storage ID.",
+            "type": "string"
+        },
+        "tempStorage": {
+            "description": "Temporary storage ID.",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "storage",
+        "tempStorage",
+        "acceptPattern",
+        "generateIriQuery",
+        "resourceQuery",
+        "namePredicateIri",
+        "mediaTypePredicateIri",
+        "placeholder"
+    ],
+    "required": [
+        "storage",
+        "tempStorage"
+    ],
+    "type": "object"
+}
+

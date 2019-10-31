@@ -1,0 +1,22 @@
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-which-directory-it-is-stored-in/246128#246128
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+ 
+ 
+SCRIPTPATH="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+METAPHACTORYPATH=$SCRIPTPATH
+JETTY_HOME="$METAPHACTORYPATH/jetty-distribution"
+ 
+# change log4j2.xml for different logging profiles
+# possible values log4j2-debug.xml, log4j2-trace.xml and log4j2-trace2.xml
+LOG4J2="file://$JETTY_HOME/webapps/ROOT/etc/log4j2.xml"
+# whitespace encoding for filepath
+LOG4J2="$(echo $LOG4J2 | sed 's/ /%20/g')"
+
+JAVA_OPTIONS="-Xmx2000m"
+ 
+JETTY_ARGS="jetty.base=$JETTY_HOME jetty.port=80 --module=console-capture -Dorg.eclipse.jetty.server.Request.maxFormContentSize=100000000 -Dcom.metaphacts.config.baselocation=$METAPHACTORYPATH/config -DruntimeDirectory=$METAPHACTORYPATH/ -Dlog4j.configurationFile=$LOG4J2"

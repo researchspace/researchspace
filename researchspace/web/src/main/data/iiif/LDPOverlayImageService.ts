@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,7 @@ export class LdpOverlayImageServiceClass extends LdpService {
     const param2 = Rdf.iri('http://www.metaphacts.com/param2');
 
     const resourceGraph =
-      Rdf.graph(
+      Rdf.graph([
         // common typing & labels
         Rdf.triple(
           overlayIri, vocabularies.rdf.type, rso.Thing
@@ -104,8 +104,8 @@ export class LdpOverlayImageServiceClass extends LdpService {
         ),
         Rdf.triple(
           param2, rso.OverlayOpacity, Rdf.literal('' + topOpacity)
-        )
-      );
+        ),
+      ]);
     return resourceGraph;
   }
 

@@ -1,0 +1,183 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "ChartDimensions": {
+            "properties": {
+                "height": {
+                    "description": "Chart height in pixels",
+                    "type": "number"
+                },
+                "width": {
+                    "description": "Chart width in pixels",
+                    "type": "number"
+                }
+            },
+            "propertyOrder": [
+                "width",
+                "height"
+            ],
+            "type": "object"
+        },
+        "ChartProvider": {
+            "enum": [
+                "chartjs",
+                "highcharts"
+            ],
+            "type": "string"
+        },
+        "ChartType": {
+            "enum": [
+                "bar",
+                "bubble",
+                "donut",
+                "line",
+                "pie",
+                "radar"
+            ],
+            "type": "string"
+        },
+        "DataSetMappings": {
+            "properties": {
+                "category": {
+                    "description": "Same as x, but value is explicitly non-numerical.",
+                    "type": "string"
+                },
+                "color": {
+                    "description": "Color of specific data point.",
+                    "type": "string"
+                },
+                "dataSetIRI": {
+                    "description": "Optional IRI of data set. If specified, a label for this IRI will be fetched and displayed in legend.",
+                    "type": "string"
+                },
+                "dataSetName": {
+                    "description": "Optional label of data set to display in legend.",
+                    "type": "string"
+                },
+                "dataSetVariable": {
+                    "description": "Query variable to pivot on.",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Same as y for two-dimensional data.",
+                    "type": "string"
+                },
+                "x": {
+                    "description": "Determines position of data point along main axis (usually x-axis or axis around chart's center).",
+                    "type": "string"
+                },
+                "y": {
+                    "description": "Determine position along cross axis (y-axis or radial axis).",
+                    "type": "string"
+                },
+                "z": {
+                    "description": "Third-dimension value for 3+ dimensional data.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "dataSetVariable",
+                "dataSetName",
+                "dataSetIRI",
+                "x",
+                "y",
+                "z",
+                "category",
+                "value",
+                "color"
+            ],
+            "type": "object"
+        },
+        "ProviderSpecificStyle": {
+            "properties": {
+                "provider": {
+                    "$ref": "#/definitions/ChartProvider",
+                    "description": "Charting library identifier."
+                },
+                "style": {
+                    "description": "Options specific to the provider. These options will be merged with widget-generated options and specified style will override defaults.\nSee <a href=\"https://www.chartjs.org/docs/\" target=\"_blank\">ChartJS Docs</a> and <a href=\"https://www.highcharts.com/docs/\" target=\"_blank\">Highcharts Docs</a> for further information."
+                }
+            },
+            "propertyOrder": [
+                "provider",
+                "style"
+            ],
+            "required": [
+                "provider",
+                "style"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "dimensions": {
+            "$ref": "#/definitions/ChartDimensions",
+            "description": "Chart's dimensions. If any dimension is not set, the default value provided by the charting library is used instead. In most cases the component will occupy all available space, so you should limit dimensions on enclosing HTML container tag if omitting this parameter."
+        },
+        "disableTooltips": {
+            "description": "Disables chart tooltips.",
+            "type": "boolean"
+        },
+        "id": {
+            "description": "ID for issuing component events.",
+            "type": "string"
+        },
+        "multiDataSet": {
+            "$ref": "#/definitions/DataSetMappings",
+            "description": "Data sets specified through pivoting on variable in query and mapping between data points properties and other query variables. (Mutually exclusive with `data-sets.`)"
+        },
+        "noResultTemplate": {
+            "description": "<semantic-link iri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.",
+            "type": "string"
+        },
+        "provider": {
+            "$ref": "#/definitions/ChartProvider",
+            "description": "Charting library provider.\n<a target='_blank' href='http://www.chartjs.org/'>Chart.js</a> is used by default."
+        },
+        "query": {
+            "description": "SPARQL select query where the resulting rows correspond to one (in case of `multi-data-set`) or multiple (in case of `data-sets`) data points.",
+            "type": "string"
+        },
+        "sets": {
+            "description": "List of plotted data sets where each specified through mapping between data points properties and query variables. (Mutually exclusive with `multi-data-sets.`)",
+            "items": {
+                "$ref": "#/definitions/DataSetMappings"
+            },
+            "type": "array"
+        },
+        "styles": {
+            "description": "List of charting library-specific configurations.",
+            "items": {
+                "$ref": "#/definitions/ProviderSpecificStyle"
+            },
+            "type": "array"
+        },
+        "tooltipTemplate": {
+            "description": "<semantic-link iri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied to render tooltip for chart points; the following properies are provided:\n<mp-documentation type=\"ChartTooltipData\"></mp-documentation>",
+            "type": "string"
+        },
+        "type": {
+            "$ref": "#/definitions/ChartType",
+            "description": "Type of chart, specified as string"
+        }
+    },
+    "propertyOrder": [
+        "query",
+        "type",
+        "sets",
+        "multiDataSet",
+        "styles",
+        "dimensions",
+        "provider",
+        "id",
+        "disableTooltips",
+        "noResultTemplate",
+        "tooltipTemplate"
+    ],
+    "required": [
+        "query",
+        "type"
+    ],
+    "type": "object"
+}
+

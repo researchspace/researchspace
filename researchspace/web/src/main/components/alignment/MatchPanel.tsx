@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,7 @@ import { TemplateItem } from 'platform/components/ui/template';
 import {
   KeyPath, TreeSelection, SelectionNode, Node,
   LazyTreeSelector, LazyTreeSelectorProps, SemanticTreeInput,
-  SingleFullSubtree, SinglePartialSubtree,
+  SelectionMode, SingleFullSubtree, PartialSubtrees,
 } from 'platform/components/semantic/lazy-tree';
 
 import {
@@ -53,11 +53,11 @@ export interface MatchPanelProps {
   onExpandAndScrollToPath: (path: KeyPath, target: Node) => void;
   onCancelExpandingToScroll: () => void;
 
-  draggedNode?: AlignmentNode;
-  onDragStart?: (node: AlignmentNode) => void;
+  draggedNodes?: ReadonlyArray<AlignmentNode>;
+  onDragStart?: (nodes: AlignmentNode[]) => void;
   onDragEnd?: () => void;
 
-  onAlign?: (sourceNode: AlignmentNode, targetPath: KeyPath) => void;
+  onAlign?: (sourceNodes: ReadonlyArray<AlignmentNode>, targetPath: KeyPath) => void;
   onUnalign?: (targetPath: KeyPath) => void;
   onFindAligned?: (targetKey: string) => void;
 
@@ -67,7 +67,6 @@ export interface MatchPanelProps {
 
 export class MatchPanel extends Component<MatchPanelProps, {}> {
   private alignementTree: LazyTreeSelector;
-  private selectionMode = new SinglePartialSubtree<AlignmentNode>();
 
   private searchedPaths = Immutable.Set<Immutable.List<string>>();
 
@@ -90,8 +89,9 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
       renderItem: node => this.renderTreeNodeRow(node, highlightedNodes),
       requestMore: this.requestMore,
       hideCheckboxes: role === AlignementRole.Target,
-      selectionMode: role === AlignementRole.Source
-        ? this.selectionMode : SingleFullSubtree<AlignmentNode>(),
+      selectionMode: this.props.role === AlignementRole.Source
+        ? PartialSubtrees<AlignmentNode>()
+        : SingleFullSubtree<AlignmentNode>(),
       selection,
       onSelectionChanged: this.props.onSelectionChanged,
       isExpanded,
@@ -141,14 +141,15 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
     );
 
     if (role === AlignementRole.Source) {
+      const mode = PartialSubtrees<AlignmentNode>();
       const selected = selection.nodes.get(AlignmentNode.keyOf(node));
       if (selected && selected.size > 0) {
-        const selectedRootPath = this.selectionMode.selectedRootPath;
-        const isSelectedRoot = selectedRootPath && forest.fromKeyPath(selectedRootPath) === node;
-        if (isSelectedRoot) {
+        const path = forest.getKeyPath(node);
+        const itemSelection = selection.fromKeyPath(path);
+        if (itemSelection && mode.isSelectedSubtree(itemSelection)) {
           return (
             <Draggable iri={node.base.iri.value}
-              onDragStart={() => this.setDraggedNode(node)}
+              onDragStart={() => this.startDraggingSelection()}
               onDragEnd={onDragEnd}>
               <span className={styles.draggableWrapper}>
                 <span className={styles.draggableHandle} />
@@ -272,13 +273,17 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
     onExpandOrCollapse(path, expanded);
   }
 
-  private setDraggedNode(node: AlignmentNode) {
+  private startDraggingSelection() {
     const {forest, selection} = this.props.state;
-    const selectedRootPath = this.selectionMode.selectedRootPath;
-    const isSelectedRoot = selectedRootPath && forest.fromKeyPath(selectedRootPath) === node;
+    const mode = PartialSubtrees<AlignmentNode>();
+    const subtrees = mode.getSelectedSubtrees(selection);
+    if (subtrees.length === 0) {
+      return;
+    }
 
-    if (isSelectedRoot) {
-      const selectionRoot = selection.fromKeyPath(selectedRootPath);
+    const draggedNodes = subtrees.map(selectionRoot => {
+      const selectionPath = selection.getKeyPath(selectionRoot);
+      const node = forest.fromKeyPath(selectionPath);
       const excludeFromAlignment = findExcludedChildren(node, selectionRoot, selection);
       const unloadedNode = (node.base.children && node.base.children.length > 0)
         ? Node.set(node.base, {children: undefined, reachedLimit: false})
@@ -287,17 +292,19 @@ export class MatchPanel extends Component<MatchPanelProps, {}> {
         base: unloadedNode,
         excludeFromAlignment,
       });
-      this.props.onDragStart(draggedNode);
-    }
+      return draggedNode;
+    });
+    this.props.onDragStart(draggedNodes);
   }
 
   private onDropInto(path: KeyPath, iri: Rdf.Iri) {
-    const {state, draggedNode, onCancelExpandingToScroll, onAlign} = this.props;
+    const {state, draggedNodes, onCancelExpandingToScroll, onAlign} = this.props;
     if (state.expandingToScroll) {
       onCancelExpandingToScroll();
     }
-    if (onAlign && draggedNode && draggedNode.base.iri.equals(iri)) {
-      onAlign(draggedNode, path);
+
+    if (onAlign && draggedNodes && draggedNodes.some(n => n.base.iri.equals(iri))) {
+      onAlign(draggedNodes, path);
     }
   }
 

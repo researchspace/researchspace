@@ -1,0 +1,231 @@
+---
+- name: "1"
+  prefixes: |
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Thing_acquired_by_Actor <http://collection.britishmuseum.org/id/person-institution/171106>.
+    }
+  expectedCount: 234
+
+- name: "2"
+  prefixes: |
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?__value___93bb7232_4550_4f25_8c20_141a56346a54 rso:Thing_created_at_Place <http://collection.britishmuseum.org/id/place/x21550>.
+      { ?subject rso:Actor_is_owner_of_Thing ?__value___93bb7232_4550_4f25_8c20_141a56346a54. }
+    }
+  expectedCount: 2191
+
+- name: "3"
+  prefixes: |
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?__value___185f122f_da16_4cf2_86f4_1f015b1028eb rso:Thing_created_at_Place <http://collection.britishmuseum.org/id/place/x20468>.
+      ?__value___185f122f_da16_4cf2_86f4_1f015b1028eb rso:Thing_created_on_Time ?date_ad38eebc_59a2_400e_abe1_b42ee0f60c38_cbf43d0f_8d8e_4d9e_9d70_cd9528486a2a_ee019639_305f_47c3_a248_b67a4e442057.
+      ?date_ad38eebc_59a2_400e_abe1_b42ee0f60c38_cbf43d0f_8d8e_4d9e_9d70_cd9528486a2a_ee019639_305f_47c3_a248_b67a4e442057 crm:P82a_begin_of_the_begin ?begin_90af73f6_d2da_4cb5_8fd6_6a6ec0638197_67ef7fa0_3bed_4b31_a684_516b6bf3acec_6507a440_3ee2_4ef2_9db5_1109f3b726c3.
+      ?date_ad38eebc_59a2_400e_abe1_b42ee0f60c38_cbf43d0f_8d8e_4d9e_9d70_cd9528486a2a_ee019639_305f_47c3_a248_b67a4e442057 crm:P82b_end_of_the_end ?end_84c52a31_5a58_44e2_97d4_9f3f4303a003_ab4d42b0_433b_4737_bf16_a948d83d356d_b73aa9cf_0783_4774_a415_5d466b4157d1.
+      FILTER(?begin_90af73f6_d2da_4cb5_8fd6_6a6ec0638197_67ef7fa0_3bed_4b31_a684_516b6bf3acec_6507a440_3ee2_4ef2_9db5_1109f3b726c3 <= "2016-12-31"^^xsd:date)
+      FILTER(?end_84c52a31_5a58_44e2_97d4_9f3f4303a003_ab4d42b0_433b_4737_bf16_a948d83d356d_b73aa9cf_0783_4774_a415_5d466b4157d1 >= "-1000-01-01"^^xsd:date)
+      { ?subject rso:Thing_has_part_Thing ?__value___185f122f_da16_4cf2_86f4_1f015b1028eb. }
+    }
+  expectedCount: 4071
+
+- name: "4"
+  prefixes: |
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Event_from_Place <http://collection.britishmuseum.org/id/place/x20793>.
+      { ?__value___115a1219_d60d_4cab_8236_c60729911d24 rso:Thing_has_material_type_Concept thes:x10892. }
+      UNION
+      { ?__value___115a1219_d60d_4cab_8236_c60729911d24 rso:Thing_has_material_type_Concept thes:x11728. }
+      ?__value___115a1219_d60d_4cab_8236_c60729911d24 rso:Thing_found_or_acquired_at_Place <http://collection.britishmuseum.org/id/place/x17274>.
+      { ?subject rso:Event_created_Thing ?__value___115a1219_d60d_4cab_8236_c60729911d24. }
+    }
+  expectedCount: 302
+
+- name: "6"
+  prefixes: |
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+  query: |
+    SELECT DISTINCT ?subject WHERE { ?subject rso:Concept_has_broader_Concept thes:x10892. }
+  expectedCount: 1
+
+- name: "8"
+  prefixes: |
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+  query: |
+    SELECT DISTINCT ?subject WHERE { ?subject rso:Thing_created_in_Event <http://collection.britishmuseum.org/id/object/PPA77219/production>. }
+  expectedCount: 1
+
+- name: "9"
+  prefixes: |
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Actor_has_met_Time ?date_81a8fb66_a266_4364_bc1d_4db823545b45.
+      ?date_81a8fb66_a266_4364_bc1d_4db823545b45 crm:P82a_begin_of_the_begin ?begin_f4c65da8_f266_4ef8_9a8d_e081ddb898f7.
+      ?date_81a8fb66_a266_4364_bc1d_4db823545b45 crm:P82b_end_of_the_end ?end_4b47db73_7305_4a4f_9093_aa75918ea3bd.
+      FILTER(?begin_f4c65da8_f266_4ef8_9a8d_e081ddb898f7 <= "1960-12-31"^^xsd:date)
+      FILTER(?end_4b47db73_7305_4a4f_9093_aa75918ea3bd >= "0800-01-01"^^xsd:date)
+      ?__value___9b363cb5_b88d_4de9_bbd0_dd9745a88932 rso:Thing_has_material_type_Concept thes:x10892.
+      ?__value___9b363cb5_b88d_4de9_bbd0_dd9745a88932 rso:Thing_created_at_Place <http://collection.britishmuseum.org/id/place/x20793>.
+      { ?subject rso:Actor_is_owner_of_Thing ?__value___9b363cb5_b88d_4de9_bbd0_dd9745a88932. }
+    }
+  expectedCount: 566
+
+# returns 0 but should be 2 (the same is on blazegraph)
+# name: "10. Things has type Egyptian hierogylphic and from Egypt"
+#  prefixes: |
+#    PREFIX rso: <http://www.researchspace.org/ontology/>
+#  query: |
+#    SELECT DISTINCT ?subject WHERE {
+#      ?subject rso:Thing_has_type_Concept <http://collection.britishmuseum.org/id/thesauri/script/egyptian-hierogylphic>.
+#      ?subject rso:Thing_from_Place <http://collection.britishmuseum.org/id/place/x17904>.
+#    }
+#  expectedCount: 2
+
+- name: "11"
+  prefixes: |
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Thing_has_material_type_Concept thes:x11225.
+      ?subject rso:Thing_created_on_Time ?date_e716f3b3_1556_4925_bf1c_83d5ec7b2547.
+      ?date_e716f3b3_1556_4925_bf1c_83d5ec7b2547 crm:P82a_begin_of_the_begin ?begin_fac76987_202e_4b62_b834_873cb28daa5a.
+      ?date_e716f3b3_1556_4925_bf1c_83d5ec7b2547 crm:P82b_end_of_the_end ?end_af49f0ce_1874_45fe_a02c_246ec82698c8.
+      FILTER(?begin_fac76987_202e_4b62_b834_873cb28daa5a <= "0500-12-31"^^xsd:date)
+      FILTER(?end_af49f0ce_1874_45fe_a02c_246ec82698c8 >= "-0100-01-01"^^xsd:date)
+      ?subject rso:Thing_created_at_Place <http://collection.britishmuseum.org/id/place/x21667>.
+      ?subject rso:Thing_has_type_Concept thes:x6089.
+    }
+  expectedCount: 4478
+
+- name: "13"
+  prefixes: |
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Thing_found_by_Actor <http://collection.britishmuseum.org/id/thesauri/profession/archaeologist>.
+      ?subject rso:Thing_from_Place <http://collection.britishmuseum.org/id/place/x20468>.
+      ?subject rso:Thing_created_on_Time ?date_e4420fc1_94d2_4994_ba5a_8ccd53ee2e07.
+      ?date_e4420fc1_94d2_4994_ba5a_8ccd53ee2e07 crm:P82a_begin_of_the_begin ?begin_b8797246_a66a_4ae9_a96e_8c339e31a18b.
+      ?date_e4420fc1_94d2_4994_ba5a_8ccd53ee2e07 crm:P82b_end_of_the_end ?end_375e5e14_e1cb_46ea_9e4f_013b9054f551.
+      FILTER(?begin_b8797246_a66a_4ae9_a96e_8c339e31a18b <= "0100-12-31"^^xsd:date)
+      FILTER(?end_375e5e14_e1cb_46ea_9e4f_013b9054f551 >= "-2000-01-01"^^xsd:date)
+      ?subject rso:Thing_has_material_type_Concept thes:x11354.
+    }
+  expectedCount: 305
+
+- name: "15"
+  prefixes: |
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      { ?subject rso:Actor_refers_to_Place <http://collection.britishmuseum.org/id/place/x20489>. }
+      UNION
+      { ?subject rso:Actor_refers_to_Place <http://collection.britishmuseum.org/id/place/x101331>. }
+      ?subject rso:Actor_performed_action_at_Time ?date_536c419b_3cd7_4017_b691_5b9102bfc0f0.
+      ?date_536c419b_3cd7_4017_b691_5b9102bfc0f0 crm:P82a_begin_of_the_begin ?begin_5c1c2a5e_8924_4dfa_a97b_c075c573fe83.
+      ?date_536c419b_3cd7_4017_b691_5b9102bfc0f0 crm:P82b_end_of_the_end ?end_ca288baa_5726_461f_86ef_798d14acee0d.
+      FILTER(?begin_5c1c2a5e_8924_4dfa_a97b_c075c573fe83 <= "2000-12-31"^^xsd:date)
+      FILTER(?end_ca288baa_5726_461f_86ef_798d14acee0d >= "1700-01-01"^^xsd:date)
+    }
+  expectedCount: 33
+
+- name: "16"
+  prefixes: |
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Thing_has_material_type_Concept thes:x11206.
+      ?subject rso:Thing_created_on_Time ?date_57f640f4_56ea_4b69_8365_71f11622f2b4.
+      ?date_57f640f4_56ea_4b69_8365_71f11622f2b4 crm:P82a_begin_of_the_begin ?begin_b2d106d9_92a0_4982_bfd8_d9482accb95f.
+      ?date_57f640f4_56ea_4b69_8365_71f11622f2b4 crm:P82b_end_of_the_end ?end_d7c33241_f548_4b72_add7_f6ea6b27d2d8.
+      FILTER(?begin_b2d106d9_92a0_4982_bfd8_d9482accb95f <= "-0100-12-31"^^xsd:date)
+      FILTER(?end_d7c33241_f548_4b72_add7_f6ea6b27d2d8 >= "-0700-01-01"^^xsd:date)
+      ?subject rso:Thing_created_at_Place <http://collection.britishmuseum.org/id/place/x21667>.
+    }
+  expectedCount: 240
+
+- name: "18"
+  prefixes: |
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Thing_created_on_Time ?date_d455c257_5416_4199_9071_9c76bf7e4d1c.
+      ?date_d455c257_5416_4199_9071_9c76bf7e4d1c crm:P82a_begin_of_the_begin ?begin_a4b13ddb_1a33_4b50_bc7b_ce3facf1fe35.
+      ?date_d455c257_5416_4199_9071_9c76bf7e4d1c crm:P82b_end_of_the_end ?end_465bf75a_5493_4aab_be0d_cb57d3fb06d3.
+      FILTER(?begin_a4b13ddb_1a33_4b50_bc7b_ce3facf1fe35 <= "-0300-12-31"^^xsd:date)
+      FILTER(?end_465bf75a_5493_4aab_be0d_cb57d3fb06d3 >= "-0800-01-01"^^xsd:date)
+      ?subject rso:Thing_created_at_Place <http://collection.britishmuseum.org/id/place/x21667>.
+      ?subject rso:Thing_refers_to_Event <http://collection.britishmuseum.org/id/event/Birth-of-Athena>.
+      ?subject rso:Thing_has_material_type_Concept thes:x11519.
+    }
+  expectedCount: 1
+
+- name: "19"
+  prefixes: |
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+    PREFIX thes: <http://collection.britishmuseum.org/id/thesauri/>
+    PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      ?subject rso:Thing_refers_to_Time ?date_abd211a9_5503_4f54_b76b_c27df3ef4915.
+      ?date_abd211a9_5503_4f54_b76b_c27df3ef4915 crm:P82a_begin_of_the_begin ?begin_81f88b8f_2b0c_4987_8b5f_1ac44fccc757.
+      ?date_abd211a9_5503_4f54_b76b_c27df3ef4915 crm:P82b_end_of_the_end ?end_12f27a6c_8404_4b89_aa5d_f813f4514a09.
+      FILTER(?begin_81f88b8f_2b0c_4987_8b5f_1ac44fccc757 <= "0800-12-31"^^xsd:date)
+      FILTER(?end_12f27a6c_8404_4b89_aa5d_f813f4514a09 >= "0200-01-01"^^xsd:date)
+      { ?subject rso:Thing_has_material_type_Concept thes:x11354. }
+      UNION
+      {
+        { ?__value___6bb4837d_44ad_4a48_b788_3d3b60c6cb1e rso:Concept_is_type_of_Event <http://collection.britishmuseum.org/id/event/Death>. }
+        UNION
+        { ?__value___6bb4837d_44ad_4a48_b788_3d3b60c6cb1e rso:Concept_is_type_of_Event <http://collection.britishmuseum.org/id/event/Birthday>. }
+        ?__value___6bb4837d_44ad_4a48_b788_3d3b60c6cb1e rso:Concept_is_type_of_Place <http://collection.britishmuseum.org/id/place/x20468>.
+        { ?subject rso:Thing_has_material_type_Concept ?__value___6bb4837d_44ad_4a48_b788_3d3b60c6cb1e. }
+      }
+    }
+  expectedCount: 280
+
+- name: "20"
+  prefixes: |
+    PREFIX rso: <http://www.researchspace.org/ontology/>
+  query: |
+    SELECT DISTINCT ?subject WHERE {
+      { ?subject rso:Actor_refers_to_Place <http://collection.britishmuseum.org/id/place/x21667>. }
+      UNION
+      { ?subject rso:Actor_refers_to_Place <http://collection.britishmuseum.org/id/place/x22683>. }
+      UNION
+      { ?subject rso:Actor_refers_to_Place <http://collection.britishmuseum.org/id/place/x17904>. }
+      { ?subject rso:Actor_is_owner_of_Thing <http://collection.britishmuseum.org/id/series/The-Parthenon-Sculptures>. }
+      UNION
+      { ?subject rso:Actor_is_owner_of_Thing <http://collection.britishmuseum.org/id/object/CME325015>. }
+      ?subject rso:Actor_refers_to_Actor <http://collection.britishmuseum.org/id/person-institution/59756>.
+    }
+  expectedCount: 5

@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "fixZoomLevel": {
+            "description": "Optional numeric zoom between 0-18 (max zoom level may vary depending on the resolution)\nto fix the inital map zoom.\nIf no fixed zoom level is provided, the zoom will be calculated on the max bounding box\nof available markers.",
+            "type": "number"
+        },
+        "id": {
+            "description": "ID for issuing component events.",
+            "type": "string"
+        },
+        "noResultTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        },
+        "query": {
+            "description": "SPARQL Select query. Query should project `lat` and `lng`, with the WKT point.\nOr `wkt` variable with WKT point literal.\n\nAlso to use default marker template one need to project `link` with IRI of\nthe corresponding resource and `description` with some short textual\nmarker description text.\n\nOne can customize color of the marker/polygon using `color` projection variable",
+            "type": "string"
+        },
+        "tupleTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "query",
+        "tupleTemplate",
+        "noResultTemplate",
+        "fixZoomLevel",
+        "id"
+    ],
+    "required": [
+        "query"
+    ],
+    "type": "object"
+}
+

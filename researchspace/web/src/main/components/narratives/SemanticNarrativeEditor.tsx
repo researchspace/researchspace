@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,8 @@
  */
 
 import * as React from 'react';
-import {createElement, PropTypes} from 'react';
+import { createElement } from 'react';
+import * as PropTypes from 'prop-types';
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap';
 import HTML5Backend from 'react-dnd-html5-backend';
 import * as _ from 'lodash';
@@ -33,10 +34,10 @@ import {
 } from '../../services/LDPAnnotationService';
 
 import Editor, { Editable, createEmptyState } from 'ory-editor-core';
-import { layoutMode } from 'ory-editor-core/lib/actions/display';
+import { layoutMode, editMode } from 'ory-editor-core/lib/actions/display';
 import { HTMLRenderer } from 'ory-editor-renderer';
-import { Trash } from 'ory-editor-ui';
-require('react-tap-event-plugin')();
+import Trash from './Trash';
+
 import slate from 'ory-editor-plugins-slate';
 import image from 'ory-editor-plugins-image';
 import video from 'ory-editor-plugins-video';
@@ -203,6 +204,7 @@ export class SemanticNarrativeEditor extends Component<Props, State> {
 
     this.loadData(this.props);
     window.addEventListener('mp-dragstart', this.onSomewhereDragStart);
+    window.addEventListener('mp-dragend', this.onSomewhereDragEnd);
   }
 
   componentWillReceiveProps(props: Props) {
@@ -213,15 +215,25 @@ export class SemanticNarrativeEditor extends Component<Props, State> {
 
   componentWillUnmount() {
     window.removeEventListener('mp-dragstart', this.onSomewhereDragStart);
+    window.removeEventListener('mp-dragend', this.onSomewhereDragEnd);
   }
 
   private onSomewhereDragStart = () => {
     this.state.editor.store.dispatch(layoutMode());
   }
 
+  private onSomewhereDragEnd = () => {
+    this.state.editor.store.dispatch(editMode());
+  }
+
   private loadData = (props: Props) => {
 
     const editor = (window as any).__singletonEditor;
+
+    // set editMode as default
+    if (!props.readOnly) {
+      editor.store.dispatch(editMode());
+    }
     if (props.annotationTarget && this.props.iri) {
       throw `Wrong configuration: Only annotationTarget or iri can be set at the same time.`;
     } else if (props.iri) {
@@ -342,29 +354,36 @@ export class SemanticNarrativeEditor extends Component<Props, State> {
     const {editor, state, isSaving} = this.state;
     return (
       <div className={CLASS_NAME}>
-        <FormGroup className='form-inline'>
-          <ControlLabel style={{marginRight: 12, marginTop: 10, float: 'left'}}>Title</ControlLabel>
-          <FormControl type='text' placeholder='Title'
-            value={this.state.label ? this.state.label : ''}
-            style={{width: 350}}
-            onChange={(e) => {
-              const newValue = (e.target as any).value;
-              this.setState({label: newValue});
-            }}
-          />
-        </FormGroup>
-        <div className='semantic-narrative-editor__toolbars'>
-          <div className='semantic-narrative-editor__toolbar semantic-narrative-editor__toolbar--first' data-flex-layout='row'>
-            <div className='semantic-narrative-editor__toolbar-title-holder'>
-              <div className='semantic-narrative-editor__toolbar-title'>Mode</div>
+        <div className='semantic-narrative-editor__title-and-toolbars'>
+          <FormGroup className='form-inline'>
+            <ControlLabel style={{marginRight: 12, marginTop: 10, float: 'left'}}>Title</ControlLabel>
+            <FormControl type='text' placeholder='Title'
+              value={this.state.label ? this.state.label : ''}
+              style={{width: 350}}
+              onChange={(e) => {
+                const newValue = (e.target as any).value;
+                this.setState({label: newValue});
+              }}
+            />
+            <Button bsSize='small' bsStyle='success' className='pull-right' onClick={this.onSubmit}>
+              {isSaving && <span>Saving... <i className="fa fa-refresh fa-spin fa-fw"></i></span>}
+              {!isSaving && (this.isEditMode() ? 'Update Page' : 'Save Page')}
+            </Button>
+          </FormGroup>
+
+          <div className='semantic-narrative-editor__toolbars'>
+            <div className='semantic-narrative-editor__toolbar semantic-narrative-editor__toolbar--first' data-flex-layout='row'>
+              <div className='semantic-narrative-editor__toolbar-title-holder'>
+                <div className='semantic-narrative-editor__toolbar-title'>Mode</div>
+              </div>
+              <ModeToggle editor={editor} />
             </div>
-            <ModeToggle editor={editor} />
-          </div>
-          <div className='semantic-narrative-editor__toolbar' data-flex-layout='row'>
-            <div className='semantic-narrative-editor__toolbar-title-holder'>
-              <div className='semantic-narrative-editor__toolbar-title'>Add</div>
+            <div className='semantic-narrative-editor__toolbar' data-flex-layout='row'>
+              <div className='semantic-narrative-editor__toolbar-title-holder'>
+                <div className='semantic-narrative-editor__toolbar-title'>Add</div>
+              </div>
+              <PluginToolbar editor={editor} />
             </div>
-            <PluginToolbar editor={editor} />
           </div>
         </div>
         <Editable id={state.id}
@@ -378,10 +397,6 @@ export class SemanticNarrativeEditor extends Component<Props, State> {
           alert: AlertType.NONE,
           message: '',
         })}
-        <Button bsSize='small' bsStyle='success' style={{marginTop:12}} className='pull-right' onClick={this.onSubmit}>
-          {isSaving && <span>Saving... <i className="fa fa-refresh fa-spin fa-fw"></i></span>}
-          {!isSaving && (this.isEditMode() ? 'Update' : 'Submit')}
-        </Button>
       </div>
     );
   }

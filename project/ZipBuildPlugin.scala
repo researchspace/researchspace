@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,16 +18,11 @@
 import sbt._
 import Keys._
 
-import java.security.MessageDigest
-import java.nio.file._
 import com.earldouglas.xwp.JettyPlugin
-import com.typesafe.sbt.SbtLicenseReport.autoImport._
-import org.apache.commons.configuration2._
-import org.apache.commons.configuration2.builder._
-import org.apache.commons.configuration2.builder.fluent._
 import scala.util.{Failure, Success, Try}
-import collection.JavaConverters._
+import java.io._
 
+import RootBuildOptions._
 
 object ZipBuildPlugin extends AutoPlugin {
   object autoImport {
@@ -41,24 +36,28 @@ object ZipBuildPlugin extends AutoPlugin {
 
   override lazy val projectSettings = Seq(
     platformZip := {
-      val log = state.value.log;
-      val config = readConfiguration(
-        new File(sys.props.get("zipConfig").get),
-        baseDirectory.value
-      );
+      val log = state.value.log
+      val config = new ZipConfiguration(
+        baseDirectory.value,
+        target.value,
+        version.value
+      )
 
-      val distdir = target.value / (config.name + "-" + version.value)
+      val distdir = config.zipDistdir
       val zipFile = target.value / (config.name +"-"+ version.value +".zip")
 
       // delete old artifacts
-      IO.delete(zipFile)
+      val files = target.value.listFiles().filter(_.isFile).toList.filter { file =>
+        file.getName.endsWith("zip")
+      }
+      files.foreach(IO.delete)
       IO.delete(distdir)
 
-      val zipFolder = downloadAndUnzipJetty(distdir, log).get
+      val jettyFolderTemp = downloadAndUnzipJetty(distdir, log).get
 
       // check that jetty folder is really where we expect it to be
       val jettyFolder = distdir.listFiles.find(_.isDirectory).get;
-      if(!jettyFolder.getName().startsWith("jetty-distribution-")) {
+      if(!jettyFolder.getName().equals("jetty-distribution")) {
           throw new IllegalStateException("Can not find jetty distribution folder.");
       }
       val platformWar = Keys.`package`.value
@@ -70,24 +69,23 @@ object ZipBuildPlugin extends AutoPlugin {
       val jettyWebappRoot = new File(jettyFolder, "./webapps/ROOT");
       IO.unzip(platformWar, jettyWebappRoot);
       val appsDir = distdir / "apps";
-      val configDir = distdir / "config";
-      val dateTemplatesDir = distdir / "data/templates";
+      val configDir = distdir / "runtime-data/config";
+
+      val jettyResources = new File(jettyFolder, "resources");
 
       log.info("Create config files");
-      IO.createDirectories(Seq(distdir, appsDir, configDir, dateTemplatesDir))
-      IO.touch(Seq(
-        (configDir / "ui.prop")
-      ));
+      IO.createDirectories(Seq(distdir, appsDir, configDir, jettyResources))
 
-      IO.copyFile(config.namespaces, new File(configDir,"namespaces.prop"));
-      IO.copyFile(config.environment, new File(configDir,"environment.prop"));
-      IO.copyFile(config.global, new File(configDir,"global.prop"));
-      IO.copyFile(config.shiro, new File(configDir,"shiro.ini"));
+      IO.copyFile(config.global, new File(configDir, "global.prop"))
+      IO.copyFile(config.shiro, new File(configDir, "shiro.ini"))
 
-      log.info("Copy template files")
-      config.templates.foreach(
-        IO.copyDirectory(_, dateTemplatesDir, true)
-      )
+      IO.copyFile(config.jetty, new File(distdir,"jetty"));
+
+      IO.copyFile(
+        new File("./project/zip-dist/jetty-logging.properties"),
+        new File(jettyResources, "jetty-logging.properties")
+      );
+
 
       val startShSource = scala.io.Source.fromFile("./project/zip-dist/start.sh.tpl")
       val startShContent = try startShSource.mkString finally startShSource.close();
@@ -108,22 +106,23 @@ object ZipBuildPlugin extends AutoPlugin {
       IO.copyFile(new File(jettyWebappRoot, "THIRDPARTY.html"), new File(distdir,"THIRDPARTY.html"));
       IO.copyFile(new File(jettyWebappRoot, "LICENSE.txt"), new File(distdir,"LICENSE.txt"));
 
-      handleDatabase(log, config, jettyFolder, distdir)
+      createBlazegraphBundle(log, config, jettyFolder.getName, distdir)
+      createRdf4NativeBundle(log, config, jettyFolder.getName, distdir)
 
-      log.info("Create final platform ZIP file");
-      def entries(f: File):List[File] = f :: (if (f.isDirectory) IO.listFiles(f).toList.flatMap(entries(_)) else Nil)
-      IO.zip(entries(distdir).map(d => (d, d.getAbsolutePath.substring(distdir.getParent.length))), zipFile)
+      log.info("Create final platform ZIP file")
+      packZip(distdir, zipFile)
       zipFile
     },
     platformZip := (platformZip dependsOn Keys.`package`).value
   )
 
   def downloadAndUnzipJetty(targetFolder: File, log: Logger): Try[File] = {
-    val jettyVersion = "9.2.13.v20150730";
+    val jettyVersion = "9.4.12.v20180830";
     log.info("Downloading Jetty "+ jettyVersion);
     val jettyUrl = "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/"+jettyVersion+"/jetty-distribution-"+jettyVersion+".zip"
 
     val jettyFile = new File(System.getProperty("java.io.tmpdir"),"jetty"+jettyVersion+".zip");
+    log.info("Trying to find jetty in " + jettyFile);
     if(java.nio.file.Files.notExists(jettyFile.toPath())) {
       log.info("Jetty zip distribution file does not exist, downloading from: " +jettyUrl);
       IO.download(new URL(jettyUrl), jettyFile);
@@ -136,22 +135,28 @@ object ZipBuildPlugin extends AutoPlugin {
       case Nil => Failure(new IllegalStateException(s"Jetty could not be downloaded or contains no files"))
       case _ => {
         log.info("Unzipped Jetty zip distribution to:" + targetFolder.getAbsolutePath());
+        log.info("Renaming folder to jetty-distribution");
+        var finalDistributionFolder = new File(targetFolder, "jetty-distribution");
+        IO.move(new File(targetFolder, "jetty-distribution-"+jettyVersion),  finalDistributionFolder )
         return Success(targetFolder)
       }
     }
   }
 
-  def handleDatabase(log: Logger, config: ZipConfiguration, jettyFolder: File, distDir: File) {
-    config.database match {
-      case "blazegraph" => handleBlazegraph(log, config, jettyFolder, distDir)
-      case "native" => handleNative(config)
-    }
-  }
+  def createBlazegraphBundle(log: Logger, config: ZipConfiguration, jettySubFolderName: String, distDir: File) = {
+    val blazegraphTargetZipFile = config.blazegraphTargetZipFile
+    val zipDistdir = config.blazegraphZipDistDir
+    val jettyFolder = new File(zipDistdir, jettySubFolderName)
 
-  def handleBlazegraph(log: Logger, config: ZipConfiguration, jettyFolder: File, distDir: File) {
+    IO.delete(blazegraphTargetZipFile)
+    IO.delete(zipDistdir)
+
+    IO.copyDirectory(config.zipDistdir, zipDistdir)
+
     val path = config.blazegraphUrl.split("/");
     val blazegraphVersion = path(path.length - 1);
     val blazegraphWar = new File(System.getProperty("java.io.tmpdir"), blazegraphVersion)
+    log.info("Trying to find blazegraph in " + blazegraphWar);
     if(java.nio.file.Files.notExists(blazegraphWar.toPath())) {
       log.info("Downloading blazegraph: " + config.blazegraphUrl + " to "+blazegraphWar.getAbsolutePath);
       IO.download(new URL(config.blazegraphUrl), blazegraphWar);
@@ -160,52 +165,87 @@ object ZipBuildPlugin extends AutoPlugin {
     }
     log.info("Unzip blazegraph war to jetty folder.");
     IO.unzip(blazegraphWar, new File(jettyFolder, "./webapps/blazegraph"));
-    IO.copyFile(new File("./project/zip-dist/LICENSE_BLAZEGRAPH.txt"), new File(distDir,"LICENSE_BLAZEGRAPH.txt"));
+    IO.copyFile(new File("./project/zip-dist/LICENSE_BLAZEGRAPH.txt"), new File(zipDistdir,"LICENSE_BLAZEGRAPH.txt"));
 
     log.info("Copy RWStore.properties for blazegraph.");
-    IO.copyFile(config.blazegraphProps, new File(distDir,"RWStore.properties"));
+    IO.copyFile(config.blazegraphProps, new File(zipDistdir,"RWStore.properties"));
+
+    log.info("Set sparqlEndpoint to local blazegraph in environment.prop")
+    val configDir = new File(zipDistdir, "runtime-data/config");
+    IO.touch(Seq(
+        (configDir / "environment.prop")
+    ));
+    val bw = new BufferedWriter(new FileWriter(new File(configDir ,"environment.prop")))
+    bw.write("sparqlEndpoint=http://127.0.0.1:10214/blazegraph/sparql")
+    bw.close()
+
+    log.info("Create platform blazegraph ZIP bundle")
+    packZip(zipDistdir, blazegraphTargetZipFile)
   }
 
-  def handleNative(config: ZipConfiguration) {}
+  def createRdf4NativeBundle(log: Logger, config: ZipConfiguration, jettySubFolderName: String, distDir: File) = {
+    val rdf4jTargetZipFile = config.rdf4jTargetZipFile
+    val zipDistdir = config.rdf4jZipDistDir
 
-  def readConfiguration(file: File, base: File) = {
-    Thread.currentThread().setContextClassLoader(ZipBuildPlugin.getClass.getClassLoader)
-    val params = new Parameters();
-    val builder =
-      new FileBasedConfigurationBuilder[FileBasedConfiguration](
-        classOf[org.apache.commons.configuration2.PropertiesConfiguration]
-      )
-      .configure(params.fileBased().setFile(file))
-    new ZipConfiguration(builder.getConfiguration(), base);
+    IO.delete(rdf4jTargetZipFile)
+    IO.delete(zipDistdir)
+
+    IO.copyDirectory(config.zipDistdir, zipDistdir)
+
+    val repositoryDir = new File(zipDistdir, "runtime-data/config/repositories");
+    IO.copyFile(new File(config.zipDistFileTemplates, "default-rdf4j.ttl"), new File(repositoryDir,"default.ttl"));
+
+    log.info("Create platform rdf4j native store ZIP bundle")
+    packZip(zipDistdir, rdf4jTargetZipFile)
+  }
+
+  private def packZip(zipDistdir: File, outputZipPath: File) = {
+    def entries(f: File): List[File] = f :: (if (f.isDirectory) IO.listFiles(f).toList.flatMap(entries) else Nil)
+    IO.zip(
+      entries(zipDistdir).map(entryFile => {
+        val relativePath = zipDistdir.getParentFile.relativize(entryFile.getAbsoluteFile).get
+        (entryFile, relativePath.toString)
+      }),
+      outputZipPath
+    )
   }
 }
 
 class ZipConfiguration(
-  private val configuration: org.apache.commons.configuration2.Configuration,
-  private val base: File
+  private val base: File,
+  private val targetDir: File,
+  private val version: String
 ) {
+  private val configuration = zipBundleOptions
   def name = configuration.getString("name", "platform")
-  def database = configuration.getString("database", "blazegraph")
+
+  def zipDistdir = targetDir/ (name + "-" + version)
+
+  /*
+   *  Blazegraph
+   */
   def blazegraphUrl = configuration.getString(
     "blazegraphUrl",
     "https://oss.sonatype.org/content/repositories/snapshots/com/blazegraph/blazegraph-war/2.2.0-SNAPSHOT/blazegraph-war-2.2.0-20160908.003514-6.war"
   )
-  def blazegraphProps =
-    resolveFile(configuration.getString("blazegraphProps", "./project/zip-dist/RWStore.properties"))
-  def templates =
-    configuration.getList(classOf[String], "templates").asScala.map(resolveFile)
+  def blazegraphProps = resolveFile(configuration.getString("blazegraphProps", "./project/zip-dist/RWStore.properties"))
+  val blazegraphZipDistDir = new File(zipDistdir + "-blazegraph-bundle")
+  val blazegraphTargetZipFile = targetDir / (name +"-"+ version +"-blazegraph-bundle.zip")
+
+  /*
+   *  RDF4J native store
+   */
+  val rdf4jZipDistDir = new File(zipDistdir + "-rdf4j-bundle")
+  val rdf4jTargetZipFile = targetDir / (name +"-"+ version +"-rdf4j-bundle.zip")
+
+  def zipDistFileTemplates = resolveFile("./project/zip-dist/")
+
   def global = resolveFile(configuration.getString("global", "./project/zip-dist/global.prop"))
-  def ui = resolveFile(configuration.getString("ui", "./project/zip-dist/ui.prop"))
-  def environment = resolveFile(
-    configuration.getString("environment", "./project/zip-dist/environment.prop")
-  )
-  def namespaces = resolveFile(
-    configuration.getString("namespaces", "./project/zip-dist/environment.prop")
-  )
-  def shiro = resolveFile(configuration.getString("shiro", "./project/zip-dist/shiro.ini"))
+  def shiro = resolveFile(configuration.getString("shiro", "./metaphacts-platform/app/config/shiro.ini"))
+  def jetty = resolveFile(configuration.getString("jetty", "./project/zip-dist/jetty"))
 
   def readme = resolveFile(configuration.getString("readme", "./project/zip-dist/README.txt"))
-  def jettyVersion = configuration.getString("jettyVersion", "9.4.5.v20170502")
+  def jettyVersion = configuration.getString("jettyVersion", "9.4.12.v20180830")
 
   private def resolveFile(file: String) = new File(base, file)
 }

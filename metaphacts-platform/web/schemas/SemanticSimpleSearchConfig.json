@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "defaultQuery": {
+            "description": "SPARQL SELECT query string. If present will be used to show default suggestions without the need for the user to type anything.",
+            "type": "string"
+        },
+        "escapeLuceneSyntax": {
+            "default": true,
+            "description": "A flag determining whether any special Lucene syntax must be escaped.\nBy default Lucene syntax is escaped and user input is tokenized into words prefixed by `*`.\nE.g for the search `Hello World` -> `Hello* World*`.\nWhen `false` user input is propagated unchanged to the query.",
+            "type": "boolean"
+        },
+        "minSearchTermLength": {
+            "default": 3,
+            "description": "Minimum number of input characters that triggers the search.",
+            "type": "number"
+        },
+        "placeholder": {
+            "description": "Input placeholder.",
+            "type": "string"
+        },
+        "query": {
+            "description": "SPARQL SELECT query string. Needs to have a variable named as `__token__`(can be customized with searchTermVariable) that will be replaces with the user input.",
+            "type": "string"
+        },
+        "resourceBindingName": {
+            "description": "Name of the binding being used for result.",
+            "type": "string"
+        },
+        "searchTermVariable": {
+            "default": "__token__",
+            "description": "User input variable name.",
+            "type": "string"
+        },
+        "template": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for suggestion item.",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "resourceBindingName",
+        "template",
+        "query",
+        "defaultQuery",
+        "searchTermVariable",
+        "minSearchTermLength",
+        "placeholder",
+        "escapeLuceneSyntax"
+    ],
+    "required": [
+        "query"
+    ],
+    "type": "object"
+}
+

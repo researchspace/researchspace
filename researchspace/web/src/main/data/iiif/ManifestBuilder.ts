@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,23 +17,26 @@
  */
 
 import * as Kefir from 'kefir';
-import * as jsonld from 'jsonld';
 import * as _ from 'lodash';
 
-import { Rdf } from 'platform/api/rdf';
-import { SparqlClient } from 'platform/api/sparql';
+import { Rdf, vocabularies } from 'platform/api/rdf';
+import * as JsonLd from 'platform/api/rdf/formats/JsonLd';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+import { ConfigHolder } from 'platform/api/services/config-holder';
+import { getLabel, getLabels } from 'platform/api/services/resource-label';
 
 import { OARegionAnnotation } from './LDPImageRegionService';
-import { JsonLDUtils } from './JsonLDUtils';
 
-const manifestFrame  = require('./ld-resources/manifest-frame.json');
-const iiifContext = require('./ld-resources/iiif-context.json');
+const MANIFEST_FRAME  = require('./ld-resources/manifest-frame.json');
+const IIIF_PRESENTATION_CONTEXT = require('./ld-resources/iiif-context.json');
+
+const { xsd, rdf } = vocabularies;
 
 export interface Manifest {
   __manifestBrand: void;
 }
 
-type CreateManifestParams = {
+export type CreateManifestParams = {
   baseIri: Rdf.Iri;
   imageIri: Rdf.Iri;
   imageServiceUri: string;
@@ -48,62 +51,48 @@ export class ManifestBuildingError extends Error {
 }
 
 export function createManifest(
-  params: CreateManifestParams, repositories: Array<string>
+  params: Array<CreateManifestParams>
 ): Kefir.Property<Manifest> {
-  return findManifesInRepositories(params, repositories)
+  return findManifestInRepository(params)
     .mapErrors(err =>  new ManifestBuildingError('Failed fetching manifest data', err))
     .flatMap(processJsonResponse).toProperty();
 }
 
-function findManifesInRepositories(
-  params: CreateManifestParams, repositories: Array<string>
-) {
+function findManifestInRepository(params: Array<CreateManifestParams>) {
   // 1. prepare sparql construct
-  const sparql = constructSparql(params);
-  JsonLDUtils.registerLocalLoader();
-  // 2. execute sparql, get json-ld
-
-  const requests =
-    repositories.map(
-      repository =>
-        SparqlClient.stringStreamAsJson(
-          SparqlClient.sendStreamSparqlQuery(sparql, 'application/ld+json', {context: {repository}})
-        )
-    );
-  return Kefir.combine(requests).flatMap(
-    responses => {
-      const manifests = _.filter(responses, response => !_.isEmpty(response));
-      if (_.isEmpty(manifests)) {
-        return Kefir.constantError<any>(`No manifests for the image/region ${params.imageIri}`);
-      } else if (manifests.length > 1) {
-        return Kefir.constantError<any>(`Multiple manifests for image/regions ${params.imageIri}`);
-      } else {
-        return Kefir.constant(manifests[0]);
+  return constructSparql(params).flatMap(sparql => {
+    // 2. execute sparql, get json-ld
+    return SparqlClient.sendSparqlQuery(sparql, 'application/ld+json')
+      .map(res => JSON.parse(res));
+  }).flatMap(
+    manifest => {
+      if (_.isEmpty(manifest)) {
+        return Kefir.constantError<any>(
+          `No manifests for the image/region ${params.map(({imageIri}) => imageIri).join(', ')}`
+        );
       }
+      return Kefir.constant(manifest);
     }
   );
 }
 
-function processJsonResponse(response: {}) {
-  return Kefir.fromNodeCallback<Manifest>(cb => {
-    // 3. frame and compact json-ld
-    jsonld.frame(response, manifestFrame, (frameError, framed) => {
-      if (frameError) {
-        cb(new ManifestBuildingError('Failed to frame JSON-LD', frameError));
-        return;
-      }
-      jsonld.compact(framed, iiifContext, (compactError, compacted) => {
-        if (compactError) {
-          cb(new ManifestBuildingError('Failed to compact JSON-LD', compactError));
-          return;
-        }
-        cb(null, compacted);
-      });
-    });
+function processJsonResponse(response: {}): Kefir.Stream<Manifest> {
+  const documentLoader = JsonLd.makeDocumentLoader({
+    overrideContexts: {
+      'http://iiif.io/api/presentation/2/context.json': IIIF_PRESENTATION_CONTEXT,
+    }
   });
+  return JsonLd.frame(response, MANIFEST_FRAME, {documentLoader})
+    .mapErrors(frameError => new ManifestBuildingError('Failed to frame JSON-LD', frameError))
+    .flatMap(framed => {
+      return JsonLd.compact(framed, MANIFEST_FRAME, {documentLoader})
+        .mapErrors(compactError =>
+          new ManifestBuildingError('Failed to compact JSON-LD', compactError))
+    });
 }
 
-function constructSparql(params: CreateManifestParams) {
+function constructSparql(params: Array<CreateManifestParams>): Kefir.Property<string> {
+  const baseIri = params[0].baseIri;
   const sparql = `PREFIX as: <http://www.w3.org/ns/activitystreams#>
 PREFIX cnt: <http://www.w3.org/2011/content#>
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -127,7 +116,7 @@ CONSTRUCT {
 ?manifestURI a sc:Manifest ;
 rdfs:label ?displayLabel;
 sc:attributionLabel "Provided by the The British Museum" ;
-sc:hasSequences ( ?sequenceURI ) ;
+sc:hasSequences ?sequenceURI;
 dc:description ?displayLabel;
 dcterms:within ?object.
 
@@ -143,32 +132,39 @@ oa:hasTarget ?canvasURI ;
 oa:motivatedBy sc:painting .
 
 ?sequenceURI a sc:Sequence ;
-sc:hasCanvases ( ?canvasURI ) .
+sc:hasCanvases ?canvasURI .
 
 ?canvasURI a sc:Canvas ;
-rdfs:label "Illustrated book. 2 vols." ;
-sc:hasImageAnnotations ( ?imageannoURI ).
+rdfs:label ?label ;
+sc:hasImageAnnotations ?imageannoURI .
 
-${params.canvasSize ? (`?canvasURI ` +
-  `exif:width "${params.canvasSize.width}"^^xsd:integer ; ` +
-  `exif:height "${params.canvasSize.height}"^^xsd:integer`) : ''}
-
+?canvasURI exif:width ?canvasWidth;
+exif:height ?canvasHeight.
 } WHERE {
- {
-   # workaround for the situation when we have multiple rso:displayLabel
-   SELECT * {
-     BIND(${params.imageIri} as ?img)
-     BIND(STR(${params.baseIri}) as ?baseStr)
-     #find object and it's label
-     ?img rso:displayLabel ?displayLabel.
-     BIND(<${params.imageServiceUri}> as ?service)
-     BIND(URI(CONCAT(?baseStr, "/manifest.json")) as ?manifestURI)
-     BIND(URI(CONCAT(?baseStr, "/sequence")) as ?sequenceURI)
-     BIND(URI(CONCAT(?baseStr, "")) as ?canvasURI)
-     BIND(URI(CONCAT(?baseStr, "/imageanno/anno-1")) as ?imageannoURI)
-     BIND(URI(CONCAT(?baseStr, "/imgresource")) as ?imageResourceURI)
-  } LIMIT 1
- }
+  BIND(STR(${baseIri}) as ?baseStr)
+  BIND(URI(CONCAT(?baseStr, "/manifest.json")) as ?manifestURI)
+  BIND(URI(CONCAT(?baseStr, "/sequence")) as ?sequenceURI)
+  BIND(STR(?imageIri) as ?imageStr)
+  BIND(URI(CONCAT(?imageStr, "")) as ?canvasURI)
+  BIND(URI(CONCAT(?imageStr, "/imageanno/anno-1")) as ?imageannoURI)
+  BIND(URI(CONCAT(?imageStr, "/imgresource")) as ?imageResourceURI)
 }`;
-  return sparql;
+  const iris = params.map(({imageIri}) => imageIri);
+  const queryingDisplayLabel = getLabel(baseIri);
+  const queryingImagesLabels = getLabels(iris);
+  return Kefir.zip([queryingDisplayLabel, queryingImagesLabels]).flatMap(
+    ([displayLabel, labels]) => {
+      const parameters = params.map(param => ({
+        displayLabel: Rdf.literal(displayLabel),
+        imageIri: param.imageIri,
+        service: Rdf.iri(param.imageServiceUri),
+        canvasWidth: Rdf.literal(param.canvasSize.width.toString(), xsd.integer),
+        canvasHeight: Rdf.literal(param.canvasSize.height.toString(), xsd.integer),
+        label: Rdf.literal(labels.get(param.imageIri)),
+      }));
+      return SparqlClient.prepareQuery(sparql, parameters);
+    }
+  ).map(query =>
+    SparqlUtil.serializeQuery(query)
+  ).toProperty();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,13 +16,21 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-var path = require("path");
-var webpack = require("webpack");
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var ProgressBarPlugin = require('progress-bar-webpack-plugin');
-const ThemePlugin = require('./ThemePlugin');
+const path = require("path");
+const webpack = require("webpack");
+const AssetsPlugin = require('assets-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const resolveTheme = require('./theme');
 
-module.exports = function(buildConfig, defaults) {
+const devMode = process.env.NODE_ENV !== 'production';
+
+/**
+ * @param {ReturnType<import('./defaults')>} defaults
+ * @returns {import('webpack').Configuration}
+ */
+module.exports = function(defaults) {
+    const {themeDir} = resolveTheme(defaults);
     return {
         entry: {
             'basic_styling': ['basic-styles.scss'],
@@ -31,8 +39,9 @@ module.exports = function(buildConfig, defaults) {
                 'react-bootstrap', 'react-select', 'kefir', 'data.maybe', 'immutable', 'handlebars',
                 'html-to-react', 'object-assign', 'dom-serializer', 'basil.js', 'moment',
                 'griddle-react', 'urijs', 'he', 'history', 'js-cookie', 'react-notification-system',
-                'core.lambda', 'data.either', 'document-register-element', 'uuid', 'es6-promise',
-                'tslib', 'js-beautify'
+                'core.lambda', 'data.either', 'uuid', 'es6-promise', 'tslib',
+                '@webcomponents/custom-elements',
+                '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js',
             ]
         },
         module: {
@@ -40,15 +49,15 @@ module.exports = function(buildConfig, defaults) {
                 test: /\.css$/,
                 loader: 'style!css?-restructuring!autoprefixer-loader'
             }, {
-                test: /\.scss$/,
-                loader: ExtractTextPlugin.extract({
-                    fallback: "style-loader",
-                    use: [{
+              test: /\.scss$/,
+              use: [{
+                    loader: MiniCssExtractPlugin.loader
+                  },{
                         loader: 'css-loader'
                     }, {
                         loader: 'sass-loader'
-                    }]
-                })
+                    }
+                   ]
             }, {
                 test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "url-loader?limit=10000&mimetype=application/font-woff&name=fonts/[name]-[hash].[ext]"
@@ -65,31 +74,52 @@ module.exports = function(buildConfig, defaults) {
         },
         resolve: {
             modules: [path.resolve(defaults.METAPHACTORY_ROOT_DIR, 'node_modules')],
-            alias: Object.assign({
-                _: 'lodash',
+            alias: Object.assign(
+              defaults.ALIASES,
+              {
+                'platform-theme': themeDir,
+                // the override here is for unknown (?) reasons (`basic-styles.scss` alias already defined
+                // differently in `metaphacts-platform/web/platform-web-build.json`)
                 'basic-styles.scss': path.join(defaults.METAPHACTORY_DIRS.src, 'styling/bootstrap.scss'),
+                _: 'lodash',
                 'basil.js': 'basil.js/src/basil.js',
                 'handlebars': 'handlebars/dist/handlebars.js'
-            }, defaults.EXTENSION_ALIASES)
+              }
+            )
         },
 
         output: {
             path: path.join(__dirname, "assets", "no_auth"),
             filename: "dll.[name].js",
-            library: "[name]"
+            library: "[name]",
+            // set diffrent namespace for source maps; otherwise it defaults to `output.library`
+            // which includes placeholders like [name] and produces invalid source URLs like this
+            //   webpack://[name]C:/.../node_modules/file.js
+            // and these invalid URLs causes Firefox to print way too many warnings
+            devtoolNamespace: 'metaphacts-dll'
         },
         plugins: [
-            new ThemePlugin(buildConfig, defaults),
-            new ExtractTextPlugin("basic-styles.css"),
-            new webpack.DllPlugin({
-                path: path.join(__dirname, "assets/dll-manifest/[name]-manifest.json"),
-                name: "[name]",
-                context: defaults.METAPHACTORY_DIRS.src
-            }),
-            new webpack.optimize.UglifyJsPlugin({
-                comments: false
-            }),
-            new ProgressBarPlugin()
+          new MiniCssExtractPlugin({
+            filename: devMode ? 'basic-styles.css' : 'basic-styles.[hash].css',
+            chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
+          }),
+          new webpack.DllPlugin({
+            path: path.join(__dirname, "assets/dll-manifest/[name]-manifest.json"),
+            name: "[name]",
+            context: defaults.METAPHACTORY_DIRS.src
+          }),
+          /*
+           * Generate json files with bundle - hashed bundle file names,
+           * so we can properly refer to bundles in main.hbs and login.hbs files
+           */
+          new AssetsPlugin({
+            // TODO: use this generated file even in local dev builds
+            filename: "dll-manifest.json",
+            path: defaults.DIST,
+            fullPath: true
+          }),
+          // @ts-ignore
+          new ProgressBarPlugin()
         ],
         stats: {
             colors: true,
@@ -97,7 +127,6 @@ module.exports = function(buildConfig, defaults) {
             version: false,
             timings: false,
             assets: false,
-            chunks: false,
             modules: false,
             reasons: false,
             children: false,

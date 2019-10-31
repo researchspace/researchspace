@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,8 @@
  * @author Denis Ostapenko
  */
 
-import { Component, DOM as D, Props, createFactory, createElement, MouseEvent } from 'react';
+import { Component, Props, createFactory, createElement, MouseEvent } from 'react';
+import * as D from 'react-dom-factories';
 
 import { TemplateItem } from 'platform/components/ui/template';
 import { Spinner } from 'platform/components/ui/spinner';
@@ -44,6 +45,7 @@ export interface FacetValueProps extends Props<FacetValueComponent> {
 }
 
 interface FacetValueState {
+  selected: boolean;
   isLoading: boolean
 }
 
@@ -54,16 +56,18 @@ interface FacetValueState {
  * for other facet value kinds, e.g. date slider etc.
  */
 export class FacetValueComponent extends Component<FacetValueProps, FacetValueState> {
-  constructor() {
-    super();
+  constructor(props: FacetValueProps, context: any) {
+    super(props, context);
     this.state = {
+      selected: props.facetValue.selected,
       isLoading: false,
     };
   }
 
-  componentWillReceiveProps(newProps) {
+  componentWillReceiveProps(newProps: FacetValueProps) {
     this.setState({
-      isLoading: false,
+      selected: newProps.facetValue.selected,
+      isLoading: false
     });
   }
 
@@ -90,7 +94,7 @@ export class FacetValueComponent extends Component<FacetValueProps, FacetValueSt
           {
             type: 'checkbox',
             className: 'checkbox',
-            defaultChecked: this.props.facetValue.selected,
+            checked: this.state.selected,
           }
         ),
         this.renderCheckboxLabel(),
@@ -107,7 +111,8 @@ export class FacetValueComponent extends Component<FacetValueProps, FacetValueSt
     // The idea is to trigger it only for checkbox element.
     if (event.target['tagName'] === 'INPUT') {
       this.setState({
-        isLoading: true,
+        selected: (event.target as HTMLInputElement).checked,
+        isLoading: true
       });
       if (this.props.facetValue.selected) {
         this.props.actions.deselectFacetValue(this.props.facetValue.entity);

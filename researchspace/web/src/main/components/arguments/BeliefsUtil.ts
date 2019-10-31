@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@ import * as Kefir from 'kefir';
 import * as uuid from 'uuid';
 import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
+import * as SparqlJs from 'sparqljs';
 
 import { Rdf, vocabularies } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -176,7 +177,9 @@ function getBeliefsForAssertion(assertionIri: Rdf.Iri): Kefir.Property<Array<Rdf
     (graph: Rdf.Graph) =>
       _.map(
         Rdf.getValuesFromPropertyPath<Rdf.Iri>([rso.PX_asserts], Rdf.pg(assertionIri, graph)),
-        belief => Rdf.pg(belief, Rdf.graph(Rdf.triple(belief, rso.PX_premise_assertion, assertionIri)))
+        belief => Rdf.pg(belief, Rdf.graph([
+          Rdf.triple(belief, rso.PX_premise_assertion, assertionIri),
+        ]))
       )
   );
 }
@@ -197,12 +200,12 @@ function savePropositionSet(
 
 function serializePropSet(belief: Belief, proposition: PropositionSet): Rdf.Graph {
   const propositionSetIri = Rdf.iri('');
-  return Rdf.graph(
+  return Rdf.graph([
     Rdf.triple(propositionSetIri, vocabularies.rdf.type, crminf.I4_Proposition_Set),
     Rdf.triple(propositionSetIri, vocabularies.rdfs.label, Rdf.literal('Proposition Set')),
-    ...proposition
-  );
-};
+    ...proposition,
+  ]);
+}
 
 function createBeliefIri(belief: Belief): Rdf.Iri {
   return belief.iri.getOrElse(
@@ -214,13 +217,10 @@ function createPropositionIri(beliefIri: Rdf.Iri): Rdf.Iri {
   return Rdf.iri(`${beliefIri.value}/proposition`);
 }
 
-
-//TODO
-
 export function createBeliefLabel(belief: Belief): string {
   // const start = belief. === 'Agree'
   //   ? 'Agree with proposition ' : 'Disagree with proposition ';
   // const propositionSetLabel = createPropositionSetLabel(subject, field, belief);
   // return `${start} "${propositionSetLabel}"`;
-  return 'Belief'
+  return 'Belief';
 }

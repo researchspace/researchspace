@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,10 +18,11 @@
 
 import * as React from 'react';
 
-import Draggable from 'ory-editor-ui/lib/Toolbar/Draggable';
+import { Button } from 'react-bootstrap';
+import Draggable from './Draggable';
 import Avatar from 'material-ui/Avatar';
-import ListItem from 'material-ui/List/ListItem';
 import RcTooltip from 'rc-tooltip';
+import * as _ from 'lodash';
 
 export const VisualisePluginBlacklist = ['metaphactory/content/resource'];
 
@@ -60,29 +61,26 @@ export class Item extends React.Component<ItemProps, ItemState> {
 
     let MyDraggable = Draggable(plugin.name);
 
-    return <ListItem leftIcon={<span
-          className='ory-toolbar-item-drag-handle-button'
-          onMouseEnter={this.onMouseEnter}
-          onMouseLeave={this.onMouseLeave}
-          onMouseDown={this.onMouseLeave}
-      >
-      <MyDraggable insert = {insert}>
-        <RcTooltip
-          visible={this.state.tooltipVisible}
-          placement='bottomLeft'
-          overlay={<span>Drag me!</span>}
-        >
-        <div style={{display: 'flex', alignItems: 'center'}}>
-          <span className='draggable-gripper'></span>
-          <Avatar icon={plugin.IconComponent} className = 'ory-toolbar-item-drag-handle'></Avatar>
-        </div>
-        </RcTooltip>
-      </MyDraggable>
-      </span>}
-      primaryText = {plugin.text}
-      secondaryText = ''
-      secondaryTextLines = {2}
-      disabled = {true}
-      className = 'ory-toolbar-item'></ListItem>;
+    return <Button onMouseEnter={this.onMouseEnter}
+                   onMouseLeave={this.onMouseLeave}
+                   onMouseDown={this.onMouseLeave}
+                   className='ory-toolbar-item-drag-handle-button'>
+      <span>
+        <MyDraggable insert = {insert}>
+          <RcTooltip
+            visible={this.state.tooltipVisible}
+            placement='bottomLeft'
+            align={{'offset': [0, 12]}}
+            overlay={<span>Drag me!</span>}
+          >
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <span className='draggable-gripper'></span>
+            <Avatar icon={plugin.IconComponent} className = 'ory-toolbar-item-drag-handle'></Avatar>
+            <span className='ory-toolbar-item-plugin-text'>{plugin.text}</span>
+          </div>
+          </RcTooltip>
+        </MyDraggable>
+      </span>
+    </Button>;
   }
 }

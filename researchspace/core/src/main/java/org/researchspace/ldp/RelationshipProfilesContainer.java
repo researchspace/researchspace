@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,6 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.google.common.base.Throwables;
@@ -36,6 +35,7 @@ import com.metaphacts.data.rdf.PointedGraph;
 import com.metaphacts.data.rdf.container.AbstractLDPContainer;
 import com.metaphacts.data.rdf.container.LDPR;
 import com.metaphacts.data.rdf.container.RootContainer;
+import com.metaphacts.repository.MpRepositoryProvider;
 import com.metaphacts.vocabulary.LDP;
 
 /**
@@ -49,8 +49,8 @@ public class RelationshipProfilesContainer extends AbstractLDPContainer {
     @Inject
     private Provider<RootContainer> rootContainer;
     
-    public RelationshipProfilesContainer(IRI iri, Repository repository) {
-        super(iri, repository);
+    public RelationshipProfilesContainer(IRI iri, MpRepositoryProvider repositoryProvider) {
+        super(iri, repositoryProvider);
     }
     
     public void initialize() {
@@ -80,5 +80,10 @@ public class RelationshipProfilesContainer extends AbstractLDPContainer {
     		);
     	}
     	return container;
+    }
+    
+    @Override
+    public IRI getResourceType() {
+        return LDP.Resource;
     }
 }

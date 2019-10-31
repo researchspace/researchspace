@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,14 +16,14 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { DOM as D, Component, createFactory, createElement, MouseEvent, KeyboardEvent } from 'react';
+import { Component, createFactory, createElement, MouseEvent, KeyboardEvent } from 'react';
+import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as classnames from 'classnames';
 import * as Kefir from 'kefir';
-import * as uuid from 'uuid';
 import * as assign from 'object-assign';
 import * as _ from 'lodash';
-import * as sparqljs from 'sparqljs';
+import * as SparqlJs from 'sparqljs';
 
 import {
   Editor as EditorComponent, EditorState, RichUtils, CompositeDecorator, ContentState, Entity, Modifier,
@@ -121,7 +121,7 @@ interface SemanticBlockData {
 const findTemplatesForUri = (
   dropTemplateConfig: DropTemplateConfigItem[], uri: string
 ): Kefir.Property<DropTemplateConfigItem[]> => {
-  const query = (new sparqljs.Parser()).parse(`
+  const query = new SparqlJs.Parser().parse(`
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     SELECT ?type ?label ?lang WHERE {
       <${uri}> a ?type .
@@ -332,7 +332,7 @@ class AnnotationSemanticEditorComponent extends
   notifyMount(entityKey: string, ptr: SemanticBlock) {
     if (entityKey === this.state.waitingForSemanticWithEntityKey) {
       this.props.editor.changeCurrentSemanticBlock(ptr);
-      this.setState(state => { state.waitingForSemanticWithEntityKey = null; return state; });
+      this.setState({waitingForSemanticWithEntityKey: null});
     }
   }
 
@@ -340,7 +340,7 @@ class AnnotationSemanticEditorComponent extends
     let data = this.props.semanticToEdit.getData();
     data.selectedTemplateIndex = 'inline';
     const newInlineEntityKey = Entity.create('SEMANTIC-INLINE', 'MUTABLE', data);
-    this.setState(state => { state.waitingForSemanticWithEntityKey = newInlineEntityKey; return state; }, () => {
+    this.setState({waitingForSemanticWithEntityKey: newInlineEntityKey}, () => {
       const {editor} = this.props;
       const {block} = this.props.semanticToEdit.props;
       const initialState = editor.state.editorState;
@@ -369,7 +369,7 @@ class AnnotationSemanticEditorComponent extends
     let data = this.props.semanticToEdit.getData();
     data.selectedTemplateIndex = newIndex;
     const newBlockEntityKey = Entity.create('SEMANTIC-BLOCK', 'IMMUTABLE', data);
-    this.setState(state => { state.waitingForSemanticWithEntityKey = newBlockEntityKey; return state; }, () => {
+    this.setState({waitingForSemanticWithEntityKey: newBlockEntityKey}, () => {
       const {editor} = this.props;
       const {entityKey} = this.props.semanticToEdit.props;
       const initialState = editor.state.editorState;
@@ -584,8 +584,8 @@ class AnnotationTextEditorComponent extends Component<Props, State> {
         initState = convertFromRaw(JSON.parse(nextProps.initText));
       } catch (e) { }
       this.setState(state => {
-        state.editorState = EditorState.createWithContent(initState, this.decorators);
-        return state;
+        const editorState = EditorState.createWithContent(initState, this.decorators);
+        return {editorState};
       });
     }
   }
@@ -635,13 +635,14 @@ class AnnotationTextEditorComponent extends Component<Props, State> {
     }
 
     this.setState(state => {
-      state.editorState = editorState;
       const selection = editorState.getSelection();
-      state.anchorKey = selection.getAnchorKey();
-      state.anchorOffset = selection.getAnchorOffset();
-      state.focusKey = selection.getFocusKey();
-      state.focusOffset = selection.getFocusOffset();
-      return state;
+      return {
+        editorState,
+        anchorKey: selection.getAnchorKey(),
+        anchorOffset: selection.getAnchorOffset(),
+        focusKey: selection.getFocusKey(),
+        focusOffset: selection.getFocusOffset(),
+      };
     });
   }
 
@@ -731,20 +732,18 @@ class AnnotationTextEditorComponent extends Component<Props, State> {
     (this.refs['semantic-editor'] as AnnotationSemanticEditorComponent).notifyMount(entityKey, ptr);
   }
   changeCurrentSemanticBlock(ptr: SemanticBlock) {
-    this.setState(state => { state.semanticToEdit = ptr; return state; });
+    this.setState({semanticToEdit: ptr});
   }
   showModalFor(ptr: SemanticBlock, show: boolean) {
-    this.setState(state => {
-      state.showSemanticModalEditor = show;
-      state.semanticToEdit = ptr;
-      return state;
+    this.setState({
+      showSemanticModalEditor: show,
+      semanticToEdit: ptr,
     });
   }
   hideModal() {
-    this.setState(state => {
-      state.showSemanticModalEditor = false;
-      state.semanticToEdit = null;
-      return state;
+    this.setState({
+      showSemanticModalEditor: false,
+      semanticToEdit: null,
     });
   }
 
@@ -798,10 +797,9 @@ class AnnotationTextEditorComponent extends Component<Props, State> {
   }
 
   hideLinkEditor() {
-    this.setState(state => {
-      state.showURLInput = false;
-      state.urlValue = '';
-      return state;
+    this.setState({
+      showURLInput: false,
+      urlValue: '',
     }, () => {
       setTimeout(() => this.focus(), 0);
     });
@@ -809,9 +807,9 @@ class AnnotationTextEditorComponent extends Component<Props, State> {
 
   showLinkEditor(currentUrl: string) {
     this.setState(state => {
-      state.showURLInput = !state.showURLInput;
-      state.urlValue = currentUrl;
-      return state;
+      const showURLInput = !state.showURLInput;
+      const urlValue = currentUrl;
+      return {showURLInput, urlValue};
     }, () => {
       (this.refs['url-input'] as any).focus();
     });
@@ -870,7 +868,7 @@ class AnnotationTextEditorComponent extends Component<Props, State> {
             value: this.state.urlValue,
             onChange: (e) => {
               const value = (e.target as any).value;
-              this.setState(state => { state.urlValue = value; return state; });
+              this.setState({urlValue: value});
             },
             onKeyDown: (e: KeyboardEvent<any>) => {
               if (e.which === 13 && this.state.urlValue !== '') { // enter

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -121,11 +121,11 @@ export function queryImageBounds(serverAndPrefix: string, imageId: string) {
       .get(uri)
       .accept('application/ld+json')
       .end((err, res) => {
-        if (res) {
+        if (err) {
+          cb(err);
+        } else {
           const json = JSON.parse(res.text);
           cb(err, json);
-        } else {
-          cb(err);
         }
       });
   }).toProperty();

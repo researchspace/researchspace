@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,8 @@
  * @author Artem Kozlov <ak@metaphacts.com>
  */
 
-import { DOM as D, Component, createFactory, ReactElement } from 'react';
+import { Component, createFactory, ReactElement } from 'react';
+import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as assign from 'object-assign';
@@ -64,8 +65,8 @@ export class CreateProfileDialogClass extends Component<Props, State> {
   private static nameInputRef = 'name';
   private static descriptionInputRef = 'description';
 
-  constructor() {
-    super();
+  constructor(props: Props, context: any) {
+    super(props, context);
     this.state = {
       state: States.USER_INPUT,
       inputValidationState: {
@@ -223,7 +224,7 @@ export class CreateProfileDialogClass extends Component<Props, State> {
   }
 
   private getInputElement(ref): HTMLInputElement {
-    return findDOMNode<HTMLInputElement>(this.refs[ref]);
+    return findDOMNode(this.refs[ref]) as HTMLInputElement;
   }
 }
 

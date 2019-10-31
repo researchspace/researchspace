@@ -1,0 +1,112 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "ChartTooltipPoint": {
+            "properties": {
+                "bindings": {
+                    "$ref": "#/definitions/SparqlClient.Dictionary<Rdf.Node>",
+                    "description": "Bindings from SPARQL query for the data point."
+                },
+                "iri": {
+                    "description": "Data set IRI (as plain string) for the data point; may be empty.",
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Data set label for the data point.",
+                    "type": "string"
+                },
+                "markerClass": {
+                    "description": "CSS class for SVG shape to display data set color; may be empty.\n(Provided by Highcharts.)",
+                    "type": "string"
+                },
+                "markerStyle": {
+                    "description": "Style string for SVG shape to display data set color; may be empty.\n(Provided by ChartJs.)",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Data point value representation: either a simple number or\ntuple for charts with multiple numerical axes.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                }
+            },
+            "propertyOrder": [
+                "bindings",
+                "iri",
+                "label",
+                "value",
+                "markerStyle",
+                "markerClass"
+            ],
+            "required": [
+                "bindings",
+                "label",
+                "value"
+            ],
+            "type": "object"
+        },
+        "SparqlClient.Dictionary<Rdf.Node>": {
+            "additionalProperties": {
+                "$ref": "#/definitions/T"
+            },
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "T": {
+            "propertyOrder": [
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "category": {
+            "description": "Non-numerical value for argument axis (usually x-axis) at selected data points,\ne.g. labels of pie chart segement or bar chart column; may be empty.",
+            "properties": {
+                "iri": {
+                    "description": "Category IRI (as plain string); may be empty.",
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Category label.",
+                    "type": "string"
+                },
+                "markerClass": {
+                    "description": "CSS class for SVG shape to display category color; may be empty.\n(Provided by Highcharts.)",
+                    "type": "string"
+                },
+                "markerStyle": {
+                    "description": "Style string for SVG shape to display category color; may be empty.\n(Provided by ChartJs.)",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "iri",
+                "label",
+                "markerStyle",
+                "markerClass"
+            ],
+            "required": [
+                "label"
+            ],
+            "type": "object"
+        },
+        "points": {
+            "description": "Numerical values for value axes (usually y-axis, z-axis, etc) at selected data points.",
+            "items": {
+                "$ref": "#/definitions/ChartTooltipPoint"
+            },
+            "type": "array"
+        }
+    },
+    "propertyOrder": [
+        "category",
+        "points"
+    ],
+    "required": [
+        "points"
+    ],
+    "type": "object"
+}
+

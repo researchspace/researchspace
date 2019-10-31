@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,7 @@ export class LdpLinkServiceClass extends LdpService {
       );
 
     const resourceGraph =
-      Rdf.graph(
+      Rdf.graph([
         Rdf.triple(
           linkIri, vocabularies.rdf.type, crmdig.D29_Annotation_Object
         ),
@@ -53,8 +53,8 @@ export class LdpLinkServiceClass extends LdpService {
         Rdf.triple(
           linkIri, rso.displayLabel, Rdf.literal(name)
         ),
-        ... linksGraph.toArray()
-      );
+        ...linksGraph.toArray(),
+      ]);
 
     return resourceGraph;
   }

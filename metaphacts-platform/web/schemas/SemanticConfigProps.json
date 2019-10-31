@@ -1,0 +1,163 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "BNode": {
+            "properties": {
+                "_rdfBlankBrand": {
+                    "type": "string"
+                },
+                "_value": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "_rdfBlankBrand",
+                "toString",
+                "_value",
+                "value",
+                "hashCode",
+                "equals",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_rdfBlankBrand",
+                "_value",
+                "value"
+            ],
+            "type": "object"
+        },
+        "Iri": {
+            "properties": {
+                "_rdfIriBrand": {
+                    "type": "string"
+                },
+                "_value": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "_rdfIriBrand",
+                "equals",
+                "toString",
+                "toJSON",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_rdfIriBrand",
+                "_value",
+                "value"
+            ],
+            "type": "object"
+        },
+        "Literal": {
+            "properties": {
+                "_dataType": {
+                    "$ref": "#/definitions/Iri"
+                },
+                "_value": {
+                    "type": "string"
+                },
+                "dataType": {
+                    "$ref": "#/definitions/Iri"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "_dataType",
+                "dataType",
+                "toString",
+                "equals",
+                "toJSON",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_dataType",
+                "_value",
+                "dataType",
+                "value"
+            ],
+            "type": "object"
+        },
+        "Node": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/Iri"
+                },
+                {
+                    "$ref": "#/definitions/Literal"
+                },
+                {
+                    "$ref": "#/definitions/BNode"
+                }
+            ]
+        }
+    },
+    "properties": {
+        "bindings": {
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "$ref": "#/definitions/Node"
+                    },
+                    {
+                        "type": "string"
+                    }
+                ]
+            },
+            "description": "A string indexed map (object), of key value pairs to inject into queries.\nThe key is the plain binding name (without ? or $) and the value is the plain IRI or literal value to be injected.\n\nThe interface and implementation is not yet stable and might be changed or even be removed in the future without notice.",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "defaultGraphs": {
+            "description": "Specifies the default graph, i.e. will be translated into a FROM <graphiri> clause.\nSeveral default graphs will be interpreted as a single merge graph, i.e. according to the SPARQL 1.1 standard: \n\"A default graph consisting of the RDF merge of the graphs referred to in the FROM clauses.\"\n\nDefaults to an empty array, which usually means all graphs.\nHowever, this may differ across database vendors (for example, in Stardog you will have to configure the database with query.all.graphs=true )\n\nSee <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank'> https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph </a> for details.\n\nThis functionality is still beta and not yet well tested.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "namedGraphs": {
+            "description": "List of named graphs that will restrict any GRAPH ?g{} clause within the query body to the enumerated graphs.\n\nSee <a href='https://www.w3.org/TR/rdf-sparql-query/#namedGraphs' target='_blank'>https://www.w3.org/TR/rdf-sparql-query/#namedGraphs</a> for details.\n\nThis functionality is still beta and not yet well tested.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "repository": {
+            "default": "default",
+            "description": "Repository ID as registered in the platform repository manager.\nQueries will be executed/evaluated against this repository.",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "repository",
+        "defaultGraphs",
+        "namedGraphs",
+        "bindings"
+    ],
+    "type": "object"
+}
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { PropTypes } from 'react';
+import * as PropTypes from 'prop-types';
 
 import { Rdf } from 'platform/api/rdf';
 import { FieldDefinitionProp } from 'platform/components/forms/FieldDefinition';

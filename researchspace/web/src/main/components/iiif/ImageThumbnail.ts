@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  */
 
 import * as React from 'react';
+import * as D from 'react-dom-factories';
 import * as Kefir from 'kefir';
 import { isEqual } from 'lodash';
 import * as Maybe from 'data.maybe';
@@ -30,8 +31,6 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import {
   queryIIIFImageOrRegion, ImageOrRegionInfo,
 } from '../../data/iiif/ImageAnnotationService';
-
-const D = React.DOM;
 
 export interface Props {
   imageOrRegion: string;
@@ -168,7 +167,7 @@ class ImageThumbnailComponent extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.requests.plug(Kefir.constant({}));
+    this.requests.plug(Kefir.constant({} as ThumbnailRequest));
   }
 
   render() {

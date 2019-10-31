@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 import * as _ from 'lodash';
+import * as SparqlJs from 'sparqljs';
 
 import { Action } from 'platform/components/utils';
 
@@ -360,6 +361,9 @@ export class SearchStore {
                 kind: 'relation-selection',
                 domain: baseConjunct.range,
                 conjunctIndex: newConjunctIndex,
+                // FIXME: should be specified?!
+                range: undefined,
+                relations: undefined,
               },
             }, conjunct.range);
           }
@@ -407,6 +411,8 @@ export class SearchStore {
                 domain: baseConjunct.range,
                 range: conjunct.range,
                 conjunctIndex: newConjunctIndex,
+                // FIXME: should be specified?!
+                relations: undefined,
               },
             }, conjunct.relation);
           }
@@ -469,9 +475,12 @@ export class SearchStore {
         state, this.selectTextDisjunctState(deepestActiveState, range)
       );
     } else {
-      return this.updateNestedState(
-        state, this.selectRelationState(deepestActiveState, range)
-      );
+      let newState: SearchState = this.selectRelationState(deepestActiveState, range);
+      if (newState.relations.size === 1) {
+        const relation = newState.relations.first();
+        newState = this.selectTermState(newState, relation)
+      }
+      return this.updateNestedState(state, newState);
     }
   }
 

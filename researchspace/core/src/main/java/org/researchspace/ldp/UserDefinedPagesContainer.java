@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ import com.metaphacts.data.rdf.PointedGraph;
 import com.metaphacts.data.rdf.container.DefaultLDPContainer;
 import com.metaphacts.data.rdf.container.LDPR;
 import com.metaphacts.data.rdf.container.RootContainer;
+import com.metaphacts.repository.MpRepositoryProvider;
 import com.metaphacts.vocabulary.LDP;
 
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +33,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 import javax.inject.Inject;
@@ -53,8 +53,8 @@ public class UserDefinedPagesContainer extends DefaultLDPContainer {
     @Inject
     private Provider<RootContainer> rootContainer;
 
-    public UserDefinedPagesContainer(IRI uri, Repository repository) {
-        super(uri, repository);
+    public UserDefinedPagesContainer(IRI uri, MpRepositoryProvider repositoryProvider) {
+        super(uri, repositoryProvider);
     }
 
     public void initialize() {

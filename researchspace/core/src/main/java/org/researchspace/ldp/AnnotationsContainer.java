@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,6 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.researchspace.vocabulary.CRMdig;
 import org.researchspace.vocabulary.CidocCRM;
@@ -37,6 +36,7 @@ import com.google.common.base.Throwables;
 import com.metaphacts.data.rdf.PointedGraph;
 import com.metaphacts.data.rdf.container.AnnotationContainer;
 import com.metaphacts.data.rdf.container.LDPR;
+import com.metaphacts.repository.MpRepositoryProvider;
 import com.metaphacts.vocabulary.LDP;
 import com.metaphacts.vocabulary.OA;
 
@@ -49,8 +49,8 @@ public class AnnotationsContainer extends AnnotationContainer {
     public static final IRI IRI = vf.createIRI(IRI_STRING);
     
     
-    public AnnotationsContainer(IRI iri, Repository repository) {
-        super(iri, repository);
+    public AnnotationsContainer(IRI iri, MpRepositoryProvider repositoryProvider) {
+        super(iri, repositoryProvider);
     }
     
     public void initialize() {

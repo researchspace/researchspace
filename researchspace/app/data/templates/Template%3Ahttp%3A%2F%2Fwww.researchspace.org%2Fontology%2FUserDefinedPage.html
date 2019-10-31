@@ -22,18 +22,36 @@
   </div>
   [[/inline]]
   [[#*inline "ownerContent"]]
-  <div class="page__header-navtabs--no-image">
-    [[> rsp:Header]]
-  </div>
-  <bs-tabs class="page__body-navtabs--borderless-no-image" unmount-on-exit=true>
-    <bs-tab event-key="1" title="View">
-      [[>rsp:UDPView]]
-    </bs-tab>
-    <bs-tab event-key="2" title="Edit">
-      [[>rsp:UDPEdit]]
-    </bs-tab>
-  </bs-tabs>
-  [[/inline]]
-  [[/ rsp:VisibilityCheck]]
-  [[/rsp:ClipboardSidebar]]
+
+  [[#if (urlParam "tab")]]
+  <bs-tab-container class="page__body-navtabs--borderless-no-image" unmount-on-exit=true default-active-key="[[urlParam 'tab']]">
+    [[else]]
+    <bs-tab-container class="page__body-navtabs--borderless-no-image" unmount-on-exit=true default-active-key="1">
+      [[/if]]
+      <div>
+        <bs-nav bs-style="tabs" class="udp-nav-tabs">
+          <bs-nav-item event-key="1">View</bs-nav-item>
+          <bs-nav-item event-key="2">Edit</bs-nav-item>
+          [[#if notDraggable]]
+          [[else]]
+          <div class="page__header-draggable-title" data-flex-self='left'>
+            <mp-draggable iri='[[this]]'>
+              <h3 data-flex-layout='row center-left'>
+                <span class="page__header-gripper"></span>
+                <mp-label iri='[[this]]' class='page__header-gripper-label'></mp-label>
+              </h3>
+            </mp-draggable>
+          </div>
+          [[/if]]
+        </bs-nav>
+        <bs-tab-content animation>
+          <bs-tab-pane event-key="1">[[>rsp:UDPView]]</bs-tab-pane>
+          <bs-tab-pane event-key="2">[[>rsp:UDPEdit]]</bs-tab-pane>
+        </bs-tab-content>
+      </div>
+    </bs-tab-container>
+
+    [[/inline]]
+    [[/ rsp:VisibilityCheck]]
+    [[/rsp:ClipboardSidebar]]
 </div>

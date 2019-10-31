@@ -1,0 +1,23 @@
+#
+# platform configuration template for a Stardog repository
+# accesed as SPARQL repository with basic authentication
+#
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.metaphacts.com/ontologies/platform/repository#> .
+@prefix stardog: <http://www.metaphacts.com/ontologies/platform/repository/stardog#> .
+
+
+[] a rep:Repository ;
+   rep:repositoryID "default" ; # Replace with your repository ID or leave default if this is the main repository
+   rdfs:label "Stardog SPARQL repository with basic authentication" ; # Replace with a meaningful description for this repository
+   rep:repositoryImpl [
+      rep:repositoryType "metaphacts:StardogRepository" ;
+      sparqlr:query-endpoint <http://mystardog:5820/myDb/query> ; # Replace with the URL of the SPARQL endpoint to submit queries to
+      # sparqlr:update-endpoint <http://mystardog:5820/myDb/update> ; # (Optional) Uncomment and replace with the update endpoint (only if different from the query endpoint)
+      mph:username "username" ; # Replace with username to connect to the repository
+      mph:password "password" # Replace with password to connect to the repository
+   ].

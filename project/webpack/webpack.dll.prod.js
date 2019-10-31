@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,38 +16,41 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-var path = require('path'),
-    glob = require('glob'),
-    webpack = require('webpack'),
-    AssetsPlugin = require('assets-webpack-plugin'),
-    ExtractTextPlugin = require("extract-text-webpack-plugin"),
-    defaults = require('./defaults'),
-    utils = require('./utils');
+const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const makeDefaults = require('./defaults');
 
-module.exports = function(env) {
-    const buildConfig = utils.parseArgs(env.buildConfig);
-    const defaultConfig = defaults(buildConfig);
-    const config = require('./webpack.dll.js')(buildConfig, defaults(buildConfig));
+/**
+ * @param {{ [key: string]: string }} env
+ */
+module.exports = function (env) {
+    const defaults = makeDefaults();
+    const config = require('./webpack.dll.js')(defaults);
+    config.mode = 'production';
 
-    //enable react production mode.
-    //add hash to text plugin
-    config.plugins.shift();
+    config.optimization = {
+      minimizer: [
+        new UglifyJsPlugin({
+          parallel: true,
+          sourceMap: false,
+          uglifyOptions: {
+            output: {
+              comments: false
+            }
+          }
+        }),
+      ]
+    };
+
     config.plugins.push(
-        new ExtractTextPlugin("basic-styles-[contenthash].css"),
+        /**
+         * Enable react production mode
+         */
         new webpack.DefinePlugin({
             BUNDLE_HIGHCHARTS: process.env.BUNDLE_HIGHCHARTS,
             'process.env': {
                 NODE_ENV: '"production"'
             }
-        }),
-        /*
-         * Generate json files with bundle - hashed bundle file names,
-         * so we can properly refer to bundles in main.hbs and login.hbs files
-         */
-        new AssetsPlugin({
-            filename: "dll-manifest.json",
-            path: defaultConfig.DIST,
-            fullPath: true
         })
     );
 

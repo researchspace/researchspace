@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Appenders>
+
+    <!-- Appender for platform.log  -->
+    <RollingFile name="LOGFILE" fileName="logs/platform-debug.log"
+                 filePattern="logs/platform-debug/${date:yyyy-MM}/platform-%d{MM-dd-yyyy}-%i.log">
+      <PatternLayout>
+        <Pattern>%d %p [%t] %c - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="5000 KB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+
+    <RollingFile name="LOGINLOGFILE" fileName="logs/platform-logins.log"
+                 filePattern="logs/platform-logins/${date:yyyy-MM}/platform-logins-%d{MM-dd-yyyy}-%i.log">
+      <PatternLayout pattern="%X{clientIpAddress} - %X{userPrincipal} - [%d{dd/MMM/yyyy:HH:mm:ss +SSSS}] - %msg%n"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="5000 KB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+
+    <RollingFile name="PAGEREQUESTS" fileName="logs/platform-page-requests.log"
+                 filePattern="logs/platform-page-requests/${date:yyyy-MM}/platform-page-requests-%d{MM-dd-yyyy}-%i.log">
+      <PatternLayout pattern="%X{clientIpAddress} - %X{userPrincipal} - [%d{dd/MMM/yyyy:HH:mm:ss +SSSS}] - %msg%n"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="5000 KB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+
+    <RollingFile name="SPARQLSERVLET" fileName="logs/platform-sparqlservlet-requests.log"
+                 filePattern="logs/platform-sparqlservlet-requests/${date:yyyy-MM}/platform-sparqlservlet-requests-%d{MM-dd-yyyy}-%i.log">
+      <PatternLayout pattern="%X{clientIpAddress} - %X{userPrincipal} - [%d{dd/MMM/yyyy:HH:mm:ss +SSSS}] - %msg%n"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="5000 KB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+
+    <!-- Appender for STDOUT (console)  -->
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] (%F:%L) - %m%n"/>
+    </Console>
+
+</Appenders>

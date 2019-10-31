@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@
 import * as webdriver from 'selenium-webdriver';
 import * as _ from 'lodash';
 
-const username: string = process.env.BROWSERSTACK_USERNAME;
-const accessKey: string = process.env.BROWSERSTACK_ACCESS_KEY;
+const username: string = process.env.BROWSERSTACK_USERNAME as string;
+const accessKey: string = process.env.BROWSERSTACK_ACCESS_KEY as string;
 export const windows = (browser: string, version?: string) =>
   Object.assign({
     os: 'WINDOWS',

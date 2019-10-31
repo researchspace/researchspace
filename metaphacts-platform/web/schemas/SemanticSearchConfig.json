@@ -1,0 +1,543 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "DatasetAlignmentConfig": {
+            "properties": {
+                "iri": {
+                    "description": "Alignment IRI, typically some skos:scheme.",
+                    "type": "string"
+                },
+                "isDefault": {
+                    "description": "True if alignment should be selected by default.",
+                    "type": "boolean"
+                },
+                "label": {
+                    "description": "Alignment label.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "iri",
+                "label",
+                "isDefault"
+            ],
+            "required": [
+                "iri",
+                "label"
+            ],
+            "type": "object"
+        },
+        "DatasetsConfig": {
+            "properties": {
+                "datasetPattern": {
+                    "default": "`\nGRAPH ?__dataset__ {\n?subject a ?t .\n}\n\n`",
+                    "description": "Query pattern that is used to discriminate items between datasets in non-federated mode.\nThis pattern will be applied to tree selector queries, resource selector queries,\nfacet queries and final result query. At the runtime `__dataset__`\nwill be bound to dataset selected by the user.",
+                    "type": "string"
+                },
+                "datasets": {
+                    "description": "The list of datasets which should be queried.\nIf not provided, only the search will only affect the default repository.",
+                    "items": {
+                        "$ref": "#/definitions/SearchDatasetConfig"
+                    },
+                    "type": "array"
+                },
+                "federated": {
+                    "description": "If true, denotes a federated scenario, in which the search query must be sent\nto multiple repositories (described in the datasets property).",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "federated",
+                "datasets",
+                "datasetPattern"
+            ],
+            "type": "object"
+        },
+        "DateRange": {
+            "properties": {
+                "datatype": {
+                    "default": "xsd:date",
+                    "description": "Datatype for injected variables.",
+                    "type": "string"
+                },
+                "format": {
+                    "default": "YYYY-MM-DD",
+                    "description": "moment.js format pattern for injected values.",
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "date-range"
+                    ],
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "description": "Injected variables:\n   * `__dateBeginValue__` - xsd:date literal\n   * `__dateEndValue__` - xsd:date literal\n\nKeep in mind that there is no default query pattern for `date-range` kind,\nbecause date representation is always domain specific.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "queryPattern",
+                "datatype",
+                "format"
+            ],
+            "required": [
+                "kind",
+                "queryPattern"
+            ],
+            "type": "object"
+        },
+        "Hierarchy": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "hierarchy"
+                    ],
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "default": "`$subject ?__relation__ ?__value__ .`",
+                    "description": "Injected variables:\n  * `__value__` - user selected value IRI",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "queryPattern"
+            ],
+            "required": [
+                "kind",
+                "queryPattern"
+            ],
+            "type": "object"
+        },
+        "InlineCategory": {
+            "description": "Inline configuration for a category",
+            "properties": {
+                "iri": {
+                    "description": "IRI of the category/relation.\nMust be expressed as a full IRI enclosed in '<>'",
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Label of the category/relation shown in the UI",
+                    "type": "string"
+                },
+                "thumbnail": {
+                    "description": "URL reference of the icon image to depict the category in the query builder UI",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "thumbnail",
+                "iri",
+                "label"
+            ],
+            "required": [
+                "iri",
+                "label"
+            ],
+            "type": "object"
+        },
+        "InlineRelation": {
+            "description": "Inline configuration for a relation",
+            "properties": {
+                "hasDomain": {
+                    "description": "IRI of the category whose instances appear as subjects of this relation.\nMust be expressed as a full IRI enclosed in '<>'",
+                    "type": "string"
+                },
+                "hasRange": {
+                    "description": "IRI of the category whose instances appear as objects of this relation.\nMust be expressed as a full IRI enclosed in '<>'",
+                    "type": "string"
+                },
+                "iri": {
+                    "description": "IRI of the category/relation.\nMust be expressed as a full IRI enclosed in '<>'",
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Label of the category/relation shown in the UI",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "hasDomain",
+                "hasRange",
+                "iri",
+                "label"
+            ],
+            "required": [
+                "hasDomain",
+                "hasRange",
+                "iri",
+                "label"
+            ],
+            "type": "object"
+        },
+        "InlineSearchProfileConfig": {
+            "properties": {
+                "categories": {
+                    "items": {
+                        "$ref": "#/definitions/InlineCategory"
+                    },
+                    "type": "array"
+                },
+                "relations": {
+                    "items": {
+                        "$ref": "#/definitions/InlineRelation"
+                    },
+                    "type": "array"
+                }
+            },
+            "propertyOrder": [
+                "categories",
+                "relations"
+            ],
+            "required": [
+                "categories",
+                "relations"
+            ],
+            "type": "object"
+        },
+        "Literal": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "literal"
+                    ],
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "default": "`$subject ?__relation__ ?__literal__ .`",
+                    "description": "Injected variables:\n  * `__literal__` - user selected value literal",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "queryPattern"
+            ],
+            "required": [
+                "kind",
+                "queryPattern"
+            ],
+            "type": "object"
+        },
+        "NumericRange": {
+            "properties": {
+                "datatype": {
+                    "description": "datatype for injected variables, default is http://www.w3.org/2001/XMLSchema#double",
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "numeric-range"
+                    ],
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "description": "Injected variables:\n   * `__numericRangeBeginValue__` - xsd:double literal\n   * `__numericRangeEndValue__` - xsd:double literal\n\nCurrently there is no default query pattern for `numeric-range` kind",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "queryPattern",
+                "datatype"
+            ],
+            "required": [
+                "kind",
+                "queryPattern"
+            ],
+            "type": "object"
+        },
+        "Patterns": {
+            "additionalProperties": {
+                "items": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Resource"
+                        },
+                        {
+                            "$ref": "#/definitions/Hierarchy"
+                        },
+                        {
+                            "$ref": "#/definitions/DateRange"
+                        },
+                        {
+                            "$ref": "#/definitions/Place"
+                        },
+                        {
+                            "$ref": "#/definitions/Text"
+                        },
+                        {
+                            "$ref": "#/definitions/Set"
+                        },
+                        {
+                            "$ref": "#/definitions/Literal"
+                        },
+                        {
+                            "$ref": "#/definitions/NumericRange"
+                        }
+                    ]
+                },
+                "type": "array"
+            },
+            "description": "Mapping of categories/relations IRIs (fully qualified IRI enclosed in <>) to corresponding UI input components and generated query patterns.\nEvery IRI can have multiple kinds, e.g it makes sense to have a category that, at the same time,\nrepresents `hierarchy` and `place`.\n\nCurrently supported kinds of categories/relations:\n\n1) `resource` - any RDF Resource, selection of value is performed with autosuggestion dropdown.\n2) `hierarchy` - RDF Resource that belongs to some hierarchy (e.g. with `skos:broader`),\n                  selection of value is performed with hierarchical tree-selector with.\n3) `date-range` - date range values, in the simple case begin and end of the range.\n                   can be represented with the same value.\n                   Selection of value is performed with speciall date-range selection components.\n4) `place` - geo-spatial value. Selection of value is performed with visual region selector.\n5) `text` - speciall kind that is used as a marker for full-text search.\n6) `set` - special kind that is used as a marker for the ability to use set of items as input, can be used only in combination with `resource` or `hierarchy` kind.\n7) `literal`\n8) `numeric-range`\n\nSpecial variable, common to all patterns, that are substituted with user selected values:\n   * `__domain__` - search domain category IRI\n   * `__range__` - conjunct range category IRI\n   * `__relation__` - conjunct relation IRI\n   * `__relationPattern__` - conjunct relation query pattern\n\nIn all query patterns ?subject variable refers to result projection variable,\nand should be always present in the query pattern. All other free variables except ?subject,\nvariable are randomized to prevent name collisions.\nSo for example resource pattern like:\n\n```sparql\n?subject ?__relation__ ?holder .\n?holder ?p ?__value__ .\n```\n\nWill be rewritten and all special variables will be replaced by user selected values:\n\n```\n?subject <http://example/com/relation> ?holder_tgyzctyko3oozv2jzto6r .\n?holder_tgyzctyko3oozv2jzto6r <http://example.cm/some_resource> .\n```",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        },
+        "Place": {
+            "properties": {
+                "boundingBoxQueryPattern": {
+                    "description": "Injected variables:\n   `__geoSouthWest__` - coordinates of the south-west bounding-box corner, default is xsd:string literal in the `lat#long` format\n   `__geoSouthWestLat__` - xsd:string literal with the latitude of the south-west bounding-box corner\n   `__geoSouthWestLong__` - xsd:string literal with the longitude of the south-west bounding-box corner\n   `__geoNorthEast__` - coordinates of the north-east bounding-box corner, default is xsd:string literal in the `lat#long` format\n   `__geoNorthEastLat__` - xsd:string literal with the latitude of the north-east bounding-box corner\n   `__geoNorthEastLong__` - xsd:string literal with the longitude of the north-east bounding-box corner",
+                    "type": "string"
+                },
+                "datatype": {
+                    "default": "http://www.w3.org/2001/XMLSchema#string",
+                    "description": "datatype for injected coordinates",
+                    "type": "string"
+                },
+                "distanceQueryPattern": {
+                    "description": "Injected variables:\n   * `__geoCenter__` - coordinates of the circle center, default is xsd:string literal in the `lat#long` format\n   * `__geoCenterLat__` - xsd:string literal with the latitude of the circle center\n   * `__geoCenterLong__` - xsd:string literal with the longitude of the circle center\n   * `__geoDistance__` - xsd:string literal with radius of the circle in km",
+                    "type": "string"
+                },
+                "format": {
+                    "default": "`lat#long`",
+                    "description": "format pattern for injected coordinates",
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "place"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "distanceQueryPattern",
+                "boundingBoxQueryPattern",
+                "format",
+                "datatype"
+            ],
+            "required": [
+                "boundingBoxQueryPattern",
+                "distanceQueryPattern",
+                "kind"
+            ],
+            "type": "object"
+        },
+        "QuerySearchProfileConfig": {
+            "properties": {
+                "categoriesQuery": {
+                    "description": "SPARQL Select query returning the list of categories available for search,\ngrouped by corresponding search profile.\n\nExpected projection variables:\n   category - IRI of the category\n   profile - search profile IRI that a given category belongs to\n   thumbnail - URL of the category thumbnail\n   label - category label\n   description - detailed description of the category",
+                    "type": "string"
+                },
+                "defaultProfile": {
+                    "description": "IRI of the default profile",
+                    "type": "string"
+                },
+                "relationsQuery": {
+                    "description": "SPARQL Select query returning the list of relations available for search,\ngrouped by corresponding search profile.\n\nExpected projection variables:\n   relation- relation IRI\n   label - relation label\n   description - detailed description of the relation\n   domain - relation domain IRI\n   range - relation range IRI",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "categoriesQuery",
+                "relationsQuery",
+                "defaultProfile"
+            ],
+            "required": [
+                "categoriesQuery",
+                "relationsQuery"
+            ],
+            "type": "object"
+        },
+        "Resource": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "resource"
+                    ],
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "default": "`$subject ?__relation__ ?__value__ .`",
+                    "description": "Injected variables:\n  * `__value__` - user selected value IRI",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "queryPattern"
+            ],
+            "required": [
+                "kind",
+                "queryPattern"
+            ],
+            "type": "object"
+        },
+        "SearchDatasetConfig": {
+            "properties": {
+                "alignments": {
+                    "description": "Optional list of alignments with other datasets.",
+                    "items": {
+                        "$ref": "#/definitions/DatasetAlignmentConfig"
+                    },
+                    "type": "array"
+                },
+                "iri": {
+                    "description": "Service IRI of the dataset's SPARQL endpoint.\nIf not present, denotes the default repository (having the ID \"default\" in the RepositoryManager).",
+                    "type": "string"
+                },
+                "isDefault": {
+                    "description": "True if dataset should be selected by default.",
+                    "type": "boolean"
+                },
+                "label": {
+                    "description": "Textual label denoting the repository.",
+                    "type": "string"
+                },
+                "silent": {
+                    "description": "If true, then error from the repository in fedarate query will be ignored (using SILENT from SPARQL 1.1 standard).",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "iri",
+                "label",
+                "isDefault",
+                "silent",
+                "alignments"
+            ],
+            "required": [
+                "label"
+            ],
+            "type": "object"
+        },
+        "Set": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "set"
+                    ],
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "default": "`?__set__ ldp:contains/platform:setItem ?__value__ .`",
+                    "description": "`set` pattern will be combined with corresponding `hierarchy` or `resource` pattern.\n\nAdditional special variables, that will be substituted with values:\n   `__set__` - set IRI",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "queryPattern"
+            ],
+            "required": [
+                "kind",
+                "queryPattern"
+            ],
+            "type": "object"
+        },
+        "Text": {
+            "properties": {
+                "escapeLuceneSyntax": {
+                    "description": "A flag determining whether any special Lucene syntax must be escaped.\nDefault: true",
+                    "type": "boolean"
+                },
+                "helpPage": {
+                    "description": "IRI of the help page to explain any special syntax used in the text search.\nMust be a fully qualified IRI enclosed in <>.\nDefault: <http://help.metaphacts.com/resource/SolrFullTextSearchSyntax> (shown if escapeLuceneSyntax is false)",
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "text"
+                    ],
+                    "type": "string"
+                },
+                "queryPattern": {
+                    "default": "`$subject ?__relation__ ?__value__ .`",
+                    "description": "Injected variables:\n   * `__value__` - string literal with user input. User input is split into words and interleaved with `*`. E.g for the user input \"Hello World\", injected literal will be \"Hello* World*\"",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "kind",
+                "queryPattern",
+                "helpPage",
+                "escapeLuceneSyntax"
+            ],
+            "required": [
+                "kind",
+                "queryPattern"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "categories": {
+            "$ref": "#/definitions/Patterns",
+            "description": "Definition of the categories to be used in structured search. Specified kind will be use\nfor all relations that have given category as a range.\n\nIf not specified otherwise, by default, all categories/relations from Search Profile\nare considered of kind 'resource'."
+        },
+        "datasetsConfig": {
+            "$ref": "#/definitions/DatasetsConfig",
+            "description": "Multi-datasets search configuration.\nIf not provided, only the search will only affect the default repository."
+        },
+        "id": {
+            "description": "Unique HTML id that is used by all nested search-related components, used when one need to have multiple search interfaces on the same page.",
+            "type": "string"
+        },
+        "limit": {
+            "default": 1000,
+            "description": "Maximal number of answers to be returned",
+            "type": "number"
+        },
+        "optimizer": {
+            "description": "Specifies if any optimizer 'magic' patterns are included\nfor the specific repository type.",
+            "enum": [
+                "blazegraph",
+                "none"
+            ],
+            "type": "string"
+        },
+        "relations": {
+            "$ref": "#/definitions/Patterns",
+            "description": "Definition of the relations to be used in structured search.\n\nIf not specified otherwise, by default, all categories/relations from Search Profile\nare considered of kind 'resource'."
+        },
+        "searchProfile": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/QuerySearchProfileConfig"
+                },
+                {
+                    "$ref": "#/definitions/InlineSearchProfileConfig"
+                }
+            ],
+            "description": "Search Profile defines list of categories and relations available in the search."
+        },
+        "selectorMode": {
+            "description": "Specifies a mode for category and relation selectors to operate in:\n   `stack` - vertical stack of buttons.\n   `dropdown` - dropdown field.",
+            "enum": [
+                "dropdown",
+                "stack"
+            ],
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "id",
+        "categories",
+        "relations",
+        "searchProfile",
+        "datasetsConfig",
+        "limit",
+        "optimizer",
+        "selectorMode"
+    ],
+    "required": [
+        "searchProfile"
+    ],
+    "type": "object"
+}
+

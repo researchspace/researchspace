@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,22 +49,19 @@ class RawPluginToolbar extends Component<PluginToolbarProps, {}> {
     const plugins = editor.plugins.plugins;
 
     return (
-      <div className='semantic-narrative-editor__mode-toggle' style={{display: 'flex'}}>
+      <div className='semantic-narrative-editor__mode-toggle'>
         {plugins.content.map(plugin => (
-          <div className='semantic-narrative-editor__toolbar-section'>
+          <div key={`${plugin.name}_content-toolbar-section`} className='semantic-narrative-editor__toolbar-section'>
             <Item key={plugin.name}
               plugin={plugin}
               insert={{
                 content: {plugin, state: plugin.createInitialState()}
               }}
             />
-            { (plugin.IconComponent && plugin.text
-              && VisualisePluginBlacklist.indexOf(plugin.name) === -1)
-            && <div className='semantic-narrative-editor__toolbar-divider'/> }
           </div>
         ))}
         {plugins.layout.map(plugin => (
-          <div className='semantic-narrative-editor__toolbar-section'>
+          <div key={`${plugin.name}_layout-toolbar-section`} className='semantic-narrative-editor__toolbar-section'>
             <Item key={plugin.name}
               plugin={plugin}
               insert={{

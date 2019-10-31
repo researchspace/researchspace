@@ -1,0 +1,110 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri="http://www.metaphacts.com/resource/admin/">Administration</semantic-link>
+  </li>
+  <li class="active">Data Import and Export</li>
+</ol>
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-cloud-upload fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Data Import and Export</h2>
+    </div>
+  </div>
+  <div class='page__body'>
+
+    <h2>Data Import</h2>
+    <hr/>
+	[[#if (hasPermission "sparql:update")]]
+    <bs-alert bs-style="info">
+      <strong>Info!</strong><br/>
+      <p>
+        The data import via drag&amp;drop file upload should only be used for smaller files.
+      </p>
+      <p>
+        All communication is done via HTTP and as such there are several limiting parameters, for example,
+        the maximum body size a client may post against the webserver (e.g. tomcat, jetty or nginx default configuration is usually around 2 MBs). <br/>
+        For loading larger datasets it is generally recommended to load the data via dedicated (but usually proprietary) graph database APIs. See also <semantic-link iri="http://help.metaphacts.com/resource/WorkingWithData"></semantic-link>.
+      </p>
+    </bs-alert>
+    <mp-rdf-upload style='width: 70%;'></mp-rdf-upload>
+	[[else]]
+		<i>No permission for uploading or modifying data.</i>
+	[[/if]]
+
+
+    <h2>Data Export &amp; Deletion</h2>
+    <hr/>
+   	<semantic-query query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
+                          template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <bs-alert bs-style="info"> The repository contains <strong>{{number.value}}</strong> distinct named graphs.</bs-alert> {{/ifCond}}{{/each}}'
+          >
+    </semantic-query>
+    <semantic-table
+      query='
+          SELECT ?graph WHERE {
+              {
+                SELECT DISTINCT ?graph WHERE {
+                  { GRAPH ?graph { ?subject ?predicate ?object. } }
+                } LIMIT 1000
+              }
+          }
+      '
+      column-configuration='[
+        {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
+        {"displayName":"Triples", "cellTemplate":"{{> count}}"}
+        [[#if (hasPermission "sparql:graphstore:get")]]
+        	,{"displayName":"Export", "cellTemplate": "{{> export}}" }
+        [[/if]]
+        [[#if (hasPermission "sparql:graphstore:delete")]]
+        	,{"displayName":"Delete", "cellTemplate": "{{> delete}}" }
+        [[/if]]
+      ]'
+    >
+      <template id='link'>
+        <semantic-link iri="[[resolvePrefix "Admin:NamedGraphs"]]" urlqueryparam-graph="{{graph.value}}">{{graph.value}}</semantic-link>
+      </template>
+      <template id='delete'>
+        <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{graph.value}}"><i class="fa fa-trash-o"></i></mp-graph-store-action>
+      </template>
+      <template id='count'>
+        <semantic-query
+          query='
+            SELECT ?size WHERE {
+              {
+                SELECT (COUNT(*) as ?number) WHERE {
+                  GRAPH <{{graph.value}}> { { SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000 } }
+                } LIMIT 1
+              }
+              BIND(IF(?number>=1000, &apos;>=1000&apos;, ?number) as ?size)
+            }
+          '
+        ></semantic-query>
+      </template>
+      <template id='export'>
+          <bs-dropdown-button id="download" bs-size="xsmall" title="" class="mp-rdf-graph-action__download-dropdown" no-caret="true">
+            <bs-menu-item event-key=1>
+              <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig" class="mp-rdf-graph-action__download-dropdown-item">TRIG</mp-graph-store-action>
+            </bs-menu-item>
+            <bs-menu-item event-key=2>
+              <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl" class="mp-rdf-graph-action__download-dropdown-item">TURTLE</mp-graph-store-action>
+            </bs-menu-item>
+            <bs-menu-item event-key=3>
+              <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt" class="mp-rdf-graph-action__download-dropdown-item">NTRIPLES</mp-graph-store-action>
+            </bs-menu-item>
+            <bs-menu-item event-key=4>
+              <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf" class="mp-rdf-graph-action__download-dropdown-item">RDF/XML</mp-graph-store-action>
+            </bs-menu-item>
+            <bs-menu-item event-key=4>
+              <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl" class="mp-rdf-graph-action__download-dropdown-item">OWL</mp-graph-store-action>
+            </bs-menu-item>
+          </bs-dropdown-button>
+      </template>
+    </semantic-table>
+	</div>
+</div>

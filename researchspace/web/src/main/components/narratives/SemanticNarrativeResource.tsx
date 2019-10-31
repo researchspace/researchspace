@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,9 +17,10 @@
  */
 
 import * as React from 'react';
-import { Component, DOM as D } from 'react';
-import * as ReactSelect from 'react-select';
-import * as sparqljs from 'sparqljs';
+import { Component } from 'react';
+import * as D from 'react-dom-factories';
+import ReactSelect from 'react-select';
+import * as SparqlJs from 'sparqljs';
 import * as _ from 'lodash';
 import * as Kefir from 'kefir';
 
@@ -38,7 +39,7 @@ import { ControlLabel, FormGroup, Col, Form } from 'react-bootstrap';
 
 
 function getTypesFromRepository(repository: string, resource: Rdf.Iri): Kefir.Property<Array<Rdf.Iri>> {
-  const TYPES_QUERY = (new sparqljs.Parser()).parse(`SELECT DISTINCT ?type WHERE { ?__resource__ a ?type }`);
+  const TYPES_QUERY = new SparqlJs.Parser().parse(`SELECT DISTINCT ?type WHERE { ?__resource__ a ?type }`);
   return SparqlClient.select(
     SparqlClient.setBindings(TYPES_QUERY, {'__resource__': resource}),
     {context: {repository: repository}}
@@ -159,7 +160,8 @@ export class SemanticNarrativeResource extends Component<Props, State> {
               value={selectedTemplateKeyOuter}
               placeholder='Display Entity as'
               onChange={(selected) => {
-                const selectedTemplateKey = selected.value;
+                if (Array.isArray(selected)) { return; }
+                const selectedTemplateKey = selected.value as string;
                 const {resourceIri, relBinding} = this.props.state;
                 this.props.onChange({resourceIri, relBinding, selectedTemplateKey});
               }}

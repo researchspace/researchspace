@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@
 import * as React from 'react';
 import * as maybe from 'data.maybe';
 import * as classNames from 'classnames';
-import * as ReactSelect from 'react-select';
+import ReactSelect from 'react-select';
 import { FormControl, FormGroup } from 'react-bootstrap';
 import * as _ from 'lodash';
 
@@ -48,6 +48,8 @@ export interface DateSelectorValue {
 
 export interface DateFormatSelectorProps {
   onSelect: (value: DateSelectorValue) => void
+  onOpen?: () => void;
+  onChange?: (value: TemporalDisjunctT) => void;
 }
 
 export class DateFormatSelectorComponent extends React.Component<DateFormatSelectorProps, State> {
@@ -75,11 +77,12 @@ export class DateFormatSelectorComponent extends React.Component<DateFormatSelec
       <button className={classNames('btn', 'btn-primary')} onClick={this.onSelect}>Select</button>
     </div>;
 
-  private onSelect = () =>
+  private onSelect = () => {
     this.props.onSelect({
       dateFormat: this.state.dateFormat.get(),
       value: this.state.value.get(),
     });
+  }
 
   private dateInput(disjunct: TemporalDisjunct): Array<React.ReactElement<any>> {
     return matchTemporalDisjunct({
@@ -225,6 +228,11 @@ export class DateFormatSelectorComponent extends React.Component<DateFormatSelec
                         options={options}
                         value={this.state.dateFormat.getOrElse(undefined)}
                         clearable={false}
+                        onOpen={() => {
+                          if (this.props.onOpen) {
+                            this.props.onOpen();
+                          }
+                        }}
                         onChange={this.selectDateFormat.bind(this)}
                         optionRenderer={this.dateSelectorOptions}
                         valueRenderer={this.dateSelectorOptions}
@@ -234,6 +242,9 @@ export class DateFormatSelectorComponent extends React.Component<DateFormatSelec
 
   private selectDateFormat(value: {value: TemporalDisjunctT}) {
     this.setState(_.assign({}, this.initialState, {dateFormat: maybe.Just(value.value)}));
+    if (this.props.onChange) {
+      this.props.onChange(value.value);
+    }
   }
 
   private dateSelectorOptions(option: {value: TemporalDisjunctT}) {

@@ -1,5 +1,7 @@
+import sbt.Process
+
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,8 +17,10 @@
  * License along with this library; if not, you can receive a copy 
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
-object CommandUtilities {
 
+import RootBuildOptions._
+
+object CommandUtilities {
  /**
   * Function generate command via ProcessBuilder
   * i.e. on windows command needs to be called via "cmd /C "
@@ -37,6 +41,10 @@ object CommandUtilities {
   def generateNPMcmd(command: String*) : Array[String] = {
     val cmd = Array.concat(Array("npm"), command.toArray)
     return generateCmd(cmd:_*);
+  }
+
+  def runProcessWithEnv(command: Array[String], cwd: sbt.File) = {
+    Process(command, cwd, (buildJsonParamName, buildJsonPath))
   }
 }
 

@@ -1,0 +1,554 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "anyOf": [
+        {
+            "$ref": "#/definitions/BaseSemanticGraphConfig"
+        },
+        {
+            "$ref": "#/definitions/SemanticGraphConfigShow"
+        },
+        {
+            "$ref": "#/definitions/SemanticGraphConfigHide"
+        }
+    ],
+    "definitions": {
+        "BaseSemanticGraphConfig": {
+            "description": "The most simple graph configuration option which require only SPARQL CONSTRUCT query. Visualize all statements from the resulted graph, including literal nodes.",
+            "properties": {
+                "graphStyle": {
+                    "description": "Graph styles definitions. There are some default styles defined for `edge`, `node`, `node[?isLiteral]`, `edge.meta`, etc. So be careful when overriding these generic selectors, because then you will lose all defaults.",
+                    "items": {
+                        "$ref": "#/definitions/Stylesheet"
+                    },
+                    "type": "array"
+                },
+                "groupBy": {
+                    "description": "It is possible to group nodes according to some predicate (discriminator) value to display containment relation. Accepts full IRI of the property that should be used as a discriminator.",
+                    "type": "string"
+                },
+                "height": {
+                    "default": 400,
+                    "description": "Height of the graph component canvas in pixels",
+                    "type": "number"
+                },
+                "id": {
+                    "description": "ID for issuing component events.",
+                    "type": "string"
+                },
+                "noResultTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results",
+                    "type": "string"
+                },
+                "openLinksInNewWindow": {
+                    "default": false,
+                    "description": "`true` if click on the graph node should open corresponding resource page in the new window.",
+                    "type": "boolean"
+                },
+                "query": {
+                    "description": "SPARQL CONSTRUCT query string. By default all triples are visualized, including literal nodes",
+                    "type": "string"
+                },
+                "userZoomingEnabled": {
+                    "default": true,
+                    "description": "Enable/disable mouse zoom.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "query",
+                "noResultTemplate",
+                "graphStyle",
+                "groupBy",
+                "height",
+                "userZoomingEnabled",
+                "id",
+                "openLinksInNewWindow"
+            ],
+            "required": [
+                "query"
+            ],
+            "type": "object"
+        },
+        "Cy.Css.BgFit": {
+            "enum": [
+                "contain",
+                "cover",
+                "none"
+            ],
+            "type": "string"
+        },
+        "Cy.Css.BorderStyle": {
+            "enum": [
+                "dashed",
+                "dotted",
+                "double",
+                "solid"
+            ],
+            "type": "string"
+        },
+        "Cy.Css.CurveStyle": {
+            "enum": [
+                "bezier",
+                "haystack",
+                "segments",
+                "unbundled-bezier"
+            ],
+            "type": "string"
+        },
+        "Cy.Css.EdgeArrowShape": {
+            "enum": [
+                "circle",
+                "diamond",
+                "none",
+                "square",
+                "tee",
+                "triangle",
+                "triangle-backcurve",
+                "triangle-tee"
+            ],
+            "type": "string"
+        },
+        "Cy.Css.ElementCss": {
+            "properties": {
+                "background-blacken": {
+                    "type": "number"
+                },
+                "background-color": {
+                    "type": "string"
+                },
+                "background-fit": {
+                    "$ref": "#/definitions/Cy.Css.BgFit"
+                },
+                "background-image": {
+                    "type": "string"
+                },
+                "background-opacity": {
+                    "type": "number"
+                },
+                "border-color": {
+                    "type": "string"
+                },
+                "border-opacity": {
+                    "type": "number"
+                },
+                "border-style": {
+                    "$ref": "#/definitions/Cy.Css.BorderStyle"
+                },
+                "border-width": {
+                    "type": "number"
+                },
+                "color": {
+                    "anyOf": [
+                        {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "content": {
+                    "anyOf": [
+                        {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "control-point-distances": {
+                    "type": "string"
+                },
+                "curve-style": {
+                    "$ref": "#/definitions/Cy.Css.CurveStyle"
+                },
+                "font-family": {
+                    "type": "string"
+                },
+                "font-size": {
+                    "type": "string"
+                },
+                "height": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "label"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "line-color": {
+                    "type": "string"
+                },
+                "line-style": {
+                    "$ref": "#/definitions/Cy.Css.LineStyle"
+                },
+                "overlay-color": {
+                    "type": "string"
+                },
+                "overlay-opacity": {
+                    "type": "number"
+                },
+                "overlay-padding": {
+                    "type": "number"
+                },
+                "padding-bottom": {
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "padding-left": {
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "padding-right": {
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "padding-top": {
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "shape": {
+                    "$ref": "#/definitions/Cy.Css.Shape"
+                },
+                "target-arrow-color": {
+                    "anyOf": [
+                        {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "target-arrow-shape": {
+                    "$ref": "#/definitions/Cy.Css.EdgeArrowShape"
+                },
+                "text-background-color": {
+                    "type": "string"
+                },
+                "text-background-opacity": {
+                    "type": "number"
+                },
+                "text-background-shape": {
+                    "enum": [
+                        "rectangle",
+                        "roundrectangle"
+                    ],
+                    "type": "string"
+                },
+                "text-border-color": {
+                    "type": "string"
+                },
+                "text-border-opacity": {
+                    "type": "number"
+                },
+                "text-border-width": {
+                    "type": "number"
+                },
+                "text-halign": {
+                    "type": "string"
+                },
+                "text-margin-x": {
+                    "type": "number"
+                },
+                "text-margin-y": {
+                    "type": "number"
+                },
+                "text-max-width": {
+                    "type": "number"
+                },
+                "text-outline-color": {
+                    "type": "string"
+                },
+                "text-outline-opacity": {
+                    "type": "number"
+                },
+                "text-outline-width": {
+                    "type": "number"
+                },
+                "text-rotation": {
+                    "anyOf": [
+                        {
+                            "propertyOrder": [
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "enum": [
+                                "autorotate",
+                                "none"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "text-valign": {
+                    "type": "string"
+                },
+                "text-wrap": {
+                    "type": "string"
+                },
+                "width": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "label"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                }
+            },
+            "propertyOrder": [
+                "background-image",
+                "width",
+                "height",
+                "shape",
+                "color",
+                "content",
+                "font-family",
+                "text-valign",
+                "text-halign",
+                "text-background-color",
+                "text-background-opacity",
+                "text-background-shape",
+                "text-border-color",
+                "text-border-width",
+                "text-border-opacity",
+                "text-outline-width",
+                "text-outline-color",
+                "text-outline-opacity",
+                "text-wrap",
+                "text-max-width",
+                "text-margin-x",
+                "text-margin-y",
+                "font-size",
+                "background-color",
+                "background-blacken",
+                "background-opacity",
+                "background-fit",
+                "border-width",
+                "border-style",
+                "border-color",
+                "border-opacity",
+                "overlay-color",
+                "overlay-padding",
+                "overlay-opacity",
+                "padding-left",
+                "padding-right",
+                "padding-top",
+                "padding-bottom",
+                "control-point-distances",
+                "curve-style",
+                "text-rotation",
+                "line-color",
+                "line-style",
+                "target-arrow-shape",
+                "target-arrow-color"
+            ],
+            "type": "object"
+        },
+        "Cy.Css.LineStyle": {
+            "enum": [
+                "dashed",
+                "dotted",
+                "solid"
+            ],
+            "type": "string"
+        },
+        "Cy.Css.Shape": {
+            "enum": [
+                "ellipse",
+                "heptagon",
+                "hexagon",
+                "octagon",
+                "pentagon",
+                "rectangle",
+                "roundrectangle",
+                "star",
+                "triangle"
+            ],
+            "type": "string"
+        },
+        "SemanticGraphConfigHide": {
+            "description": "With the default configuration, all triples which are present in the graph are always visualized.\nBut it is possible to hide triples using `hidePredicates` option. For example most of the time it can be convenient to hide predicates with literal values.",
+            "properties": {
+                "graphStyle": {
+                    "description": "Graph styles definitions. There are some default styles defined for `edge`, `node`, `node[?isLiteral]`, `edge.meta`, etc. So be careful when overriding these generic selectors, because then you will lose all defaults.",
+                    "items": {
+                        "$ref": "#/definitions/Stylesheet"
+                    },
+                    "type": "array"
+                },
+                "groupBy": {
+                    "description": "It is possible to group nodes according to some predicate (discriminator) value to display containment relation. Accepts full IRI of the property that should be used as a discriminator.",
+                    "type": "string"
+                },
+                "height": {
+                    "default": 400,
+                    "description": "Height of the graph component canvas in pixels",
+                    "type": "number"
+                },
+                "hidePredicates": {
+                    "description": "Blacklist-list edges that should not be visualized in graph. If some node is used only with black-listed predicates it will not be shown. Accepts only full IRIs in angle brackets, e.g `<http://example.com/something>`.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "id": {
+                    "description": "ID for issuing component events.",
+                    "type": "string"
+                },
+                "noResultTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results",
+                    "type": "string"
+                },
+                "openLinksInNewWindow": {
+                    "default": false,
+                    "description": "`true` if click on the graph node should open corresponding resource page in the new window.",
+                    "type": "boolean"
+                },
+                "query": {
+                    "description": "SPARQL CONSTRUCT query string. By default all triples are visualized, including literal nodes",
+                    "type": "string"
+                },
+                "userZoomingEnabled": {
+                    "default": true,
+                    "description": "Enable/disable mouse zoom.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "hidePredicates",
+                "query",
+                "noResultTemplate",
+                "graphStyle",
+                "groupBy",
+                "height",
+                "userZoomingEnabled",
+                "id",
+                "openLinksInNewWindow"
+            ],
+            "required": [
+                "hidePredicates",
+                "query"
+            ],
+            "type": "object"
+        },
+        "SemanticGraphConfigShow": {
+            "description": "With the default configuration, all triples which are present in the graph are always visualized.\nBut it is possible to show only specific triples using `showPredicates` option.",
+            "properties": {
+                "graphStyle": {
+                    "description": "Graph styles definitions. There are some default styles defined for `edge`, `node`, `node[?isLiteral]`, `edge.meta`, etc. So be careful when overriding these generic selectors, because then you will lose all defaults.",
+                    "items": {
+                        "$ref": "#/definitions/Stylesheet"
+                    },
+                    "type": "array"
+                },
+                "groupBy": {
+                    "description": "It is possible to group nodes according to some predicate (discriminator) value to display containment relation. Accepts full IRI of the property that should be used as a discriminator.",
+                    "type": "string"
+                },
+                "height": {
+                    "default": 400,
+                    "description": "Height of the graph component canvas in pixels",
+                    "type": "number"
+                },
+                "id": {
+                    "description": "ID for issuing component events.",
+                    "type": "string"
+                },
+                "noResultTemplate": {
+                    "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results",
+                    "type": "string"
+                },
+                "openLinksInNewWindow": {
+                    "default": false,
+                    "description": "`true` if click on the graph node should open corresponding resource page in the new window.",
+                    "type": "boolean"
+                },
+                "query": {
+                    "description": "SPARQL CONSTRUCT query string. By default all triples are visualized, including literal nodes",
+                    "type": "string"
+                },
+                "showPredicates": {
+                    "description": "White-list edges that should be visualized in graph. If some node is used only with non-visible predicates it will not be shown. Accepts only full IRIs in angle brackets, e.g `<http://example.com/something>`",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "userZoomingEnabled": {
+                    "default": true,
+                    "description": "Enable/disable mouse zoom.",
+                    "type": "boolean"
+                }
+            },
+            "propertyOrder": [
+                "showPredicates",
+                "query",
+                "noResultTemplate",
+                "graphStyle",
+                "groupBy",
+                "height",
+                "userZoomingEnabled",
+                "id",
+                "openLinksInNewWindow"
+            ],
+            "required": [
+                "query",
+                "showPredicates"
+            ],
+            "type": "object"
+        },
+        "Stylesheet": {
+            "properties": {
+                "selector": {
+                    "description": "The selector concept is similar to the CSS selector, but it provides mechanism to match on Rdf Graphs.\nThe most significant difference to the CSS selector is that, the specificity rules are completely ignored in stylesheets. For a given style property for a given element, the last matching selector wins.\n\nThe selector semantics is based on <a target='_blank' href='http://js.cytoscape.org/#selectors'>Cytoscape's Selectors</a> with additional RDF specific matchers like:\n\n1) Matching on nodes/edges:\n   * **node** - `node` selector is used to match on all nodes\n   * **edge** - `edge` selector is used to match on all edges\n\n2) Matching on node type:\n   * **IRI** - to match only nodes which are IRIs one can use `node[?isIri]` selector\n   * **literal** - to match only nodes which are literals one can use `node[?isLiteral]` selector\n   * **bnode** - to match only nodes which are bnodes one can use `node[?isBnode]` selector\n\n3) Exact match on node/edge identifier:\n   * **IRI**. To match on the IRI use `iri` helper function, for example to match the node with IRI `<http://example.com/perso/alice>` use `node[resource = iri(<http://example.com/person/alice>)]`. In the same way one can match on edges using `edge[resource = iri(<...>)]` syntax\n   * **literal** To match on the string literal use `literal` helper function. `literal` helper function takes second optional argument to specify literal data type, by default it assumes `xsd:string`. For example to match string literal `\"Alice\"` one can use the following pattern `node[resource = literal(Alice)]'`. In case of typed literal, for example `2^^xsd:integer`, one need to explicitly provide datatype - `node[resource = literal(\"2\", iri(<http://www.w3.org/2001/XMLSchema#integer>))]`\n\n4) Match on outgoing properties:\n   * **property existence** One can match all nodes which have specific outgoing property without any constrain on the property value. There is special `property` function to match on outgoing edges. For example to match on all nodes that have `foaf:knows` outgoing edges - `node[property(<http://xmlns.com/foaf/0.1/knows>)]`\n   * **property value** Also it is possible to match on the nodes which have some specific value for some property. One of the most typical use-case for this matcher is styling of nodes of some `rdf:type`, but it is also possible to match on literal values, etc. For example to match on all nodes that have value `2^^xsd:integer` for some property `<http://example.com/count>` - `[property(<http://example.com/count>) *= literal(2, iri(<http://www.w3.org/2001/XMLSchema#integer>))]`\n\n5) Matching on edge source/target:\n   * **source** - to match on all edges which have some specific resource as a source one can use `edge[source = iri(<...>)]` syntax\n   * **target** - to match on all edges which are pointing to some specific resource one can use `edge[target = iri(<...>)]` syntax\n\nSelectors can be combined together (logical AND) or joined together (logical OR) with commas.\nFor example to match on nodes that have both `example:Alice` **AND** `example:Bob` as `foaf:knows` values one can use the following selector - `node[property(<http://xmlns.com/foaf/0.1/knows>) *= iri(<http://example.com/person/Alice>)][property(<http://xmlns.com/foaf/0.1/knows>) *= iri(<http://example.com/person/Bob>)`.\nAnd to match on nodes that `foaf:knows` has value `example:Alice` **OR** `example:Bob` on can use the following selector `node[property(<http://xmlns.com/foaf/0.1/knows>) *= iri(<http://example.com/person/Alice>)], node[property(<http://xmlns.com/foaf/0.1/knows>) *= iri(<http://example.com/person/Bob>)`.\n\nSome cytoscape extensions can define their own useful matchers.",
+                    "type": "string"
+                },
+                "style": {
+                    "$ref": "#/definitions/Cy.Css.ElementCss",
+                    "description": "Graph styles definition in JSON format.\nIn additional to built-in [Cytoscape.js Styles](http://js.cytoscape.org/#style) one can also use some features which are specific to RDF graphs.\n\nIt is possible to use handlebars templates to access values of outgoing edges in style attributes. E.g. to use `rdfs:label` value as label for the node one can use the following style:\n```\n'style': {\n   'content': '{{[<http://www.w3.org/2000/01/rdf-schema#label>].[0].value}}',\n}\n```\nThe assumption here is that a property can have multiple values.\n\nAlso it is possible to use resource preferred label or preferred thumbnail with the help of `data` function.\nFor example to use preferred label for as node content one can use the following snippet:\n```\n'style': {\n   'content': 'data(label)',\n}\n```\nand in A similar way preferred thumbnail can be used as node background:\n```\n'style': {\n   'content': 'data(thumbnail)',\n}\n```"
+                }
+            },
+            "propertyOrder": [
+                "selector",
+                "style"
+            ],
+            "required": [
+                "selector",
+                "style"
+            ],
+            "type": "object"
+        }
+    }
+}
+

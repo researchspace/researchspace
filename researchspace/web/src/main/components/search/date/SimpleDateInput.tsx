@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -108,7 +108,8 @@ export class SimpleDateInput extends React.PureComponent<SimpleDateInputProps, S
     const { day, month, year } = state;
     const isFullDate = !_.isEmpty(day) && !_.isEmpty(month) && !_.isEmpty(year);
     if (isFullDate) {
-      this.props.onSelected(moment({day: day, month: month, year: year}));
+      const zeroIndexedMonth = parseInt(month) - 1; // months in MomentJS are zero indexed
+      this.props.onSelected(moment({day: day, month: zeroIndexedMonth, year: year}));
     }
   }
 }

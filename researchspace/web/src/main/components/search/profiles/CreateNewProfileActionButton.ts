@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,8 @@
  * @author Artem Kozlov <ak@metaphacts.com>
  */
 
-import { Component, DOM as D } from 'react';
+import { Component } from 'react';
+import * as D from 'react-dom-factories';
 import * as maybe from 'data.maybe';
 
 import { navigateToResource } from 'platform/api/navigation';

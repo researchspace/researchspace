@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@ import { findDOMNode } from 'react-dom';
 import * as classnames from 'classnames';
 import * as _ from 'lodash';
 import * as Maybe from 'data.maybe';
-import * as ReactSelect from 'react-select';
+import ReactSelect from 'react-select';
 
 import { TemplateItem } from 'platform/components/ui/template';
 
@@ -143,7 +143,7 @@ class StackSelector extends Component<Props, StackSelectorState> {
   }
 }
 
-class DropdownSelector extends Component<Props, void> {
+class DropdownSelector extends Component<Props, {}> {
   render() {
     const {tupleTemplate, className, resources, actions, itemClassName} = this.props;
     return (
@@ -163,7 +163,7 @@ class DropdownSelector extends Component<Props, void> {
 
   private onSelectMounted = (select: any) => {
     if (select) {
-      const node = findDOMNode(select);
+      const node = findDOMNode(select) as Element;
       node.setAttribute('aria-label', this.props.label);
     }
   }
@@ -185,7 +185,7 @@ export function renderResource(
   });
 }
 
-export class ItemSelector extends Component<Props, void> {
+export class ItemSelector extends Component<Props, {}> {
   render() {
     return this.props.mode === 'dropdown'
       ? <DropdownSelector {...this.props} />

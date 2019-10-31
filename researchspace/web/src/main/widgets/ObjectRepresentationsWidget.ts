@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,11 @@
  * @author Mike Kelly <mkelly@britishmuseum.org>
  */
 
-import {DOM as D, Component, createElement, createFactory} from 'react';
+import { Component, createElement, createFactory } from 'react';
+import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as classNames from 'classnames';
-import * as TransitionGroup from 'react-addons-css-transition-group';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
@@ -237,15 +238,22 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
       createElement(TransitionGroup,
         {
           key: 'image-focused-transition-group',
-          transitionName: 'cross-fade',
-          transitionEnterTimeout: this.TRANSITION_TIME,
-          transitionLeaveTimeout: this.TRANSITION_TIME,
         },
-        D.img({
-          className: 'image--focused',
-          src: focused,
-          key: focused,
-        })
+        createElement(CSSTransition,
+          {
+            key: focused,
+            classNames: 'cross-fade',
+            timeout: {
+              enter: this.TRANSITION_TIME,
+              exit: this.TRANSITION_TIME,
+            }
+          },
+          D.img({
+            className: 'image--focused',
+            src: focused,
+            key: focused,
+          })
+        )
       )
     );
   }
@@ -254,57 +262,64 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
     return createElement(TransitionGroup,
       {
         key: 'image-thumbs-transition-group',
-        transitionName: 'fade-in',
-        transitionAppear: true,
-        transitionAppearTimeout: this.TRANSITION_TIME,
-        transitionEnterTimeout: this.TRANSITION_TIME,
-        transitionLeaveTimeout: this.TRANSITION_TIME,
       },
-      D.div(
+      createElement(CSSTransition,
         {
           key: 'object-representations__images',
-          className: 'object-representations__images',
+          classNames: 'fade-in',
+          appear: true,
+          timeout: {
+            appear: this.TRANSITION_TIME,
+            enter: this.TRANSITION_TIME,
+            exit: this.TRANSITION_TIME,
+          }
         },
-        // Thumbnail for main representation, which is always the first thumbnail
-        // Don't bother showing it if there aren't any other thumbnails
-        this.state.otherPreviewReps.length ?
-          createElement(TemplateItem, {
-            key: 'main-rep-thumb',
-            template: {
-              source: this.props.template,
-              options: {imgURL: {value: this.state.mainPreviewRep.get().imgURL}},
-            },
-            componentProps: {
-              className: classNames({
-                'object-representations__image--active':
-                  (this.state.mainPreviewRep.get().imgURL === this.state.focusedPreviewRep.get().imgURL),
-                'object-representations__image':
-                  (this.state.mainPreviewRep.get().imgURL !== this.state.focusedPreviewRep.get().imgURL),
-              }),
-              onClick: () => this.updateFocusedImage(this.state.mainPreviewRep.get().imgURL),
-              onLoad: this.handleImageChanges,
-            },
-          }) : null,
-        // Thumbnails for other representations
-        this.state.otherPreviewReps.map((res, i) => {
-          return createElement(TemplateItem, {
-            key: 'other-rep-thumb-' + i,
-            template: {
-              source: this.props.template,
-              options: {imgURL: {value: res.imgURL}},
-            },
-            componentProps: {
-              className: classNames({
-                'object-representations__image--active':
-                  (this.state.focusedPreviewRep.get().imgURL === res.imgURL),
-                'object-representations__image':
-                  (this.state.focusedPreviewRep.get().imgURL !== res.imgURL),
-              }),
-              onClick: () => this.updateFocusedImage(res.imgURL),
-              onLoad: this.handleImageChanges,
-            },
-          });
-        })
+        D.div(
+          {
+            key: 'object-representations__images',
+            className: 'object-representations__images',
+          },
+          // Thumbnail for main representation, which is always the first thumbnail
+          // Don't bother showing it if there aren't any other thumbnails
+          this.state.otherPreviewReps.length ?
+            createElement(TemplateItem, {
+              key: 'main-rep-thumb',
+              template: {
+                source: this.props.template,
+                options: {imgURL: {value: this.state.mainPreviewRep.get().imgURL}},
+              },
+              componentProps: {
+                className: classNames({
+                  'object-representations__image--active':
+                    (this.state.mainPreviewRep.get().imgURL === this.state.focusedPreviewRep.get().imgURL),
+                  'object-representations__image':
+                    (this.state.mainPreviewRep.get().imgURL !== this.state.focusedPreviewRep.get().imgURL),
+                }),
+                onClick: () => this.updateFocusedImage(this.state.mainPreviewRep.get().imgURL),
+                onLoad: this.handleImageChanges,
+              },
+            }) : null,
+          // Thumbnails for other representations
+          this.state.otherPreviewReps.map((res, i) => {
+            return createElement(TemplateItem, {
+              key: 'other-rep-thumb-' + i,
+              template: {
+                source: this.props.template,
+                options: {imgURL: {value: res.imgURL}},
+              },
+              componentProps: {
+                className: classNames({
+                  'object-representations__image--active':
+                    (this.state.focusedPreviewRep.get().imgURL === res.imgURL),
+                  'object-representations__image':
+                    (this.state.focusedPreviewRep.get().imgURL !== res.imgURL),
+                }),
+                onClick: () => this.updateFocusedImage(res.imgURL),
+                onLoad: this.handleImageChanges,
+              },
+            });
+          })
+        )
       )
     );
   }
@@ -342,22 +357,42 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
               width: this.state.focusedModalRep.isJust ? `${this.state.focusedModalRep.get().width}px` : '0px',
               height: this.state.focusedModalRep.isJust ? `${this.state.focusedModalRep.get().height}px` : '0px',
             },
-            transitionName: 'fade-in',
-            transitionAppear: true,
-            transitionLeave: true,
-            transitionAppearTimeout: this.TRANSITION_TIME,
-            transitionEnterTimeout: this.TRANSITION_TIME,
-            transitionLeaveTimeout: this.TRANSITION_TIME,
           },
           this.state.modalNavIsDisplayed ? [
-            D.span({
-              className: 'object-representations-modal__nav fa fa-chevron-circle-left',
-              onClick: this.prevModalImage.bind(this)
-            }),
-            D.span({
-              className: 'object-representations-modal__nav fa fa-chevron-circle-right',
-              onClick: this.nextModalImage.bind(this)
-            }),
+            createElement(CSSTransition,
+              {
+                key: 'left',
+                classNames: 'fade-in',
+                appear: true,
+                leave: true,
+                timeout: {
+                  appear: this.TRANSITION_TIME,
+                  enter: this.TRANSITION_TIME,
+                  exit: this.TRANSITION_TIME,
+                }
+              },
+              D.span({
+                className: 'object-representations-modal__nav fa fa-chevron-circle-left',
+                onClick: this.prevModalImage.bind(this)
+              })
+            ),
+            createElement(CSSTransition,
+              {
+                key: 'right',
+                classNames: 'fade-in',
+                appear: true,
+                leave: true,
+                timeout: {
+                  appear: this.TRANSITION_TIME,
+                  enter: this.TRANSITION_TIME,
+                  exit: this.TRANSITION_TIME,
+                }
+              },
+              D.span({
+                className: 'object-representations-modal__nav fa fa-chevron-circle-right',
+                onClick: this.nextModalImage.bind(this)
+              })
+            ),
           ] : []
         ),
         D.img({
@@ -371,7 +406,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
   }
 
   private updateFocusedImage(url) {
-    let newFocusedRep = _.find(this.allReps, ['imgURL', url]);
+    let newFocusedRep = _.find(this.allReps, rep => rep.imgURL === url);
     this.setState(
       {
         focusedPreviewRep: maybe.Just(newFocusedRep),

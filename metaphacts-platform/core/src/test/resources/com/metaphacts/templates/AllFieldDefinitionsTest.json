@@ -1,0 +1,74 @@
+[{
+  "id": "http://www.metaphacts.com/field/testinstance/fieldDefinitionContainer/fieldInstance1",
+  "iri": "http://www.metaphacts.com/field/testinstance/fieldDefinitionContainer/fieldInstance1",
+  "label": "Test Field 1",
+  "description": "Test Field 1 comment",
+  "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string",
+  "minOccurs": "1",
+  "maxOccurs": "2",
+  "defaultValues": [],
+  "domain": [],
+  "range": [],
+  "autosuggestionPattern":
+"SELECT DISTINCT ?value WHERE {
+  ?s rdfs:label ?value
+  FILTER(REGEX(str(?value),'*?token*','i'))
+} LIMIT 10",
+  "selectPattern":
+"SELECT $value WHERE {
+  # select field 1
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}",
+  "askPattern": "ASK { ?a ?b ?c }",
+  "valueSetPattern":
+"SELECT DISTINCT ?value ?label WHERE {
+  ?value rdfs:label ?label
+} LIMIT 10",
+  "insertPattern":
+"INSERT {
+  # insert field 1
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}
+WHERE {}",
+ "deletePattern":"DELETE { $subject rdfs:label $value. } WHERE {}",
+ "treePatterns":{
+   "type":"simple",
+   "schemePattern":"?item a <http://example.com/treeItem>"
+ }
+},
+{
+  "id": "http://www.metaphacts.com/field/testinstance/fieldDefinitionContainer/fieldInstance2",
+  "iri": "http://www.metaphacts.com/field/testinstance/fieldDefinitionContainer/fieldInstance2",
+  "label": "Test Field 2",
+  "description": "Test Field 2 comment",
+  "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string",
+  "defaultValues": ["first default label", "second default label"],
+  "domain": ["http://example.com/Domain1", "http://example.com/Domain2"],
+  "range": ["http://example.com/Range1", "http://example.com/Range2"],
+  "autosuggestionPattern":
+"SELECT DISTINCT ?value WHERE {
+  ?s rdfs:label ?value
+  FILTER(REGEX(str(?value),'*?token*','i'))
+} LIMIT 15",
+  "selectPattern":
+"SELECT $value WHERE {
+  # select field 2
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}",
+  "askPattern": "ASK { ?a ?b ?c }",
+  "valueSetPattern":
+"SELECT DISTINCT ?value ?label WHERE {
+  ?value rdfs:label ?label
+} LIMIT 15",
+  "insertPattern":
+"INSERT {
+  # insert field 2
+  $subject a skos:ConceptScheme .
+  $subject rdfs:label $value .
+}
+WHERE {}",
+ "deletePattern":"DELETE { $subject rdfs:label $value. } WHERE {}"
+}]

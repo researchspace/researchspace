@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,8 @@ import { Rdf } from 'platform/api/rdf';
 
 import { LdpRegionService, OARegionAnnotation } from './LDPImageRegionService';
 
+import { ImageOrRegionInfo } from './ImageAnnotationService';
+
 export interface AnnotationEndpoint {
   init?: () => void;
   search?: (canvasIri: Rdf.Iri) => Kefir.Property<OARegionAnnotation[]>;
@@ -31,11 +33,13 @@ export interface AnnotationEndpoint {
   userAuthorize?: (action: any, annotation: OARegionAnnotation) => boolean;
 }
 
-export class LdpAnnotationEndpoint implements AnnotationEndpoint {
-  displayedRegion: Rdf.Iri;
+export type ImagesInfoByIri = Map<string, ImageOrRegionInfo>;
 
-  constructor(options: { displayedRegion?: Rdf.Iri }) {
-    this.displayedRegion = options.displayedRegion;
+export class LdpAnnotationEndpoint implements AnnotationEndpoint {
+  private readonly imagesInfo: ImagesInfoByIri;
+
+  constructor(options: { imagesInfo?: ImagesInfoByIri }) {
+    this.imagesInfo = options.imagesInfo || new Map<string, ImageOrRegionInfo>();
   }
 
   search(canvasIri: Rdf.Iri) {
@@ -43,9 +47,10 @@ export class LdpAnnotationEndpoint implements AnnotationEndpoint {
     // filtering specific image region if we're called to display only one region.
     // This is overhead, all regions are retreived and only one is used,
     // but i'm unshure should we change API here
-    if (this.displayedRegion) {
+    const imageInfo = this.imagesInfo.get(canvasIri.value);
+    if (imageInfo && imageInfo.isRegion) {
       annotationList = annotationList.map(list => list.filter(
-        annotation => annotation['@id'] === this.displayedRegion.value));
+        annotation => annotation['@id'] === imageInfo.iri.value));
     }
     return annotationList;
   }

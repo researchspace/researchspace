@@ -15,24 +15,49 @@
  * License along with this library; if not, you can receive a copy
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
-import com.earldouglas.xwp.ContainerPlugin
 
-lazy val metaphactory = (project in file("metaphactory"))
+import RootBuildOptions._
+
+val _ = println("Included projects to build: " + includeProjects.mkString(", "))
 
 lazy val clientApi =
-  (project in file("metaphactory/client-api"))
-    .disablePlugins(HeaderPlugin, EclipsePlugin)
-    .dependsOn(metaphactory)
-    
+  (project in file("metaphacts-platform/client-api"))
+    .disablePlugins(HeaderPlugin)
 
-lazy val researchspace = (project in file("researchspace"))
-  .dependsOn(metaphactory % "test->test;compile->compile")
+lazy val metaphactsPlatform =
+  Project("metaphacts-platform", file("metaphacts-platform"))
+    .dependsOn(clientApi)
+
+lazy val metaphactory = if (includeProjects.contains("metaphactory")) {
+  (project in file("metaphactory"))
+    .dependsOn(metaphactsPlatform % "test->test;compile->compile")
+} else { null }
+
+lazy val researchspace = if (includeProjects.contains("researchspace")) {
+  (project in file("researchspace"))
+    .dependsOn(metaphactsPlatform % "test->test;compile->compile")
+} else { null }
+
+lazy val graphscope = if (includeProjects.contains("graphscope")) {
+  (project in file("graphscope"))
+    .disablePlugins(HeaderPlugin, EclipsePlugin)
+} else { null }
+
+lazy val aggregatedProjects =
+  (List(metaphactsPlatform, clientApi) ::: List(researchspace, graphscope, metaphactory))
+    .filter(p => p != null)
+    .map(p => p: sbt.ProjectReference)
+lazy val dependedOnProjects =
+  (List(metaphactsPlatform) ::: List(researchspace, graphscope, metaphactory))
+    .filter(p => p != null)
+    .map(p => p: sbt.ClasspathDep[sbt.ProjectReference])
 
 lazy val platform = (project in file("."))
   .enablePlugins(JettyPlugin)
   .disablePlugins(HeaderPlugin)
-  .aggregate(metaphactory, clientApi, researchspace)
-  .dependsOn(metaphactory, researchspace)
+  .aggregate(aggregatedProjects: _*)
+  .dependsOn(dependedOnProjects: _*)
 
-version := "2.1-SNAPSHOT"
-licenseFile := "researchspace/LICENSE.txt"
+// below parts are defined in project/RootBuildOptions.scala
+version := platformVersion
+licenseFile := licenseBundleOptions.licenseFile

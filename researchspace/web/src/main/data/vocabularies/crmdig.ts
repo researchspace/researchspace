@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,10 +27,13 @@ module crmdig {
   export const D1_Digital_Object = iri('D1_Digital_Object');
   export const D3_Formal_Derivation = iri('D3_Formal_Derivation');
   export const D29_Annotation_Object = iri('D29_Annotation_Object');
+  export const D30_Annotation_Event = iri('D30_Annotation_Event');
+
   export const L21_used_as_derivation_source = iri('L21_used_as_derivation_source');
   export const L22_created_derivative = iri('L22_created_derivative');
   export const L13_used_parameters = iri('L13_used_parameters');
   export const L43_annotates = iri('L43_annotates');
+  export const L48i_was_annotation_created_by = iri('L48i_was_annotation_created_by');
 }
 
 export default crmdig;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,6 @@
 
 package org.researchspace.ldp;
 
-import javax.inject.Inject;
-
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -27,16 +25,15 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.researchspace.vocabulary.CrmInf;
 
 import com.google.common.base.Throwables;
-import com.google.inject.Provider;
 import com.metaphacts.data.rdf.PointedGraph;
 import com.metaphacts.data.rdf.container.AbstractLDPContainer;
 import com.metaphacts.data.rdf.container.LDPR;
-import com.metaphacts.data.rdf.container.RootContainer;
+import com.metaphacts.repository.MpRepositoryProvider;
 import com.metaphacts.vocabulary.LDP;
 
 /**
@@ -46,8 +43,8 @@ import com.metaphacts.vocabulary.LDP;
 public class PropositionSetsContainers extends AbstractLDPContainer {
     public static final String IRI_STRING = "http://www.researchspace.org/ontology/Propositions.Container";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
-    public PropositionSetsContainers(IRI iri, Repository repository) {
-        super(iri, repository);
+    public PropositionSetsContainers(IRI iri, MpRepositoryProvider repositoryProvider) {
+        super(iri, repositoryProvider);
     }
     
     public void initialize() {
@@ -86,7 +83,7 @@ public class PropositionSetsContainers extends AbstractLDPContainer {
     @Override
     protected void add(PointedGraph pointedGraph, RepositoryConnection repConnection) throws RepositoryException{
         PointedGraph pg = addLdpContainerRelation(addProvenance(pointedGraph));
-        repConnection.add(pg.getGraph(), new I4_Proposition_Set(pointedGraph.getPointer(), this.repository).getContextIRI());
+        repConnection.add(pg.getGraph(), new I4_Proposition_Set(pointedGraph.getPointer(), this.repositoryProvider).getContextIRI());
     }
     
     @Override
@@ -95,5 +92,9 @@ public class PropositionSetsContainers extends AbstractLDPContainer {
         // since propositions are sets of statements which should not
         // be mixed with with provenance statements
         return pg;
+    }
+    
+    public IRI getResourceType() {
+    	return CrmInf.I4_Proposition_Set;
     }
 }

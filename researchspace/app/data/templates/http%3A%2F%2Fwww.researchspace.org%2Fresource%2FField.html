@@ -55,41 +55,42 @@
           </div>
         </mp-panel-header>
         <mp-panel-body>
-          <semantic-context repository='assets'>
-            <semantic-query
-              query='
-                            SELECT DISTINCT ?assertion ?user ?time WHERE {
-                              ?assertion rso:targetsField <[[urlParam "field"]]> ;
-                                         rso:targetsRecord <[[urlParam "subject"]]> ;
-                                         prov:wasAttributedTo ?user ;
-                                         prov:generatedAtTime ?time .
-                            }
-                          '
-              template='{{> template}}'
-            >
-              <template id='template'>
-                <div>
-                  <ol>
-                    {{#each bindings}}
-                    <li>
-                      <p>
-                        Assertion <semantic-context repository='assets'><semantic-link uri='{{assertion.value}}'></semantic-link></semantic-context> about <semantic-context repository='assets'><mp-label iri='[[urlParam "field"]]' class="field-type-title"></mp-label></semantic-context> by <mp-label iri='{{user.value}}'></mp-label>, {{dateTimeFormat time.value "LLL"}}
-                      <p>
-                      <div>
-                        <mp-field-visualization
-                          subject='[[urlParam "subject"]]'
-                          fields='[[fieldDefinitions field=(urlParam "field")]]'
-                          template='{{> rsp:FieldBasedAssertedValueVisualization}}'
-                        ></mp-field-visualization>
-                      </div>
-                    </li>
-                    {{/each}}
-                  </ol>
-                  [[> newAssertionButton]]
-                </div>
-              </template>
-            </semantic-query>
-          </semantic-context>
+          <div>
+            <semantic-context repository='assets'>
+              <div>
+                <semantic-query
+                  query='SELECT DISTINCT ?assertion ?user ?time WHERE {
+                       ?assertion rso:targetsField <[[urlParam "field"]]> ;
+                       rso:targetsRecord <[[urlParam "subject"]]> ;
+                       prov:wasAttributedTo ?user ;
+                       prov:generatedAtTime ?time .
+                       }'
+                  template='{{> assertionTemplate}}'>
+                  <template id='assertionTemplate'>
+                    <div>
+                      <ol>
+                        {{#each bindings}}
+                        <li>
+                          <p>
+                            Assertion <semantic-context repository='assets'><semantic-link uri='{{assertion.value}}'></semantic-link></semantic-context> about <semantic-context repository='assets'><mp-label iri='[[urlParam "field"]]' class="field-type-title"></mp-label></semantic-context> by <mp-label iri='{{user.value}}'></mp-label>, {{dateTimeFormat time.value "LLL"}}
+                          <p>
+                          <div>
+                            <mp-field-visualization
+                              subject='[[urlParam "subject"]]'
+                              fields='[[fieldDefinitions field=(urlParam "field")]]'
+                              template='{{> rsp:FieldBasedAssertedValueVisualization}}'
+                            ></mp-field-visualization>
+                          </div>
+                        </li>
+                        {{/each}}
+                      </ol>
+                    </div>
+                  </template>
+                </semantic-query>
+                [[> newAssertionButton]]
+              </div>
+            </semantic-context>
+          </div>
         </mp-panel-body>
       </mp-panel>
     </bs-col>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -52,7 +52,6 @@ interface SelectedBelief {
 }
 
 export interface BeliefSelectionProps {
-  subject: Rdf.Iri;
   acceptRecordQuery: string;
   multiSelection: boolean;
   onSelect: (belief: Array<ArgumentsBelief>) => void;
@@ -105,16 +104,17 @@ export class BeliefSelection extends React.Component<BeliefSelectionProps, State
   }
 
   private fieldSelection = (belief: SelectedBelief) => {
-    const { subject, messages, multiSelection } = this.props;
+    const { messages, multiSelection } = this.props;
     return <Form horizontal>
         <FormGroup>
           <Col componentClass={ControlLabel} sm={2}>Fields:</Col>
           <Col sm={10}>
             <FieldSelection
               multiSelection={multiSelection}
-              subject={subject} record={belief.record} types={belief.types}
+              record={belief.record} types={belief.types}
               placeholder={messages.fieldSelectionPlaceholder}
-              onCancel={this.onCancelBelief} onSave={this.onFieldSelection}
+              onCancel={this.onCancelBelief}
+              onSave={this.onFieldSelection}
             />
           </Col>
         </FormGroup>
@@ -150,7 +150,7 @@ export class BeliefSelection extends React.Component<BeliefSelectionProps, State
           getOverlaySystem().show(
             'field-selection-overlay',
               <OverlayDialog onHide={this.onCancelBelief} title='Field Selection' type='modal' show={true}>
-                <p>Select Field for <ResourceLinkComponent uri={resource.value} />:</p>
+                <p>Select Field for <ResourceLinkComponent uri={resource.value} guessRepository={true}/>:</p>
                 {this.fieldSelection(belief)}
             </OverlayDialog>
           );
@@ -160,8 +160,8 @@ export class BeliefSelection extends React.Component<BeliefSelectionProps, State
       }
     );
 
-  private onFieldSelection = (selected: Array<ArgumentsFieldDefinition> | Rdf.Iri) => {
-    const normalizedSelected = this.props.multiSelection ? selected : [selected];
+  private onFieldSelection = (selected: Array<ArgumentsFieldDefinition> | ArgumentsFieldDefinition) => {
+    const normalizedSelected = Array.isArray(selected) ? selected : [selected];
     this.setState((state: State) => ({
       belief: state.belief.map(belief => ({...belief, selectedFields: normalizedSelected})),
     }));
@@ -231,6 +231,6 @@ export class BeliefSelection extends React.Component<BeliefSelectionProps, State
       SparqlClient.select(
         SparqlClient.setBindings(this.TYPES_QUERY, {'__resource__': resource}), {context: {repository: repository}}
       ).map(
-        result => result.results.bindings.map(binding => binding['type'])
+        result => result.results.bindings.map(binding => binding['type'] as Rdf.Iri)
     );
 }

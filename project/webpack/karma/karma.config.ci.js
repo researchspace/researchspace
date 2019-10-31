@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,14 +16,15 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-const assign = require('object-assign'),
-      defaultsFn = require('../defaults.js'),
-      utils = require('../utils.js');
+const assign = require('object-assign');
+const defaultsFn = require('../defaults.js');
 
-module.exports = function(config) {
-  const buildConfig = utils.parseArgs(config.env.buildConfig);
-  const defaults = defaultsFn(buildConfig);
-  const karmaConfig = require('./karma.config.js')(buildConfig, defaults);
+/**
+ * @param {import('karma').Config} config
+ */
+module.exports = function (config) {
+  const defaults = defaultsFn();
+  const karmaConfig = require('./karma.config.js')(defaults);
 
   config.set(assign({}, karmaConfig, {
     logLevel: config.LOG_INFO,

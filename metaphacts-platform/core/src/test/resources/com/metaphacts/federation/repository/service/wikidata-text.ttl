@@ -1,0 +1,65 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX : <http://www.metaphacts.com/ontologies/platform/service/custom#>
+
+<http://www.metaphacts.com/ontologies/platform/ephedra#WikidataTextSearch> a <http://www.metaphacts.com/ontologies/platform/ephedra#Service> ;
+	<http://www.openrdf.org/config/sail#sailType> "metaphacts:WikidataTextSearch" ;
+	<http://www.w3.org/2000/01/rdf-schema#label> "A wrapper for the Wikidata test search." ;
+	<http://www.metaphacts.com/ontologies/platform/ephedra#hasSPARQLPattern> (
+		[
+			sp:subject :_uri ;
+			sp:predicate <http://www.metaphacts.com/ontology/hasWikidataSearchToken> ;
+			sp:object :_token
+		]
+		[
+			sp:subject :_uri ;
+			sp:predicate <http://schema.org/description> ;
+			sp:object :_description
+		]
+		[
+			sp:subject :_uri ;
+			sp:predicate <http://www.w3.org/2000/01/rdf-schema#label> ;
+			sp:object :_label
+		]
+		[
+			sp:subject :_uri ;
+			sp:predicate <http://www.metaphacts.com/ontology/orderNr> ;
+			sp:object :_rank
+		]
+	) ;
+	spin:constraint
+		[
+			a spl:Argument ;
+      rdfs:comment "Input token" ;
+      spl:predicate :_token ;
+      spl:valueType xsd:string
+    ] ;
+	spin:column
+		[
+			a spin:Column ;
+			rdfs:comment "URI of the Wikidata resource" ;
+			spl:predicate :_uri ;
+			spl:valueType rdf:Resource
+		] ;
+	spin:column
+		[
+			a spin:Column ;
+			rdfs:comment "Label of the Wikidata resource" ;
+			spl:predicate :_label ;
+			spl:valueType xsd:string
+		] ;
+	spin:column
+		[
+			a spin:Column ;
+			rdfs:comment "Description of the Wikidata resource" ;
+			spl:predicate :_description ;
+			spl:valueType xsd:string
+		] ;
+	spin:column
+		[
+			a spin:Column ;
+			rdfs:comment "Rank" ;
+			spl:predicate :_rank ;
+			spl:valueType xsd:integer
+		] .

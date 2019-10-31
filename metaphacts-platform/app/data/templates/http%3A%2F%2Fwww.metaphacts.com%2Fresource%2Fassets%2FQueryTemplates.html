@@ -1,0 +1,112 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+    <li>
+    <semantic-link title="Assets" uri="http://www.metaphacts.com/resource/assets/">Assets</semantic-link>
+  </li>
+  <li class="active">Query Templates</li>
+</ol>
+
+<!-- style for fa stacked icon -->
+<style>
+  .fa-stack-1x { top: .25em; }
+  .fa-stack {
+    vertical-align: -16%;
+  }
+  .filetype-text {
+    font-size: .4em;
+    font-weight: 800;
+  }
+</style>
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2>
+        <span class="fa-stack">
+          <span class="fa-stack-1x filetype-text">SPIN</span>
+          <i class="fa fa-file-o fa-stack-2x"></i>
+        </span>
+      </h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Query Templates</h2>
+    </div>
+  </div>
+  <div class='page__body'> 
+    
+      [[#if (urlParam "queryTemplateFilter")]]
+					<bs-alert bs-style="warning">
+            Current view is filtered to a particular query. <mp-link url="/resource/?uri=[[this]]">Show all</mp-link>.
+          </bs-alert>
+      [[/if]]  
+      [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#queryTemplateContainer>:read:any")]]         
+      		<semantic-context repository="assets">
+            <semantic-table config='{
+              "query":"SELECT ?template ?label ?text ?author ?modified WHERE {
+                        ?template <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spinrdf.org/spin#Template>;
+                        <http://www.w3.org/ns/prov#wasAttributedTo> ?author;
+                        <http://www.w3.org/ns/prov#generatedAtTime> ?modified
+                        OPTIONAL {?template <http://www.w3.org/2000/01/rdf-schema#label> ?label.}
+                        [[#if (urlParam "queryTemplateFilter")]]FILTER(?template=<[[urlParam "queryTemplateFilter"]]>) [[/if]]            
+                        } ORDER BY DESC(?modified)",
+                   "columnConfiguration" : [
+                        {"variableName":"template", "displayName":"Template", "cellTemplate": "
+                                    <mp-overlay-dialog title=\"Edit Query Template\" type=\"modal\" bs-size=\"large\">
+                                      <mp-overlay-dialog-trigger><a>{{label.value}}</a></mp-overlay-dialog-trigger>
+                                      <mp-overlay-dialog-content>
+                                          <div>
+                                             <semantic-context repository=\"assets\">
+                                              <mp-spin-query-template-editor iri=\"{{template.value}}\"></mp-spin-query-template-editor>
+                                             </semantic-context>
+                                          </div>
+                                      </mp-overlay-dialog-content>
+                                    </mp-overlay-dialog>
+                                   "},                                                          
+                        {"variableName":"author", "displayName":"Author", "cellTemplate": "<mp-label iri=\"{{author.value}}\"></mp-label>" },
+                        {"variableName":"modified", "displayName":"Modified", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" },
+                        {"displayName": "Actions", "cellTemplate": "{{> actions}}"}
+                   ],
+                   "layout":{
+                     "tupleTemplate": null,
+                     "options":{
+                        "showFilter":true,
+                        "resultsPerPage":10
+                     }
+                    }
+            }'>
+              <template id='actions'>
+                <div>
+                  <mp-copy-to-clipboard text='{{template.value}}' message='Query Template IRI has been copied to clipboard!'>
+                    <button class="btn btn-xs btn-default" style="margin-right: 8px">
+                      <i class="fa fa-clipboard" aria-hidden=true></i> Copy IRI
+                    </button>
+                  </mp-copy-to-clipboard>
+                  [[#if (hasPermission "api:ldp:container:http://www.metaphacts.com/ontologies/platform#querytemplatecontainer:delete:any")]]   
+                    <mp-ldp-remove-from-container-action iri="{{template.value}}" container="http://www.metaphacts.com/ontologies/platform#queryTemplateContainer">
+                      <button class="btn btn-xs btn-danger" style="margin-right: 8px;"><i class="fa fa-trash" aria-hidden=true></i> Delete</button>
+                    </mp-ldp-remove-from-container-action>   
+                  [[/if]]
+                </div>
+              </template>
+            </semantic-table>
+    </semantic-context>
+    
+          [[#if (hasPermission "api:ldp:container:http://www.metaphacts.com/ontologies/platform#querytemplatecontainer:create:any")]]         
+            <mp-overlay-dialog title="Create Query Template" type="modal" bs-size="large">
+              <mp-overlay-dialog-trigger><button class="btn btn-default btn btn-sm btn-primary">Create Query Template</button></mp-overlay-dialog-trigger>
+              <mp-overlay-dialog-content>
+                  <div>
+                     <semantic-context repository="assets">
+                      <mp-spin-query-template-editor></mp-spin-query-template-editor>
+                     </semantic-context>
+                  </div>
+              </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+          [[/if]]
+
+      [[else]]
+        No permission to edit or add items in Query Template Catalog.
+      [[/if]]
+  </div>
+</div>

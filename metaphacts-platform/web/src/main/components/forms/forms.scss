@@ -1,0 +1,268 @@
+/*
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+@import "~basic-styles.scss";
+
+$default-error-color: red;
+$configuration-error-color: #6f6f6f;
+$loading-error-color: darkorange;
+
+$remove-value-color: gray;
+
+.cardinality-support {
+  display: flex;
+  flex-direction: column;
+
+  &__add-value {
+    &--first { align-self: flex-start; }
+    &--another {
+      margin-top: 5px;
+      align-self: flex-end;
+    }
+  }
+
+  &__single-instance + &__single-instance,
+  &__group-instance + &__group-instance {
+    margin-top: 10px;
+  }
+
+  &__single-instance {
+    display: flex;
+    align-items: flex-start;
+
+    .select-text-field,
+    .plain-text-field,
+    .autocomplete-text-field,
+    .date-picker-field {
+      flex: 1 1 100%;
+    }
+
+    .form-control-feedback {
+      position: absolute;
+      top: 0;
+      right: 0;
+      line-height: 39px;
+    }
+  }
+
+  &__single-instance > &__remove-value {
+    flex: 0 0 auto;
+    margin-left: 10px;
+    color: $remove-value-color;
+  }
+
+  &__group-instance {
+    position: relative;
+    padding-right: $padding-large-horizontal;
+    border: 2px solid lightgray;
+  }
+
+  &__group-instance > &__remove-value {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    padding: 3px 6px;
+    color: $remove-value-color;
+  }
+}
+
+.plain-text-field {
+  &__inputs {
+    display: flex;
+    > .form-group {
+      margin-bottom: 0;
+    }
+  }
+
+  &__text,
+  & :first-child {
+    flex-grow: 1;
+  }
+
+  textarea.plain-text-field__text {
+    font-size: 15px;
+    padding: 6px 10px;
+    min-height: 39px;
+    width: 100%;
+  }
+
+  &__language {
+    flex-basis: 120px;
+    > .Select-control { border-left: none; }
+  }
+}
+
+.autocomplete-text-field {
+  &__main-row { display: flex; }
+  &__select { flex: auto; }
+  &__create-button { margin-left: 10px; }
+}
+
+.semantic-form-tree-picker-input {
+  display: flex;
+  &__picker { flex: auto; }
+  &__create-button { margin-left: 10px; }
+}
+
+.semantic-form-errors {
+  &__error-source {
+    text-transform: capitalize;
+    &:after {
+      content: ': ';
+    }
+  }
+
+  &__error {
+    color: $default-error-color;
+
+    &--configuration {
+      color: $configuration-error-color;
+    }
+    &--loading {
+      color: $loading-error-color;
+    }
+  }
+}
+
+.semantic-form-input-decorator {
+  &--with-header {
+    margin-top: $padding-large-vertical;
+    margin-bottom: $padding-large-vertical;
+    padding-left: $padding-large-horizontal;
+  }
+
+  &__header {
+    margin-left: -$padding-base-horizontal;
+    margin-bottom: $padding-base-vertical;
+  }
+
+  &__label-required:after {
+    content: '*';
+  }
+
+  &__description-icon {
+    margin-left: $padding-base-horizontal;
+    text-transform: capitalize;
+    @include icon(question-circle);
+    color: $text-muted;
+  }
+
+  &__spinner {
+    left: 10px;
+    color: gray;
+  }
+}
+
+.semantic-form-validation-messages {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+
+  &__error {
+    color: $default-error-color;
+
+    &--configuration {
+      color: $configuration-error-color;
+    }
+    &--loading {
+      color: $loading-error-color;
+    }
+  }
+}
+
+.semantic-form-recover-notification {
+  &__discard-data, &__hide, &__discard-data:focus, &__hide:focus, &__discard-data:hover, &__hide:hover{
+    background-color: transparent;
+    border-color: transparent;
+    margin-left: 10px;
+    padding: 5px 8px;
+  }
+}
+
+.semantic-form-checklist-input,
+.semantic-form-checkbox-input {
+  &_row {
+    display: flex;
+  }
+
+  &__label {
+    cursor: auto;
+    font-size: 15px;
+    font-weight: normal;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    margin-right: 20px;
+  }
+
+  &__input {
+    display: none;
+  }
+
+  &__input:indeterminate ~ &__checkbox {
+    background-color: darkgrey;
+    border: 3px #ccc solid;
+    cursor: auto;
+  }
+
+  &__radio, &__checkbox {
+    cursor: pointer;
+    position: relative;
+    height: 20px;
+    width: 20px;
+    margin-right: 10px;
+    background-color: #ccc;
+  }
+  &__radio {
+    border-radius: 50%;
+  }
+  &__checkbox {
+    border-radius: 0;
+  }
+
+  &__input:checked ~ &__radio, &__input:checked ~ &__checkbox {
+    background-color: #4679c5;
+  }
+  &__input:checked ~ &__radio::after, &__input:checked ~ &__checkbox::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 8px;
+    height: 8px;
+    background: white;
+  }
+  &__input:checked ~ &__checkbox::after {
+    border-radius: 0;
+  }
+  &__input:checked ~ &__radio::after {
+    border-radius: 50%;
+  }
+}
+
+.form-switch {
+  &__content {
+    width: 100%;
+    margin: 5px 0 0 12px;
+  }
+
+  &__select {
+    min-width: max-content;
+    font-family: inherit;
+    font-size: 15px;
+  }
+}

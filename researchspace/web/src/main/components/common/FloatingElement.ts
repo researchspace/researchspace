@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,11 +16,10 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import React = require('react');
-import classNames = require('classnames');
-import assign = require('object-assign');
-
-var D = React.DOM;
+import * as React from 'react';
+import * as D from 'react-dom-factories';
+import * as classNames from 'classnames';
+import * as assign from 'object-assign';
 
 export interface FloatingElementProps extends React.Props<FloatingElementComponent> {
   position: {

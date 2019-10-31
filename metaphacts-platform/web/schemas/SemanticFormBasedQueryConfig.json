@@ -1,0 +1,550 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "FieldConstraint": {
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "validatePattern": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "validatePattern",
+                "message"
+            ],
+            "required": [
+                "message",
+                "validatePattern"
+            ],
+            "type": "object"
+        },
+        "FieldDefinitionProp": {
+            "properties": {
+                "askPattern": {
+                    "type": "string"
+                },
+                "autosuggestionPattern": {
+                    "type": "string"
+                },
+                "categories": {
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Rdf.Iri"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "type": "array"
+                },
+                "constraints": {
+                    "items": {
+                        "$ref": "#/definitions/FieldConstraint"
+                    },
+                    "type": "array"
+                },
+                "defaultValues": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "deletePattern": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "domain": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Rdf.Iri"
+                        },
+                        {
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/definitions/Rdf.Iri"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insertPattern": {
+                    "type": "string"
+                },
+                "label": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "$ref": "#/definitions/Rdf.LangLiteral"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "maxOccurs": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "unbound"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "minOccurs": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "unbound"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "range": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Rdf.Iri"
+                        },
+                        {
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/definitions/Rdf.Iri"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "selectPattern": {
+                    "type": "string"
+                },
+                "testSubject": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Rdf.Iri"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "treePatterns": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/SimpleTreeConfig"
+                        },
+                        {
+                            "$ref": "#/definitions/FullTreeConfig"
+                        }
+                    ]
+                },
+                "valueSetPattern": {
+                    "type": "string"
+                },
+                "xsdDatatype": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Rdf.Iri"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "propertyOrder": [
+                "id",
+                "label",
+                "description",
+                "categories",
+                "domain",
+                "xsdDatatype",
+                "range",
+                "minOccurs",
+                "maxOccurs",
+                "defaultValues",
+                "selectPattern",
+                "askPattern",
+                "constraints",
+                "valueSetPattern",
+                "deletePattern",
+                "insertPattern",
+                "autosuggestionPattern",
+                "treePatterns",
+                "testSubject"
+            ],
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "FullTreeConfig": {
+            "properties": {
+                "childrenQuery": {
+                    "description": "Children query with [?parent] input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "parentsQuery": {
+                    "description": "Parent nodes query with [?item] inputs through VALUES(...) clause\nand [?item, ?parent, ?parentLabel] outputs.",
+                    "type": "string"
+                },
+                "rootsQuery": {
+                    "description": "Tree roots query with no input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "searchQuery": {
+                    "description": "Search query with [?__token__] input and [?item, ?score, ?label, ?hasChildren] outputs.",
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "full"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "rootsQuery",
+                "childrenQuery",
+                "parentsQuery",
+                "searchQuery"
+            ],
+            "required": [
+                "childrenQuery",
+                "parentsQuery",
+                "rootsQuery",
+                "searchQuery",
+                "type"
+            ],
+            "type": "object"
+        },
+        "QueryTemplate": {
+            "properties": {
+                "arguments": {
+                    "additionalProperties": {
+                        "$ref": "#/definitions/QueryTemplateArgument"
+                    },
+                    "description": "A map of query arguments.\nThe key of every map entry must be equal to the query variable in the SPARQL queryString.",
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "queryString": {
+                    "description": "The SPARQL query string, which is supposed to be parameterized, i.e. the query must\nhave query variables as listed in the arguments maps.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "queryString",
+                "arguments"
+            ],
+            "required": [
+                "arguments",
+                "queryString"
+            ],
+            "type": "object"
+        },
+        "QueryTemplateArgument": {
+            "properties": {
+                "optional": {
+                    "default": false,
+                    "description": "Whether the argument is optional.",
+                    "type": "boolean"
+                },
+                "type": {
+                    "description": "The RDF datatype of the expected value, i.e. xsd:anyURI, xsd:string, xsd:integer etc.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "optional"
+            ],
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        },
+        "Rdf.Iri": {
+            "properties": {
+                "_rdfIriBrand": {
+                    "type": "string"
+                },
+                "_value": {
+                    "type": "string"
+                },
+                "cata": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "equals": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "hashCode": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "isBnode": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "isIri": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "isLiteral": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "toJSON": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "toString": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "_rdfIriBrand",
+                "equals",
+                "toString",
+                "toJSON",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_rdfIriBrand",
+                "_value",
+                "cata",
+                "equals",
+                "hashCode",
+                "isBnode",
+                "isIri",
+                "isLiteral",
+                "toJSON",
+                "toString",
+                "value"
+            ],
+            "type": "object"
+        },
+        "Rdf.LangLiteral": {
+            "properties": {
+                "_dataType": {
+                    "$ref": "#/definitions/Rdf.Iri"
+                },
+                "_lang": {
+                    "type": "string"
+                },
+                "_value": {
+                    "type": "string"
+                },
+                "cata": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "dataType": {
+                    "$ref": "#/definitions/Rdf.Iri"
+                },
+                "equals": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "hashCode": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "isBnode": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "isIri": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "isLiteral": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "toJSON": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "toString": {
+                    "propertyOrder": [
+                    ],
+                    "type": "object"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "_lang",
+                "lang",
+                "equals",
+                "toString",
+                "toJSON",
+                "_dataType",
+                "dataType",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_dataType",
+                "_lang",
+                "_value",
+                "cata",
+                "dataType",
+                "equals",
+                "hashCode",
+                "isBnode",
+                "isIri",
+                "isLiteral",
+                "lang",
+                "toJSON",
+                "toString",
+                "value"
+            ],
+            "type": "object"
+        },
+        "SimpleTreeConfig": {
+            "properties": {
+                "relationPattern": {
+                    "description": "Output bindings: `?item`, `?parent`",
+                    "type": "string"
+                },
+                "scheme": {
+                    "description": "Binds to `?__scheme__` variable in the `schemePattern`",
+                    "type": "string"
+                },
+                "schemePattern": {
+                    "description": "Input bindings: `?__scheme__`\nOutput bindings: `?item`",
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "simple"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "scheme",
+                "schemePattern",
+                "relationPattern"
+            ],
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "domain": {
+            "description": "Specifies the search domain category IRI (full IRI enclosed in <>).\nRequired, if component is used together with facets.",
+            "type": "string"
+        },
+        "domainField": {
+            "type": "string"
+        },
+        "fields": {
+            "description": "Definitions for form fields. Every field `id` must be map exactly to a\nsingle argument as defined in the arguments map of the `queryTemplate`\nas well as must be referenced by the `for=` attribute of the HTML form input elements.\n\n- `maxOccurs` will be overridden to 1 (if the `multi` property set to `false`);\n- `minOccurs` will be overridden to 0 or 1 depending on whether\ncorresponding query argument is optional or not.",
+            "items": {
+                "$ref": "#/definitions/FieldDefinitionProp"
+            },
+            "type": "array"
+        },
+        "multi": {
+            "default": false,
+            "description": "Enables multi-value injection.\nIf set to `true`, VALUES clause will be used to parametrize the base query for arguments with more than one value.\nIf set to `false`, the first value will be used to parametrize the base query by replacement of the binding variable.\nTo disable multi-value parameterization for particular variables, one can explicitly set `maxOccurs: 1` for corresponding fields.",
+            "type": "boolean"
+        },
+        "queryTemplate": {
+            "$ref": "#/definitions/QueryTemplate",
+            "description": "Query template for form parametrization. Each query argument must have\ncorresponding form field definition."
+        }
+    },
+    "propertyOrder": [
+        "queryTemplate",
+        "fields",
+        "domain",
+        "domainField",
+        "multi"
+    ],
+    "required": [
+        "fields",
+        "queryTemplate"
+    ],
+    "type": "object"
+}
+

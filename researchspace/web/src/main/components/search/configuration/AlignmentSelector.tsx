@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@
  */
 
 import * as React from 'react';
-import * as ReactSelect from 'react-select';
+import ReactSelect, { Option, Options } from 'react-select';
 import * as _ from 'lodash';
 import * as Maybe from 'data.maybe';
 
@@ -76,13 +76,13 @@ export class AlignmentSelector extends React.Component<AlignmentSelectorProps, S
     />;
   }
 
-  private alignmentsToOptions = (alignments: Array<Alignment>): ReactSelect.Options =>
+  private alignmentsToOptions = (alignments: Array<Alignment>): Options =>
     _.map(alignments, this.alignmentToOption);
 
-  private alignmentToOption = (alignment: Alignment): ReactSelect.Option =>
+  private alignmentToOption = (alignment: Alignment): Option<string> =>
     ({value: alignment.iri.value, label: alignment.label})
 
-  private selectAlignment = (option: Array<ReactSelect.Option>) => {
+  private selectAlignment = (option: ReadonlyArray<Option<string>>) => {
     if (option.length !== 0) {
       this.props.onAlignmentSelection(
         Maybe.Just(

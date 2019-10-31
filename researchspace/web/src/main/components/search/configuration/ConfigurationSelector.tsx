@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ import * as _ from 'lodash';
 
 import { Alignment, Dataset } from 'platform/components/semantic/search/data/datasets/Model';
 import {
-  ConfigurationContextTypes, ConfigurationContext,
+  SemanticSearchContext, ConfigurationContext
 } from 'platform/components/semantic/search/web-components/SemanticSearchApi';
 import { DatasetSelector } from './DatasetSelector';
 import { AlignmentSelector } from './AlignmentSelector';
@@ -33,18 +33,27 @@ import * as styles from './ConfigurationSelector.scss';
 /**
  * @author Artem Kozlov <ak@metaphacts.com>
  */
+export class ConfigurationSelector extends React.Component {
+  render() {
+    return (
+      <SemanticSearchContext.Consumer>
+        {context => <ConfigurationSelectorInner {...this.props} context={context} />}
+      </SemanticSearchContext.Consumer>
+    );
+  }
+}
+
+interface InnerProps {
+  context: ConfigurationContext;
+}
 
 interface State {
   isCollapsed: boolean;
 }
 
-export class ConfigurationSelector extends React.Component<void, State> {
-  static contextTypes = ConfigurationContextTypes;
-  static childContextTypes = ConfigurationContextTypes;
-  context: ConfigurationContext;
-
-  constructor(props, context) {
-    super(props, context);
+class ConfigurationSelectorInner extends React.Component<InnerProps, State> {
+  constructor(props: InnerProps) {
+    super(props);
     this.state = {
       isCollapsed: true,
     };
@@ -71,54 +80,60 @@ export class ConfigurationSelector extends React.Component<void, State> {
     </div>;
   }
 
-  private onCollapseExpand = () => this.setState(state => ({isCollapsed: !state.isCollapsed}))
+  private onCollapseExpand = () => this.setState(state => ({isCollapsed: !state.isCollapsed}));
 
   private viewConfiguration() {
-    if (_.isEmpty(this.context.selectedDatasets)) {
+    const {context} = this.props;
+    if (_.isEmpty(context.selectedDatasets)) {
       return null;
     } else {
       return <div>
         <div className={styles.viewHolder}>
           <b>Datasets: </b>
-          {_.map(this.context.selectedDatasets, dataset => dataset.label).join(', ')}.
+          {_.map(context.selectedDatasets, dataset => dataset.label).join(', ')}.
           <b> Alignment: </b>
-          {this.context.selectedAlignment.map(a => a.label).getOrElse('NONE')}
+          {context.selectedAlignment.map(a => a.label).getOrElse('NONE')}
         </div>
         <div className='clearfix'></div>
       </div>;
     }
   }
 
-  private editConfiguration = () =>
-    <div>
-      {this.props.children}
-      <div className={styles.configurationSelector}>
-        <span>Datasets for search:</span>
-          <div className={styles.datasetSelector}>
-          <DatasetSelector
-            disabled={!this.context.isConfigurationEditable}
-            availableDatasets={this.context.availableDatasets}
-            selectedDatasets={this.context.selectedDatasets}
-            onDatasetsSelection={this.selectDatasets}
-          />
-        </div>
-        <div className={styles.alignmentSelector}>
-          <AlignmentSelector
-            disabled={!this.context.isConfigurationEditable}
-            selectedDatasets={this.context.selectedDatasets}
-            selectedAlignment={this.context.selectedAlignment}
-            onAlignmentSelection={this.context.setSelectedAlignment}
-          />
+  private editConfiguration = () => {
+    const {context} = this.props;
+    return (
+      <div>
+        {this.props.children}
+        <div className={styles.configurationSelector}>
+          <span>Datasets for search:</span>
+            <div className={styles.datasetSelector}>
+            <DatasetSelector
+              disabled={!context.isConfigurationEditable}
+              availableDatasets={context.availableDatasets}
+              selectedDatasets={context.selectedDatasets}
+              onDatasetsSelection={this.selectDatasets}
+            />
+          </div>
+          <div className={styles.alignmentSelector}>
+            <AlignmentSelector
+              disabled={!context.isConfigurationEditable}
+              selectedDatasets={context.selectedDatasets}
+              selectedAlignment={context.selectedAlignment}
+              onAlignmentSelection={context.setSelectedAlignment}
+            />
+          </div>
         </div>
       </div>
-    </div>;
+    );
+  }
 
   private selectDatasets = (datasets: Array<Dataset>) => {
+    const {context} = this.props;
     if (datasets.length < 1) {
       // reset alignment if less then one dataset is selected
-      this.context.setSelectedAlignment(Maybe.Nothing<Alignment>());
+      context.setSelectedAlignment(Maybe.Nothing<Alignment>());
     }
-    this.context.setSelectedDatasets(datasets);
+    context.setSelectedDatasets(datasets);
   }
 }
 

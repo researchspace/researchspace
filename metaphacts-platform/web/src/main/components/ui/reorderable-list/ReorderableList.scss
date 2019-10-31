@@ -1,0 +1,67 @@
+/*
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+@import "~basic-styles.scss";
+
+.component {
+  &.drag-whole .item {
+    cursor: move;
+    &[data-dragged] {
+      opacity: 0;
+    }
+  }
+  &.drag-whole .item-body {
+    pointer-events: none;
+  }
+  &.drag-by-handle .item {
+    &[data-dragged] {
+      // show transparent item when dragging only handle because browser
+      // will only render dragging tooltip for the handle itself
+      opacity: 0.3;
+    }
+  }
+  &.drag-by-handle .item-handle {
+    cursor: move;
+  }
+
+  &:not(.dragging) .item:hover .item-handle {
+    filter: brightness(0.75);
+  }
+  &:not(.dragging) .item:hover {
+    background: #ffffff;
+  }
+}
+
+.item {
+  position: relative;
+  &[data-dragged] {
+    pointer-events: none;
+  }
+}
+.item-handle {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: 5px;
+  background: url('./handle.svg');
+  background-repeat: repeat-y;
+}
+.item-body {
+  margin-left: 15px;
+}

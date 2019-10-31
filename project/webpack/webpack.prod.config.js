@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,19 +16,17 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-var path = require('path'),
-    glob = require('glob'),
-    _ = require('lodash'),
-    webpack = require('webpack'),
-    ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin'),
-    AssetsPlugin = require('assets-webpack-plugin'),
-    defaultsFn = require('./defaults'),
-    utils = require('./utils');
+const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const defaultsFn = require('./defaults');
 
-module.exports = function(env) {
-    const buildConfig = utils.parseArgs(env.buildConfig);
-    const defaults = defaultsFn(buildConfig);
-    var config = require('./webpack.config.js')(buildConfig, defaults);
+/**
+ * @param {{ [key: string]: string }} env
+ */
+module.exports = function (env) {
+    const defaults = defaultsFn();
+    var config = require('./webpack.config.js')(defaults);
+    config.mode = 'production';
 
     //reset source-maps
     delete config.devtool;
@@ -37,40 +35,37 @@ module.exports = function(env) {
      * Add chunkhash to filename to make sure that we bust
      * browser cache on redeployment.
      */
-    config.output.filename = "[name]-[chunkhash]-bundle.js";
+    config.output.filename = function(chunkData) {
+        return chunkData.chunk.name === 'page-renderer' ? '[name]-bundle.js': "[name]-[chunkhash]-bundle.js";
+    };
     config.output.chunkFilename = "[name]-[chunkhash]-bundle.js";
 
-    let tsLoader = config.module.rules[0].use[0];
+  config.optimization = {
+    minimizer: [
+      new UglifyJsPlugin({
+        parallel: true,
+        sourceMap: false,
+        uglifyOptions: {
+          output: {
+            comments: false
+          },
+          compress: {
+            keep_fnames: true
+          }
+        }
+      }),
+    ]
+  };
+
+  let tsLoader = config.module.rules[0].use[0];
 
     //enable assets optimizations
     config.plugins.push(
         defaults.tsHappyPack(tsLoader),
         defaults.tsTypeCheck(true),
-        new ParallelUglifyPlugin({
-            uglifyJs: {
-                output: {
-                    comments: false
-                },
-                sourceMap: false,
-                comments: false,
-                'screw-ie8': true,
-                compress: {
-                    keep_fnames: true
-                }
-            }
-        }),
         new webpack.LoaderOptionsPlugin({
             minimize: true
         }),
-
-        /*
-         * Generate json files with bundle - hashed bundle file names,
-         * so we can properly refer to bundles in main.hbs and login.hbs files
-         */
-        new AssetsPlugin({
-            filename: "bundles-manifest.json",
-            path: defaults.DIST
-        })
     );
 
     //enable react production mode.

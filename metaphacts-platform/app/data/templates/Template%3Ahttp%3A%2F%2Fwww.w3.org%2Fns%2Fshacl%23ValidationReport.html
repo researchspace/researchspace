@@ -1,0 +1,79 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  
+  <li>
+    <semantic-link title="System Settings" data-uri="http://www.metaphacts.com/resource/admin/">System Settings</semantic-link>
+  </li>
+  <li>
+    <semantic-link uri='http://www.metaphacts.com/resource/admin/DataQuality'>Data Quality</semantic-link>
+  </li>
+
+  <li class="active">Validation Report</li>
+</ol>
+
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-body'>
+      <h2>Validation Report</h2>
+    </div>
+  </div>
+  <div class='page__body'>   
+    <mp-panel>
+      <mp-panel-header>
+        <span>Summary</span>
+      </mp-panel-header>
+      <mp-panel-body>
+        <semantic-chart
+          type="bar"
+          sets='[{"dataSetName": "ReportSummary", "category": "result", "value": "count"}]'
+          query='
+            SELECT ?result ?count {
+              {
+                ?? <http://rdfunit.aksw.org/ns/core#testsFailed> ?count .
+                BIND(<http://rdfunit.aksw.org/ns/core#failed> AS ?result) .
+              } UNION {
+                ?? <http://rdfunit.aksw.org/ns/core#testsSuceedded> ?count .
+                BIND(<http://rdfunit.aksw.org/ns/core#succeeded> AS ?result) .
+              }
+            }
+          '
+        >
+        </semantic-chart>
+      </mp-panel-body>
+    </mp-panel>
+    
+    <mp-panel>
+      <mp-panel-header>
+        <span>Results</span>
+      </mp-panel-header>
+      <mp-panel-body>
+        <div>
+
+          <semantic-table id='table' 
+                          query='
+                            PREFIX sh: <http://www.w3.org/ns/shacl#>
+                            SELECT DISTINCT ?subject (COUNT(DISTINCT ?result) AS ?count) WHERE {
+                              ?? sh:result ?result .
+                              ?result sh:message ?subject .
+                            } GROUP BY ?subject ORDER BY ASC(?count)
+                          '
+                          column-configuration='[
+                            {"displayName": "Check", "cellTemplate": "{{> check}}"}, 
+                            {"displayName": "Count", "variableName": "count"}
+                          ]'
+          >
+            <template id='check'>
+              <semantic-link iri='http://www.metaphacts.com/resource/admin/CheckSummary' 	urlqueryparam-report="[[this]]" urlqueryparam-check="{{subject.value}}">
+                {{subject.value}}
+              </semantic-link>
+            </template>
+          </semantic-table> 
+        </div>
+      </mp-panel-body>
+    </mp-panel>    
+    
+  </div>
+<div>

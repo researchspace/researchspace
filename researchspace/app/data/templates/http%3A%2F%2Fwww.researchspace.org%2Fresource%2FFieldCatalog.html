@@ -43,8 +43,10 @@
             </mp-ldp-remove-from-container-action>
           </div>
 
+          <mp-selection-group>
+          <div>
           <div style='float: right; margin-right: 30px;'>
-            <mp-selection-action-choice id="field-definition-selection" title='With selected ...'>
+            <mp-selection-action-choice id="field-definition-selection" title='With selected ...' selection='field-definition-selection'>
               <mp-ldp-export-resource><bs-menu-item>Export</bs-menu-item></mp-ldp-export-resource>
             </mp-selection-action-choice>
             <semantic-context repository='assets'>
@@ -120,9 +122,8 @@
                       <semantic-table
                         id='field-results'
                         number-of-displayed-rows=50
-                        query='SELECT ?subject ?ModificationDate ?label WHERE {
-                                   ?subject <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate ;
-                                     rdfs:label ?label .
+                        query='SELECT DISTINCT ?subject ?ModificationDate WHERE {
+                                   ?subject <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate .
                                  }'
                         column-configuration='[
                                         {"displayName":"Field", "cellTemplate": "{{> field}}"},
@@ -134,7 +135,7 @@
                             <span>
                               <mp-selection-toggle selection="field-definition-selection" tag="{{subject.value}}"></mp-selection-toggle>
                               <semantic-context repository='assets'>
-                                <semantic-link style='margin-left: 10px; max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' uri='{{subject.value}}' title='{{label.value}}'>{{label.value}}</semantic-link>
+                                <semantic-link style='margin-left: 10px; max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' uri='{{subject.value}}'></semantic-link>
                               </semantic-context>
 
                             </span>
@@ -156,6 +157,8 @@
               </div>
             </semantic-search>
           </semantic-context>
+          </div>
+          </mp-selection-group>
         </div>
       </bs-col>
     </bs-row>

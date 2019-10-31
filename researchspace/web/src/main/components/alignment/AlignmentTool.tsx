@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@ import * as React from 'react';
 import { CSSProperties } from 'react';
 import * as classnames from 'classnames';
 import { Button } from 'react-bootstrap';
+import * as SparqlJs from 'sparqljs';
 
 import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
@@ -72,18 +73,11 @@ enum LoadingStatus { Loading = 1, Success, Error }
 type State = { type: LoadingStatus.Loading } | SuccessState | ErrorState;
 
 interface SuccessState extends ToolState {
-  type: LoadingStatus.Success;
+  readonly type: LoadingStatus.Success;
 }
 
 interface ErrorState {
-  type: LoadingStatus.Error;
-}
-
-interface ParsedQueries {
-  rootsQuery: SparqlJs.SelectQuery;
-  childrenQuery: SparqlJs.SelectQuery;
-  parentsQuery: SparqlJs.SelectQuery;
-  searchQuery: SparqlJs.SelectQuery;
+  readonly type: LoadingStatus.Error;
 }
 
 export class AlignmentTool extends Component<AlignmentToolProps, State> {
@@ -104,7 +98,7 @@ export class AlignmentTool extends Component<AlignmentToolProps, State> {
       cancellation: this.cancellation,
       updateState: (change, callback) => {
         this.setState(
-          state => change(assertLoaded(state)),
+          state => change(assertLoaded(state)) as SuccessState,
           () => callback(assertLoaded(this.state))
         );
       },
@@ -140,7 +134,7 @@ export class AlignmentTool extends Component<AlignmentToolProps, State> {
     } else if (this.state.type === LoadingStatus.Error) {
       return null;
     } else {
-      const {source, target, draggedNode, matches, savedMatches} = this.state;
+      const {source, target, draggedNodes, matches, savedMatches} = this.state;
       return (
         <div className={classnames(styles.component, className)} style={style}>
           <SplitPaneComponent id='alignment-tool-pane' dock={false} minSize={300}>
@@ -156,7 +150,7 @@ export class AlignmentTool extends Component<AlignmentToolProps, State> {
                   onSelectionChanged={this.onSourceSelectionChanged}
                   onExpandAndScrollToPath={this.onSourceExpandAndScroll}
                   onCancelExpandingToScroll={this.onSourceCancelExpanding}
-                  draggedNode={draggedNode}
+                  draggedNodes={draggedNodes}
                   onDragStart={this.onDragStart}
                   onDragEnd={this.onDragEnd}
                   onFindAligned={this.onSourceFindAligned}
@@ -175,7 +169,7 @@ export class AlignmentTool extends Component<AlignmentToolProps, State> {
                     onExpandOrCollapse={this.onTargetExpandOrCollapse}
                     onExpandAndScrollToPath={this.onTargetExpandAndScroll}
                     onCancelExpandingToScroll={this.onTargetCancelExpanding}
-                    draggedNode={draggedNode}
+                    draggedNodes={draggedNodes}
                     onAlign={this.onAlign}
                     onUnalign={this.onUnalign}
                   />
@@ -264,23 +258,33 @@ export class AlignmentTool extends Component<AlignmentToolProps, State> {
     this.controller.cancelExpandingToScroll(AlignementRole.Target);
   }
 
-  private onDragStart = (node: AlignmentNode) => {
-    this.controller.enqueueStateUpdate(() => ({draggedNode: node}));
+  private onDragStart = (nodes: AlignmentNode[]) => {
+    this.controller.enqueueStateUpdate(() => ({draggedNodes: nodes}));
   }
 
   private onDragEnd = () => {
-    this.controller.enqueueStateUpdate(() => ({draggedNode: undefined}));
+    this.controller.enqueueStateUpdate(() => ({draggedNodes: undefined}));
   }
 
-  private onAlign = (sourceNode: AlignmentNode, targetPath: KeyPath) => {
+  private onAlign = (sourceNodes: ReadonlyArray<AlignmentNode>, targetPath: KeyPath) => {
+    if (sourceNodes.length === 0) { return; }
     const state = assertLoaded(this.state);
-    showAlignmentRelationDialog({
-      sourceNode: sourceNode.base,
-      targetNode: state.target.forest.fromKeyPath(targetPath).base,
-      onSubmit: kind => {
-        this.controller.alignNode(sourceNode, targetPath, kind);
-      },
-    });
+    if (sourceNodes.length === 1) {
+      const sourceNode = sourceNodes[0];
+      showAlignmentRelationDialog({
+        sourceNode: sourceNode.base,
+        targetNode: state.target.forest.fromKeyPath(targetPath).base,
+        onSubmit: kind => {
+          this.controller.alignNodes(targetPath, [{kind, sourceNode}]);
+        },
+      });
+    } else {
+      const alingments = sourceNodes.map(sourceNode => ({
+        sourceNode,
+        kind: AlignKind.NarrowerMatch
+      }));
+      this.controller.alignNodes(targetPath, alingments);
+    }
   }
 
   private onUnalign = (path: KeyPath) => {
@@ -311,7 +315,7 @@ export class AlignmentTool extends Component<AlignmentToolProps, State> {
       .toProperty();
 
     this.cancellation.map(task).observe({
-      value: state => this.setState({type: LoadingStatus.Success, ...state}),
+      value: state => this.setState({type: LoadingStatus.Success, ...state} as SuccessState),
       error: error => {
         addNotification({
           level: 'error',

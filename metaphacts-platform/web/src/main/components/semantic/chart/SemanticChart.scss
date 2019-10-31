@@ -1,0 +1,66 @@
+/*
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+@import "~basic-styles.scss";
+
+
+@mixin type-button-mixin($icon) {
+  @include icon($icon);
+  &:before {
+    margin-right: 3px;
+  }
+}
+
+.semantic-chart {
+  &__type-button.chart-type-line .semantic-chart__type-icon {
+    @include type-button-mixin(line-chart);
+  }
+
+  &__type-button.chart-type-bar .semantic-chart__type-icon {
+    @include type-button-mixin(bar-chart);
+  }
+
+  &__type-button.chart-type-radar .semantic-chart__type-icon {
+    @include type-button-mixin(certificate);
+  }
+
+  &__type-button.chart-type-pie .semantic-chart__type-icon {
+    @include type-button-mixin(pie-chart);
+  }
+
+  &__type-button.chart-type-donut .semantic-chart__type-icon {
+    @include type-button-mixin(pie-chart);
+  }
+
+  &__type-button.chart-type-bubble .semantic-chart__type-icon {
+    @include type-button-mixin(circle-thin);
+  }
+
+  &[data-type="radar"] {
+    .highcharts-xaxis .highcharts-axis-line {
+      display: none;
+    }
+    .highcharts-xaxis-grid .highcharts-grid-line {
+      stroke-width: 1px;
+    }
+  }
+}
+
+.semantic-chart__type-label {
+  text-transform: capitalize;
+}

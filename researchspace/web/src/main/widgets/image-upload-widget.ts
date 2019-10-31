@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,16 +16,14 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import {
-  DOM as D, Component, createElement,
-} from 'react';
+import { Component, createElement } from 'react';
 import * as React from 'react';
+import * as D from 'react-dom-factories';
 import * as assign from 'object-assign';
 import * as maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 import * as _ from 'lodash';
 import * as ReactBootstrap from 'react-bootstrap';
-import * as ReactDropzone from 'react-dropzone';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -37,9 +35,9 @@ import {
 } from 'platform/components/forms';
 
 import { Alert, AlertConfig, AlertType } from 'platform/components/ui/alert';
+import { Dropzone } from 'platform/components/ui/dropzone';
 import { FileUploadService } from 'platform/api/services/file-upload';
 
-const Dropzone = React.createFactory(ReactDropzone);
 const ProgressBar = React.createFactory(ReactBootstrap.ProgressBar);
 
 import '../scss/image-upload-widget.scss';
@@ -266,9 +264,9 @@ class ImageUploadWidget extends Component<Props, State> {
     }).map(newImageIri => {
       this.messages.plug(Kefir.constant('File: ' + file.name + ' uploaded.<br/>'));
       window.location.reload();
-    }).mapErrors<void>(error =>
+    }).mapErrors(error =>
       this.messages.plug(Kefir.constant('File: ' + file.name + ' failed (' + error + ').<br/>'))
-    ).toProperty();
+    );
   }
 
   render() {
@@ -281,23 +279,26 @@ class ImageUploadWidget extends Component<Props, State> {
     return D.div({className: 'iiif-upload__holder'},
                  this.state.alertState ? createElement(Alert, this.state.alertState) : null,
                  progress.map(progress => ProgressBar({ active: true, min: 0, max: 100, now: progress })).getOrElse(null),
-                 Dropzone(
-                   {
-                     className: 'iiif-upload__dropzone',
-                     onDrop: this.onDrop.bind(this),
-                     multiple: false,
-                   },
-                   D.div({className: 'iiif-upload__description'}, D.p({}, description)),
-                   D.button({
-                     className: 'iiif-upload__dropzone-button btn btn-sm btn-default',
-                   }, 'Browse')
-                 ),
+      createElement(Dropzone,
+        {
+          className: 'iiif-upload__dropzone',
+          onDrop: this.onDrop.bind(this),
+          multiple: false,
+        },
+        D.div({className: 'iiif-upload__description'}, D.p({}, description)),
+        D.button({
+          className: 'iiif-upload__dropzone-button btn btn-sm btn-default',
+        }, 'Browse')
+      ),
       this.state.files.map(file => D.h4({key: file.name}, 'Selected file: ' + file.name)),
       createElement(ResourceEditorForm,
         {
           fields: FORM_FIELDS,
           persistence: {
-            persist: (intialModel, model) => this.submit(model),
+            persist: (intialModel, model) => {
+              if (FieldValue.isEmpty(model)) { return; }
+              return this.submit(model);
+            },
           },
         } as ResourceEditorFormProps,
         React.createElement<PlainTextInputProps>(

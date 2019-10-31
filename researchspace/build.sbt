@@ -1,6 +1,8 @@
+import RootBuildOptions._
+
 name := "researchspace"
 organization := "org.researchspace"
-version := "2.1-SNAPSHOT"
+version := platformVersion
 
 homepage := Some(url("http://www.researchspace.org"))
 startYear := Some(2010)

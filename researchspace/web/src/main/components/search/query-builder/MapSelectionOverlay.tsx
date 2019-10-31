@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,8 +47,8 @@ interface MapSelectionState {
  */
 export class MapSelectionOverlay extends Component<MapSelectionProps, MapSelectionState> {
 
-  constructor(props: MapSelectionProps) {
-    super();
+  constructor(props: MapSelectionProps, context: any) {
+    super(props, context);
     this.state = {
       selection: undefined,
       zoomToOptions: undefined,
@@ -80,7 +80,7 @@ export class MapSelectionOverlay extends Component<MapSelectionProps, MapSelecti
       <div className={styles.actions}>
         <div className='form-group'>
           <div className='btn-group' role='group'>
-            <button type='cancel' className="btn btn-danger"
+            <button type='button' className="btn btn-danger"
                     onClick={this.props.onCancel}>Cancel</button>
             <button type='submit' className="btn btn-primary" disabled={!this.state.selection}
                     onClick={this.confirmSelection}>Select</button>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@ export interface ExistingBeliefViewProps {
  * Renders view for selected Belief(premise in case of "Inference Making"
  * or addopted Belief in case of "Belief Adoption".
  */
-export class ExistingBeliefView extends React.Component<ExistingBeliefViewProps, void> {
+export class ExistingBeliefView extends React.Component<ExistingBeliefViewProps, {}> {
   render() {
     const { belief, onCancel } = this.props;
     const close = <i className='fa fa-times pull-right' onClick={onCancel} />;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@ import * as Maybe from 'data.maybe';
 import {
   Panel, FormControl, FormGroup, Button, ButtonGroup, Col, ControlLabel, Form,
 } from 'react-bootstrap';
-import * as ReactSelect from 'react-select';
+import ReactSelect, { ReactSelectProps, Option } from 'react-select';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient } from 'platform/api/sparql';
@@ -35,7 +35,6 @@ import { ExistingBeliefView } from './ExistingBeliefView';
 
 
 export interface InferenceMakingComponentProps {
-  subject: Rdf.Iri;
   acceptEvidenceQuery?: string
   onCancel: () => void
   onSave: (argument: Inference) => void
@@ -56,8 +55,10 @@ export interface State {
   note: string;
   logicType?: Rdf.Iri;
   premises: Array<ArgumentsBelief>;
-  logics?: Array<{value: Rdf.Iri; label: string}>
+  logics?: Array<Option<Rdf.Iri>>;
 }
+
+const LogicSelector: React.ComponentClass<ReactSelectProps<Rdf.Iri>> = ReactSelect;
 
 export class InferenceMakingComponent extends React.Component<InferenceMakingComponentProps, State> {
   constructor(props, context) {
@@ -146,7 +147,7 @@ export class InferenceMakingComponent extends React.Component<InferenceMakingCom
     const { logics } = this.state;
     const selected = this.state.logicType ?
       _.find(logics, option => option.value.equals(this.state.logicType)) : null;
-    return <ReactSelect
+    return <LogicSelector
              placeholder='Select logic type...'
              options={logics}
              value={selected}
@@ -164,37 +165,40 @@ export class InferenceMakingComponent extends React.Component<InferenceMakingCom
     };
     return <BeliefSelection
       multiSelection={true}
-      subject={this.props.subject}
       messages={messages}
       acceptRecordQuery={this.props.acceptEvidenceQuery}
       onSelect={this.savePremise}
     />;
   }
 
-  private onTitleChange = (event: React.ChangeEvent<any>) =>
+  private onTitleChange = (event: React.ChangeEvent<any>) => {
     this.setState({title: event.target.value});
+  }
 
-  private onNoteChange = (event: React.ChangeEvent<any>) =>
+  private onNoteChange = (event: React.ChangeEvent<any>) => {
     this.setState({note: event.target.value});
+  }
 
-  private onLogicChange = (selected: {value: Rdf.Iri}) =>
+  private onLogicChange = (selected: Option<Rdf.Iri>) => {
     this.setState({logicType: selected.value});
+  }
 
-  private savePremise = (beliefs: Array<ArgumentsBelief>) =>
+  private savePremise = (beliefs: Array<ArgumentsBelief>) => {
     this.setState(
       state => ({
         premises: state.premises.concat(beliefs),
-        addingNewPremise: false,
       })
     );
+  }
 
-  private removePremise = (premise: ArgumentsBelief) =>
+  private removePremise = (premise: ArgumentsBelief) => {
     this.setState(
       state => {
         _.remove(state.premises, p => p === premise);
         return {premises: state.premises};
       }
     );
+  }
 
   private saveArgument = () => {
     this.props.onSave({

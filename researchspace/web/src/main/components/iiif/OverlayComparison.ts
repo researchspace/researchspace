@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,8 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { DOM as D, createFactory, createElement } from 'react';
+import { createFactory, createElement } from 'react';
+import * as D from 'react-dom-factories';
 import * as Kefir from 'kefir';
 import * as Immutable from 'immutable';
 import * as classNames from 'classnames';
@@ -24,8 +25,10 @@ import * as classNames from 'classnames';
 import { Rdf } from 'platform/api/rdf';
 import { navigateToResource } from 'platform/api/navigation';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
-import { KefirComponentBase } from 'platform/components/utils';
 import { CreateResourceDialog } from 'platform/components/ldp';
+
+// TODO: remove KefirComponent and replace it by utilizing Cancellation object
+import { KefirComponentBase } from 'platform/components/utils/KefirComponent';
 
 import {
   queryIIIFImageOrRegion, ImageOrRegionInfo,

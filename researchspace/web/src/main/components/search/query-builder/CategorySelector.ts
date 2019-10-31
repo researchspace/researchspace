@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,12 @@
  * @author Artem Kozlov <ak@metaphacts.com>
  */
 
-import { Component, DOM as D, createFactory, createElement } from 'react';
+import { Component, createFactory, createElement } from 'react';
+import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as classnames from 'classnames';
 import * as _ from 'lodash';
-import * as ReactSelect from 'react-select';
+import ReactSelect from 'react-select';
 
 import { TemplateItem } from 'platform/components/ui/template';
 import { Category, Categories } from 'platform/components/semantic/search/data/profiles/Model';
@@ -49,8 +50,8 @@ export class CategorySelectorComponent extends Component<
   CategorySelectorProps, CategorySelectorState
 > {
 
-  constructor() {
-    super();
+  constructor(props: CategorySelectorProps, context: any) {
+    super(props, context);
     this.state = {
       isDisabled: {},
     };
@@ -163,7 +164,7 @@ export class CategorySelectorComponent extends Component<
           this.refs,
           (acc, ref, key) => {
             acc[key] = this.hasDisabledChild(
-              findDOMNode<HTMLElement>(ref)
+              findDOMNode(ref) as HTMLElement
             );
             return acc;
           }, {}

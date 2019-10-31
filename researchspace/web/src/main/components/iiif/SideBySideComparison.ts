@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,8 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { createFactory, createElement, DOM as D } from 'react';
+import { createFactory, createElement } from 'react';
+import * as D from 'react-dom-factories';
 import { uniqueId, keyBy, isEqual } from 'lodash';
 import * as Kefir from 'kefir';
 import * as maybe from 'data.maybe';
@@ -135,12 +136,12 @@ export class SideBySideComparison extends Component<Props, State> {
         // but instead we are starting to fetch for regions
           LdpRegionService.search(imageInfo.imageIRI).flatMap(annotations =>
             // and lastly we're creating manifest and putting it all together
-            createManifest({
+            createManifest([{
               baseIri: imageInfo.iri,
               imageIri: imageInfo.imageIRI,
               imageServiceUri: serviceRequestUri,
               canvasSize: bounds,
-            }, repositories).map(manifest => ({manifest, imageInfo, annotations}))
+            }]).map(manifest => ({manifest, imageInfo, annotations}))
           )
         );
       }));
@@ -158,12 +159,12 @@ export class SideBySideComparison extends Component<Props, State> {
       layout: chooseMiradorLayout(imagesMetadata.length),
       saveSession: false,
       data: imagesMetadata.map(metadata => ({
-        manifestUri: metadata.imageInfo.imageIRI.value,
+        manifestUri:  metadata.manifest['@id'],
         location: 'British Museum',
         manifestContent: metadata.manifest,
       })),
       annotationEndpoint: {
-        name: 'Metaphactory annotation endpoint',
+        name: 'ResearchSpace annotation endpoint',
         module: 'AdapterAnnotationEndpoint',
         options: {
           endpoint: annotationEndpoint,
@@ -239,7 +240,7 @@ export class SideBySideComparison extends Component<Props, State> {
       targetElement: element,
       miradorConfig: this.state.miradorConfig,
       onInitialized: mirador => {
-        scrollToRegions(mirador, index => {
+        scrollToRegions(mirador, ({index}) => {
           const metadata = this.state.imagesMetadata[index];
           return metadata.imageInfo.viewport;
         });
@@ -251,7 +252,7 @@ export class SideBySideComparison extends Component<Props, State> {
 /**
  * Computes the arrangement of Mirador windows
  */
-function chooseMiradorLayout(slotCount: number) {
+export function chooseMiradorLayout(slotCount: number) {
   const layout: Mirador.LayoutDescription = {type: 'column'};
   if (slotCount <= 1) { return layout; }
 

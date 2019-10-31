@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,16 +20,18 @@ import * as React from 'react';
 import * as Maybe from 'data.maybe';
 import * as _ from 'lodash';
 import * as Kefir from 'kefir';
-import * as ReactSelect from 'react-select';
+import ReactSelect from 'react-select';
+import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
-import { getArgumentsFieldDefinition } from './FieldUtils';
-import { ArgumentsFieldDefinition } from './ArgumentsApi';
+import { getPreferredLabel } from 'platform/components/forms';
 import { getRepositoryStatus } from 'platform/api/services/repository';
 
+import { getArgumentsFieldDefinition } from './FieldUtils';
+import { ArgumentsFieldDefinition } from './ArgumentsApi';
+
 export interface BaseFieldSelectionProps {
-  subject: Rdf.Iri
   record: Rdf.Iri
   types: Array<Rdf.Iri>
   placeholder: string
@@ -62,6 +64,10 @@ interface State {
   selectedFields: Array<SelectedField> | SelectedField
 }
 
+interface UndocumentedReactSelect {
+  closeMenu?(): void;
+}
+
 /**
  * Provides the ability to select multiple Fields for some Record.
  * 1) Only fields that have range matching type of the Record can be selected.
@@ -69,7 +75,7 @@ interface State {
  *    for the give record can be selected.
  */
 export class FieldSelection extends React.Component<FieldSelectionProps, State> {
-  private fieldSelection: ReactSelect.Component;
+  private fieldSelection: ReactSelect;
   private repositories = getRepositoryStatus().map(repos => repos.keySeq().toArray());
 
   constructor(props: FieldSelectionProps, context) {
@@ -107,15 +113,14 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
         ref={component => this.fieldSelection = component}
         multi={this.props.multiSelection} clearable={true}
         onChange={this.onFieldSelectionChange(fields)}
-        options={fields.map(field => ({value: field.iri, label: field.label}))}
+        options={fields.map(field => ({value: field.iri, label: getPreferredLabel(field.label)}))}
         value={this.state.selectedFields} placeholder={this.props.placeholder}
       />
     </div>
 
   private onFieldSelectionChange =
-    (fields: Array<ArgumentsFieldDefinition>) =>
-    (selected: Array<SelectedField> |  SelectedField) => {
-      this.fieldSelection.closeMenu();
+    (fields: Array<ArgumentsFieldDefinition>) => (selected: Array<SelectedField> | SelectedField) => {
+      (this.fieldSelection as UndocumentedReactSelect).closeMenu();
       this.setState({selectedFields: selected});
       if (isMultiSelection(this.props)) {
         const multiSelectd = selected as Array<SelectedField>;
@@ -131,16 +136,16 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
 
   private fetchFields =
     (props: FieldSelectionProps) => {
-      const { subject, record, types } = props;
+      const { record, types } = props;
       this.setState({fields: Maybe.Nothing<Array<ArgumentsFieldDefinition>>()});
-      this.getExistingFieldsForRecord(subject, record, types).onValue(
+      this.getExistingFieldsForRecord(record, types).onValue(
         fields => this.setState({fields: Maybe.Just(fields)})
       );
     }
 
   private getExistingFieldsForRecord =
     (
-      subject: Rdf.Iri, record: Rdf.Iri, types: Array<Rdf.Iri>
+      record: Rdf.Iri, types: Array<Rdf.Iri>
     ): Kefir.Property<Array<ArgumentsFieldDefinition>> => {
       const allFields = this.getFieldsForRecord(record, types);
       return allFields.flatMap(
@@ -179,7 +184,7 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
       };
       return SparqlClient.ask(
         SparqlClient.setBindings(
-          askQuery, {'subject': this.props.subject}
+          askQuery, {'subject': this.props.record}
         ),
         {context: {repository: repository}}
       );

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, metaphacts GmbH
+ * Copyright (C) 2015-2018, metaphacts GmbH
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,42 +16,40 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-var path = require('path'),
-    glob = require('glob'),
-    _ = require('lodash'),
-    webpack = require('webpack'),
-    WebpackNotifierPlugin = require('webpack-notifier');
+const webpack = require('webpack');
+const WebpackNotifierPlugin = require('webpack-notifier');
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 
-var ProgressBarPlugin = require('progress-bar-webpack-plugin');
-
-module.exports = function(buildConfig, defaults) {
-  const config = require('./webpack.config.js')(buildConfig, defaults);
+/**
+ * @param {ReturnType<import('./defaults')>} defaults
+ */
+module.exports = function(defaults) {
+  const config = require('./webpack.config.js')(defaults);
   // enable sourceMaps for ts loader
+
   let tsLoader = config.module.rules[0].use[0];
   const tsOptions = tsLoader.options;
   tsOptions.compilerOptions = {
     sourceMap: true
   };
 
-  if (!buildConfig.noTsCheck) {
+  if (!defaults.ROOT_BUILD_CONFIG.noTsCheck) {
     config.plugins.push(defaults.tsTypeCheck(false));
   }
+
+  config.mode = 'development';
+
   config.plugins.push(
     defaults.tsHappyPack(tsLoader),
-    new webpack.DllReferencePlugin({
-      manifest: require("./assets/dll-manifest/hot-manifest.json"),
-      context: path.resolve(__dirname, defaults.METAPHACTORY_DIRS.src)
-    }),
-    new webpack.HotModuleReplacementPlugin(),
-    //  new webpack.NoErrorsPlugin(),
     new webpack.DefinePlugin({
       BUNDLE_HIGHCHARTS: process.env.BUNDLE_HIGHCHARTS
     }),
     new webpack.SourceMapDevToolPlugin({
       columns: false
     }),
+    // @ts-ignore
     new ProgressBarPlugin(),
-    new WebpackNotifierPlugin({title: 'Platform'})
+    new WebpackNotifierPlugin({title: 'Platform', excludeWarnings: true})
   );
 
   config.output.publicPath = 'http://localhost:3000/assets/';

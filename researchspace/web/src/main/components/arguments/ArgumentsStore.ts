@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -73,7 +73,7 @@ function findArgumentsForAssertion(assertionIri: Rdf.Iri): Kefir.Property<Array<
     SparqlClient.setBindings(FIND_ARGUMENTS_QUERY, {'__assertion__': assertionIri});
   return SparqlClient.select(
     query, {context: {repository: 'assets'}}
-  ).map(res => res.results.bindings.map(b => b['argument']));
+  ).map(res => res.results.bindings.map(b => b['argument'] as Rdf.Iri));
 }
 
 function deserializeArgument(pg: Rdf.PointedGraph): Kefir.Property<Argument> {
@@ -246,12 +246,12 @@ export function serializeArgument(
     );
 
   const baseArgumentGraph =
-      Rdf.graph(
+      Rdf.graph([
         Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crminf.I1_Argumentation),
         Rdf.triple(Rdf.BASE_IRI, vocabularies.rdfs.label, Rdf.literal(argument.title)),
         Rdf.triple(Rdf.BASE_IRI, crm.P3_has_note, Rdf.literal(argument.note)),
-        ... conclusionTriples
-      );
+        ...conclusionTriples,
+      ]);
 
   const specificArgumentGraph =
     serializeSpecificArgument(argument, beliefs);
@@ -284,23 +284,23 @@ export function serializeBeliefAdoption(
     );
   }
 
-  return Rdf.graph(
+  return Rdf.graph([
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crminf.I7_Belief_Adoption),
     ..._.flatMap(beliefs, b => b.graph.triples.toArray()),
-    ...triples
-  );
+    ...triples,
+  ]);
 }
 
 
 export function serializeObservation(observation: Observation): Rdf.Graph {
   const observationTimePg = createObservationTimeSpan(observation);
-  return Rdf.graph(
+  return Rdf.graph([
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crmsci.S19_Encounter_Event),
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crmsci.S4_Observation),
     Rdf.triple(Rdf.BASE_IRI, crmsci.O21_has_found_at, observation.place),
     Rdf.triple(Rdf.BASE_IRI, crm.P4_has_time_span, observationTimePg.pointer),
-    ... observationTimePg.graph.triples.toJS()
-  );
+    ...observationTimePg.graph.triples.toJS(),
+  ]);
 }
 
 export function createObservationTimeSpan(observation: Observation): Rdf.PointedGraph {
@@ -309,12 +309,12 @@ export function createObservationTimeSpan(observation: Observation): Rdf.Pointed
   const label = Rdf.literal(moment(observation.date.value).format('LL'));
   return Rdf.pg(
     timeIri,
-    Rdf.graph(
+    Rdf.graph([
       Rdf.triple(timeIri, crm.P82a_begin_of_the_begin, time),
       Rdf.triple(timeIri, crm.P82a_end_of_the_end, time),
       Rdf.triple(timeIri, vocabularies.rdfs.label, label),
-      Rdf.triple(timeIri, rso.displayLabel, label)
-    )
+      Rdf.triple(timeIri, rso.displayLabel, label),
+    ])
   );
 }
 
@@ -325,10 +325,10 @@ export function serializeInference(
       beliefs.map(
         beliefPg => Rdf.triple(Rdf.BASE_IRI, crminf.J1_used_as_premise, beliefPg.pointer)
       );
-  return Rdf.graph(
+  return Rdf.graph([
     Rdf.triple(Rdf.BASE_IRI, vocabularies.rdf.type, crminf.I5_Inference_Making),
     Rdf.triple(Rdf.BASE_IRI, crminf.J3_applies, inference.logicType),
-    ... premises,
-    ... _.flatMap(beliefs, b => b.graph.triples.toArray())
-  );
+    ...premises,
+    ..._.flatMap(beliefs, b => b.graph.triples.toArray()),
+  ]);
 }

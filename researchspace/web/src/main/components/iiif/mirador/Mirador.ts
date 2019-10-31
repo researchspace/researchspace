@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,9 +46,10 @@ function ensureBusExists(emitter: EmitterMixin) {
  * override event bus operations to be able to 'clearAllSubscriptions':
  * this allows us to remove and show Mirador again without complete page reload
  */
-Mirador.EventEmitter.prototype.subscribe = function (this: EmitterMixin) {
+Mirador.EventEmitter.prototype.subscribe = function (this: EmitterMixin, name, handler) {
   ensureBusExists(this);
   this.bus.on.apply(this.bus, arguments);
+  return {name, handler};
 };
 Mirador.EventEmitter.prototype.unsubscribe = function (this: EmitterMixin) {
   ensureBusExists(this);
@@ -184,12 +185,14 @@ interface ViewportRegion {
 
 export function scrollToRegions(
   mirador: Mirador.Instance,
-  region: (index: number, view: Mirador.ImageViewModule) => ViewportRegion | undefined
+  region: (
+    params: { index: number; canvasId: string; view: Mirador.ImageViewModule }
+  ) => ViewportRegion | undefined
 ): Kefir.Property<void> {
   const windows = mirador.viewer.workspace.windows;
   const task = Kefir.sequentially(0, range(windows.length)).flatMap(index => {
     const window = windows[index];
-    return scrollToRegion(window, view => region(index, view));
+    return scrollToRegion(window, view => region({index, canvasId: window.canvasID, view}));
   }).last().map(value => { /* void */}).toProperty();
   // make observable active (hot)
   task.onEnd(() => { /* nothing */ });

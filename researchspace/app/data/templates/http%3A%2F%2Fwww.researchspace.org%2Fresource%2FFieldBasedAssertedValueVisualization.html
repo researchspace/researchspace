@@ -6,8 +6,8 @@
             {{#each field.values as |value|}}
               <semantic-if 
                 query='
-                  ASK { 
-                    {{../../assertion}} rso:PX_asserts/rso:PX_asserts_value {{value}} . 
+                  ASK {
+                    {{../../assertion}} rso:PX_asserts/rso:PX_asserts_value {{value.value}} .
                   }
                 ' 
                 then='
@@ -15,8 +15,8 @@
                         {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#string"}}
                           {{value.value}}
                         {{/ifCond}}
-                        {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#anyURI"}} 
-                            <semantic-link uri="{{value.value}}" guess-repository=true></semantic-link>
+                        {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#anyURI"}}
+                            <semantic-link uri="{{value.value.value}}" guess-repository=true></semantic-link>
                         {{/ifCond}}
                   </li>                                                                                                   
               '>

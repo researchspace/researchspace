@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,8 @@
  */
 
 import * as React from 'react';
-import { Component, PropTypes } from 'react';
+import { Component } from 'react';
+import * as PropTypes from 'prop-types';
 
 import { Rdf } from 'platform/api/rdf';
 

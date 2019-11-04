@@ -6,8 +6,23 @@
 
 It challenges the instrumental nature of technology and allows subject experts to become authors of meaningful forms of structured data, combined with visual and textual narrative.
 
-The ResearchSpace system has been designed to allow researchers to use computers for qualitative as well as quantitative research, to transition from information systems that solely capture and index ‘essential’ reference material, to ones that address the complexity and richness of the research itself and provide a natural ‘relational’ method that traverses space and time, supporting different levels of complexity, variety of vantage point, and the represention of arguments and meta-commentary in a collaborative environment.
+The ResearchSpace system has been designed to allow researchers to connect qualitative and quantitative research, to transition from information systems that solely capture and index ‘essential’ reference material, to ones that address the complexity and richness of the research itself and provide a natural ‘relational’ method that traverses space and time, supporting different levels of complexity, variety of vantage point, and the represention of arguments and meta-commentary in a collaborative environment.
 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis
+" target="_blank"><img src="https://i.ytimg.com/vi/MaAv0SE7wis/maxresdefault.jpg" 
+alt="ResearchSpace Overview" width="640" border="1" /></a>
+
+# Knowledge Base 
+**To Be Added**
+
+# Demo 
+We are currently working on bringing together domain-specific examples for non-technical and technical users of ResearchSpace. The following is a snapshot from ongoing research on *Connecting Through Time and Space an ancient Nubian Settlement and a North London Residential Tower Block*.
+![Researchspace Example Knowledge Map](https://www.researchspace.org/images/knowledgemaps/ResearchKnowledgeMap.png "Creating a Knowledge Base while Visualy Tracing your Research with Knowledge Maps")
+*Figure: Creating a Knowledge Base (RDF Graph) by Visualy Tracing your Research with Knowledge Maps*
+
+
+
+# Technical Documentation
 
 The following documentation covers the setting up of the ResearchSpace Platform in [production](#setup-with-docker) and [development](#developing-and-bulding-from-sources) mode. 
 The ResearchSpace platform's **browser compatibility** is **Google Chrome (minimum version 53)** and **Mozilla Firefox (minimum version 58)**.
@@ -20,13 +35,13 @@ The ResearchSpace is distributed under LGPL-2.1.
 
 > :warning: **WARNING**: Currently we are working on demo application .....
 
-The easiest way to try researchspace is to use [setup with docker-compose](#deploying-using-docker). 
+The easiest way to try researchspace is to use a [setup with docker-compose](#setup-with-docker). 
 
 # Overview
 
 <!--ts-->
    * [Setup with docker](#setup-with-docker)
-   * [Developing and bulding from sources](#developing-and-bulding-from-sources)
+   * [Developing and building from sources](#developing-and-building-from-sources)
       * [Prerequisites](#prerequisites)
          * [Prerequisites Installation on <em>Ubuntu 18.04 (Bionic Beaver)</em>](#prerequisites-installation-on-ubuntu-1804-bionic-beaver)
          * [Prerequisites Installation on <em>MacOS Mojave</em>](#prerequisites-installation-on-macos-mojave)
@@ -38,7 +53,7 @@ The easiest way to try researchspace is to use [setup with docker-compose](#depl
             * [Backend](#backend)
             * [Frontend](#frontend)
          * [Backend Logging](#backend-logging)
-      * [Buildng WAR artefact](#buildng-war-artefact)
+      * [Building WAR artefact](#building-war-artefact)
       * [Building the Docker image](#building-the-docker-image)
          * [Setup IDE](#setup-ide)
             * [Eclipse](#eclipse)
@@ -53,7 +68,7 @@ The easiest way to try researchspace is to use [setup with docker-compose](#depl
          * [Fetching and installing dependencies may fail on the first run](#fetching-and-installing-dependencies-may-fail-on-the-first-run)
          * [Java version](#java-version)
 
-<!-- Added by: artem, at: Thu Oct 31 11:12:27 EET 2019 -->
+<!-- Added by: artem, at: Tue Nov  5 18:47:57 EET 2019 -->
 
 <!--te-->
 
@@ -64,7 +79,7 @@ Latest docker images for ResearchSpace are available on [Docker Hub](https://hub
 
 To setup ResearchSpace you need to execute `docker-compose up -d` from the folder with compose file. See more details about *docker-compose* in the [official documentation](https://docs.docker.com/compose/). 
 
-# Developing and bulding from sources
+# Developing and building from sources
 
 ## Prerequisites
 It is possible to use an unix-based OS as well as Windows for development against the platform. As prerequisites you need to have installed on your machine:
@@ -169,11 +184,11 @@ For most developments (i.e. for starting-up the platform properly) you will need
 
 ## Running the ResearchSpace in Development Mode
 
-2. Compile and initialise the some files using SBT in batch mode
-6. Configure the platform to use this Blazegraph instance as its default repository
-8. Start the SBT build environment in interactive mode.
+1. Compile and initialise the files using SBT in batch mode
+2. Configure the platform to use a local Blazegraph instance as its default repository
+3. Start the SBT build environment in interactive mode.
 
-Enter the following into your terminal (for Linx and Mac):
+Enter the following into your terminal (for Linux and Mac):
 
 ```sh
 mkdir -p runtime/config && echo "sparqlEndpoint=http://localhost:10080/blazegraph/sparql" >> runtime/config/environment.prop
@@ -188,11 +203,11 @@ mkdir runtime\config ; echo "sparqlEndpoint=http://localhost:10080/blazegraph/sp
 
 SBT will resolve some dependencies and present the SBT prompt.
 
-Once being in the SBT console, run `~jetty:start` which will compile all sources and start the jetty server. The tilde `~` will make SBT to watch source directories for changes in order to trigger incremental compilation, so any change to the server-side or client-side sources triggers re-deployment, which takes no more than a few seconds until they are picked-up by Jetty.
+Once in the SBT console, run `~jetty:start` which will compile all sources and start the jetty server. The tilde `~` will make SBT to watch source directories for changes in order to trigger incremental compilation, so any change to the server-side or client-side sources triggers re-deployment, which takes no more than a few seconds until they are picked-up by Jetty.
 
-It may take a few minutes to complete on the first run; it should be quicker on subsequent runs.
+Note, it may take a few minutes to complete starting the platform on the first run; it should be quicker on subsequent runs.
 
-You should see console output similar to
+You should see console output similar to:
 
 ```
 *************************************************************************************
@@ -205,7 +220,7 @@ followed by
 2017-11-01 16:04:25.823:INFO:oejs.Server:main: Started @14366ms
 ```
 
-Finally, go to [http://127.0.0.1:10214/](http://127.0.0.1:10214/). You should see the login screen and should be able to login with standard login `admin:admin`.
+Finally, go to [http://127.0.0.1:10214/](http://127.0.0.1:10214/), where you should see the login screen. Default platform access username and password are  `admin:admin`.
 
 ## Testing
 > :warning: **WARNING**: Chromium or Google Chrome browser is required for client-side tests.
@@ -221,7 +236,7 @@ Once the SBT console displays the message "Listening for transport dt_socket at 
 #### Frontend
 You can use standard browser developer tools for debugging the frontend. Furthermore, there is a dedicated plugin called "React Developer Tools" (available for Chrome, Firefox** for debugging and tracing states of React components.
 
-There are several convenient specifies, if being in the development mode:
+There are several convenient specifics, if in the development mode:
 
 **Hot-Reloading**
 
@@ -229,19 +244,23 @@ Changes to JS/TS and CSS/LESS files are compiled and pushed during runtime. We a
 
 **Source Attachments**
 
-Sourcemaps are being attached (`webpack://./src`) i.e. you can debug in the Typescript code instead of in the compile JS code.
+Sourcemaps are being attached (`webpack://./src`) i.e. you can debug in the Typescript code instead of the compiled JS code.
 
 ### Backend Logging
-The platform's backend is using log4j2 (and respective adapters) for logging and comes with four pre-configured log profiles.
+The platform's backend is using log4j2 (and respective adapters) for logging. It is setup with four pre-configured log profiles.
 The default profile is "debug", however, the profile can easily be switched by supplying the `build.sh -Dlog={log4j2-debug,log4j2-trace,log4j2-trace2,log4j2}` environment variable
-to the sbt console. The `log4j2-trace` and `log4j2-trace2` profile produce a lot of log messages, however, can particularly be useful when one needs to trace, for example, request headers or queries without goint to debug low level APIs.
+in the sbt console. The `log4j2-trace` and `log4j2-trace2` profile produce a lot of log messages, however, they can be particularly useful when one needs to trace, for example, request headers or queries without goint to debug low level APIs.
 
-**Please note:** If an old `log4j2.xml` file is still present in the compilation `/target/webapp/WEB-INF` folder, it will always be be preceded over the file set via the `-Dlog` env variable. Execute `clean` and `clean-files` in the sbt console to clean the target folder.
+**Please note:** If an old `log4j2.xml` file is still present in the compilation `/target/webapp/WEB-INF` folder, it will always be preceded over the file set via the `-Dlog` env variable. Execute `clean` and `clean-files` in the sbt console to clean the target folder.
 
-## Buildng WAR artefact
-To build ResearchSpace WAR artefact that can be deployed into Java Servlet Container (like jetty), exacute the following command, replace `VERSION_NUMBER` with some valid [semantic versioning](https://semver.org/) number.
+## Building WAR artefact
+> :warning: **WARNING**: There is a bug in SBT 1.* that prevents automatic assets cleanup (https://github.com/sbt/sbt/pull/4999), so you need to manually remove `project/webpack/assets` folder before building the WAR artefact. 
 
-`sh ./build.sh -DplatformVersion=VERSION_NUMBER -Dbuildjson=researchspace/researchspace-root-build.json -DbuildEnv=prod cleanFiles package`
+To build ResearchSpace WAR artefact that can be deployed into Java Servlet Container (like jetty), execute the following command, replace `VERSION_NUMBER` with some valid [semantic versioning](https://semver.org/) number.
+
+`rm -rf project/webpack/assets`
+
+`sh ./build.sh -DplatformVersion=VERSION_NUMBER -Dbuildjson=researchspace/researchspace-root-build.json -DbuildEnv=prod clean package`
 
 When the packaging process is complete you will find the .war file in `/target/platform-VERSION_NUMBER.war`.
 
@@ -249,7 +268,7 @@ When the packaging process is complete you will find the .war file in `/target/p
 
 The creation of the platform Docker image consists of packaging the ResearchSpace platform as a Java webapp (the .war file we have just created) in a Java servlet container, Jetty.
 
-Dockerfile file is located in `metaphacts-platform/dist/docker` folder. This file contains the instructions for the building of the platform Docker image that is based on official Jetty server as image.
+Dockerfile file is located in `metaphacts-platform/dist/docker` folder. This file contains the instructions for building the platform's Docker image that is based on an official Jetty server as image.
 
 
 To build the image first we need to copy artefacts produced by the platform build process.
@@ -273,7 +292,7 @@ docker build -t researchspace:VERSION_TAG .
 ```
 
 ### Setup IDE
-You can use various IDEs and text editors like Eclipse, IDEA, VSCode, Atom and Emacs to work on the projcet. While there exist some addons for JavaScript and Typescript in Eclipse, it is in principle possible to develop everything in only one IDE, e.g. Eclipse or IDEA. However, in particular for the JavaScript/TypeScript development it can be convenient to use editors such as VSCode, Atom or Emacs with much more powerful plugins.
+You can use various IDEs and text editors like Eclipse, IDEA, VSCode, Atom and Emacs to work on the project. While there exist some add-ons for JavaScript and Typescript in Eclipse, it is in principle possible to develop everything in only one IDE, e.g. Eclipse or IDEA. However, in particular for the JavaScript/TypeScript development it can be convenient to use editors such as VSCode, Atom or Emacs with much more powerful plugins.
 
 #### Eclipse
 If you are used to develop in Eclipse, you can automatically generate a new Eclipse project by executing the `build.sh`, which is located in the project root folder.

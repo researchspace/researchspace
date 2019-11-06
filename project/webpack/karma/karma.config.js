@@ -96,7 +96,7 @@ module.exports = function (defaults) {
           }
         },
         client: {
-            captureConsole: false
+            captureConsole: true
         },
 
         // see https://github.com/angular/angular-cli/issues/2125#issuecomment-247395088

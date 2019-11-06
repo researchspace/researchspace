@@ -58,7 +58,7 @@ object PlatformBuildPlugin extends AutoPlugin {
     lazy val installNpmDependencies = taskKey[Unit]("Install npm dependencies.")
     lazy val createJsonSchema = taskKey[Unit]("Create json schema for components")
     lazy val licenseFile = settingKey[String]("License file")
-    lazy val npmTest = TaskKey[Int]("Client-side tests.");
+    lazy val npmTest = taskKey[Int]("Client-side tests.");
   }
   import autoImport._
 
@@ -177,10 +177,6 @@ object PlatformBuildPlugin extends AutoPlugin {
       } else {
         0
       }
-    },
-    test in Test := {
-      npmTest.value
-      (test in Test).value
     },
     // --tests
 

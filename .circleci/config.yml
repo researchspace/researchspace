@@ -1,0 +1,175 @@
+version: 2
+jobs:
+  fetch_dependencies:
+    docker:
+      - image: circleci/openjdk@sha256:47679dc80282783c910354a18d2470d546059de456b05f54a5de761bf46d2ed8
+
+    steps:
+      - checkout
+
+      # we are generating md5sum for all files where we define any 3rd party dependencies, and see if it maches with file in circleci cache, if yes then we know that we don't need to
+      # regenerate any cachaes
+      - run:
+          command: |
+            md5sum project/build.properties >> assets.md5 && md5sum project/webpack/yarn.lock >> assets.md5 && md5sum metaphacts-platform/web/yarn.lock >> assets.md5 && md5sum researchspace/web/yarn.lock >> assets.md5 && md5sum project/dependencies.scala >> assets.md5 && md5sum metaphacts-platform/build.sbt >> assets.md5 && md5sum researchspace/build.sbt >> assets.md5
+            cat assets.md5
+
+      - restore_cache:
+          keys:
+            - assets-v1-{{ checksum "assets.md5" }}
+
+      - run:
+          name: Check if dependencies changed
+          command: |
+            if [[ ! -d assets ]]; then
+              echo "need to update caches"
+            else
+              echo "no need to update caches"
+              circleci-agent step halt
+            fi
+
+      - restore_cache:
+          name: Restore SBT Cache
+          keys:
+            - sbt-v2-{{ checksum "project/build.properties" }}
+            - sbt-v2-
+
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-v4-{{ checksum "project/webpack/yarn.lock" }}{{ checksum "metaphacts-platform/web/yarn.lock" }}{{ checksum "researchspace/web/yarn.lock" }}
+            - yarn-packages-v4-
+
+      - restore_cache:
+          name: Restore SBT Package Cache
+          keys:
+            - sbt-packages-v5-{{ checksum "project/dependencies.scala" }}{{ checksum "metaphacts-platform/build.sbt" }}{{ checksum "researchspace/build.sbt" }}
+            - sbt-packages-v5-
+
+      - run: sh ./build.sh -Dbuildjson=researchspace/researchspace-root-build.json update compile:update test:update package:update
+
+      - run: mkdir assets
+
+      - save_cache:
+          paths:
+            - assets
+          key: assets-v1-{{ checksum "assets.md5" }}            
+
+      - save_cache:
+          paths:
+            - ~/.sbt
+          key: sbt-v2-{{ checksum "project/build.properties" }}            
+
+      - save_cache:
+          paths:
+            - ~/.sbt
+          key: sbt-v2-{{ checksum "project/build.properties" }}            
+
+      - save_cache:
+          paths:
+            - ~/.ivy2
+            - ~/.coursier
+          key: sbt-packages-v5-{{ checksum "project/dependencies.scala" }}{{ checksum "metaphacts-platform/build.sbt" }}{{ checksum "researchspace/build.sbt" }}
+
+      - save_cache:
+          paths:
+            - ~/.cache/yarn
+          key: yarn-packages-v4-{{ checksum "project/webpack/yarn.lock" }}{{ checksum "metaphacts-platform/web/yarn.lock" }}{{ checksum "researchspace/web/yarn.lock" }}
+
+
+
+  frontend_build_test:
+    docker:
+      - image: circleci/openjdk@sha256:47679dc80282783c910354a18d2470d546059de456b05f54a5de761bf46d2ed8
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          name: Restore SBT Cache
+          keys:
+            - sbt-v2-{{ checksum "project/build.properties" }}
+            - sbt-v2-
+
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-v4-{{ checksum "project/webpack/yarn.lock" }}{{ checksum "metaphacts-platform/web/yarn.lock" }}{{ checksum "researchspace/web/yarn.lock" }}
+            - yarn-packages-v4-
+
+      - restore_cache:
+          name: Restore SBT Package Cache
+          keys:
+            - sbt-packages-v5-{{ checksum "project/dependencies.scala" }}{{ checksum "metaphacts-platform/build.sbt" }}{{ checksum "researchspace/build.sbt" }}
+            - sbt-packages-v5-
+
+      - run:
+          name: runt client-side tests
+          environment:
+            CHROMIUM_BIN: /opt/google/chrome/google-chrome
+          command: sh ./build.sh -DplatformVersion=3.2.2-SNAPSHOT -Dbuildjson=researchspace/researchspace-root-build.json -DbuildEnv=prod npmTest
+
+      - run:
+          name: collect test results
+          shell: /bin/bash
+          command: |
+            node ./project/webpack/generateInputsForJenkins.js ./researchspace/researchspace-root-build.json
+            mkdir -p ~/test-results && cp $(<./target/testResultPaths) ~/test-results || :
+          when: always
+
+      - store_test_results:
+          path: ~/test-results
+
+      - store_artifacts:
+          path: ~/test-results
+
+
+  backend_build_test:
+    docker:
+      - image: circleci/openjdk@sha256:47679dc80282783c910354a18d2470d546059de456b05f54a5de761bf46d2ed8
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          name: Restore SBT Cache
+          keys:
+            - sbt-v2-{{ checksum "project/build.properties" }}
+            - sbt-v2-
+
+      - restore_cache:
+          name: Restore SBT Package Cache
+          keys:
+            - sbt-packages-v5-{{ checksum "project/dependencies.scala" }}{{ checksum "metaphacts-platform/build.sbt" }}{{ checksum "researchspace/build.sbt" }}
+            - sbt-packages-v5-
+
+      - run:
+          environment:
+            _JAVA_OPTIONS: -Xms256m -Xmx1g
+          command: sh ./build.sh -DplatformVersion=3.2.2-SNAPSHOT -Dbuildjson=researchspace/researchspace-root-build.json -DbuildEnv=prod -DnoYarn=true test
+
+      - run:
+          name: collect test results
+          shell: /bin/bash
+          command: |
+            node ./project/webpack/generateInputsForJenkins.js ./researchspace/researchspace-root-build.json
+            mkdir -p ~/test-results && cp $(<./target/testResultPaths) ~/test-results || :
+          when: always
+
+      - store_test_results:
+          path: ~/test-results
+
+      - store_artifacts:
+          path: ~/test-results
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - fetch_dependencies
+      - frontend_build_test:
+          requires:
+            - fetch_dependencies
+      - backend_build_test:
+          requires:
+            - fetch_dependencies

@@ -1,6 +1,14 @@
-# ResearchSpace
+<p align='center'>
+  <img src='https://www.researchspace.org/images/rslogo_blackonwhite_crop.png' alt='ResearchSpace' />
+</p>
 
-![ResearchSpace Project logo](https://www.researchspace.org/images/rslogo_blackonwhite_crop.png "ResearchSpace")
+- - -
+
+<p align="center">
+  <a href="https://gitter.im/researchspace/community"><img src="https://badges.gitter.im/Join Chat.svg" alt="Gitter"></a>
+</p>
+
+- - -
 
 [ResearchSpace](https://www.researchspace.org/) is a new type of contextualising knowledge system. It promotes collaborative interdisciplinary research allowing people to grow knowledge that relates to and reveals different aspects of society.
 

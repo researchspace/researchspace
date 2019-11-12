@@ -129,6 +129,7 @@ class FieldEditorComponent extends Component<Props, State> {
       range: [] as Value[],
       min: Nothing<Value>(),
       max: Nothing<Value>(),
+      order: Nothing<Value>(),
       defaults: [] as Value[],
       testSubject: Nothing<Value>(),
       insertPattern: Nothing<Value>(),
@@ -355,6 +356,23 @@ class FieldEditorComponent extends Component<Props, State> {
           placeholder: 'Any positive number from 1 to n. \"unbound\" for unlimited.',
           onChange: e => this.updateValues({max: getFormValue(e)}, Validation.validateMax),
           value: this.state.max.map(v => v.value).getOrElse(undefined),
+        }),
+      }),
+      row({
+        label: 'Order',
+        expanded: this.state.order.isJust,
+        onExpand: () => this.updateValues(
+          {order: Just({value: '1'})},
+          Validation.validateOrder
+        ),
+        onCollapse: () => this.updateValues({order: nothing}),
+        error: this.state.order.map(v => v.error).getOrElse(undefined),
+        element: input({
+          className: block('order-input').toString(),
+          type: 'text',
+          placeholder: 'Any positive number greater than 0.',
+          onChange: e => this.updateValues({order: getFormValue(e)}, Validation.validateOrder),
+          value: this.state.order.map(v => v.value).getOrElse(undefined),
         }),
       }),
       this.renderMultipleValuesInput({

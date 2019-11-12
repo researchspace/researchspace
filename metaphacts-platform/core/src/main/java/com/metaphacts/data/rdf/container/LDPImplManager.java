@@ -48,32 +48,48 @@ import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 
 /**
- * 
+ *
  * TODO replace by META-INF service loader?
  * @author Johannes Trame <jt@metaphacts.com>
  *
  */
 public class LDPImplManager {
-    
+
     private static final Logger logger = LogManager.getLogger(LDPImplManager.class);
-    
+
     private static final Map<IRI,Class<? extends LDPContainer>> knownContainerImplementations = listLDPContainerImplementations();
     private static final Map<IRI,Class<? extends LDPResource>> knownResourceImplementations = listLDPImplementations();
-    
+
     @Inject
     private static Injector injector;
-    
+
     public static LDPResource getLDPImplementation(IRI iri, Set<IRI> types, MpRepositoryProvider repositoryProvider) {
         Class<? extends LDPResource> cl = null;
         if(knownContainerImplementations.containsKey(iri))
             cl=knownContainerImplementations.get(iri);
         else
             cl = isContainer(iri, types) ? getContainerImplementation(iri, types) : getResourceImplementation(iri, types);
-            
+
         logger.trace("Selected implementation for LDP Container: " + cl);
+        return createLDPInstance(iri, cl, repositoryProvider);
+    }
+
+    public static LDPContainer getLDPContainerInstance(IRI iri, MpRepositoryProvider repositoryProvider) {
+        if(knownContainerImplementations.containsKey(iri)) {
+            return (LDPContainer)createLDPInstance(iri, knownContainerImplementations.get(iri), repositoryProvider);
+        } else {
+            throw new RuntimeException("There is no LDP container implementation for " + iri);
+        }
+    }
+
+    public static boolean isKnownContainer(IRI iri) {
+        return knownContainerImplementations.containsKey(iri);
+    }
+
+    private static LDPResource createLDPInstance(IRI iri, Class<? extends LDPResource> cl, MpRepositoryProvider repositoryProvider) {
         try {
             @SuppressWarnings("unchecked")
-            Constructor<LDPResource> cons = (Constructor<LDPResource>) cl.getConstructor(IRI.class, MpRepositoryProvider.class);
+                Constructor<LDPResource> cons = (Constructor<LDPResource>) cl.getConstructor(IRI.class, MpRepositoryProvider.class);
             LDPResource instance = cons.newInstance(iri, repositoryProvider);
             injector.injectMembers(instance);
             if(LDPContainer.class.isAssignableFrom(instance.getClass())){
@@ -81,23 +97,19 @@ public class LDPImplManager {
             }
             return instance;
         } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
+                 | IllegalArgumentException | InvocationTargetException
+                 | NoSuchMethodException | SecurityException e) {
             Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
     }
-    
-    public static boolean isKnownContainer(IRI iri) {
-        return knownContainerImplementations.containsKey(iri);
-    }
-    
+
     private static boolean isContainer(IRI iri, Set<IRI> types){
         boolean b = RootContainer.IRI.equals(iri) || !Collections.disjoint(types, Sets.newHashSet(LDP.Container, LDP.BasicContainer, LDP.DirectContainer));
         if(logger.isTraceEnabled()) logger.trace("Resource is a LDP Container: "+b );
         return b;
     }
-    
+
     private static Class<? extends LDPResource> getContainerImplementation(IRI iri, Set<IRI> types){
         Class<? extends LDPContainer> impl = knownContainerImplementations.containsKey(iri) ? knownContainerImplementations.get(iri) : null;
         if(impl!=null)
@@ -107,14 +119,14 @@ public class LDPImplManager {
         }
         return DefaultLDPContainer.class;
      }
-     
+
      private static Class<? extends LDPResource> getResourceImplementation(IRI iri, Set<IRI> types){
          for(Resource r : types){
              if(knownResourceImplementations.containsKey(r)) return knownResourceImplementations.get(r);
          }
          return DefaultLDPResource.class;
      }
-     
+
      @SuppressWarnings("unchecked")
      private static Map<IRI,Class<? extends LDPResource>> listLDPImplementations(){
          ValueFactory vf =  SimpleValueFactory.getInstance();
@@ -145,7 +157,7 @@ public class LDPImplManager {
          logger.trace("Found the following LDP container implementations: " + known);
          return known;
      }
-     
+
     private static Set<Class<?>> findLdpImplementations(Predicate<ClassInfo> filter) {
         ClassGraph classGraph = new ClassGraph()
             .enableClassInfo()

@@ -76,6 +76,10 @@ export interface FieldDefinition {
    */
   maxOccurs: number;
   /**
+   * XSD schema maximum cardinality (including).
+   */
+  weight: number;
+  /**
    * List of default values assigned to field.
    */
   defaultValues: ReadonlyArray<string>;
@@ -160,6 +164,7 @@ export interface FieldDefinitionProp {
   range?: string | Rdf.Iri | ReadonlyArray<string | Rdf.Iri>;
   minOccurs?: number | 'unbound';
   maxOccurs?: number | 'unbound';
+  weight?: number | 'unbound';
   defaultValues?: ReadonlyArray<string>;
   selectPattern?: string;
   askPattern?: string;
@@ -213,6 +218,12 @@ export function normalizeFieldDefinition(
     definition.maxOccurs = Infinity;
   } else {
     definition.maxOccurs = parseInt(definition.maxOccurs, 10);
+  }
+
+  if (!definition.weight || definition.weight === 'unbound') {
+    definition.weight = 0;
+  } else {
+    definition.weight = parseInt(definition.weight, 10);
   }
 
   if (typeof definition.domain === 'string') {

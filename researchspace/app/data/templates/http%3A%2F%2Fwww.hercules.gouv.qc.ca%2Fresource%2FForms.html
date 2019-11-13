@@ -1,0 +1,44 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li class="active">Formulaire</li>
+</ol>
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-id-card fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Formulaire</h2>
+    </div>
+  </div>
+  <div class='page__body'>
+    <i>Les formulaires sémantiques sont utilisés pour la création d'entités.
+      Il est aussi possible de créer des formulaires à partir de code HTML directement avec le composant
+      <semantic-link iri="[[resolvePrefix 'Help:SemanticForm']]"> <code> <semantic-form> </code>
+        .
+      </semantic-link>
+    </i>
+    <hr />
+    <h2 id="fielddefinitions">Listes des formulaires créés</h2>
+    <semantic-table query="
+    SELECT ?form ?name WHERE {
+      ?form a <http://hercules.gouv.qc.ca/ontology/meta/InstanceForm> .
+      ?form <http://hercules.gouv.qc.ca/ontology/meta/hasName> ?name . 
+    }" column-configuration='[
+    {
+    "displayName": "Nom du formulaire", 
+    "cellTemplate": "
+    <div>
+      <semantic-link iri={{form.value}}> {{name.value}}
+      </semantic-link>
+    </div>" 
+    }
+  ]' number-of-displayed-rows=8>
+    </semantic-table>
+    <mp-resource-link-container uri="http://www.hercules.gouv.qc.ca/resource/FormGeneration">
+      <button class="btn btn-primary">Créer un nouveau formulaire</button>
+    </mp-resource-link-container>
+  </div>
+</div>

@@ -1,0 +1,416 @@
+<semantic-form new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' post-action='redirect'
+  browser-persistence=true form-id='E22_Man-Made_Object_Form' fields='[
+    {
+      "id": "type",
+      "label": "Type",
+      "description": "The type of the created instance",
+      "xsdDatatype": "xsd:anyURI",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE {}",
+      "deletePattern": "DELETE { $subject a $value } WHERE {}"
+    },
+    {
+      "id": "label",
+      "label": "Label",
+      "description": "The label used to display the instance",
+      "xsdDatatype": "xsd:langString",
+      "minOccurs": "1",
+      "maxOccurs": "unbound",
+      "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+      "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+      "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+    },
+    {
+      "id": "production_event",
+      "label": "Production Event",
+      "description": "The production event of the instance",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "0",
+      "maxOccurs": "1",
+      "selectPattern": "SELECT $value WHERE { $subject <http://erlangen-crm.org/170309/P108i_was_produced_by> $value }",
+      "insertPattern": "INSERT { $subject <http://erlangen-crm.org/170309/P108i_was_produced_by> $value . $value <http://erlangen-crm.org/170309/P108_has_produced> $subject } WHERE {}",
+      "deletePattern": "DELETE { $subject <http://erlangen-crm.org/170309/P108i_was_produced_by> $value . $value <http://erlangen-crm.org/170309/P108_has_produced> $subject } WHERE {}"
+    },
+    {
+      "id": "component",
+      "label": "Component",
+      "description": "The different components of the instance",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "0",
+      "maxOccurs": "unbound",
+      "selectPattern": "SELECT $value WHERE { $subject <http://erlangen-crm.org/170309/P46_is_composed_of> $value }",
+      "insertPattern": "INSERT { $subject <http://erlangen-crm.org/170309/P46_is_composed_of> $value . $value <http://erlangen-crm.org/170309/P46i_forms_part_of> $subject } WHERE {}",
+      "deletePattern": "DELETE { $subject <http://erlangen-crm.org/170309/P46_is_composed_of> $value . $value <http://erlangen-crm.org/170309/P46i_forms_part_of> $subject } WHERE {}"
+    },
+    {
+      "id": "present_at_event",
+      "label": "Present at Event",
+      "description": "The different events where the instance was used",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "0",
+      "maxOccurs": "unbound",
+      "selectPattern": "
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        SELECT ?value ?label WHERE {
+          $subject <http://erlangen-crm.org/170309/P12i_was_present_at> ?value .
+          OPTIONAL { ?value rdfs:label ?label }
+        }
+      ",
+      "insertPattern": "INSERT { $subject <http://erlangen-crm.org/170309/P12i_was_present_at> ?value . ?value <http://erlangen-crm.org/170309/P12_occurred_in_the_presence_of> $subject } WHERE {}",
+      "deletePattern": "DELETE { $subject <http://erlangen-crm.org/170309/P12i_was_present_at> ?value . ?value <http://erlangen-crm.org/170309/P12_occurred_in_the_presence_of> $subject } WHERE {}",
+      "autosuggestionPattern": "
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        SELECT DISTINCT $value $label WHERE {
+          $value a <http://erlangen-crm.org/170309/E5_Event> .
+          $value rdfs:label $label .
+          FILTER REGEX(str($label), \"?token\", \"i\")
+        }
+      "
+    }
+  ]'>
+  <bs-panel>
+    <h4>Create new Man Made Object Instance</h4>
+    <semantic-form-recover-notification></semantic-form-recover-notification>
+    <bs-tabs fixed-key="form">
+      <bs-tab event-key="1" title="General Information">
+          <semantic-form-hidden-input for='type' default-value='http://erlangen-crm.org/170309/E22_Man-Made_Object'>
+          </semantic-form-hidden-input>
+          <semantic-form-text-input for='label' require-language=true languages='["fr","en"]'></semantic-form-text-input>
+          <semantic-form-composite-input for='production_event'
+            new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+            {
+              "id": "production-type",
+              "xsdDatatype": "xsd:anyURI",
+              "minOccurs": "1",
+              "maxOccurs": "1",
+              "selectPattern": "SELECT ?value WHERE { $subject a ?value }",
+              "insertPattern": "INSERT { $subject a ?value } WHERE {}",
+              "deletePattern": "DELETE { $subject a ?value } WHERE {}"
+            },
+            {
+              "id": "label",
+              "label": "Label",
+              "description": "The label used to display the instance",
+              "xsdDatatype": "xsd:langString",
+              "minOccurs": "1",
+              "maxOccurs": "unbound",
+              "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+              "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+              "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+            },
+            {
+              "id": "general_technique",
+              "label": "General Technique",
+              "description": "The general technique used to create the instance",
+              "xsdDatatype": "xsd:anyURI",
+              "minOccurs": "0",
+              "maxOccurs": "1",
+              "selectPattern": "
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                SELECT ?value ?label WHERE {
+                  $subject <http://erlangen-crm.org/170309/P32_used_general_technique> ?value .
+                  OPTIONAL { ?value rdfs:label ?label }
+                }
+              ",
+              "insertPattern": "INSERT { $subject <http://erlangen-crm.org/170309/P32_used_general_technique> ?value } WHERE {}",
+              "deletePattern": "DELETE { $subject <http://erlangen-crm.org/170309/P32_used_general_technique> ?value } WHERE {}",
+              "autosuggestionPattern": "
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                SELECT DISTINCT $value $label WHERE {
+                  $value a <http://cidoccrm-mccq.gouv.qc.ca/Design_or_Procedure_Type> .
+                  $value rdfs:label $label .
+                  FILTER REGEX(str($label), \"?token\", \"i\")
+                }
+              "
+            }]'>
+            <semantic-form-hidden-input for='production-type' default-value="http://erlangen-crm.org/170309/E12_Production"></semantic-form-hidden-input>
+            <semantic-form-text-input for='label' require-language=true languages='["fr","en"]'></semantic-form-text-input>
+            <semantic-form-autocomplete-input for='general_technique' placeholder='Search or create a general technique...'>
+              <semantic-form new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+                {
+                  "id": "label",
+                  "label": "Label",
+                  "description": "The label used to display the instance",
+                  "xsdDatatype": "xsd:langString",
+                  "minOccurs": "1",
+                  "maxOccurs": "unbound",
+                  "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+                  "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+                  "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+                },
+                {
+                  "id": "type",
+                  "label": "Type",
+                  "xsdDatatype": "xsd:anyURI",
+                  "minOccurs": "1",
+                  "maxOccurs": "1",
+                  "selectPattern": "SELECT $value WHERE { $subject a $value }",
+                  "insertPattern": "INSERT { $subject a $value } WHERE {}",
+                  "deletePattern": "DELETE { $subject a $value } WHERE {}"
+                },
+                {
+                  "id": "description",
+                  "label": "Description",
+                  "description": "The description of the instance",
+                  "xsdDatatype": "xsd:langString",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "selectPattern": "SELECT $value WHERE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value }",
+                  "insertPattern": "INSERT { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}",
+                  "deletePattern": "DELETE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}"
+                }]'>
+                <semantic-form-hidden-input for='type' default-value='http://cidoccrm-mccq.gouv.qc.ca/Design_or_Procedure_Type'></semantic-form-hidden-input>
+                  <semantic-form-text-input for='label' require-language=true languages='["fr","en"]'></semantic-form-text-input>
+                <semantic-form-text-input for='description' require-language=true languages='["fr","en"]' multiline=true></semantic-form-text-input>
+                <semantic-form-errors></semantic-form-errors>
+                <button name='submit' class='btn btn-default'>Create</button>
+                <button name='reset' class='btn btn-default'>Reset</button>
+              </semantic-form>
+            </semantic-form-autocomplete-input>
+          </semantic-form-composite-input>
+          <semantic-form-autocomplete-input for='present_at_event' placeholder='Search or create an event...'>
+            <semantic-form new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+              {
+                "id": "label",
+                "label": "Label",
+                "description": "The label used to display the instance",
+                "xsdDatatype": "xsd:langString",
+                "minOccurs": "1",
+                "maxOccurs": "unbound",
+                "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+                "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+                "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+              },
+              {
+                "id": "type",
+                "label": "Type",
+                "xsdDatatype": "xsd:anyURI",
+                "minOccurs": "1",
+                "maxOccurs": "1",
+                "selectPattern": "SELECT $value WHERE { $subject a $value }",
+                "insertPattern": "INSERT { $subject a $value } WHERE {}",
+                "deletePattern": "DELETE { $subject a $value } WHERE {}"
+              },
+              {
+                "id": "description",
+                "label": "Description",
+                "description": "The description of the instance",
+                "xsdDatatype": "xsd:langString",
+                "minOccurs": "0",
+                "maxOccurs": "1",
+                "selectPattern": "SELECT $value WHERE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value }",
+                "insertPattern": "INSERT { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}",
+                "deletePattern": "DELETE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}"
+              }]'>
+              <semantic-form-hidden-input for='type' default-value='http://erlangen-crm.org/170309/E5_Event'>
+              </semantic-form-hidden-input>
+              <semantic-form-text-input for='label'></semantic-form-text-input>
+              <semantic-form-text-input for='description' require-language=true languages='["fr","en"]' multiline=true></semantic-form-text-input>
+              <semantic-form-errors></semantic-form-errors>
+              <button name='submit' class='btn btn-default'>Create</button>
+              <button name='reset' class='btn btn-default'>Reset</button>
+            </semantic-form>
+          </semantic-form-autocomplete-input>
+      </bs-tab>
+      <bs-tab event-key="2" title="Component">
+        <semantic-form-composite-input for="component" new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+          {
+            "id": "type",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT ?value WHERE { $subject a ?value }",
+            "insertPattern": "INSERT { $subject a ?value } WHERE {}",
+            "deletePattern": "DELETE { $subject a ?value } WHERE {}"
+          },
+          {
+            "id": "label",
+            "label": "Label",
+            "description": "The label used to display the instance",
+            "xsdDatatype": "xsd:langString",
+            "minOccurs": "1",
+            "maxOccurs": "unbound",
+            "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+            "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+            "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+          },
+          {
+            "id": "production_event_component",
+            "label": "Production Event",
+            "description": "The production event of the instance",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "0",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT $value WHERE { $subject <http://erlangen-crm.org/170309/P108i_was_produced_by> $value }",
+            "insertPattern": "INSERT { $subject <http://erlangen-crm.org/170309/P108i_was_produced_by> $value . $value <http://erlangen-crm.org/170309/P108_has_produced> $subject } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://erlangen-crm.org/170309/P108i_was_produced_by> $value . $value <http://erlangen-crm.org/170309/P108_has_produced> $subject } WHERE {}"
+          },
+          {
+            "id": "present_at_event",
+            "label": "Present at Event",
+            "description": "The different events where the instance was used",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "0",
+            "maxOccurs": "unbound",
+            "selectPattern": "
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+              SELECT ?value ?label WHERE {
+                $subject <http://erlangen-crm.org/170309/P12i_was_present_at> ?value .
+                OPTIONAL { ?value rdfs:label ?label }
+              }
+            ",
+            "insertPattern": "INSERT { $subject <http://erlangen-crm.org/170309/P12i_was_present_at> ?value . ?value <http://erlangen-crm.org/170309/P12_occurred_in_the_presence_of> $subject } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://erlangen-crm.org/170309/P12i_was_present_at> ?value . ?value <http://erlangen-crm.org/170309/P12_occurred_in_the_presence_of> $subject } WHERE {}",
+            "autosuggestionPattern": "
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+              SELECT DISTINCT $value $label WHERE {
+                $value a <http://erlangen-crm.org/170309/E5_Event> .
+                $value rdfs:label $label .
+                FILTER REGEX(str($label), \"?token\", \"i\")
+              }
+            "
+          }]'>
+          <semantic-form-hidden-input for='type' default-value="http://erlangen-crm.org/170309/E22_Man-Made_Object"></semantic-form-hidden-input>
+          <semantic-form-text-input for='label' require-language=true languages='["fr","en"]'></semantic-form-text-input>
+          <semantic-form-composite-input for='production_event_component' new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+            {
+              "id": "production_type_component",
+              "xsdDatatype": "xsd:anyURI",
+              "minOccurs": "1",
+              "maxOccurs": "1",
+              "selectPattern": "SELECT ?value WHERE { $subject a ?value }",
+              "insertPattern": "INSERT { $subject a ?value } WHERE {}",
+              "deletePattern": "DELETE { $subject a ?value } WHERE {}"
+            },
+            {
+              "id": "label",
+              "label": "Label",
+              "description": "The label used to display the instance",
+              "xsdDatatype": "xsd:langString",
+              "minOccurs": "1",
+              "maxOccurs": "unbound",
+              "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+              "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+              "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+            },
+            {
+              "id": "general_technique",
+              "label": "General Technique",
+              "description": "The general technique used to create the instance",
+              "xsdDatatype": "xsd:anyURI",
+              "minOccurs": "0",
+              "maxOccurs": "1",
+              "selectPattern": "
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                SELECT ?value ?label WHERE {
+                  $subject <http://erlangen-crm.org/170309/P32_used_general_technique> ?value .
+                  OPTIONAL { ?value rdfs:label ?label }
+                }
+              ",
+              "insertPattern": "INSERT { $subject <http://erlangen-crm.org/170309/P32_used_general_technique> ?value } WHERE {}",
+              "deletePattern": "DELETE { $subject <http://erlangen-crm.org/170309/P32_used_general_technique> ?value } WHERE {}",
+              "autosuggestionPattern": "
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                SELECT DISTINCT $value $label WHERE {
+                  $value a <http://cidoccrm-mccq.gouv.qc.ca/Design_or_Procedure_Type> .
+                  $value rdfs:label $label .
+                  FILTER REGEX(str($label), \"?token\", \"i\")
+                }
+              "
+            }]'>
+            <semantic-form-hidden-input for='production_type_component' default-value='http://erlangen-crm.org/170309/E12_Production'></semantic-form-hidden-input>
+            <semantic-form-text-input for='label' require-language=true languages='["fr","en"]'></semantic-form-text-input>
+            <semantic-form-autocomplete-input for='general_technique' placeholder='Search or create a general technique...'>
+              <semantic-form new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+                {
+                  "id": "label",
+                  "label": "Label",
+                  "description": "The label used to display the instance",
+                  "xsdDatatype": "xsd:langString",
+                  "minOccurs": "1",
+                  "maxOccurs": "unbound",
+                  "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+                  "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+                  "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+                },
+                {
+                  "id": "type",
+                  "label": "Type",
+                  "xsdDatatype": "xsd:anyURI",
+                  "minOccurs": "1",
+                  "maxOccurs": "1",
+                  "selectPattern": "SELECT $value WHERE { $subject a $value }",
+                  "insertPattern": "INSERT { $subject a $value } WHERE {}",
+                  "deletePattern": "DELETE { $subject a $value } WHERE {}"
+                },
+                {
+                  "id": "description",
+                  "label": "Description",
+                  "description": "The description of the instance",
+                  "xsdDatatype": "xsd:langString",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "selectPattern": "SELECT $value WHERE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value }",
+                  "insertPattern": "INSERT { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}",
+                  "deletePattern": "DELETE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}"
+                }]'>
+                <semantic-form-hidden-input for='type' default-value='http://cidoccrm-mccq.gouv.qc.ca/Design_or_Procedure_Type'></semantic-form-hidden-input>
+                <semantic-form-text-input for='label' require-language=true languages='["fr","en"]'></semantic-form-text-input>
+                <semantic-form-text-input for='description' require-language=true languages='["fr","en"]' multiline=true></semantic-form-text-input>
+                <semantic-form-errors></semantic-form-errors>
+                <button name='submit' class='btn btn-default'>Create</button>
+                <button name='reset' class='btn btn-default'>Reset</button>
+              </semantic-form>
+            </semantic-form-autocomplete-input>
+          </semantic-form-composite-input>
+          <semantic-form-autocomplete-input for='present_at_event' placeholder='Search or create an event...'>
+            <semantic-form new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+              {
+                "id": "label",
+                "label": "Label",
+                "description": "The label used to display the instance",
+                "xsdDatatype": "xsd:langString",
+                "minOccurs": "1",
+                "maxOccurs": "unbound",
+                "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+                "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+                "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+              },
+              {
+                "id": "type",
+                "label": "Type",
+                "xsdDatatype": "xsd:anyURI",
+                "minOccurs": "1",
+                "maxOccurs": "1",
+                "selectPattern": "SELECT $value WHERE { $subject a $value }",
+                "insertPattern": "INSERT { $subject a $value } WHERE {}",
+                "deletePattern": "DELETE { $subject a $value } WHERE {}"
+              },
+              {
+                "id": "description",
+                "label": "Description",
+                "description": "The description of the instance",
+                "xsdDatatype": "xsd:langString",
+                "minOccurs": "0",
+                "maxOccurs": "1",
+                "selectPattern": "SELECT $value WHERE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value }",
+                "insertPattern": "INSERT { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}",
+                "deletePattern": "DELETE { $subject <http://www.w3.org/2000/01/rdf-schema#comment> $value } WHERE {}"
+              }]'>
+              <semantic-form-hidden-input for='type' default-value='http://erlangen-crm.org/170309/E5_Event'></semantic-form-hidden-input>
+              <semantic-form-text-input for='label' require-language=true languages='["fr","en"]'></semantic-form-text-input>
+              <semantic-form-text-input for='description' require-language=true languages='["fr","en"]' multiline=true></semantic-form-text-input>
+              <semantic-form-errors></semantic-form-errors>
+              <button name='submit' class='btn btn-default'>Create</button>
+              <button name='reset' class='btn btn-default'>Reset</button>
+            </semantic-form>
+          </semantic-form-autocomplete-input>
+        </semantic-form-composite-input>
+      </bs-tab>
+    </bs-tabs>
+    <semantic-form-errors></semantic-form-errors>
+    <!-- save and reset button for form -->
+    <button name='submit' class='btn btn-default'>Create</button>
+    <button name='reset' class='btn btn-default'>Reset</button>
+  </bs-panel>
+</semantic-form>

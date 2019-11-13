@@ -1,0 +1,96 @@
+   set-items-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
+      PREFIX prov: <http://www.w3.org/ns/prov#>
+      PREFIX platform: <http://www.metaphacts.com/ontologies/platform#>
+      PREFIX bds: <http://www.bigdata.com/rdf/search#>
+      PREFIX ontodia: <http://ontodia.org/schema/v1#>
+      SELECT ?item ?itemHolder ?parent ?kind WHERE {
+        {
+          FILTER(!(?__isSearch__)) .
+          {{
+            ?__rootSet__ ldp:contains ?itemHolder .
+            BIND(?__rootSet__ as ?parent) .
+            OPTIONAL { ?itemHolder platform:setItem ?setItem }
+            BIND(COALESCE(?setItem, ?itemHolder) AS ?item) .
+          } UNION {
+            platform:ontodiaDiagramContainer ldp:contains ?itemHolder .
+            BIND(platform:ontodiaDiagramContainer as ?parent) .
+            BIND(COALESCE(?setItem, ?itemHolder) AS ?item) .
+          } UNION {
+            ?__rootSet__ ontodia:layoutData/ontodia:hasElement/ontodia:resource ?itemHolder .
+            BIND(?__rootSet__ as ?parent) .
+            BIND(?itemHolder AS ?item) .
+          }}
+        } UNION {
+          FILTER(?__isSearch__) .
+          {{
+              ?__rootSet__ ldp:contains ?__setToSearch__ .
+              ?__setToSearch__ ldp:contains ?itemHolder.
+              BIND(?__setToSearch__ as ?parent) .
+              ?itemHolder platform:setItem ?item .
+              FILTER(?__filterPatterns__)
+           } UNION {
+              ?__setToSearch__ ontodia:layoutData/ontodia:hasElement/ontodia:resource ?itemHolder .
+              BIND(?__setToSearch__ as ?parent) .
+              BIND(?itemHolder AS ?item) .
+              FILTER(?__filterPatterns__)
+          }}
+        }
+
+        OPTIONAL {
+          ?itemHolder platform:setItemIndex ?i .
+        }
+        OPTIONAL {
+          ?itemHolder prov:generatedAtTime ?modificationDate .
+        }
+        BIND(COALESCE(?i, 0) AS ?index) .
+        OPTIONAL {
+          {
+            ?item a platform:Set .
+          } UNION {
+            ?item a ontodia:Diagram .
+          }
+          BIND(platform:Set as ?type)
+        }
+        BIND(COALESCE(?type, platform:SetItem) AS ?kind) .
+      } ORDER BY ?index DESC(?modificationDate)'
+    set-count-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
+      PREFIX platform: <http://www.metaphacts.com/ontologies/platform#>
+      PREFIX ontodia: <http://ontodia.org/schema/v1#>
+      SELECT ?set (COUNT(?item) as ?count) WHERE {
+          {
+            ?__rootSet__ ldp:contains ?set .
+            OPTIONAL { ?set ldp:contains ?item }
+          } UNION {
+            platform:ontodiaDiagramContainer ldp:contains ?set .
+            OPTIONAL { ?set ontodia:layoutData/ontodia:hasElement ?item }
+          }
+      } GROUP BY ?set'
+		item-config='{
+      "<http://www.metaphacts.com/ontologies/platform#Set>": {
+        "isSet": true,
+        "listTemplate": "{{> :SetView}}",
+        "gridTemplate": "{{> :SetView}}"
+      },
+      "<http://www.metaphacts.com/ontologies/platform#SetItem>": {
+        "isSet": false,
+        "listTemplate": "{{> :SetListView}}",
+        "gridTemplate": "{{> :SetGridView [[#if check]]check=[[check]][[/if]]}}"
+      }
+    }'
+filters='[{
+              "placeholder": "Filter by type...",
+              "queryPattern": "{?item rdf:type ?__value__}",
+              "suggestionsQuery": "SELECT ?value ?label WHERE { ?value a <http://www.researchspace.org/ontology/FundamentalCategory>; rdfs:label ?label. }"
+            }]'
+  item-config='{
+    "<http://www.metaphacts.com/ontologies/platform#Set>": {
+      "isSet": true,
+      "listTemplate": "{{> :SetView}}",
+      "gridTemplate": "{{> :SetView}}"
+    },
+    "<http://www.metaphacts.com/ontologies/platform#SetItem>": {
+      "isSet": false,
+      "listTemplate": "{{> :SetListView}}",
+      "gridTemplate": "{{> :SetGridView [[#if check]]check=[[check]][[/if]]}}"
+    }
+  }'

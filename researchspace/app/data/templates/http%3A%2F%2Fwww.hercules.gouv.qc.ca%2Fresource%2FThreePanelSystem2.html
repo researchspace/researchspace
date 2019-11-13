@@ -1,0 +1,324 @@
+<div class="">
+    [[#>:ClipboardSidebar]]
+      <div style="height: calc(100vh - 104px)">
+        <rs-panel-system>
+          <rs-panel-system-holder id="panel-system-top" default-holder='graph-authoring'>
+            <rs-ontodia-panel id="ontodia-panel" 
+                              settings=nostats 
+                              repositories='["default", "assets"]' 
+                              authoring-mode=true default-node-template="{{> default}}" 
+                              node-templates='{"http://www.cidoc-crm.org/cidoc-crm/E5_Event": "{{> event-template}}"}'
+                              edge-styles='{"http://www.metaphacts.com/fieldDefinition/connected%20with": {"editable": true}}' 
+                              
+                              provider-settings= '{ "fullTextSearch": {
+                "prefix": "PREFIX bds: <http://www.bigdata.com/rdf/search#>
+",
+                "queryPattern": "
+                  #?inst rso:displayLabel ?searchLabel.
+                  ?inst ${dataLabelProperty} ?searchLabel.
+                  SERVICE bds:search {
+                         ?searchLabel bds:search \"${text}*\" ;
+                                      bds:minRelevance \"0.5\" ;
+
+                                      bds:matchAllTerms \"true\";
+                                      bds:relevance ?score.
+                  }
+            ",
+                "extractLabel": false},
+                       "classTreeQuery": "
+                          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                          PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                          PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                          PREFIX rs: <http://www.researchspace.org/ontology/>
+													PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                          PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>    
+                               
+                               SELECT ?class ?label ?parent WHERE {
+															  {
+                                  ?class a rs:FundamentalCategory .
+																	 BIND (crm:E1_CRM_Entity as ?parent)
+                                }
+                                UNION {
+                                 crm:E89_Propositional_Object rdfs:label ?label.
+                                  BIND (crm:E89_Propositional_Object as ?class)
+                                  BIND (\"CIDOC-CRM\" as ?parent)
+                                  FILTER (LANG(?label) = \"en\")
+                                }
+                                 UNION {
+                                 crm:E4_Period rdfs:label ?label.
+                                  BIND (crm:E4_Period as ?class)
+                                  BIND (\"CIDOC-CRM\" as ?parent)
+                                  FILTER (LANG(?label) = \"en\")
+                                }
+                              
+                               	UNION {
+                                 crm:E92_Spacetime_Volume rdfs:label ?label.
+                                  BIND (crm:E92_Spacetime_Volume as ?class)
+                                  BIND (\"CIDOC-CRM\" as ?parent)
+                                  FILTER (LANG(?label) = \"en\")
+                                }
+                               	UNION {
+                                 crm:E5_Event rdfs:label ?label.
+                                  BIND (crm:E5_Event as ?class)
+                                  BIND (\"CIDOC-CRM\" as ?parent)
+                                  FILTER (LANG(?label) = \"en\")
+                                }
+                               
+                               	UNION {
+                                 crm:E1_CRM_Entity rdfs:label ?label.
+                                  BIND (crm:E1_Event as ?class)
+                                  
+                                  FILTER (LANG(?label) = \"en\")
+                                }
+                            FILTER(ISIRI(?class))
+                             	
+                               OPTIONAL { ?class rdfs:label ?label. }
+                           		 OPTIONAL {
+                              	?class rdfs:subClassOf ?parent.
+                              	FILTER(ISIRI(?parent))
+                            }
+                          }
+
+                       "
+                     }' 
+                              
+                              default-edge-style='{"editable": true}' post-saving='none'>
+            <template id="default">
+              <div>
+              	<div style="height: 10px; width: 200px; background: {{color}}"></div>
+                <mp-panel style='margin-bottom: 0; width: 200px;'>
+                  <mp-panel-header><span>{{types}}</span></mp-panel-header>
+                  <mp-panel-body>
+                    <div>
+                      <semantic-query query='SELECT ?iri WHERE{ BIND(<{{iri}}> AS ?iri)}' template='{{> item}}'>
+                        <template id="item">
+                          [[> ontodiaItemCard]]
+                        </template>
+                      </semantic-query>
+                      {{#if isExpanded }}
+                      <div class='btn-group' style="display: flex; margin-top: 15px;">
+                        <button class='btn btn-primary btn-sm' name='edit' style="flex: 1;"><i class="fa fa-pencil"></i> Edit</button>
+                        <button class='btn btn-danger btn-sm' name='delete' style="flex: 1;"><i class="fa fa-trash-o"></i> Delete</button>
+                      </div>
+                      {{/if}}
+                    </div>
+                  </mp-panel-body>
+                </mp-panel>
+              </div>
+            </template>
+            <template id="event-template">
+            <div class="panel panel-default" style="margin: 0; width: 300px;">
+              <div class="panel-heading">
+                <h4 class="text-nowrap" style="margin: 0">{{label}}</h4>
+              </div>
+              {{#if isExpanded}}
+                <div class="panel-body">
+                  {{#if props.[http://www.researchspace.org/instances/fields/EntityHasVideo]}}
+                    {{#each props.[http://www.researchspace.org/instances/fields/EntityHasVideo].values}}
+                      <div class="embed-responsive embed-responsive-16by9" style='margin-bottom: 20px;'>
+                        <iframe class="embed-responsive-item"  src='{{value}}' allowfullscreen="allowfullscreen"></iframe>
+                      </div>
+                    {{/each}}
+                  {{/if}}
+
+                  {{#if props.[http://www.researchspace.org/instances/fields/EntityHasImage]}}
+                       {{#each props.[http://www.researchspace.org/instances/fields/EntityHasImage].values}}
+                      <div class="embed-responsive embed-responsive-16by9" style='margin-bottom: 20px;'>
+                        <img class="embed-responsive-item"  src='{{value}}'/>
+                      </div>
+                    {{/each}}
+                  {{/if}}
+
+
+                  <div class='btn-group'>
+                    <button class='btn btn-primary btn-sm' name='edit'><i class="fa fa-pencil"></i> Edit</button>
+                    <button class='btn btn-danger btn-sm' name='delete'><i class="fa fa-trash-o"></i> Delete</button>
+                  </div>
+                </div>
+              {{/if}}
+              </div>
+            </template> 
+              [[> :AuthoringConfig]]
+            </rs-ontodia-panel>
+          </rs-panel-system-holder>
+          <rs-panel-system-holder id="panel-system-bottom">
+        		<mp-page-loader id='resource-template' urlqueryparam-show-only-content=true></mp-page-loader>
+          	<rs-iiif-viewer-panel [[> :IIIFConfig]] repositories='["default", "assets"]' query="SELECT ?image WHERE {
+              {
+                {
+                	?subject a rso:EX_Digital_Image
+                } UNION {
+                	?subject a rso:EX_Digital_Image_Region
+                }
+              	BIND(?subject as ?image)
+              } UNION {
+              	?subject crm:P138i_has_representation ?image .
+              	{
+                	?image a rso:EX_Digital_Image
+                } UNION {
+                	?image a rso:EX_Digital_Image_Region
+                }
+              }
+            }"></rs-iiif-viewer-panel>
+          </rs-panel-system-holder>
+      	</rs-panel-system>
+      </div>
+    [[/:ClipboardSidebar]]
+</div>
+
+<mp-event-proxy on-event-source='clipboard-sidebar' proxy-event-type='Components.SetManagement.ItemsFiltered' proxy-targets='["ontodia-panel"]'></mp-event-proxy>
+<mp-event-proxy on-event-source='initiate-graph' proxy-event-type='PanelSystem.InitiateGraphAuthoring' proxy-targets='["panel-system-top"]'></mp-event-proxy>
+<mp-event-proxy on-event-source='initiate-iiif' proxy-event-type='PanelSystem.InitiateIIIFViewer' proxy-targets='["panel-system-bottom"]'></mp-event-proxy>
+
+<mp-event-proxy on-event-type='Ontodia.DiagramSaved' on-event-source='ontodia-panel' proxy-event-type='Component.Refresh' proxy-targets='["clipboard-sidebar"]'></mp-event-proxy>
+
+[[#*inline "ontodiaItemCard"]]
+{{#bind iri=bindings.0.iri}}
+<div class="set-management__set-item">
+	<div class="rs-grid-element text-center panel panel-default">
+	  <div class="panel-body" style="height: 140px;">
+    	<semantic-context repository='assets'>
+        <semantic-switch
+            query='
+              SELECT ?type WHERE {
+                {
+                  <{{iri.value}}> a <http://www.ontodia.org/schema/v1#diagram> .
+                  BIND(<http://www.ontodia.org/schema/v1#diagram> as ?type) .
+                } UNION {
+                  <{{iri.value}}> a <http://www.metaphacts.com/ontologies/persist/PersistedComponent>.
+                  <{{iri.value}}> <http://www.metaphacts.com/ontologies/persist/componentType> ?type .
+                } UNION {
+                  <{{iri.value}}> a rso:UserDefinedPage .
+                  BIND(rso:UserDefinedPage as ?type) .
+                } UNION {
+                  <{{iri.value}}> a rso:Annotation .
+                  BIND(rso:Annotation as ?type) .
+                } UNION {
+                  <{{iri.value}}> a rso:EX_Assertion .
+                  BIND(rso:EX_Assertion as ?type) .
+                } UNION {
+                  <{{iri.value}}> a sp:Query .
+                  BIND(sp:Query as ?type) .
+                } UNION {
+                  <{{iri.value}}> a crmdig:D9_Data_Object .
+                  BIND(crmdig:D9_Data_Object as ?type) .
+                } UNION {
+                  <{{iri.value}}> a rs:EX_Digital_Image_Region .
+                  BIND(rs:EX_Digital_Image_Region as ?type) .
+                }
+              } LIMIT 1
+            '
+          >
+            <template id="http://www.researchspace.org/ontology/UserDefinedPage">
+              <semantic-link uri="{{iri.value}}">
+                {{>:ItemCardStaticThumbnail img='../images/clipboard-icons/pages.svg'}}
+              </semantic-link>
+            </template>
+            <template id="http://www.researchspace.org/ontology/Annotation">
+              <semantic-link uri="{{iri.value}}">
+                {{>:ItemCardStaticThumbnail img='../images/clipboard-icons/annotations.svg'}}
+              </semantic-link>
+            </template>
+            <template id='http://www.researchspace.org/ontology/EX_Assertion'>
+              <semantic-link uri="{{iri.value}}">
+                {{>:ItemCardStaticThumbnail img='../images/assertion.svg'}}
+              </semantic-link>
+            </template>
+
+            <!-- saved charts -->
+            <template id='http://www.metaphacts.com/ontologies/persist/components/semantic-chart'><semantic-link uri="{{iri.value}}"><i class='fa fa-line-chart fa-2x' style='color:#2C3E50;'></i></semantic-link></template>
+            <template id='http://www.metaphacts.com/ontologies/persist/components/semantic-timeline'><semantic-link uri="{{iri.value}}"><i class='fa fa-clock-o fa-2x' style='color:#2C3E50;'></i></semantic-link></template>
+
+            <!-- diagrams -->
+            <template id='http://www.ontodia.org/schema/v1#diagram'><semantic-link uri="{{iri.value}}"><i class='fa fa-sitemap fa-2x' style='color:#2C3E50;'></i></semantic-link></template>
+
+            <!-- saved search -->
+            <template id='http://spinrdf.org/sp#Query'><semantic-link uri="{{iri.value}}"><i class='fa fa-search fa-2x' style='color:#2C3E50;'></i></semantic-link></template>
+
+            <!-- iiif image -->
+            <template id="http://www.ics.forth.gr/isl/CRMdig/D9_Data_Object">
+              <semantic-link uri="{{iri.value}}">{{> :IIIFThumbnail }}</semantic-link>
+            </template>
+
+            <!-- iiif image region -->
+            <template id="http://www.researchspace.org/ontology/EX_Digital_Image_Region">
+              <semantic-link uri="{{iri.value}}">{{> :IIIFThumbnail }}</semantic-link>
+            </template>
+
+            <template id="default">
+              <semantic-link iri="{{iri.value}}" urlqueryparam-repository="default">
+                {{#if imgUrl}}
+                  <img src='{{imgUrl}}' style="max-height: 120px; min-width: 50px; max-width: 120px;" />
+                {{else}}
+                  <img src='../images/no-image.svg' style="width: 100%" />
+                {{/if}}
+              </semantic-link>
+            </template>
+          </semantic-switch>
+    	</semantic-context>
+	  </div>
+    <div class="panel-footer" style="position: relative; display: flex; flex-direction:row; justify-content: flex-start;">
+      <span class='resource-card--icon' style="width:20px; height:auto; flex-shrink: 0; margin-top: -3px; margin-left: -4px; margin-right: 2px; opacity: 0.5;">
+          <semantic-context repository='default'>
+            <semantic-switch query='[[> :ObjectTypeQuery]]'>
+                <template id='http://www.researchspace.org/ontology/Thing'><img style="width: 25px; flex-shrink: 0;" src="../images/fcs/things.svg"></template>
+                <template id='http://www.researchspace.org/ontology/Actor'><img style="width: 25px; padding-right: 4px; flex-shrink: 0;" src="../images/fcs/actors.svg"></template>
+                <template id='http://www.researchspace.org/ontology/Place'><img style="width: 25px; flex-shrink: 0;" src="../images/fcs/places.svg"></template>
+                <template id='http://www.researchspace.org/ontology/Time'><img style="width: 25px; flex-shrink: 0;" src="../images/fcs/dates.svg"></template>
+                <template id='http://www.researchspace.org/ontology/Event'><img style="width: 25px; flex-shrink: 0;" src="../images/fcs/events.svg"></template>
+                <template id='http://www.researchspace.org/ontology/Concept'><img style="width: 25px; flex-shrink: 0;" src="../images/fcs/concepts.svg"></template>
+                <template id='default'>
+                  <semantic-context repository='assets'>
+                    <semantic-switch query='[[> :ObjectTypeQuery]]'>
+                      <template id='http://www.researchspace.org/ontology/UserDefinedPage'><img style="width: 25px; padding-right: 4px; flex-shrink: 0;" src="../images/clipboard-icons/pages.svg"></template>
+                      <template id='http://www.researchspace.org/ontology/Annotation'><img style="width: 25px; flex-shrink: 0;" src="../images/clipboard-icons/annotations.svg"></template>
+                      <template id='http://www.researchspace.org/ontology/EX_Assertion'>
+                        <img style="width: 25px; padding-right: 4px; flex-shrink: 0;" src="../images/assertion.svg">
+                      </template>
+                      <template id='http://spinrdf.org/sp#Query'><i class='fa fa-search' style="padding-right: 4px; padding-top: 6px; width: 25px; flex-shrink: 0;"></i></template>
+                      <template id='http://www.ics.forth.gr/isl/CRMdig/D9_Data_Object'><i class='fa fa-picture-o' style="padding-right: 4px; padding-top: 6px; width: 25px; flex-shrink: 0;"></i></template>
+                      <template id='http://www.metaphacts.com/ontologies/persist/components/semantic-chart'><i class='fa fa-line-chart' style="padding-right: 4px; padding-top: 6px; width: 25px; flex-shrink: 0;"></i></template>
+                      <template id='http://www.metaphacts.com/ontologies/persist/components/semantic-timeline'><i class='fa fa-clock-o' style="padding-right: 4px; padding-top: 6px; width: 25px; flex-shrink: 0;"></i></template>
+                      <template id='http://www.ontodia.org/schema/v1#diagram'><i class='fa fa-sitemap' style="padding-right: 4px; padding-top: 6px; width: 25px; flex-shrink: 0;"></i></template>
+                      <template id='default'><i class='fa fa-square' style="padding-right: 6px; padding-top: 6px; width: 25px; flex-shrink: 0;"></i></template>
+                    </semantic-switch>
+                  </semantic-context>
+                </template>
+            </semantic-switch>
+          </semantic-context>
+        </span>
+
+      <semantic-context repository='assets'>
+        <semantic-switch query='[[> :ObjectTypeQuery]]'>
+          <template id='http://www.researchspace.org/ontology/UserDefinedPage'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://www.researchspace.org/ontology/Annotation'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://www.researchspace.org/ontology/EX_Assertion'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://spinrdf.org/sp#Query'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://www.ics.forth.gr/isl/CRMdig/D9_Data_Object'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://www.researchspace.org/ontology/EX_Digital_Image_Region'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://www.metaphacts.com/ontologies/persist/components/semantic-chart'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://www.metaphacts.com/ontologies/persist/components/semantic-timeline'>{{> :ItemCardAssetsLink}}</template>
+          <template id='http://www.ontodia.org/schema/v1#diagram'>{{> :ItemCardAssetsLink}}</template>
+          <template id='default'>
+            <semantic-context repository='default'>
+              <semantic-link class="grid-resource-link" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" uri="{{iri.value}}">{{label}}</semantic-link>
+            </semantic-context>
+          </template>
+        </semantic-switch>
+      </semantic-context>
+
+      <div class="set-management__item-actions">
+	      <bs-dropdown-button pull-right=true bs-style=link title="" id="set-item-actions-{{iri.value}}">
+	        <mp-event-trigger type='PanelSystem.ShowResource' targets='["panel-system-bottom"]' data='{"pageId": "resource-template", "pageProps": {"iri": "{{iri.value}}", "urlqueryparamUri": "{{iri.value}}"}}'>
+	            <bs-menu-item event-key=template>Show Resource</bs-menu-item>
+	        </mp-event-trigger>
+	        <mp-event-trigger type='PanelSystem.InitiateIIIFViewer' targets='["panel-system-bottom"]' data='{"iris": ["{{iri.value}}"]}'>
+	          <bs-menu-item event-key=template>Initiate IIIF Viewer</bs-menu-item>
+	        </mp-event-trigger>
+	      </bs-dropdown-button>
+	    </div>
+    </div>
+	</div>
+</div>
+{{/bind}}
+[[/inline]]

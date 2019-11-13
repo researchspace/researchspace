@@ -1,0 +1,73 @@
+<div style="height: 90vh">
+  <ontodia settings="nostats" authoring-mode="true">
+    <semantic-form new-subject-template='http://culture.gouv.qc.ca/entity/{{UUID}}' fields='[
+          {
+            "iri": "http://type",
+            "id": "type",
+            "label": "Type",
+            "description": "The type of the created instance",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT $value WHERE { $subject a $value }",
+            "insertPattern": "INSERT { $subject a $value } WHERE {}",
+            "deletePattern": "DELETE { $subject a $value } WHERE {}"
+          },
+          {
+            "iri": "http://label",
+            "id": "label",
+            "label": "Label",
+            "description": "The label used to display the instance",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+            "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+            "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+          },
+          {
+            "iri": "P46_is_composed_of",
+            "id": "P46_is_composed_of",
+            "label": "P46 is composed of",
+            "description": "P46_is_composed_of",
+            "xsdDatatype": "xsd:anyURI",
+            "selectPattern": "
+              SELECT $value WHERE { $subject <http://erlangen-crm.org/170309/P46_is_composed_of> $value }
+            ",
+            "insertPattern": "
+              INSERT { $subject <http://erlangen-crm.org/170309/P46_is_composed_of> $value } WHERE {}
+            ",
+            "deletePattern": "
+              DELETE { $subject <http://erlangen-crm.org/170309/P46_is_composed_of> $value } WHERE {}
+            "
+          },
+          {
+            "iri": "P46i_forms_part_of",
+            "id": "P46i_forms_part_of",
+            "label": "P46i forms part of",
+            "description": "P46i_forms_part_of",
+            "xsdDatatype": "xsd:anyURI",
+            "selectPattern": "
+              SELECT $value WHERE { $subject <http://erlangen-crm.org/170309/P46i_forms_part_of> $value }
+            ",
+            "insertPattern": "
+              INSERT { $subject <http://erlangen-crm.org/170309/P46i_forms_part_of> $value } WHERE {}
+            ",
+            "deletePattern": "
+              DELETE { $subject <http://erlangen-crm.org/170309/P46i_forms_part_of> $value } WHERE {}
+            "
+          }
+        ]'>
+      <ontodia-entity-metadata
+        entity-type-iri="http://erlangen-crm.org/170309/E22_Man-Made_Object"
+        label-iri='http://label'
+        type-iri='http://type'>
+      </ontodia-entity-metadata>
+
+      <semantic-form-text-input for='label'></semantic-form-text-input>
+      <semantic-form-errors></semantic-form-errors>
+      <button name="submit" class="btn btn-default">Save</button>
+      <button name="reset" class="btn btn-default">Reset</button>
+    </semantic-form>
+  </ontodia>
+</div>

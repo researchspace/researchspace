@@ -1,0 +1,42 @@
+                     <semantic-table
+                          id='resources-results'
+                          number-of-displayed-rows=10
+                          query='[[query]]'
+                          column-configuration='[
+                                        {"variableName":"subject","displayName":"Field", "cellTemplate": "{{> field}}"},
+                                        {"variableName":"ModificationDate","displayName":"Modified", "cellTemplate": "{{dateTimeFormat ModificationDate.value \"LLL\"}}" },
+                                        {"variableName":"attribution","displayName":"Attribution", "cellTemplate": "<mp-label iri=\"{{attribution.value}}\"></mp-label>" },
+                                        {"displayName":"Actions", "cellTemplate": "{{> actions}}"}
+                                   ]'
+                        >
+                         <template id='field'>
+                           <span>
+                             <mp-selection-toggle selection="resource-selection" tag="{{subject.value}}"></mp-selection-toggle>
+                             <semantic-context repository='assets'>
+                               {{#if label}}
+                                 <semantic-link style='max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' uri='{{subject.value}}' title='{{label.value}}'>{{label.value}}</semantic-link>
+                               {{else}}
+                                 <semantic-link style='max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' uri='{{subject.value}}'></semantic-link>
+                               {{/if}}
+                             </semantic-context>
+
+                           </span>
+                         </template>
+                         <template id='actions'>
+                           <div>
+                             <mp-ldp-duplicate-resource-action iri="{{subject.value}}" container="[[container]]">
+                               <button class="btn btn-xs btn-default" style="margin-right:8px;"><i class="fa fa-files-o" aria-hidden=true></i> Duplicate</button>
+                             </mp-ldp-duplicate-resource-action>
+
+                             <mp-ldp-export-resource iri="{{subject.value}}">
+                               <button class="btn btn-xs btn-default" style="margin-right: 8px">
+                                 <i class='fa fa-download' aria-hidden=true></i> Export
+                               </button>
+                             </mp-ldp-export-resource>
+
+                             <mp-ldp-remove-from-container-action iri="{{subject.value}}" container="[[container]]">
+                               <button class="btn btn-xs btn-danger" style="margin-right:8px;"><i class="fa fa-trash" aria-hidden=true></i> Delete</button>
+                             </mp-ldp-remove-from-container-action>                          
+                           </div>
+                         </template>
+                       </semantic-table>

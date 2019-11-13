@@ -2,32 +2,30 @@
 
 <ol class="page-breadcrumb">
   <li>
-    <semantic-link title="Field Definition Catalog" uri="http://www.researchspace.org/resource/FieldCatalog">Field Definition Catalog</semantic-link>
+    <semantic-link title="Knowledge Patterns Catalog" uri="http://www.researchspace.org/resource/FieldCatalog">Knowledge Patterns Catalog</semantic-link>
   </li>
-  <li class="active">Edit Field Definition: [[this.label]]</li>
+  <li class="active">Edit Knowledge Pattern: [[this.label]]</li>
 </ol>
 
-<div class="page rs-page">
+<div class="page">
   [[#>rsp:ClipboardSidebar]]
+  
+  [[> rsp:assetpageHeader title="Edit Knowledge Pattern" icon="fa-pencil-square-o"]]
 
-  <div class="page__header page__header--no-image">
-    <h2>Edit Field Definition</h2>
-  </div>
-
-  <div class='page__body--borderless'>
-    <bs-row>
-      <bs-col sm=8>
-        <div>
+  <div class="container-fluid">
+      <bs-row class="row-center">
+          <bs-col xs=11 sm=10 md=10 lg=8 style='padding-bottom: 40px;'>  
+        		<div>
           <field-editor field-instance-base-iri="http://www.researchspace.org/instances/fields/" data-field-iri='[[this]]' ></field-editor>
 
-          <h2>Field Preview</h2>
-          <hr>
+          <h1 style='padding: 30px 0 15px 0;'>Knowledge Pattern Preview</h1>
+    
           <semantic-form 
             debug='false' 
             browser-persistence=false 
             fields='[[fieldDefinitionsFromQuery "SELECT ?field { BIND(?? AS ?field) }"]]'
           >
-            <bs-tabs>
+            <bs-tabs id='fieldPreview'>
               <bs-tab event-key="1" title="Plain Input">
                 <semantic-form-text-input for='[[this]]' render-header=true></semantic-form-text-input>
               </bs-tab>
@@ -47,7 +45,7 @@
           </semantic-form>
 
           <h2>JSON Configuration Example</h2>
-          <hr>
+          <hr style='margin-top: 8px; margin-bottom: 16px;'>
           <i style="color:red;font-size: 10px;">
             Please be aware of that the "example" id needs to be replaced with the current IRI: "<b>[[this]]</b>"
           </i>

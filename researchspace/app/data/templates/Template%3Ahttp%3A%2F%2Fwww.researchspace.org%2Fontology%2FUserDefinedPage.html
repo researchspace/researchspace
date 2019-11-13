@@ -3,14 +3,14 @@
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
   <li>
-    <semantic-link uri="http://www.researchspace.org/resource/MyPages">My Pages</semantic-link>
+    <semantic-link uri="http://www.researchspace.org/resource/MyPages">My Narratives</semantic-link>
   </li>
   <li class="active">
     <mp-label iri='[[this]]'></mp-label>
   </li>
 </ol>
 
-<div class="page rs-page">
+<div class="page">
   [[#>rsp:ClipboardSidebar]]
   [[#> rsp:VisibilityCheck]]
   [[#*inline "content"]]
@@ -29,20 +29,24 @@
     <bs-tab-container class="page__body-navtabs--borderless-no-image" unmount-on-exit=true default-active-key="1">
       [[/if]]
       <div>
+          <div class="page__header-draggable-title" data-flex-self='left'>
+              <mp-draggable iri='[[this]]'>
+                <h2 data-flex-layout='row center-left'>
+                  <span class="page__header-gripper"></span>
+                  <mp-label iri='[[this]]' class='page__header-gripper-label'></mp-label>
+                </h2>
+              </mp-draggable>
+            </div>
         <bs-nav bs-style="tabs" class="udp-nav-tabs">
-          <bs-nav-item event-key="1">View</bs-nav-item>
-          <bs-nav-item event-key="2">Edit</bs-nav-item>
+          
           [[#if notDraggable]]
           [[else]]
-          <div class="page__header-draggable-title" data-flex-self='left'>
-            <mp-draggable iri='[[this]]'>
-              <h3 data-flex-layout='row center-left'>
-                <span class="page__header-gripper"></span>
-                <mp-label iri='[[this]]' class='page__header-gripper-label'></mp-label>
-              </h3>
-            </mp-draggable>
-          </div>
+          
           [[/if]]
+
+          <bs-nav-item event-key="1">View</bs-nav-item>
+          <bs-nav-item event-key="2">Edit</bs-nav-item>
+
         </bs-nav>
         <bs-tab-content animation>
           <bs-tab-pane event-key="1">[[>rsp:UDPView]]</bs-tab-pane>

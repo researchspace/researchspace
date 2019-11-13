@@ -1,0 +1,63 @@
+    [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer>:read:any")]]
+      <semantic-context repository="assets">
+        <semantic-table query='prefix ontodia: <http://ontodia.org/schema/v1#>
+                                SELECT  ?diagram (SAMPLE(?label) AS ?label) (SAMPLE(?author) AS ?author) (MAX(?modified) AS ?modified) WHERE {
+                                  SELECT * 
+                                    {
+                                        VALUES ?ontodiaClass {ontodia:Diagram <http://www.ontodia.org/schema/v1#diagram>}
+                                        ?diagram a ?ontodiaClass.
+                                        ?diagram rdfs:label ?label;
+                                        <http://www.w3.org/ns/prov#wasAttributedTo> ?author ;
+                                       [[#if myKm]] <http://www.w3.org/ns/prov#wasAttributedTo> ?__useruri__ ; [[/if]] 
+                                        <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
+                                		} ORDER BY DESC(?modified)
+                                } GROUP BY ?diagram '
+                        
+                       column-configuration='[
+                            {"variableName":"diagram", "displayName":"Knowledge Map", "cellTemplate":"{{> view}}"},
+                            {"variableName":"author", "displayName":"Author", "cellTemplate":"
+                                             <div><i class=\"fa fa-user\" style=\"margin-right: 10px\"></i>
+                                         		 <semantic-link class=\"rs-dashboard--a\" uri=\"{{author.value}}\" target=\"_blank\"></semantic-link></div>"},
+                            {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" }
+                            [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer>:delete:any")]]
+                              ,{"displayName":"Delete", "cellTemplate": "<mp-ldp-remove-from-container-action iri=\"{{diagram.value}}\" data-container=\"http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer\">
+                    <i class=\"fa fa-trash\" style=\"cursor:pointer;\" aria-hidden=\"true\"></i>
+                                             </mp-ldp-remove-from-container-action>" }
+                            [[/if]]
+                       ]'
+       >
+          <template id='view'>
+              <semantic-context repository=default>
+                <semantic-link iri='rsp:ThreePanelSystem' urlqueryparam-diagram='{{diagram.value}}'>{{label.value}}</semantic-link>
+              </semantic-context>
+          </template>
+       </semantic-table>
+     </semantic-context>
+
+    <!-- [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer>:create:any")]]
+       <mp-resource-link-container 
+         uri="http://www.researchspace.org/resource/ThreePanelSystem" 
+         [[#if (urlParam "ontologyIri")]] urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]' [[/if]]
+       >
+         <button class="btn btn-primary">Create Knowledge Map</button>
+       </mp-resource-link-container>
+     [[/if]] -->
+
+
+<div style="margin: 24px 0;">
+
+           <!--   <img class="rs-ds-icon" src="/images/icons/diagram.svg" style="margin-right:12px; height:35px;"> -->
+  							<i class="fa fa-object-group" style="margin-right:12px; font-size:25px;"></i>
+               [[#if (hasPermission "api:ldp:container:<http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer>:create:any")]]
+                 <mp-resource-link-container 
+                   uri="http://www.researchspace.org/resource/ThreePanelSystem" 
+                   [[#if (urlParam "ontologyIri")]] urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]' [[/if]]
+                 >
+                   <strong style="cursor:pointer;">Create New Knowledge Map</strong>
+                 </mp-resource-link-container>
+               [[/if]]
+            </div>
+
+    [[/if]]
+
+						

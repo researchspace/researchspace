@@ -370,7 +370,7 @@ class FieldEditorComponent extends Component<Props, State> {
         element: input({
           className: block('weight-input').toString(),
           type: 'text',
-          placeholder: 'Any number from 0.1 to 1',
+          placeholder: 'Any positive number greater than 0.',
           onChange: e => this.updateValues({weight: getFormValue(e)}, Validation.validateWeight),
           value: this.state.weight.map(v => v.value).getOrElse(undefined),
         }),

@@ -16,23 +16,13 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-export { default as rdfs } from './rdfs';
-export { default as rdf } from './rdf';
-export { default as xsd } from './xsd';
-export { default as dc } from './dc';
-export { default as dct } from './dct';
+import * as Rdf from '../core/Rdf';
 
-export { default as sp } from './sp';
-export { default as spl } from './spl';
-export { default as spin } from './spin';
-export { default as ldp } from './ldp';
-export { default as oa } from './oa';
-export { default as field } from './field';
-export { default as schema } from './schema';
+module schema {
+  export const _NAMESPACE = 'https://schema.org/';
+  export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 
-export { default as prov } from './prov';
+  export const weight = iri('weight');
+}
 
-export { default as persist } from './persist';
-export { default as VocabPlatform } from './platform';
-
-export { default as workflow } from './workflow';
+export default schema;

@@ -129,6 +129,7 @@ class FieldEditorComponent extends Component<Props, State> {
       range: [] as Value[],
       min: Nothing<Value>(),
       max: Nothing<Value>(),
+      weight: Nothing<Value>(),
       defaults: [] as Value[],
       testSubject: Nothing<Value>(),
       insertPattern: Nothing<Value>(),
@@ -355,6 +356,23 @@ class FieldEditorComponent extends Component<Props, State> {
           placeholder: 'Any positive number from 1 to n. \"unbound\" for unlimited.',
           onChange: e => this.updateValues({max: getFormValue(e)}, Validation.validateMax),
           value: this.state.max.map(v => v.value).getOrElse(undefined),
+        }),
+      }),
+      row({
+        label: 'Weight',
+        expanded: this.state.weight.isJust,
+        onExpand: () => this.updateValues(
+          {weight: Just({value: '1'})},
+          Validation.validateWeight
+        ),
+        onCollapse: () => this.updateValues({weight: nothing}),
+        error: this.state.weight.map(v => v.error).getOrElse(undefined),
+        element: input({
+          className: block('weight-input').toString(),
+          type: 'text',
+          placeholder: 'Any positive number greater than 0.',
+          onChange: e => this.updateValues({weight: getFormValue(e)}, Validation.validateWeight),
+          value: this.state.weight.map(v => v.value).getOrElse(undefined),
         }),
       }),
       this.renderMultipleValuesInput({

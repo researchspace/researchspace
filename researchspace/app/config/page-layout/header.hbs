@@ -1,130 +1,81 @@
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar" aria-expanded="false" 
-              aria-controls="rs-navbar" aria-label="Toggle navigation">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand rs-header-logo" href="/">
-          {{deploymentTitle}}
-      </a>
+<bs-navbar data-fluid="true" class="metaphacts-header-navbar" data-role="navigation">
+  <bs-navbar-header>
+    <div class="navbar-brand-section pull-left">
+      <bs-navbar-brand>
+        <semantic-link iri="http://www.hercules.gouv.qc.ca/resource/Start">
+          <div class="hercules-logo-grey"></div>
+        </semantic-link>
+      </bs-navbar-brand>
     </div>
-
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="rs-navbar">
-      
-      <ul class="nav navbar-nav">
-        <li class="rs-nav-about--margin"><a href="" target="_blank" class="rs-body-m-M">About</a></li>
-
-        <li class="rs-nav-resources--margin">
-
-          <div class="btn-group special">
-
-              <button type="button" id='main-header-dropdown' class="btn rs-dropdown-M--white rs-body-m-M dropdown-toggle" style="border:none;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span style="line-height: 21px;">Example Resources</span>
-                <span class="rs-dropdown-M-icon">
-                        <i class="fa fa-sort-down"></i>
-                </span>
-              </button>
-              <ul class="dropdown-menu rs-dropdown-menu rs-dropdown-menu-M--white">
-                  <li><a href="#">resource 1</a></li>
-                  <li><a href="#">resource 2</a></li>
-                  <li><a href="#">resource 3</a></li>
-              </ul>
-          </div>
+  </bs-navbar-header>
+  <bs-navbar-collapse>
+    <bs-nav data-pull-right="true">
+      <bs-nav-dropdown title="Démo" id="bg-nested-dropdown">
+        <li>
+          <semantic-link uri="http://www.hercules.gouv.qc.ca/resource/Form">Formulaire</semantic-link>
         </li>
+        <li>
+          <semantic-link uri="http://www.hercules.gouv.qc.ca/resource/AuthoringDiagram">Modification par graphe
+          </semantic-link>
+        </li>
+      </bs-nav-dropdown>
 
-      </ul>
-
-      <ul class="nav navbar-nav">
-
-         
-        <mp-anonymous-hidden>
-          <li>
-            <a href="/resource/dashboard" title="Dashboard" class="rs-body-m-M">
-              Dashboard
-            </a> 
-          </li>
-        </mp-anonymous-hidden>
-        
-        <mp-anonymous-hidden>
-          <li><a href="/sparql" class="rs-body-m-M">Sparql</a></li>
-        </mp-anonymous-hidden>
-          
-
-        <mp-anonymous-hidden alt='<li><a href="/login" title="login" class="rs-body-m-M">Login</a></li>'>
-          <li class="rs-account-dropdown">
-              <div class="btn-group special">
-                  <button type="button" id='main-header-dropdown' class="btn rs-dropdown-M--white rs-body-m-M dropdown-toggle" style="border:none;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="" style="line-height: 21px;">Account</span>
-                    <span class="rs-dropdown-M-icon">
-                        <i class="fa fa-sort-down"></i>
-                    </span>
-                  </button>
-                  
-                  <ul class="dropdown-menu rs-dropdown-menu rs-dropdown-menu-M--white">
-                      <li><a title='userPrincipal'>
-                          <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(SUBSTR(STR(?__useruri__), 41), "%40", "@") as ?userName) }' template='\{{> template}}'>
-                            <template id='template'>
-                              <mp-resource-link-container uri='\{{bindings.0.__useruri__.value}}'>
-                                <div>\{{bindings.0.userName.value}}</div>
-                              </mp-resource-link-container>
-                            </template>
-                          </semantic-query>
-                        </a>
-                        
-                      </li>
-
-                      <mp-resource-link-container uri="http://www.researchspace.org/resource/MyImages">
-                          <li><a title='my images'>My Images</a></li>    
-                      </mp-resource-link-container>
-                      
-                      <mp-resource-link-container uri="http://www.researchspace.org/resource/MyPages">
-                          <li><a title='my pages'>My Narratives</a></li>    
-                      </mp-resource-link-container>
-
-                      <mp-resource-link-container uri="http://www.researchspace.org/resource/MyKnowledgeMaps">
-                          <li><a title='my maps'>My Knowledge Maps</a></li>    
-                      </mp-resource-link-container>
-                      
-                      <li class="divider"></li>
-                      <li><a href="/login" title='logout'>Logout</a></li>
-                  </ul>
-              </div>
-          </li>
-        </mp-anonymous-hidden>
-
-          {{!-- <mp-anonymous-hidden>
-              <li>
-                <a href="/resource/dashboard" title="Dashboard" style="padding-right:5px; padding-top: 17px;">
-                      <i class="fa fa-th"></i>
-                  </a> 
-              </li>
-          </mp-anonymous-hidden>  --}} 
-          
-          <mp-anonymous-hidden>
-            <li class="rs-only-xs">
-              <a href="/resource/admin" title="System Settings">
-                Setting
-              </a> 
-            </li>
-          </mp-anonymous-hidden>  
-
-          <mp-anonymous-hidden>
-            <li class="rs-xs-none">
-              <a href="/resource/admin" title="System Settings" style="font-size: 15px;">
-                    <i class="fa fa-cog"></i>
-                </a> 
-            </li>
-          </mp-anonymous-hidden>       
-          
-  
-      </ul>
-
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
-</nav>
+      <mp-anonymous-hidden>
+        <bs-nav-item data-href="/sparql" data-title="Sparql Endpoint">SPARQL</bs-nav-item>
+      </mp-anonymous-hidden>
+      <bs-nav-dropdown title="Liens rapides" id="bg-nested-dropdown">
+        <li>
+          <semantic-link iri="http://www.hercules.gouv.qc.ca/resource/Forms">Formulaires</semantic-link>
+        </li>
+        <li>
+          <semantic-link iri="http://www.hercules.gouv.qc.ca/resource/SemanticSearch">Recherche sémantique
+          </semantic-link>
+        </li>
+        <li>
+          <semantic-link iri="http://www.metaphacts.com/resource/NavigateToPage">Naviguer vers une ressource
+          </semantic-link>
+        </li>
+        <li>
+          <semantic-link iri="http://www.metaphacts.com/resource/admin/DataImportExport">Importation &amp; Exportation
+          </semantic-link>
+        </li>
+        <li>
+          <semantic-link iri="http://www.metaphacts.com/resource/SimpleSearch">Recherche simple</semantic-link>
+        </li>
+        <bs-menu-item divider=true></bs-menu-item>
+        <li>
+          <semantic-link iri="http://www.metaphacts.com/resource/assets/">Ressources</semantic-link>
+        </li>
+        <li>
+          <semantic-link iri="http://www.metaphacts.com/resource/assets/Ontologies">Ontologies</semantic-link>
+        </li>
+      </bs-nav-dropdown>
+      <mp-anonymous-hidden alt='<bs-nav-item title="login" href="/login">Connexion</bs-nav-item>'>
+        <bs-nav-dropdown id='main-header-dropdown' title='Compte'>
+          <bs-menu-item title='userPrincipal'>
+            <semantic-query
+              query='SELECT ?__useruri__ ?userName { BIND(REPLACE(SUBSTR(STR(?__useruri__), 41), "%40", "@") as ?userName) }'
+              template='\{{> template}}'>
+              <template id='template'>
+                <mp-resource-link-container uri='\{{bindings.0.__useruri__.value}}'>
+                  <div>\{{bindings.0.userName.value}}</div>
+                </mp-resource-link-container>
+              </template>
+            </semantic-query>
+          </bs-menu-item>
+          <bs-menu-item divider=true></bs-menu-item>
+          <bs-menu-item title='logout' href="/login">Déconnexion</bs-menu-item>
+        </bs-nav-dropdown>
+      </mp-anonymous-hidden>
+      <mp-anonymous-hidden style="float:left;">
+        <li>
+          <semantic-link uri="http://www.hercules.gouv.qc.ca/resource/hercules-admin/"><i class="fa fa-cog">
+          </semantic-link>
+        </li>
+      </mp-anonymous-hidden>
+      <li>
+        <semantic-link iri="http://help.metaphacts.com/resource/Start"><i class="fa fa-question-circle"></semantic-link>
+      </li>
+    </bs-nav>
+  </bs-navbar-collapse>
+</bs-navbar>

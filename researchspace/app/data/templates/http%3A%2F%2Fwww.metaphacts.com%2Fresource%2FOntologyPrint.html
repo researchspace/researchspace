@@ -1,0 +1,104 @@
+<div class="visible-print-block">
+    <mp-print-section id="2" label="Classes">
+      <h2>Classes</h2>
+      <br>
+          <semantic-query query='SELECT DISTINCT ?Class WHERE { 
+                                  GRAPH ?g { ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology  } 
+                                  FILTER( !isBlank(?Class))
+                                 } ORDER BY ?Class' 
+            template='{{#each bindings}}
+                        <mp-label iri="{{Class.value}}"></mp-label>{{#if @last}}{{else}}, {{/if}}
+                      {{/each}}<br><br>
+                      {{#each bindings}}
+                        <h3>Class: <mp-label iri="{{Class.value}}"></mp-label></h3>
+                        <span style="font-size:8px;">URI: {{{Class.value}}}</span>
+                        <hr>
+                        <i>
+                          <semantic-query 
+                            query="SELECT ?description WHERE { <{{Class.value}}> rdfs:comment ?description. }LIMIT 1"
+                            no-result-template="No description available."> 
+                          </semantic-query>
+                        </i><br>
+                        <b>In Domain of Property:</b>
+                          <semantic-query 
+                            query="SELECT ?domain WHERE { ?domain rdfs:domain <{{Class.value}}>. }"
+                            no-result-template="-"> 
+                          </semantic-query>
+                        <b>In Range of Property:</b>
+                          <semantic-query 
+                            query="SELECT ?range WHERE { ?range rdfs:range <{{Class.value}}>. }"
+                            no-result-template="-"> 
+                          </semantic-query>
+                        <hr>
+                      {{/each}}'>
+          </semantic-query> 
+    </mp-print-section>
+
+    <mp-print-section id="3" label="Object Properties">
+      <h2>Object Properties</h2>
+      <br>
+          <semantic-query query='SELECT distinct ?ObjectProperty WHERE { 
+                                        GRAPH ?g { ?ObjectProperty rdf:type owl:ObjectProperty . ?? rdf:type owl:Ontology } 
+                                     } order by ?ObjectProperty' 
+            template='{{#each bindings}}
+                        <mp-label iri="{{ObjectProperty.value}}"></mp-label>{{#if @last}}{{else}}, {{/if}}
+                      {{/each}}<br><br>
+                      {{#each bindings}}
+                        <h3>Object Property: <mp-label iri="{{ObjectProperty.value}}"></mp-label></h3>
+                        <span style="font-size:8px;">URI: {{{ObjectProperty.value}}}</span>
+                        <hr>
+                        <i>
+                          <semantic-query 
+                            query="SELECT ?description WHERE { <{{ObjectProperty.value}}> rdfs:comment ?description. }LIMIT 1"
+                            no-result-template="No description available."> 
+                          </semantic-query>
+                        </i><br>
+                        <b>Domains:</b>
+                          <semantic-query 
+                            query="SELECT ?domain WHERE { <{{ObjectProperty.value}}> rdfs:domain ?domain. FILTER(isIRI(?domain))}"
+                            no-result-template="-"> 
+                          </semantic-query>
+                        <b>Ranges:</b>
+                          <semantic-query 
+                            query="SELECT ?range WHERE { <{{ObjectProperty.value}}> rdfs:range ?range. FILTER(isIRI(?range))}"
+                            no-result-template="-"> 
+                          </semantic-query>
+                        <hr>
+                      {{/each}}'>
+          </semantic-query> 
+    </mp-print-section>
+
+    <mp-print-section id="4" label="Datatype Properties">
+      <h2>Datatype Properties</h2>
+      <br>
+          <semantic-query query='SELECT distinct ?DatatypeProperty WHERE { 
+                                        GRAPH ?g { ?DatatypeProperty rdf:type owl:DatatypeProperty . ?? rdf:type owl:Ontology } 
+                                     } order by ?DatatypeProperty' 
+            template='{{#each bindings}}
+                        <mp-label iri="{{DatatypeProperty.value}}"></mp-label>{{#if @last}}{{else}}, {{/if}}
+                      {{/each}}<br><br>
+                      {{#each bindings}}
+                        <h3>Datatype Property: <mp-label iri="{{DatatypeProperty.value}}"></mp-label></h3><br>
+                        <span style="font-size:8px;">URI: {{{DatatypeProperty.value}}}</span>
+                        <hr>
+                        <i>
+                          <semantic-query 
+                            query="SELECT ?description WHERE { <{{DatatypeProperty.value}}> rdfs:comment ?description. }LIMIT 1"
+                            no-result-template="No description available."> 
+                          </semantic-query>
+                        </i><br>
+                        <b>Domains:</b>
+                          <semantic-query 
+                            query="SELECT ?domain WHERE { <{{DatatypeProperty.value}}> rdfs:domain ?domain. FILTER(isIRI(?domain)) }"
+                            no-result-template="-"> 
+                          </semantic-query>
+                        <b>Ranges:</b>
+                          <semantic-query 
+                            query="SELECT ?range WHERE { <{{DatatypeProperty.value}}> rdfs:range ?range. FILTER(isIRI(?range)) }"
+                            no-result-template="-"> 
+                          </semantic-query>
+                        <hr>
+                      {{/each}}'>
+          </semantic-query> 
+    </mp-print-section>
+</div>

@@ -1,0 +1,122 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>        
+  [[> http://www.metaphacts.com/resource/assets/OntologyBreadcrumbs ]]
+  <li class="active">
+    <mp-label iri='[[this]]'></mp-label>
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__header-navtabs'>
+    [[> Platform:DefaultResourceHeader]]
+  </div>
+  <bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
+    <bs-tab event-key='2' title="Taxonomy">
+      <bs-row>
+        <bs-col md=6>
+          <mp-collapsible-div>
+            <mp-collapsible-div-trigger>
+              <b>Subclasses</b>
+            </mp-collapsible-div-trigger>
+            <mp-collapsible-div-content>
+              <semantic-table query='SELECT DISTINCT ?Subclass ?Relation WHERE {
+                  {
+                    ?Subclass rdfs:subClassOf ?? . BIND("direct" as ?Relation)
+                  } UNION {
+                    ?Subclass rdfs:subClassOf+ ?? . BIND("inferred" as ?Relation)
+                    FILTER NOT EXISTS { ?Subclass rdfs:subClassOf ?? }
+                  }
+                  FILTER(!isBlank(?Subclass))
+                }'
+                options='{"showTableHeading":false, "filterPlaceholderText":"Filter Subclasses"}'
+                no-result-template='<i>No <span style="text-transform: lowercase;">Subclasses</span>.</i>'
+                number-of-displayed-rows=5>
+              </semantic-table>
+            </mp-collapsible-div-content>
+          </mp-collapsible-div>
+
+          <mp-collapsible-div>
+            <mp-collapsible-div-trigger>
+              <b>Superclasses</b>
+            </mp-collapsible-div-trigger>
+            <mp-collapsible-div-content>
+              <semantic-table query='SELECT DISTINCT ?Superclass ?Relation WHERE {
+                  {
+                    ?? rdfs:subClassOf ?Superclass . BIND("direct" as ?Relation)
+                  } UNION {
+                    ?? rdfs:subClassOf+ ?Superclass . BIND("inferred" as ?Relation)
+                    FILTER NOT EXISTS { ?? rdfs:subClassOf ?Superclass }
+                  }
+                  FILTER(!isBlank(?Superclass))
+                }'
+                options='{"showTableHeading":false, "filterPlaceholderText":"Filter Superclasses"}'
+                no-result-template='<i>No <span style="text-transform: lowercase;">Superclasses</span>.</i>'
+                number-of-displayed-rows=5>
+              </semantic-table>
+            </mp-collapsible-div-content>
+          </mp-collapsible-div>
+        </bs-col>
+        <bs-col md=6>
+          <semantic-tree
+            query="
+              SELECT DISTINCT ?node ?parent ?test WHERE {
+                { { ?? rdfs:subClassOf* ?node }
+                  UNION
+                  { ?node rdfs:subClassOf* ?? } }
+                OPTIONAL { ?node rdfs:subClassOf ?parent. FILTER(ISIRI(?parent)) }
+                FILTER(ISIRI(?node))
+            }"
+            collapsed="true"
+            keys-opened='["[[this]]"]'>
+          </semantic-tree>
+        </bs-col>
+      </bs-row>
+    </bs-tab>
+    <bs-tab event-key="3" title="Properties">
+      <mp-collapsible-div>
+        <mp-collapsible-div-trigger>
+          <b>Properties with this domain</b>
+        </mp-collapsible-div-trigger>
+        <mp-collapsible-div-content>
+          <semantic-table query='SELECT ?property WHERE { ?property rdfs:domain ??. FILTER(ISIRI(?property))}'
+          	options='{"showTableHeading":false, "filterPlaceholderText":"Filter Properties"}'
+            no-result-template='<i>No properties with domain "<mp-label iri="[[this]]"></mp-label>".</i>'>
+          </semantic-table>
+        </mp-collapsible-div-content>
+      </mp-collapsible-div>
+
+      <mp-collapsible-div>
+        <mp-collapsible-div-trigger>
+          <b>Properties with this range</b>
+        </mp-collapsible-div-trigger>
+        <mp-collapsible-div-content>
+          <semantic-table query='SELECT ?property WHERE { ?property rdfs:range ??. FILTER(ISIRI(?property))}'
+          	options='{"showTableHeading":false, "filterPlaceholderText":"Filter Properties"}'
+            no-result-template='<i>No properties with range "<mp-label iri="[[this]]"></mp-label>".</i>'>
+          </semantic-table>
+        </mp-collapsible-div-content>
+      </mp-collapsible-div>
+    </bs-tab>
+
+    <bs-tab event-key="4" title="Individuals">
+      <semantic-query query='SELECT (COUNT(*) as ?number) WHERE { {SELECT ?Instance WHERE{ {?Instance rdf:type ??.} UNION {?Instance rdf:type/rdfs:subClassOf+ ??.} FILTER(ISIRI(?Instance))}   LIMIT 1000 } }'
+      	template='{{#each bindings}}{{#ifCond number.value ">" 0}} {{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The table below is limited to show only a preview of <strong>1000 individuals</strong>. However, the absolute number of individuals of type <strong>[[this.label]]</strong> seems to be larger. </bs-alert>{{else}} <bs-alert bs-style="info"> <strong>{{number.value}}</strong> individuals of type <strong>[[this.label]]</strong>. Blank nodes are not considered.</bs-alert> {{/ifCond}}{{/ifCond}}{{/each}} '>
+      </semantic-query>
+      <semantic-table query='SELECT DISTINCT ?Instance ?Relation WHERE {
+      		{
+        		?Instance rdf:type ??. BIND("direct" as ?Relation)
+        	} UNION {
+        		?Instance rdf:type ?type . ?type rdfs:subClassOf+ ??.
+        		BIND("inferred" as ?Relation)
+        	}
+        	FILTER(ISIRI(?Instance))
+        } LIMIT 1000'
+        options='{"showTableHeading":false, "filterPlaceholderText":"Filter Individuals"}'
+        no-result-template='<i>No individuals of rdf:type "<mp-label iri="[[this]]"></mp-label>". Blank nodes are not considered.</i>'>
+      </semantic-table>
+    </bs-tab>
+    [[> "http://www.metaphacts.com/resource/LinksToOtherDatabases" eventKey='5']]
+  </bs-tabs>
+</div>

@@ -1,0 +1,46 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li class="active">
+    <mp-label iri='[[this]]'></mp-label>
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__header'>
+    <div class='page__header-thumbnail'>
+    </div>
+    <div class='page__header-body'>
+      <h2>OWL Classes</h2>
+    </div>
+  </div>
+  <div class='page__body'>
+      <bs-tabs id="tabs" unmount-on-exit=true>
+        <bs-tab event-key="1" title="Table">
+           <semantic-table 
+             query='SELECT ?Class WHERE { 
+                        ?Class rdf:type owl:Class . 
+                        FILTER(ISIRI(?Class))     
+                     }
+                     ORDER BY(?node)'
+             options='{"showTableHeading": false, "filterPlaceholderText":"Filter Classes"}'
+             no-result-template='<i>No Classes.</i>'>
+          </semantic-table>
+        </bs-tab>
+        <bs-tab event-key="2" title="Taxonomy">
+            <semantic-tree 
+              query='SELECT ?node ?parent WHERE {
+                      ?node a owl:Class .         
+                      OPTIONAL{?node rdfs:subClassOf ?parent }
+                      FILTER(ISIRI(?node))                          
+                    }
+                    ORDER BY(?node)'                                    
+              collapsed="true"
+              parentBindingName="parent"
+              nodeBindingName="node">
+          </semantic-tree>
+        </bs-tab>
+     </bs-tabs>
+  </div>
+</div>

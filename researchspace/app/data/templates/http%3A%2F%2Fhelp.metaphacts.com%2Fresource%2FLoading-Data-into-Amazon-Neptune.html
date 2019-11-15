@@ -1,0 +1,133 @@
+<ol class="page-breadcrumb">
+    <li>
+      <semantic-link title="Help" data-uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+    </li>
+    <li>
+      <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+    </li>
+    <li class="active">metaphactory for Amazon Neptune - Loading Data</li>
+</ol>
+
+<div class='page'>
+  <div class='page__header'>
+    <h1>&nbsp;&nbsp;Loading Data into Amazon Neptune</h1>
+  </div>
+	<div class='page__body'>
+    <br />
+    <h4>Requirements</h4>
+    <ul>
+      <li>You need to have a metaphactory running on top of Amazon Neptune. <a href="https://help.metaphacts.com/resource/Help:Getting-started_metaphactory-for-Amazon-Neptune" target="_blank">You do not have it running yet? Please follow this link here.</a></li>
+      <li>You need an IAM Policy to allow read access to an Amazon S3 bucket and an IAM Role with this policy assigned to your Amazon Neptune Cluster. <a href="https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-IAM.html" target="_blank"> Please see the AWS documentation</a></li>
+      <li><b>The VPC used by your Neptune Cluster and your EC2-instance needs to have an S3 VPC Endpoint.</b>  <a href="https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-IAM.html#bulk-load-tutorial-vpc" target="_blank"> Please see the AWS documentation.</a></li>
+    </ul>
+
+    <br />
+
+    <h3>Step-by-step guide to load data into Amazon Neptune using metaphactory </h3>
+    <br />
+    <ol>
+      <li>Click on the <b>gear icon</b> on the top right to navigate to the <i>Administration</i> page:</li>
+		   <br />
+       <a href="/images/dataloading/button-to-admininistration.png"><img height="420px" src="/images/dataloading/button-to-admininistration.png"/></a>
+       <br />
+      <br />
+      <li>Click on <b>Data Import and Export</b>:</li>
+      <br />
+      <br />
+       <a href="/images/dataloading/data-import-export.png"><img height="420px" src="/images/dataloading/data-import-export.png"/></a>
+      <br />
+      <br />
+      <li>
+				<br />
+       <a href="/images/dataloading/neptune-load-iam-role-form.png"><img height="420px" src="/images/dataloading/neptune-load-iam-role-form.png"/></a>
+      <br />
+        <ul style="list-style-type:disc">
+          <br />
+          <li>Enter the S3 URI of the S3 bucket or of the specific file you want to load in the "Load new data" form. If your S3 URI points to a folder, then all files in all subfolders of the bucket will be loaded. Note, all files need to be in the same RDF format. They can be gzipped (*.gz). If the S3 URI points to a file, only this file will be loaded.
+      <br/>
+      <br/>(OPTIONAL) If you want to do <b>our SPARQL tutorial, use the following S3 URI to load the PermID dataset:</b><br />
+      <code>s3://permid-tutorial-dataset</code>
+					</li>
+          <br/>
+
+          <li>Select the RDF format of the files you want to load. Choose <b>nquads</b>, if you load the PermID dataset.</li>
+        <br />
+        <li>Enter the AWS Region of the S3 bucket. During the Neptune Preview phase only us-east-1 is available.</li>
+        <br />
+        <li>
+      Enter your the ARN (Amazon Resource Name) of the IAM Role which allows the Neptune Cluster to access the S3 bucket (also for public S3 buckets you need an IAM Role allowing your cluster to access S3). If you have not yet created such an IAM Role <a href="https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-IAM.html" target="_blank"> please check the AWS Neptune documentation.</a><br /></li>
+      <br />
+			<li>
+      <i>Start Load</i>.<br />
+       </li>
+      Loading the PermID dataset with its 120M triples takes about 20min.</li>
+      <br />
+      <br />
+      <li>You can monitor the load progress in the <i>Data load status</i> panel.</li>
+      </ul>
+
+      <br />
+      <a href="/images/dataloading/load-status.png"><img height="220px" src="/images/dataloading/load-status.png"/></a>
+      <br />
+      <br />
+      <div style="color:green;" >
+        <b><h3>Congratulations!</h3></b> <br />
+        <b>Your you loaded your first data into Amazon Neptune!</b> <br />
+        <br />
+        <a href="/images/dataloading/welcome-sparql-tutorial.png"><img height="420px" src="/images/dataloading/welcome-sparql-tutorial.png"/></a>
+      </div>
+        <br />
+        <br />
+     <li>
+        <b>If you loaded the PermID dataset, then you can now start with our SPARQL Tutorial. Click on <i>Quick Links</i> in the top menu and then on <i>Neptune SPARQL Tutorial</i></b>
+
+
+     </li>
+  </ol>
+  <br />
+  <br />
+     <h3>Troubleshooting</h3>
+      <ul>
+        <li>Ensure that your VPC has a working S3 VPC endpoint. Further read: <a href="https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-data.html#bulk-load-prereqs-s3" target="_blank">Creating a S3 VPC Endpoint</a> </li>
+        <li><b>Access from your EC2 instance to your Neptune cluster needs to be allowed in the Security Groups</b>.</li> Please see the <a href="https://aws.amazon.com/neptune/" target="_blank">Amazon Neptune</a> and the <a href="https://aws.amazon.com/ec2" target="_blank">Amazon EC2 </a> documentation for details.
+    </ul>
+
+  <br />
+      <br />
+
+    <table>
+      <tr>
+        <td width="43%"  style="vertical-align:bottom">
+          <h3>Links and resources </h3>
+        </td>
+        <td width="14%">
+        &nbsp;
+        </td>
+        <td width="43%"  style="vertical-align:bottom">
+        </td>
+       </tr>
+       <tr>
+         <td style="vertical-align:top;font-size:14px;">
+          <ul>
+            <li><a href="https://metaphacts.com/amazon-neptune" target="_blank">metaphactory for Amazon Neptune Sign-Up</a></li>
+            <li><a href="https://metaphacts.com/product" target="_blank">metaphactory</a></li>
+            <li><a href="https://pages.awscloud.com/NeptunePreview.html" target="_blank">Amazon Neptune Preview Sign-Up</a></li>
+            <li><a href="https://aws.amazon.com/neptune/" target="_blank">Amazon Neptune</a></li>
+           </ul>
+        </td>
+        <td>
+        &nbsp;
+        </td>
+        <td style="vertical-align:top;font-size:14px;">
+          <ul>
+            <li><a href="https://help.metaphacts.com/resource/Help:AWS-trial-getting-started" target="_blank">metaphactory - Getting Started on AWS</a></li>
+            <li><a href="https://help.metaphacts.com/resource/Help:Tutorial" target="_blank">metaphactory tutorial</a></li>
+            <li><a href="https://help.metaphacts.com" target="_blank">metaphactory documentation</a></li>
+            <li><a href="mailto:support@metaphacts.com">support@metaphacts.com</a></li>
+          </ul>
+        </td>
+      </tr>
+  </table>
+
+  </div>
+</div>

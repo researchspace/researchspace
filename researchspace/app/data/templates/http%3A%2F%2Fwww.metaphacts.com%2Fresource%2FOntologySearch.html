@@ -1,0 +1,125 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Assets" uri="http://www.metaphacts.com/resource/assets/">Assets</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Ontologies" uri="http://www.metaphacts.com/resource/assets/Ontologies">Ontologies</semantic-link>
+  </li>
+  <li class="active">Ontology Element Search</li>
+</ol>
+
+<div class="page">
+    <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-sitemap fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Ontology Element Search</h2>
+    </div>
+  </div>
+  <div class='page__body'>
+  <semantic-search selector-mode="dropdown" categories='{
+    "<http://www.w3.org/2001/XMLSchema#Decimal>": [{
+      "kind": "numeric-range",
+      "queryPattern": "{
+        $subject ?__relation__ ?literal .
+        FILTER(?literal >= ?__numericRangeBeginValue__) .
+        FILTER(?literal <= ?__numericRangeEndValue__) .
+      }"
+    }],
+    "<http://www.w3.org/2000/01/rdf-schema#Literal>": [{
+      "kind": "literal",
+      "queryPattern": "{
+        $subject ?__relation__ ?__literal__ .
+      }"
+    }]
+  }'>
+    <semantic-search-query-keyword 
+      domain='<http://www.w3.org/2000/01/rdf-schema#Resource>'
+      placeholder='Search for ontology elements by label. Type at least three characters to start searching.'                      
+      query='
+        SELECT ?subject WHERE { 
+          ?subject a ?class . 
+          ?subject rdfs:label ?label .
+          FILTER REGEX(STR(?label), ?__token__, "i")
+        }
+      '
+    ></semantic-search-query-keyword>
+  <div data-flex-layout="row stretch-stretch">
+    <!-- 
+    <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+      <semantic-search-facet value-categories='{
+        "<http://www.w3.org/2001/XMLSchema#Decimal>": {
+          "kind": "numeric-range",
+          "valuesQuery": "
+            SELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {
+              $subject ?__relation__ ?literal .
+            }
+            GROUP BY ?literal
+            ORDER BY ?literal
+          "
+        },
+        "<http://www.w3.org/2000/01/rdf-schema#Literal>": {
+          "kind": "literal",
+          "valuesQuery": "
+            SELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {
+              $subject ?__relation__ ?literal .
+            } 
+            GROUP BY ?literal
+            ORDER BY ?literal
+          "
+        }
+      }'></semantic-search-facet>
+    </div>
+ 		-->
+    <semantic-search-result-holder>
+      <div data-flex-self="md-full">
+        <semantic-search-result>
+          <mp-sparql-result-counts id='result-count'
+                                   query="SELECT DISTINCT ?subject {}"
+                                   template='{{#if hasLimit}} <bs-alert bs-style="warning">
+                                             Showing {{numberOfResults}} of {{totalNumberOfResults}} matches. <strong>Please, refine your search.</strong> </bs-alert>
+                                             {{else}} Found {{numberOfResults}} matches. {{/if}}'>
+          </mp-sparql-result-counts>
+        </semantic-search-result>
+        <semantic-search-result>
+          <semantic-table 
+                    id='grid-result'
+										query='SELECT DISTINCT ?subject ?description WHERE {
+                                  OPTIONAL { ?subject rdfs:comment ?description  }
+										}'
+                    number-of-displayed-rows="10"
+                    tuple-template='{{> tuple-template}}'
+                    options='{"showTableHeading": false, "showFilter":false}'>
+            
+            			 	<template id="tuple-template">
+                      <div style="width:100%;">
+                       <mp-panel>
+                        <mp-panel-body>
+                          <div>
+                            <h3><semantic-link uri="{{subject.value}}"></semantic-link></h3>
+                            <div><b>URI: </b><i>{{subject.value}}</i></div>
+                            <div><b>Types: </b><semantic-query style='display:inline;' query='SELECT ?type WHERE { <{{subject.value}}> a ?type}' no-result-template='<span>-</span>'></semantic-query></div>
+                          </div>
+                        </mp-panel-body>
+                        <mp-panel-footer>
+                          <div>
+                            <i>{{#if description.value}}<mp-text-truncate lines=3 truncate="...">{{description.value}}</mp-text-truncate>{{else}}No description{{/if}}</i>
+                          </div>
+                        </mp-panel-footer>
+                      </mp-panel>
+                   </div>
+                	</template>
+ 		           </semantic-table>          
+ 
+            </semantic-search-result>
+
+      </div>
+    </semantic-search-result-holder>
+  </div>
+</semantic-search>
+  </div>
+</div>

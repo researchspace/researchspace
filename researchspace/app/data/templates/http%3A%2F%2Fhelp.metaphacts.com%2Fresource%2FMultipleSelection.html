@@ -1,0 +1,100 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li class="active">Multiple Selection</li>
+</ol>
+
+<div class='page'>
+  <div class='page__body'>
+    <h1>Multiple Selection</h1>
+    <p>The platform provides the set of components that allow selecting multiple resources and performing actions with them:</p>
+    <ul>
+      <li>
+        <code><mp-selection-toggle /></code> - triggers the <code>Components.Selection.Toggle</code> event on resource selection
+      </li>
+      <li>
+        <code><mp-selection-action-choice /></code> - collects selected resources and displays possible actions
+      </li>
+      <li>
+        <code><mp-selection-group /></code> - container component that stores selected resources and allows restoring the state of the <code>mp-selection-toggle</code> component if it gets re-rendered
+      </li>
+    </ul>
+    <p>
+      The following attributes can be configured for the <code><mp-selection-toggle /></code> component:
+    </p>
+    <dl class='dl-horizontal'>
+      <dt><code>selection: string</code></dt>
+      <dd>
+        <p>Name of checkbox listener</p>
+      </dd>
+      <dt><code>tag: string</code></dt>
+      <dd>
+        <p>Extra data to pass to listener, so that it's possible to figure out, which of checkboxes was toggled</p>
+      </dd>
+    </dl>
+    <p>
+      The <code><mp-selection-action-choice /></code> component allows specify the following attributes:
+    </p>
+    <dl class='dl-horizontal'>
+      <dt><code>id: string</code></dt>
+      <dd>
+        <p>Required to make dropdown available to screen reader software</p>
+      </dd>
+      <dt><code>selection: string</code></dt>
+      <dd>
+        <p>Action group name</p>
+      </dd>
+      <dt><code>title: string</code></dt>
+      <dd>
+        <p>Dropdown caption</p>
+      </dd>
+      <dt><code>style?: string</code></dt>
+      <dd>
+        <p>CSS style</p>
+      </dd>
+      <dt><code>class?: string</code></dt>
+      <dd>
+        <p>CSS class</p>
+      </dd>
+    </dl>
+    <h2>Example</h2>
+    <mp-code-block mode='text/html'>
+<![CDATA[
+	<mp-selection-group>
+		<div>
+	    <mp-selection-action-choice id='demo' selection='demo' title='With selected ...'>
+	      <!-- Possible actions -->
+	    </mp-selection-action-choice>
+	    <semantic-table
+	      query="[[>Help:SemanticTableSampleQuery]]"
+	      column-configuration='[
+	        {
+	          "variableName": "s",
+	          "displayName": "Subject",
+	          "cellTemplate": "{{> subjectTemplate}}"
+	        }, 
+	        {"variableName": "p", "displayName": "Predicate"},  
+	        {"variableName": "o", "displayName": "Object"}
+	      ]'
+	      options='{
+	        "showFilter":false
+	      }'
+	      number-of-displayed-rows=2
+	    >
+	      <template id='subjectTemplate'>
+	        <div>
+	          <mp-selection-toggle selection='demo' tag='{{s.value}}'></mp-selection-toggle>
+	          <semantic-link iri='{{s.value}}' style='margin-left: 10px'></semantic-link>
+	        </div>
+	      </template>
+	    </semantic-table>
+		</div>
+	</mp-selection-group>
+]]>
+    </mp-code-block>
+  </div>
+</div>

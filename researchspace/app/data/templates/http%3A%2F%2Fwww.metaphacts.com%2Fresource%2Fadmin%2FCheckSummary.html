@@ -1,0 +1,65 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+
+  <li>
+    <semantic-link title="System Settings" data-uri="http://www.metaphacts.com/resource/admin/">System Settings</semantic-link>
+  </li>
+  <li>
+    <semantic-link uri='http://www.metaphacts.com/resource/admin/DataQuality'>Data Quality</semantic-link>
+  </li>
+  <li>
+    <semantic-context repository='tests'>
+    <semantic-link iri='[[urlParam "report"]]'>Validation Report</semantic-link>
+    </semantic-context>
+  </li>
+
+  <li class="active">Check summary</li>
+</ol>
+
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-body'>
+      <h2>Check summary for Report</h2>
+    </div>
+  </div>
+  <div class='page__body'>
+    <mp-panel>
+      <mp-panel-header>
+        <span>Results</span>
+      </mp-panel-header>
+      <mp-panel-body>
+      <semantic-context repository='tests'>
+        <semantic-table
+            query='
+              SELECT ?result ?message ?severity ?focusNode WHERE {
+                <[[urlParam "report"]]> <http://www.w3.org/ns/shacl#result> ?result.
+                ?result <http://www.w3.org/ns/shacl#resultMessage> """[[urlParam "check"]]""" ;
+                        <http://www.w3.org/ns/shacl#resultMessage> ?message ;
+                        <http://www.w3.org/ns/shacl#severity> ?severity ;
+                        <http://www.w3.org/ns/shacl#focusNode> ?focusNode .
+              }
+            '
+            column-configuration='[
+              {"variableName": "message", "displayName": "Message"},
+              {"variableName": "severity", "displayName": "Severity"},
+              {
+                "displayName": "Focus node",
+                "cellTemplate": "{{> focusNode}}"
+              }
+            ]'
+          >
+            <template id='focusNode'>
+              <semantic-context repository='default'>
+                <semantic-link iri='{{focusNode.value}}'></semantic-link>
+              </semantic-context>
+            </template>
+          </semantic-table>
+        </semantic-context>
+      </mp-panel-body>
+    </mp-panel>
+
+  </div>
+<div>

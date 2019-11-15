@@ -1,0 +1,45 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" data-uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li class="active">Query as a Service</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Query as a Service</h1>
+    <p>The metaphactory platform uses SPARQL queries as the main way of interaction with the data. SPARQL queries can be sent to the system both from the platform UI as well as from outside the system, using the platform SPARQL endpoint <code>/sparql</code> as a web service. However, physically constructing a SPARQL query string and sending it to the SPARQL endpoint as text can be inconvenient and require much effort from the developers of the client applications. In order to ease the development of custom client applications making use of the knowledge graph data managed by the metaphactory platform, the platform provides a possibility to define custom REST APIs supported by parameterized SPARQL query templates.</p>
+    
+    <h2>Defining a SPARQL query template</h2>
+    <p>The metaphactory platform allows specifying custom parameterized SPARQL <i>query templates</i> described using a standard <a href="http://spinrdf.org/spin.html#spin-templates">SPIN ontology</a> that can be saved for future reuse in the platform's <semantic-link uri="http://www.metaphacts.com/resource/assets/QueryTemplates">query catalog</semantic-link>. A query template contains a <i>base query</i> and defines some of the variables in the base query as parameters. When a template is instantiated with values for these parameters, the variables in the base query get replaced with the provided values. An arbitrary query created in the metaphactory <a href="../sparql">SPARQL editor</a> can be saved as a query template using the <b>Save</b> button under the editor area. In the popup form you can specify the descriptions for the new template as well as define one or more variables from the base query as parameters and even provide default values for them. Once saved, a SPARQL template is represented in the SPIN vocabulary and stored in the assets repository as part of the <semantic-link uri="http://www.metaphacts.com/resource/assets/QueryTemplates">query catalog</semantic-link>. This template can then be exposed as a custom REST API.</p> 
+    
+    <h2>Exposing SPARQL query template as a custom REST API</h2>
+    <p>Custom REST API services are managed from the <semantic-link uri="[[resolvePrefix "Admin:QueryService"]]">Query as a (REST) Service
+</semantic-link> page of the metaphactory admin interface. When adding a new REST API, you can specify the following parameters:</p>
+      <ul>
+        <li><code>ID</code>: This serves as both an internal and external identifier of an API. The REST API will be exposed under the URL <code>{PLATFORM_URL}/rest/qaas/{id}</code>.</li>
+        <li><code>Query</code>: Query template to be invoked.</li>
+        <li><code>ACL permission</code>: SHIRO permission string to determine the access restrictions for the new REST API service.</li>
+        <li><code>Default response format</code>: Response format to express the query results. The format must be consistent with the type of the query: e.g., SELECT queries can return tabular results in JSON, CSV, or XML, while CONSTRUCT queries return RDF graphs which can be formatted using standard serializations like Turtle or N-Triples.</li>
+        <li><code>Default repository</code>: ID of the repository in the <semantic-link uri="[[resolvePrefix "Help:RepositoryManager"]]">repository manager</semantic-link>, against which the query will be evaluated (if not provided, the <code>default</code> repository is used).</li>
+    	</ul>
+    <p>Once saved, the new REST API becomes available immediately.</p>
+    <h2>Service configuration</h2>
+    <p>Configurations of exposed REST APIs are stored as property files in the subdirectory <i>config/qaas</i>. Each configuration file has a name <i>{id}.prop</i>, where <i>{id}</i> corresponds to the identifier of the API. An example configuration file is given below:</p>
+    <mp-code-block><![CDATA[
+iri = http://localhost:10214/container/queryTemplateContainer/test-api
+disabled = false
+responseformat = application/json
+aclPermission = qaas:execute:*
+publisher = http://www.metaphacts.com/resource/user/admin
+]]>
+    </mp-code-block>
+    <p>Exposed APIs can be added/configured either from the <semantic-link uri="[[resolvePrefix "Admin:QueryService"]]">UI</semantic-link> or in the property files.</p>
+  </div>
+</div>

@@ -1,0 +1,205 @@
+<div style="height: calc(100vh - 60px);">
+  <ontodia settings='nostats' authoring-mode="true" provider-settings='{"classTreeQuery": "
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT ?class ?label ?parent
+            WHERE {
+                {
+                  {
+                  	?class a rdfs:Class
+                  } UNION {
+                  	?class a owl:Class
+                  }
+                  FILTER ISIRI(?class)
+                  OPTIONAL {?class rdfs:label ?label}
+                  OPTIONAL {?class rdfs:subClassOf ?parent. FILTER ISIRI(?parent)}
+                } UNION {
+                	VALUES(?class ?label ?parent) {
+                    (rdfs:Resource \"Resource\" UNDEF)
+                    (rdfs:Class \"Class\" UNDEF)
+                    (owl:Class \"Class\" rdfs:Class)
+                    (rdf:Property \"Property\" rdfs:Resource)
+                    (owl:DatatypeProperty \"DatatypeProperty\" rdf:Property)
+                    (owl:ObjectProperty \"ObjectProperty\" rdf:Property)    
+                  }                                                  
+               } 
+            }
+        "}'>
+   <semantic-form
+      new-subject-template='https://sputniq.space/authoring/rdfs-class/{{UUID}}'
+      fields='[ [[> subClassOf]], [[> label]], [[> comment]], [[> type]] ]'>
+      
+      <ontodia-entity-metadata
+        entity-type-iri='http://www.w3.org/2000/01/rdf-schema#Class'
+        label-iri='http://www.metaphacts.com/fieldDefinition/label'
+        type-iri='http://www.metaphacts.com/fieldDefinition/type'>
+      </ontodia-entity-metadata>
+      
+      <semantic-form-text-input for='label'></semantic-form-text-input>
+      <semantic-form-text-input for='comment'></semantic-form-text-input>
+      <semantic-form-errors></semantic-form-errors>
+      <button name="submit" class="btn btn-default">Save</button>
+      <button name="reset" class="btn btn-default">Reset</button>
+    </semantic-form>
+
+     <semantic-form
+      new-subject-template='https://sputniq.space/authoring/owl-class/{{UUID}}'
+      fields='[ [[> subClassOf]], [[> label]], [[> comment]], [[> type]] ]'>
+      
+      <ontodia-entity-metadata
+        entity-type-iri='http://www.w3.org/2002/07/owl#Class'
+        label-iri='http://www.metaphacts.com/fieldDefinition/label'
+        type-iri='http://www.metaphacts.com/fieldDefinition/type'>
+      </ontodia-entity-metadata>
+      
+      <semantic-form-text-input for='label'></semantic-form-text-input>
+      <semantic-form-text-input for='comment'></semantic-form-text-input>
+      <semantic-form-errors></semantic-form-errors>
+      <button name="submit" class="btn btn-default">Save</button>
+      <button name="reset" class="btn btn-default">Reset</button>
+    </semantic-form>
+    
+    <semantic-form
+      new-subject-template='https://sputniq.space/authoring/datatype-property/{{UUID}}'
+      fields='[ [[> domain]], [[> rangeDP]], [[> label]], [[> comment]], [[> type]] ]'>
+      
+      <ontodia-entity-metadata
+        entity-type-iri='http://www.w3.org/2002/07/owl#DatatypeProperty'
+        label-iri='http://www.metaphacts.com/fieldDefinition/label'
+        type-iri='http://www.metaphacts.com/fieldDefinition/type'
+        force-iris='["http://www.metaphacts.com/fieldDefinition/range-dp"]'>
+      </ontodia-entity-metadata>
+      
+      <semantic-form-text-input for='label'></semantic-form-text-input>
+      <semantic-form-text-input for='comment'></semantic-form-text-input>
+      <semantic-form-select-input for='range'></semantic-form-select-input>
+      <semantic-form-errors></semantic-form-errors>
+      <button name="submit" class="btn btn-default">Save</button>
+      <button name="reset" class="btn btn-default">Reset</button>
+    </semantic-form>
+
+    <semantic-form
+      new-subject-template='https://sputniq.space/authoring/object-property/{{UUID}}'
+      fields='[ [[> domain]], [[> range]], [[> label]], [[> comment]], [[> type]] ]'>
+      
+      <ontodia-entity-metadata
+        entity-type-iri='http://www.w3.org/2002/07/owl#ObjectProperty'
+        label-iri='http://www.metaphacts.com/fieldDefinition/label'
+        type-iri='http://www.metaphacts.com/fieldDefinition/type'>
+      </ontodia-entity-metadata>
+
+      <semantic-form-text-input for='label'></semantic-form-text-input>
+      <semantic-form-text-input for='comment'></semantic-form-text-input>
+      <semantic-form-errors></semantic-form-errors>
+      <button name="submit" class="btn btn-default">Save</button>
+      <button name="reset" class="btn btn-default">Reset</button>
+    </semantic-form>
+  </ontodia>
+</div>
+
+[[#*inline "subClassOf"]]
+{
+	"deletePattern" : "DELETE { $subject rdfs:subClassOf $value} WHERE {}",
+	"iri" : "http://www.metaphacts.com/fieldDefinition/subClassOf",
+	"selectPattern" : "SELECT ?value ?label WHERE {  $subject rdfs:subClassOf ?value.}",
+	"xsdDatatype" : "http://www.w3.org/2001/XMLSchema#anyURI",
+	"domain" : [ "http://www.w3.org/2000/01/rdf-schema#Class", "http://www.w3.org/2000/01/rdf-schema#Class", "http://www.w3.org/2002/07/owl#Class", "http://www.w3.org/2002/07/owl#Class" ],
+	"defaultValues" : [ ],
+	"range" : [ "http://www.w3.org/2000/01/rdf-schema#Class", "http://www.w3.org/2002/07/owl#Class", "http://www.w3.org/2000/01/rdf-schema#Class", "http://www.w3.org/2002/07/owl#Class" ],
+	"id" : "subClassOf",
+	"label" : "SubClassOf",
+	"insertPattern" : "INSERT { $subject rdfs:subClassOf $value} WHERE {}",
+	"order" : "0"
+}
+[[/inline]]
+[[#*inline "label"]]
+{
+	"deletePattern" : "DELETE { $subject rdfs:label $value } WHERE {}",
+	"iri" : "http://www.metaphacts.com/fieldDefinition/label",
+	"selectPattern" : "SELECT ?value WHERE {  $subject rdfs:label ?value.}",
+	"xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
+	"domain" : [ "http://www.w3.org/2000/01/rdf-schema#Resource" ],
+	"defaultValues" : [ ],  "range" : [ ],
+	"id" : "label",
+	"label" : "Label",
+	"insertPattern" : "INSERT { $subject rdfs:label $value } WHERE {}",
+	"order" : "1"
+}
+[[/inline]]
+[[#*inline "comment"]]
+{
+	"deletePattern" : "DELETE { $subject rdfs:comment $value } WHERE {}",
+	"iri" : "http://www.metaphacts.com/fieldDefinition/comment",
+	"selectPattern" : "SELECT ?value WHERE {  $subject rdfs:comment ?value.}",
+	"xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
+	"domain" : [ "http://www.w3.org/2000/01/rdf-schema#Resource" ],
+	"defaultValues" : [ ],  "range" : [ ],
+	"id" : "comment",
+	"label" : "Comment",
+	"insertPattern" : "INSERT { $subject rdfs:comment $value} WHERE {}",
+	"order" : "2"
+}
+[[/inline]]
+[[#*inline "type"]]
+{
+	"deletePattern" : "DELETE { $subject a $value} WHERE {}",
+	"iri" : "http://www.metaphacts.com/fieldDefinition/type",
+	"selectPattern" : "SELECT ?value WHERE {  $subject a ?value.}",
+	"xsdDatatype" : "http://www.w3.org/2001/XMLSchema#anyURI",
+	"domain" : [ "http://www.w3.org/2000/01/rdf-schema#Resource" ],
+	"defaultValues" : [ ],
+	"range" : [ "http://www.w3.org/2000/01/rdf-schema#Class" ],
+	"id" : "type",
+	"label" : "Type",
+	"insertPattern" : "INSERT { $subject a $value} WHERE {}",
+	"order" : "3"
+}
+[[/inline]]
+[[#*inline "domain"]]
+{
+	"deletePattern" : "DELETE { $subject rdfs:domain $value} WHERE {}",
+	"iri" : "http://www.metaphacts.com/fieldDefinition/domain",
+	"selectPattern" : "SELECT ?value WHERE {  $subject rdfs:domain ?value.}",
+	"xsdDatatype" : "http://www.w3.org/2001/XMLSchema#anyURI",
+	"domain" : [ "http://www.w3.org/2002/07/owl#ObjectProperty", "http://www.w3.org/2002/07/owl#ObjectProperty", "http://www.w3.org/2002/07/owl#DatatypeProperty", "http://www.w3.org/2002/07/owl#DatatypeProperty" ],
+	"defaultValues" : [ ],
+	"range" : [ "http://www.w3.org/2000/01/rdf-schema#Class", "http://www.w3.org/2002/07/owl#Class", "http://www.w3.org/2000/01/rdf-schema#Class", "http://www.w3.org/2002/07/owl#Class" ],
+	"maxOccurs" : "1",
+	"id" : "domain",
+	"label" : "Domain",
+	"insertPattern" : "INSERT { $subject rdfs:domain $value} WHERE {}",
+	"order" : "0"
+}
+[[/inline]]
+[[#*inline "rangeDP"]]
+{
+	"deletePattern" : "DELETE { $subject rdfs:range $value} WHERE {}",
+	"iri" : "http://www.metaphacts.com/fieldDefinition/range-dp",
+	"selectPattern" : "SELECT ?value WHERE {  $subject rdfs:range ?value.}",
+	"domain" : [ "http://www.w3.org/2002/07/owl#DatatypeProperty" ],
+	"valueSetPattern" : "SELECT ?value ?label WHERE {  VALUES (?value ?label) {      (xsd:boolean \"boolean\")      (xsd:date \"date\")      (xsd:dateTime \"dateTime\")      (xsd:decimal \"decimal\")      (xsd:double \"double\")      (xsd:duration \"duration\")      (xsd:float \"float\")      (xsd:gDay \"gDay\")  }}",
+	"defaultValues" : [ ],
+	"range" : [ "http://www.w3.org/2000/01/rdf-schema#Datatype" ],
+	"id" : "range",
+	"label" : "Range",
+	"insertPattern" : "INSERT { $subject rdfs:range $value} WHERE {}",
+	"order" : "1"
+}
+[[/inline]]
+[[#*inline "range"]]
+{
+	"deletePattern" : "DELETE { $subject rdfs:range $value} WHERE {}",
+	"iri" : "http://www.metaphacts.com/fieldDefinition/range",
+	"selectPattern" : "SELECT ?value WHERE {  $subject rdfs:range ?value.}",
+	"xsdDatatype" : "http://www.w3.org/2001/XMLSchema#anyURI",
+	"domain" : [ "http://www.w3.org/2002/07/owl#ObjectProperty", "http://www.w3.org/2002/07/owl#ObjectProperty" ],
+	"defaultValues" : [ ],
+	"range" : [ "http://www.w3.org/2000/01/rdf-schema#Class", "http://www.w3.org/2002/07/owl#Class" ],
+	"maxOccurs" : "1",
+	"id" : "range",
+	"label" : "Range",
+	"insertPattern" : "INSERT { $subject rdfs:range $value} WHERE {}",
+	"order" : "1"
+}
+[[/inline]]

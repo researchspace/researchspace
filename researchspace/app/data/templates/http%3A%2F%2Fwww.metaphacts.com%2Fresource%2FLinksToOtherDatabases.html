@@ -1,0 +1,36 @@
+[[#if askQuery]]
+  [[#if (ask askQuery)]]
+    [[> externalLinks]]
+  [[/if]]
+[[else]]
+  [[#if (ask "ASK { ?? rdfs:seeAlso ?url. FILTER(isUri(?url)) }")]]
+    [[> externalLinks]]
+  [[/if]]
+[[/if]]
+
+[[#*inline 'externalLinks']]
+  <bs-tab event-key='[[eventKey]]' title='External Links'>
+    <semantic-query query='[[#if selectQuery]][[selectQuery]][[else]]SELECT ?label ?url WHERE { ?? rdfs:seeAlso|owl:sameAs ?url. FILTER(isUri(?url)) }[[/if]]'
+      template='{{> links}}'
+      no-result-template='<i>No links to other databases.</i>'>
+      <template id="links">
+        <ul class="list-unstyled" style="display: flex; flex-wrap: wrap; margin: 0 -10px;">
+          {{#each bindings}}
+          <li style='display: flex; flex-flow: column; flex: 0 0 200px; margin: 0 10px;'>
+            <a target='_blank' href='{{{url.value}}}' class="text-center thumbnail" style="flex: 1; display: flex; flex-flow: column;">
+              <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                <div>
+                  <i class="fa fa-external-link" aria-hidden="true" style='font-size: 12px;'></i>
+                  {{#if label.value}}{{label.value}}{{else}}<mp-label iri='{{url.value}}'></mp-label>{{/if}}{{#if object}}: <i>{{object.value}}</i>{{/if}}
+                  <br/>
+                  {{#if lang}}<small><i class="fa fa-language"></i> {{lang.value}}</small>{{/if}}
+                </div>
+              </div>
+            </a>
+          </li>
+          {{/each}}
+        </ul>
+      </template>
+    </semantic-query>
+  </bs-tab>
+[[/inline]]

@@ -1,0 +1,40 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri="http://www.metaphacts.com/resource/admin/">Administration</semantic-link>
+  </li>
+  <li class="active">Query as a (REST) Service</li>
+</ol>
+
+<div class="page">
+  <div class="page__header">
+    <div class='page__header-thumbnail'>
+      <h2><i class="fa fa-circle-o-notch fa-2x"></i></h2>
+    </div>
+    <div class='page__header-body'>
+      <h2>Query as a (REST) Service</h2>
+    </div>
+  </div>
+  <div class='page__body'>
+	[[#if (hasPermission "qaas:info")]]
+    <semantic-context repository='assets'>
+
+        <mp-admin-query-api-manager api-id-template='{{> id-template}}'>
+          <template id='id-template'>
+            <mp-overlay-dialog title='Execute service "{{id}}"' bs-size='large'>
+              <mp-overlay-dialog-trigger><a>{{url}}</a></mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                  <mp-admin-query-api-form api-id='{{id}}'></mp-admin-query-api-form>
+                </mp-overlay-dialog-content>
+              </mp-overlay-dialog>
+          </template>
+        </mp-admin-query-api-manager>
+
+    </semantic-context>
+  [[else]]
+    <i>No permission to view QAAS configurations.</i>
+	[[/if]]
+  </div>
+</div>

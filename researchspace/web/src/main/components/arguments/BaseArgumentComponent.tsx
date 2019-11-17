@@ -113,7 +113,7 @@ export class BaseArgumentsComponent extends Component<ArgumentsProps, BaseArgume
         <div className={styles.header}>
           <img src='../images/assertion.svg' />
           Assertion about field <SemanticContextProvider repository='default'>
-          <ResourceLinkComponent uri='http://www.researchspace.org/resource/Field'
+          <ResourceLinkComponent uri='http://www.hercules.gouv.qc.ca/resource/Field'
                                  urlqueryparamSubject={this.state.target.value}
                                  urlqueryparamField={field.iri}>
             <span className='field-type-title'>

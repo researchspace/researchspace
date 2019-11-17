@@ -111,11 +111,14 @@
                       } 
                       UNION 
                       {
-                        ?page a ?type;
-                          rdfs:label ?title;
-                          <http://www.w3.org/ns/prov#wasAttributedTo> ?user;
-                          <http://www.w3.org/ns/prov#generatedAtTime> ?time .
-                        FILTER (?type = <http://hercules.gouv.qc.ca/ontology/meta/Form>) .
+                        GRAPH ?g { 
+                          ?page a ?type .
+                          ?page <http://hercules.gouv.qc.ca/ontology/meta/hasName> ?title .
+                          ?c <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                          ?c <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                          
+                          FILTER (?type = <http://hercules.gouv.qc.ca/ontology/meta/Form>)
+                        }
                         BIND('Formulaire' as ?content_type) .
                         BIND('rs-btn-dashboard--forms' as ?tag_cssClass) 	
                       }

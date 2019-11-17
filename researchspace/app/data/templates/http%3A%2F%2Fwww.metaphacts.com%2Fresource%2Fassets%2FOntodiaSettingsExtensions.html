@@ -1,0 +1,29 @@
+[[!--
+  This may be expanded to handle 2-hops search or to support triplestore-specific path finding algorithms
+--]]
+find-relationship-query='
+
+CONSTRUCT {
+  ?in ?linkType1 ?intermediate .
+  ?target ?linkType1 ?intermediate .
+  ?target ?linkType2 ?intermediate .
+  ?intermediate ?linkType2 ?in .
+  ?intermediate ?linkType1 ?in .
+  ?intermediate ?linkType2 ?target .
+} WHERE {
+{
+  ?in ?linkType1 ?intermediate .
+  ?intermediate ?linkType2 ?target .
+} UNION {
+  ?target ?linkType1 ?intermediate .
+  ?intermediate ?linkType2 ?in .
+} UNION {
+  ?in ?linkType1 ?intermediate .
+  ?target ?linkType2 ?intermediate .
+} UNION {
+  ?intermediate ?linkType1 ?in .
+  ?intermediate ?linkType2 ?target .
+}
+FILTER (ISIRI(?intermediate)) .
+}'
+

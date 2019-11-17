@@ -1,0 +1,77 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+
+  <li>
+    <semantic-link title="Components" uri="http://help.metaphacts.com/resource/HTML5Components">Components</semantic-link>
+  </li>
+  <li class="active">GraphScope Search Component</li>
+</ol>
+
+<div class="page documentation">
+  <div class='page__body'>
+    <h1>GraphScope Search Component</h1>
+    <p><code>semantic-search-query-graphscope</code> is a query formulation component for the semantic search framework.</p>
+
+    <p><code>semantic-search-domain-switch</code> switches the domain for the facet search.</p>
+    <p><code>semantic-search-results-explanation-graphscope</code> explains result of a search, shows how domains are related.</p>
+    <p><code>diagram-search-result</code> allows using Ontodia for result visualization.</p>
+    <p><code>semantic-search-table-result</code> dynamically changes the configuration of the semantic-table to display concepts names instead of projection variables in the table head.</p>
+    <mp-code-block>
+      <![CDATA[
+      <style>
+        .facet__category-selector-holder .category-selector {
+          flex-wrap: wrap;
+        }
+
+        .facet__category-selector-holder .category-selector li {
+          border-right: 1px solid #666;
+          margin: 1px;
+        }
+      </style>
+
+      <semantic-search search-profile='{"categories": [], "relations": []}'>
+        <semantic-search-query-graphscope></semantic-search-query-graphscope>
+
+        <div data-flex-layout="row stretch-stretch" style="margin-top: 20px;">
+          <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+            <semantic-search-facet></semantic-search-facet>
+          </div>
+          <semantic-search-result-holder>
+            <div data-flex-self="md-full">
+              <div style="max-width: 300px; margin: 20px 0;">
+    	          <semantic-search-domain-switch></semantic-search-domain-switch>
+    	        </div>
+    	        <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+    	        <div style="margin: 20px 0;">
+    	          <semantic-search-results-explanation-graphscope></semantic-search-results-explanation-graphscope>
+    	        </div>
+    	        <bs-tabs id="tabs" unmount-on-exit=true animation=false>
+    	          <bs-tab event-key="1" title="Diagram">
+    	            <div style="height: calc(65vh)">
+    	              <semantic-search-result>
+    	                  <diagram-search-result id='graph' query='SELECT * WHERE {} LIMIT 100'>
+    	                    <ontodia hide-panels=true></ontodia>
+    	                  </diagram-search-result>
+    	              </semantic-search-result>
+    	            </div>
+    	          </bs-tab>
+    	          <bs-tab event-key="2" title="Table">
+    	            <semantic-search-result>
+    	              <semantic-search-table-result>
+    	                <semantic-table id='table' query='SELECT * WHERE {}'></semantic-table>
+    	              </semantic-search-table-result>
+    	            </semantic-search-result>
+    	          </bs-tab>
+    	        </bs-tabs>
+    	      </div>
+    	    </semantic-search-result-holder>
+    	  </div>
+    	</semantic-search>
+    	]]>
+    </mp-code-block>
+</div>

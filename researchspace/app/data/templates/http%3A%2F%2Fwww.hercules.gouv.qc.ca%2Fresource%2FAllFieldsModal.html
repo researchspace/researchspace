@@ -1,0 +1,27 @@
+<semantic-context repository='assets'>
+  <semantic-table id='table-result'
+              query='
+                SELECT ?subject ?description WHERE {
+                  <http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains> ?subject .
+                  ?subject <http://www.metaphacts.com/ontology/fields#domain> [[urlParam "type"]] .
+                  OPTIONAL {
+                    ?subject rdfs:comment ?description .
+                  }
+                }
+              '
+              column-configuration='[
+                { "displayName": "Field",  "cellTemplate": "{{> fieldColumn}}" },
+                { "variableName": "description", "displayName": "Description" },
+                { "displayName": "Actions",  "cellTemplate": "{{> actionColumn}}" }
+              ]'
+  >
+    <template id='fieldColumn'>
+      <mp-label iri='{{subject.value}}'></mp-label>
+    </template>
+    <template id='actionColumn'>
+      <mp-resource-link-container uri='http://www.hercules.gouv.qc.ca/resource/Field' urlqueryparam-field='{{subject.value}}' urlqueryparam-subject='[[this]]'>
+        <button class='btn btn-xs btn-default'>Add Assertion</button>
+      </mp-resource-link-container>
+    </template>
+  </semantic-table>
+</semantic-context>

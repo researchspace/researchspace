@@ -1,0 +1,132 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Ephedra" uri='[[resolvePrefix "Help:Ephedra"]]'>Ephedra</semantic-link>
+  </li>
+  <li class="active">Federating over Platform Repositories</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Ephedra: Federating over Platform Repositories</h1>
+    <p>
+  		Ephedra is implemented as an RDF4J federation that can include repositories registered in the platform <semantic-link title="Repository Manager" uri='[[resolvePrefix "Help:RepositoryManager"]]'>Repository Manager</semantic-link>. Ephedra itself represents an additional RDF4J repository in the Repository Manager and is registered and configured using a Turtle file. Ephedra is implemented as a SAIL repository of a special type <code>metaphacts:FederationSailRepository</code> and the nested SAIL module belongs to the type <code>metaphacts:Federation</code>.
+    </p>
+    <p>Below is an example of an Ephedra repository configuration file for the repository with the name <code>ephedra</code>:</p>
+    <mp-code-block mode='text/turtle'>
+<![CDATA[
+[] a <http://www.openrdf.org/config/repository#Repository> ;
+	<http://www.openrdf.org/config/repository#repositoryID> "ephedra" ;
+	<http://www.w3.org/2000/01/rdf-schema#label> "Repository to test the local federation." ;
+	<http://www.openrdf.org/config/repository#repositoryImpl> [
+    <http://www.openrdf.org/config/repository#repositoryType> "metaphacts:FederationSailRepository" ;
+ 	<http://www.openrdf.org/config/repository/sail#sailImpl> [
+		# metaphactory federation sail 
+     	<http://www.openrdf.org/config/sail#sailType> "metaphacts:Federation" ;
+      	# the ID of the repository that serves as the default federation member
+		<http://www.metaphacts.com/ontologies/platform/ephedra#defaultMember> "default" ;
+      	# descriptors of the federation members
+		<http://www.openrdf.org/config/sail/federation#member> [
+        	# repository ID
+			<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "assets" ;
+        	# URI of the SPARQL SERVICE for this repository
+			<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>	<http://www.metaphacts.com/ontologies/platform/repository/federation#assets>
+		] 
+    ] 
+  ] .
+]]>
+</mp-code-block> 
+    <p>The federation must include at least one member: the one which would be treated as default (usually, but not necessarily the <code>default</code> platform repository). Apart from the default one, the federation can include any number of repositories registered in the Repository Manager to be addressed using a SPARQL SERVICE keyword. For each of these additional members, the SAIL configuration has to include a member  description using the property <code>&lt;http://www.openrdf.org/config/sail/federation#member&gt;</code>. Each member description node must have two outgoing properties:</p>
+    <ul>
+      <li><code>&lt;http://www.metaphacts.com/ontologies/platform/repository#delegateRepositoryID&gt;</code>: the ID of the member repository in the Repository Manager</li>
+      <li><code>&lt;http://www.metaphacts.com/ontologies/platform/repository#serviceReference&gt;</code>: the URI to reference the member repository from the SERVICE clause in the SPARQL query.</li>
+    </ul>
+    <p>Besides the member repository descriptors, the configuration must specify which member repository will be treated as the default repository. This repository will be the target for the parts of the SPARQL query that are not part of any SERVICE clause.    
+    </p>
+    <p>Once the the Ephedra federation is configured, one can then send federated SPARQL queries over several federation members: in our case, the main default repository and the assets repository. For example, one can retrieve all <semantic-link title="Fields" uri='[[resolvePrefix "Help:SemanticForm"]]'>field definitions</semantic-link> which have as a domain the class <code>foaf:Person</code> or any of its subclasses:</p>
+    <mp-code-block mode='application/sparql-query'>
+      <![CDATA[
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX fields: <http://www.metaphacts.com/ontology/fields#>
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        SELECT ?field WHERE {
+          SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#assets> {
+              ?field a fields:Field .
+            ?field fields:domain ?domain .
+          }
+          ?domain rdfs:subClassOf* foaf:Person .
+        } 
+      ]]>
+    </mp-code-block>
+    <h2>Query hints</h2>
+    <p>Before execution, the federated Ephedra queries are processed by the query optimizer, which is based on the standard RDF4J query optimizer. In particular, it tries to reorder the query clauses in such a way that they would be executed in the shortest time. The RDF4J query optimizer sometimes makes non-optimal decisions, which may cause the query to take long time or even to timeout. To deal with such situations and give more control over how the query should be executed, Ephedra provides <i>query hints</i>: custom directives that tell the query planner how the query should be executed. These query hints represent special triple patterns introduced in the query, which are not matched against data, but are interpreted by the query planner.</p>
+    <p>Ephedra envisages the following query hints (all assuming that the namespace prefix <code>ephedra</code> is declared as <code>PREFIX ephedra: &lt;http://www.metaphacts.com/ontologies/platform/ephedra#&gt;</code>):</p>
+    <ul>
+      <li>
+        <code>ephedra:Query ephedra:disableJoinReordering "true"^^xsd:boolean .</code>: adding this query hint tells Ephedra that the join operands in this query should be executed in the same order they are written in the query. Ephedra will not reorder the clauses based on its heuristics to try and find the optimal query plan. For instance, we slightly modify query from the example above:
+        <mp-code-block mode='application/sparql-query'>
+      <![CDATA[
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX fields: <http://www.metaphacts.com/ontology/fields#>
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+        SELECT ?field WHERE {
+          ephedra:Query ephedra:disableJoinReordering "true" .
+          ?domain rdfs:subClassOf foaf:Person .
+          SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#assets> {
+              ?field a fields:Field .
+            ?field fields:domain ?domain .
+          }
+        } 
+      ]]>
+    </mp-code-block>
+        Without the <code>disableJoinReordering</code> directive Ephedra will reorder the query clauses so that the <code>SERVICE</code> call gets executed first, select all fields from the <code>assets</code> repository and filter for those <code>domain</code> values that are subclasses of <code>foaf:Person</code>. With it, it will execute the clauses in the order they are written: i.e., select all sublcasses of <code>foaf:Person</code>, then for each of them extract relevant fields from the assets repository.
+      </li>
+      <li>
+        <code>ephedra:Prior ephedra:executeFirst "true"^^xsd:boolean .</code>: this query hint applies to the join operand clause immediately preceding it and tells Ephedra that this join operand has to be executed first in its join sequence. With this query hint, Ephedra will still apply its optimization heuristics, but while reordering the join operands the target clause will have the highest priority. Note that this query hint applies only to the immediate n-ary join operator and cannot move a query clause to a different level in the query tree: e.g., from/to an <code>OPTIONAL</code> clause or from/to a block affected by <code>FILTER</code>. In the example query below, the triple pattern <code>?domain rdfs:subClassOf foaf:Person </code> will be moved forward in the order of join operands and will be executed first.
+        <mp-code-block mode='application/sparql-query'>
+      <![CDATA[
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX fields: <http://www.metaphacts.com/ontology/fields#>
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+        SELECT ?field WHERE {
+          SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#assets> {
+              ?field a fields:Field .
+            ?field fields:domain ?domain .
+          }
+          ?domain rdfs:subClassOf foaf:Person .
+          ephedra:Prior ephedra:executeFirst "true" .
+        } 
+      ]]>
+    </mp-code-block>
+      </li>
+      <li>
+        <code>ephedra:Prior ephedra:executeLast "true"^^xsd:boolean .</code>: Similar to the previous one, but tells Ephedra that the preceding join operand clause has to be executed the last in the sequence. In the example below, the <code>SERVICE</code> call will get executed last, producing the same effect as in the previous example.
+        <mp-code-block mode='application/sparql-query'>
+      <![CDATA[
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX fields: <http://www.metaphacts.com/ontology/fields#>
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+				PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+        SELECT ?field WHERE {
+          SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#assets> {
+              ?field a fields:Field .
+            ?field fields:domain ?domain .
+          }
+          ephedra:Prior ephedra:executeLast "true" .
+          ?domain rdfs:subClassOf foaf:Person .
+        } 
+      ]]>
+    </mp-code-block>
+      </li>
+    </ul>
+    <p>The query hints apply only to federated queries processed by the Ephedra: i.e., those which contain <code>SERVICE</code> clauses. A regular SPARQL query that does not contain any <code>SERVICE</code> clauses will be sent by Ephedra directly to the default federation member. This default federation member will apply its own query planner (depending on the triple store type) and the Ephedra query hints will be ignored.</p>
+    <p>Note: query hints is currently an experimental feature that may lead to unexpected results. For example, with query hints you can configure a hybrid query in such a way that an Ephedra service will be invoked before its input parameters are bound and thus the whole query will fail. You can disable the query hints feature completely by adding the configuration property <code>ephedra:enableQueryHints false</code> to the Ephedra repository configuration. In this case, Ephedra applies the previous implementation of the join order optimizer.</p>
+	</div>
+</div>

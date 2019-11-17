@@ -183,7 +183,7 @@ object SearchBenchmark {
     feed(searches)
       .exec(
         http("search page")
-          .get("/resource/rsp:Search")
+          .get("/resource/:Search")
           .resources(
             // get search result counts
             sparqlQuery("COUNT:${name}", "${prefixes} \n SELECT (COUNT(*) as ?count) WHERE { { ${query} } }")

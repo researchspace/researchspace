@@ -1,0 +1,503 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" data-uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation</semantic-link>
+  </li>
+  <li class="active">Data Quality Service</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Data Quality Service</h1>
+		Data quality service provides a visualization of the quality of data managed in the platform. Visualization includes a visual data quality trend charts that show how the quality of data changed over time, as well as links to the validation reports represented in table format. Service is available from 'Toolbox' menu for users with admin rights. <semantic-link iri="[[resolvePrefix "Admin:DataQuality"]]">Direct link</semantic-link>.
+    <h2>Interface</h2>
+    <p>
+      <bs-row>
+        <bs-col sm="7">
+          The dashboard page consists of three tabs:
+          <ol>
+            <li><b>Results</b> - the tab wich provides data quality trend charts and links to the validation reports.</li>
+            <li><b>Referenced Queries</b> - the tab includes a list of queries from the query catalog, that are used in the definition of test cases.
+            <li><b>Test Case Management</b> - this tab represents test case editor and execution controls.</li>
+          </ol>
+        </bs-col>
+        <bs-col sm="4">
+          [[> tab-example]]
+        </bs-col>
+      </bs-row>
+    </p>
+    <h3>Results tab</h3>
+    <p>
+      The result overview page provides a visual data quality trend chart that shows how the data quality changed over time:
+    </p>
+    [[> quality-chart-example]]
+    <br/>
+    <p>
+      Next to the data quality chart the table with links to the validation reports is represented as well:
+    </p>
+    [[> validation-reports-example]]
+    <p>
+      Every validation report shows a chart with the total number of failed (red) and succeeded (yellow) test cases:
+    </p>
+    [[> summary-example]]
+    <p>
+      Below the chart with test cases there is a table with the links to individual checks:
+    </p>
+    [[> summary-results-example]]
+    <p>
+      By clicking on links in the table you can navigate to the "check summary page", which displays a list of "focus nodes" that violate given check. It is also possible for further investigation to navigate from "check summary page" to the resources that violate the check (Only mock links presented in the examples on the help page).
+    </p>
+
+    <h3>Referenced Queries tab</h3>
+    <p>
+      The "Referenced Queries" tab provides a condensed overview of all queries from a query catalog that are used in the definitions of test cases.
+    </p>
+    [[> queries-example]]
+
+    <h3>Test Case Management tab</h3>
+    <p>
+      This tab is dedicated to the management of test cases. Here you can create, save and execute test configurations (cases).
+      To run the test cases press the <b>Run Tests</b> button. The <b>Test Status</b> will change to "In Progress", as soon as test cases are completed the test status will change to "Finished" and validation report will become available from the <b>Results tab</b>. This tab has three sub-tabs which represent different ways of defining test cases (see <b>Test case management</b>).
+    </p>
+    [[> manager-example]]
+
+    <h2>Test case management</h2>
+    <p>
+      There are two ways of defining test cases, which are represented via different sub-tabs in <b>Test Case Management</b> tab:
+      <ul>
+        <li><b>Simple SHACL</b> (shacl.ttl tab) - Here you can define test cases basing on SHACL rules;</li>
+        <li><b>SHACL generators</b> (autoGeneratorsOWL.ttl / patterns.ttl tab) - Here you can generate test cases basing on an ontology or some other metadata present in the repository;</li>
+      </ul>
+    </p>
+    <h3>Simple SHACL</h3>
+    <p>
+      All test cases in the Data Quality dashboard are based on the <a href="https://www.w3.org/TR/shacl/">SHACL standard</a>. Metaphactory supports the following SHACL constraints:
+      <bs-row>
+        <bs-col sm="6">
+          <ul>
+            <li>sh:targetNode</li>
+            <li>sh:targetClass</li>
+            <li>sh:targetSubjecsOf</li>
+            <li>sh:targetObjects</li>
+            <li>sh:node</li>
+            <li>sh:property</li>
+            <li>sh:class</li>
+            <li>sh:datatype</li>
+            <li>sh:nodeKind</li>
+            <li>sh:minCount</li>
+            <li>sh:maxCount</li>
+            <li>sh:minExclusive</li>
+            <li>sh:minInclusive</li>
+            <li>sh:maxExclusive</li>
+          </ul>
+        </bs-col>
+        <bs-col sm="6">
+          <ul>
+            <li>sh:maxInclusive</li>
+            <li>sh:minLength</li>
+            <li>sh:maxLength</li>
+            <li>sh:pattern</li>
+            <li>sh:languageIn</li>
+            <li>sh:uniqueLang</li>
+            <li>sh:equals</li>
+            <li>sh:disjoint</li>
+            <li>sh:lessThan</li>
+            <li>sh:lessThanOrEquals</li>
+            <li>sh:closed</li>
+            <li>sh:ignoredProperties</li>
+            <li>sh:hasValue</li>
+            <li>sh:in</li>
+            <li>sh:sparql</li>
+          </ul>
+        </bs-col>
+      </bs-row>
+      In addition to standard constraints there is a possibility to use <code>mpqa:hasSPINQueryTemplate</code> predicate to use queries from query catalog. This predicate can be used instead of standard <code>sh:select</code> predicate.
+    </p>
+
+    <h4>Example 1</h4>
+    <p>
+      Let's say we want to check that every resource that is typed with <code>rdf:type</code> should have at least one <code>rdfs:label</code>.
+      To add this check:
+      <ol>
+        <li>Go to <b>Test Case Management</b> tab on the Data Quality page;</li>
+        <li>
+          Add the following SHACL snippet to the text editor on the <b>shacl.ttl tab</b> after <code>"@prefix" definitions</code>:
+          <mp-code-block mode="text/turtle"><![CDATA[
+rules:NoLabelForTypedEntities a sh:NodeShape ;
+  sh:targetSubjectsOf rdf:type ;
+  sh:property [ # then we define a constraint on a property
+    sh:path rdfs:label ; # specifically on rdfs:label
+    sh:minCount 1 ; # the property should have at least one value sh:message "No rdfs:label for typed entity.". # the message for the report
+  ].
+          ]]></mp-code-block>
+        </li>
+        <li>Click <b>Save Config Files</b> to save the changes.</li>
+        <li>Click <b>Run Tests</b> to trigger test cases execution. After the execution Results will be available on the <b>Results</b> tab.</li>
+      </ol>
+    </p>
+
+    <h4>Example 2</h4>
+    <p>
+        Now we want to check if there is more than one domain defined for <code>owl:ObjectProperty</code> and to consider properties only from specific ontologies. For that purpouse you can't use a simple SHACL shape, because SHACL doesn’t provide any mechanism to add additional restrictions on named graphs that are considered for shapes. But SHACL has so called <a href="https://www.w3.org/TR/shacl/#sparql-constraints">SPARQL-based Constraints</a>. Metaphactory provides extension to this mechanism and allows to use queries from the query catalog for <b>SPARQL-based Constraints</b>. For this purpouse you can use <code>mpqa:hasSPINQueryTemplate</code> predicate.
+      <ol>
+        <li>Go to <mp-link url="/sparql" title="Sparql Endpoint">SPARQL Query Interface</mp-link></li>
+        <li>Paste the following query into the SPARQL editor: 
+          <mp-code-block mode="application/sparql-query"><![CDATA[
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?this WHERE {
+  GRAPH ?graph {
+    ?o rdf:type owl:Ontology.
+  } FILTER(STRSTARTS(STR(?graph), "http://example.org"))
+  GRAPH ?graph {
+    ?this rdfs:domain ?domain.
+  }
+} GROUP BY ?this HAVING ((COUNT(DISTINCT ?domain)) > 1)
+        ]]></mp-code-block>
+        </li>
+        <li>Save the query to the query catalog by clicking the <b>Save</b> button.</li>
+        <li>The requirements for the query are exactly the same as for <code>sh:select</code> predicate, in particular <code>?this</code> projection variable should be used to specify the nodes that violate the checks. See official <a href="https://www.w3.org/TR/shacl/#sparql-constraints">SHACL documentation</a> for more details</li>
+        <li>When the query is saved it will appear in the list of the saved query in the query catalog sidebar. Now you can copy the URI of the query to the clipboard, by clicking <b>Copy Query Template IRI</b> in the drop-down menu: [[> copy-query-example]]</li>
+        <li>Now when the query is defined, you needs to create a SHACL shape that uses it;</li>
+        Go to “Data Quality” page, “Test Case Management” tab and add the following SHACL snippet to the editor on the <b>Test Case Management</b> => <b>shacl.ttl</b> tab:
+        <mp-code-block mode="text/turtle"><![CDATA[
+rules:MultipleDomainsForProperty a sh:NodeShape ;
+  sh:targetSubjectsOf rdfs:domain ;
+  sh:sparql [
+    a sh:SPARQLConstraint ;
+    sh:message """Property has multiple rdfs:domain.""" ;
+    sh:severity sh:Warning ;
+    sh:prefixes mpqa:prefixes ;
+    mpqa:hasSPINQueryTemplate <...new-query-iri...> ;
+  ].
+        ]]></mp-code-block>
+
+        <li>
+          In this example we apply the metaphactory-specific <code>mpqa:hasSPINQueryTemplate</code> predicate to use the query template that we just saved to the query catalog;
+        </li>
+        <li>Click <b>Save Config Files</b> to save the changes;</li>
+        <li>
+          Go to <b>Referenced Queries</b>, to double check that the query was successfully referenced from the test case;
+        </li>
+        <li>
+          To trigger the test case execution go to <b>Test Case Management</b> tab and click the <b>Run Tests</b> button;
+        </li>
+        <li>When the test run finishes, you can check for results in the <b>Validation Report</b>.</li>
+      </ol>
+      
+    </p>
+
+    <h3>SHACL generators</h3>
+    <p>
+        In addition to test definitions in <b>shacl.ttl</b> tab, there is a way to generate the test cases based on an ontology or some other metadata present in the repository (<b>autoGeneratorsOWL.ttl, patterns.ttl</b>  tabs). 
+    </p>
+    <p>
+        For example to check if the values that are used, for every property from the ontology, have a proper <code>rdf:type</code> that corresponds to <code>rdfs:range</code> definition you can define a SHACL shape for all properties manually. But to simplify the process you can use a parameterizable pattern to capture the reusable essence of the test case and use generators to instantiate the pattern with some values. In the given example we have the following pattern that checks if the object of the property <code>P1</code> has the corresponding type <code>T1</code> and a generator that selects all properties and corresponding ranges:
+    </p>
+    <h4>Patterns tab (Define pattern)</h4>
+    <mp-code-block mode="text/turtle"><![CDATA[
+      patterns:PROPERTY_RANGE a mpqa:ShaclPattern ;
+        mpqa:shapeType sh:NodeShape ;
+        sh:targetObjectsOf [ mpqa:parameter "P1" ] ;
+        sh:property [
+          sh:class [
+            mpqa:parameter "T1" ;
+          ];
+          sh:message "{@P1} value for the resource has different range from: {@T1}";
+        ].
+    ]]></mp-code-block>
+    <h4>Generators tab (Generate shapes with pattern)</h4>
+    <mp-code-block mode="text/turtle"><![CDATA[
+      generators:OBJECT_PROPERTY_RDFSRANGE a mpqa:ShaclGenerator ;
+        rdfs:comment """Generate all rdfs:range constraints for ObjectProperties defined in a schema""" ; 
+        mpqa:generatorQuery """
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT DISTINCT ?P1 ?T1 WHERE {
+            ?P1 rdfs:range ?T1 .
+          } ORDER BY ?P1
+        """;
+        mpqa:basedOnPattern patterns:PROPERTY_RANGE .
+    ]]></mp-code-block>
+    <p>
+      Patterns can be defined in the <b>patterns.ttl</b> tab, generators in the <b>autoGeneratorsOWL.ttl</b> tab.
+      In this example, the values of <code>sh:targetObjectOf</code> and <code>sh:class</code> are parameters that can be filled in with the values from corresponding generator.
+      In general there are multiple ways to refer to the parameter depending on the context where it is used.
+      <ul>
+        <li>
+            <code>mpqa:parameter</code> predicate is used to refer to the projection variable of the generator query. When the parameter is used in subject or object position in some triple that are part of the SHACL shape.
+        </li>
+        <li><code>{@P1}</code> syntax is used to refer to the parameter in the <code>sh:message</code> values.</li>
+        <li>
+            <code>?P1</code> syntax is used to refer to the parameter from the SPARQL query in the <code>sh:select</code> predicate.
+        </li>
+      </ul>
+    </p>
+    
+    <h2>Maintenance via REST</h2>
+    <p>
+      Test runs can be triggered from the user interface by pressing the <b>Run Tests</b> button. Alternately, the test run can be started by posting an HTTP request to the following REST URL <code>/rest/rdfunit</code>.
+      For example, a CRON job may regularly trigger the test run using the following curl command:
+      <mp-code-block mode="text/x-sh">
+        curl -X POST -k -u service-user:password '{..host..}/rest/dataquality'
+      </mp-code-block>
+    </p>
+  </div>
+</div>
+
+[[#*inline "tab-example"]]
+<h4>Example:</h4>
+<bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
+    <bs-tab event-key='1' title='Results'></bs-tab>
+    <bs-tab event-key='2' title='Referenced Queries'></bs-tab>
+    <bs-tab event-key='3' title='Test Case Management'></bs-tab>
+</bs-tabs>
+[[/inline]]
+
+[[#*inline "quality-chart-example"]]
+<mp-panel-body>
+  <semantic-chart
+    type="line"
+    sets='[{"dataSetName": "failed checks", "category": "ended", "y": "failed"}, {"dataSetName": "succeeded checks", "category": "ended", "y": "succeeded"}]'
+    styles='[{
+      "provider": "chartjs",
+      "style": {
+        "options": {
+          "legend": {
+            "display": false
+          }
+        }
+      }
+    }]'
+    query='
+    SELECT ?ended ?failed ?succeeded WHERE {
+      VALUES (?ended ?failed ?succeeded) {
+        (
+          "2019-01-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+          "5"^^<http://www.w3.org/2001/XMLSchema#double>
+          "10"^^<http://www.w3.org/2001/XMLSchema#double>
+        )
+        (
+          "2019-02-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+          "4"^^<http://www.w3.org/2001/XMLSchema#double>
+          "12"^^<http://www.w3.org/2001/XMLSchema#double>
+        )
+        (
+          "2019-03-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+          "7"^^<http://www.w3.org/2001/XMLSchema#double>
+          "8"^^<http://www.w3.org/2001/XMLSchema#double>
+        )
+        (
+          "2019-04-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+          "1"^^<http://www.w3.org/2001/XMLSchema#double>
+          "14"^^<http://www.w3.org/2001/XMLSchema#double>
+        )
+      }
+    }
+    '
+    no-result-template="<i>Something went wrong!</i>"
+  >
+  </semantic-chart>
+</mp-panel-body>
+[[/inline]]
+
+[[#*inline "validation-reports-example"]]
+<mp-panel>
+  <mp-panel-header>
+    <span>Validation Reports</span>
+  </mp-panel-header>
+  <mp-panel-body>
+    <semantic-table
+      query='
+        SELECT ?report ?conforms ?ended WHERE {
+          VALUES (?ended ?report ?conforms) {
+            (
+              "2019-01-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+              <[[resolvePrefix "Help:DataQuality"]]>
+              "false"
+            )
+            (
+              "2019-02-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+              <[[resolvePrefix "Help:DataQuality"]]>
+              "false"
+            )
+            (
+              "2019-03-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+              <[[resolvePrefix "Help:DataQuality"]]>
+              "false"
+            )
+            (
+              "2019-04-10T14:45:13.815-05:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
+              <[[resolvePrefix "Help:DataQuality"]]>
+              "false"
+            )
+          }
+        }
+      '
+        column-configuration='[
+          {"displayName":"Report", "variableName": "ended" , "cellTemplate": "{{> report}}"},
+          {"displayName":"Conformance", "variableName": "conforms" },
+          {"displayName":"Actions", "cellTemplate": "{{> actions}}" }
+        ]'
+        options='{
+          "showFilter": false
+        }'
+        no-result-template="<i>No test results available. Most likely no test cases have been executed so far.</i>"
+    >
+      <template id='report'>
+        <semantic-link iri='{{report.value}}'>Full Report - {{dateTimeFormat ended.value "LLL"}}</semantic-link>
+      </template>
+      <template id='actions'>
+        <div>
+          <button class="btn btn-xs btn-danger" style="margin-right: 8px;"><i class="fa fa-trash" aria-hidden=true></i>Delete</button> 
+        </div>
+      </template>
+    </semantic-table>
+  </mp-panel-body>
+</mp-panel>
+[[/inline]]
+
+[[#*inline "summary-example"]]
+<mp-panel>
+  <mp-panel-header>
+    <span>Summary</span>
+  </mp-panel-header>
+  <mp-panel-body>
+    <semantic-chart
+      type="bar"
+      sets='[{"dataSetName": "ReportSummary", "category": "result", "value": "count"}]'
+      query='
+        SELECT ?result ?count {
+          {
+            BIND("5" as ?count) .
+            BIND(<http://rdfunit.aksw.org/ns/core#failed> AS ?result) .
+          } UNION {
+            BIND("10" as ?count) .
+            BIND(<http://rdfunit.aksw.org/ns/core#succeeded> AS ?result) .
+          }
+        }
+    '>
+    </semantic-chart>
+  </mp-panel-body>
+</mp-panel>
+[[/inline]]
+
+[[#*inline "summary-results-example"]]
+<mp-panel>
+  <mp-panel-header>
+    <span>Results</span>
+  </mp-panel-header>
+  <mp-panel-body>
+    <div>
+      <semantic-table
+        id='table' 
+        query='
+          SELECT DISTINCT ?subject ?count WHERE {
+            VALUES (?subject ?count) {
+              ("First test case" "5" )
+              ("Second test case" "5")
+            }
+          }
+        '
+        column-configuration='[
+          {"displayName": "Check", "cellTemplate": "<semantic-link iri=\"[[resolvePrefix "Help:DataQuality"]]\">{{subject.value}}</semantic-link>"}, 
+          {"displayName": "Count", "variableName": "count"}
+        ]'
+      >
+      </semantic-table> 
+    </div>
+  </mp-panel-body>
+</mp-panel>
+[[/inline]]
+
+[[#*inline "queries-example"]]
+<mp-panel>
+  <mp-panel-body>
+    <semantic-table
+      query='
+        SELECT ?queryTemplate WHERE {
+          VALUES(?queryTemplate) {
+            ("The first query")
+            ("The second query")
+            ("e.t.c.")
+          }
+        }
+      '
+      column-configuration='[
+        {
+          "displayName": "",
+          "cellTemplate": "{{> consistencyCheck}}"
+        }
+      ]'
+      no-result-template="<Something went wrong!">
+      <template id='consistencyCheck'>
+        <div>
+          <mp-link url='/sparql'><i class="fa fa-play-circle" aria-hidden="true"></i></mp-link>
+          <mp-overlay-dialog title="Edit Consistency Check" type='modal' bs-size='large'>
+            <mp-overlay-dialog-trigger><a style='margin-left: 5px;'>{{queryTemplate.value}}</a>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <div>
+                <semantic-context repository='assets'>
+                  <mp-spin-query-template-editor iri='{{queryTemplate.value}}'></mp-spin-query-template-editor>
+                </semantic-context>
+              </div>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+        </div>
+      </template>
+    </semantic-table>
+  </mp-panel-body>
+</mp-panel>
+[[/inline]]
+
+[[#*inline "manager-example"]]
+<mp-panel>
+  <mp-panel-body>
+    <div>
+      <p>Test Status: NOT STARTED</p>
+      <div style="display: flex; justify-content: space-between; width: 560px">
+        <button class="btn btn-primary">
+          Save Config Files
+        </button>
+        <button class="btn btn-primary">
+          Run Generators
+        </button>
+        <button class="btn btn-primary">
+          Download Generated Config
+        </button>
+        <button class="btn btn-success">
+          Run Tests
+        </button>
+      </div>
+      <br /><br />
+      <bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
+        <bs-tab event-key='1' title='shacl.ttl'></bs-tab>
+        <bs-tab event-key='2' title='autoGeneratorsOWL.ttl'></bs-tab>
+        <bs-tab event-key='3' title='patterns.ttl'></bs-tab>
+      </bs-tabs>
+    </div>
+  </mp-panel-body>
+</mp-panel>
+[[/inline]]
+
+[[#*inline "copy-query-example"]]
+<bs-row>
+  <div class="dropdown open">
+    <ul class="dropdown-menu dropdown-menu-right" style="position: initial">
+      <li><a><span style="height: 20px;">Remove</span></a></li>
+      <li><a><span style="display: block; height: 20px;">Edit</span></a></li>
+      <li style="text-decoration: none;
+      color: #262626;
+      background-color: #eee;
+    "><a><span style="height: 20px;">Copy Query Template IRI</span></a></li>
+    </ul>
+  </div>
+</bs-row>
+[[/inline]]

@@ -1,0 +1,46 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li class="active">Ephedra</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Ephedra: Federation over SPARQL Repositories and Custom Services</h1>
+    <p>
+      There is often a need to query data stored in multiple RDF repositories and even augment it with information from other services. To address these hybrid information needs, we designed Ephedra: a SPARQL 1.1 federation architecture over RDF datasets and custom compute services. Ephedra operates on top of the platform repository manager and allows send SPARQL 1.1 federated queries over several repositories. Ephedra federation itself can be registered in the <semantic-link title="Repository Manager" uri='[[resolvePrefix "Help:RepositoryManager"]]'>Repository Manager</semantic-link>. After that, SPARQL queries can be sent to it both via the metaphactory SPARQL endpoint and from UI components (using semantic context).
+    </p>
+    <p>A special case involves combining information retrieved from SPARQL repositories with the output of custom services (e.g., custom indices or REST APIs). To achieve this, we need to:
+    </p>
+    <ol>
+      <li>Enable the service to be called using SPARQL and return results as SPARQL bindings.</li>
+      <li>Enable a SPARQL federation so that a service call can be combined with the data from the main repository.</li>
+    </ol>
+    <p>
+      As the basis for Ephedra implementation, we used the RDF4J Federation SAIL API reusing the common functions such as query parsing and accessing remote SPARQL
+      endpoints.
+    </p>
+    <p>
+      However, Ephedra extends the RDF4J object model and overrides the static optimization and query execution strategies to deal with hybrid queries. The Ephedra query evaluation strategy sends the sub-clauses of the query to the corresponding data sources and invokes the relevant processing services, then gathers the partial results, combines them using the union and join operations, and produces the final result set. In this way, processing becomes transparent: hybrid information needs are processed in the same way as ordinary SPARQL queries to an RDF triple store without the need to integrate related processing services at the UI level.
+    </p>
+
+    <ul>
+      <li>
+        <semantic-link iri='[[resolvePrefix "Help:EphedraRepositoryConfiguration"]]'>Federating over Platform Repositories</semantic-link>
+      </li>
+      <li>
+        <semantic-link iri='[[resolvePrefix "Help:EphedraRESTService"]]'>REST API SPARQL Service</semantic-link>
+      </li>
+      <li>
+        <semantic-link iri='[[resolvePrefix "Help:EphedraSQLService"]]'>SQL Service</semantic-link>
+      </li>
+      <li>
+        <semantic-link iri='[[resolvePrefix "Help:CustomSPARQLServices"]]'>Implementing a custom service</semantic-link>
+      </li>
+    </ul>
+  </div>
+</div>

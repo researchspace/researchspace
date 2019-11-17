@@ -1,0 +1,22 @@
+ provider-settings='{
+                   "classTreeQuery": "
+                     SELECT ?class ?label ?parent WHERE {
+                       [[#if param]]<[[param]]> owl:imports* ?ontology .[[else]]
+                         ?? a ?type. GRAPH ?graph { ?o a owl:Ontology . { ?type a ?c } UNION { ?? a ?type } }
+                         ?o owl:imports* ?ontology .
+                       [[/if]]
+                       GRAPH ?g {
+                         ?ontology a owl:Ontology .
+                         { ?class rdf:type rdfs:Class. }
+                         UNION
+                         { ?class rdf:type owl:Class. }
+                         FILTER(ISIRI(?class))
+                         OPTIONAL { ?class rdfs:label ?label. }
+                         OPTIONAL {
+                           ?class rdfs:subClassOf ?parent.
+                           FILTER(ISIRI(?parent))
+                         }
+                       }
+                     }
+                   "
+                 }'

@@ -57,7 +57,7 @@ export interface State {
  * @example
  * <rs-panel-system-holder id="panel-system-holder">
  *     <mp-page-loader id='resource-template' iri='http://example.com/demo'></mp-page-loader>
- *     <rs-iiif-viewer-panel [[> rsp:IIIFConfig]]
+ *     <rs-iiif-viewer-panel [[> :IIIFConfig]]
  *        query="SELECT ?image WHERE { ?subject crm:P138i_has_representation ?image }">
  *     </rs-iiif-viewer-panel>
  * </rs-panel-system-holder>

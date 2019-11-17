@@ -1,0 +1,188 @@
+<style>
+  .panel-title > a, .panel-title > small, .panel-title > .small, .panel-title > small > a, .panel-title > .small > a {
+    color: #008cba;
+	}
+</style>
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" data-uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Installation" iri="http://help.metaphacts.com/resource/Installation">Installation</semantic-link>
+  </li>
+  <li class="active">How to connect metaphactory to Stardog</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>How to connect metaphactory to Stardog</h1>
+    <p>
+    	<i>This article explains how to connect metaphactory to an existing installation of Stardog.</i>
+    </p>
+    <h2>Contents</h2>
+    <ul style="list-style-type:none">
+      <li>
+     		<mp-anchor to="#1" animate='{"offset": -100, "duration": 100}' className="nav-link">
+            1. Install metaphactory
+        </mp-anchor>
+      </li>
+      [[!-- need to be properly integrated / aligned with main installation instruction 
+      <ul style="list-style-type:none">
+      	<li>
+          <mp-anchor to="#1a" animate='{"offset": -100, "duration": 100}' className="nav-link">
+            1a. Install metaphactory via docker
+        	</mp-anchor>
+        </li>
+        <li>
+          <mp-anchor to="#1b" animate='{"offset": -100, "duration": 100}' className="nav-link">
+            1b. Install metaphactory using the zip distribution
+        	</mp-anchor>
+        </li>
+      </ul>
+      --]]
+      <li>
+     		<mp-anchor to="#2" animate='{"offset": -100, "duration": 100}' className="nav-link">
+            2. Connect metaphactory to Stardog
+        </mp-anchor>
+      </li>
+      <li>
+     		<mp-anchor to="#3" animate='{"offset": -100, "duration": 100}' className="nav-link">
+            3. Import and Explore data
+        </mp-anchor>
+      </li>
+    </ul>
+
+
+    <h2 id="1">1. Install metaphactory</h2>
+    
+    Follow the general <semantic-link title="Installation" iri="http://help.metaphacts.com/resource/Installation">Installation</semantic-link> guidelines to start the metaphactory docker container. Omit the <code>-Dconfig.environment.sparqlEndpoint=</code> parameter when starting the metaphactory container.
+    [[!-- need to be properly integrated / aligned with main installation instruction 
+    <blockquote>
+      At metaphacts we love technology and have been advocating container based technologies from the very beginning.
+      Therefore, we recommend to run our metaphactory platform on docker.
+			However, we understand that this is not always possible or easy in larger corporates. If you do not have access to docker, please contact metaphacts for access to alternative distributions (e.g. zip file) and follow the instructions 1b).
+    </blockquote>
+    <h3 id="1a">1a. Install metaphactory via docker</h3>
+    
+    <h4>Prerequisites</h4>
+    <ul>
+      <li>Account for metaphacts docker registry</li>
+      <li>Docker installed</li>
+      <li>
+        Permissions to open a port (default is <code>10214</code>) on your local/host machine and/or respective firewalls.
+      </li>
+    </ul>
+
+    <h4>Installation</h4>
+    <bs-panel header="> Expand Instructions" collapsible="true">
+      <ol>
+        <li>
+          Run <code>docker login docker.metaphacts.com</code> .
+          Use your email as username and the password, which you have set to activate your account.  
+        </li>
+        <li>
+          Run <code>docker create --name metaphactory-data docker.metaphacts.com/release/platform-data:2.4.0</code>
+        </li>
+        <li>
+          Run platform container with data container mounted:<br>
+          <code>
+          docker run --name metaphactory -d --restart=always -p 10214:8080 --link blazegraph:blazegraph --volumes-from metaphactory-data --env JAVA_OPTS="-Dcom.metaphacts.config.baselocation=/config -DruntimeDirectory=/ -Dconfig.environment.appsDirectory=/apps" docker.metaphacts.com/release/platform:2.4.0
+          </code>
+        </li>
+        <li>
+          It may take a minute until the container is up and running. You may want to check the overall container status with <code>docker ps</code> or by looking into the startup logs <code>docker logs metaphactory</code>.
+        </li>
+        <li>
+          Your metaphactory installation should now be accessible from within your browser
+          <a href="http://127.0.0.1:10214/" target="_blank">http://127.0.0.1:10214/</a>. <br>
+          Change <code>127.0.0.1</code> if you installed metaphactory on a remote machine.<br>
+          The default login is: <code>admin:admin</code>.
+        </li>
+      </ol>
+    </bs-panel>
+    
+    
+    <h3 id="1b">1b. Install metaphactory using the zip distribution</h3>
+    
+   	<h4>Prerequisites</h4>
+    <ul>
+      <li>
+        Java JVM, version 8, i.e. running <code>java -version</code> should return <code>java version "1.8.x"</code>.
+      </li>
+      <li>
+        Permissions to open the port <code>10214</code> on your local/host machine and/or respective firewalls.
+      </li>
+    </ul>
+    
+    <h4>Installation</h4>
+    <bs-panel header="> Expand Instructions" collapsible="true">
+      <ol>
+        <li>Unzip the zip distribution</li>
+        <li>Navigate into the folder on the unix (<code>cd /.../metaphactory-2.4.0.zip</code>) or windows (<code>cd \...\	metaphactory-2.4.0.zip</code>)</li>
+        <li>Run <code>sh ./start.sh</code> (on unix) or <code>bat ./start.bat</code> (on windows).</li>
+        <li>
+          After a minute, your metaphactory installation should be accessible from within your browser
+          <a href="http://127.0.0.1:10214/" target="_blank">http://127.0.0.1:10214/</a>. Change <code>127.0.0.1</code> if you installed metaphactory on a remote machine.<br>
+          The default login is: <code>admin:admin</code>.
+        </li>
+      </ol>
+    </bs-panel >
+    --]]
+    <h2 id="2">2. Connect metaphactory to Stardog</h2>
+    <h4>Prerequisites:</h4>
+    <ul>
+      <li>Stardog installed</li>
+      <li>Stardog accessible over the network (respective dns/ip/ports need to be accessible)</li>
+      <li>A database created in Stardog. In the instructions below, we assume the database name is <code>myDB</code></li>
+      <li><b>Important:</b> The database in Stardog needs to be configured to <code>query.all.graphs=true</code><b>!!!</b> Please note that this property is by default set to false if your create a new database in Stardog (c.f. <a href='https://www.stardog.com/docs/#_why_don_t_my_queries_work'>https://www.stardog.com/docs/#_why_don_t_my_queries_work</a>).</li>
+    </ul>
+    
+    <b>On your initial login</b>, you will see the following screen, requesting you to configure the repository/database connection:<br>
+    <p>
+      <img src="/images/help/ConfigureDefaultRepositoryStardog.png" width="80%">
+    </p>
+    
+    
+    
+Please copy the configuration snippet below to the configuration panel and replace the existing template/config:
+      <mp-code-block data-mode="text/turtle">
+<![CDATA[
+@prefix rep: &#x3C;http://www.openrdf.org/config/repository#&#x3E; .
+@prefix sail: &#x3C;http://www.openrdf.org/config/sail#&#x3E; .
+@prefix sr: &#x3C;http://www.openrdf.org/config/repository/sail#&#x3E; .
+@prefix rdfs: &#x3C;http://www.w3.org/2000/01/rdf-schema#&#x3E; .
+@prefix mph: &#x3C;http://www.metaphacts.com/ontologies/platform/repository#&#x3E; .
+ 
+[] a rep:Repository ;
+        rep:repositoryID &#x22;default&#x22; ;
+        rdfs:label &#x22;SPARQL repository with basic authentication&#x22; ;
+        rep:repositoryImpl _:node1c17gvqn7x28 .
+ 
+_:node1c17gvqn7x28 rep:repositoryType &#x22;metaphactory:SPARQLBasicAuthRepository&#x22; ;
+        &#x3C;http://www.openrdf.org/config/repository/sparql#query-endpoint&#x3E; &#x3C;http://stardog:5820/myDB/query&#x3E; ;
+        &#x3C;http://www.openrdf.org/config/repository/sparql#update-endpoint&#x3E; &#x3C;http://stardog:5820/myDB/update&#x3E; ;
+        mph:quadMode true ;
+        mph:username &#x22;admin&#x22; ;
+        mph:password &#x22;admin&#x22; .
+]]>
+      </mp-code-block>
+    <p>
+      <b>Please substitute</b> the Stardog database connection URLs <code>http://stardog:5820/myDB/query</code> <b>and</b> <code>http://stardog:5820/myDB/update</code> with your installation specific values.
+    </p>
+    <p>
+      In particular, you will need to replace the hostname alias <code>stardog</code> with your hostname or IP. <code>5820</code> is the default Stardog port, i.e. you will only need to change it if you are using a different port for your Stardog installation.
+      <code>myDB</code> is the name of the database, which we assume you have created in Stardog (c.f. Prerequisites). Change it to your database name.
+    Finally, replace the values for username and password respectively, i.e. you are not using Stardog's default settings.
+    </p>
+    <p>
+      Afterwards click "Update Config". <b>You will need to restart metaphactory</b> to activate the new setting.
+     If your are using the docker distribution,  you can simply run <code>docker restart metaphactory</code>. With the zip distribution you will need to stop the current metaphactory process (<code>crtl + c</code>) and then run the platform <code>start.(sh|bat)</code> script again.
+    </p>
+    <h2 id="3">3. Import and Explore data</h2>
+    Do the <semantic-link title="Tutorial" iri='[[resolvePrefix "Help:Tutorial"]]'>Tutorial</semantic-link>, i.e. load data and explore your data using the <semantic-link title="Ontodia" iri='http://www.metaphacts.com/resource/assets/OntodiaDiagrams'>Ontodia</semantic-link> diagramming component.
+    
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" iri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li class="active">Operations and Troubleshooting</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Operations and Troubleshooting</h1>
+		<p>
+      The information here applies to installations based on docker-compose, which includes the standard Amazon AMIs distributed through AWS Marketplace.<br>
+      For Amazon AMIs it is required to first logon to the EC2 instance via ssh with ec2-user. Also, please run all docker commands with <code>sudo</code> (e.g. <code>sudo docker ps</code>).<br>
+      Please note that you might have to adapt slightly for kubernetes or manual docker installations.<br>
+      <b>The examples provided assume that your deployment has been named "ec2", which is the default for the Amazon AMIs distributed by metaphacts.</b>
+    </p>
+    <h2>Minimum System Requirements</h2>
+    Metaphactory requires the following minimum setup to run:
+    <ul>
+      <li><b>runtime-data volume</b> of minimum 100MB</li>
+      <li>Minimum of 500MB for the <b>container on disk</b> (352MB read-only container layers + 134MB of container data)</li>
+      <li>Minimum of 1GB RAM for the metaphactory container, while 2GB are recommended</li>
+    </ul>
+    
+    <h2>Backup</h2>
+    All changes in metaphactory are persistet in the <code>/runtime-data</code> folder.
+    This includes, but is not limited to:
+    <ul>
+      <li>Modified and new instance and template pages: <code>/data/templates</code></li>
+      <li>Repository configuration: <code>/config/repositories</code></li>
+      <li>Ephedra service definitions: <code>/ldp/assets</code></li>
+      <li>Page layout, images and style sheets: <code>/config/page-layout</code> and <code>/assets</code></li>
+      <li>Property settings for UI, environment, global, security, namespace prefixes and data quality configuration: <code>/config</code></li>
+      <li>Query catalog: <code>/ldp/assets</code></li>
+    </ul>
+    It is recommended to store backups of this folder in regular intervals.<br>
+    Backups can be retrieved from the filesystem with any backup client or via HTTP REST access with 
+    <code>curl -u admin http://127.0.0.1:10214/rest/admin/storages/runtime/zip > $(date +%Y%m%d%H%M%S)_metaphactory_runtime_backup.zip</code><br>
+    Restore can be performed into a new instance by just copying the content into the <code>/runtime-data</code> volume or folder.<br>
+    Restart is required after updating the <code>/runtime-data</code> folder.
+    
+    <h2>Change JVM parameters</h2>
+    The JVM parameters are set in the environment of the container and should be modified in the docker-compose environment configuration or manual docker commands that are used to start the containers.<br>
+    For Amazon AMIs please check <code>/opt/metaphactory/ec2-service</code> for the default service configuration.<br>
+    It is recommended to only modify the <code>JAVA_OPTS</code> parameter in the <code>docker-compose.overwrite.yml</code> file, by commenting in the relevant section, and not modify any of the actual compose files.<br>
+    The default <code>JAVA_OPTS</code> setting is <code>-Xmx1g</code> to limit the heap size to 1GB.
+    Additional parameters can be set in the <code>METAPHACTORY_OPTS</code> parameter, which will be added to the <code>PLATFORM_OPTS</code> parameter that is used by the container.<br>
+    This can for example be used to increase the logging level with <code>-Dlog=log4j2-trace2</code> to the maximum level.
+
+    <h2>Logs</h2>
+    Relevant logs can be retrieved via <code>docker logs</code> command.
+    For example <code>docker logs ec2-metaphactory</code> will return the logs for the ec2 deployment that is defined by default in the Amazon AMIs.
+    
+    <h2>Advanced Troubleshooting</h2>
+    It is possible to connect to the metaphactory container for more advanced troubleshooting.<br><br>
+    <b>Please reach out to <a href="mailto:support@metaphacts.com">support@metaphacts.com</a> before doing so.</b><br><br>    
+    The required command to connect to the container is <code>docker exec -it ec2-metaphactory sh</code> or on kubernetes <code>kubectl exec -it metaphactory -- sh</code> will provide the same result.<br>
+    The connection can be closed with <code>exit</code>.
+    
+  </div>
+</div>
+

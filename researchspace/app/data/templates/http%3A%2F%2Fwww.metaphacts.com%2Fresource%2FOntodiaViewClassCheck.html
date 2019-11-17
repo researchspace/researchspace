@@ -1,0 +1,17 @@
+                 [[!-- check to see if we have more then 1000 classes in the database, if so show only top level classes in ontodia class selector --]]
+                 [[#if (ask "ASK {{ SELECT (COUNT(?class) as ?count) WHERE { BIND(<http://dummy> AS ?dummy) { SELECT ?class {{ ?class rdf:type rdfs:Class. } UNION { ?class rdf:type owl:Class. }} LIMIT 1001}} GROUP BY ?dummy HAVING (COUNT(?class) > 1000)}}")]]
+                   provider-settings='{
+                     "classTreeQuery": "
+                       SELECT ?class ?label ?parent WHERE {
+                        { ?class rdf:type rdfs:Class. }
+                        UNION
+                        { ?class rdf:type owl:Class. }
+                        FILTER(ISIRI(?class))
+                        FILTER NOT EXISTS {
+                          ?class rdfs:subClassOf ?p.
+                        } 
+                        OPTIONAL { ?class rdfs:label ?label. }
+                      } LIMIT 1000                 
+                     "
+                   }'
+                 [[/if]]

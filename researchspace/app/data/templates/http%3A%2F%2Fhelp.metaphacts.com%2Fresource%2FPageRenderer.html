@@ -1,0 +1,82 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation Overview" uri="http://help.metaphacts.com/resource/DocumentationOverview">Documentation Overview</semantic-link>
+  </li>
+  <li class="active">
+    Page Renderer
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Page Renderer - Integration into external web applications</h1>
+    <p>
+      metaphactory provides a JavaScript API for rendering metaphactory pages into external 3rd party web applications.
+    </p>
+    <p>
+      The metaphactory pages may embed standard metaphactory web-components, but will be rendered into a single DOM node without the metaphactory platform header and footer. All HTTP requests will be send to the (proxied) metaphactory instance. As such it is possible to expose and embed certain metaphactory components selectively into a 3rd party web application.
+    </p>
+    
+    <h2>Configuration</h2>
+    <p>
+      Let's assume your 3rd party web application is going to be deployed at <b>https://app.example.com</b>.
+    </p>
+    <p>
+      The easiest way to make metaphactory accessible from the app (i.e. to handle CORS, authentication etc.) is to proxy all requests, with nginx or apache from <b>https://app.example.com/metaphactory</b> to the corresponding metaphactory instance.
+    </p>
+    <p>
+      The following scripts need to be included into the 3rd party application:
+    </p>
+    <mp-code-block>
+<![CDATA[
+<script type='text/javascript' src='https://app.example.com/metaphactory/rest/template/vendor'></script>
+<script type='text/javascript' src='https://app.example.com/metaphactory/assets/page-renderer-bundle.js'></script>
+<script type='text/javascript'>window.metaphactory.init('https://app.example.com/metaphactory');</script> 
+]]>
+    </mp-code-block>
+    
+    <p>Afterwards, metaphactory pages can be rendered into DOM elements controlled by a 3rd party application with the following snippet:</p>
+    
+        <mp-code-block>
+<![CDATA[
+<script type='text/javascript'>
+  window.metaphactory.render('https://someresource', {'param1': 'true'}, document.getElementById('some-dom-element'));
+</script>
+]]>
+    </mp-code-block>
+    
+    Complete example, including styling:
+    <mp-code-block>
+<![CDATA[
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type='text/javascript' src='https://app.example.com/metaphactory/rest/template/vendor'></script>
+    <script type='text/javascript' src='https://app.example.com/metaphactory/page-renderer-bundle.js'></script>
+    <script type='text/javascript'>
+      window.metaphactory.init('https://app.example.com/metaphactory');
+    </script> 
+    <link href='https://app.example.com/metaphactory/assets/no_auth/basic-styles.css' rel='stylesheet' type='text/css'>
+    <meta charset='UTF-8'>
+    <title>My External Application</title>
+  </head>
+  <body>
+    <!-- here the metaphactory page with the IRI https://someresource' will be rendered-->
+    <div id='some-dom-element'>
+    </div>
+  </body>
+  <script type='text/javascript'>
+    window.metaphactory.render('https://someresource', {'param1': 'true'}, document.getElementById('some-dom-element'));
+  </script>
+</html>
+]]>
+    </mp-code-block>
+
+  </div>
+</div>

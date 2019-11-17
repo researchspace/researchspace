@@ -41,7 +41,7 @@ targets['local'] = {
   options: {
     dataset: 'bm',
     loginUrl: 'http://localhost:10214/login',
-    searchUrl: 'http://localhost:10214/resource/rsp:Search',
+    searchUrl: 'http://localhost:10214/resource/:Search',
     username: process.env.RS_DEVELOP_USERNAME || 'admin',
     password: process.env.RS_DEVELOP_PASSWORD || 'admin'
   },

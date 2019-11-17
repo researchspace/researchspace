@@ -1,0 +1,90 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" iri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li class="active">Installation and Deployment</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Installation and Deployment</h1>
+
+    <h2>Deployment Modes</h2>
+    <p>For the time being two deployment artifacts are available:</p>
+    <ul>
+      <li><b>Docker Image</b>  - Recommended and well tested deployment mode.
+        Easy to update and migrate once new releases are available. Takes just a few minutes to login to metaphacts registry, pull the platform image and start the container.<br>
+        <b>Please contact <a href="mailto:support@metaphacts.com">support@metaphacts.com</a> in order to request access to the docker registry. </b>
+      </li>
+      <li>
+        <b>AWS EC2</b> - Ready-to-use Amazon AWS EC2 machine image (AMI), accessible through <a href="https://aws.amazon.com/marketplace/seller-profile?id=a04eaa90-2616-469a-a304-96d35bd77641" target="_blank">AWS Marketplace</a>
+      </li>
+    </ul>
+
+    <b>Please let us know if neither docker nor AWS is an option for you.</b>
+    
+    <h2>Docker Deployment</h2>
+    <p>Please verify the following prerequisites before proceeding</p>
+    <ul>
+      <li>Docker Version >= 17.x - Follow the official documentation and test by running <code>docker --version</code></li>
+      <li>Docker-Compose Version >= 1.14 - Test by running <code>docker-compose --version</code></li>
+    </ul>
+    <p>
+      Instead of deploying docker containers manually, we strongly recommend to use docker-compose. With docker-compose you can easily manage one or several deployments on your docker host, without copy-pasting docker commands manually.
+    </p>
+    
+    <h3>Deployment via docker-compose (RECOMMENDED)</h3>
+    <p>
+      You will find various examples and templates in our public <a href="https://bitbucket.org/metaphacts/metaphactory-docker-compose" target="_blank">docker-compose GIT repository</a>, including pre-defined service stacks for connecting to graph databases like Blazegraph, Amazon Neptune or Stardog.
+    </p>
+    Please read the <b><a href="https://bitbucket.org/metaphacts/metaphactory-docker-compose/src/master/README.md" target="_blank">README.md</a></b> in our GIT repository for the various metaphactory deployment options. The simplest  setting is to deploy metaphactory with Blazegraph; on a local machine, without additional Nginx proxy (i.e. without additional security and ingress routing, which is <b>not</b> recommended in production).
+    
+    <h3>Deployment via docker (manually)</h3>
+    <ol>
+      <li>Login into docker hub with the account that has been activated for the private metaphactory repository: <code>docker login</code></li>
+      <li>Pull latest platform (and Blazegraph image)</li>
+      <ul>
+        <li><code>docker pull metaphacts/blazegraph-basic:2.2.0-20160908.003514-6</code></li>
+        <li><code>docker pull metaphacts/metaphactory:3.1.0</code></li>
+      </ul>
+      <li>Create network for container interconnect</li>
+      <ul>
+        <li><code>docker network create metaphactory_network</code></li>
+      </ul>
+      <li>(Optional) Prepare and run Blazegraph container</li>
+      <ul>
+        <li>Run Blazegraph container 
+          <code>docker run --name blazegraph -d --restart=always --network=metaphactory_network --env JAVA_OPTS="" -v /blazegraph-data metaphacts/blazegraph-basic:2.2.0-20160908.003514-6</code>
+        </li>
+      </ul>
+      <li>Prepare and Run Platform container</li>
+      <ul>
+        <li>Run platform container: <code>docker run --name metaphactory -d --restart=always -p 10214:8080 -v /runtime-data --env JAVA_OPTS="" --network=metaphactory_network --env PLATFORM_OPTS="-Dconfig.environment.sparqlEndpoint=http://blazegraph:8080/blazegraph/sparql -Dlog4j.configurationFile=file:///var/lib/jetty/webapps/etc/log4j2.xml" metaphacts/metaphactory:3.1.0</code>
+        </li>
+      </ul>
+      <li>Open <a href="http://127.0.0.1:10214/" target="_blank">http://127.0.0.1:10214/</a> in your browser. The default login is: <code>admin/admin</code></li>
+    </ol>
+    <h3>Connecting to an existing SPARQL 1.1 database</h3>  
+    <p>
+      To use a different, SPARQL 1.1 compliant graph database you can simple skip the docker commands related to Blazegraph in the previous section and set <code>-Dconfig.environment.sparqlEndpoint=</code> to a different SPARQL endpoint when starting the metaphactory runtime container.
+    </p>
+    <p>
+      <b>Please note:</b> If you want to connect to an existing Stardog, GraphDB, Neptune or Virtuoso instance, your SPARQL endpoint is most likley HTTP Basic Auth protected. In this case you will have to omit the <code>-Dconfig.environment.sparqlEndpoint=</code> parameter. After the platform started and on initial login, you will be asked to configure the connection to your default repository via the <semantic-link title="Repository Manager" iri='[[resolvePrefix "Help:RepositoryManager"]]'>Repository Manager</semantic-link>. 
+		</p>
+    See also:
+		<ul>
+        <li>
+          <semantic-link title="How to connect to Stardog" iri='[[resolvePrefix "Help:HowToConnectToStardog"]]'>
+            How to connect to Stardog
+          </semantic-link>
+      	</li>
+		</ul>
+   
+    <h2>Amazon AWS EC2</h2>
+    <p>Please refer to <a href="https://aws.amazon.com/marketplace/seller-profile?id=a04eaa90-2616-469a-a304-96d35bd77641" target="_blank">AWS Marketplace</a> for further details. You may also be interested in <a href="http://metaphacts.com/amazon-neptune" target="_blank">our offerings ontop of the new Amazon Neptune fully managed graph database service</a>. </p>
+  </div>
+</div>
+

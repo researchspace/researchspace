@@ -1,0 +1,456 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Ephedra" uri='[[resolvePrefix "Help:Ephedra"]]'>Ephedra</semantic-link>
+  </li>
+  <li class="active">REST API SPARQL Service</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+
+    <h1>Ephedra: REST API SPARQL Service</h1>
+
+    <p>
+  		The generic procedure for creating a <semantic-link title="Ephedra" uri='[[resolvePrefix "Help:CustomSPARQLServices"]]'>SPARQL wrapper for a custom compute service</semantic-link> allows including any arbitrary custom computation procedure into the platform SPARQL federation.
+    </p>
+    <p>
+      However, in many cases compute services are exposed as services conforming to some popular convention like REST. For such standardized REST API services that return JSON as output, Ephedra already contains a built-in default wrapper implementation that allows connecting to an exposed REST API. 
+    </p>
+    <p>
+      With this default REST API wrapper, one does not need to build custom Java implementations of RDF4J concepts: all required settings can be declaratively defined in the repository and service configuration files.
+    </p>
+    <p>
+  As an example, here we provide a description of a REST API wrapper that can connect to a public OpenStreetMap API, submit a keyword search string, retrieve matching entities, their coordinates in the WKT format, and a corresponding Wikidata ID.
+    </p>
+    <p>
+  Such service can be invoked using an HTTP GET request: <code>https://nominatim.openstreetmap.org/search?q=Walldorf&polygon_text=1&format=json&extratags=1</code>.
+  The output returned by this call will be a JSON array of the following format:
+    </p>
+
+<mp-code-block mode='application/json'>
+<![CDATA[
+  [{"place_id":"177969548",
+  	"licence":"Data © OpenStreetMap contributors, ODbL 1.0. https:\/\/osm.org\/copyright",
+  	"osm_type":"relation",
+  	"osm_id":"453404",
+  	"boundingbox":["49.2753412","49.327009","8.5952745","8.6685701"],
+  	"lat":"49.3038134",
+  	"lon":"8.6433518",
+  	"display_name":"Walldorf, Rhein-Neckar-Kreis, Regierungsbezirk Karlsruhe, Baden-Württemberg, 69190, Germany",
+  	"class":"boundary",
+  	"type":"administrative",
+  	"importance":0.21418824546743,
+  	"icon":"https:\/\/nominatim.openstreetmap.org\/images\/mapicons\/poi_boundary_administrative.p.20.png",
+  	"geotext":"POLYGON((8.5952745 49.2969561,...,8.5952745 49.2969561))",
+  	"extratags":{
+  		"place":"town",
+  		"wikidata":"Q22872",
+  		"wikipedia":"de:Walldorf (Baden)",
+  		"population":"14663",
+  		"name:prefix":"Stadt"}
+  	},
+  	...
+  ]
+]]>
+</mp-code-block>
+
+Thus, our service wrapper needs to:
+  <ul>
+  <li>generate an HTTP request with parameters <code>q</code>, <code>polygon_text</code>, <code>format</code>, <code>extratags</code></li>
+  <li>extract from the output JSON array the values of properties <code>display_name</code>, <code>geotext</code>, and <code>extratags/wikidata</code> and use them to bind variables in a SPARQL query</li>
+</ul>
+    
+<h2>Describing the REST Service Signature</h2>
+
+    <p>
+      The service descriptor file needs to define which SPARQL patterns will be accepted within the SERVICE clause and how input parameters and output variables will be specified in these SPARQL patterns. 
+    </p>
+
+Below we provide an example service descriptor file for the OpenStreetMap API:
+<mp-code-block mode='text/turtle'>
+<![CDATA[
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX osm: <http://www.metaphacts.com/ontologies/osm#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.metaphacts.com/ontologies/platform/service/custom#>
+
+ephedra:openstreetmap a ephedra:Service ;
+	sail:sailType "metaphacts:RESTService" ;
+	rdfs:label "A wrapper for the OpenStreetMap service." ;
+	ephedra:hasSPARQLPattern (
+		[
+			sp:subject :_results ;
+			sp:predicate osm:hasSearchTerm ;
+			sp:object :_q
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate osm:polygonText ;
+			sp:object :_polygon_text
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate osm:format ;
+			sp:object :_format
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate osm:extratags ;
+			sp:object :_extratags
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate rdfs:label ;
+			sp:object :_display_name
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate osm:wktGeotext ;
+			sp:object :_geotext
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate osm:wikidataID ;
+			sp:object :_wikidataID
+		]
+	) ;
+	spin:constraint
+	[
+		a spl:Argument ;
+		rdfs:comment "search term" ;
+		spl:predicate :_q ;
+		spl:valueType xsd:string
+    ] ;
+    spin:constraint
+	[
+		a spl:Argument ;
+		rdfs:comment "polygon text flag" ;
+		spl:predicate :_polygon_text ;
+		spl:defaultValue "1"^^xsd:integer ;
+		spl:valueType xsd:integer
+    ] ;
+    spin:constraint
+	[
+		a spl:Argument ;
+		rdfs:comment "format" ;
+		spl:predicate :_format ;
+		spl:valueType xsd:string
+    ] ;
+    spin:constraint
+	[
+		a spl:Argument ;
+		rdfs:comment "extra tags flag" ;
+		spl:predicate :_extratags ;
+		spl:valueType xsd:integer
+    ] ;
+    spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "results" ;
+		spl:predicate :_results ;
+		spl:valueType rdfs:Resource;
+		ephedra:jsonPath "$"
+	] ;
+	spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "display name" ;
+		spl:predicate :_display_name ;
+		spl:valueType xsd:string;
+		ephedra:jsonPath "$.display_name"
+	] ;
+	spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "geotext" ;
+		spl:predicate :_geotext ;
+		ephedra:jsonPath "$.geotext" ;
+		spl:valueType geo:wktLiteral
+	] ;
+	spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "wikidataID" ;
+		spl:predicate :_wikidataID ;
+		ephedra:jsonPath "$.extratags.wikidata" ;
+		spl:valueType xsd:string
+	] .
+]]>
+</mp-code-block>
+
+		<p>
+			This service requires 4 input parameters: <code>q</code>, <code>polygon_text</code>, <code>format</code>, <code>extratags</code>.
+    </p>
+    <p>
+			In the service descriptor these input parameters are described using corresponding <code mode='text/turtle'>spl:Argument</code> instances, objects of the <code mode='text/turtle'>spin:constraint</code> property.
+    </p>
+    <p>
+			Note that the local name of the identifier of each argument will exactly correspond to the parameter name in the HTTP request (without the '_' sign). For instance, the value of the <code mode='text/turtle'>:_q</code> argument will be passed using the <code>&q=...</code> parameter in the HTTP request. 
+    </p>
+    <p>
+      It is possible to specify a default value for an input parameter using the <code>spl:defaultValue</code> property. It will be passed to the service if no value was provided via the SPARQL query.
+    </p>
+
+The SPARQL pattern definition
+<mp-code-block mode='text/turtle'>
+<![CDATA[
+[
+	sp:subject :_results ;
+	sp:predicate osm:hasSearchTerm ;
+	sp:object :_q
+]
+]]>
+</mp-code-block>
+means that when receiving a SPARQL expression 
+
+<mp-code-block mode='application/sparql-query'>
+<![CDATA[
+[
+SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#openstreetmap> {
+	?root osm:hasSearchTerm "Walldorf" .
+	...
+}
+]]>
+</mp-code-block>
+
+    <p>
+      the Ephedra REST service wrapper will interpret the literal "Walldorf" 
+      as a value of the argument <code mode='text/turtle'>:_q</code>
+      and pass it in a REST HTTP GET request as <code>&q=Walldorf</code>.
+    </p>
+    <p>
+      Similarly, the <code mode='text/turtle'>spin:Column</code> instances, 
+      objects of the <code mode='text/turtle'>spin:column</code> property 
+      are used to map the fields in the output JSON object to unbound variables in the SPARQL query.
+    </p>
+
+    <p>
+      To specify the relative path to the required JSON field the service descriptor 
+      uses the <a href="http://goessner.net/articles/JsonPath/">JsonPath</a> format. 
+      The JsonPath expression for an output parameter is provided via the 
+      <code mode='text/turtle'>service:jsonPath</code> property.
+    </p>
+
+    <p>
+The Ephedra REST wrapper assumes that the output represents a list of one or more binding sets ("rows"), where each
+binding set contains bindings for one or more output variables. 
+    </p>
+    <p>
+If the output JSON value represents an array, the list will contain one binding set per array element, while if the 
+JSON value is an object, the output list will contain only one binding set. Each binding set "row" will always 
+contain a binding for the output parameter <code mode='text/turtle'>results</code>. 
+    </p>
+    <p>
+Note that this parameter must appear as subject in all SPARQL patterns, otherwise an error will be thrown.
+The output value that will be bound to this parameter will always be a randomly generated blank node 
+and will not carry any information by itself beyond being an internal row identifier.
+    </p>
+
+    <p>
+The <code mode='text/turtle'>results</code> parameter represents a root object to extract other output parameters.
+By default, it will be mapped to the root node of the JSON object (<code>$</code> in the JsonPath format).
+However, it is possible to connect it to an arbitrary object in the JSON tree by specifying the corresponding 
+JsonPath expression. The JsonPath locations of all other output parameters will be calculated relative to this root.
+    </p>
+
+    <p>
+For all other output parameters, the JsonPath expression will be used 
+to extract the required value from the JSON root object and <code mode='text/turtle'>spl:valueType</code>
+will define the RDF type into which this value will be converted. The JSON value returned by a 
+JsonPath expression for a non-root output parameter must always be an atomic value and cannot be a JSON object 
+or an array.
+    </p>
+
+For a SPARQL query with a SERVICE clause like
+<mp-code-block mode='application/sparql-query'>
+<![CDATA[
+[
+SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#openstreetmap> {
+	?root osm:hasSearchTerm "Walldorf" .
+	...
+	?root rdfs:label ?label .
+}
+]]>
+</mp-code-block>
+the Ephedra wrapper will perform the following actions:
+<ul>
+  <li>The literal "Walldorf" will be passed as the value for the parameter <code>q</code>.</li>
+  <li>The <code>results</code> output parameter will be linked to the <code>root</code> variable.</li>
+  <li>The <code>display_name</code> output parameter will be linked to the <code>label</code> variable.</li>
+  <li>After receiving the JSON results array, the <code>root</code> variable will get bound for each array element.</li>
+  <li>For each element of the array, the <code>$.display_name</code> JsonPath expression will be applied to 
+  extract the values of the <code>display_name</code> output parameter.</li>
+  <li>The extracted values will be converted to RDF literals and bound to the <code>label</code> variable.</li>
+</ul>
+
+
+<h2>Configuring the OpenStreetMap REST Service Repository</h2>
+
+While the service descriptor defines the SPARQL service signature and mappings to the HTTP request and JSON output, 
+the repository configuration must provide the installation parameters.
+
+<mp-code-block mode='text/turtle'>
+<![CDATA[
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX osm: <http://www.metaphacts.com/ontologies/osm#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX repo: <http://www.openrdf.org/config/repository#>
+PREFIX reposail: <http://www.openrdf.org/config/repository/sail#>
+PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.metaphacts.com/ontologies/platform/service/custom#>
+
+[] a repo:Repository ;
+	repo:repositoryID "openstreetmap" ;
+	rdfs:label "Repository to test the generic service wrapper applied to OpenStreetMap." ;
+	repo:repositoryImpl [
+		repo:repositoryType "openrdf:SailRepository" ;
+		reposail:sailImpl [
+			sail:sailType "metaphacts:RESTService" ;
+			ephedra:serviceURL "https://nominatim.openstreetmap.org/search" ;
+			ephedra:httpMethod "GET" ;
+			ephedra:httpHeader [
+				ephedra:name "Accept" ;
+				ephedra:value "application/json"
+			] ;
+			ephedra:implementsService ephedra:openstreetmap 
+		]  
+	] .
+]]>
+</mp-code-block>
+
+The meaning of the SAIL repository parameters are the following:
+<ul>
+  <li>The value of the <code>ephedra:implementsService</code> property must be the same URI as the root service descriptor instance.</li>
+  <li>The <code>sail:sailType</code> must always correspond to the default Ephedra REST service wrapper: <code>metaphacts:RESTService</code>.</li>
+  <li>The <code>ephedra:serviceURL</code> must point to the target URL of the REST API. The URL can include placeholders for path parameters. For example, there  exists a public API for finding similar chemical structures: <code>https://www.ebi.ac.uk/chembl/api/data/similarity/{simile}/{similarity}</code>. This API includes two of its parameters with names <code>simile</code> and <code>similarity</code> as elements of the URL path. When invoking the API, these placeholders will be replaced with the corresponding values.</li>
+  <li>The <code>ephedra:httpMethod</code> must determine the HTTP request type ("GET" or "POST"). 
+  If no value provided, "GET" is used as a default.</li>
+  <li>The <code>ephedra:inputFormat</code> property determines how the input parameters are passed via the REST API call. Currently supported options are:
+    <ul>
+      <li>"URL": as URL parameters</li>
+      <li>"FORM": as form parameters (for POST requests only)</li>
+      <li>"JSON": as a flat JSON object with key-value pairs of the form <code>"parameterName": "parameterValue"</code> (for POST requests only)</li>
+    </ul>
+    Note that path parameters, whose values have already been included in the URL, will not be passed again using one of these options.
+  </li>
+  <li>Optionally, special HTTP headers can be passed via the <code>ephedra:httpHeader</code> property.</li>
+</ul> 
+
+To include this repository into the Ephedra federation, one needs to include a reference to it into the Ephedra repository configuration:
+
+<mp-code-block mode='text/turtle'>
+<![CDATA[
+[] a <http://www.openrdf.org/config/repository#Repository> ;
+	<http://www.openrdf.org/config/repository#repositoryID> "ephedra" ;
+	<http://www.w3.org/2000/01/rdf-schema#label> "Repository to test the local federation." ;
+	<http://www.openrdf.org/config/repository#repositoryImpl> [
+    <http://www.openrdf.org/config/repository#repositoryType> "metaphacts:FederationSailRepository" ;
+ 	<http://www.openrdf.org/config/repository/sail#sailImpl> [
+		# metaphactory federation sail 
+     	<http://www.openrdf.org/config/sail#sailType> "metaphacts:Federation" ;
+      	# the ID of the repository that serves as the default federation member
+		<http://www.metaphacts.com/ontologies/platform/ephedra#defaultMember> "default" ;
+      	# descriptors of the federation members
+		<http://www.openrdf.org/config/sail/federation#member> [
+        	# repository ID
+			<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "default" ;
+        	# URI of the SPARQL SERVICE for this repository
+			<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>	<http://www.metaphacts.com/ontologies/platform/repository/federation#default>
+		] ;
+		<http://www.openrdf.org/config/sail/federation#member> [
+        	# repository ID
+			<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "openstreetmap" ;
+        	# URI of the SPARQL SERVICE for this repository
+			<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>	<http://www.metaphacts.com/ontologies/platform/repository/federation#openstreetmap>
+		] 
+    ] 
+  ] .
+]]>
+</mp-code-block> 
+
+    <p><b>Important</b>: Note that to apply any change to a service descriptor or a repository descriptor the <i>metaphactory</i> platform must be restarted.</p>
+    
+<h2>Querying the REST API Using SPARQL</h2>
+
+After configuring the REST service as described in this section, 
+one is able to post the following query to the Ephedra repository
+
+<mp-code-block mode='application/sparql-query'>
+<![CDATA[
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX osm: <http://www.metaphacts.com/ontologies/osm#>
+SELECT * WHERE {
+  BIND("Flughafen in der Nähe von Karlsruhe"^^xsd:string as ?input)
+ SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#openstreetmap> {
+   ?results osm:hasSearchTerm ?input .
+   ?results osm:polygonText 1 .
+   ?results osm:format "json".
+   ?results osm:extratags 1 .
+   ?results rdfs:label ?label.
+   ?results osm:wktGeotext ?wkt.
+   ?results osm:wikidataID ?wikidataID.
+ }
+} LIMIT 1
+]]>
+</mp-code-block>
+
+to receive the following SPARQL results:
+
+<mp-code-block mode='application/json'>
+<![CDATA[
+{
+	"head":	{
+		"vars": [
+			"input","results","label","wkt","wikidataID" 
+		]
+	},
+	"results": {
+		"bindings": [
+			{
+				"input": {
+					"type":"literal",
+					"value":"Flughafen in der Nähe von Karlsruhe"
+				},
+				"wkt":{
+					"datatype":"http://www.opengis.net/ont/geosparql#wktLiteral",
+					"type":"literal",
+					"value":"POLYGON((8.0655819 48.7664969,...,8.0655819 48.7664969))"
+				},
+				"wikidataID": {
+					"type":"literal",
+					"value":"Q707457"
+				},
+				"label": {
+					"type":"literal",
+					"value":"Flughafen Karlsruhe/Baden-Baden, Summerside Avenue C, Mederhof, Rheinmünster, Verwaltungsverband Rheinmünster-Lichtenau, Landkreis Rastatt, Regierungsbezirk Karlsruhe, Baden-Württemberg, 77836, Deutschland"
+				},
+				"results": {
+					"type":"bnode",
+					"value":"node1ci993n52x242"
+				}
+			}
+		]
+	}
+}
+]]>
+</mp-code-block>  
+
+</div>
+</div>

@@ -1,0 +1,299 @@
+<ol class="page-breadcrumb rs-breadcrumb">
+    <li class="rs-body-s-B">
+      <mp-link title="Home" url="resource/Start">Accueil</mp-link>
+    </li>
+    <li class="active rs-body-s-M">Tableau de bord</li>
+  </ol>
+
+<div class='rs-dashboard-bg'>
+
+  [[#> :ClipboardSidebar]]
+
+  <div class="container-fluid rs-dashboard-container">
+
+    <bs-row class="row-left">
+      <bs-col xs=12 sm=11 class='rs-h1'>Tableau de bord
+      </bs-col>
+    </bs-row> <!--  close row -->
+
+    <bs-row class="row-left rs-top-buttons">
+
+      <bs-col xs=12 sm=4 md=3 lg=3 class="rs-btn-dashboard--col">
+        <semantic-link uri="http://www.hercules.gouv.qc.ca/resource/Forms" role="button"
+          class="rs-btn-dashboard rs-btn-dashboard--forms">
+          <div class="btn">Formulaires</div>
+          <semantic-query query="SELECT (COUNT(DISTINCT ?form) as ?count)
+                                       WHERE {
+                                        ?form a <http://hercules.gouv.qc.ca/ontology/meta/Form>.
+                                       }" template='{{#each bindings}}
+                                          <span class="badge rs-badge rs-badge-dashboard">{{count.value}}</span>
+                                          {{/each}}'
+            no-result-template='<span class="badge rs-badge rs-badge-dashboard">0</span>'>
+          </semantic-query>
+        </semantic-link>
+      </bs-col>
+
+      <bs-col xs=12 sm=4 md=3 lg=3 class="rs-btn-dashboard--col">
+        <semantic-link uri="http://www.hercules.gouv.qc.ca/resource/FieldCatalog" role="button"
+          class="rs-btn-dashboard rs-btn-dashboard--fields">
+          <div class="btn">Modèles de connaissances</div>
+          <semantic-context repository='assets'>
+            <semantic-query query="SELECT (COUNT(DISTINCT ?field) as ?count)
+                                   WHERE {
+                                    ?field a <http://www.metaphacts.com/ontology/fields#Field>.
+                                   }" template='{{#each bindings}}
+                                      <span class="badge rs-badge rs-badge-dashboard">{{count.value}}</span>
+                                      {{/each}}'
+              no-result-template='<span class="badge rs-badge rs-badge-dashboard">0</span>'>
+            </semantic-query>
+          </semantic-context>
+        </semantic-link>
+      </bs-col>
+
+
+
+      <bs-col xs=12 sm=4 md=3 lg=3 class="rs-btn-dashboard--col">
+        <a href="resource/projectNarratives" role="button" class="rs-btn-dashboard rs-btn-dashboard--narrative">
+          <div class="btn">Récits sémantiques</div>
+          <semantic-context repository='assets'>
+            <semantic-query query="SELECT (COUNT(*) AS ?count)
+                                        where {
+                                        ?page a <http://www.researchspace.org/ontology/UserDefinedPage> ;
+                                          rdfs:label ?label ;
+                                          <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                                          <http://www.w3.org/ns/prov#wasAttributedTo> ?user
+                                      }" template='{{#each bindings}}
+                                      <span class="badge rs-badge rs-badge-dashboard">{{count.value}}</span>
+                                      {{/each}}'
+              no-result-template='<span class="badge rs-badge rs-badge-dashboard">0</span>'>
+            </semantic-query>
+          </semantic-context>
+        </a>
+      </bs-col>
+
+      <bs-col xs=12 sm=4 md=3 lg=3 class="rs-btn-dashboard--col">
+        <a href="resource/MyImages" role="button" class="rs-btn-dashboard rs-btn-dashboard--img">
+          <div class="btn">Images</div>
+          <semantic-context repository='assets'>
+            <semantic-query query="SELECT (COUNT(*) AS ?count)
+                                      where {{
+                                         ?iri a crmdig:D9_Data_Object;
+                                         <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                                         <http://www.w3.org/ns/prov#wasAttributedTo> ?user
+                                       }
+                                      UNION {
+                                        ?iri a crmdig:D35_Area;
+                                        <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                                        <http://www.w3.org/ns/prov#wasAttributedTo> ?user
+                                      }}" template='{{#each bindings}}
+                                    <span class="badge rs-badge rs-badge-dashboard">{{count.value}}</span>
+                                    {{/each}}'
+              no-result-template='<span class="badge rs-badge rs-badge-dashboard">0</span>'>
+            </semantic-query>
+          </semantic-context>
+        </a>
+      </bs-col>
+    </bs-row> <!--  close row -->
+
+    <div class="rs-activity-area">
+      <div class="rs-activity">
+        <div class='rs-activity-title'>Activités récentes</div>
+        <div class="table-responsive rs-dashboard-table">
+          <semantic-table query=" SELECT * WHERE {
+                      {
+                        ?page a ?type ;
+                          rdfs:label ?title ;
+                          <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                          <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                        FILTER (?type = <http://www.researchspace.org/ontology/UserDefinedPage>) .
+                        BIND('Récit sémantique' as ?content_type) .
+                        BIND('rs-btn-dashboard--narrative' as ?tag_cssClass)
+                      } 
+                      UNION 
+                      {
+                        ?page a ?type;
+                          rdfs:label ?title;
+                          <http://www.w3.org/ns/prov#wasAttributedTo> ?user;
+                          <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                        FILTER (?type = <http://hercules.gouv.qc.ca/ontology/meta/Form>) .
+                        BIND('Formulaire' as ?content_type) .
+                        BIND('rs-btn-dashboard--forms' as ?tag_cssClass) 	
+                      }
+                      UNION 
+                      {
+                        ?page a ?type;
+                          <http://www.w3.org/ns/prov#wasAttributedTo> ?user;
+                          <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                        FILTER (?type = <http://www.metaphacts.com/ontology/fields#Field>) .
+                        BIND('Modèle' as ?content_type) .
+                        BIND('rs-btn-dashboard--fields' as ?tag_cssClass) 	
+                      }
+                      UNION
+                      {
+                        {
+                          ?page a crmdig:D9_Data_Object;
+                            <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                            <http://www.w3.org/ns/prov#wasAttributedTo> ?user.
+                          BIND('image' as ?content_type) .
+                          BIND('rs-btn-dashboard--img' as ?tag_cssClass) 
+                        }
+                        UNION 
+                        {
+                          ?page a crmdig:D35_Area;
+                          <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                          <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                          BIND('image' as ?content_type) .
+                          BIND('rs-btn-dashboard--img' as ?tag_cssClass) 
+                        }
+                      }
+                    }
+                    
+                    ORDER BY DESC(?time)" number-of-displayed-rows=5 options='{"showFilter": true}'
+            column-configuration='[
+                                    {"variableName": "title", "displayName": "", "cellTemplate":"{{> resource}}" },
+
+                                    {"variableName": "user", "displayName": "", "cellTemplate": "<div><i class=\"fa fa-user\" style=\"margin-right: 10px\"></i>
+                                      <semantic-link class=\"rs-dashboard--a\" uri=\"{{user.value}}\" target=\"_blank\"></semantic-link></div>" },
+
+                                    {"variableName": "type", "displayName": "", 
+                                    "cellTemplate": "<div><span class=\"rs-tag {{tag_cssClass.value}} rs-dashboard-tag rs-h5\">{{content_type.value}}</span></div>"},
+                                    
+                                    {"variableName": "time", "displayName": "", "cellTemplate": 
+                                    "<div class=\"rs-dashboard-tableDate\">
+                                      <div>
+                                        <span>Last modified: </span>
+                                        <span class=\"rs-dashboard-tableDateValue\">{{dateTimeFormat time.value \"LLL\"}}</span>
+                                      </div>
+                                    </div>"},
+                                    {"displayName": "Export", "cellTemplate": "{{>data_download}}"
+                                    }
+                                    ]'>
+
+            <template id='resource'>
+              <semantic-if
+                query='PREFIX ontodia: <http://ontodia.org/schema/v1#> ASK { <{{page.value}}> a <http://ontodia.org/schema/v1#Diagram> }'
+                then='{{> then}}' else='{{> else}}'>
+
+                <template id="then">
+                  <mp-draggable iri='{{page.value}}'>
+                    <span>
+                      <semantic-link class='rs-dashboard--a-title' iri=':ThreePanelSystem'
+                        urlqueryparam-diagram='{{page.value}}'>{{title.value}}</semantic-link>
+
+                    </span>
+                  </mp-draggable>
+                </template>
+
+                <template id="else">
+                  <mp-draggable iri='{{page.value}}'>
+                    <span>
+                      <semantic-link class='rs-dashboard--a-title' uri='{{page.value}}'>{{title.value}}</semantic-link>
+                    </span>
+                  </mp-draggable>
+                </template>
+
+              </semantic-if>
+            </template>
+
+            <template id="data_download">
+              <div>
+                <mp-sparql-download
+                  query="select ?s ?p ?o where {
+                                           BIND(IRI('{{page.value}}') as ?diagramContainer)
+                                ?diagramContainer    ontodia:layoutData/ontodia:hasElement/ontodia:resource  ?diagramNode .
+                                BIND (IRI(CONCAT(STR(?diagramNode),'/container/context')) as ?g) 
+                                {select * where {graph ?g {?s ?p ?o. 
+                                                           MINUS {?s <http://www.w3.org/ns/ldp#contains> ?o .} 
+                                                           MINUS {?s rdf:type <http://www.w3.org/ns/ldp#Resource> .}
+                                                           MINUS {?s rdf:type <http://www.w3.org/ns/prov#Entity> .} } } } }"
+                  header="text/csv" filename="myDiagramEntities.csv">
+                  <div style="text-align:center;">
+                    <a href="#" class="rs-dashboard--a">
+                      <i class="fa fa-download" style="margin-right: 10px"></i>Download Data</a>
+                  </div>
+
+                </mp-sparql-download>
+              </div>
+            </template>
+
+          </semantic-table>
+
+        </div>
+      </div>
+      <div class='rs-team'>
+        <div class='rs-activity-title'>Membres actifs</div>
+
+
+
+        <div class="table-responsive rs-dashboard-table">
+            <semantic-table query=" SELECT DISTINCT ?user WHERE
+            {
+              SELECT * WHERE {
+                ?page a ?type ;
+                rdfs:label ?title ;
+                <http://www.w3.org/ns/prov#generatedAtTime> ?time ;
+                <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+              }
+              ORDER BY DESC(?time)
+            } 
+            LIMIT 50" number-of-displayed-rows=5 options='{"showFilter": false}'
+              column-configuration='[
+                                      {"variableName": "", "displayName": "", "cellTemplate": "{{> icon}}" },
+                                      {"variableName": "user", "displayName": "", "cellTemplate": "{{> name}}" }
+                                    ]'>
+            <template id='icon'>
+              <div>
+                  <img class="img-responsive rs-user-img" src="/images/users/user.svg">
+              </div>
+            </template>
+            <template id='name'>
+                <div>
+                    <semantic-link class="rs-dashboard--a" uri="{{user.value}}" target="_blank"> </semantic-link>
+                  </div>
+            </template>
+          </semantic-query>
+        </ul>
+        </div>
+      </div>
+    </div>
+
+    <bs-row class="row-center">
+
+      <bs-col xs=12 sm=4>
+        <div class="rs-h3 rs-ds-add--title">Création et modification</div>
+        [[>Default:dashboardCard title="Formulaires" descr="Ajouter un formulaire de création d'entités" imgIcon="/images/icons/narrative.svg"
+        pageLink=(resolvePrefix ":Forms")]]
+        [[>Default:dashboardCard title="Graphes" descr="Ajouter une entité à l'aide d'un graphe lié" imgIcon="/images/icons/diagram.svg"
+        pageLink=(resolvePrefix ":AuthoringDiagram")]]
+        [[>Default:dashboardCard title="Récits" descr="Ajouter un récit sémantique" imgIcon="/images/icons/storyboard.svg"
+        pageLink=(resolvePrefix ":UDPForm")]]
+      </bs-col>
+
+      <bs-col xs=12 sm=4>
+        <div class="rs-h3 rs-ds-add--title">Données</div>
+        [[>Default:dashboardCard title="Données sémantiques" descr="Télécharger ou téléverser des données" imgIcon="/images/icons/upload.svg"
+        pageLink=(resolvePrefix "Admin:DataImportExport")]]
+        [[>Default:dashboardCard title="Modèles de connaissances" descr="Ajouter un modèle de connaissances" imgIcon="/images/icons/list.svg"
+        pageLink=(resolvePrefix ":FieldCatalog")]]
+        [[>Default:dashboardCard title="Images" descr="Ajouter une image" imgIcon="/images/icons/images.svg"
+        pageLink=(resolvePrefix ":MyImages")]]
+      </bs-col>
+
+      <bs-col xs=12 sm=4>
+        <div class="rs-h3 rs-ds-add--title">Recherche et exploration</div>
+        [[>Default:dashboardCard title="Ontologies" descr="Explorer les ontologies du projet"
+        imgIcon="/images/icons/ontology.svg" pageLink=(resolvePrefix "assets:Ontologies")]]
+        [[>Default:dashboardCard title="Recherche avancée" descr="Utiliser l'outil de recherche sémantique"
+        imgIcon="/images/icons/semantic_search.svg" pageLink=(resolvePrefix ":SemanticSearch")]]
+        [[>Default:dashboardCard title="Naviguer vers une entité" descr="Naviguer vers entité à l'aide de son IRI complet"
+        imgIcon="/images/icons/external-link.svg" pageLink=(resolvePrefix "mpp:NavigateToPage")]]
+
+      </bs-col>
+
+    </bs-row>
+
+  </div>
+
+  [[/:ClipboardSidebar]]
+
+</div>

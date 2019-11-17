@@ -1,0 +1,327 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation Overview" uri="http://help.metaphacts.com/resource/DocumentationOverview">DocumentationOverview</semantic-link>
+  </li>
+  <li class="active">
+    Security Configuration
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Security </h1>
+    <p>
+      The platform relies on the <a href="http://shiro.apache.org" target="_blank">Apache Shiro</a> security framework.
+      While it is possible to hook-in different security providers and realms, the easiest way is to define users, roles and permissions using the "shiro.ini" file.
+    </p>
+
+    <section>
+      <h2>Providers</h2>
+      <p>
+        The platform supports various authentication/authorization providers: file based, LDAP, SSO with OAuth2 or SAML2.
+      </p>
+
+      <section>
+        <h3>File Based</h3>
+        <p>
+          Default provider that manages all users and roles in the <code>shiro.ini</code> configuration file.
+        </p>
+
+        <p>
+          New user accounts should be created using the respective &nbsp;<semantic-link uri="http://www.metaphacts.com/resource/admin/Security" title="Security">administration page </semantic-link>. The same widget can be used to modify accounts and to re-assign existing roles to users. However, creating new roles and permissions need to be done by modifying the shiro.ini manually (c.f. Basic ACLs section at the bottom of the page).
+        </p>
+
+        <bs-alert bs-style="info"><strong>Please Note:</strong><br/>
+          If no shiro.ini file is configured, the platform will use a a pre-bundled shiro.ini file with default logins and a warning will be printed in the startup logs.
+        </bs-alert>
+
+        <b>Example Configuration:</b>
+        <p>
+        The example below defines two users with salt-encrypted passwords (c.f. <a href="http://shiro.apache.org/command-line-hasher.html" target="_blank">Shiro Command Line Hasher</a>) and assigns roles to them. Permissions are granted to roles in the <i>[roles]</i> section.
+        </p>
+        <ul>
+          <li>The role "rootRole" is granted permission to view, create and modify accounts.</li>
+          <li>The role "adminRole" is granted permission to execute all SPARQL query and update operations as well as to save template pages .</li>
+          <li>The role "guestRole" is granted permission to execute all SPARQL query operations, but no update operations.  In addition, the "guestRole" can not save template pages.</li>
+        </ul>
+        <div class="highlight" style="margin-left:2%">
+          <pre>
+      [users]
+      admin=$shiro1$SHA-256$500000$JWFyxDbrkcdlGl6Xpj02dg==$UYbUG3bHmT8Z4dTeEHToK5WdyvwR9cRefiM/9zRjfr4=,adminRole,rootRole
+      guest=$shiro1$SHA-256$500000$IbH5irWwZzyQlXHZg33GeA==$n+A1vGbmrIxJBBxGcsNn3cz48wDvhBkMbNPcskfAQy4=,guestRole
+
+      [roles]
+      rootRole = accounts:*:*
+      adminRole = sparql:update, sparql:query:*, sparql:graphstore:*, pages:*:*
+      guestRole = sparql:query:*
+
+          </pre>
+        </div>
+
+        It is <b>strongly recommended</b> to only change the <i>[roles]</i> section by hand and to do these changes not during runtime.<br/>
+      </section>
+
+      <section>
+        <h3>Single sign-on (SSO)</h3>
+        <p>
+          The platform supports <a href='http://docs.oasis-open.org/security/saml/v2.0/sstc-saml-approved-errata-2.0.html'>SAML2</a> and <a href='https://tools.ietf.org/html/rfc6749'>OAuth2</a> for both authentication and authorization.
+        </p>
+        <p>
+          By default it is not possible to work with users defined in the <code>shiro.ini</code> when SSO is enabled. If needed local users can be enabled by setting <code>enableLocalUsers=true</code> in the <b>environment.prop</b> configuration file.
+        </p>
+        <p>
+          In cases when IdP doesn't provide any information that can be used for Authorization, it is possible to grant permissions for users locally, defining them in the  <code>shiro-sso-users.ini</code> configuration file. Users are identified by the value of <code>principalNameAttribute.value</code>(see SAML2 and OAuth2 configuration). Here is a simple configuration file that grants <code>admin</code> and <code>query-catalog</code> roles to the user with id <code>user3@example.com</code> and <code>guest</code> role to the user with id <code>user2@example.com</code>
+        </p>
+        <pre>
+[users]
+user3@example.com = admin,query-catalog
+user2@example.com = guest
+        </pre>
+
+        <section>
+          <h4>SAML2</h4>
+          <p>Metaphactory provides a way to use SAML2 authorization server as a centralized solution for user Authentication and Authorization and Single Sign-on.</p>
+          <p>To enable SSO with SAML2 in metaphactory set <code>shiroAuthenticationFilter</code> property in the <b>environment.prop</b> configuration file to <b>saml2</b>: <code>shiroAuthenticationFilter=saml2</code></p>
+
+          <p>
+            SAML2 SSO configuration is specified in the <code>/config/shiro-sso-saml-params.ini</code> configuration file. SAML2 requires the following configuration parameters:
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Required</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>serviceProviderEntityId.value</td>
+                <td>SP's unique identifier by which it is registered in the IdP</td>
+                <td>yes</td>
+              </tr>
+
+              <tr>
+                <td>callbackUrl.value</td>
+                <td>Platform's service URL that consumes IdP responses, must match with URL that was registered for the given SP in the IdP. Must confirm to the following format <code>https://&lt;your_domain&gt;/sso/callback?client_name=SAML2Client</code>, where <code>your_domain</code> is domain of the platform instance.</td>
+                <td>yes</td>
+              </tr>
+
+              <tr>
+                <td>principalNameAttribute.value</td>
+                <td>SAML2 attribute that must be used as a user principal, typically <code>email</code> or some id.</td>
+                <td>yes</td>
+              </tr>
+
+              <tr>
+                <td>identityProviderMetadataPath.value</td>
+                <td>Path to the IdP metadata xml file. By default <code>file:/config/saml-provider-metadata.xml</code>. Please make sure that <code>&lt;md:EntitiesDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:ds="http://www.w3.org/2000/09/xmldsig#"&gt;</code> is used as a root element with the actuall <code>md:EntityDescriptor</code> inside.</td>
+                <td>yes</td>
+              </tr>
+
+              <tr>
+                <td>rolesAttribute.value</td>
+                <td>SAML2 attribute that can be used to get user roles for authorization</td>
+                <td>no</td>
+              </tr>
+
+              <tr>
+                <td>rolesMap.value</td>
+                <td>Can be used together with <code>rolesAttribute.value</code> to map roles from IdP to local platform roles defined in the <code>shiro.ini</code> file. If no mappings are provided, then the assumption is that values in the roles attribute already correspond to platform roles.</td>
+                <td>no</td>
+              </tr>
+
+              <tr>
+                <td>defaultRole.value</td>
+                <td>Platform role that must be assigned to all authenticated user in addition to roles from <code>rolesAttribute.value</code>.</td>
+                <td>no</td>
+              </tr>
+              <tr>
+                <td>logoutFilter.defaultUrl</td>
+                <td>The URL to which the user is redirected after logout</td>
+                <td>no</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <br/>
+
+          <p>
+            Here is a sample configuration file for the locally running metaphactory and <a href='https://simplesamlphp.org/'>SimpleSAMLphp</a> as IdP:
+          </p>
+          <pre>[main]
+serviceProviderEntityId.value = http://localhost:8080/sso/callback
+callbackUrl.value = http://localhost:8080/sso/callback?client_name=SAML2Client
+principalNameAttribute.value = email
+defaultRole.value = guest
+rolesAttribute.value = eduPersonAffiliation
+rolesMap.value = "metaphactory.admin":"admin", "metaphactory.root":"root", "metaphactory.query-catalog":"query-catalog", "metaphactory.guest":"guest", "metaphactory.repository-admin":"repository-admin"
+defaultLogoutUrl.value = http://localhost:8080
+          </pre>
+        </section>
+
+        <section>
+          <h4>OAuth2</h4>
+          <p>Metaphactory provides a way to use OAuth2 authorization server as a centralized solution for user Authentication and Authorization and Single Sign-on.</p>
+          <p>To enable SSO with OAuth2 in metaphactory set <code>shiroAuthenticationFilter</code> property in the <b>environment.prop</b> configuration file to <b>oauth2</b>: <code>shiroAuthenticationFilter=oauth2</code></p>
+
+          <p>
+            OAuth2 SSO configuration is specified in the <code>/config/shiro-sso-oauth-params.ini</code> configuration file. OAuth2 requires the following configuration parameters:
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Required</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>authorizationEndpoint.value</td>
+                <td>Authorization endpoint URL</td>
+                <td>yes</td>
+              </tr>
+
+              <tr>
+                <td>tokenEndpoint.value</td>
+                <td>Token endpoint URL</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td>profileEndpoint.value</td>
+                <td>OpenID user profile URL</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td>clientId.value</td>
+                <td>Application key as registered in the IdP</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td>clientSecret.value</td>
+                <td>Application secret as registered in the IdP</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td>redirectUri.value</td>
+                <td>
+                  Platform's service URL that consumes IdP responses, must match with URL that was registered for the given SP in the IdP. Must confirm to the following format <code>https://&lt;your_domain&gt;/sso/callback?client_name=OAuth20Client</code>, where <code>your_domain</code> is domain of the platform instance.
+                </td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td>principalNameAttribute.value</td>
+                <td>User profile attribute that must be used as a user principal, typically <code>email</code> or some id.</td>
+                <td>yes</td>
+              </tr>
+
+              <tr>
+                <td>defaultRole.value</td>
+                <td>Platform role that must be assigned to all authenticated user in addition to roles from scopes.</td>
+                <td>no</td>
+              </tr>
+              <tr>
+                <td>scopeRolesMap.value</td>
+                <td>
+                  Mappings between user scopes and metaphactory roles. If no mappings are provided, then the assumption is that scopes correspond directly to platform roles.
+                </td>
+                <td>no</td>
+              </tr>
+              <tr>
+                <td>logoutFilter.defaultUrl</td>
+                <td>The URL to which the user is redirected after logout</td>
+                <td>no</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <br/>
+
+          <p>
+            Here is a sample configuration file for the locally running metaphactory and <a href='https://github.com/cloudfoundry/uaa'>UAA</a> as IdP:
+          </p>
+          <pre>[main]
+authorizationEndpoint.value = http://localhost/uaa/oauth/authorize
+tokenEndpoint.value = http://localhost/uaa/oauth/token
+profileEndpoint.value = http://localhost/uaa/userinfo
+clientId.value = metaphactory
+clientSecret.value = metaphactory_secret
+redirectUri.value = http://localhost:8080/sso/callback?client_name=OAuth20Client
+principalNameAttribute.value = email
+defaultRole.value = guest
+scopeRolesMap.value = "metaphactory.admin":"admin", "metaphactory.root":"root", "metaphactory.query-catalog":"query-catalog", "metaphactory.guest":"guest", "metaphactory.repository-admin":"repository-admin"
+logoutFilter.defaultUrl = http://localhost:8080
+          </pre>
+        </section>
+      </section>
+    </section>
+
+    <h3> Login Protection </h3>
+    By default the platform requires authentication for all resources below the root /** URL. <br/>
+    For security reasons it is not possible to disable authentication entirely,
+    however, one can grant access to anonymous/guest user by enabling a special "anon" authentication filter (c.f. general system properties section).
+
+    To activate the filter, the following configuration property needs to be set in environment.prop
+    <div class="highlight" style="margin-left:2%"><pre>
+  shiroAuthenticationFilter=authcBasic,anon,authc
+  </pre></div>
+
+    <bs-alert bs-style="info"><strong>Please Note:</strong><br/>
+      For the special anonymous filter ("anon") a static user with the user principal <b>"anonymous"</b> (and any dummy password) must be configured
+      i.e. must granted access to the respective resource and operations by assigning the respective roles (c.f. Basic ACLs section below).
+    </bs-alert>
+    <h3> ACL Permissions </h3>
+    ACL permission strings are used to restrict certain actions or behavior, which are typically exposed through REST interfaces.<br>
+    Permissions are <b>whitelist based</b>, i.e. they need to be assigned explicitly to users through respective roles.
+
+        <style>
+          th, td {
+            text-align: left;
+          }
+
+          tr:nth-child(even) {
+            background-color: #f2f2f2
+          }
+        </style>
+        <mp-json-renderer style="align: center;" get-url='/rest/security/getAllPermissionsDoc' template='{{> acl-table}}'>
+          <template id='acl-table'>      
+            <table>
+              {{#each this as |group|}} 
+                <thead>
+                  <tr>
+                    <td colspan="3"><h3>{{@key}}</h3></td>
+                  </tr>
+                  <tr>
+                    <th>Acl</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                  </tr>
+                </thead>
+                {{#each group as |element|}}
+                <tbody>
+                  <tr>
+                    <td>{{element.acl}}</td>
+                    <td>{{element.description}}</td>
+                    <td>{{{element.example}}}</td>
+                  </tr>
+                  <br>
+                </tbody>
+                {{/each}}
+              {{/each}}   
+            </table>
+          </template>
+        </mp-json-renderer>
+    <p>
+      The permissions from above are pre-defined to restrict actions on core platform functionality to certain user roles. On top, (domain specific) applications may add/define own permission strings and define new user roles, for example, in order to control certain user interface behaviour.
+    </p>
+  </div>
+</div>
+
+

@@ -1,0 +1,279 @@
+[[#*inline "axiom"]]
+  <semantic-query 
+    query='SELECT ?item ?pattern WHERE { [[pattern]] BIND("[[pattern]]" AS ?pattern) .}'
+    template='{{> template}}'
+  >
+    <template id='template'>
+      <dl style='margin-bottom: 0px;'>
+        <dt>[[title]]:</dt>
+        {{#each bindings}}
+          <dd style='margin-left: 15px;'>
+            {{#if (isIri item)}}
+              <semantic-link iri='{{item.value}}'>
+                <span>
+                  <mp-label iri='{{item.value}}'></mp-label>
+                  <sup title="[[type]]" style='cursor: help; color: [[color]];'>
+                    [[type]]
+                  </sup>
+                </span>
+              </semantic-link>
+            {{else if (isBnode item)}}
+              <semantic-query 
+                query='SELECT ?unionItem WHERE { {{pattern.value}} ?item owl:unionOf/rdf:rest*/rdf:first ?unionItem. }'
+                template='{{> unionItemTemplate}}'
+              >
+                <template id='unionItemTemplate'>
+                  <span>
+                    {{#each bindings}}
+                      <semantic-link iri='{{unionItem.value}}'>
+                        <span>
+                          <mp-label iri='{{unionItem.value}}'></mp-label>
+                          <sup title="[[type]]" style='cursor: help; color: [[color]];'>
+                            [[type]]
+                          </sup>
+                        </span>
+                      </semantic-link>
+                      {{#if @last}}{{else}}<span style='margin: 0px 5px; color: purple; font-weight: bold;'>or</span> {{/if}}
+                    {{/each}}
+                  </span>
+                </template>
+              </semantic-query>
+            {{else}}
+              {{item.value}}
+            {{/if}}
+          </dd>
+        {{/each}}
+      </dl>
+    </template>
+  </semantic-query>
+[[/inline]]
+
+<bs-row>
+  <bs-col md=10 md-offset=1>
+    <mp-print-section id="1" label="Header">
+      <h1>
+        <mp-label iri='[[this]]'></mp-label>
+      </h1>
+      <p><b>URI</b>: <i style="font-size: 12px;">[[this]]</i></p>
+
+      <!--Version, usually only applicable for owl elements and will not be rendered otherwise -->
+      <semantic-query 
+        query='
+          SELECT ?versionInfo WHERE { 
+            <[[this]]> owl:versionInfo ?versionInfo
+          } LIMIT 1
+        ' 
+        template='<p><b>Version</b>: {{bindings.0.versionInfo.value}}</p>'>
+      </semantic-query> 
+
+
+      <semantic-query 
+        query='
+          SELECT ?creator WHERE { 
+            <[[this]]> <http://purl.org/dc/elements/1.1/creator>|<http://purl.org/dc/terms/creator> ?creator
+          } LIMIT 1
+        ' 
+        template='<p>{{#each bindings}}<b>Author</b>: {{creator.value}}{{/each}}<br><br></p>'>
+      </semantic-query> 
+
+      [[! we should use semantic-lang-literal when we have it ]]
+      <semantic-query 
+        query='SELECT ?comment { <[[this]]> rdfs:comment ?comment } LIMIT 1'
+        template='{{> comment}}'
+      >
+        <template id='comment'>
+          <p>
+            <b>Description</b>: {{bindings.0.comment.value}}
+          </p>
+        </template>
+      </semantic-query>
+      <hr />
+    </mp-print-section>
+    <mp-print-section id="2" label="Classes">
+      <br>
+      <semantic-query 
+        query='
+          SELECT DISTINCT ?Class WHERE { 
+            ?Class rdf:type owl:Class .
+            GRAPH ?g { { ?Class rdf:type ?type } UNION { ?Class rdfs:subClassOf ?class . }  . <[[this]]> rdf:type owl:Ontology  } 
+            FILTER(!isBlank(?Class))
+          } ORDER BY ?Class
+        ' 
+            template='{{> classes}}'
+            no-result-template='<h2>Classes (0)</h2>'
+      >
+        <template id='classes'>
+          <div>
+            <h2>Classes ({{bindings.length}}) </h2>  
+            {{#each bindings}}
+              <mp-anchor to="#{{Class.value}}">
+                <mp-label iri="{{Class.value}}"></mp-label>
+              </mp-anchor>
+              {{#if @last}}{{else}}, {{/if}}
+            {{/each}}
+            <br>
+            <br>
+            {{#each bindings}}
+              <section id="{{Class.value}}"></section>
+              <mp-panel>
+                <mp-panel-header>
+                  <h3>
+                     <mp-label iri='{{Class.value}}'></mp-label>
+                     <sup title="class" style='cursor: help; color: orange;'>c</sup>
+                  </h3>
+                </mp-panel-header>
+                <mp-panel-body>
+                  <div>
+                    <p><b>IRI:</b> {{{Class.value}}}</p>
+                    <semantic-query 
+                                    query='SELECT ?description WHERE { <{{Class.value}}> rdfs:comment ?description. }LIMIT 1'
+                                    template='{{> description}}'
+                    >
+                      <template id='description'>
+                        <p>{{bindings.0.description.value}}</p>
+                      </template>
+                    </semantic-query>
+                  </div>
+                </mp-panel-body>
+                <mp-panel-footer>
+                  <div>
+                    [[> axiom title='is equivalent to' type='c' color='orange' pattern='<{{Class.value}}> owl:equivalentClass [owl:oneOf / ( rdf:rest*/rdf:first ) ?item]']]
+                    [[> axiom title='has super-classes' type='c' color='orange' pattern='<{{Class.value}}> rdfs:subClassOf ?item. FILTER(isIRI(?item))']]
+
+                    [[> axiom title='has sub-classes' type='c' color='orange' pattern='?item rdfs:subClassOf <{{Class.value}}>. FILTER(isIRI(?item))']]
+
+                    [[> axiom title='is in domain of' type='op' color='navy' pattern='{ ?item rdfs:domain <{{Class.value}}>. } UNION { ?item rdfs:domain/owl:unionOf/rdf:rest*/rdf:first <{{Class.value}}> }']]
+                    [[> axiom title='is in range of' type='op' color='navy' pattern='{ ?item rdfs:range <{{Class.value}}>. } UNION { ?item rdfs:range/owl:unionOf/rdf:rest*/rdf:first <{{Class.value}}> }']]                  
+                  </div>
+                </mp-panel-footer>
+              </mp-panel>
+            {{/each}}
+          </div>
+        </template>
+      </semantic-query> 
+    </mp-print-section>
+    
+    <mp-print-section id="3" label="Object Properties">
+      <semantic-query 
+          query='
+            SELECT DISTINCT ?ObjectProperty WHERE { 
+              GRAPH ?g { 
+                ?ObjectProperty rdf:type owl:ObjectProperty . <[[this]]> rdf:type owl:Ontology 
+              } 
+            } ORDER BY ?ObjectProperty
+          ' 
+          template='{{> properties}}'
+          no-result-template='<h2>Object Properties (0)</h2>'
+      >
+        <template id='properties'>
+          <div>
+            <h2>Object Properties ({{bindings.length}})</h2> 
+            {{#each bindings}}
+              <mp-anchor to="#{{ObjectProperty.value}}">
+                <mp-label iri="{{ObjectProperty.value}}"></mp-label>
+              </mp-anchor>
+              {{#if @last}}{{else}}, {{/if}}
+            {{/each}}
+            <br>
+            <br>
+            
+            {{#each bindings}}
+              <section id="{{ObjectProperty.value}}"></section>
+              <mp-panel>
+                <mp-panel-header>
+                  <h3>
+                     <mp-label iri='{{ObjectProperty.value}}'></mp-label>
+                     <sup title="object property" style='cursor: help; color: navy;'>op</sup>
+                  </h3>
+                </mp-panel-header>
+                <mp-panel-body>
+                  <div>
+                    <p><b>IRI:</b> {{{ObjectProperty.value}}}</p>
+                    <semantic-query 
+                                    query='SELECT ?description WHERE { <{{ObjectProperty.value}}> rdfs:comment ?description. }LIMIT 1'
+                                    template='{{> description}}'
+                    >
+                      <template id='description'>
+                        <p>{{bindings.0.description.value}}</p>
+                      </template>
+                    </semantic-query>
+                  </div>
+                </mp-panel-body>
+                <mp-panel-footer>
+                  <div>
+                    [[> axiom title='has domain' type='c' color='orange' pattern='<{{ObjectProperty.value}}> rdfs:domain ?item.']]
+                    [[> axiom title='has range' type='c' color='orange' pattern='<{{ObjectProperty.value}}> rdfs:range ?item.']]
+                    [[> axiom title='has super-properties' type='op' color='navy' pattern='<{{ObjectProperty.value}}> rdfs:subPropertyOf ?item. FILTER(isIRI(?item))']]
+                    [[> axiom title='has sub-properties' type='op' color='navy' pattern='?item rdfs:subPropertyOf <{{ObjectProperty.value}}>. FILTER(isIRI(?item))']]
+                  </div>
+                </mp-panel-footer>
+              </mp-panel>            
+            {{/each}}
+          </div>
+        </template>
+      </semantic-query> 
+    </mp-print-section>
+    
+    <mp-print-section id="4" label="Datatype Properties">
+      <semantic-query 
+        query='
+          SELECT DISTINCT ?DatatypeProperty WHERE { 
+            GRAPH ?g { 
+              ?DatatypeProperty rdf:type owl:DatatypeProperty . 
+              <[[this]]> rdf:type owl:Ontology
+            } 
+          } ORDER BY ?DatatypeProperty
+        ' 
+        template='{{> properties}}'
+        no-result-template='<h2>Object Properties (0)</h2>'
+      >
+        <template id='properties'>
+          <div>
+            <h2>Datatype Properties ({{bindings.length}}) </h2> 
+            {{#each bindings}}
+              <mp-anchor to="#{{DatatypeProperty.value}}">
+                <mp-label iri="{{DatatypeProperty.value}}"></mp-label>
+              </mp-anchor>
+              {{#if @last}}{{else}}, {{/if}}
+            {{/each}}
+            <br>
+            <br>
+
+            {{#each bindings}}
+              <section id="{{DatatypeProperty.value}}"></section>
+              <mp-panel>
+                <mp-panel-header>
+                  <h3>
+                     <mp-label iri='{{DatatypeProperty.value}}'></mp-label>
+                     <sup title="data property" style='cursor: help; color: green;'>dp</sup>
+                  </h3>
+                </mp-panel-header>
+                <mp-panel-body>
+                  <div>
+                    <p><b>IRI:</b> {{{DatatypeProperty.value}}}</p>
+                    <semantic-query 
+                                    query='SELECT ?description WHERE { <{{DatatypeProperty.value}}> rdfs:comment ?description. }LIMIT 1'
+                                    template='{{> description}}'
+                    >
+                      <template id='description'>
+                        <p>{{bindings.0.description.value}}</p>
+                      </template>
+                    </semantic-query>
+                  </div>
+                </mp-panel-body>
+                <mp-panel-footer>
+                  <div>
+                    [[> axiom title='has domain' type='c' color='orange' pattern='<{{DatatypeProperty.value}}> rdfs:domain ?item.']]
+                    [[> axiom title='has range' type='dt' color='grey' pattern='<{{DatatypeProperty.value}}> rdfs:range ?item. FILTER(isIRI(?item))']]
+                    [[> axiom title='has super-properties' type='dp' color='green' pattern='<{{DatatypeProperty.value}}> rdfs:subPropertyOf ?item. FILTER(isIRI(?item))']]
+                    [[> axiom title='has sub-properties' type='dp' color='green' pattern='?item rdfs:subPropertyOf <{{DatatypeProperty.value}}>. FILTER(isIRI(?item))']]
+                  </div>
+                </mp-panel-footer>
+              </mp-panel>            
+            {{/each}}            
+          </div>
+        </template>
+      </semantic-query> 
+    </mp-print-section>
+  </bs-col>
+</bs-row>

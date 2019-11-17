@@ -1,0 +1,280 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Accueil</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Ephedra" uri='[[resolvePrefix "Help:Ephedra"]]'>Ephedra</semantic-link>
+  </li>
+  <li class="active">SQL SPARQL Service</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+
+    <h1>Ephedra: SQL SPARQL Service</h1>
+
+    <p>
+      In some cases there arises a need to integrate knowledge graph with information from a relational database on the fly. In general, it is usually achieved using Ontology Based Data Access (OBDA) with a standard language like <a href="https://www.w3.org/TR/r2rml/">R2RML</a> to specify mappings between the RDF-based and relational data representation and systems like <a href="http://ontop.inf.unibz.it">Ontop</a> to process these mappings and enable SPARQL queries over relational databases. But this solution is often an overkill in situations which only require an "API-like" access to databases getting some values from a relational database using a limited number of pre-defined SQL queries. For such cases, Ephedra already contains a built-in default wrapper implementation that allows connecting to a relational database via JDBC, send pre-defined parameterized SQL queries, and bind returned results to variables in a SPARQL query. 
+    </p>
+    <p>
+      With this SQL wrapper, one can specify the SPARQL patterns and SQL query templates declaratively, without requiring custom modifications in the Java code.
+    </p>
+    <p>
+  As an example, here we provide a description of an SQL wrapper configuration for an imaginary database which contains one table <code>DEVICES</code> where we want to retrieve the value of the field <code>deviceTag</code> for a given value of the primary key <code>id</code>.
+    </p>
+
+<h2>Describing the SQL Wrapper Service Signature</h2>
+
+    <p>
+      The service descriptor file needs to define which SPARQL patterns will be accepted within the SERVICE clause, how input parameters and output variables will be specified in these SPARQL patterns, and how these inputs and outputs will be passed inside SQL queries to the database using SQL templates. 
+    </p>
+
+Below we provide an example service descriptor file for our imaginary use case:
+<mp-code-block mode='text/turtle'>
+<![CDATA[
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX : <http://www.metaphacts.com/ontologies/platform/service/custom#>
+PREFIX mpsqlsail: <http://www.metaphacts.com/ontologies/sql#> 
+PREFIX ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#>
+
+:SQLTest a ephedra:Service ;
+	<http://www.openrdf.org/config/sail#sailType> "metaphacts:SQL" ;
+	rdfs:label "A wrapper for the SQL test service." ;
+	ephedra:hasSPARQLPattern (
+	    [
+			sp:subject :_results ;
+			sp:predicate mpsqlsail:hasQueryId ;
+			sp:object :_queryId
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate mpsqlsail:hasDeviceId ;
+			sp:object :_deviceId
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate mpsqlsail:hasDeviceTag ;
+			sp:object :_deviceTag
+		]
+	) ;
+	spin:constraint
+	[
+		a spl:Argument ;
+		rdfs:comment "query ID" ;
+		spl:predicate :_queryId ;
+		spl:valueType xsd:string
+    ] ;
+  spin:constraint
+	[
+		a spl:Argument ;
+		rdfs:comment "device ID" ;
+		spl:predicate :_deviceId ;
+		spl:valueType xsd:integer
+    ] ;
+	spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "Row index: will be assigned a random blank node" ;
+		spl:predicate :_results ;
+		spl:valueType rdfs:Resource
+	] ;
+	spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "device tag" ;
+		spl:predicate :_deviceTag ;
+		spl:valueType xsd:string
+	] ;
+	mpsqlsail:includesSQLQuery 
+	[
+		mpsqlsail:hasQueryId "q1" ;
+		mpsqlsail:text "SELECT deviceTag FROM DEVICES WHERE id=?deviceId" ;
+	] .
+]]>
+</mp-code-block>
+
+		<p>
+			This service requires 2 input parameters: <code>queryId</code> and <code>deviceId</code>. The first parameter <code>queryId</code> is a mandatory one and determines which SQL query template will be used. All other input parameters refers to the named slots in this SQL query template. In our case, we have one SQL query template <code>q1</code>, which takes one input parameter <code>deviceId</code>. Input parameter slots in the SQL query template are expressed using SPARQL-like variable notation: <code>?deviceId</code> (the name must correspond to the identifier of the input parameter without the leading "_" sign). When executing the SQL query, this variable will be replaced with the actual value passed from the SPARQL query.
+    </p>
+    <p>
+			In the service descriptor these input parameters are described using corresponding <code mode='text/turtle'>spl:Argument</code> instances, objects of the <code mode='text/turtle'>spin:constraint</code> property.
+    </p>
+    <p>
+      It is possible to specify a default value for an input parameter using the <code>spl:defaultValue</code> property. It will be passed to the corresponding slot in the SQL template if no value was provided via the SPARQL query.
+    </p>
+The SPARQL patterns definition means that when receiving a SPARQL expression 
+
+    <mp-code-block mode='application/sparql-query'>
+<![CDATA[
+[
+SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#sqltest> {
+	?root mpsqlsail:hasQueryId "q1" .
+	?root mpsqlsail:hasDeviceId "12345"^^xsd:integer .
+	?root mpsqlsail:hasDeviceTag ?tag .
+}
+]]>
+</mp-code-block>
+
+    <p>
+      the Ephedra SQL service wrapper will interpret the literal "q1" 
+      as a value of the mandatory argument <code mode='text/turtle'>:_queryId</code>, 
+      select the corresponding SQL template and replace the <code>deviceId</code> input parameter with the integer value "12345".
+    </p>
+    <p>
+      Similarly, the <code mode='text/turtle'>spin:Column</code> instances, 
+      objects of the <code mode='text/turtle'>spin:column</code> property 
+      are used to map the output columns in the SQL query result set to unbound variables in the SPARQL query.
+    </p>
+
+    <p>
+      To map the output column to a SPARQL variable, the name of the output parameter must be exactly equal to the name of the column in the result set: 
+      in our case, the column <code>deviceTag</code> corresponds to the parameter <code>:_deviceTag</code> which appears as the object of the property 
+      <code>mpsqlsail:hasDeviceTag</code> in the statement patterns and therefore its value will be bound to the variable <code>?tag</code> appearing in this position.
+    </p>
+
+    <p>
+The Ephedra SQL wrapper assumes that the output represents a list of one or more binding sets ("rows"), where each
+binding set contains bindings for one or more output variables. Each binding set "row" will always 
+contain a binding for the output parameter <code mode='text/turtle'>results</code>. 
+    <p>
+Note that this parameter must appear as subject in all SPARQL patterns, otherwise an error will be thrown.
+The output value that will be bound to this parameter will always be a randomly generated blank node 
+and will not carry any information by itself beyond being an internal row identifier.
+    </p>
+
+<h2>Configuring a SQL Service Repository</h2>
+
+While the service descriptor defines the SPARQL service signature and mappings to the SQL template slots and columns, 
+the repository configuration must provide the database connection parameters.
+
+<mp-code-block mode='text/turtle'>
+<![CDATA[
+@prefix repo: <http://www.openrdf.org/config/repository#> .
+@prefix reposail: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.metaphacts.com/ontologies/platform/ephedra#> .
+@prefix mprepo: <http://www.metaphacts.com/ontologies/platform/repository#> .
+@prefix mpsqlsail: <http://www.metaphacts.com/ontologies/sql#> .
+@prefix : <http://www.metaphacts.com/ontologies/platform/service/custom#> .
+
+[] a repo:Repository ;
+	repo:repositoryID "sqltest" ;
+	rdfs:label "A wrapper for the SQL test repository." ;
+	repo:repositoryImpl [
+		repo:repositoryType "openrdf:SailRepository" ;
+		reposail:sailImpl [
+			sail:sailType "metaphacts:SQL" ;
+			ephedra:serviceURL "jdbc:oracle:thin:@localhost:1521/xe" ;
+			mprepo:username "system" ;
+			mprepo:password "oracle" ;
+      mpsqlsail:hasConnectionProperty [
+        mpsqlsail:name "connectTimeout" ;
+        mpsqlsail:value "2000"
+      ] ;
+			ephedra:implementsService :SQLTest ;
+		] ;
+	] .
+]]>
+</mp-code-block>
+
+The meaning of the SAIL repository parameters are the following:
+<ul>
+  <li>The value of the <code>ephedra:implementsService</code> property must be the same URI as the root service descriptor instance.</li>
+  <li>The <code>sail:sailType</code> must always correspond to the Ephedra SQL wrapper: <code>metaphacts:SQL</code>.</li>
+  <li>The <code>ephedra:serviceURL</code> must contain the JDBC connection URL of the database.</li>
+  <li>The <code>mprepo:username</code> and <code>mprepo:password</code> contain the login credentials.</li>
+  <li>Optionally, the <code>mpsqlsail:hasConnectionProperty</code> contain additional parameters of the JDBC connection. The descriptor can contain more than one statement for  <code>mpsqlsail:hasConnectionProperty</code>.</li>
+</ul> 
+
+To include this repository into the Ephedra federation, one needs to include a reference to it into the Ephedra repository configuration:
+
+<mp-code-block mode='text/turtle'>
+<![CDATA[
+[] a <http://www.openrdf.org/config/repository#Repository> ;
+	<http://www.openrdf.org/config/repository#repositoryID> "ephedra" ;
+	<http://www.w3.org/2000/01/rdf-schema#label> "Repository to test the local federation." ;
+	<http://www.openrdf.org/config/repository#repositoryImpl> [
+    <http://www.openrdf.org/config/repository#repositoryType> "metaphacts:FederationSailRepository" ;
+ 	<http://www.openrdf.org/config/repository/sail#sailImpl> [
+		# metaphactory federation sail 
+     	<http://www.openrdf.org/config/sail#sailType> "metaphacts:Federation" ;
+      	# the ID of the repository that serves as the default federation member
+		<http://www.metaphacts.com/ontologies/platform/ephedra#defaultMember> "default" ;
+      	# descriptors of the federation members
+		<http://www.openrdf.org/config/sail/federation#member> [
+        	# repository ID
+			<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "default" ;
+        	# URI of the SPARQL SERVICE for this repository
+			<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>	<http://www.metaphacts.com/ontologies/platform/repository/federation#default>
+		] ;
+		<http://www.openrdf.org/config/sail/federation#member> [
+        	# repository ID
+			<http://www.metaphacts.com/ontologies/platform/ephedra#delegateRepositoryID> "sqltest" ;
+        	# URI of the SPARQL SERVICE for this repository
+			<http://www.metaphacts.com/ontologies/platform/ephedra#serviceReference>	<http://www.metaphacts.com/ontologies/platform/repository/federation#sqltest>
+		] 
+    ] 
+  ] .
+]]>
+</mp-code-block> 
+
+    <p>After making changes to a service descriptor or a repository descriptor the <i>metaphactory</i> platform must be restarted.</p>
+
+    
+<h2>Querying the SQL service Using SPARQL</h2>
+
+After configuring the SQL service as described in this section, 
+one is able to post the following query to the Ephedra repository
+
+<mp-code-block mode='application/sparql-query'>
+<![CDATA[
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX osm: <http://www.metaphacts.com/ontologies/osm#>
+SELECT * WHERE {
+ SERVICE <http://www.metaphacts.com/ontologies/platform/repository/federation#sqltest> {
+	?root mpsqlsail:hasQueryId "q1" .
+	?root mpsqlsail:hasDeviceId "12345"^^xsd:integer .
+	?root mpsqlsail:hasDeviceTag ?tag .
+ }
+} LIMIT 1
+]]>
+</mp-code-block>
+
+to receive the following SPARQL results:
+
+<mp-code-block mode='application/json'>
+<![CDATA[
+{
+	"head":	{
+		"vars": [
+			"results","tag"
+		]
+	},
+	"results": {
+		"bindings": [
+			{
+				"results": {
+					"type":"bnode",
+					"value":"node1ci993n52x242"
+				},
+				"tag": {
+					"type":"literal",
+					"value":"tagABCDEF0x56AF"
+				}
+			}
+		]
+	}
+}
+]]>
+</mp-code-block>  
+
+</div>
+</div>

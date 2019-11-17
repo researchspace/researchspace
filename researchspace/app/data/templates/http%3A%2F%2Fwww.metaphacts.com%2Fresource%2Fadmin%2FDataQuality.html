@@ -1,0 +1,169 @@
+<ol class="page-breadcrumb rs-breadcrumb">
+  <li class="rs-body-s-B">
+    <mp-link title="Home" url="resource/Start">Accueil</mp-link>
+  </li>
+
+  <li class="rs-body-s-B">
+    <semantic-link title="Administration" iri="http://www.hercules.gouv.qc.ca/resource/HerculesAdmin/">Administration</semantic-link>
+  </li>
+  <li class="active rs-body-s-M">Data Quality</li>
+</ol>
+
+<div class="page">
+
+    [[> :assetpageHeader title="Data Quality" icon="fa-tasks"]]
+
+  <bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
+    <bs-tab event-key='1' title='Results'>
+      <div>
+  
+    <semantic-context repository="tests">
+     <div>
+          <mp-panel>
+            <mp-panel-header>
+              <span>Data Quality Trend</span>
+            </mp-panel-header>
+            <mp-panel-body>
+              <semantic-chart
+                type="line"
+                sets='[{"dataSetName": "failed checks", "category": "ended", "y": "failed"}, {"dataSetName": "succeeded checks", "category": "ended", "y": "succeeded"}]'
+                styles='[{
+                  "provider": "chartjs",
+                  "style": {
+                    "options": {
+                      "legend": {
+                        "display": false
+                      }
+                    }
+                  }
+                }]'
+                query='
+                  prefix sh: <http://www.w3.org/ns/shacl#>
+
+                  SELECT ?ended ?failed ?succeeded WHERE {
+                    ?report a sh:ValidationReport ;
+                               <http://rdfunit.aksw.org/ns/core#testsSuceedded> ?succeeded ;
+                              <http://rdfunit.aksw.org/ns/core#testsFailed> ?failed ;
+                            <http://www.w3.org/ns/prov#endedAtTime> ?ended .
+                  }
+                  ORDER BY ASC(?ended)
+                '
+                no-result-template="<i>No test results available. Most likely no test cases have been executed so far.</i>"
+              >
+              </semantic-chart>
+            </mp-panel-body>
+          </mp-panel>
+
+      <mp-panel>
+        <mp-panel-header>
+          <span>Validation Reports</span>
+        </mp-panel-header>
+        <mp-panel-body>
+          <semantic-table
+            query='
+              SELECT ?report ?conforms ?ended WHERE {
+                ?report a <http://www.w3.org/ns/shacl#ValidationReport> ;
+                        <http://www.w3.org/ns/shacl#conforms> ?conforms ;
+                        <http://www.w3.org/ns/prov#endedAtTime> ?ended .
+              } ORDER BY DESC(?ended)
+            '
+						 column-configuration='[
+               {"displayName":"Report", "variableName": "ended" , "cellTemplate": "{{> report}}"},
+
+               {"displayName":"Conformance", "variableName": "conforms" },
+               {"displayName":"Actions", "cellTemplate": "{{> actions}}" }
+             ]'
+             options='{
+               "showFilter": false
+             }'
+             no-result-template="<i>No test results available. Most likely no test cases have been executed so far.</i>"
+          >
+            <template id='report'>
+              <semantic-link iri='{{report.value}}'>Full Report - {{dateTimeFormat ended.value "LLL"}}</semantic-link>
+            </template>
+            <template id='actions'>
+              <div>
+                [[#if (hasPermission "api:ldp:container:http://www.metaphacts.com/ontologies/platform#validationReportContainer:delete:any")]]
+                  <semantic-context repository='tests'>
+                    <mp-ldp-remove-from-container-action iri="{{report.value}}" container="http://www.metaphacts.com/ontologies/platform#validationReportContainer">
+                      <button class="btn btn-xs btn-danger" style="margin-right: 8px;"><i class="fa fa-trash" aria-hidden=true></i> Delete</button>
+                    </mp-ldp-remove-from-container-action>   
+                  </semantic-context>
+                [[/if]]
+              </div>
+            </template>
+          </semantic-table>
+        </mp-panel-body>
+      </mp-panel>
+    </div>
+  </semantic-context>
+      </div>
+    </bs-tab>
+     <bs-tab event-key='2' title='Referenced Queries'>
+      <div>
+        <bs-alert bs-style='info'>
+          Queries that are referenced from the SHACL test cases.
+        </bs-alert>
+    <semantic-context repository='tests'>
+      <semantic-table
+        query='
+          prefix sh: <http://www.w3.org/ns/shacl#>
+          prefix mpqa: <http://www.metaphacts.com/ontologies/qa#>
+
+          SELECT DISTINCT ?queryTemplate WHERE {
+            ?shape a sh:NodeShape ;
+              sh:sparql ?sparql .
+            ?sparql mpqa:hasSPINQueryTemplate ?queryTemplate .
+          }
+        '
+        column-configuration='[
+          {
+            "displayName": "",
+            "cellTemplate": "{{> consistencyCheck}}"
+           }
+        ]'
+        no-result-template="<i>No SHACL/SPIN queries from the query catalog referenced from test cases.</i>"
+      >
+        <template id='consistencyCheck'>
+          <semantic-context repository='assets'>
+            <semantic-query
+              query='SELECT (<{{queryTemplate.value}}>  as ?template) ?plainQueryString ?label  WHERE {
+                <{{queryTemplate.value}}> a <http://spinrdf.org/spin#Template>;
+                            rdfs:label ?label;
+                            <http://spinrdf.org/spin#body>/<http://spinrdf.org/sp#text> ?plainQueryString .
+                } LIMIT 1
+              '
+              template='{{> executeQuery}}'
+            >
+              <template id='executeQuery'>
+                <div>
+                  <mp-link url='/sparql' urlqueryparam-query='{{{bindings.0.plainQueryString.value}}}'>
+                    <i class="fa fa-play-circle" aria-hidden="true"></i>
+                  </mp-link>
+
+                  <mp-overlay-dialog title="Edit Consistency Check" type='modal' bs-size='large'>
+                    <mp-overlay-dialog-trigger><a style='margin-left: 5px;'>{{bindings.0.label.value}} </a></mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                      <div>
+                        <semantic-context repository='assets'>
+                          <mp-spin-query-template-editor iri='{{bindings.0.template.value}}'></mp-spin-query-template-editor>
+                        </semantic-context>
+                      </div>
+                    </mp-overlay-dialog-content>
+                  </mp-overlay-dialog>
+                </div>
+              </template>
+            </semantic-query>
+          </semantic-context>
+        </template>
+      </semantic-table>
+    </semantic-context>
+       </div>
+        </bs-tab>
+[[#if (hasPermission "job:create:data-quality")]]
+      <bs-tab event-key='3' title='Test Case Management'>
+        <mp-rdf-unit-manager></mp-rdf-unit-manager>
+      </bs-tab>
+[[/if]]
+  </bs-tabs>  
+</div>

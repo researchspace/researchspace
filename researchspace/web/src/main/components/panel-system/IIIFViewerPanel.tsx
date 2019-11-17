@@ -50,7 +50,7 @@ export interface State {
 
 /**
  * @example
- * <rs-iiif-viewer-panel-system [[> rsp:IIIFConfig]]
+ * <rs-iiif-viewer-panel-system [[> :IIIFConfig]]
  *    query="SELECT ?image WHERE { ?subject crm:P138i_has_representation ?image }">
  * </rs-iiif-viewer-panel-system>
  */

@@ -1,0 +1,139 @@
+<semantic-search categories='{
+    "<http://www.w3.org/2001/XMLSchema#Decimal>": [{
+      "kind": "numeric-range",
+      "queryPattern": "{
+        $subject ?__relation__ ?literal .
+        FILTER(?literal >= ?__numericRangeBeginValue__) .
+        FILTER(?literal <= ?__numericRangeEndValue__) .
+      }"
+    }],
+    "<http://www.w3.org/2000/01/rdf-schema#Literal>": [{
+      "kind": "literal",
+      "queryPattern": "{
+        $subject ?__relation__ ?__literal__ .
+      }"
+    }]
+}'>
+  [[> @partial-block ]]
+  <div data-flex-layout="row stretch-stretch">
+    <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+      <semantic-search-facet></semantic-search-facet>
+    </div>
+    <semantic-search-result-holder>
+      <div data-flex-self="md-full">
+        <semantic-search-result>
+          <mp-sparql-result-counts id='query-count'
+                                   query="SELECT DISTINCT * {}"
+                                   template='{{#if hasLimit}} <bs-alert bs-style="warning">
+                                             Showing {{numberOfResults}} of {{totalNumberOfResults}} matches. <strong>Please, refine your search.</strong> </bs-alert>
+                                             {{else}} found {{numberOfResults}} matches {{/if}}'>
+          </mp-sparql-result-counts>
+        </semantic-search-result>
+        <bs-tabs unmount-on-exit=true id='search-results' animation=false>
+          <bs-tab event-key="1" title="Grid">
+            <bs-alert bs-style="info"> Only entities with image representation are shown in the Grid! </bs-alert>
+            <semantic-search-result>
+              <semantic-table id='grid-result'
+                              query='
+                                PREFIX wd: <http://www.wikidata.org/entity/>
+                                PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+                                SELECT DISTINCT ?subject ?thumbnail WHERE {
+                                  OPTIONAL { ?subject wdt:P18|wdt:P154|wdt:P117 ?image  }
+
+                                  BIND(
+                                    REPLACE(
+                                      COALESCE(
+                                        STR(?image),
+                                        "//upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/200px-No_image_available.svg.png"
+                                      ),
+                                      "http://", "//"
+                                    ) as ?thumbnail
+                                  ).
+                                }'
+                              tuple-template='{{>tupleTemplate}}'
+                              options:='{"showFilter":false, "resultsPerPage":16}'
+              >
+                <template id='tupleTemplate'>
+                  <div class="rs-grid-element text-center panel panel-default">
+                    <div class="panel-body">
+                      <img src="{{thumbnail.value}}" style="height:120px;max-width:150px;" class="img-rounded">
+                    </div>
+                    <div class="panel-footer" style="position: relative">
+                      <semantic-link class="grid-resource-link" uri="{{subject.value}}"></semantic-link>
+                    </div>
+                  </div>
+                </template>
+              </semantic-table>
+            </semantic-search-result>
+          </bs-tab>
+          <bs-tab event-key="2" title="Table">
+            <semantic-search-result>
+              <semantic-table id='table-result'
+                              query='SELECT DISTINCT ?subject WHERE { }'
+                              options='{"showFilter":false, "resultsPerPage":10'
+              >
+              </semantic-table>
+            </semantic-search-result>
+          </bs-tab>
+          <bs-tab event-key="4" title="Carousel">
+            <semantic-search-result>
+              <semantic-carousel id='carousel-result'
+                                query='
+                                  PREFIX wd: <http://www.wikidata.org/entity/>
+                                  PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+                                  SELECT DISTINCT ?subject ?thumbnail WHERE {
+                                    OPTIONAL { ?subject wdt:P18|wdt:P154|wdt:P117 ?image  }
+                                    BIND(
+                                      REPLACE(
+                                        COALESCE(
+                                          STR(?image),
+                                          "//upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/200px-No_image_available.svg.png"
+                                        ),
+                                        "http://", "//"
+                                      ) as ?thumbnail
+                                    ).
+                                  }'
+                                  tuple-template='{{> tupleTemplate}}'
+                                  options='{"centerMode":true, "dots":false}'
+              >
+                <template id='tupleTemplate'>
+                  <div class="text-center panel panel-default" style="border:none;margin-right:20px;font-size:12px;height:300px;width: 100%;">
+                    <div class="panel-body" style="height: 280px;">
+                      <img src="{{thumbnail.value}}" style="max-height:260px; margin: 0 auto;" class="img-rounded">
+                    </div>
+                    <div class="panel-footer" style="position: relative;  border: none;">
+                      <semantic-link class="grid-resource-link" uri="{{subject.value}}"></semantic-link>
+                    </div>
+                  </div>
+                </template>
+
+              </semantic-carousel>
+            </semantic-search-result>
+          </bs-tab>
+        </bs-tabs>
+
+        <bs-panel>
+          <semantic-search-result>
+            <mp-sparql-download id='csv-download'
+                                query="SELECT * WHERE { }"
+                                header="text/csv"
+                                filename="csv-result.csv">
+              <button class="btn btn-default">Download CSV</button>
+            </mp-sparql-download>
+          </semantic-search-result>
+          <semantic-search-result>
+            <mp-sparql-download id='json-download'
+                                query="SELECT * WHERE { }"
+                                header="application/sparql-results+json"
+                                filename="json-result.json"
+                                >
+              <button class="btn btn-default">Download JSON</button>
+            </mp-sparql-download>
+          </semantic-search-result>
+        </bs-panel>
+      </div>
+    </semantic-search-result-holder>
+  </div>
+</semantic-search>

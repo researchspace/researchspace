@@ -28,49 +28,47 @@
               browser-persistence=false form-id='Form' fields='[[fieldDefinitions]]'>
               <bs-panel>
                 <semantic-form-recover-notification></semantic-form-recover-notification>
-                <bs-tabs fixed-key="form">
-                  <semantic-form-hidden-input for='http://www.metaphacts.com/fieldDefinition/Type'
-                    default-value={{class.value}}>
-                  </semantic-form-hidden-input>
-                  <semantic-form-text-input for='http://www.metaphacts.com/fieldDefinition/Label' placeholder='Label'>
-                  </semantic-form-text-input>
-                  <!-- CHANGE FOR SEMANTIC IF -->
-                  {{#each bindings}}
-                  {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/SelectInput"}}
-                  <semantic-form-select-input for='{{field.value}}' placeholder='{{label.value}}'>
-                  </semantic-form-select-input>
-                  {{/ifCond}}
+                <semantic-form-hidden-input for='http://www.metaphacts.com/fieldDefinition/Type'
+                  default-value={{class.value}}>
+                </semantic-form-hidden-input>
+                <semantic-form-text-input for='http://www.metaphacts.com/fieldDefinition/Label' placeholder='Label'>
+                </semantic-form-text-input>
+                <!-- CHANGE FOR SEMANTIC IF -->
+                {{#each bindings}}
+                {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/SelectInput"}}
+                <semantic-form-select-input for='{{field.value}}' placeholder='{{label.value}}'>
+                </semantic-form-select-input>
+                {{/ifCond}}
 
-                  {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/TextInput"}}
-                  <semantic-form-text-input for='{{field.value}}' placeholder='{{label.value}}'>
-                  </semantic-form-text-input>
-                  {{/ifCond}}
+                {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/TextInput"}}
+                <semantic-form-text-input for='{{field.value}}' placeholder='{{label.value}}'>
+                </semantic-form-text-input>
+                {{/ifCond}}
 
-                  {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/DateInput"}}
-                  <semantic-form-datetime-input for='{{field.value}}' placeholder='{{label.value}}'>
-                  </semantic-form-datetime-input>
-                  {{/ifCond}}
+                {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/DateInput"}}
+                <semantic-form-datetime-input for='{{field.value}}' placeholder='{{label.value}}'>
+                </semantic-form-datetime-input>
+                {{/ifCond}}
 
-                  {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/ChecklistInput"}}
-                  <semantic-form-checklist-input for='{{field.value}}' type='{{type.value}}'
-                    row='{{orientation.value}}'></semantic-form-checklist-input>
-                  {{/ifCond}}
+                {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/ChecklistInput"}}
+                <semantic-form-checklist-input for='{{field.value}}' type='{{type.value}}'
+                  row='{{orientation.value}}'></semantic-form-checklist-input>
+                {{/ifCond}}
 
-                  {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/CheckboxInput"}}
-                  <semantic-form-checkbox-input for='{{field.value}}'></semantic-form-checkbox-input>
-                  {{/ifCond}}
+                {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/CheckboxInput"}}
+                <semantic-form-checkbox-input for='{{field.value}}'></semantic-form-checkbox-input>
+                {{/ifCond}}
 
-                  {{/each}}
-                  <button name='submit' class='btn btn-default'>Suivant</button>
-                  <button name='reset' class='btn btn-default'>Réinitialiser</button>
+                {{/each}}
+                <button name='submit' class='btn btn-default'>Suivant</button>
+                <button name='reset' class='btn btn-default'>Réinitialiser</button>
 
-                  [[#if (hasPermission "forms:ldp:*")]]
-                    <semantic-link-container
-                    uri='http://www.hercules.gouv.qc.ca/resource/FormFields?formUUID=[[this.label]]'>
-                    <button class='btn btn-default'>Modifier le formulaire</button>
-                  </semantic-link-container>
-                  [[/if]]
-
+                [[#if (hasPermission "forms:ldp:*")]]
+                  <semantic-link-container
+                  uri='http://www.hercules.gouv.qc.ca/resource/Forms/Fields?formUUID=[[this.label]]'>
+                  <button class='btn btn-default'>Modifier le formulaire</button>
+                </semantic-link-container>
+                [[/if]]
               </bs-panel>
             </semantic-form>
           </div>

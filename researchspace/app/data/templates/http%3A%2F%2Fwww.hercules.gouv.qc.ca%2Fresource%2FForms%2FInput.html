@@ -11,18 +11,26 @@
   {
     "id": "field",
     "label": "Modèle de connaissances",
-    "description": "Le modèle de connaissances à ajouter au formulaire",
+    "description": "Le modèle de connaissances liant l&#39;entrée à l&#39;entité créée par le formulaire",
     "xsdDatatype": "xsd:anyURI",
     "minOccurs": "1",
     "maxOccurs": "1",
     "valueSetPattern": "
-      SELECT DISTINCT $value $label WHERE {
+    SELECT DISTINCT $value $label WHERE {
+      {
         $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
         $value a <http://www.metaphacts.com/ontology/fields#Field> .
         $value rdfs:label $label .
-        $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .  
+        $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .
         ?class rdfs:subClassOf* ?domainClass .
       }
+      UNION {
+        $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+        $value a <http://www.metaphacts.com/ontology/fields#Field> .
+        $value rdfs:label $label .
+        FILTER NOT EXISTS { $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass . }
+      }
+    }
     ",
     "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value }",
     "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value } WHERE { }",

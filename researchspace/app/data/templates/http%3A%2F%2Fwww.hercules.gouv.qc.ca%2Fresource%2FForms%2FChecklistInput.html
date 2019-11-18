@@ -10,17 +10,25 @@
     {
       "id": "field",
       "label": "Modèle de connaissances",
-      "description": "Le modèle de connaissances à ajouter au formulaire",
+      "description": "Le modèle de connaissances liant l&#39;entrée à l&#39;entité créée par le formulaire",
       "xsdDatatype": "xsd:anyURI",
       "minOccurs": "1",
       "maxOccurs": "1",
       "valueSetPattern": "
-        SELECT $value $label WHERE {
-          <{{form.value}}> <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
-          $value a <http://www.metaphacts.com/ontology/fields#Field> .
-          $value rdfs:label $label .
-          $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .
-          ?class rdfs:subClassOf* ?domainClass .
+        SELECT DISTINCT $value $label WHERE {
+          {
+            $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+            $value a <http://www.metaphacts.com/ontology/fields#Field> .
+            $value rdfs:label $label .
+            $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .
+            ?class rdfs:subClassOf* ?domainClass .
+          }
+          UNION {
+            $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+            $value a <http://www.metaphacts.com/ontology/fields#Field> .
+            $value rdfs:label $label .
+            FILTER NOT EXISTS { $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass . }
+          }
         }
       ",
       "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value }",
@@ -29,8 +37,8 @@
     },
     {
       "id": "checklist-type",
-      "label": "ChecklistType",
-      "description": "Le type de la liste de contrôle à ajouter au formulaire",
+      "label": "Type de contrôle",
+      "description": "Le type de contrôle utilisé pour les entrées de la liste de contrôle à ajouter au formulaire",
       "xsdDatatype": "xsd:string",
       "minOccurs": "1",
       "maxOccurs": "1",
@@ -49,7 +57,7 @@
     },
     {
       "id": "checklist-row",
-      "label": "ChecklistRow",
+      "label": "Orientation",
       "description": "L&#39;orientation de la liste de contrôle à ajouter au formulaire",
       "xsdDatatype": "xsd:string",
       "minOccurs": "1",

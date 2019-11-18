@@ -19,8 +19,10 @@
           <{{form.value}}> <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
           $value a <http://www.metaphacts.com/ontology/fields#Field> .
           $value rdfs:label $label .
-          $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .
-          ?class rdfs:subClassOf* ?domainClass .
+          OPTIONAL { 
+            $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .  
+            ?class rdfs:subClassOf* ?domainClass .
+          }
         }
       ",
       "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value }",

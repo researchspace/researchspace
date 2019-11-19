@@ -1,43 +1,41 @@
 <ol class="page-breadcrumb rs-breadcrumb">
   <li class="rs-body-s-B">
-      <mp-link title="Home" url="resource/Start">Accueil</mp-link>
+      <mp-link title="Home" url="resource/Start">[[i18n "home" locale=(urlParam "preferredLanguage")]]</mp-link>
   </li>
   <li class="rs-body-s-B">
-    <semantic-link iri="http://www.hercules.gouv.qc.ca/resource/HerculesAdmin/">Administration</semantic-link> 
+    <semantic-link iri="http://www.hercules.gouv.qc.ca/resource/HerculesAdmin/">[[i18n "administration" locale=(urlParam "preferredLanguage")]]</semantic-link> 
   </li>
-  <li class="active rs-body-s-M">Data Import and Export</li>
+  <li class="active rs-body-s-M">[[i18n "dataImportAndExport" locale=(urlParam "preferredLanguage")]]</li>
 </ol>
 
 <div class="page rs-import-exp">
   
-  [[> :assetpageHeader title="Data Import and Export" icon="fa-cloud-upload"]]
+  [[> :assetpageHeader title=(i18n "dataImportAndExport" locale=(urlParam "preferredLanguage")) icon="fa-cloud-upload"]]
   
   <div class="container-fluid" style="margin-bottom: 40px;">
         <bs-row class="row-center">
             <bs-col xs=11 sm=10 md=10 lg=8>
-              	<h1>Data Import</h1>
+              	<h1>[[i18n "dataImport" locale=(urlParam "preferredLanguage")]]</h1>
     						<hr style="margin-top:0px;"/>
 								[[#if (hasPermission "sparql:update")]]
     						<bs-alert bs-style="info" class="rs-body-m-M">
-      					<strong>Info!</strong><br/>
+      					<strong>[[i18n "info" locale=(urlParam "preferredLanguage")]]</strong><br/>
                 <p>
-                  The data import via drag&amp;drop file upload should only be used for smaller files.
+                  [[i18n "dataImportInfo1" locale=(urlParam "preferredLanguage")]]
                 </p>
                 <p>
-                  All communication is done via HTTP and as such there are several limiting parameters, for example,
-                  the maximum body size a client may post against the webserver (e.g. tomcat, jetty or nginx default configuration is usually around 2 MBs).
-                  For loading larger datasets it is generally recommended to load the data via dedicated (but usually proprietary) graph database APIs. <br/> See also  <semantic-link iri="http://help.metaphacts.com/resource/WorkingWithData"></semantic-link>.
+                  [[i18n "dataImportInfo2" locale=(urlParam "preferredLanguage")]]<br/> [[i18n "seeAlso" locale=(urlParam "preferredLanguage")]]  <semantic-link iri="http://help.metaphacts.com/resource/WorkingWithData">[[i18n "workingWithData" locale=(urlParam "preferredLanguage")]]</semantic-link>.
                 </p>
                 </bs-alert>
                 <mp-rdf-upload style='width: 90%;'></mp-rdf-upload>
                 [[else]]
-                  <i>No permission for uploading or modifying data.</i>
+                  <i>[[i18n "noPermission" locale=(urlParam "preferredLanguage")]]</i>
                 [[/if]]
 
-              <h1 style="margin-top: 30px;">Data Export &amp; Deletion</h1>
+              <h1 style="margin-top: 30px;">[[i18n "dataExportAndDeletion" locale=(urlParam "preferredLanguage")]]</h1>
               <hr style="margin-top:0px;"/>
               <semantic-query query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
-                                    template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <bs-alert bs-style="info"> The repository contains <strong>{{number.value}}</strong> distinct named graphs.</bs-alert> {{/ifCond}}{{/each}}'
+                                    template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> [[i18n "tableLimitation" locale=(urlParam "preferredLanguage")]] <strong>1000</strong> [[i18n "namedGraphs" locale=(urlParam "preferredLanguage")]] </bs-alert> {{else}} <bs-alert bs-style="info"> [[i18n "repositoryContains" locale=(urlParam "preferredLanguage")]] <strong>{{number.value}}</strong> [[i18n "distinctNamedGraphs" locale=(urlParam "preferredLanguage")]] </bs-alert> {{/ifCond}}{{/each}}'
                     >
               </semantic-query>
               <semantic-table
@@ -51,13 +49,13 @@
                     }
                 '
                 column-configuration='[
-                  {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
-                  {"displayName":"Triples", "cellTemplate":"{{> count}}"}
+                  {"variableName":"graph", "displayName":"[[i18n "namedGraph" locale=(urlParam "preferredLanguage")]]", "cellTemplate":"{{> link}}"},
+                  {"displayName":"[[i18n "triples" locale=(urlParam "preferredLanguage")]]", "cellTemplate":"{{> count}}"}
                   [[#if (hasPermission "sparql:graphstore:get")]]
-                    ,{"displayName":"Export", "cellTemplate": "{{> export}}" }
+                    ,{"displayName":"[[i18n "export" locale=(urlParam "preferredLanguage")]]", "cellTemplate": "{{> export}}" }
                   [[/if]]
                   [[#if (hasPermission "sparql:graphstore:delete")]]
-                    ,{"displayName":"Delete", "cellTemplate": "{{> delete}}" }
+                    ,{"displayName":"[[i18n "delete" locale=(urlParam "preferredLanguage")]]", "cellTemplate": "{{> delete}}" }
                   [[/if]]
                 ]'
               >

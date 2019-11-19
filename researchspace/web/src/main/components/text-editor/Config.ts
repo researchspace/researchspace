@@ -16,32 +16,17 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-// @flow
+export interface ResourceTemplateConfig {
+  id: string
+  // URI of type template could be applied to
+  type: string
+  // Human-readable description of template
+  label: string
+  template: string
 
-
-export const source = {
-  beginDrag({ insert, ...props }: { layoutMode(): void, insert: Object }) {
-    props.layoutMode()
-    return {
-      node: insert,
-      rawNode: () => insert,
-      ...props,
-    };
-  },
-
-  endDrag(props: any, monitor: any) {
-    const item = monitor.getItem();
-    if (monitor.didDrop()) {
-      // If the item drop occurred deeper down the tree, don't do anything
-      return;
-    }
-
-    item.clearHover();
-  },
-};
-
-export const collect = (connect: any, monitor: any) => ({
-  connectDragSource: connect.dragSource(),
-  isDragging: monitor.isDragging(),
-  connectDragPreview: connect.dragPreview(),
-});
+  resizable?: boolean
+  defaults?: {
+    height?: string
+    width?: string
+  }
+}

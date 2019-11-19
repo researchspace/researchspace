@@ -63,7 +63,7 @@ export class FileManager {
    * @returns file resource IRI
    */
   uploadFileAsResource(options: {
-    file: File;
+    file: Blob;
     storage: string;
     contextUri?: string;
     generateIriQuery?: string;
@@ -98,7 +98,7 @@ export class FileManager {
    * @returns object ID of the uploaded file, including object kind prefix "file/"
    */
   uploadFileDirectlyToStorage(options: {
-    file: File;
+    file: Blob;
     storage: string;
     folder: string;
     fileName?: string;

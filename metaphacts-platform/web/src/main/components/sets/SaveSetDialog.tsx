@@ -19,7 +19,7 @@
 import * as React from 'react';
 import { Component, ReactElement, KeyboardEvent, SyntheticEvent } from 'react';
 import { findDOMNode } from 'react-dom';
-import { Modal, Button }from 'react-bootstrap';
+import { Modal, Button, ModalDialogProps }from 'react-bootstrap';
 import * as Kefir from 'kefir';
 import * as assign from 'object-assign';
 import * as _ from 'lodash';
@@ -31,7 +31,7 @@ export type SaveSetDialogProps = HeadlessSaveSetDialogProps & {
   onHide: () => void;
 };
 
-export interface HeadlessSaveSetDialogProps extends ReactBootstrap.ModalDialogProps {
+export interface HeadlessSaveSetDialogProps extends ModalDialogProps {
   onSave: (name: string) => Kefir.Observable<any>;
   maxSetSize: Data.Maybe<number>;
   title?: string;

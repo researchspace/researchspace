@@ -185,7 +185,7 @@ export class SplitPaneComponent extends Component<Props, State> {
           return isOpen ? cloneElement(element, {onClick: this.handleOpen}) : null;
         }
 
-        return cloneElement(element, {}, ...this.mapChildren(element.props.children));
+        return cloneElement(element, {}, this.mapChildren(element.props.children));
       })
     );
   }
@@ -224,7 +224,7 @@ export class SplitPaneComponent extends Component<Props, State> {
       cloneElement(
         firstChild,
         {style: firstChildStyle},
-        ...this.mapChildren(firstChild.props.children)
+        this.mapChildren(firstChild.props.children)
       ),
       this.mapChildren(children[1])
     );

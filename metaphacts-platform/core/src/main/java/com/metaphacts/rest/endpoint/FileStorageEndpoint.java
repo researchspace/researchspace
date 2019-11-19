@@ -165,8 +165,11 @@ public class FileStorageEndpoint {
         assertPermission(FILE.PREFIX_WRITE + storageId);
 
         try {
-            ManagedFileName managedName = ManagedFileName.generateFromFileName(
-                ObjectKind.FILE, fileDisposition.getFileName(), fileManager::generateSequenceNumber);
+          // TODO allow to disable sequenceNumber generation
+          //  ManagedFileName managedName = ManagedFileName.generateFromFileName(
+          //      ObjectKind.FILE, fileDisposition.getFileName(), fileManager::generateSequenceNumber);
+          ManagedFileName managedName = ManagedFileName.generateFromFileName(
+                                                                             ObjectKind.FILE, fileDisposition.getFileName(), null);
             String mediaType = fileDisposition.getType();
 
             ObjectStorage storage = platformStorage.getStorage(storageId);

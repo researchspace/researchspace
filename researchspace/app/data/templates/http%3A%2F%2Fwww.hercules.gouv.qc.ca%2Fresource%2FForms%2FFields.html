@@ -11,8 +11,11 @@
   <template id='fieldsTemplate'>
     <div>
       {{#each bindings}}
-        <semantic-form subject='{{form.value}}' post-action='redirect' browser-persistence=false form-id='FieldsForm'
-          fields='[
+      [[> :assetpageHeader title="Définition des champs d'entrée du formulaire" icon="fa-bars"]]
+      <bs-row class="row-center">
+        <bs-col xs=11 sm=10 md=10 lg=8>
+          <semantic-form subject='{{form.value}}' post-action='redirect' browser-persistence=false form-id='FieldsForm'
+            fields='[
           {
             "id": "type",
             "label": "Type",
@@ -62,10 +65,7 @@
             "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasInput> $value } WHERE { }"
           }
           ]'>
-          <bs-panel>
-            <h4>Définir les champs d'entrée du formulaire</h4>
-            <semantic-form-recover-notification></semantic-form-recover-notification>
-            <bs-tabs fixed-key="form">
+            <bs-panel>
               <semantic-form-hidden-input for='type' default-value='http://hercules.gouv.qc.ca/ontology/meta/Form'>
               </semantic-form-hidden-input>
               <semantic-form-hidden-input for='class' default-value='{{class.value}}'></semantic-form-hidden-input>
@@ -73,11 +73,12 @@
 
               {{> Forms:InputSwitch field='input'}}
 
-              <button name='submit' class='btn btn-default'>Suivant</button>
-              <button name='reset' class='btn btn-default'>Réinitialiser</button>
-            </bs-tabs>
-          </bs-panel>
-        </semantic-form> 
+              <button name='submit' class='btn btn-default pull-right'>Créer</button>
+              <button name='reset' class='btn btn-default pull-right'>Réinitialiser</button>
+            </bs-panel>
+          </semantic-form>
+        </bs-col>
+      </bs-row>
       {{/each}}
     </div>
   </template>

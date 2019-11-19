@@ -7,61 +7,64 @@
   <template id='form-generation-template'>
     <div>
       {{#each bindings}}
-        <semantic-form new-subject-template='http://culture.gouv.qc.ca/form/{{uuid.value}}'
-          post-action='http://www.hercules.gouv.qc.ca/resource/Forms/Fields?formUUID={{uuid.value}}' browser-persistence=false
-          form-id='ClassForm' fields='[
-        {
-          "id": "type",
-          "label": "Type",
-          "description": "Le type du formulaire",
-          "xsdDatatype": "xsd:anyURI",
-          "selectPattern": "SELECT $value WHERE { $subject a $value }",
-          "insertPattern": "INSERT { $subject a $value } WHERE { }",
-          "deletePattern": "DELETE { $subject a $value } WHERE { }"
-        },
-        {
-          "id": "class",
-          "label": "Classe",
-          "description": "La classe de l&#39;entité à créer par le formulaire",
-          "xsdDatatype": "xsd:anyURI",
-          "minOccurs": "1",
-          "maxOccurs": "1",
-          "valueSetPattern": "
-            SELECT $value $label WHERE {
-              $value a owl:Class .
-              $value rdfs:label $label .
-              FILTER langMatches(lang($label) , \"fr\")
+      [[> :assetpageHeader title="Création d'un nouveau formulaire" icon="fa-file"]]
+        <bs-row class="row-center">
+          <bs-col xs=11 sm=10 md=10 lg=8>
+            <semantic-form new-subject-template='http://culture.gouv.qc.ca/form/{{uuid.value}}'
+              post-action='http://www.hercules.gouv.qc.ca/resource/Forms/Fields?formUUID={{uuid.value}}'
+              browser-persistence=false form-id='ClassForm' fields='[
+            {
+              "id": "type",
+              "label": "Type",
+              "description": "Le type du formulaire",
+              "xsdDatatype": "xsd:anyURI",
+              "selectPattern": "SELECT $value WHERE { $subject a $value }",
+              "insertPattern": "INSERT { $subject a $value } WHERE { }",
+              "deletePattern": "DELETE { $subject a $value } WHERE { }"
+            },
+            {
+              "id": "class",
+              "label": "Classe",
+              "description": "La classe de l&#39;entité à créer par le formulaire",
+              "xsdDatatype": "xsd:anyURI",
+              "minOccurs": "1",
+              "maxOccurs": "1",
+              "valueSetPattern": "
+                SELECT $value $label WHERE {
+                  $value a owl:Class .
+                  $value rdfs:label $label .
+                  FILTER langMatches(lang($label) , \"fr\")
+                }
+              ",
+              "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value }",
+              "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }",
+              "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }"
+            },
+            {
+              "id": "name",
+              "label": "Nom",
+              "description": "Le nom du formulaire",
+              "xsdDatatype": "xsd:string",
+              "minOccurs": "1",
+              "maxOccurs": "1",
+              "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value }",
+              "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }",
+              "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }"
             }
-          ",
-          "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value }",
-          "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }",
-          "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }"
-        },
-        {
-          "id": "name",
-          "label": "Nom",
-          "description": "Le nom du formulaire",
-          "xsdDatatype": "xsd:string",
-          "minOccurs": "1",
-          "maxOccurs": "1",
-          "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value }",
-          "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }",
-          "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }"
-        }
-        ]'>
-          <bs-panel>
-            <h4>Choisir une classe</h4>
-            <semantic-form-recover-notification></semantic-form-recover-notification>
-            <bs-tabs fixed-key="form">
-              <semantic-form-hidden-input for='type'
-                default-value='http://hercules.gouv.qc.ca/ontology/meta/Form'></semantic-form-hidden-input>
-              <semantic-form-text-input for='name' placeholder='Nom du formulaire'></semantic-form-text-input>
-              <semantic-form-select-input for='class' placeholder='Classe de l&#39;entité à créer'></semantic-form-select-input>
+            ]'>
+              <bs-panel>
+                <semantic-form-hidden-input for='type' default-value='http://hercules.gouv.qc.ca/ontology/meta/Form'>
+                </semantic-form-hidden-input>
+                <semantic-form-text-input for='name' placeholder='Nom du formulaire'></semantic-form-text-input>
+                <semantic-form-select-input for='class' placeholder='Classe de l&#39;entité à créer'>
+                </semantic-form-select-input>
 
-              <button name='submit' class='btn btn-default'>Suivant</button>
-              <button name='reset' class='btn btn-default'>Réinitialiser</button>
-          </bs-panel>
-        </semantic-form>        
+                <button name='submit' class='btn btn-default pull-right'>Suivant</button>
+                <button name='reset' class='btn btn-default pull-right'>Réinitialiser</button>
+              </bs-panel>
+            </semantic-form>
+          </bs-col>
+        </bs-row>
       {{/each}}
     </div>
   </template>

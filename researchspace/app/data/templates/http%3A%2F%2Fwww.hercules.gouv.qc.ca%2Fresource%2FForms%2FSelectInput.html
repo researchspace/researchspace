@@ -1,0 +1,44 @@
+<semantic-form-composite-input for='{{field}}' fields=
+'[{
+    "id": "switch-case-type",
+    "xsdDatatype": "xsd:anyURI",
+    "minOccurs": "1",
+    "maxOccurs": "1",
+    "selectPattern": "SELECT $value WHERE { $subject a $value }",
+    "insertPattern": "INSERT { $subject a $value } WHERE { }",
+    "deletePattern": "DELETE { $subject a $value } WHERE { }"
+  },
+  {
+    "id": "field",
+    "label": "[[i18n "knowledgePattern" locale=(urlParam "preferredLanguage")]]",
+    "description": "[[i18n "knowledgePatternDescription" locale=(urlParam "preferredLanguage")]]",
+    "xsdDatatype": "xsd:anyURI",
+    "minOccurs": "1",
+    "maxOccurs": "1",
+    "valueSetPattern": "
+    SELECT DISTINCT $value $label WHERE {
+      {
+        $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+        $value a <http://www.metaphacts.com/ontology/fields#Field> .
+        $value rdfs:label $label .
+        $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .
+        ?class rdfs:subClassOf* ?domainClass .
+      }
+      UNION
+      {
+        $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+        $value a <http://www.metaphacts.com/ontology/fields#Field> .
+        $value rdfs:label $label .
+        FILTER NOT EXISTS { $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass . }
+      }
+    }
+    ",
+    "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value }",
+    "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value } WHERE { }",
+    "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value } WHERE { }"
+  }]'
+  >
+  <semantic-form-hidden-input for='switch-case-type' default-value='{{type}}'>
+  </semantic-form-hidden-input>
+  <semantic-form-select-input for='field' placeholder='[[i18n "knowledgePatterns" locale=(urlParam "preferredLanguage")]]'></semantic-form-select-input>
+</semantic-form-composite-input>

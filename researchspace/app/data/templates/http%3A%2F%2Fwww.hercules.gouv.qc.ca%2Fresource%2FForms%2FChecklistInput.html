@@ -1,0 +1,84 @@
+<semantic-form-composite-input for='{{field}}' fields='[{
+      "id": "switch-case-type",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "selectPattern": "SELECT $value WHERE { $subject a $value }",
+      "insertPattern": "INSERT { $subject a $value } WHERE { }",
+      "deletePattern": "DELETE { $subject a $value } WHERE { }"
+    },
+    {
+      "id": "field",
+      "label": "[[i18n "knowledgePattern" locale=(urlParam "preferredLanguage")]]",
+      "description": "[[i18n "knowledgePatternDescription" locale=(urlParam "preferredLanguage")]]",
+      "xsdDatatype": "xsd:anyURI",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "valueSetPattern": "
+        SELECT DISTINCT $value $label WHERE {
+          {
+            $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+            $value a <http://www.metaphacts.com/ontology/fields#Field> .
+            $value rdfs:label $label .
+            $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass .
+            ?class rdfs:subClassOf* ?domainClass .
+          }
+          UNION {
+            $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+            $value a <http://www.metaphacts.com/ontology/fields#Field> .
+            $value rdfs:label $label .
+            FILTER NOT EXISTS { $value <http://www.metaphacts.com/ontology/fields#domain> ?domainClass . }
+          }
+        }
+      ",
+      "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value }",
+      "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value } WHERE { }",
+      "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forField> $value } WHERE { }"
+    },
+    {
+      "id": "checklist-type",
+      "label": "[[i18n "checklistType" locale=(urlParam "preferredLanguage")]]",
+      "description": "[[i18n "checklistTypeDescription" locale=(urlParam "preferredLanguage")]]",
+      "xsdDatatype": "xsd:string",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "defaultValues": [ "checkbox" ],
+      "valueSetPattern": "
+        SELECT ?value ?label WHERE {
+          VALUES (?value ?label) {
+            (\"checkbox\" \"Checkbox\")
+            (\"radio\" \"Radio button\")
+          }
+        }
+      ",
+      "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasControlType> $value }",
+      "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasControlType> $value } WHERE { }",
+      "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasControlType> $value } WHERE { }"
+    },
+    {
+      "id": "checklist-row",
+      "label": "[[i18n "checklistRow" locale=(urlParam "preferredLanguage")]]",
+      "description": "[[i18n "checklistRowDescription" locale=(urlParam "preferredLanguage")]]",
+      "xsdDatatype": "xsd:string",
+      "minOccurs": "1",
+      "maxOccurs": "1",
+      "defaultValues": [ "false" ],
+      "valueSetPattern": "
+        SELECT ?value ?label WHERE {
+          VALUES (?value ?label) {
+            (\"false\" \"Colonne\")
+            (\"true\" \"Ligne\")                        
+          }
+        }
+      ",
+      "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasOrientation> $value }",
+      "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasOrientation> $value } WHERE { }",
+      "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasOrientation> $value } WHERE { }"
+    }]'>
+  <semantic-form-hidden-input for='switch-case-type'
+    default-value='http://hercules.gouv.qc.ca/ontology/meta/ChecklistInput'>
+  </semantic-form-hidden-input>
+  <semantic-form-select-input for='field' placeholder='[[i18n "knowledgePatterns" locale=(urlParam "preferredLanguage")]]'></semantic-form-select-input>
+  <semantic-form-select-input for='checklist-type' placeholder='Type'></semantic-form-select-input>
+  <semantic-form-select-input for='checklist-row' placeholder='Orientation'></semantic-form-select-input>
+</semantic-form-composite-input>

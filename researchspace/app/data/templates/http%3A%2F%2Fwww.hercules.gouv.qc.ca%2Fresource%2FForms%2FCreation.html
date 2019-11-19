@@ -1,0 +1,71 @@
+<semantic-query query='
+          SELECT ?uuid WHERE {
+            BIND(STRUUID() as ?uuid)
+          }
+        ' template='{{> form-generation-template}}'>
+
+  <template id='form-generation-template'>
+    <div>
+      {{#each bindings}}
+      [[> :assetpageHeader title=(i18n "createNewForm" locale=(urlParam "preferredLanguage")) icon="fa-file"]]
+        <bs-row class="row-center">
+          <bs-col xs=11 sm=10 md=10 lg=8>
+            <semantic-form new-subject-template='http://culture.gouv.qc.ca/form/{{uuid.value}}'
+              post-action='http://www.hercules.gouv.qc.ca/resource/Forms/Fields?formUUID={{uuid.value}}'
+              browser-persistence=false form-id='ClassForm' fields='[
+            {
+              "id": "type",
+              "label": "[[i18n "type" locale=(urlParam "preferredLanguage")]]",
+              "description": "[[i18n "formGenerationTypeDescription" locale=(urlParam "preferredLanguage")]]",
+              "xsdDatatype": "xsd:anyURI",
+              "selectPattern": "SELECT $value WHERE { $subject a $value }",
+              "insertPattern": "INSERT { $subject a $value } WHERE { }",
+              "deletePattern": "DELETE { $subject a $value } WHERE { }"
+            },
+            {
+              "id": "class",
+              "label": "[[i18n "class" locale=(urlParam "preferredLanguage")]]",
+              "description": "[[i18n "formGenerationClassDescription" locale=(urlParam "preferredLanguage")]]",
+              "xsdDatatype": "xsd:anyURI",
+              "minOccurs": "1",
+              "maxOccurs": "1",
+              "valueSetPattern": "
+                SELECT $value $label WHERE {
+                  $value a owl:Class .
+                  $value rdfs:label $label .
+                  FILTER langMatches(lang($label) , \"[[urlParam "preferredLanguage"]]\")
+                }
+              ",
+              "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value }",
+              "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }",
+              "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }"
+            },
+            {
+              "id": "name",
+              "label": "[[i18n "name" locale=(urlParam "preferredLanguage")]]",
+              "description": "[[i18n "formGenerationNameDescription" locale=(urlParam "preferredLanguage")]]",
+              "xsdDatatype": "xsd:string",
+              "minOccurs": "1",
+              "maxOccurs": "1",
+              "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value }",
+              "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }",
+              "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }"
+            }
+            ]'>
+              <bs-panel>
+                <semantic-form-hidden-input for='type' default-value='http://hercules.gouv.qc.ca/ontology/meta/Form' placeholder='[[i18n "typePlaceholder" locale=(urlParam "preferredLanguage")]]'>
+                </semantic-form-hidden-input>
+                <semantic-form-text-input for='name' placeholder='[[i18n "namePlaceholder" locale=(urlParam "preferredLanguage")]]'></semantic-form-text-input>
+                <semantic-form-select-input for='class' placeholder='[[i18n "classPlaceholder" locale=(urlParam "preferredLanguage")]]'>
+                </semantic-form-select-input>
+
+                <button name='submit' class='btn btn-default pull-right'>[[i18n "next" locale=(urlParam "preferredLanguage")]]</button>
+                <button name='reset' class='btn btn-default pull-right'>[[i18n "reset" locale=(urlParam "preferredLanguage")]]</button>
+              </bs-panel>
+            </semantic-form>
+          </bs-col>
+        </bs-row>
+      {{/each}}
+    </div>
+  </template>
+</semantic-query>

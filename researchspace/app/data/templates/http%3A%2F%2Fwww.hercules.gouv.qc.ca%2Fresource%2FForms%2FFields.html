@@ -1,0 +1,85 @@
+<semantic-query query='
+        PREFIX Form: <http://culture.gouv.qc.ca/form/>
+
+        SELECT ?form ?class ?name WHERE {
+          BIND(Form:[[urlParam "formUUID"]] as ?form)
+          ?form <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+          ?form <http://hercules.gouv.qc.ca/ontology/meta/hasName> ?name .
+        } 
+        ' template='{{> fieldsTemplate}}'>
+
+  <template id='fieldsTemplate'>
+    <div>
+      {{#each bindings}}
+      [[> :assetpageHeader title=(i18n "fieldsDefinitionForm" locale=(urlParam "preferredLanguage")) icon="fa-bars"]]  
+      <bs-row class="row-center">
+        <bs-col xs=11 sm=10 md=10 lg=8>
+          <semantic-form subject='{{form.value}}' post-action='redirect' browser-persistence=false form-id='FieldsForm'
+            fields='[
+          {
+            "id": "type",
+            "label": "Type",
+            "description": "Le type du formulaire",
+            "xsdDatatype": "xsd:anyURI",
+            "selectPattern": "SELECT $value WHERE { $subject a $value }",
+            "insertPattern": "INSERT { $subject a $value } WHERE { }",
+            "deletePattern": "DELETE { $subject a $value } WHERE { }"
+          },
+          {
+            "id": "class",
+            "label": "Classe",
+            "description": "La classe de l&#39;entité à créer par le formulaire",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "defaultValues": [ "http://erlangen-crm.org/170309/E1_CRM_Entity" ],
+            "valueSetPattern": "
+              SELECT $value $label WHERE {
+                $value a owl:Class .
+                $value rdfs:label $label .
+              }
+            ",
+            "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value }",
+            "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }",
+            "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/forClass> $value } WHERE { }"
+          },
+          {
+            "id": "name",
+            "label": "Nom",
+            "description": "Le nom du formulaire",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value }",
+            "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }",
+            "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasName> $value } WHERE { }"
+          },
+          {
+            "id": "input",
+            "label": "[[i18n "formInputField" locale=(urlParam "preferredLanguage")]]",
+            "description": "[[i18n "formInputFieldDescription" locale=(urlParam "preferredLanguage")]]",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "selectPattern": "SELECT $value WHERE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasInput> $value }",
+            "insertPattern": "INSERT { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasInput> $value } WHERE { }",
+            "deletePattern": "DELETE { $subject <http://hercules.gouv.qc.ca/ontology/meta/hasInput> $value } WHERE { }"
+          }
+          ]'>
+            <bs-panel>
+              <semantic-form-hidden-input for='type' default-value='http://hercules.gouv.qc.ca/ontology/meta/Form' placeholder='[[i18n "typePlaceholder" locale=(urlParam "preferredLanguage")]]'>
+              </semantic-form-hidden-input>
+              <semantic-form-hidden-input for='class' default-value='{{class.value}}' placeholder='[[i18n "classPlaceholder" locale=(urlParam "preferredLanguage")]]'></semantic-form-hidden-input>
+              <semantic-form-hidden-input for='name' default-value='{{name.value}}' placeholder='[[i18n "namePlaceholder" locale=(urlParam "preferredLanguage")]]'></semantic-form-hidden-input>
+
+              {{> Forms:InputSwitch field='input'}}
+
+              <button name='submit' class='btn btn-default pull-right'>[[i18n "create" locale=(urlParam "preferredLanguage")]]</button>
+              <button name='reset' class='btn btn-default pull-right'>[[i18n "reset" locale=(urlParam "preferredLanguage")]]</button>
+            </bs-panel>
+          </semantic-form>
+        </bs-col>
+      </bs-row>
+      {{/each}}
+    </div>
+  </template>
+</semantic-query>

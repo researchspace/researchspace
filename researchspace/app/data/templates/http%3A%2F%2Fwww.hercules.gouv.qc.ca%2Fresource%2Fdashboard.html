@@ -7,9 +7,9 @@
 
 <div class='rs-dashboard-bg'>
 
-  [[#> :ClipboardSidebar]]
 
   <div class="container-fluid rs-dashboard-container">
+
 
     <bs-row class="row-left">
       <bs-col xs=12 sm=11 class='rs-h1'>[[i18n "dashboard" locale=(urlParam "preferredLanguage")]]
@@ -19,7 +19,7 @@
     <bs-row class="row-left rs-top-buttons">
 
       <bs-col xs=12 sm=4 md=3 lg=3 class="rs-btn-dashboard--col">
-        <semantic-link uri="http://www.hercules.gouv.qc.ca/resource/Forms" role="button"
+        <semantic-link iri="http://www.hercules.gouv.qc.ca/resource/Forms" role="button"
           class="rs-btn-dashboard rs-btn-dashboard--forms">
           <div class="btn">[[i18n "forms" locale=(urlParam "preferredLanguage")]]</div>
           <semantic-query query="SELECT (COUNT(DISTINCT ?form) as ?count)
@@ -34,9 +34,9 @@
       </bs-col>
 
       <bs-col xs=12 sm=4 md=3 lg=3 class="rs-btn-dashboard--col">
-        <semantic-link uri="http://www.hercules.gouv.qc.ca/resource/FieldCatalog" role="button"
+        <semantic-link iri="http://www.hercules.gouv.qc.ca/resource/FieldCatalog" role="button"
           class="rs-btn-dashboard rs-btn-dashboard--fields">
-          <div class="btn">[[i18n "knowledgeModels" locale=(urlParam "preferredLanguage")]]</div>
+          <div class="btn">[[i18n "knowledgePatterns" locale=(urlParam "preferredLanguage")]]</div>
           <semantic-context repository='assets'>
             <semantic-query query="SELECT (COUNT(DISTINCT ?field) as ?count)
                                    WHERE {
@@ -111,11 +111,14 @@
                       } 
                       UNION 
                       {
-                        ?page a ?type;
-                          rdfs:label ?title;
-                          <http://www.w3.org/ns/prov#wasAttributedTo> ?user;
-                          <http://www.w3.org/ns/prov#generatedAtTime> ?time .
-                        FILTER (?type = <http://hercules.gouv.qc.ca/ontology/meta/Form>) .
+                        GRAPH ?g { 
+                          ?page a ?type .
+                          ?page <http://hercules.gouv.qc.ca/ontology/meta/hasName> ?title .
+                          ?c <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                          ?c <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                          
+                          FILTER (?type = <http://hercules.gouv.qc.ca/ontology/meta/Form>)
+                        }
                         BIND('Formulaire' as ?content_type) .
                         BIND('rs-btn-dashboard--forms' as ?tag_cssClass) 	
                       }
@@ -153,7 +156,7 @@
                                     {"variableName": "title", "displayName": "", "cellTemplate":"{{> resource}}" },
 
                                     {"variableName": "user", "displayName": "", "cellTemplate": "<div><i class=\"fa fa-user\" style=\"margin-right: 10px\"></i>
-                                      <semantic-link class=\"rs-dashboard--a\" uri=\"{{user.value}}\" target=\"_blank\"></semantic-link></div>" },
+                                      <semantic-link class=\"rs-dashboard--a\" iri=\"{{user.value}}\" target=\"_blank\"></semantic-link></div>" },
 
                                     {"variableName": "type", "displayName": "", 
                                     "cellTemplate": "<div><span class=\"rs-tag {{tag_cssClass.value}} rs-dashboard-tag rs-h5\">{{content_type.value}}</span></div>"},
@@ -161,7 +164,7 @@
                                     {"variableName": "time", "displayName": "", "cellTemplate": 
                                     "<div class=\"rs-dashboard-tableDate\">
                                       <div>
-                                        <span>Last modified: </span>
+                                        <span>[[i18n "lastModified" locale=(urlParam "preferredLanguage")]]</span>
                                         <span class=\"rs-dashboard-tableDateValue\">{{dateTimeFormat time.value \"LLL\"}}</span>
                                       </div>
                                     </div>"},
@@ -187,7 +190,7 @@
                 <template id="else">
                   <mp-draggable iri='{{page.value}}'>
                     <span>
-                      <semantic-link class='rs-dashboard--a-title' uri='{{page.value}}'>{{title.value}}</semantic-link>
+                      <semantic-link class='rs-dashboard--a-title' iri='{{page.value}}'>{{title.value}}</semantic-link>
                     </span>
                   </mp-draggable>
                 </template>
@@ -273,7 +276,7 @@
         <div class="rs-h3 rs-ds-add--title">[[i18n "data" locale=(urlParam "preferredLanguage")]]</div>
         [[>Default:dashboardCard title=(i18n "semanticData" locale=(urlParam "preferredLanguage")) descr=(i18n "semanticDataDashboardDescription" locale=(urlParam "preferredLanguage")) imgIcon="/images/icons/upload.svg"
         pageLink=(resolvePrefix "Admin:DataImportExport")]]
-        [[>Default:dashboardCard title=(i18n "knowledgeModels" locale=(urlParam "preferredLanguage")) descr=(i18n "knowledgeModelsDashboardDescription" locale=(urlParam "preferredLanguage")) imgIcon="/images/icons/list.svg"
+        [[>Default:dashboardCard title=(i18n "knowledgePatterns" locale=(urlParam "preferredLanguage")) descr=(i18n "knowledgePatternsDashboardDescription" locale=(urlParam "preferredLanguage")) imgIcon="/images/icons/list.svg"
         pageLink=(resolvePrefix ":FieldCatalog")]]
         [[>Default:dashboardCard title=(i18n "images" locale=(urlParam "preferredLanguage")) descr=(i18n "imagesDashboardDescription" locale=(urlParam "preferredLanguage")) imgIcon="/images/icons/images.svg"
         pageLink=(resolvePrefix ":MyImages")]]
@@ -293,7 +296,5 @@
     </bs-row>
 
   </div>
-
-  [[/:ClipboardSidebar]]
 
 </div>

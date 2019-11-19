@@ -1,0 +1,84 @@
+<semantic-query query='
+    SELECT ?formName ?class ?label WHERE {
+      ?? <http://hercules.gouv.qc.ca/ontology/meta/forClass> ?class .
+      ?? <http://hercules.gouv.qc.ca/ontology/meta/hasName> ?formName .
+      ?class rdfs:label ?label .
+      FILTER langMatches(lang(?label), "[[urlParam "preferredLanguage"]]")
+      BIND(STRUUID() as ?uuid)
+    }
+    ' template='{{> classTemplate}}'>
+  <template id='classTemplate'>
+    <div>
+      {{#each bindings}}
+        [[> :assetpageHeader title="{{formName.value}}" icon="fa-user-plus"]]
+
+        <bs-row class="row-center">
+          <bs-col xs=11 sm=10 md=10 lg=8>
+            <semantic-query query='
+              SELECT ?field ?input ?inputType ?label ?clType ?clOrientation WHERE {
+                ?? <http://hercules.gouv.qc.ca/ontology/meta/hasInput> ?input .
+                ?input a ?inputType .
+                ?input <http://hercules.gouv.qc.ca/ontology/meta/forField> ?field .
+                OPTIONAL { 
+                  ?input <http://hercules.gouv.qc.ca/ontology/meta/hasControlType> ?clType .
+                  ?input <http://hercules.gouv.qc.ca/ontology/meta/hasOrientation> ?clOrientation .
+                }
+                ?field rdfs:label ?label .
+              }
+              ' template='{{> formTemplate}}'>
+              <template id='formTemplate'>
+                <div>
+                  <semantic-form new-subject-template='http://culture.gouv.qc.ca/entity/{{uuid.value}}'
+                    post-action='redirect' browser-persistence=false form-id='Form' fields='[[fieldDefinitions]]'>
+                    <bs-panel>
+                      [[#if (hasPermission "forms:ldp:*")]]
+                      <semantic-link-container
+                        uri='http://www.hercules.gouv.qc.ca/resource/Forms/Fields?formUUID=[[this.label]]'>
+                        <button class='btn btn-default pull-right'>Modifier</button>
+                      </semantic-link-container>
+                      [[/if]]
+                      <semantic-form-hidden-input for='http://www.metaphacts.com/fieldDefinition/Type'
+                        default-value={{class.value}}>
+                      </semantic-form-hidden-input>
+                      <semantic-form-text-input for='http://www.metaphacts.com/fieldDefinition/Label' placeholder='Label'>
+                      </semantic-form-text-input>
+                      <!-- CHANGE FOR SEMANTIC IF -->
+                      {{#each bindings}}
+                      {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/SelectInput"}}
+                      <semantic-form-select-input for='{{field.value}}' placeholder='{{label.value}}'>
+                      </semantic-form-select-input>
+                      {{/ifCond}}
+
+                      {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/TextInput"}}
+                      <semantic-form-text-input for='{{field.value}}' placeholder='{{label.value}}'>
+                      </semantic-form-text-input>
+                      {{/ifCond}}
+
+                      {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/DateInput"}}
+                      <semantic-form-datetime-input for='{{field.value}}' placeholder='{{label.value}}'>
+                      </semantic-form-datetime-input>
+                      {{/ifCond}}
+
+                      {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/ChecklistInput"}}
+                      <semantic-form-checklist-input for='{{field.value}}' type='{{type.value}}'
+                        row='{{orientation.value}}'></semantic-form-checklist-input>
+                      {{/ifCond}}
+
+                      {{#ifCond inputType.value "==" "http://hercules.gouv.qc.ca/ontology/meta/CheckboxInput"}}
+                      <semantic-form-checkbox-input for='{{field.value}}'></semantic-form-checkbox-input>
+                      {{/ifCond}}
+
+                      {{/each}}
+                      <button name='submit' class='btn btn-default pull-right'>Créer</button>
+                      <button name='reset' class='btn btn-default pull-right'>Réinitialiser</button>
+                    </bs-panel>
+                  </semantic-form>
+                </div>
+              </template>
+            </semantic-query>
+          </bs-col>
+        </bs-row>
+      {{/each}}
+    </div>
+  </template>
+</semantic-query>

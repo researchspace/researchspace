@@ -29,7 +29,7 @@ Hercules est une application propulsée par le système de connaissances context
 
 # Déploiement
 
-Les étapes de déploiement sont les mêmes que la plateforme Researchspace. Elle se trouvent au lien suivant : 
+Les étapes de déploiement sont les mêmes que la plateforme Researchspace. Elles se trouvent au lien suivant : 
 
 [Researchspace Setup](SETUP.md)
 

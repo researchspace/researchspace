@@ -1,0 +1,91 @@
+name: CI
+
+on: ['pull_request']
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    
+    if: github.event.action != 'labeled' || github.event.label.name == 'build_image'
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Setup up Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Cache sbt packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.sbt
+          key: sbt-v1-${{ hashFiles('project/build.properties') }}
+          restore-keys: |
+            sbt-v1-${{ env.cache-name }}
+            sbt-v1-
+
+      - name: Cache maven packages 1
+        uses: actions/cache@v1
+        with:
+          path: ~/.coursier
+          key: coursier-v1-${{ hashFiles('project/dependencies.scala') }}
+          restore-keys: |
+            coursier-v2-${{ env.cache-name }}
+            coursier-v2-
+
+      - name: Cache maven packages 2
+        uses: actions/cache@v1
+        with:
+          path: ~/.ivy2
+          key: ivy-v2-${{ hashFiles('project/dependencies.scala') }}
+          restore-keys: |
+            ivy-v2-${{ env.cache-name }}
+            ivy-v2-
+
+      - name: Cache node packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/yarn
+          key: yarn-v1-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-v1-${{ env.cache-name }}
+            yarn-v1-
+
+      - name: Run tests
+        run: |
+          sh ./build.sh -DplatformVersion=3.3-${GITHUB_SHA:7} -Dbuildjson=researchspace/researchspace-root-build.json -DbuildEnv=prod test
+        env:
+          CHROMIUM_BIN: /usr/bin/google-chrome
+
+      - name: Build WAR
+        if: contains(github.event.pull_request.labels.*.name, 'build_image')
+        run: |
+          sh ./build.sh -DplatformVersion=3.3-${GITHUB_SHA} -Dbuildjson=researchspace/researchspace-root-build.json -DbuildEnv=prod package
+
+      - name: Build docker image
+        if: contains(github.event.pull_request.labels.*.name, 'build_image')
+        run: |
+          export DOCKER_FOLDER="$(pwd)/metaphacts-platform/dist/docker"
+          cp target/platform-*.war $DOCKER_FOLDER/platform/ROOT.war
+          mkdir $DOCKER_FOLDER/platform/etc
+          cp metaphacts-platform/webapp/etc/* $DOCKER_FOLDER/platform/etc
+          mkdir $DOCKER_FOLDER/platform/config
+          cp -r  metaphacts-platform/app/config/* $DOCKER_FOLDER/platform/config
+          cd $DOCKER_FOLDER/platform
+          docker build -t researchspace/platform-ci:${GITHUB_SHA} .
+
+      - name: Push docker image
+        if: contains(github.event.pull_request.labels.*.name, 'build_image')
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
+          docker push researchspace/platform-ci:${GITHUB_SHA}

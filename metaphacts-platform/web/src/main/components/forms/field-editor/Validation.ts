@@ -35,7 +35,7 @@ export function collectStateErrors(state: State): Error[] {
 
   const values = [
     state.id, state.description, state.xsdDatatype,
-    state.min, state.max, state.weight, state.testSubject, state.selectPattern, state.insertPattern,
+    state.min, state.max, state.order, state.testSubject, state.selectPattern, state.insertPattern,
     state.deletePattern, state.askPattern, state.valueSetPattern, state.autosuggestionPattern,
   ];
   for (const value of values) {
@@ -132,17 +132,17 @@ export function validateMax(v: string): Value {
 }
 
 /**
- * Returns a valid weight observable value if value is >= 0 or unbound,
+ * Returns a valid order observable value if value is >= 0 or unbound,
  * an error observable otherwise.
  */
-export function validateWeight(v: string): Value {
+export function validateOrder(v: string): Value {
   const num = Number(v);
   if (Number.isInteger(num) && num >= 0 ) {
     return {value: v};
   } else {
     return {
       value: v,
-      error: new Error('Weight must be >= 0'),
+      error: new Error('Order must be >= 0'),
     };
   }
 }

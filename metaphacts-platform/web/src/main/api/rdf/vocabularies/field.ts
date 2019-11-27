@@ -36,6 +36,7 @@ module field {
   export const range = iri('range');
   export const min_occurs = iri('minOccurs');
   export const max_occurs = iri('maxOccurs');
+  export const order = iri('order');
   export const default_value = iri('defaultValue');
   export const valueset_pattern = iri('valueSetPattern');
   export const autosuggestion_pattern = iri('autosuggestionPattern');

@@ -23,7 +23,7 @@ import { fromNullable } from 'data.maybe';
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import { getFieldDefinitionProp } from 'platform/api/services/ldp-field';
 import { Rdf, vocabularies } from 'platform/api/rdf';
-const { sp, field, rdf, rdfs, xsd, VocabPlatform, schema } = vocabularies;
+const { sp, field, rdf, rdfs, xsd, VocabPlatform } = vocabularies;
 
 import { TreeQueriesConfig } from 'platform/components/forms';
 import { ComplexTreePatterns } from 'platform/components/semantic/lazy-tree';
@@ -41,7 +41,7 @@ export interface State {
   range?: ReadonlyArray<Value>;
   min?: Data.Maybe<Value>;
   max?: Data.Maybe<Value>;
-  weight?: Data.Maybe<Value>;
+  order?: Data.Maybe<Value>;
   defaults?: ReadonlyArray<Value>;
   testSubject?: Data.Maybe<Value>;
 
@@ -144,7 +144,7 @@ export namespace ValidatedTreeConfig {
  * @param  {string} xsdtype - xsdDatatype full IRI string
  * @param  {string} min - minOccurs
  * @param  {string} max - maxOccurs
- * @param  {string} weight - weight
+ * @param  {string} order - order
  * @param  {string} defaults - defaultValues
  * @param  {string} selectPattern - SPARQL selectPattern string
  * @param  {string} del - SPARQL deletePattern string
@@ -164,7 +164,7 @@ export function createFieldDefinitionGraph(properties: {
   range: ReadonlyArray<string>;
   min: string | undefined;
   max: string | undefined;
-  weight: string | undefined;
+  order: string | undefined;
   defaultValues: ReadonlyArray<string>;
   selectPattern: string | undefined;
   insertPattern: string;
@@ -176,7 +176,7 @@ export function createFieldDefinitionGraph(properties: {
   testSubject: string | undefined;
 }): Rdf.Graph {
   const {
-    id, label, description, domain, xsdDatatype, range, min, max, weight, defaultValues, testSubject,
+    id, label, description, domain, xsdDatatype, range, min, max, order, defaultValues, testSubject,
     selectPattern, insertPattern, deletePattern, askPattern, valueSetPattern, autosuggestionPattern,
     categories, treePatterns,
   } = properties;
@@ -214,8 +214,8 @@ export function createFieldDefinitionGraph(properties: {
   if (max) {
     triples.push(Rdf.triple(baseIri, field.max_occurs, Rdf.literal(max, xsd._string) ));
   }
-  if (weight) {
-    triples.push(Rdf.triple(baseIri, schema.weight, Rdf.literal(weight, xsd._string) ));
+  if (order) {
+    triples.push(Rdf.triple(baseIri, field.order, Rdf.literal(order, xsd._string) ));
   }
   for (const value of defaultValues) {
     triples.push(Rdf.triple(baseIri, field.default_value, Rdf.literal(value, xsd._string)));
@@ -324,7 +324,7 @@ export function getFieldDefitionState(fieldIri: Rdf.Iri): Kefir.Property<State> 
         range,
         min: fromNullable(fieldDef.minOccurs as string).map(createValue),
         max: fromNullable(fieldDef.maxOccurs as string).map(createValue),
-        weight: fromNullable(fieldDef.weight as string).map(createValue),
+        order: fromNullable(fieldDef.order as string).map(createValue),
         defaults: fieldDef.defaultValues.map(createValue) as ReadonlyArray<Value>,
         testSubject: fromNullable(fieldDef.testSubject).map(createValue),
         insertPattern: fromNullable(fieldDef.insertPattern).map(createValue),
@@ -341,12 +341,12 @@ export function getFieldDefitionState(fieldIri: Rdf.Iri): Kefir.Property<State> 
 
 export function unwrapState(state: State) {
   const {
-    id, label, description, categories, domain, xsdDatatype, range, min, max, weight, defaults,
+    id, label, description, categories, domain, xsdDatatype, range, min, max, order, defaults,
     testSubject, selectPattern, insertPattern, deletePattern, askPattern, valueSetPattern,
     autosuggestionPattern, treePatterns,
   } = state;
   const fields = {
-    id, description, xsdDatatype, min, max, weight, testSubject, selectPattern,
+    id, description, xsdDatatype, min, max, order, testSubject, selectPattern,
     insertPattern, deletePattern, askPattern, valueSetPattern, autosuggestionPattern,
   };
   type Unwrapped = { [K in keyof typeof fields]: string | undefined } & {

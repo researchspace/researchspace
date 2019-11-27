@@ -129,7 +129,7 @@ class FieldEditorComponent extends Component<Props, State> {
       range: [] as Value[],
       min: Nothing<Value>(),
       max: Nothing<Value>(),
-      weight: Nothing<Value>(),
+      order: Nothing<Value>(),
       defaults: [] as Value[],
       testSubject: Nothing<Value>(),
       insertPattern: Nothing<Value>(),
@@ -359,20 +359,20 @@ class FieldEditorComponent extends Component<Props, State> {
         }),
       }),
       row({
-        label: 'Weight',
-        expanded: this.state.weight.isJust,
+        label: 'Order',
+        expanded: this.state.order.isJust,
         onExpand: () => this.updateValues(
-          {weight: Just({value: '1'})},
-          Validation.validateWeight
+          {order: Just({value: '1'})},
+          Validation.validateOrder
         ),
-        onCollapse: () => this.updateValues({weight: nothing}),
-        error: this.state.weight.map(v => v.error).getOrElse(undefined),
+        onCollapse: () => this.updateValues({order: nothing}),
+        error: this.state.order.map(v => v.error).getOrElse(undefined),
         element: input({
-          className: block('weight-input').toString(),
+          className: block('order-input').toString(),
           type: 'text',
           placeholder: 'Any positive number greater than 0.',
-          onChange: e => this.updateValues({weight: getFormValue(e)}, Validation.validateWeight),
-          value: this.state.weight.map(v => v.value).getOrElse(undefined),
+          onChange: e => this.updateValues({order: getFormValue(e)}, Validation.validateOrder),
+          value: this.state.order.map(v => v.value).getOrElse(undefined),
         }),
       }),
       this.renderMultipleValuesInput({

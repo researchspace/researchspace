@@ -22,7 +22,7 @@ import * as Kefir from 'kefir';
 
 import { LdpService } from 'platform/api/services/ldp';
 import { Rdf, vocabularies } from 'platform/api/rdf';
-const { sp, field, rdfs, VocabPlatform, schema } = vocabularies;
+const { sp, field, rdfs, VocabPlatform } = vocabularies;
 
 import {
   FieldDefinition, FieldDefinitionProp, normalizeFieldDefinition
@@ -50,7 +50,6 @@ function deserialize(fieldIri: Rdf.Iri, graph: Rdf.Graph): FieldDefinitionProp {
     xsdDatatype: [field.xsd_datatype],
     minOccurs: [field.min_occurs],
     maxOccurs: [field.max_occurs],
-    weight: [schema.weight],
     selectPattern: [field.select_pattern, sp.text],
     deletePattern: [field.delete_pattern, sp.text],
     askPattern: [field.ask_pattern, sp.text],

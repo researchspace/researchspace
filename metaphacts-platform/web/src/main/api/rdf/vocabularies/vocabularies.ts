@@ -28,7 +28,6 @@ export { default as spin } from './spin';
 export { default as ldp } from './ldp';
 export { default as oa } from './oa';
 export { default as field } from './field';
-export { default as schema } from './schema';
 
 export { default as prov } from './prov';
 

@@ -20,6 +20,7 @@ package com.metaphacts.servlet;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.URISyntaxException;
 import java.util.Base64;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,35 +39,42 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.mitre.dsmiley.httpproxy.ProxyServlet;
 
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.methods.HttpGet;
+
 import com.google.inject.Inject;
 import com.metaphacts.security.Permissions;
 
 /**
  * 
- * A proxy servlet for accessing a remote URL <b>targetUri</b> requiring separate authentication.
- * Transforms a request of the form [platform URL]/proxy/[proxy ID]/path/to/resource into
- * [targetUri]/path/to/resource and adds the authentication header.
+ * A proxy servlet for accessing a remote URL <b>targetUri</b> requiring
+ * separate authentication. Transforms a request of the form [platform
+ * URL]/proxy/[proxy ID]/path/to/resource into [targetUri]/path/to/resource and
+ * adds the authentication header.
  * 
- * The <b>targetUri</b> and the login credentials are passed via properties in two ways:
+ * The <b>targetUri</b> and the login credentials are passed via properties in
+ * two ways:
  * <ul>
  * <li>Using the file <i>config/proxy.prop</i>.</li>
  * <li>Using Java system properties.</li>
  * </ul>
  * The following properties are supported:
  * <ul>
- * <li><b>config.proxy.[proxy ID].targetUri</b>: the target URL to redirect the requests to.</li>
+ * <li><b>config.proxy.[proxy ID].targetUri</b>: the target URL to redirect the
+ * requests to.</li>
  * </ul>
  * and two alternative options to pass the login credentials
  * <ul>
  * <li><b>config.proxy.[proxy ID].loginName</b> and</li>
- * <li><b>config.proxy.[proxy ID].loginPassword</b>: login and password for basic authentication on
- * the target web site.</li>
+ * <li><b>config.proxy.[proxy ID].loginPassword</b>: login and password for
+ * basic authentication on the target web site.</li>
  * </ul>
  * OR
  * <ul>
- * <li><b>config.proxy.[proxy ID].loginBase64</b>: base64-encoded "login:password" pair. This option
- * is only applied when login and password are not provided explicitly. Note: this option exists
- * only to avoid defining login and password in the configuration file as plain text, but does not
+ * <li><b>config.proxy.[proxy ID].loginBase64</b>: base64-encoded
+ * "login:password" pair. This option is only applied when login and password
+ * are not provided explicitly. Note: this option exists only to avoid defining
+ * login and password in the configuration file as plain text, but does not
  * provide secure data interchange.</li>
  * </ul>
  *
@@ -84,8 +92,8 @@ public class MProxyServlet extends ProxyServlet {
     }
 
     @Override
-    protected HttpResponse doExecute(HttpServletRequest servletRequest,
-            HttpServletResponse servletResponse, HttpRequest proxyRequest) throws IOException {
+    protected HttpResponse doExecute(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
+            HttpRequest proxyRequest) throws IOException {
 
         String loginName = getConfigParam("loginName");
         String loginPassword = getConfigParam("loginPassword");
@@ -93,14 +101,15 @@ public class MProxyServlet extends ProxyServlet {
         String permission = Permissions.PROXY.PREFIX + key;
         String encodedAuth = null;
 
+        String accessToken = getConfigParam("access_token");
+
         if (!SecurityUtils.getSubject().isPermitted(new WildcardPermission(permission))) {
             return createHttpError("You do not have required permissions to access this resource",
                     HttpStatus.SC_FORBIDDEN);
         }
 
         if (!StringUtils.isEmpty(loginName) && !StringUtils.isEmpty(loginPassword)) {
-            encodedAuth = Base64.getEncoder()
-                    .encodeToString((loginName + ":" + loginPassword).getBytes());
+            encodedAuth = Base64.getEncoder().encodeToString((loginName + ":" + loginPassword).getBytes());
         } else {
             encodedAuth = loginBase64;
         }
@@ -113,12 +122,24 @@ public class MProxyServlet extends ProxyServlet {
         }
 
         if (logger.isTraceEnabled()) {
-            logger.trace("proxy " + servletRequest.getMethod() + " uri: " + servletRequest.getRequestURI()
-                    + " -- " + proxyRequest.getRequestLine().getUri());
+            logger.trace("proxy " + servletRequest.getMethod() + " uri: " + servletRequest.getRequestURI() + " -- "
+                    + proxyRequest.getRequestLine().getUri());
+        }
+
+        HttpGet httpget;
+
+        try {
+            URIBuilder builder = new URIBuilder(proxyRequest.getRequestLine().getUri());
+            builder.setParameter("access_token", accessToken);
+            httpget = new HttpGet(builder.build());
+        } catch (URISyntaxException e) {
+            logger.debug("Connection to target system could not be established: ", e);
+            return createHttpError("Connection to target system could not be established: " + e.getMessage(),
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR);
         }
 
         try {
-            return getProxyClient().execute(getTargetHost(servletRequest), proxyRequest);
+            return getProxyClient().execute(getTargetHost(servletRequest), httpget);
         } catch (ConnectException e) {
             logger.debug("Connection to target system could not be established: ", e);
             return createHttpError("Connection to target system could not be established: " + e.getMessage(),
@@ -131,8 +152,8 @@ public class MProxyServlet extends ProxyServlet {
     }
 
     protected HttpResponse createHttpError(String message, int statusCode) throws IOException {
-        HttpResponse response = new DefaultHttpResponseFactory()
-                .newHttpResponse(HttpVersion.HTTP_1_1, statusCode, null);
+        HttpResponse response = new DefaultHttpResponseFactory().newHttpResponse(HttpVersion.HTTP_1_1, statusCode,
+                null);
         response.setEntity(new StringEntity(message));
         return response;
     }

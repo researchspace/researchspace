@@ -1,0 +1,229 @@
+/*
+ * Copyright (C) 2015-2019, © Trustees of the British Museum
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, you can receive a copy
+ * of the GNU Lesser General Public License from http://www.gnu.org/
+ */
+
+@import "~basic-styles.scss";
+
+// Text Editor
+
+$editorHeight: 74vh;
+
+.narrativeHolder {
+  & > :global(.panel) {
+    margin-bottom: 0;
+
+    & > :global(.panel-body) {
+      overflow: auto;
+      height: $editorHeight;
+      padding: 0;
+    }
+  }
+
+  & > :global(.panel-default > .panel-heading) {
+    background-color: #ecf0f1;
+    border-color: #DDD;
+
+    a {
+     color: #2F323B;
+    }
+  }
+
+  // DropArea styling
+  :global(.DropArea--dropArea) {
+    height: 30px;
+  }
+
+  :global(.DropArea--dropArea.mp-droppable-enabled > .DropArea--children) {
+    display: none;
+  }
+
+  :global(.DropArea--messageWrapper) {
+    height: 100%;
+    display: none;
+  }
+
+  :global(.DropArea--dropArea.mp-droppable-enabled .DropArea--messageWrapper) {
+    display: block;
+  }
+
+  :global(.DropArea--dropMessage) {
+    height: 100% !important;
+  }
+
+  :global(.DropArea--dropArea.mp-droppable-hover .DropArea--dropMessage) {
+    background-color: rgba(29, 10, 110, 0.3) !important;
+  }
+
+}
+
+:global(#internal-link-popover .DropArea--dropArea.mp-droppable-hover .DropArea--dropMessage) {
+  background-color: rgba(29, 10, 110, 0.3) !important;
+}
+
+.title {
+  font-size: 32px !important;
+}
+
+.resourceBlock {
+  display: flex;
+  justify-content: center;
+  border: 2px dashed #ffffff;
+  margin: 0 0 ($line-height-computed / 2);
+  padding: 10px;
+
+  // TODO
+  & > div > :global(.card.rs-object-card.rs-search-card) {
+    margin: 0;
+  }
+}
+
+.resourceBlockActive {
+  border: 2px dashed #1d0a6e;
+}
+
+/*
+ we need to set relative position for sidebar and editor holder, so we can
+ get relative position of the editor and use it for sidebar positioning
+*/
+.sidebarAndEditorHolder {
+  position: relative;
+  overflow: auto;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  min-height: $editorHeight;
+}
+
+.editorContainer {
+  // need for text-align to work properly
+  white-space: normal;
+
+  background-color: rgb(255, 255, 255);
+  width: 794px;
+  box-shadow: 0 1px 3px 1px rgba(60,64,67,.15);
+
+  // for edit mode, later extract
+
+  & > div {
+    padding: 20px 96px;
+  }
+  & a {
+    cursor: text;
+    text-decoration: underline;
+  }
+
+  & a:hover {
+    background-color:  #f2f3f5;
+  }
+}
+
+.sidebarContainer {
+    position: absolute;
+}
+
+
+// Sidebar
+
+.sidebar {
+    border-right: 3px solid #f2f3f5;
+    padding: 0 5px;
+    position: absolute;
+    transition: transform .15s;
+    left: 141px;
+
+    :global(.btn) {
+      background-color: #f8f9fa;
+    }
+}
+
+
+// Toolbar
+
+.toolbar {
+  display: flex;
+  justify-content: center;
+}
+
+.dropdown {}
+
+.sidebarDropdown {
+  border: 0;
+}
+
+.dropdownMenuItem {
+    width: 130px;
+    display: inline-block;
+    text-align: start;
+}
+
+.dropdownMenuItemIcon {
+    width: 25px;
+    display: inline-block;
+}
+
+
+.toolbar .dropdownMenuItemIcon {
+    margin-right: 10px;
+}
+.sidebar .dropdownMenuItemIcon {
+    margin-right: 5px;
+}
+
+// links
+.internalLink {
+  /**/
+}
+
+.externalLink:before {
+  font-family: FontAwesome;
+  content: "\F08E ";
+  font-size: 11px;
+}
+
+.externalLinkHolder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.linkPopover {
+  display: flex;
+  width: 245px;
+  height: $input-height-base;
+
+  & :global(.DropArea--children) {
+    align-items: center;
+    justify-content: center;
+  }
+
+  & :global(.DropArea--dropMessage) {
+    height: $input-height-base !important;
+  }
+
+  & a {
+    text-decoration: underline;
+  }
+}
+
+:global {
+  // link editor
+  #external-link-popover .btn-group {
+    display: flex;
+    margin-left: -1px;
+  }
+}

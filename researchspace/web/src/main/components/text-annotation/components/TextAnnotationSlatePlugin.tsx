@@ -56,64 +56,34 @@ export interface TextAnnotationEditorProps {
   handlers: WorkspaceHandlers;
 }
 
-interface State {
-  selectionTopOffset?: number;
-}
-
 const EMPTY_SET = new Set<string>();
 
-export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, State> {
-  private debounceTooltip: Cancellation = new Cancellation();
-  private sideline: HTMLElement | null | undefined;
+export function TextAnnotationPlugin(props: TextAnnotationEditorProps) {
+  
+}
 
-  constructor(props: TextAnnotationEditorProps, context: any) {
-    super(props, context);
-    this.state = {};
-  }
-
-  onChange = (change: { operations: Immutable.List<Slate.Operation>, value: Slate.Value }) => {
-    const {editorState, onEditorStateChange} = this.props;
-    const nextState = editorState.set({value: change.value});
-    onEditorStateChange(nextState);
-  }
+export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, {}> {
 
   render() {
     const {className, editorState, permissions} = this.props;
-    const {selectionTopOffset} = this.state;
     return (
       <div className={classnames(styles.component, className)}>
         <div className={styles.textEditor}>
           <Editor
             spellCheck={false}
             value={editorState.value}
-            onChange={this.onChange}
             onKeyDown={this.onKeyDown}
             onClick={this.onTextClick}
             onDragStart={this.ignoreIfReadonly}
             onCut={this.ignoreIfReadonly}
             onPaste={this.ignoreIfReadonly}
-            onSelect={this.onSelect}
             renderNode={this.renderNode}
             renderMark={this.renderMark}
           />
-          <div className={styles.addAnnotationSideline} ref={this.onSidelineMount}>
-            {(permissions.create && selectionTopOffset > 0) ? (
-              <Button className={styles.addAnnotationButton}
-                style={{top: selectionTopOffset}}
-                title='Add annotation'
-                onClick={this.onAddAnnotationClick}>
-                <span className={styles.addAnnotationIcon} />
-              </Button>
-            ) : null}
-          </div>
         </div>
         {this.renderTooltip()}
       </div>
     );
-  }
-
-  private onSidelineMount = (sideline: HTMLElement | null) => {
-    this.sideline = sideline;
   }
 
   private renderTooltip() {
@@ -221,38 +191,6 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
     }
   }
 
-  private onSelect = (event: Event, editor: Slate.Editor, next: () => void) => {
-    next();
-
-    const state = this.props.editorState as EditorState;
-
-    if (!editor.value.selection.equals(state.markedSelection)) {
-      this.debounceTooltip.cancelAll();
-      this.debounceTooltip = new Cancellation();
-      this.debounceTooltip.map(Kefir.later(0, true)).observe({
-        value: () => {
-          this.updateSelectionOffset(editor);
-        }
-      });
-    }
-  }
-
-  private updateSelectionOffset(editor: Slate.Editor) {
-    if (!this.sideline) {
-      return;
-    }
-    const {start, end} = editor.value.selection;
-    const range = Slate.Range.create({anchor: start, focus: end});
-    // Return type in typings is wrong and should be Range, not Slate.Range:
-    // https://docs.slatejs.org/slate-react/utils
-    const domRange = findDOMRange(range) as any as Range;
-    const rect = domRange.getBoundingClientRect();
-    const selectionTop = rect.top + rect.height / 2;
-    const sidelineTop = this.sideline.getBoundingClientRect().top;
-    const selectionTopOffset = selectionTop - sidelineTop;
-    this.setState({selectionTopOffset});
-  }
-
   private onAddAnnotationClick = () => {
     const {handlers: {beginAddingAnnotation}} = this.props;
     beginAddingAnnotation();
@@ -327,6 +265,7 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
 }
 
 interface AdditionalEditorState {
+  readonly owner: TextAnnotationEditor | undefined;
   readonly markedSelection: Slate.Selection | undefined;
   readonly tooltip: TooltipState | undefined;
 }
@@ -345,12 +284,14 @@ interface TooltipState extends HoverState {
 class EditorState implements TextEditorState, AdditionalEditorState {
   readonly value: Slate.Value;
   readonly annotations: ReadonlyArray<Schema.Annotation>;
+  readonly owner: TextAnnotationEditor | undefined;
   readonly markedSelection: Slate.Selection | undefined;
   readonly tooltip: TooltipState | undefined;
 
   private constructor(props: TextEditorStateProps & Partial<AdditionalEditorState>) {
     this.value = props.value;
     this.annotations = props.annotations;
+    this.owner = props.owner;
     this.markedSelection = props.markedSelection;
     this.tooltip = props.tooltip;
   }
@@ -366,6 +307,7 @@ class EditorState implements TextEditorState, AdditionalEditorState {
     const baseProps: TextEditorStateProps & Partial<AdditionalEditorState> = {
       value: base.value,
       annotations: base.annotations,
+      owner: base.owner,
       markedSelection: base.markedSelection,
       tooltip: base.tooltip,
     };

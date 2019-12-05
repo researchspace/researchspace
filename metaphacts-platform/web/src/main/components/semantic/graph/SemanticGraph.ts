@@ -34,10 +34,10 @@ import { Alert, AlertType } from 'platform/components/ui/alert';
 import { Graph } from './Graph';
 import * as GraphInternals from './GraphInternals';
 import { SemanticGraphConfig } from './Config';
+export { SemanticGraphConfig } from './Config';
 
 import './SemanticGraph.scss';
 
-export type SemanticGraphConfig = SemanticGraphConfig;
 export type SemanticGraphProps = SemanticGraphConfig & ReactProps<SemanticGraph>;
 
 export interface State {

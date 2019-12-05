@@ -26,7 +26,7 @@ import { LdpService } from 'platform/api/services/ldp';
 
 import StructuredSearchVocab from '../Vocabulary';
 import { Resource } from '../Common';
-import { Profile, Relations, Categories } from './Model';
+import { Profile as CategoryProfile, Relations, Categories } from './Model';
 
 const { xsd, rdfs, rdf, ldp } = vocabularies;
 
@@ -73,7 +73,7 @@ export class SearchProfileProfileLdpServiceClass extends LdpService {
     );
   }
 
-  updateProfile(iri: Rdf.Iri, profile: Profile): Kefir.Property<{}> {
+  updateProfile(iri: Rdf.Iri, profile: CategoryProfile): Kefir.Property<{}> {
     return this.update(iri, this.profileToGraph(iri, profile));
   }
 
@@ -86,7 +86,7 @@ export class SearchProfileProfileLdpServiceClass extends LdpService {
     ]);
   }
 
-  private profileToGraph(iri: Rdf.Iri, profile: Profile): Rdf.Graph {
+  private profileToGraph(iri: Rdf.Iri, profile: CategoryProfile): Rdf.Graph {
     const base = Rdf.graph([
       Rdf.triple(
         iri, rdf.type, StructuredSearchVocab.Profile

@@ -36,6 +36,11 @@ export interface SimpleSearchProps extends SemanticSimpleSearchConfig {
   multi?: boolean
 }
 
+interface BackwardCompatibilityProps extends SimpleSearchProps {
+  inputPlaceholder?: string;
+  resourceSelection?: {resourceBindingName?: string; template: string};
+}
+
 interface SimpleSearchState {
   result?: Data.Maybe<SparqlClient.SparqlSelectResult>;
   isLoading?: boolean;
@@ -67,7 +72,8 @@ export class SimpleSearch extends Component<SimpleSearchProps, SimpleSearchState
     const {
       minSearchTermLength, resourceBindingName, query, placeholder,
       searchTermVariable, multi, defaultQuery, escapeLuceneSyntax,
-    } = this.backwardCompatibleProps(this.props);
+      tokenizeLuceneQuery,
+    } = this.backwardCompatibleProps(this.props as BackwardCompatibilityProps);
     // use external onSelected function if any
     const onSelected = this.props.onSelected
       ? this.props.onSelected
@@ -80,6 +86,7 @@ export class SimpleSearch extends Component<SimpleSearchProps, SimpleSearchState
       placeholder: placeholder,
       query: query,
       escapeLuceneSyntax: escapeLuceneSyntax,
+      tokenizeLuceneQuery: tokenizeLuceneQuery,
       multi: multi,
       defaultQuery: defaultQuery,
       minimumInput: minSearchTermLength,
@@ -102,13 +109,21 @@ export class SimpleSearch extends Component<SimpleSearchProps, SimpleSearchState
     );
   }
 
-  private backwardCompatibleProps(props: any): SimpleSearchProps {
+  private backwardCompatibleProps(props: BackwardCompatibilityProps): SimpleSearchProps {
     if (props.inputPlaceholder) {
-      props.placeholder = props.inputPlaceholder;
+      props = {
+        ...props,
+        placeholder: props.inputPlaceholder,
+      };
     }
     if (props.resourceSelection) {
       props.resourceBindingName = props.resourceSelection.resourceBindingName;
       props.template = props.resourceSelection.template;
+      props = {
+        ...props,
+        resourceBindingName: props.resourceSelection.resourceBindingName,
+        template: props.resourceSelection.template,
+      };
     }
     return props;
   }

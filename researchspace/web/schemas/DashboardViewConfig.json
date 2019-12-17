@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "checkQuery": {
+            "description": "SPARQL Ask query that is used to check whether it is possible to display a specific resource type in the specific view. Resource IRI is injected into the query using the <code>?value</code> binding variable.",
+            "type": "string"
+        },
+        "description": {
+            "description": "Description of the view.",
+            "type": "string"
+        },
+        "frameVariable": {
+            "default": "'dashboardId'",
+            "description": "Defined the variable name that will be passed to the template to propagate the frame ID.",
+            "type": "string"
+        },
+        "iconClass": {
+            "description": "Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.",
+            "type": "string"
+        },
+        "id": {
+            "description": "Unique identifier of the view.",
+            "type": "string"
+        },
+        "image": {
+            "description": "Image that will be displayed in the Dashboard Item as the representation for the specific View.",
+            "type": "string"
+        },
+        "itemBodyTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        },
+        "itemLabelTemplate": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the label of a frame, it is used in the frame controller. By default the <code><mp-label></mp-label></code> component is used. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        },
+        "label": {
+            "description": "Label of the view.",
+            "type": "string"
+        },
+        "resourceNotRequired": {
+            "description": "Allows initiating a component/template without a resource. For instance, <code><ontodia></ontodia></code> component can be initiated in the Dashboard without a specific resource. When <code>resourceNotRequired</code> is set to <code>true</code> the version of the dialogue is rendered to suggests \"Create new\" option for the user, which means that the user can start this particular View from scratch and populate it with resources later.",
+            "type": "boolean"
+        },
+        "template": {
+            "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is used to render the view when users drop a resource on it. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.\n**The template MUST have a single HTML root element.**",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "id",
+        "template",
+        "label",
+        "description",
+        "image",
+        "iconClass",
+        "checkQuery",
+        "resourceNotRequired",
+        "frameVariable",
+        "itemLabelTemplate",
+        "itemBodyTemplate"
+    ],
+    "required": [
+        "id",
+        "label",
+        "template"
+    ],
+    "type": "object"
+}
+

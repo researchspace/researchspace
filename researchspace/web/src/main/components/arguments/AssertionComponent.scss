@@ -16,89 +16,115 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-@import "~basic-styles.scss";
+$canonical: #3793FF;
+$not-canonical: #50E3C2;
 
-
-$arrow-top: 5px;
-$arrow-side: -13px;
-$button-height: 30px;
-$button-arrow-border: $button-height * 0.74;
-$lightgrey-border: 1px #CCC solid;
-
-@mixin clauseItemAfter {
-  border: $lightgrey-border;
-  content: "";
-  position: absolute;
-  width: $button-height;
-  height: $button-height;
-  top: $arrow-top;
-  right: -14px;
-  transform: scaleX(0.7) rotate(45deg);
-  padding: 0;
-  z-index: 1;
-  border-bottom: none;
-  border-left: none;
+.body {
+  margin-bottom: 15px;
+  overflow: hidden;
 }
 
-@mixin newAssertionItem {
-  border: 1px #CCC solid;
+.row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 2*$padding-base-horizontal + $button-arrow-border / 2;
-  padding-right: 2*$padding-base-horizontal;
-  position: relative;
-  height: 100%;
-
-  &::after {
-    @include clauseItemAfter();
-  }
+  padding: 5px 0;
 }
 
-
-.valueHolder {
-  :global(.cardinality-support) {
-    margin: 0;
-  }
-
-  // hide border for nested forms in value assertions
-  :global(.cardinality-support__group-instance) {
-    border: 0;
-  }
-
-  // hide nested form removal button, we have dedicate button for that
-  :global(.cardinality-support__group-instance > .cardinality-support__remove-value) {
-    display: none;
-  }
+.valueCell {
+  flex: 1 1 auto;
 }
 
-.actions {
-  margin-top: $padding-base-horizontal;
-
-  :global(.btn-success) {
-    margin-left: 12px;
-  }
+.beliefCell {
+  flex: 0 0 80px;
+  width: 80px;
+  text-align: center;
 }
 
-.header {
+.beliefTitle {
+  font-size: 13px;
+}
+
+.dotCell {
+  flex: 0 0 18px;
+  width: 18px;
+  margin-right: 5px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  width: auto;
-  // buttons have box-model box sizing, add 2 pixels to fit them in
-  height: 42px;
 }
 
-.subject {
-  @include newAssertionItem();
-  border-right: none;
-}
-.field {
-  @include newAssertionItem();
-  border-left: none;
-  border-right: none;
+.dot {
+  background: #fff;
+  border: 1px solid;
+  border-radius: 50%;
+  display: inline-block;
+  height: 7px;
+  width: 7px;
+
+  &.item {
+    position: relative;
+
+    &:before, &:after {
+      border-right: 1px solid;
+      content: "";
+      position: absolute;
+      left: 50%;
+      margin-left: -0.5px;
+      height: 500px;
+      z-index: -1;
+    }
+
+    &:before {
+      bottom: 100%;
+    }
+
+    &:after {
+      top: 100%;
+    }
+  }
+
+  &.canonical {
+    color: $canonical;
+
+    &.hasArgument {
+      background: $canonical;
+    }
+
+    &.item {
+      align-self: flex-start;
+    }
+  }
+
+  &.notCanonical {
+    color: $not-canonical;
+
+    &.hasArgument {
+      background: $not-canonical;
+    }
+
+    &.item {
+      align-self: flex-end;
+    }
+  }
 }
 
-.valuesRow {
-  margin-bottom: $padding-base-vertical;
+.label {
+  display: inline-block;
+  margin-bottom: 5px;
+
+  &.canonical {
+    background: $canonical;
+  }
+
+  &.notCanonical {
+    background: $not-canonical;
+  }
+}
+
+.note {
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.noteDot {
+  margin-right: 3px;
 }

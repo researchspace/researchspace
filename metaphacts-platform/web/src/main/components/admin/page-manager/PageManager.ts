@@ -287,10 +287,10 @@ export class PageManager extends Component<{}, PageAdminState> {
         if (success) {
           window.location.reload();
         }
-      }).onError((err: string) =>
+      }).onError((err) =>
       this.setState({
         isLoading: false,
-        alert: maybe.Just(Error(err)),
+        alert: maybe.Just(Error(err.response.text)),
       })
     );
   }

@@ -18,7 +18,6 @@
 
 package com.metaphacts.repository.sparql.bearertoken;
 
-import org.eclipse.rdf4j.query.resultio.BooleanQueryResultParserRegistry;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 

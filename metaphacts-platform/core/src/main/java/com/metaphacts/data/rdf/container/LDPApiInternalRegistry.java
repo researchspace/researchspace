@@ -30,14 +30,13 @@ import javax.inject.Singleton;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.repository.Repository;
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.metaphacts.cache.CacheManager;
 import com.metaphacts.config.NamespaceRegistry;
 import com.metaphacts.querycatalog.QueryCatalogRESTServiceRegistry;
-import com.metaphacts.repository.RepositoryManager;
 import com.metaphacts.repository.MpRepositoryProvider;
+import com.metaphacts.repository.RepositoryManager;
 
 /**
  * Registry for maintaining {@link LDPApiInternal} instances.
@@ -48,6 +47,8 @@ import com.metaphacts.repository.MpRepositoryProvider;
 @Singleton
 public class LDPApiInternalRegistry {
     
+    public static final String CACHE_ID = "platform.ldp.ApiInternalRegistry";
+    
     private static final Logger logger = LogManager
             .getLogger(QueryCatalogRESTServiceRegistry.class);
     
@@ -57,10 +58,13 @@ public class LDPApiInternalRegistry {
     @Inject
     private Provider<RepositoryManager> repositoryManagerProvider;
     
-    protected Cache<String, LDPApiInternal> ldpCache = CacheBuilder.newBuilder()
-            .maximumSize(5).expireAfterAccess(30, TimeUnit.MINUTES)
-            .build();
+    protected final Cache<String, LDPApiInternal> ldpCache;
     
+    @Inject
+    public LDPApiInternalRegistry(CacheManager cacheManager) {
+        ldpCache = cacheManager.newBuilder(CACHE_ID,
+                cacheBuilder -> cacheBuilder.maximumSize(5).expireAfterAccess(30, TimeUnit.MINUTES)).build();
+    }
     
     public void invalidate() {
         ldpCache.invalidateAll();

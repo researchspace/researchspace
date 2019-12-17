@@ -50,7 +50,7 @@ import {
   ComponentContext as EditorContext,
 } from './SparqlQueryEditorContext';
 
-import './SparqlQueryEditor.scss';
+import * as styles from './SparqlQueryEditor.scss';
 import 'yasgui-yasr/dist/yasr.css';
 
 export interface SparqlQueryEditorProps { }
@@ -62,8 +62,6 @@ interface State {
   readonly repositoryStatus?: Immutable.Map<string, boolean>;
   readonly selectedRepository?: string;
 }
-
-const CLASS_NAME = 'SparqlQueryEditor';
 
 export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> {
   static readonly contextTypes = {...ContextTypes, ...EditorContextTypes};
@@ -86,7 +84,7 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
   }
 
   render() {
-    return <Row className={CLASS_NAME}>
+    return <Row className={styles.sparqlQueryEditor}>
       <Col componentClass='div' md={12}>
           <SparqlEditor ref={editor => this.editor = editor}
             backdrop={this.state.isExecuting}
@@ -99,7 +97,7 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
             persistent={() => 'sparqlEndpoint'}
           />
           {this.state.alertState.map(config => createElement(Alert, config)).getOrElse(null)}
-          <div className={`form-inline ${CLASS_NAME}__controls`}>
+          <div className={`form-inline ${styles.controls}`}>
             <HasPermission permission={Permissions.queryEditorSelectEndpoint}>
               {this.renderRepositorySelector()}
             </HasPermission>
@@ -142,11 +140,11 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
     }
 
     return (
-      <span className={`${CLASS_NAME}__repositorySelector`}>
+      <span className={styles.repositorySelector}>
         <label>
           Repository:
           <FormControl componentClass='select'
-            className={`${CLASS_NAME}__repositorySelectorDropdown`}
+            className={styles.repositorySelectorDropdown}
             value={this.state.selectedRepository}
             onChange={e => this.setState({
               selectedRepository: (e.target as HTMLSelectElement).value,

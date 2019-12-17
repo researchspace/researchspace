@@ -52,6 +52,7 @@ interface State {
   readonly responseError?: any;
   readonly submittedSuccessfully?: boolean;
   readonly newRepositoryID?: string;
+  readonly validateConfiguration?: boolean;
 }
 
 type ValidationState = 'warning' | 'error' | 'success';
@@ -70,7 +71,9 @@ export class RepositoryConfigEditor extends Component<Props, State> {
   };
   constructor(props: Props, context: any) {
     super(props, context);
-    this.state = {};
+    this.state = {
+      validateConfiguration: true,
+    };
   }
 
   componentDidMount() {
@@ -86,6 +89,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
       responseError: undefined,
       loadingError: undefined,
       submittedSuccessfully: false,
+      validateConfiguration: true,
     });
     if (!id) {
         this.setState({
@@ -166,6 +170,20 @@ export class RepositoryConfigEditor extends Component<Props, State> {
                   ? source
                   : `#Please select a template to create a new repository configuration`
                 }/>
+            <div>
+              <label>
+                <input type='checkbox'
+                  checked={this.state.validateConfiguration}
+                  onChange={() =>
+                    this.setState(({validateConfiguration}): State =>
+                      ({validateConfiguration: !validateConfiguration})
+                    )
+                  }
+                  disabled={this.props.id === 'default'}/>
+                {' '}
+                Validate configuration
+              </label>
+            </div>
             <Button bsStyle='primary'
               className={styles.ActionButton}
               disabled={(!this.isEditMode() &&
@@ -215,7 +233,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
   onSubmitConfig = () => {
     const id = this.props.id ? this.props.id : this.state.newRepositoryID;
     const turtle = (this.refs['editor'] as TurtleEditorComponent).getTurtle();
-    updateOrAddRepositoryConfig(id, turtle).onValue(
+    updateOrAddRepositoryConfig(id, turtle, this.state.validateConfiguration).onValue(
       v => {
         this.setState({
           responseError: undefined,

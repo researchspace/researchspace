@@ -18,6 +18,8 @@
 
 package com.metaphacts.security;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.shiro.SecurityUtils;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -32,6 +34,8 @@ import com.metaphacts.security.Permissions.PAGES;
  */
 public class PermissionUtil {
 
+    private static final String VALID_PERMISSION_REGEX = "([-a-z0-9^\n]*):([^{}\n]*)";
+    
     public static boolean hasSparqlPermission(SparqlOperation op, String repositoryId) {
         return (repositoryId.equals(RepositoryManager.DEFAULT_REPOSITORY_ID) 
                     && SecurityUtils.getSubject().isPermitted(SPARQL.sparqlOperationDefaultPermission(op)))
@@ -40,5 +44,26 @@ public class PermissionUtil {
     
     public static boolean hasTemplateActionPermission(IRI iri, PAGES.Action action) {
         return (SecurityUtils.getSubject().isPermitted(PAGES.templateOperationPermission(iri, action)));
+    }
+    
+    /**
+     * First part of the regular expression checks the permission type i.e. Check if it contains only alphanumeric characters.
+     * Only exception here is a dash '-' that is allowed.
+     * The Second part of the permission after ':' can contain anything except curly brackets '{}',
+     * because ideally the user should replace the curly bracket with a valid entity example: proxyID, storageId, repositoryId.
+     * @param Permission string entered by the user.
+     * @return Returns whether the permission string is valid or not.
+     */
+    public static boolean isPermissionValid(String permission) {
+        Pattern initialPattern = Pattern.compile(VALID_PERMISSION_REGEX, Pattern.CASE_INSENSITIVE);
+        Matcher initalPatternMatcher = initialPattern.matcher(permission);
+        if (!initalPatternMatcher.matches()) {
+            return false;
+        }
+        return true;
+    }
+    
+    public static String normalizePermission(String permission) {
+        return permission.replaceAll("\\s","");
     }
 }

@@ -39,11 +39,24 @@ import org.mitre.dsmiley.httpproxy.ProxyServlet;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.metaphacts.secrets.SecretResolver;
+import com.metaphacts.secrets.SecretsHelper;
 import com.metaphacts.services.storage.api.ObjectKind;
 import com.metaphacts.services.storage.api.PlatformStorage;
 import com.metaphacts.services.storage.api.PlatformStorage.FindResult;
 import com.metaphacts.services.storage.api.StoragePath;
 
+/**
+ * Loads proxy configuration from proxy.prop.
+ * 
+ * <p>
+ * The following configuration values are subject to secret resolution (see {@link SecretResolver} for details):
+ * <ul>
+ * <li>username for system user</li>
+ * <li>password for system user</li>
+ * </ul>
+ * </p>
+ */
 public class ProxyConfigs {
     private static final StoragePath PROXY_CONFIG_OBJECT_ID = ObjectKind.CONFIG.resolve("proxy.prop");
 
@@ -129,7 +142,7 @@ public class ProxyConfigs {
         }
     }
 
-    public static Map<String, Map<String, String>> getConfigs(PlatformStorage platformStorage) {
+    public static Map<String, Map<String, String>> getConfigs(PlatformStorage platformStorage, SecretResolver secretResolver) {
         Map<String, Map<String, String>> proxyMap = Maps.newHashMap();
 
         try {
@@ -161,12 +174,12 @@ public class ProxyConfigs {
                 ConfigurationConverter.getMap(proxyProperties).entrySet()
                         .forEach(entry -> map.put((String) entry.getKey(), entry.getValue()));
                 BeanUtils.populate(proxyConfig, map);
-
+                
                 Map<String, String> pmap = Maps.newHashMap();
                 pmap.put("targetUri", proxyConfig.targetUri);
-                pmap.put("loginName", proxyConfig.loginName);
-                pmap.put("loginPassword", proxyConfig.loginPassword);
-                pmap.put("loginBase64", proxyConfig.loginBase64);
+                pmap.put("loginName", SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginName));
+                pmap.put("loginPassword", SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginPassword));
+                pmap.put("loginBase64", SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginBase64));
                 pmap.put("log", "true");
                 
                 pmap.put(ProxyServlet.P_PRESERVEHOST, proxyConfig.preserveHost);

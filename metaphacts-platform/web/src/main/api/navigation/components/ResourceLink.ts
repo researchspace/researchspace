@@ -29,7 +29,7 @@ import { Rdf } from 'platform/api/rdf';
 import { Draggable } from 'platform/components/dnd';
 import {
   getCurrentResource, navigateToResource, getCurrentUrl,
-  constructUrlForResource, openResourceInNewWindow,
+  constructUrlForResource, construcUrlForResourceSync,
 } from '../Navigation';
 
 export enum ResourceLinkAction {
@@ -51,8 +51,7 @@ interface ResourceLinkProps extends Props<ResourceLink> {
 }
 
 interface State {
-  url: Data.Maybe<uri.URI>;
-  label: Data.Maybe<string>;
+  readonly url?: uri.URI;
 }
 
 export class ResourceLink extends Component<ResourceLinkProps, State> {
@@ -61,8 +60,9 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
   constructor(props: ResourceLinkProps, context: any) {
     super(props, context);
     this.state = {
-      url: Maybe.Nothing<uri.URI>(),
-      label: Maybe.Nothing<string>(),
+      url: construcUrlForResourceSync(
+        this.props.resource, this.props.params, this.getRepository(), this.props.fragment
+      ),
     };
   }
 
@@ -76,7 +76,7 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
         this.props.resource, this.props.params, this.getRepository(), this.props.fragment
       )
     ).observe({
-      value: url => this.setState({url: Maybe.Just(url)}),
+      value: url => this.setState({url}),
       error: error => console.error(error),
     });
   }
@@ -86,13 +86,10 @@ export class ResourceLink extends Component<ResourceLinkProps, State> {
   }
 
   public render() {
-    return this.state.url.map(this.renderLink).getOrElse(D.a());
-  }
-
-  private renderLink = (url: uri.URI): ReactElement<any>  => {
     const {
       title, className, activeClassName, style, resource, draggable, target,
     } = this.props;
+    const {url} = this.state;
     const props = {
       href: url.toString(),
       title: title,

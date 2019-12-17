@@ -23,15 +23,11 @@ import * as Kefir from 'kefir';
 import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
-
+import {
+  WorkflowService, WorkflowState, WorkflowStep, WorkflowAssignee
+} from 'platform/api/services/WorkflowService';
 import { ErrorNotification, addNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
-
-import {
-  WorkflowState, WorkflowStep, WorkflowAssignee, queryWorkflowInstantiation,
-  queryWorkflowSteps, queryWorkflowAssignees, updateWorkflowInstantiation,
-  deserializeWorkflowState,
-} from './WorkflowModel';
 
 import * as styles from './WorkflowManagerComponent.scss';
 
@@ -43,20 +39,20 @@ enum Status {
 
 export interface Props {
   /**
-   * IRIs of workflow instantiations
+   * Workflow instantiation IRIs
    */
   iris: Array<string>;
   /**
-   * IRI of a workflow definition
+   * Workflow definition IRI
    */
   definition: string;
   /**
-   * Readonly mode shows a workflow parameters, but doesn't allow changing it.
+   * Prevent changing workflow parameters.
    */
   readonly?: boolean;
 }
 
-export interface State {
+interface State {
   workflowState?: WorkflowState;
   steps?: ReadonlyArray<WorkflowStep>;
   assignees?: ReadonlyArray<WorkflowAssignee>;
@@ -68,16 +64,19 @@ export interface State {
  * Component manages workflow instantiations
  *
  * @example
- * <mp-workflow-manager iris='["http://example.com/workflow/instance"]'
- *    definition='http://example.com/workflow/definition'>
+ * <mp-workflow-manager
+ *  iris='["http://example.com/workflow/instance"]'
+ *  definition='http://example.com/workflow/definition'>
  * </mp-workflow-manager>
  */
 export class WorkflowManagerComponent extends Component<Props, State> {
   private readonly cancellation = new Cancellation();
   private loadingCancellation = this.cancellation.derive();
   private assigneeQueryingCancellation = this.cancellation.derive();
+
   private originalWorkflowGraphs = new Map<string, Rdf.Graph>();
   private initialWorkflowState = WorkflowState.empty;
+  private workflowService = new WorkflowService();
 
   constructor(props: Props, context: any) {
     super(props, context);
@@ -90,7 +89,7 @@ export class WorkflowManagerComponent extends Component<Props, State> {
   }
 
   componentDidMount() {
-    this.initiateWorkflow(this.props);
+    this.fetchWorkflowInstantiations(this.props);
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -104,17 +103,17 @@ export class WorkflowManagerComponent extends Component<Props, State> {
         assignees: [],
         status: Status.Ready,
       });
-      this.initiateWorkflow(nextProps);
+      this.fetchWorkflowInstantiations(nextProps);
     }
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const {workflowState, assignees} = this.state;
-    if (workflowState.step && !workflowState.step.equals(prevState.workflowState.step)) {
+    const {workflowState: curWorkflowState, assignees: curAssigness} = this.state;
+    if (curWorkflowState.step && !curWorkflowState.step.equals(prevState.workflowState.step)) {
       this.updateAssignees();
     }
-    if (assignees !== prevState.assignees) {
-      this.setState(({workflowState, assignees}): State => {
+    if (curAssigness !== prevState.assignees) {
+      this.setState(({workflowState, assignees}) => {
         const assignee = assignees.find(({iri}) => iri.equals(workflowState.assignee));
         return {workflowState: {...workflowState, assignee: assignee ? assignee.iri : undefined}};
       });
@@ -125,21 +124,23 @@ export class WorkflowManagerComponent extends Component<Props, State> {
     this.cancellation.cancelAll();
   }
 
-  private initiateWorkflow(props: Props) {
+  private fetchWorkflowInstantiations(props: Props) {
     const {iris, definition} = props;
     if (!iris.length) { return; }
 
     this.setState({status: Status.Loading});
     const workflowStatesQuerying = iris.map(iri =>
-      queryWorkflowInstantiation(iri).map(graph => {
+      this.workflowService.queryWorkflowInstantiation(iri).map(graph => {
         this.originalWorkflowGraphs.set(iri, graph);
-        return deserializeWorkflowState(Rdf.iri(iri), graph);
+        return this.workflowService.deserializeWorkflowState(Rdf.iri(iri), graph);
       })
     );
     const workflowStatesAndStepsQuerying = Kefir.zip(workflowStatesQuerying).flatMap(stats => {
       const workflowState = stats.length === 1 ? stats[0] : WorkflowState.empty;
       this.initialWorkflowState = workflowState;
-      return queryWorkflowSteps({definition, currentStep: workflowState.step}).map(
+      return this.workflowService.queryWorkflowSteps({
+        definition, currentStep: workflowState.step,
+      }).map(
         steps => ({steps, workflowState})
       );
     });
@@ -166,7 +167,7 @@ export class WorkflowManagerComponent extends Component<Props, State> {
     this.assigneeQueryingCancellation =
       this.cancellation.deriveAndCancel(this.assigneeQueryingCancellation);
     this.assigneeQueryingCancellation.map(
-      queryWorkflowAssignees({
+      this.workflowService.queryWorkflowAssignees({
         query: assigneeQuery,
         newStep: workflowState.step,
         workflowInstantiations: this.props.iris.map(Rdf.iri),
@@ -224,7 +225,7 @@ export class WorkflowManagerComponent extends Component<Props, State> {
     const workflowsUpdating = this.props.iris.map(iri => {
       const {workflowState} = this.state;
       const originalGraph = this.originalWorkflowGraphs.get(iri);
-      return updateWorkflowInstantiation({
+      return this.workflowService.updateWorkflowInstantiation({
         workflowIri: Rdf.iri(iri),
         originalGraph,
         workflowState,
@@ -239,7 +240,7 @@ export class WorkflowManagerComponent extends Component<Props, State> {
           level: 'success',
           message: 'The workflow instantiations has been updated.',
         });
-        this.initiateWorkflow(this.props);
+        this.fetchWorkflowInstantiations(this.props);
       },
       error: error => {
         console.error(error);
@@ -279,6 +280,7 @@ export class WorkflowManagerComponent extends Component<Props, State> {
             <small><i className='fa fa-times' /> reset</small>
           </button>
         ) : null}
+
         {status === Status.Loading ? <Spinner className={styles.spinner} /> : null}
       </div>
     );

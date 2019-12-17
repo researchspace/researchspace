@@ -40,6 +40,8 @@ import org.apache.commons.configuration2.io.FileHandler;
 import org.apache.commons.configuration2.tree.OverrideCombiner;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Nullable;
+
 /**
  * Utility class for configuration management. Contains methods for setting
  * up configuration builders as well as generic string manipulation and
@@ -73,7 +75,11 @@ public class ConfigurationUtil {
     /**
      * Escapes a list of configuration values using {@link DefaultListDelimiterHandler}.
      */
+    @Nullable
     public static Object listAsConfigValue(List<String> list) {
+        if (list.isEmpty()) {
+            return null;
+        }
         ListDelimiterHandler delimHandler = ConfigurationUtil.commaBasedDelimiterHandler();
         return delimHandler.escapeList(list, item -> item);
     }

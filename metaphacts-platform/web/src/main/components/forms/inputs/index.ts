@@ -22,6 +22,8 @@ export * from './CardinalitySupport';
 export * from './CompositeInput';
 
 export * from './AutocompleteInput';
+export * from './CheckboxInput';
+export * from './ChecklistInput';
 export * from './DatePickerInput';
 export * from './HiddenInput';
 export * from './SelectInput';

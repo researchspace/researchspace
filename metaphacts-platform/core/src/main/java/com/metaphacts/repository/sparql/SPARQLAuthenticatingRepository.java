@@ -18,11 +18,25 @@
 
 package com.metaphacts.repository.sparql;
 
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
+import com.google.inject.Inject;
+import com.metaphacts.secrets.SecretResolver;
+import com.metaphacts.secrets.SecretsHelper;
+
 /**
+ * SPARQL Repository with authentication (HTTP basic auth or HTTP digest auth).
+ * 
+ * <p>
+ * The following configuration values are subject to secret resolution (see {@link SecretResolver} for details):
+ * <ul>
+ * <li>username</li>
+ * <li>password</li>
+ * </ul>
+ * </p>
+ * 
  * @author Johannes Trame <jt@metaphacts.com>
- *
  */
 public class SPARQLAuthenticatingRepository extends SPARQLRepository {
     private enum AuthMethod { None, BasicAuth, DigestAuth};
@@ -35,6 +49,9 @@ public class SPARQLAuthenticatingRepository extends SPARQLRepository {
     private String username;
     
     private String password;
+
+    @Inject(optional=true)
+    private SecretResolver secretResolver;
     
     /**
      * @param endpointUrl
@@ -58,6 +75,16 @@ public class SPARQLAuthenticatingRepository extends SPARQLRepository {
         this.password = password;
         this.realm = realm;
         this.authenticationModus = AuthMethod.DigestAuth;
+    }
+    
+    @Override
+    protected void initializeInternal() throws RepositoryException {
+        // replace username, password, and realm with resolved secrets (if applicable)
+        username = SecretsHelper.resolveSecretOrFallback(secretResolver, username);
+        password = SecretsHelper.resolveSecretOrFallback(secretResolver, password);
+        realm = SecretsHelper.resolveSecretOrFallback(secretResolver, realm);
+        
+        super.initializeInternal();
     }
     
     @Override

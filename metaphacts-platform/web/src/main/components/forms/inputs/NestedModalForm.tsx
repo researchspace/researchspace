@@ -28,7 +28,9 @@ import { componentHasType } from 'platform/components/utils';
 
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue } from '../FieldValues';
-import { ResourceEditorForm, ResourceEditorFormProps } from '../ResourceEditorForm';
+import { ResourceEditorForm, ResourceEditorFormProps, performFormPostAction, getPostActionUrlQueryParams } from '../ResourceEditorForm';
+import { trigger } from 'platform/api/events';
+import * as FormEvents from 'platform/components/forms/FormEvents';
 
 export interface NestedModalFormProps {
   definition: FieldDefinition;
@@ -47,9 +49,18 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   render() {
     const {definition, onSubmit, onCancel, children} = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
+      id: children.props.id,
       browserPersistence: false,
       subject: Rdf.iri(''),
       postAction: (subject: Rdf.Iri) => {
+        if (children.props.postAction) {
+          performFormPostAction({
+            postAction: children.props.postAction,
+            subject: subject,
+            eventProps: {isNewSubject: true, sourceId: children.props.id},
+            queryParams: getPostActionUrlQueryParams(children.props),
+          });
+        }
         this.cancellation.map(getLabel(subject)).observe({
           value: label => {
             onSubmit(FieldValue.fromLabeled({value: subject, label}));

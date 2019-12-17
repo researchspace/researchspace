@@ -17,11 +17,10 @@
  */
 
 import {
-  createElement, ClassAttributes, Component as ReactComponent,
-  Props, MouseEvent, cloneElement, Children,
+  ClassAttributes, Component as ReactComponent, Children, cloneElement, createElement
 } from 'react';
 import * as Kefir from 'kefir';
-import { flatten, set, cloneDeep, debounce } from 'lodash';
+import { debounce } from 'lodash';
 import {
   Workspace,
   WorkspaceProps,
@@ -51,17 +50,20 @@ import {
   AuthoredEntityContext,
   CustomTypeStyle,
   EventObserver,
-  Element,
   SerializedDiagram,
   makeSerializedDiagram,
   Link,
   IriClickEvent,
-  IriClickIntent,
+  LabelLanguageSelector,
+  SparqlDataProviderOptions,
+  LocalizedString,
+  LinkModel,
+  LinkTypeIri,
 } from 'ontodia';
 import * as URI from 'urijs';
 
 import {
-  BuiltInEvents, trigger, registerEventSource, unregisterEventSource,
+  BuiltInEvents, trigger, listen, registerEventSource, unregisterEventSource,
 } from 'platform/api/events';
 import { Cancellation, WrappingError } from 'platform/api/async';
 import { Component } from 'platform/api/components';
@@ -73,7 +75,7 @@ import {
   isSimpleClick,
 } from 'platform/api/navigation/components/ResourceLink';
 
-import { FieldDefinition, LdpPersistence } from 'platform/components/forms';
+import { FieldDefinition, CompositeValue } from 'platform/components/forms';
 import { CreateResourceDialog } from 'platform/components/ldp';
 import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
@@ -81,37 +83,31 @@ import { addNotification, ErrorNotification } from 'platform/components/ui/notif
 import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
 import { isValidChild, universalChildren } from 'platform/components/utils';
-import { getPreferredUserLanguage } from 'platform/api/services/language';
+import { getPreferredUserLanguage, selectPreferredLabel } from 'platform/api/services/language';
 import { ConfigHolder } from 'platform/api/services/config-holder';
+import { getLabels } from 'platform/api/services/resource-label';
 
 import { OntodiaExtension, OntodiaFactory } from './extensions';
 
+import * as DiagramService from './data/DiagramService';
 import {
-  getDiagramByIri,
-  getRDFGraphBySparqlQuery,
-  parseRDFGraphToRDFExtGraph,
-  prepareImages,
-  updateDiagram,
-  saveDiagram,
-  RDFGraph,
-  suggestProperties,
-  fetchThumbnails,
-} from './ontodia-data';
-
-import {
-  SupportedConfigName, RDF_DATA_PROVIDER_NAME, getDataProvider,
-} from './ontodia-configs';
+  SupportedConfigName, RDF_DATA_PROVIDER_NAME, createDataProvider,
+} from './data/OntodiaDataProvider';
+import { RawTriple, getRdfExtGraphBySparqlQuery, makeRdfExtGraph } from './data/RdfExt';
 
 import { Toolbar } from './Toolbar';
 
-import {
-  getEntityMetadata, convertElementModelToCompositeValue, convertCompositeValueToElementModel,
-  persistAuthoringState,
-} from './authoring/AuthoringPersistence';
 import { EntityForm, EntityFormProps } from './authoring/EntityForm';
 import { FieldBasedMetadataApi } from './authoring/FieldBasedMetadataApi';
 import { FieldBasedValidationApi } from './authoring/FieldBasedValidationApi';
 import { EntityMetadata, extractAuthoringMetadata } from './authoring/OntodiaEntityMetadata';
+import {
+  OntodiaPersistenceResult, OntologyPersistenceProps
+} from './authoring/OntodiaPersistence';
+import {
+  getEntityMetadata, convertCompositeValueToElementModel, convertElementModelToCompositeValue
+} from './authoring/OntodiaPersistenceCommon';
+import { FormBasedPersistence, FormBasedPersistenceProps } from './authoring/FormBasedPersistence';
 
 import * as OntodiaEvents from './OntodiaEvents';
 
@@ -316,6 +312,12 @@ export interface OntodiaConfig {
   authoringMode?: boolean;
 
   /**
+   * Defines persistence mode to use in authoring mode.
+   * @default {"type": "form"}
+   */
+  persistence?: OntodiaPersistenceMode;
+
+  /**
    * Sparql query to find a relationship between two elements.
    */
   findRelationshipQuery?: string;
@@ -329,7 +331,11 @@ export interface OntodiaConfig {
    * Controls whether Ontodia should navigate to a newly saved diagram.
    */
   postSaving?: 'navigate' | 'none';
+}
 
+export type OntodiaPersistenceMode = FormBasedPersistenceProps | OntologyPersistenceProps;
+
+export interface OntodiaProps extends OntodiaConfig, ClassAttributes<Ontodia> {
   onLoadWorkspace?: (workspace: Workspace) => void;
 }
 
@@ -345,6 +351,14 @@ const DEFAULT_FACTORY: OntodiaFactory = {
   onNewDigaramInitialized: (componentProps, workspace: Workspace) => {
     workspace.forceLayout();
     workspace.zoomToFit();
+  },
+  getPersistence: mode => {
+    switch (mode.type) {
+      case 'form':
+        return new FormBasedPersistence(mode);
+      default:
+        throw new Error(`Ontodia graph persistence mode is not supported: "${mode.type}"`);
+    }
   }
 };
 
@@ -434,9 +448,6 @@ const DEBOUNCE_DELAY = 300;
  * </ontodia>
  * ```
  */
-
-export type OntodiaProps = OntodiaConfig & Props<Ontodia>;
-
 export class Ontodia extends Component<OntodiaProps, State> {
   static defaultProps: Partial<OntodiaProps> = {
     navigateTo: 'http://www.metaphacts.com/resource/assets/OntodiaView',
@@ -444,7 +455,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
     addToDefaultSet: false,
     nodeTemplates: {},
     edgeStyles: {},
-    acceptBlankNodes: false, // set to false to prevent too complex queries to be generated by default
+    // disable blank nodes support to prevent too complex queries to be generated by default
+    acceptBlankNodes: false,
     postSaving: 'navigate',
   };
 
@@ -452,7 +464,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   private readonly listener = new EventObserver();
 
   private allFields: ReadonlyArray<FieldDefinition>;
-  private forceFields: Map<string, FieldDefinition>;
+  private forceFields: ReadonlyMap<string, FieldDefinition>;
   private entityMetadata: Map<ElementTypeIri, EntityMetadata>;
   private metadataApi: FieldBasedMetadataApi;
   private validationApi: FieldBasedValidationApi;
@@ -467,23 +479,36 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
   constructor(props: OntodiaProps, context: any) {
     super(props, context);
-    this.state = {diagramIri: props.diagram};
 
-    const entityMetadata = extractAuthoringMetadata(
-      Children.toArray(this.props.children).filter(isValidChild)
-    );
-    if (entityMetadata.size > 0) {
-      this.entityMetadata = entityMetadata;
-      this.allFields = flatten(Array.from(
-        this.entityMetadata.values(),
-        m => m.fieldById.toArray()
-      ));
-      this.forceFields = new Map<string, FieldDefinition>();
-      this.entityMetadata.forEach(metadata =>
-        metadata.forceFields.forEach(f => this.forceFields.set(f.iri, f))
+    let entityMetadata: Map<ElementTypeIri, EntityMetadata> | undefined;
+    let configurationError: unknown;
+    try {
+      entityMetadata = extractAuthoringMetadata(
+        Children.toArray(this.props.children).filter(isValidChild)
       );
+    } catch (err) {
+      configurationError = err;
+    }
+
+    this.state = {
+      diagramIri: props.diagram,
+      configurationError,
+    };
+
+    if (entityMetadata && entityMetadata.size > 0) {
+      const allFields = new Map<string, FieldDefinition>();
+      const forceFields = new Map<string, FieldDefinition>();
+      entityMetadata.forEach(metadata => {
+        metadata.fieldByIri.forEach(f => allFields.set(f.iri, f));
+        metadata.forceFields.forEach(f => forceFields.set(f.iri, f));
+      });
+
+      this.entityMetadata = entityMetadata;
+      this.allFields = Array.from(allFields.values());
+      this.forceFields = forceFields;
+
       if (this.props.authoringMode) {
-        this.metadataApi = new FieldBasedMetadataApi(this.allFields, this.entityMetadata);
+        this.metadataApi = new FieldBasedMetadataApi(this.entityMetadata);
         this.validationApi = new FieldBasedValidationApi(this.entityMetadata);
       }
     }
@@ -508,16 +533,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
       return createElement(ErrorNotification, {errorMessage: this.state.configurationError});
     }
 
+    const preferredLanguage = getPreferredUserLanguage();
     const globalLanguages = ConfigHolder.getUIConfig().preferredLanguages.map(lang => {
       return {code: lang, label: lang};
     });
 
-    const languages: any = getPreferredUserLanguage()
-          ? [ {
-              code: getPreferredUserLanguage(),
-              label: getPreferredUserLanguage(),
-            }]
-          : globalLanguages;
     const {
       readonly, groupBy, authoringMode, hidePanels, hideNavigator,
       collapseNavigator, hideToolbar, hideHalo, hideScrollBars,
@@ -528,11 +548,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
     const {createWorkspace, createToolbar} = OntodiaExtension.get() || DEFAULT_FACTORY;
     const props: WorkspaceProps & ClassAttributes<Workspace> = {
       ref: this.initWorkspace,
-      languages: languages,
-      language:
-      getPreferredUserLanguage()
-        ? getPreferredUserLanguage()
-        : 'en',
+      languages: globalLanguages.length > 0
+        ? globalLanguages
+        : [{code: preferredLanguage, label: preferredLanguage}],
+      language: preferredLanguage,
       onSaveDiagram: readonly ? undefined : this.onSaveDiagramPressed,
       onPersistChanges: authoringMode ? this.onPersistAuthoredChanges : undefined,
       leftPanelInitiallyOpen: readonly ? false : undefined,
@@ -565,6 +584,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
       typeStyleResolver: nodeStyles ? this.resolveNodeStyles : undefined,
       elementTemplateResolver: this.resolveElementTemplate,
       linkTemplateResolver: this.resolveLinkTemplate,
+      selectLabelLanguage,
       propertyEditor: this.renderPropertyEditor,
     };
     return createWorkspace(this.props, props);
@@ -637,12 +657,25 @@ export class Ontodia extends Component<OntodiaProps, State> {
     const {imageQuery, imageIris} = this.props;
 
     if (!imageQuery && !imageIris) {
-      return fetchThumbnails(elementsInfo, this.context.semanticContext);
+      return DiagramService.fetchThumbnails(elementsInfo, this.context.semanticContext);
     } else if (imageQuery) {
-      return prepareImages(elementsInfo, imageQuery);
+      return DiagramService.prepareImages(elementsInfo, imageQuery);
     }
+  }
 
-    return;
+  private prepareLabels = (resources: Set<string>): Promise<Map<string, LocalizedString[]>> => {
+    const iris = Array.from(resources, Rdf.iri);
+    const context = this.context.semanticContext;
+    return getLabels(iris, {context})
+      .map(labels => {
+        const result = new Map<string, LocalizedString[]>();
+        labels.forEach((label, iri) => {
+          const literal: LocalizedString = {value: label, language: ''};
+          result.set(iri.value, [literal]);
+        });
+        return result;
+      })
+      .toPromise();
   }
 
   /**
@@ -652,7 +685,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     if (workspace) {
       const {
         onLoadWorkspace, imageIris, provisionQuery, acceptBlankNodes,
-        settings: configName, autoZoom, hideNavigationConfirmation,
+        settings: configName, autoZoom, hideNavigationConfirmation, authoringMode,
       } = this.props;
 
       this.workspace = workspace;
@@ -660,20 +693,20 @@ export class Ontodia extends Component<OntodiaProps, State> {
         onLoadWorkspace(workspace);
       }
 
-      const options = {
+      const options: SparqlDataProviderOptions = {
         endpointUrl: '',
         prepareImages: this.prepareImages,
+        prepareLabels: this.prepareLabels,
         imagePropertyUris: imageIris,
         queryMethod: SparqlQueryMethod.POST,
         acceptBlankNodes: acceptBlankNodes,
       };
       const repositories = this.getRepositories();
-      const createRDFStorage = provisionQuery !== undefined;
-      this.dataProvider = getDataProvider({
+      this.dataProvider = createDataProvider({
         configName,
         options,
         repositories,
-        createRDFStorage,
+        createRDFStorage: provisionQuery !== undefined,
         fields: this.allFields,
         settings: this.props.providerSettings,
         forceFields: this.forceFields,
@@ -692,6 +725,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
       }
 
       this.subscribeOnEvents();
+      if (authoringMode) {
+        this.subscribeOnAuthoringEvents();
+      }
     }
   }
 
@@ -713,8 +749,94 @@ export class Ontodia extends Component<OntodiaProps, State> {
     }, DEBOUNCE_DELAY);
 
     this.listener.listen(model.events, 'changeCells', triggerEvent);
+    this.listener.listen(model.events, 'elementEvent', event => {
+      if (event.key === 'changeData') {
+        triggerEvent();
+      }
+    });
     this.listener.listen(editor.events, 'changeAuthoringState', triggerEvent);
     this.listener.listen(editor.events, 'changeTemporaryState', triggerEvent);
+
+    this.cancellation.map(
+      listen({
+        eventType: OntodiaEvents.FocusOnElement,
+        target: id,
+      })
+    ).observe({
+      value: ({data}) => {
+        const element = model.elements.find(({iri}) => iri === data.iri);
+        if (element) {
+          const {x, y} = element.position;
+          const {width, height} = element.size;
+          this.workspace.zoomToFitRect({x, y, width, height});
+          editor.setSelection([element]);
+        }
+      }
+    });
+  }
+
+  private subscribeOnAuthoringEvents() {
+    const {id} = this.props;
+    const editor = this.workspace.getEditor();
+    this.cancellation.map(
+      listen({
+        eventType: OntodiaEvents.CreateElement,
+        target: id,
+      })
+    ).flatMap(event =>
+      Kefir.fromPromise(
+        editor.metadataApi.generateNewElementIri(
+          (event.data.elementData as ElementModel).types,
+          undefined
+        )
+      ).map(iri => {
+        return {...event.data, elementModel: {...event.data.elementData, id: iri}};
+      })
+    ).observe({
+      value: ({elementModel, targets}) => {
+        const element = editor.createNewEntity({elementModel: elementModel as ElementModel});
+        targets.forEach(({targetIri, linkTypeId}) => {
+          const target = editor.model.elements.find(el => el.iri === targetIri);
+          if (target) {
+            const linkModel: LinkModel = {
+              linkTypeId: linkTypeId as LinkTypeIri,
+              sourceId: element.iri,
+              targetId: target.iri,
+            };
+            const link = new Link({
+              typeId: linkTypeId as LinkTypeIri,
+              sourceId: element.id,
+              targetId: target.id,
+              data: linkModel,
+            });
+            editor.createNewLink({link});
+          }
+        });
+      }
+    });
+
+    this.cancellation.map(
+      listen({
+        eventType: OntodiaEvents.EditElement,
+        target: id,
+      })
+    ).observe({
+      value: event => {
+        const {targetIri, elementData} = event.data;
+        editor.changeEntityData(targetIri as ElementIri, elementData as ElementModel);
+      },
+    });
+
+    this.cancellation.map(
+      listen({
+        eventType: OntodiaEvents.DeleteElement,
+        target: id,
+      })
+    ).observe({
+      value: event => {
+        editor.deleteEntity(event.data.iri as ElementIri);
+      },
+    });
   }
 
   private importLayout() {
@@ -743,7 +865,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
     const model = this.workspace.getModel();
     this.listener.listen(model.history.events, 'historyChanged', ({hasChanges}) => {
       if (hasChanges && this.props.id) {
-        trigger({eventType: OntodiaEvents.DiagramIsDirty, source: this.props.id, data: {hasChanges}});
+        trigger({
+          eventType: OntodiaEvents.DiagramIsDirty,
+          source: this.props.id,
+          data: {hasChanges},
+        });
       }
       if (hasChanges && !this.navigationListenerUnsubscribe) {
         const message = 'Changes you made to the diagram will not be saved.';
@@ -774,10 +900,18 @@ export class Ontodia extends Component<OntodiaProps, State> {
       const {label} = this.state;
       this.cancellation.map(
         this.parsedMetadata.flatMap(metadata =>
-          updateDiagram(diagramIri, layout, label, metadata)
+          DiagramService.updateDiagram(diagramIri, layout, label, metadata)
         ).map(results => {
-          trigger({eventType: OntodiaEvents.DiagramSaved, source: this.props.id, data: {resourceIri: this.state.diagramIri}});
-          trigger({eventType: OntodiaEvents.DiagramIsDirty, source: this.props.id, data: {hasChanges: false}});
+          trigger({
+            eventType: OntodiaEvents.DiagramSaved,
+            source: this.props.id,
+            data: {resourceIri: this.state.diagramIri},
+          });
+          trigger({
+            eventType: OntodiaEvents.DiagramIsDirty,
+            source: this.props.id,
+            data: {hasChanges: false},
+          });
           return results;
         })
       ).observe({
@@ -800,63 +934,80 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
   private onPersistAuthoredChanges = () => {
     this.workspace.showWaitIndicatorWhile(
-      this.persistAuthoredChanges(this.workspace)
+      this.persistAuthoredChanges()
     );
   }
 
   private onPersistChangesAndSaveDiagram() {
     this.workspace.showWaitIndicatorWhile(
-      this.persistAuthoredChanges(this.workspace).then(
+      this.persistAuthoredChanges().then(
         () => this.onSaveDiagramPressed()
       )
     );
   }
 
-  private persistAuthoredChanges = (workspace: Workspace): Promise<void> => {
-    const model = workspace.getModel();
-    const state = workspace.getEditor().authoringState;
-    const elements = new Map<ElementIri, ElementModel>();
-    model.elements.forEach(element => elements.set(element.iri, element.data));
+  private persistAuthoredChanges(): Promise<void> {
+    const persistence = makePersistenceFromConfig(this.props.persistence);
+    const model = this.workspace.getModel();
+    const editor = this.workspace.getEditor();
 
-    return new Promise(resolve => persistAuthoringState({
-      persistence: new LdpPersistence(),
-      allMetadata: this.entityMetadata,
-      state,
-      existingModels: elements,
-      fetchModel: (iri: ElementIri) => {
-        return Kefir.fromPromise(
-          model.dataProvider.elementInfo({elementIds: [iri]})
-            .then(result => result[iri])
-        ).toProperty();
+    const existingModels = new Map<ElementIri, ElementModel>();
+    model.elements.forEach(element => existingModels.set(element.iri, element.data));
+
+    const fetchModel = (iri: ElementIri): Kefir.Property<ElementModel> => {
+      if (existingModels.has(iri)) {
+        return Kefir.constant(existingModels.get(iri));
       }
-    }).observe({
-      value: changes => {
-        const editor = this.workspace.getEditor();
-        for (const element of [...model.elements]) {
-          const changed = changes.get(element.iri);
-          if (changed) {
-            editor.changeEntityData(element.iri, changed);
-          } else if (changed === null) {
-            model.removeElement(element.id);
-          }
-        }
+      return Kefir.fromPromise(
+        model.dataProvider.elementInfo({elementIds: [iri]})
+          .then(result => result[iri])
+      ).toProperty();
+    };
 
-        for (const link of [...model.links]) {
-          const event = state.index.links.get(link.data);
-          if (event && event.type === AuthoringKind.DeleteLink) {
-            model.removeLink(link.id);
-          }
-        }
+    return persistence.persist({
+      entityMetadata: this.entityMetadata,
+      state: editor.authoringState,
+      fetchModel,
+    }).map(this.onChangesPersisted).toPromise();
+  }
 
-        editor.setAuthoringState(AuthoringState.empty);
-        editor.cancelSelection();
-        model.history.reset();
+  private onChangesPersisted = (result: OntodiaPersistenceResult) => {
+    const model = this.workspace.getModel();
+    const editor = this.workspace.getEditor();
+    const irisToUpdate: ElementIri[] = [];
 
-        const diagram = model.exportLayout();
-        this.importModelLayout({diagram}).then(() => { resolve(); });
+    for (const element of [...model.elements]) {
+      const changed = result.finalizedEntities.get(element.iri);
+      if (changed) {
+        element.setData(changed);
+        irisToUpdate.push(changed.id);
+      } else if (changed === null) {
+        model.removeElement(element.id);
+      }
+    }
+
+    for (const link of [...model.links]) {
+      const event = editor.authoringState.links.get(link.data);
+      if (event && event.deleted) {
+        model.removeLink(link.id);
+      }
+    }
+
+    editor.setAuthoringState(AuthoringState.empty);
+    editor.cancelSelection();
+    model.history.reset();
+
+    this.workspace.zoomToFit();
+
+    trigger({
+      source: this.props.id,
+      eventType: OntodiaEvents.DiagramChanged,
+      data: {
+        model: model,
+        authoringState: editor.authoringState,
+        temporaryState: editor.temporaryState,
       },
-      error: error => console.error(error),
-    }));
+    });
   }
 
   /**
@@ -896,7 +1047,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
       onNewDigaramInitialized: performDiagramLayout,
     } = OntodiaExtension.get() || DEFAULT_FACTORY;
     const repositories = this.getRepositories();
-    const loadingLayout = getRDFGraphBySparqlQuery(query, repositories).then(graph => {
+    const loadingLayout = getRdfExtGraphBySparqlQuery(query, repositories).then(graph => {
       const layoutProvider = new GraphBuilder(this.dataProvider);
       return layoutProvider.getGraphFromRDFGraph(graph as Triple[]);
     });
@@ -921,14 +1072,12 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
     const repositories = this.getRepositories();
 
-    return getRDFGraphBySparqlQuery(provisionQuery, repositories).then(graph =>
+    return getRdfExtGraphBySparqlQuery(provisionQuery, repositories).then(graph =>
       this.addGraphToRDFDataProvider(graph)
     );
   }
 
-  private addGraphToRDFDataProvider = (graph: RDFGraph[]) => {
-    const rdfExtGraph = parseRDFGraphToRDFExtGraph(graph);
-
+  private addGraphToRDFDataProvider = (graph: RawTriple[]) => {
     const dataProviders = (this.dataProvider as CompositeDataProvider).dataProviders;
     let rdfDataProvider: RDFDataProvider;
 
@@ -939,7 +1088,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     }
 
     if (rdfDataProvider) {
-      rdfDataProvider.addGraph(rdfExtGraph);
+      rdfDataProvider.addGraph(makeRdfExtGraph(graph) as object);
     }
   }
 
@@ -947,7 +1096,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
    * Sets diagram layout by diagram id
    */
   private setLayoutByDiagram(diagram: string): Promise<void> {
-    const loadingLayout = getDiagramByIri(diagram, {repository: 'assets'});
+    const loadingLayout = DiagramService.getDiagramByIri(diagram, {repository: 'assets'});
     this.workspace.showWaitIndicatorWhile(loadingLayout);
 
     return loadingLayout.then(res => {
@@ -1028,18 +1177,37 @@ export class Ontodia extends Component<OntodiaProps, State> {
         show: true,
         title: 'Save Ontodia diagram',
         placeholder: 'Enter diagram name',
-      }),
+      })
     );
   }
 
   private renderPropertyEditor = (options: PropertyEditorOptions) => {
     const {elementData} = options;
     const metadata = getEntityMetadata(elementData, this.entityMetadata);
+    const authoringState = this.workspace.getEditor().authoringState;
+
     if (metadata) {
-      const model = convertElementModelToCompositeValue(elementData, metadata);
+      let rawModel = convertElementModelToCompositeValue(elementData, metadata);
+      const elementState = authoringState.elements.get(rawModel.subject.value as ElementIri);
+
+      const isNewElement =
+        elementState && elementState.type === AuthoringKind.ChangeElement && !elementState.before;
+      const elementHasNewIri = elementState &&
+        elementState.type === AuthoringKind.ChangeElement &&
+        elementState.newIri;
+
+      let model: CompositeValue = {
+        ...rawModel,
+        subject: elementHasNewIri ? new Rdf.Iri((elementState as any).newIri) : rawModel.subject,
+      };
+
+      const persistence = makePersistenceFromConfig(this.props.persistence);
       const props: EntityFormProps = {
+        acceptIriAuthoring: isNewElement || persistence.supportsIriEditing,
         fields: metadata.fieldById.toArray(),
+        newSubjectTemplate: metadata.newSubjectTemplate,
         model,
+        suggestIri: isNewElement ? true : undefined,
         onSubmit: newData => {
           const editedModel = convertCompositeValueToElementModel(newData, metadata);
           options.onSubmit(editedModel);
@@ -1059,8 +1227,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     this.setState({label});
     return this.cancellation.map(
       this.parsedMetadata.flatMap(
-        metadata =>
-          saveDiagram(label, layout, metadata)
+        metadata => DiagramService.saveDiagram(label, layout, metadata)
       )
     ).flatMap(
       res => this.props.addToDefaultSet ? addToDefaultSet(res, this.props.id) : Kefir.constant(res)
@@ -1073,8 +1240,16 @@ export class Ontodia extends Component<OntodiaProps, State> {
       this.setState({diagramIri: diagramIri.value});
       return Kefir.constant(undefined);
     }).map(results => {
-      trigger({eventType: OntodiaEvents.DiagramSaved, source: this.props.id, data: {resourceIri: this.state.diagramIri}});
-      trigger({eventType: OntodiaEvents.DiagramIsDirty, source: this.props.id, data: {hasChanges: false}});
+      trigger({
+        eventType: OntodiaEvents.DiagramSaved,
+        source: this.props.id,
+        data: {resourceIri: this.state.diagramIri},
+      });
+      trigger({
+        eventType: OntodiaEvents.DiagramIsDirty,
+        source: this.props.id,
+        data: {hasChanges: false},
+      });
       return results;
     }).mapErrors(error => {
       addNotification({level: 'error', message: `Error saving diagram ${label}`}, error);
@@ -1140,8 +1315,26 @@ export class Ontodia extends Component<OntodiaProps, State> {
       markerTarget,
       renderLink: (link: Link) => {
         if (editable && link.linkState) {
-          const customLabel = [{text: link.linkState['ontodia:customLabel'], lang: ''}];
-          return set(cloneDeep(linkStyle), 'label.attrs.text.text', customLabel);
+          const customLabel: Array<LocalizedString> = [{
+            value: link.linkState['ontodia:customLabel'],
+            language: '',
+          }];
+          const {label = {}} = linkStyle;
+          const {attrs = {}} = label;
+          const {text = {}} = attrs;
+          return {
+            ...linkStyle,
+            label: {
+              ...label,
+              attrs: {
+                ...attrs,
+                text: {
+                  ...text,
+                  text: customLabel,
+                },
+              },
+            },
+          };
         }
         return linkStyle;
       },
@@ -1161,10 +1354,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
       const diagram = this.workspace.getDiagram();
       const element = model.getElement(params.elementId);
 
-      params.token = element ? diagram.selectLabel(element.data.label.values).text : '';
+      params.token = element ? diagram.formatLabel(element.data.label.values, element.data.id) : '';
     }
 
-    return suggestProperties(params, propertySuggestionQuery);
+    return DiagramService.suggestProperties(params, propertySuggestionQuery);
   }
 
   private resolveNodeStyles = (types: string[]): CustomTypeStyle => {
@@ -1177,6 +1370,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
     }
     return undefined;
   }
+}
+
+function makePersistenceFromConfig(mode: OntodiaPersistenceMode = {type: 'form'}) {
+  const factory = OntodiaExtension.get() || DEFAULT_FACTORY;
+  return factory.getPersistence(mode);
 }
 
 function mapTemplateComponent(component: JSX.Element, context: AuthoredEntityContext): JSX.Element {
@@ -1208,5 +1406,9 @@ function mapTemplateComponent(component: JSX.Element, context: AuthoredEntityCon
 
   return mapElement(component);
 }
+
+const selectLabelLanguage: LabelLanguageSelector = (labels, language) => {
+  return selectPreferredLabel(labels, language);
+};
 
 export default Ontodia;

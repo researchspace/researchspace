@@ -73,7 +73,12 @@ export class OntodiaContents extends Component<Props, State> {
         source: this.props.id,
       })
     ).observe({
-      value: ({data}) => this.updateElements(data),
+      value: ({data: {model, authoringState, temporaryState}}) =>
+        this.updateElements({
+          model: model as DiagramModel,
+          authoringState: authoringState as AuthoringState,
+          temporaryState: temporaryState as TemporaryState,
+        }),
     });
   }
 
@@ -86,7 +91,7 @@ export class OntodiaContents extends Component<Props, State> {
   ) {
     const elements: Array<{ iri: string; persisted: boolean }> = [];
     const isPersisted = iri =>
-      !authoringState.index.elements.has(iri) && !temporaryState.elements.has(iri);
+      !authoringState.elements.has(iri) && !temporaryState.elements.has(iri);
     model.elements.forEach(element => {
       if (!element.temporary) {
         elements.push({

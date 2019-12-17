@@ -16,16 +16,7 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import * as _ from 'lodash';
-import {
-  Props,
-  createElement,
-  ReactNode,
-  ReactElement,
-  ComponentClass,
-  Children,
-  cloneElement,
-} from 'react';
+import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as SparqlJs from 'sparqljs';
 
@@ -42,7 +33,7 @@ import { StaticComponent, StaticFieldProps } from './static';
 // importing from './input' to prevent cyclic dependencies when importing from CompositeInput
 import { SingleValueInput } from './inputs/SingleValueInput';
 import {
-  MultipleValuesInput, MultipleValuesProps, ValuesWithErrors,
+  MultipleValuesInput, MultipleValuesProps, MultipleValuesHandler, ValuesWithErrors,
 } from './inputs/MultipleValuesInput';
 import { CardinalitySupport } from './inputs/CardinalitySupport';
 import { CompositeInput } from './inputs/CompositeInput';
@@ -74,18 +65,20 @@ export namespace FieldMapping {
 }
 
 export interface InputMapping {
-  inputType: ComponentClass<any>;
-  singleValueInputType?: ComponentClass<any>;
-  props: MultipleValuesProps;
+  for: string | undefined;
+  inputType: React.ComponentClass<any>;
+  singleValueInputType?: React.ComponentClass<any>;
+  element: React.ReactElement<MultipleValuesProps>;
 }
 
 export interface StaticMapping {
-  staticType: ComponentClass<any>;
-  props: StaticFieldProps;
+  for: string | undefined;
+  staticType: React.ComponentClass<any>;
+  element: React.ReactElement<StaticFieldProps>;
 }
 
 export interface OtherElementMapping {
-  child: ReactElement<any>;
+  child: React.ReactElement<any>;
   children: any;
 }
 
@@ -94,31 +87,37 @@ export interface OtherElementMapping {
  *
  * Inputs derived from `SingleValueInput` are automatically wrapped by `CardinalitySupport`.
  */
-export function mapChildToComponent(child: ReactNode): FieldMapping | undefined {
+export function mapChildToComponent(child: React.ReactNode): FieldMapping | undefined {
   if (!isValidChild(child)) { return undefined; }
 
-  const element = child as ReactElement<any>;
+  const element = child as React.ReactElement<any>;
 
   if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
-    const singleValueInputType = element.type as ComponentClass<any>;
-    const props: MultipleValuesProps = _.clone(element.props);
-    (props as Props<CardinalitySupport>).children = element;
-    return {inputType: CardinalitySupport, singleValueInputType, props};
+    const singleValueInputType = element.type as React.ComponentClass<any>;
+    return {
+      for: element.props.for,
+      inputType: CardinalitySupport,
+      singleValueInputType,
+      element: React.createElement(CardinalitySupport, {
+        ...element.props,
+        children: element,
+      }),
+    };
   } else if (hasBaseDerivedRelationship(MultipleValuesInput, element.type)) {
-    const props: MultipleValuesProps = _.clone(element.props);
-    return {inputType: (element.type as ComponentClass<any>), props};
+    const inputType = element.type as React.ComponentClass<any>;
+    return {for: element.props.for, inputType, element};
   } else if (hasBaseDerivedRelationship(StaticComponent, element.type)) {
-    const props: StaticFieldProps = _.clone(element.props);
-    return {staticType: (element.type as ComponentClass<any>), props};
-  } else if ('children' in element.props) {
-    return {child, children: element.props.children} as any;
+    const staticType = element.type as React.ComponentClass<any>;
+    return {for: element.props.for, staticType, element};
+  } else if (element.props.children) {
+    return {child, children: element.props.children};
   } else {
     return undefined;
   }
 }
 
 export interface FieldConfiguration {
-  inputs: Immutable.Map<string, InputMapping>;
+  inputs: Immutable.Map<string, ReadonlyArray<InputMapping>>;
   errors: Immutable.List<FieldError>;
 }
 
@@ -130,9 +129,9 @@ export interface FieldConfiguration {
  */
 export function validateFieldConfiguration(
   definitions: Immutable.Map<string, FieldDefinition>,
-  children: ReactNode,
+  children: React.ReactNode
 ): FieldConfiguration {
-  const inputs = Immutable.Map<string, InputMapping>().asMutable();
+  const inputs = Immutable.Map<string, ReadonlyArray<InputMapping>>().asMutable();
   const errors: FieldError[] = [];
 
   collectFieldConfiguration(definitions, children, inputs, errors);
@@ -148,25 +147,25 @@ export function validateFieldConfiguration(
 
 function collectFieldConfiguration(
   definitions: Immutable.Map<string, FieldDefinition>,
-  children: ReactNode,
-  collectedInputs: Immutable.Map<string, InputMapping>,
-  collectedErrors: FieldError[],
+  children: React.ReactNode,
+  collectedInputs: Immutable.Map<string, ReadonlyArray<InputMapping>>,
+  collectedErrors: FieldError[]
 ): void {
-  return Children.forEach(children, child => {
+  return React.Children.forEach(children, child => {
     const mapping = mapChildToComponent(child);
     if (!mapping) { return; }
 
     if (FieldMapping.isInput(mapping)) {
-      const {props} = mapping;
-      if (props.for) {
-        const definition = definitions.get(props.for);
+      if (mapping.for) {
+        const definition = definitions.get(mapping.for);
         if (!definition) {
           collectedErrors.push({
             kind: ErrorKind.Configuration,
-            message: `Field definition '${props.for}' not found`,
+            message: `Field definition '${mapping.for}' not found`,
           });
         }
-        collectedInputs.set(props.for, mapping);
+        const mappings = collectedInputs.get(mapping.for);
+        collectedInputs.set(mapping.for, mappings ? [...mappings, mapping] : [mapping]);
       } else {
         collectedErrors.push({
           kind: ErrorKind.Configuration,
@@ -174,13 +173,12 @@ function collectFieldConfiguration(
         });
       }
     } else if (FieldMapping.isStatic(mapping)) {
-      const {staticType, props} = mapping;
-      if (props.for) {
-        const definition = definitions.get(props.for);
+      if (mapping.for) {
+        const definition = definitions.get(mapping.for);
         if (!definition) {
           collectedErrors.push({
             kind: ErrorKind.Configuration,
-            message: `Field definition '${props.for}' not found`,
+            message: `Field definition '${mapping.for}' not found`,
           });
         }
       }
@@ -193,60 +191,83 @@ function collectFieldConfiguration(
 }
 
 export function renderFields(
-  children: ReactNode,
+  inputChildren: React.ReactNode,
   model: CompositeValue,
+  inputHandlers: Immutable.Map<string, ReadonlyArray<MultipleValuesHandler>>,
   getDataState: (fieldId: string) => DataState,
   onValuesChanged: (
     field: FieldDefinition,
-    reducer: (previous: ValuesWithErrors) => ValuesWithErrors,
+    reducer: (previous: ValuesWithErrors) => ValuesWithErrors
   ) => void,
-  onInputMounted: (inputId: string, element: MultipleValuesInput<any, any>) => void,
+  onInputMounted: (inputId: string, index: number, input: MultipleValuesInput<any, any>) => void
 ) {
-  return universalChildren(Children.map(children, child => {
+  const inputIndices = new Map<string, number>();
+
+  function mapChild(child: React.ReactNode) {
     const mapping = mapChildToComponent(child);
     if (!mapping) {
       return child;
     } else if (FieldMapping.isInput(mapping)) {
-      let {inputType, props} = mapping;
-      if (!props.for) { return null; }
-      props.definition = model.definitions.get(props.for);
-      if (!props.definition) { return null; }
-      const state = model.fields.get(props.for, FieldState.empty);
-      props.dataState = getDataState(props.for);
-      props.values = state.values;
-      props.errors = state.errors;
-      props.updateValues = reducer => onValuesChanged(props.definition, reducer);
+      if (!mapping.for) { return null; }
+      const definition = model.definitions.get(mapping.for);
+
+      if (!definition) { return null; }
+      const state = model.fields.get(mapping.for, FieldState.empty);
+
+      const index = inputIndices.get(mapping.for) || 0;
+      inputIndices.set(mapping.for, index + 1);
+
+      const handlers = inputHandlers.get(mapping.for);
+      if (index >= handlers.length) {
+        throw new Error(`Missing handler for field ${mapping.for} (at index ${index})`);
+      }
+      const handler = handlers[index];
+
       // save a reference to mapped component for validation
       // and lazy selectPattern evaluation
       const onMounted = (input: MultipleValuesInput<any, any>) => {
-        onInputMounted(props.for, input);
+        onInputMounted(mapping.for, index, input);
       };
-      return createElement(
+
+      const baseProvidedProps: Partial<MultipleValuesProps> = {
+        definition,
+        handler,
+        dataState: getDataState(mapping.for),
+        values: state.values,
+        errors: state.errors,
+        updateValues: reducer => onValuesChanged(definition, reducer),
+      };
+      const inputOverride: Partial<MultipleValuesProps> & React.Props<any> = {
+        ...baseProvidedProps,
+        ref: onMounted,
+      };
+      return React.createElement(
         InputDecorator,
-        props,
-        createElement(inputType, {...props, ref: onMounted})
+        {...mapping.element.props, ...baseProvidedProps},
+        React.cloneElement(mapping.element, inputOverride)
       );
     } else if (FieldMapping.isStatic(mapping)) {
-      const {staticType, props} = mapping;
-      if (props.for) {
-        props.definition = model.definitions.get(props.for);
-        if (!props.definition) { return null; }
+      const {element} = mapping;
+      const override: Partial<StaticFieldProps> = {model};
+      if (element.props.for) {
+        const definition = model.definitions.get(element.props.for);
+        if (!definition) { return null; }
+        override.definition = definition;
       }
-      props.model = model;
-      return createElement(staticType, props);
+      return React.cloneElement(mapping.element, override);
     } else if (FieldMapping.isOtherElement(mapping)) {
-      const mappedChildren = universalChildren(renderFields(
-        mapping.children,
-        model,
-        getDataState,
-        onValuesChanged,
-        onInputMounted,
-      ));
-      return cloneElement(mapping.child, {}, mappedChildren);
+      const mappedChildren = mapChildren(mapping.children);
+      return React.cloneElement(mapping.child, {}, mappedChildren);
     } else {
       throw new Error('Invalid mapping');
     }
-  }));
+  }
+
+  function mapChildren(children: React.ReactNode) {
+    return universalChildren(React.Children.map(children, mapChild));
+  }
+
+  return mapChildren(inputChildren);
 }
 
 /**

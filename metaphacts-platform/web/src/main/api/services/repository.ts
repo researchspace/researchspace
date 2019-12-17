@@ -75,9 +75,12 @@ export function getRepositoryConfigTemplate(id: string): Kefir.Property<string> 
   return fromRequest(req, (err, res) => res.text);
 }
 
-export function updateOrAddRepositoryConfig(id: string, turtle: string): Kefir.Property<string> {
+export function updateOrAddRepositoryConfig(
+  id: string, turtle: string, validate = false
+): Kefir.Property<string> {
   const req = request.post(`${ENDPOINT}/config/${id}`)
   .send(turtle)
+  .query({validate})
   .type('text/turtle');
   return fromRequest(req, (err, res) => res.text);
 }

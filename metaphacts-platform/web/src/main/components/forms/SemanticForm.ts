@@ -31,7 +31,7 @@ import {
   FieldValue, EmptyValue, AtomicValue, CompositeValue, ErrorKind, DataState,
 } from './FieldValues';
 
-import { CompositeInput } from './inputs';
+import { CompositeInput, CompositeInputProps, SingleValueHandler } from './inputs';
 import { FormErrors } from './static/FormErrors';
 
 import './forms.scss';
@@ -76,10 +76,24 @@ enum LoadingState {
 export class SemanticForm extends Component<SemanticFormProps, {}> {
   private readonly cancellation = new Cancellation();
 
+  private handler: SingleValueHandler;
+
   private input: CompositeInput;
   private lastDataState: DataState | undefined;
   private loadingState = LoadingState.None;
   private pendingModel: FieldValue;
+
+  constructor(props: SemanticFormProps, context: any) {
+    super(props, context);
+    this.handler = CompositeInput.makeHandler({
+      definition: undefined,
+      baseInputProps: {
+        fields: this.props.fields || [],
+        newSubjectTemplate: this.props.newSubjectTemplate,
+        children: this.props.children,
+      },
+    });
+  }
 
   componentDidMount() {
     this.pendingModel = this.props.model;
@@ -154,7 +168,7 @@ export class SemanticForm extends Component<SemanticFormProps, {}> {
    * e.g. loaded as initial state, restored from previous session, etc.
    */
   validate(model: CompositeValue): CompositeValue {
-    const validated = this.input.validate(model);
+    const validated = this.handler.validate(model);
     if (!FieldValue.isComposite(validated)) {
       throw new Error(
         'Expected to return either composite or empty value from CompositeInput.validate');
@@ -163,7 +177,12 @@ export class SemanticForm extends Component<SemanticFormProps, {}> {
   }
 
   finalize(model: CompositeValue): Kefir.Property<CompositeValue> {
-    return this.input.finalize(FieldValue.empty, model);
+    return this.handler.finalize(model, FieldValue.empty)
+      .flatMap(finalized => FieldValue.isComposite(finalized)
+        ? Kefir.constant(finalized)
+        : Kefir.constantError<any>(new Error('Expected CompositeValue as finalize result'))
+      )
+      .toProperty();
   }
 
   render() {
@@ -178,18 +197,19 @@ export class SemanticForm extends Component<SemanticFormProps, {}> {
       createElement(CompositeInput,
         {
           ref: this.onCompositeMounted,
+          handler: this.handler,
           fields: this.props.fields || [],
           newSubjectTemplate: this.props.newSubjectTemplate,
           dataState: DataState.Ready,
-          value: this.props.model,
           updateValue: this.updateModel,
-        },
-        // in case of configuration errors show FormErrors component instead of form content
-        hasConfigurationErrors
-          ? createElement(ErrorNotification, {title: 'Errors in form configuration'},
-              createElement(FormErrors, {model: this.props.model})
-            )
-          : this.props.children,
+          value: this.props.model,
+          // in case of configuration errors show FormErrors component instead of form content
+          children: hasConfigurationErrors
+            ? createElement(ErrorNotification, {title: 'Errors in form configuration'},
+                createElement(FormErrors, {model: this.props.model})
+              )
+            : this.props.children
+        }
       ),
       (this.props.debug
         ? D.pre({}, JSON.stringify(asDebugJSObject(this.props.model), null, 2))

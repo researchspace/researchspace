@@ -47,6 +47,7 @@ describe('FieldCommonTypes', () => {
       xsdDatatype: Rdf.iri('test'),
       minOccurs: 1,
       maxOccurs: 2,
+      order: 0,
       defaultValues: [],
       selectPattern: '',
       constraints: [
@@ -70,6 +71,7 @@ describe('FieldCommonTypes', () => {
       id: 'test',
       minOccurs: 0,
       maxOccurs: Infinity,
+      order: 0,
       defaultValues: [],
       categories: [],
       constraints: [],

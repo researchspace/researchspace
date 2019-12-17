@@ -19,7 +19,6 @@
 package com.metaphacts.repository.sparql;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.ModelException;

@@ -41,6 +41,7 @@ export interface State {
   range?: ReadonlyArray<Value>;
   min?: Data.Maybe<Value>;
   max?: Data.Maybe<Value>;
+  order?: Data.Maybe<Value>;
   defaults?: ReadonlyArray<Value>;
   testSubject?: Data.Maybe<Value>;
 
@@ -143,6 +144,7 @@ export namespace ValidatedTreeConfig {
  * @param  {string} xsdtype - xsdDatatype full IRI string
  * @param  {string} min - minOccurs
  * @param  {string} max - maxOccurs
+ * @param  {string} order - order
  * @param  {string} defaults - defaultValues
  * @param  {string} selectPattern - SPARQL selectPattern string
  * @param  {string} del - SPARQL deletePattern string
@@ -162,6 +164,7 @@ export function createFieldDefinitionGraph(properties: {
   range: ReadonlyArray<string>;
   min: string | undefined;
   max: string | undefined;
+  order: string | undefined;
   defaultValues: ReadonlyArray<string>;
   selectPattern: string | undefined;
   insertPattern: string;
@@ -173,7 +176,7 @@ export function createFieldDefinitionGraph(properties: {
   testSubject: string | undefined;
 }): Rdf.Graph {
   const {
-    id, label, description, domain, xsdDatatype, range, min, max, defaultValues, testSubject,
+    id, label, description, domain, xsdDatatype, range, min, max, order, defaultValues, testSubject,
     selectPattern, insertPattern, deletePattern, askPattern, valueSetPattern, autosuggestionPattern,
     categories, treePatterns,
   } = properties;
@@ -210,6 +213,9 @@ export function createFieldDefinitionGraph(properties: {
   }
   if (max) {
     triples.push(Rdf.triple(baseIri, field.max_occurs, Rdf.literal(max, xsd._string) ));
+  }
+  if (order) {
+    triples.push(Rdf.triple(baseIri, field.order, Rdf.literal(order, xsd._string) ));
   }
   for (const value of defaultValues) {
     triples.push(Rdf.triple(baseIri, field.default_value, Rdf.literal(value, xsd._string)));
@@ -318,6 +324,7 @@ export function getFieldDefitionState(fieldIri: Rdf.Iri): Kefir.Property<State> 
         range,
         min: fromNullable(fieldDef.minOccurs as string).map(createValue),
         max: fromNullable(fieldDef.maxOccurs as string).map(createValue),
+        order: fromNullable(fieldDef.order as string).map(createValue),
         defaults: fieldDef.defaultValues.map(createValue) as ReadonlyArray<Value>,
         testSubject: fromNullable(fieldDef.testSubject).map(createValue),
         insertPattern: fromNullable(fieldDef.insertPattern).map(createValue),
@@ -334,12 +341,12 @@ export function getFieldDefitionState(fieldIri: Rdf.Iri): Kefir.Property<State> 
 
 export function unwrapState(state: State) {
   const {
-    id, label, description, categories, domain, xsdDatatype, range, min, max, defaults, testSubject,
-    selectPattern, insertPattern, deletePattern, askPattern, valueSetPattern, autosuggestionPattern,
-    treePatterns,
+    id, label, description, categories, domain, xsdDatatype, range, min, max, order, defaults,
+    testSubject, selectPattern, insertPattern, deletePattern, askPattern, valueSetPattern,
+    autosuggestionPattern, treePatterns,
   } = state;
   const fields = {
-    id, description, xsdDatatype, min, max, testSubject, selectPattern,
+    id, description, xsdDatatype, min, max, order, testSubject, selectPattern,
     insertPattern, deletePattern, askPattern, valueSetPattern, autosuggestionPattern,
   };
   type Unwrapped = { [K in keyof typeof fields]: string | undefined } & {
@@ -353,7 +360,9 @@ export function unwrapState(state: State) {
   const mapped = mapValues(
     fields, value => value.map(v => v.value).getOrElse(undefined)
   ) as Unwrapped;
-  mapped.label = label.map(({value, lang}) => Rdf.langLiteral(value.value, lang));
+  mapped.label = label.map(({value, lang}) =>
+    lang.length ? Rdf.langLiteral(value.value,  lang) : Rdf.literal(value.value)
+  );
   mapped.categories = categories;
   mapped.domain = domain.map(v => v.value);
   mapped.range = range.map(v => v.value);

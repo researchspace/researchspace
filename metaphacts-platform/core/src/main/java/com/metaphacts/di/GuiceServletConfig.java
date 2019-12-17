@@ -34,6 +34,7 @@ import com.google.inject.spi.Message;
 import com.metaphacts.data.rdf.container.LDPAssetsLoader;
 import com.metaphacts.repository.RepositoryManager;
 import com.metaphacts.security.ShiroGuiceModule;
+import com.metaphacts.services.storage.MainPlatformStorage;
 
 /**
  * @author Artem Kozlov <ak@metaphacts.com>
@@ -101,6 +102,14 @@ public class GuiceServletConfig extends GuiceServletContextListener {
         logger.info("Shutting down repositories.");
         injector.getInstance(RepositoryManager.class).shutdown();
         
+        logger.info("Shutting down main platform storage.");
+        try {
+            injector.getInstance(MainPlatformStorage.class).shutdown();
+        } catch (Throwable t) {
+            logger.warn("Error while shutting down main platform storage: " + t.getMessage());
+            logger.debug("Details:", t);
+        }
+
         super.contextDestroyed(sce);
     }
 

@@ -139,7 +139,7 @@ export class AdapterAnnotationEndpoint implements MiradorAnnotationEndpoint {
 
   update(
     oaAnnotation: OARegionAnnotation,
-    onSuccess: () => void,
+    onSuccess: (data: OARegionAnnotation) => void,
     onError: () => void
   ) {
     const clone = cloneAnnotation(oaAnnotation);
@@ -152,7 +152,7 @@ export class AdapterAnnotationEndpoint implements MiradorAnnotationEndpoint {
       : Kefir.constantError<any>(new Error(
         'AnnotationEndpoint.update is not implemented'));
 
-    task.onValue(iri => { onSuccess(); }).onError(onError);
+    task.onValue(() => onSuccess(oaAnnotation)).onError(onError);
   }
 
   deleteAnnotation(annotationId: string, onSuccess: () => void, onError: () => void) {

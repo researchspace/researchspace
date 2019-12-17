@@ -18,16 +18,17 @@
 
 import * as React from 'react';
 import * as _ from 'lodash';
-import { DropdownButton, MenuItem, Button, ButtonGroup } from 'react-bootstrap';
+import { ButtonGroup } from 'react-bootstrap';
 
 import {
   ArgumentsContext, ArgumentsContextTypes, AssertedBelief, SimpleBeliefValue,
 } from './ArgumentsApi';
 
+import * as styles from './Belief.scss';
+
 export interface BeliefProps {
   forValue: string;
   isCanonical: boolean;
-  beliefValue: boolean;
 }
 
 interface State {
@@ -45,55 +46,54 @@ export class Belief extends React.Component<BeliefProps, State> {
     };
   }
 
-  componentWillReceiveProps(props: BeliefProps, context: ArgumentsContext) {
-    this.setState({
-      belief: context.getBeliefValue(props.forValue, props.isCanonical),
-    });
-  }
-
-  render() {
-    const { belief } = this.state;
-    const id = `belief-selection-${belief.targetValue}`;
-
-    const menuItems = [
-        <MenuItem eventKey='Agree'>Agree</MenuItem>,
-        <MenuItem eventKey='Disagree'>Disagree</MenuItem>,
-        <MenuItem eventKey='No Opinion'>No Opinion</MenuItem>,
-    ].filter(menuItem => menuItem.props.eventKey !== belief.belief);
-
-    return <ButtonGroup className='pullRight'>
-      <DropdownButton
-             title={belief.belief.value} id={id} onSelect={this.onBeliefChange(belief) as any}
-             bsStyle={this.dropdownStyle(belief)} bsSize='small' style={{minWidth: 100}}
-           >
-        {...menuItems}
-      </DropdownButton>
-      {this.props.isCanonical ? null : <Button  style={{marginLeft: 10}} onClick={() => this.onRemoveBelief(belief)} bsSize='small'><i className='fa fa-times'></i></Button>}
-    </ButtonGroup>;
-  }
-
-  private dropdownStyle = (belief: AssertedBelief): string => {
-    switch (belief.belief.value) {
-      case 'Agree': return 'info';
-      case 'Disagree': return 'warning';
-      case 'No Opinion': return 'default';
+  componentWillReceiveProps(nextProps: BeliefProps, context: ArgumentsContext) {
+    const {forValue, isCanonical} = this.props;
+    if (forValue !== nextProps.forValue || isCanonical !== nextProps.isCanonical) {
+      this.setState({
+        belief: context.getBeliefValue(nextProps.forValue, nextProps.isCanonical),
+      });
     }
   }
 
-  private onBeliefChange = (belief: AssertedBelief) => (
-    eventKey: SimpleBeliefValue, event: React.SyntheticEvent<{}>
-  ): void =>
-    this.setState(
-      (state: State) => {
-        const newBelief = _.clone(belief);
-        newBelief.belief.value = eventKey;
-        this.context.changeBelief(newBelief);
-        return {belief: newBelief};
-      }
-    );
+  componentDidUpdate(prevProps: BeliefProps, prevState: State) {
+    const {belief} = this.state;
+    if (belief !== prevState.belief) {
+      this.context.changeBelief(belief);
+    }
+  }
 
-  private onRemoveBelief = (belief: AssertedBelief) => {
-    this.context.removeBelief(belief);
+  render() {
+    const {belief} = this.state;
+    const id = `belief-selection-${belief.targetValue}`;
+    return (
+      <ButtonGroup bsSize='xs'>
+        <label className={`btn btn-default ${styles.radioButton} ${styles.agree}`}>
+          <input type='radio'
+            name={id}
+            value={SimpleBeliefValue.Agree}
+            defaultChecked={belief.belief.value === SimpleBeliefValue.Agree}
+            onChange={this.onBeliefChange} />
+          <span>YES</span>
+        </label>
+        <label className={`btn btn-default ${styles.radioButton} ${styles.disagree}`}>
+          <input type='radio'
+            name={id}
+            value={SimpleBeliefValue.Disagree}
+            defaultChecked={belief.belief.value === SimpleBeliefValue.Disagree}
+            onChange={this.onBeliefChange} />
+          <span>NO</span>
+        </label>
+      </ButtonGroup>
+    );
+  }
+
+  private onBeliefChange = (e: React.FormEvent<HTMLInputElement>) => {
+    const value = (e.target as HTMLInputElement).value as SimpleBeliefValue;
+    this.setState((prevState: State): State => {
+      const newBelief = _.clone(prevState.belief);
+      newBelief.belief.value = value;
+      return {belief: newBelief};
+    });
   }
 }
 

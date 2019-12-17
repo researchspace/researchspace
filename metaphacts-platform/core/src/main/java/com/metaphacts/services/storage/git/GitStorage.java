@@ -18,9 +18,23 @@
 
 package com.metaphacts.services.storage.git;
 
-import com.google.common.collect.ImmutableList;
-import com.metaphacts.services.storage.StorageUtils;
-import com.metaphacts.services.storage.api.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
@@ -32,7 +46,17 @@ import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.InvalidObjectIdException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.lib.CommitBuilder;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectInserter;
+import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.RefUpdate;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -45,14 +69,17 @@ import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.metaphacts.services.storage.StorageUtils;
+import com.metaphacts.services.storage.api.ObjectMetadata;
+import com.metaphacts.services.storage.api.ObjectRecord;
+import com.metaphacts.services.storage.api.ObjectStorage;
+import com.metaphacts.services.storage.api.PathMapping;
+import com.metaphacts.services.storage.api.SizedStream;
+import com.metaphacts.services.storage.api.StorageException;
+import com.metaphacts.services.storage.api.StorageLocation;
+import com.metaphacts.services.storage.api.StoragePath;
 
 public class GitStorage implements ObjectStorage {
     private static final Logger logger = LogManager.getLogger(GitStorage.class);
@@ -65,13 +92,19 @@ public class GitStorage implements ObjectStorage {
     private Repository repository;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    private ExecutorService executor;
+
     public GitStorage(PathMapping paths, GitStorageConfig config) throws StorageException {
         this.paths = paths;
         this.config = config;
 
+        initialize();
+    }
+
+    private void initialize() throws StorageException {
+
         if (!Files.isDirectory(config.getLocalPath())) {
-            throw new StorageException(
-                "Local path does not exists or not a directory: " + config.getLocalPath());
+            throw new StorageException("Local path does not exists or not a directory: " + config.getLocalPath());
         }
 
         Path gitFolder = config.getLocalPath().resolve(".git");
@@ -88,6 +121,9 @@ public class GitStorage implements ObjectStorage {
             throw new StorageException(
                 "Failed to open Git repository at: " + config.getLocalPath(), e);
         }
+
+        executor = Executors
+                .newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("git-storage-%d").build());
     }
 
     private void cloneRepository() throws GitAPIException, IOException {
@@ -128,6 +164,20 @@ public class GitStorage implements ObjectStorage {
         } catch (GitAPIException | IOException e) {
             repository.close();
             throw e;
+        }
+    }
+
+
+    @Override
+    public synchronized void close() throws StorageException {
+
+        if (executor != null) {
+            executor.shutdown();
+            try {
+                executor.awaitTermination(30, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+            }
         }
     }
 
@@ -397,55 +447,28 @@ public class GitStorage implements ObjectStorage {
             assertCleanWorkTree(git);
         }
 
-        int attempts = 0;
-        do {
-            Ref head = repository.exactRef(Constants.HEAD);
-            if (head == null || !head.isSymbolic()) {
-                throw new StorageException("Cannot update repository with detached HEAD");
-            }
-            ObjectId headCommitId = head.getObjectId();
 
-            RevCommit commitedChanges;
-            try {
-                commitedChanges = commitChanges(head, objectPath, newBlobId, author, commitMessage);
-            } catch (Exception e) {
-                performRollback(headCommitId);
-                throw e;
-            }
+        Ref head = repository.exactRef(Constants.HEAD);
+        if (head == null || !head.isSymbolic()) {
+            throw new StorageException("Cannot update repository with detached HEAD");
+        }
+        ObjectId headCommitId = head.getObjectId();
 
-            if (config.getRemoteUrl() == null) {
-                return commitedChanges;
-            }
+        RevCommit committedChanges;
+        try {
+            committedChanges = commitChanges(head, objectPath, newBlobId, author, commitMessage);
+        } catch (Exception e) {
+            performRollback(headCommitId);
+            throw e;
+        }
 
+        if (config.getRemoteUrl() != null) {
             String branch = head.getTarget().getName();
-            RemoteRefUpdate.Status pushStatus = tryPushChanges(branch);
-            switch (pushStatus) {
-                case OK:
-                    logger.debug(
-                        "Successfully pushed changes to remote as commit " +
-                        commitedChanges.getId().getName()
-                    );
-                    return commitedChanges;
-                case REJECTED_NONFASTFORWARD:
-                    logger.debug("Remote repository has other changes; trying to pull them and commit again");
-                    performRollback(headCommitId);
-                    pullChangesInFastForwardMode();
-                    break;
-                default:
-                    logger.debug(
-                        "Failed to push due to unexpected reason: {}; resetting to initial state",
-                        pushStatus.name()
-                    );
-                    performRollback(headCommitId);
-                    throw new StorageException(
-                        "Unexpected update status from pushing changes: " + pushStatus.name());
-            }
+            pushChangesAsynch(headCommitId, branch, committedChanges);
+        }
 
-            attempts++;
-        } while (attempts < config.getMaxPushAttempts());
+        return committedChanges;
 
-        throw new StorageException("Failed to push committed changes after " +
-            config.getMaxPushAttempts() + " failed attempts");
     }
 
     private RevCommit commitChanges(
@@ -520,6 +543,52 @@ public class GitStorage implements ObjectStorage {
 
             return insertedCommit;
         }
+    }
+
+    private void pushChangesAsynch(ObjectId headCommitId, String branch, RevCommit committedChanges) {
+
+        executor.submit(() -> {
+            try {
+                pushChanges(headCommitId, branch, committedChanges);
+            } catch (Throwable e) {
+                logger.warn("Failed to push changes to remote in background thread: " + e.getMessage());
+                logger.debug("Details:", e);
+            }
+        });
+    }
+
+    private void pushChanges(ObjectId headCommitId, String branch, RevCommit committedChanges)
+            throws GitAPIException, StorageException {
+
+        int attempts = 0;
+        do {
+            RemoteRefUpdate.Status pushStatus = tryPushChanges(branch);
+            switch (pushStatus) {
+            case OK:
+                logger.debug("Successfully pushed changes to remote as commit " + committedChanges.getId().getName());
+                return;
+            case REJECTED_NONFASTFORWARD:
+                logger.debug("Remote repository has other changes; trying to pull them and commit again");
+                try {
+                    lock.writeLock().lock();
+                    performRollback(headCommitId);
+                    pullChangesInFastForwardMode();
+                } finally {
+                    lock.writeLock().unlock();
+                }
+                break;
+            default:
+                logger.debug("Failed to push due to unexpected reason: {}; resetting to initial state",
+                        pushStatus.name());
+                performRollback(headCommitId);
+                throw new StorageException("Unexpected update status from pushing changes: " + pushStatus.name());
+            }
+
+            attempts++;
+        } while (attempts < config.getMaxPushAttempts());
+
+        throw new StorageException(
+                "Failed to push committed changes after " + config.getMaxPushAttempts() + " failed attempts");
     }
 
     private RemoteRefUpdate.Status tryPushChanges(String branch) throws GitAPIException {

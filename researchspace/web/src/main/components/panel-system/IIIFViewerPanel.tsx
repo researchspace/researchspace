@@ -26,12 +26,12 @@ import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import {
-  ImageRegionEditorComponentMirador, ImageRegionEditorProps,
+  ImageRegionEditorComponentMirador, ImageRegionEditorConfig,
 } from 'researchspace/components/iiif/ImageRegionEditor';
 
 const BINDING_VARIABLE = 'subject';
 
-export interface Props extends ImageRegionEditorProps {
+export interface IIIFViewerPanelProps extends ImageRegionEditorConfig {
   /**
    * SPARQL SELECT query string that is used for fetching images of an entity.
    * Entities IRIs will be injected into the query using the "?subject" binding variable.
@@ -54,11 +54,11 @@ export interface State {
  *    query="SELECT ?image WHERE { ?subject crm:P138i_has_representation ?image }">
  * </rs-iiif-viewer-panel-system>
  */
-export class IIIFViewerPanel extends Component<Props, State> {
+export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
   private readonly cancellation = new Cancellation();
   private queryingCancellation = this.cancellation.derive();
 
-  constructor(props: Props, context: any) {
+  constructor(props: IIIFViewerPanelProps, context: any) {
     super(props, context);
     this.state = {};
   }
@@ -67,7 +67,7 @@ export class IIIFViewerPanel extends Component<Props, State> {
     this.queryImages();
   }
 
-  componentDidUpdate(prevProps: Props) {
+  componentDidUpdate(prevProps: IIIFViewerPanelProps) {
     if (!isEqual(this.props, prevProps)) {
       this.queryImages();
     }

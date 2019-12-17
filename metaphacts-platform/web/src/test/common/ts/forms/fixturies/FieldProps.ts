@@ -19,22 +19,29 @@
 import { Rdf } from 'platform/api/rdf';
 
 import {
-  FieldValue, DataState, AtomicValueInputProps, normalizeFieldDefinition,
+  FieldValue, DataState, AtomicValueInput, AtomicValueInputProps, normalizeFieldDefinition,
 } from 'platform/components/forms';
 
 const DATATYPE = Rdf.iri('http://www.w3.org/2001/XMLSchema-datatypes#string');
 
+const definition = normalizeFieldDefinition({
+  id: 'test1',
+  label: 'labelProp',
+  description: 'test description',
+  xsdDatatype: DATATYPE,
+  minOccurs: 1,
+  maxOccurs: 1,
+  selectPattern: '',
+});
+
+const baseInputProps: AtomicValueInputProps = {
+  for: 'test1',
+};
+
 export const PROPS: AtomicValueInputProps = {
-  definition: normalizeFieldDefinition({
-    id: 'nameProp',
-    label: 'labelProp',
-    description: 'test description',
-    xsdDatatype: DATATYPE,
-    minOccurs: 1,
-    maxOccurs: 1,
-    selectPattern: '',
-  }),
-  for: 'test',
+  ...baseInputProps,
+  definition,
+  handler: AtomicValueInput.makeAtomicHandler({definition, baseInputProps}),
   value: FieldValue.empty,
   dataState: DataState.Ready,
 };

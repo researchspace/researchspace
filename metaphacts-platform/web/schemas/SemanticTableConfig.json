@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "anyOf": [
         {
             "$ref": "#/definitions/BaseConfig"
@@ -42,9 +42,19 @@
                     "$ref": "#/definitions/Options",
                     "description": "various ui options."
                 },
+                "prefetchLabels": {
+                    "default": true,
+                    "description": "Prefetches labels for all resource IRIs in the data to support sorting and filtering\nby resource labels.",
+                    "type": "boolean"
+                },
                 "query": {
                     "description": "SPARQL Select query.",
                     "type": "string"
+                },
+                "showLabels": {
+                    "default": true,
+                    "description": "Determines if the table should automatically fetch and display labels for resource IRIs.",
+                    "type": "boolean"
                 },
                 "showLiteralDatatype": {
                     "default": false,
@@ -58,6 +68,8 @@
                 "noResultTemplate",
                 "options",
                 "id",
+                "showLabels",
+                "prefetchLabels",
                 "showLiteralDatatype",
                 "linkParams",
                 "currentPage"
@@ -73,14 +85,7 @@
                 "columnConfiguration": {
                     "description": "List of columns to display. If specified table shows only columns explicitly specified in the configuration",
                     "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/definitions/SimpleColumnConfig"
-                            },
-                            {
-                                "$ref": "#/definitions/CustomColumnConfig"
-                            }
-                        ]
+                        "$ref": "#/definitions/ColumnConfiguration"
                     },
                     "type": "array"
                 },
@@ -111,9 +116,19 @@
                     "$ref": "#/definitions/Options",
                     "description": "various ui options."
                 },
+                "prefetchLabels": {
+                    "default": true,
+                    "description": "Prefetches labels for all resource IRIs in the data to support sorting and filtering\nby resource labels.",
+                    "type": "boolean"
+                },
                 "query": {
                     "description": "SPARQL Select query.",
                     "type": "string"
+                },
+                "showLabels": {
+                    "default": true,
+                    "description": "Determines if the table should automatically fetch and display labels for resource IRIs.",
+                    "type": "boolean"
                 },
                 "showLiteralDatatype": {
                     "default": false,
@@ -128,6 +143,8 @@
                 "noResultTemplate",
                 "options",
                 "id",
+                "showLabels",
+                "prefetchLabels",
                 "showLiteralDatatype",
                 "linkParams",
                 "currentPage"
@@ -138,21 +155,26 @@
             ],
             "type": "object"
         },
-        "CustomColumnConfig": {
-            "description": "Custom column configuration that can be used when one needs to override default cell visualization template.",
+        "ColumnConfiguration": {
+            "description": "Table column configuration which allows to override column header or cell visualization template.\nEither `variableName` or `cellTemplate` is required to properly display column content.",
             "properties": {
                 "cellTemplate": {
-                    "description": "Custom cell visualization <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>template</semantic-link>. Template has access to all projection variables for a single result tuple.\n**The template MUST have a single HTML root element.**",
+                    "description": "Custom cell visualization <semantic-link\n   uri='http://help.metaphacts.com/resource/FrontendTemplating'>template</semantic-link>.\nTemplate has access to all projection variables for a single result tuple.\n**The template MUST have a single HTML root element.**",
                     "type": "string"
                 },
                 "displayName": {
-                    "description": "Cell heading label",
+                    "description": "Cell heading label override.",
+                    "type": "string"
+                },
+                "variableName": {
+                    "description": "SPARQL projection variable name that this column is bind to.",
                     "type": "string"
                 }
             },
             "propertyOrder": [
-                "cellTemplate",
-                "displayName"
+                "displayName",
+                "variableName",
+                "cellTemplate"
             ],
             "required": [
                 "displayName"
@@ -214,9 +236,19 @@
                     "$ref": "#/definitions/Options",
                     "description": "various ui options."
                 },
+                "prefetchLabels": {
+                    "default": true,
+                    "description": "Prefetches labels for all resource IRIs in the data to support sorting and filtering\nby resource labels.",
+                    "type": "boolean"
+                },
                 "query": {
                     "description": "SPARQL Select query.",
                     "type": "string"
+                },
+                "showLabels": {
+                    "default": true,
+                    "description": "Determines if the table should automatically fetch and display labels for resource IRIs.",
+                    "type": "boolean"
                 },
                 "showLiteralDatatype": {
                     "default": false,
@@ -235,6 +267,8 @@
                 "noResultTemplate",
                 "options",
                 "id",
+                "showLabels",
+                "prefetchLabels",
                 "showLiteralDatatype",
                 "linkParams",
                 "currentPage"
@@ -242,28 +276,6 @@
             "required": [
                 "query",
                 "tupleTemplate"
-            ],
-            "type": "object"
-        },
-        "SimpleColumnConfig": {
-            "description": "Simple column configuration that can be used to override column header but still use default cell visualization.",
-            "properties": {
-                "displayName": {
-                    "description": "Cell heading label",
-                    "type": "string"
-                },
-                "variableName": {
-                    "description": "SPARQL projection variable name that this column is bind to.",
-                    "type": "string"
-                }
-            },
-            "propertyOrder": [
-                "variableName",
-                "displayName"
-            ],
-            "required": [
-                "displayName",
-                "variableName"
             ],
             "type": "object"
         }

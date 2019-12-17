@@ -17,16 +17,19 @@
  */
 
 package com.metaphacts.rest.providers;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Response;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.JerseyTestNg;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -73,8 +76,31 @@ public class IriParamProviderTest extends JerseyTestNg.ContainerPerClassTest {
         String response = target("/iri/default-iri").queryParam("iri", "http://metaphacts.com/testIRI").request().get(String.class);
         Assert.assertEquals(response, "http://metaphacts.com/testIRI");
     }
-   
-    
+
+    @Test
+    public void notAnAbsoluteUri() {
+        Response response = target("/iri/default-iri")
+            .queryParam("iri", "not valid")
+            .request().get();
+        Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(
+            "IRI \"not valid\" is not an absolute IRI.",
+            response.readEntity(String.class)
+        );
+    }
+
+    @Test
+    public void nonValidURI() {
+        Response response = target("/iri/default-iri")
+            .queryParam("iri", "http://this:is:not:valid.com/abc")
+            .request().get();
+        Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+        Assert.assertThat(
+            response.readEntity(String.class),
+            Matchers.containsString("absolute or empty path expected")
+        );
+    }
+
     @Path("/iri")
     public static class IriTestEndpoint {
 

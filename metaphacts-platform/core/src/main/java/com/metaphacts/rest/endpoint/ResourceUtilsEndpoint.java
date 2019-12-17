@@ -78,38 +78,32 @@ public class ResourceUtilsEndpoint {
         final JsonParser jp
     ) throws IOException, RepositoryException {
         Repository repo = repositoryManager.getRepository(repositoryId).orElse(repositoryManager.getDefault());
-        final ValueFactory vf = SimpleValueFactory.getInstance();
-
         StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
-                JsonFactory jfactory = new JsonFactory();
-                try(JsonGenerator jGenerator = jfactory.createGenerator(os)) {
-                    jGenerator.writeStartObject();
+                JsonFactory jsonFactory = new JsonFactory();
+                try(JsonGenerator output = jsonFactory.createGenerator(os)) {
+                    output.writeStartObject();
 
-                    // collect the resources to translate
-                    final List<IRI> resourceToLabel = new ArrayList<>();          // store resources to resolve
-                    final Map<IRI,String> iriToUriString = new LinkedHashMap<>(); // store original representation
-                    while (jp.nextToken() != JsonToken.END_ARRAY) {
-
-                        final String uriString = jp.getText();
-                        final IRI iri = vf.createIRI(uriString);
-
-                        resourceToLabel.add(iri);
-                        iriToUriString.put(iri, uriString);
-                    }
+                    Map<IRI, String> iriToUriString = readResourceIris(jp);
 
                     Optional<String> normalizedLanguageTag = preferredLanguage
                         .flatMap(tag -> Optional.ofNullable(Literals.normalizeLanguageTag(tag)));
 
+                    Map<IRI, Optional<Literal>> labelMap = labelCache.getLabels(
+                        iriToUriString.keySet(), repo, normalizedLanguageTag.orElse(null));
                     // write final bulk
-                    final Map<IRI,Optional<Literal>> labelMap = labelCache.getLabels(
-                        resourceToLabel, repo, normalizedLanguageTag.orElse(null));
-                    writeBulk(labelMap, jGenerator, iriToUriString);
+                    for (IRI iri : labelMap.keySet()) {
+                        Optional<Literal> label = labelMap.get(iri);
+                        output.writeStringField(
+                            iriToUriString.get(iri),
+                            LabelCache.resolveLabelWithFallback(label, iri)
+                        );
+                    }
 
                     // clear temp data structures
-                    jGenerator.writeEndObject();
+                    output.writeEndObject();
                 }
             }
         };
@@ -117,26 +111,19 @@ public class ResourceUtilsEndpoint {
     }
 
     /**
-     * Writes a bulk of label resource-to-label mappings using the JSON generator.
-     *
-     * @param resourceToLabel the mapping (as extracted from the LabelCache)
-     * @param jGenerator the JSON generator used for writing
-     * @param iriToUriString a map mapping the resolved full IRIs to the original uri string that was passed in
-     * @throws IOException
+     * @return resource IRIs with original representation
      */
-    private void writeBulk(
-        final Map<IRI, Optional<Literal>> resourceToLabel, final JsonGenerator jGenerator,
-        final Map<IRI, String> iriToUriString) throws IOException {
+    private Map<IRI, String> readResourceIris(JsonParser input) throws IOException {
+        ValueFactory vf = SimpleValueFactory.getInstance();
+        Map<IRI, String> iriToUriString = new LinkedHashMap<>();
+        while (input.nextToken() != JsonToken.END_ARRAY) {
 
-        // write bulk
-        for (final IRI iri : resourceToLabel.keySet()) {
+            final String uriString = input.getText();
+            final IRI iri = vf.createIRI(uriString);
 
-            final Optional<Literal> label = resourceToLabel.get(iri);
-            jGenerator.writeStringField(
-                iriToUriString.get(iri),
-                LabelCache.resolveLabelWithFallback(label, iri));
-
+            iriToUriString.put(iri, uriString);
         }
+        return iriToUriString;
     }
 
     @POST

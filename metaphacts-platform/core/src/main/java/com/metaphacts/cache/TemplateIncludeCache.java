@@ -40,7 +40,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.metaphacts.api.sparql.SparqlOperationBuilder;
@@ -51,17 +50,20 @@ import com.metaphacts.config.NamespaceRegistry;
  * @author Johannes Trame <jt@metaphacts.com>
  */
 public class TemplateIncludeCache implements PlatformCache {
-    private static final Cache<IRI, LinkedHashSet<Resource>> includeTypesCache = CacheBuilder.newBuilder()
-            .maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES)
-            .build();
+
+    public static final String CACHE_ID = "platform.TemplateIncludeCache";
 
     private static final Logger logger = LogManager.getLogger(TemplateIncludeCache.class);
 
     private Configuration config;
 
+    private final Cache<IRI, LinkedHashSet<Resource>> includeTypesCache;
+
     @Inject
     public TemplateIncludeCache(Configuration config, CacheManager cacheManager) {
        this.config=config;
+        includeTypesCache = cacheManager.newBuilder(CACHE_ID,
+                cacheBuilder -> cacheBuilder.maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES)).build();
         cacheManager.register(this);
     }
 
@@ -105,15 +107,18 @@ public class TemplateIncludeCache implements PlatformCache {
         } catch (MalformedQueryException |IllegalArgumentException e) {
             logger.error("Query as specified in \"templateIncludeQuery\" config for extracting the wiki include types is invalid.");
             logger.debug("Details:" , e);
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         } catch (QueryEvaluationException | RepositoryException e) {
             logger.error("Something went wrong during query execution for extracting the \"templateIncludeQuery\".");
             logger.debug("Details:" , e);
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         } catch (Exception e){
             logger.error("Something went wrong during extraction of the \"templateIncludeQuery\".");
             logger.debug("Details:" , e);
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
 
         includeTypesCache.put(value, newResourceSet);
@@ -132,7 +137,7 @@ public class TemplateIncludeCache implements PlatformCache {
 
     @Override
     public String getId() {
-        return "TemplateIncludeCache";
+        return CACHE_ID;
     }
 
 }

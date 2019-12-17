@@ -1,0 +1,151 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" iri="http://help.metaphacts.com/resource/Start">Help</semantic-link>
+  </li>
+  <li class="active">Image Graph Authoring</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+  	<h1>Image Graph Authoring</h1>
+    <p>Mirador component that uses <semantic-link iri='[[resolvePrefix "Help:Ontodia"]]'>Ontodia</semantic-link> in authoring mode as an endpoint to read and write images and regions. When the user creates a region in Mirador, the corresponding node immediately appears in Ontodia. Then the user can use Ontodia tools to connect the region with other entities presented on the diagram.</p>
+
+    <h2>1 Assumptions and implementation details</h2>
+    <ul>
+      <li>Ontodia and Mirador communicate using <semantic-link iri='[[resolvePrefix "Help:EventSystem"]]' target='_blank'>Event System</semantic-link>.</li>
+      <li>To synchronize regions lifecycle (read, create, update, delete) between Mirador and Ontodia, Image Graph Authoring implements annotation endpoint for Mirador by communicating with Ontodia model instead of directly reading/writing LDP resources.</li>
+      <li>This method is in place only when Image Graph Authoring is active.</li>
+      <li>Regions for an image are read from Ontodia ElementModel, translated into Open Annotation for Mirador, and created/modified regions are written back to Mirador model.</li>
+      <li>Ontodia writes and reads regions by using <semantic-link iri='[[resolvePrefix "Help:SemanticForm"]]' fragment='fielddefinitions'>Field Definitions</semantic-link>, this is also allowing for region model to be modified.</li>
+      <li>When Image Graph Authoring is initialized with a set of objects/images all images and all regions are loaded both in Mirador and Ontodia.</li>
+      <li>To support interoperation with stand-alone Mirador, standalone implementation of region persistance is also implemented using fields and semantic forms, but to keep backward compatibility with we are not allowing the ability to customize region persistence model at this point. Also, stand-alone Mirador will transfer image region to default repository on save.</li>
+      <li>As a side-effect of this, stand-alone Mirador will overwrite additional information that was created by Image Graph Authoring if the region is updated.</li>
+      <li>When an image or region is added to Ontodia, an image is added to IIIF Manifest and Mirador is refreshed.</li>
+      <li>Since Image Graph Authoring is Ontodia model-centric, only regions that are present on canvas are displayed.</li>
+      <li>User can either navigate to a region or drop a region on Ontodia.</li>
+    </ul>
+    
+    <h2>2 Configuration</h2>
+    <mp-documentation type='ImageGraphAuthoringConfig'></mp-documentation>
+    
+    <h2>3 Example</h2>
+    <p>Here is a demo configuration of Image Graph Authoring.</p>
+    <mp-code-block mode='text/html'>
+    <![CDATA[
+<div style='height: calc(100vh - 159.5px)'>
+  <div style='height: 50%'>
+   <ontodia id='ontodia-component' authoring-mode=true post-saving=none>
+      <semantic-form new-subject-template='http://www.example.com/entity/digitalimageregion/{{UUID}}'
+        fields='[ {
+          "iri" : "http://www.example.com/fieldDefinition/is%20primary%20area%20of",
+          "selectPattern" : "SELECT ?value ?label WHERE {\n  $subject <http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of> ?value.\n}",
+          "minOccurs" : "1",
+          "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
+          "range" : [ "http://www.researchspace.org/ontology/EX_Digital_Image" ],
+          "defaultValues" : [ ],
+          "maxOccurs" : "1",
+          "id" : "isPrimaryAreaOf",
+          "label" : "is primary area of",
+          "insertPattern" : "INSERT { $subject <http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of> $value } WHERE {}",
+          "order" : 0
+        }, {
+          "iri" : "http://www.example.com/fieldDefinition/region%20type",
+          "selectPattern" : "SELECT ?value WHERE {\n  $subject a ?value.\n}",
+          "minOccurs" : "1",
+          "xsdDatatype" : "http://www.w3.org/2001/XMLSchema#anyURI",
+          "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
+          "range" : [ "http://www.w3.org/2000/01/rdf-schema#Class" ],
+          "defaultValues" : [ ],
+          "id" : "type",
+          "label" : "region type",
+          "insertPattern" : "INSERT {\n  $subject a $value .\n  $subject a crmdig:D35_Area .\n} WHERE {}",
+          "order" : 0
+        }, {
+          "iri" : "http://www.example.com/fieldDefinition/region%20label",
+          "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.researchspace.org/ontology/displayLabel> ?value.\n}",
+          "minOccurs" : "1",
+          "xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
+          "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
+          "range" : [ ],
+          "defaultValues" : [ ],
+          "maxOccurs" : "1",
+          "id" : "label",
+          "label" : "region label",
+          "insertPattern" : "INSERT { $subject <http://www.researchspace.org/ontology/displayLabel> $value} WHERE {}",
+          "order" : 0
+        }, {
+          "iri" : "http://www.example.com/fieldDefinition/region%20value",
+          "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#value>?value.\n}",
+          "minOccurs" : "1",
+          "xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
+          "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
+          "range" : [ ],
+          "defaultValues" : [ ],
+          "maxOccurs" : "1",
+          "id" : "value",
+          "label" : "region value",
+          "insertPattern" : "INSERT { $subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> $value} WHERE {}",
+          "order" : 0
+        }, {
+          "iri" : "http://www.example.com/fieldDefinition/region%20viewport",
+          "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.researchspace.org/ontology/viewport> ?value.\n}",
+          "xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
+          "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
+          "range" : [ ],
+          "defaultValues" : [ ],
+          "maxOccurs" : "1",
+          "id" : "viewport",
+          "label" : "region viewport",
+          "insertPattern" : "INSERT { $subject <http://www.researchspace.org/ontology/viewport> $value} WHERE {}",
+          "order" : 0
+        }, {
+          "iri" : "http://www.example.com/fieldDefinition/region%20bounding%20box",
+          "selectPattern" : "SELECT ?value WHERE {\n  $subject <http://www.researchspace.org/ontology/boundingBox> ?value.\n}",
+          "minOccurs" : "1",
+          "xsdDatatype" : "http://www.w3.org/2001/XMLSchema#string",
+          "domain" : [ "http://www.researchspace.org/ontology/EX_Digital_Image_Region" ],
+          "range" : [ ],
+          "defaultValues" : [ ],
+          "maxOccurs" : "1",
+          "id" : "boundingBox",
+          "label" : "region bounding box",
+          "insertPattern" : "INSERT { $subject <http://www.researchspace.org/ontology/boundingBox> $value} WHERE {}",
+          "order" : 0
+        } ]'>
+     		<ontodia-entity-metadata entity-type-iri='http://www.researchspace.org/ontology/EX_Digital_Image_Region'
+          type-iri='http://www.example.com/fieldDefinition/region%20type'
+          label-iri='http://www.example.com/fieldDefinition/region%20label'>
+     		</ontodia-entity-metadata>
+
+     		<semantic-form-text-input for="label"></semantic-form-text-input>
+     		<semantic-form-hidden-input for="value"></semantic-form-hidden-input>
+     		<semantic-form-hidden-input for="viewport"></semantic-form-hidden-input>
+     		<semantic-form-hidden-input for="boundingBox"></semantic-form-hidden-input>
+
+     		<button name="submit" class="btn btn-sm btn-success">Save</button>
+     		<button name="reset" class="btn btn-sm btn-default">Reset</button>
+
+     		<button name="cancel" class="btn btn-sm btn-danger pull-right">Cancel</button>
+     </semantic-form>
+    </ontodia>
+  </div>
+
+  <div style='height: 50%'>
+    <rs-image-graph-authoring iiif-server-url="http://example.com/IIIF"
+			image-id-pattern='BIND(REPLACE(str(?imageIRI), "^.+/[A-Z0]*([1-9][0-9]*)_.*$", "$1") AS ?imageID)'
+			ontodia-id='ontodia-component'
+      fields='{
+        "boundingBox": "http://www.example.com/fieldDefinition/region%20bounding%20box",
+        "value": "http://www.example.com/fieldDefinition/region%20value",
+        "viewport": "http://www.example.com/fieldDefinition/region%20viewport",
+        "isPrimaryAreaOf": "http://www.example.com/fieldDefinition/is%20primary%20area%20of"
+      }'>
+    </rs-image-graph-authoring>
+  </div>
+</div>
+    ]]></mp-code-block>
+  </div>
+</div>

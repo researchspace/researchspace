@@ -36,12 +36,14 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.github.jsonldjava.shaded.com.google.common.collect.Sets;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.inject.Inject;
@@ -154,19 +156,33 @@ public class RepositoryManagerEndpointTest extends MetaphactsJerseyTest {
             conn.add(VF.createStatement(VF.createBNode(), RDFS.LABEL, VF.createLiteral("label")));
             Assert.assertEquals(1, Iterations.asList(conn.getStatements(null, null, null)).size());
         }
+        Assert.assertTrue(repo.isInitialized());
         
         res = target("/repositories/config/test-sail-memory-repository").request().delete();
         Assert.assertEquals(Status.OK, res.getStatusInfo());
         repoConfigsMap = repositoryRule.getRepositoryManager().getAvailableRepositoryConfigs();
         Assert.assertEquals(3, repoConfigsMap.size());
-        try {
-            try (RepositoryConnection conn = repo.getConnection()) {
-                Assert.fail("Repository not shut down properly");
-            } 
-        } catch (IllegalStateException e) {
-            // no-op
-        }
+        Assert.assertFalse(repo.isInitialized());
         
+    }
+    
+    @SubjectAware(
+            username = "sparqluser",
+            password = "sparql",
+            configuration = qaasPermissionShiroFile 
+        )
+    @Test
+    public void testGetEndpointConfigs() throws Exception {
+
+        // validate that we have three repositories
+        Map<String, Boolean> repoConfigsMap = repositoryRule.getRepositoryManager().getAvailableRepositoryConfigs();
+        Assert.assertEquals(Sets.newHashSet("default", "assets", "tests"), repoConfigsMap.keySet());
+
+        Response res = target("/repositories/").request().get();
+        String resultString = res.readEntity(String.class);
+        Assert.assertThat(resultString, Matchers.containsString("default"));
+        Assert.assertThat(resultString, Matchers.containsString("assets"));
+        Assert.assertThat(resultString, Matchers.not(Matchers.containsString("tests")));
     }
 
 }

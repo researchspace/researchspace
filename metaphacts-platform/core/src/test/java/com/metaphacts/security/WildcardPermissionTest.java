@@ -117,6 +117,14 @@ public class WildcardPermissionTest {
         Assert.assertTrue(mine.implies(other));
     }
     
+    @Test
+    public void permissionCaseSensitiveTest() {
+        WildcardPermission mine = new WildcardPermission("api:config:environment:resourceUrlMapping:read");
+        WildcardPermission other = new WildcardPermission("api:config:environment:resourceurlmapping:read");
+        // ensure that these two permissions match both ways, i.e. that case really doesn't matter in both directions
+        Assert.assertTrue(mine.implies(other));
+        Assert.assertTrue(other.implies(mine));
+    }
     
     private List<HashSet<String>> permissionParts(String... parts) {
         return Arrays.asList(parts).stream().map(Sets::newHashSet).collect(Collectors.toList());

@@ -71,6 +71,10 @@ module rso {
   export const OverlayOpacity = iri('Overlay_Opacity');
 
   export const FieldInstance = iri('FieldInstance');
+
+  export const ImageRegion = iri('ImageRegion');
+
+  export const UserDefinedPage = iri('UserDefinedPage');
 }
 
 export default rso;

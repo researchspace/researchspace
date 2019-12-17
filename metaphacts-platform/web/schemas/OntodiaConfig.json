@@ -24,19 +24,40 @@
             ],
             "type": "object"
         },
+        "FormBasedPersistenceProps": {
+            "properties": {
+                "debug": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "enum": [
+                        "form"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "debug"
+            ],
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        },
         "FullTextSearchSettings": {
             "description": "Full text search settings,\ndeveloper could use anything from search extensions of triplestore to regular expressions match\nSee wikidata and dbpedia examples for reusing full text search capabilities of Blazegraph and Virtuozo",
             "properties": {
                 "extractLabel": {
-                    "description": "try to extract label from IRI for usage in search purposes.\nIf you have no labels in the dataset and want to search, you\ncan use ?extractedLabel as something to search for.",
+                    "description": "When enabled, adds SPARQL patterns to try to extract label from IRI and\nmakes it available as `?extractedLabel` binding in `queryPattern`.",
                     "type": "boolean"
                 },
                 "prefix": {
-                    "description": "prefix to use in FTS queries",
+                    "description": "Prefixes to use in full text search queries.",
                     "type": "string"
                 },
                 "queryPattern": {
-                    "description": "query pattern should return ?inst and ?score for given ${text}.",
+                    "description": "SPARQL query pattern to search/restrict results by text token.\n\nParametrized variables:\n   - `${text}` text token\n   - `${dataLabelProperty}` `dataLabelProperty` property from the settings\n\nExpected bindings:\n   - `?inst` link type\n   - `?score` numerical score for ordering search results by relevance\n   - `?extractedLabel` (optional; if `extractLabel` is enabled)",
                     "type": "string"
                 }
             },
@@ -54,26 +75,29 @@
         "LinkConfiguration": {
             "description": "Link abstraction configuration.",
             "properties": {
+                "domain": {
+                    "description": "Optional domain constraint for source element of the link.\nIf specified checks RDF type of source element to match one from this set.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
                 "id": {
                     "description": "IRI of the \"virtual\" link",
                     "type": "string"
                 },
-                "inverseId": {
-                    "description": "IRI of the inverse",
-                    "type": "string"
-                },
                 "path": {
-                    "description": "Sparql pattern connecting $source to $target. It's required to use those specific variables.",
+                    "description": "SPARQL predicate or pattern connecting source element to target element.\n\nExpected bindings (if it is a pattern):\n   - `?source` source element\n   - `?target` target element",
                     "type": "string"
                 },
                 "properties": {
-                    "description": "Additional sparql patterns can be used for getting properties of the link. (propValue propType should be bound)",
+                    "description": "Additional SPARQL patterns can be used for getting properties of the link.\n\nExpected bindings\n   - `?source` source element\n   - `?target` target element\n   - `?propType` link property type\n   - `?propValue` link property value",
                     "type": "string"
                 }
             },
             "propertyOrder": [
                 "id",
-                "inverseId",
+                "domain",
                 "path",
                 "properties"
             ],
@@ -272,40 +296,90 @@
             "properties": {
                 "datatype": {
                     "description": "Equals `xsd:string` if not defined.",
+                    "properties": {
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "propertyOrder": [
+                        "value"
+                    ],
+                    "required": [
+                        "value"
+                    ],
+                    "type": "object"
+                },
+                "language": {
                     "type": "string"
                 },
-                "lang": {
-                    "type": "string"
-                },
-                "text": {
+                "value": {
                     "type": "string"
                 }
             },
             "propertyOrder": [
-                "text",
-                "lang",
+                "value",
+                "language",
                 "datatype"
             ],
             "required": [
-                "lang",
-                "text"
+                "language",
+                "value"
+            ],
+            "type": "object"
+        },
+        "OntologyPersistenceProps": {
+            "properties": {
+                "repository": {
+                    "type": "string"
+                },
+                "targetGraphIri": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "ontology"
+                    ],
+                    "type": "string"
+                },
+                "typePattern": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "targetGraphIri",
+                "repository",
+                "typePattern"
+            ],
+            "required": [
+                "repository",
+                "targetGraphIri",
+                "type"
             ],
             "type": "object"
         },
         "PropertyConfiguration": {
             "description": "Specifies property abstraction configuration",
             "properties": {
+                "domain": {
+                    "description": "Optional domain constraint for source element of the property.\nIf specified checks RDF type of source element to match one from this set.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
                 "id": {
                     "description": "IRI of the \"virtual\" link",
                     "type": "string"
                 },
                 "path": {
-                    "description": "Sparql pattern connecting $subject to $value. It's required to use those specific variables.",
+                    "description": "SPARQL predicate or pattern connecting source element to property value.\n\nExpected bindings (if it is a pattern):\n   - `?inst` source element\n   - `?value` property value",
                     "type": "string"
                 }
             },
             "propertyOrder": [
                 "id",
+                "domain",
                 "path"
             ],
             "required": [
@@ -315,22 +389,26 @@
             "type": "object"
         },
         "SparqlDataProviderSettings": {
-            "description": "this is dataset-schema specific settings",
+            "description": "Dataset-schema specific settings for SPARQL data provider.",
             "properties": {
+                "classInfoQuery": {
+                    "description": "SELECT query to retrieve data for each class in a set.\n\nParametrized variables:\n   - `${ids}` VALUES clause content with class IRIs\n   - `${schemaLabelProperty}` `schemaLabelProperty` property from the settings\n\nExpected output bindings:\n   - `?class`\n   - `?label` (optional)\n   - `?instcount` (optional)",
+                    "type": "string"
+                },
                 "classTreeQuery": {
-                    "description": "query to retreive class tree. Should return class, label, parent, instcount (optional)",
+                    "description": "SELECT query to retreive class tree.\n\nParametrized variables:\n   - `${schemaLabelProperty}` `schemaLabelProperty` property from the settings\n\nExpected output bindings:\n   - `?class`\n   - `?label` (optional)\n   - `?parent` (optional)\n   - `?instcount` (optional)",
                     "type": "string"
                 },
                 "dataLabelProperty": {
-                    "description": "property to use as instance label\ntodo: make it an array",
+                    "description": "Property path for querying instance data labels (elements, links).",
                     "type": "string"
                 },
                 "defaultPrefix": {
-                    "description": "default prefix to be used in every query",
+                    "description": "Default prefix to be used in every query.",
                     "type": "string"
                 },
                 "elementInfoQuery": {
-                    "description": "query for fetching all information on element: labels, classes, properties",
+                    "description": "CONSTRUCT query to retrieve data for each element (types, labels, properties).\n\nParametrized variables:\n   - `${ids}` VALUES clause content with element IRIs\n   - `${dataLabelProperty}` `dataLabelProperty` property from the settings\n   - `${propertyConfigurations}`\n\nExpected output format for triples:\n   - `?inst rdf:type ?class` element has type\n   - `?inst rdfs:label ?label` element has label\n   - `?inst ?property ?value` element has value for a datatype property",
                     "type": "string"
                 },
                 "filterAdditionalRestriction": {
@@ -346,39 +424,57 @@
                     "type": "string"
                 },
                 "filterTypePattern": {
-                    "description": "filter by type pattern. One could use transitive type resolution here.",
+                    "description": "SPARQL query pattern to retrieve transitive type sets for elements.\n\nExpected output bindings:\n   - `?inst` element IRI\n   - `?class` element type (there may be multiple or transitive types for an element)",
                     "type": "string"
                 },
                 "fullTextSearch": {
                     "$ref": "#/definitions/FullTextSearchSettings",
-                    "description": "full-text search settings"
+                    "description": "Full-text search settings."
                 },
                 "imageQueryPattern": {
-                    "description": "this should return image URL for ?inst as instance and ?linkType for image property IRI\ntodo: move to runtime settings instead? proxying is runtime thing",
+                    "description": "Query pattern to retrieve image URL for an element.\n\nExpected bindings:\n   - `?inst` element IRI\n   - `?linkType` image property IRI\n   - `?image` result image URL",
                     "type": "string"
                 },
                 "linkConfigurations": {
-                    "description": "Abstract links configuration - one could abstract a property path as a link on the diagram\nIf you choose to set linkConfiguration, please ensure you'll have corresponding handling of linkConfiguration in\nlinkTypeOf query, refElement* queries, linkInfos query.",
+                    "description": "Abstract links configuration - one could abstract a property path as a link on the diagram.",
                     "items": {
                         "$ref": "#/definitions/LinkConfiguration"
                     },
                     "type": "array"
                 },
+                "linkTypesInfoQuery": {
+                    "description": "SELECT query to retrieve data for each link type in a set.\n\nParametrized variables:\n   - `${ids}` VALUES clause content with link type IRIs\n   - `${schemaLabelProperty}` `schemaLabelProperty` property from the settings\n\nExpected output bindings:\n   - `?link`\n   - `?label` (optional)\n   - `?instcount` (optional)",
+                    "type": "string"
+                },
                 "linkTypesOfQuery": {
-                    "description": "link types of returns possible link types from specified instance with statistics",
+                    "description": "SELECT query to retrieve incoming/outgoing link types from specified element with statistics.\n\nParametrized variables:\n   - `${elementIri}`\n   - `${linkConfigurations}`\n\nExpected bindings:\n   - `?link`\n   - `?label` (optional)\n   - `?instcount` (optional)",
                     "type": "string"
                 },
                 "linkTypesPattern": {
-                    "description": "link types pattern - what to consider a link on initial fetch",
+                    "description": "Overridable part of `linkTypesQuery` with same output bindings.\n\nParametrized variables: none",
+                    "type": "string"
+                },
+                "linkTypesQuery": {
+                    "description": "SELECT query to retrieve initial link types.\n\nParametrized variables:\n   - `${linkTypesPattern}` `linkTypesPattern` property from the settings\n   - `${schemaLabelProperty}` `schemaLabelProperty` property from the settings\n\nExpected output bindings:\n   - `?link`\n   - `?label` (optional)\n   - `?instcount` (optional)",
                     "type": "string"
                 },
                 "linkTypesStatisticsQuery": {
-                    "description": "link types of stats returns statistics of a link type for specified resource.\nTo support blank nodes, query should use ?inObject and ?outObject variables for counting incoming and\noutgoing links, and provide ${navigateElementFilterOut} and ${navigateElementFilterIn} variables,\nsee OWLRDFSSettings for example",
+                    "description": "SELECT query to retrieve statistics of incoming/outgoing link types for specified element.\n\nParametrized variables:\n   - `${linkId}`\n   - `${elementIri}`\n   - `${linkConfigurationOut}`\n   - `${linkConfigurationIn}`\n   - `${navigateElementFilterOut}` (optional; for blank node support only)\n   - `${navigateElementFilterIn}` (optional; for blank node support only)\n\nExpected bindings:\n   - `?link` link type\n   - `?inCount` incoming links count\n   - `?outCount` outgoing links count",
                     "type": "string"
                 },
                 "linksInfoQuery": {
-                    "description": "Query on all links between said instances. Should return source type target",
+                    "description": "SELECT query to retrieve all links between specified elements.\n\nParametrized variables:\n   - `${ids}` VALUES clause content with element IRIs\n   - `${linkConfigurations}`\n\nExpected output bindings:\n   - `?type` link type\n   - `?source` link source\n   - `?target` link target\n   - `?propType` (optional) link property type\n   - `?propValue` (optional) link property value",
                     "type": "string"
+                },
+                "openWorldLinks": {
+                    "default": false,
+                    "description": "Allows data provider to find links other than specified in `linkConfigurations`\nwhen `linkConfigurations` has at least one value set.",
+                    "type": "boolean"
+                },
+                "openWorldProperties": {
+                    "default": false,
+                    "description": "Allows data provider to find element properties other than specified in `propertyConfigurations`\nwhen `propertyConfigurations` has at least one value set.",
+                    "type": "boolean"
                 },
                 "propertyConfigurations": {
                     "description": "Abstract property configuration similar to abstract link configuration. Not type-specific yet.",
@@ -387,8 +483,12 @@
                     },
                     "type": "array"
                 },
+                "propertyInfoQuery": {
+                    "description": "SELECT query to retrieve data for each datatype property in a set.\n\nParametrized variables:\n   - `${ids}` VALUES clause content with datatype property IRIs\n   - `${schemaLabelProperty}` `schemaLabelProperty` property from the settings\n\nExpected output bindings:\n   - `?property`\n   - `?label` (optional)",
+                    "type": "string"
+                },
                 "schemaLabelProperty": {
-                    "description": "property to use as label in schema (classes, properties)",
+                    "description": "Property path for querying schema labels in schema (classes, link types, properties).",
                     "type": "string"
                 }
             },
@@ -398,7 +498,11 @@
                 "dataLabelProperty",
                 "fullTextSearch",
                 "classTreeQuery",
+                "classInfoQuery",
+                "linkTypesQuery",
                 "linkTypesPattern",
+                "linkTypesInfoQuery",
+                "propertyInfoQuery",
                 "elementInfoQuery",
                 "linksInfoQuery",
                 "imageQueryPattern",
@@ -409,10 +513,11 @@
                 "filterElementInfoPattern",
                 "filterAdditionalRestriction",
                 "linkConfigurations",
-                "propertyConfigurations"
+                "openWorldLinks",
+                "propertyConfigurations",
+                "openWorldProperties"
             ],
             "required": [
-                "classTreeQuery",
                 "dataLabelProperty",
                 "defaultPrefix",
                 "elementInfoQuery",
@@ -424,7 +529,6 @@
                 "imageQueryPattern",
                 "linkConfigurations",
                 "linkTypesOfQuery",
-                "linkTypesPattern",
                 "linkTypesStatisticsQuery",
                 "linksInfoQuery",
                 "propertyConfigurations",
@@ -434,7 +538,6 @@
         },
         "SupportedConfigName": {
             "enum": [
-                "dbpedia",
                 "default",
                 "nostats",
                 "wikidata"
@@ -640,6 +743,20 @@
             "description": "Custom label for \"Save data\" button.",
             "type": "string"
         },
+        "persistence": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/OntologyPersistenceProps"
+                },
+                {
+                    "$ref": "#/definitions/FormBasedPersistenceProps"
+                }
+            ],
+            "default": {
+                "type": "form"
+            },
+            "description": "Defines persistence mode to use in authoring mode."
+        },
         "postSaving": {
             "description": "Controls whether Ontodia should navigate to a newly saved diagram.",
             "enum": [
@@ -735,6 +852,7 @@
         "saveDiagramLabel",
         "persistChangesLabel",
         "authoringMode",
+        "persistence",
         "findRelationshipQuery",
         "hideNavigationConfirmation",
         "postSaving"

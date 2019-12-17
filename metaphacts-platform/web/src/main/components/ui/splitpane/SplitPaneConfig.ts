@@ -80,6 +80,10 @@ export interface BaseSplitPaneConfig {
    * Splitting mode
    */
   split?: 'vertical' | 'horizontal';
+  /**
+   * Defined which pane will be used as a sidebar.
+   */
+  primary?: 'first' | 'second';
 }
 
 export interface SplitPaneConfigWithDock extends BaseSplitPaneConfig {

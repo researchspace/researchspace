@@ -1,7 +1,7 @@
-[[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK {?__this__ prov:wasAttributedTo ?creator . OPTIONAL { ?__this__ Platform:visibility ?vis . } OPTIONAL { ?__this__ Platform:visibleToGroups ?userGroups . ?__useruri__ Platform:hasGroup ?userGroups . } OPTIONAL { ?__useruri__ Platform:hasRole <http://www.metaphacts.com/security/roles/admin> . BIND(true as ?isAdmin) . } BIND(COALESCE(?vis,Platform:visibilityPrivate) as ?visibility) . FILTER(?__useruri__ = ?creator || (?visibility = Platform:visibilityPublic) || (?visibility = Platform:visibilityShared && ?__useruri__ != Platform:anonymousUser) || (?visibility = Platform:visibilityGroup && BOUND(?userGroups)) || ?isAdmin)}")]]
+[[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK { { ?__this__ prov:wasAttributedTo ?creator } UNION { BIND(IRI(CONCAT(STR(?__this__), \"/container\")) as ?container) ?container prov:wasAttributedTo ?creator } OPTIONAL { ?__this__ Platform:visibility ?vis . } OPTIONAL { ?__this__ Platform:visibleToGroups ?userGroups . ?__useruri__ Platform:hasGroup ?userGroups . } OPTIONAL { ?__useruri__ Platform:hasRole <http://www.metaphacts.com/security/roles/admin> . BIND(true as ?isAdmin) . } BIND(COALESCE(?vis,Platform:visibilityPrivate) as ?visibility) . FILTER(?__useruri__ = ?creator || (?visibility = Platform:visibilityPublic) || (?visibility = Platform:visibilityShared && ?__useruri__ != Platform:anonymousUser) || (?visibility = Platform:visibilityGroup && BOUND(?userGroups)) || ?isAdmin)}")]]
 
 <!-- Visibility switch is only available to admin and resource author-->
-[[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK {{?__this__ prov:wasAttributedTo ?__useruri__ .} UNION {?__useruri__ Platform:hasRole <http://www.metaphacts.com/security/roles/admin> .}}")]]
+[[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK {{ { ?__this__ prov:wasAttributedTo ?creator } UNION { BIND(IRI(CONCAT(STR(?__this__), \"/container\")) as ?container) ?container prov:wasAttributedTo ?creator } } UNION {?__useruri__ Platform:hasRole <http://www.metaphacts.com/security/roles/admin> .}}")]]
 
 <div class="rs-udp-visibility">
 <bs-dropdown id="visibility-dropdown-id">
@@ -15,7 +15,7 @@
 
 </div>
 [[/if]]
-  [[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK {?__this__ prov:wasAttributedTo ?__useruri__ . }")]]
+  [[#if (ask "PREFIX prov: <http://www.w3.org/ns/prov#> ASK { { ?__this__ prov:wasAttributedTo ?creator } UNION { BIND(IRI(CONCAT(STR(?__this__), \"/container\")) as ?container) ?container prov:wasAttributedTo ?creator } }")]]
     [[> ownerContent]]
   [[else]]
     [[> content ]]

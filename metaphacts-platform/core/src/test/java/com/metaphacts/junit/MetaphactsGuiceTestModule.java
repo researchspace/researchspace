@@ -18,7 +18,6 @@
 
 package com.metaphacts.junit;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -28,14 +27,10 @@ import java.util.Map;
 
 import javax.inject.Named;
 
-import com.metaphacts.services.storage.api.PlatformStorage;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.metaphacts.cache.CacheManager;
@@ -47,6 +42,10 @@ import com.metaphacts.data.rdf.container.LDPApiInternal;
 import com.metaphacts.data.rdf.container.LDPImplManager;
 import com.metaphacts.querycatalog.QueryCatalogRESTServiceRegistry;
 import com.metaphacts.repository.RepositoryManager;
+import com.metaphacts.secrets.DefaultSecretsStore;
+import com.metaphacts.secrets.SecretResolver;
+import com.metaphacts.secrets.SecretsStore;
+import com.metaphacts.services.storage.api.PlatformStorage;
 import com.metaphacts.servlet.SparqlServlet;
 import com.metaphacts.thumbnails.DefaultThumbnailService;
 import com.metaphacts.thumbnails.ThumbnailServiceRegistry;
@@ -96,6 +95,8 @@ public class MetaphactsGuiceTestModule extends AbstractModule {
         bind(com.metaphacts.config.Configuration.class).in(Singleton.class);
         bind(NamespaceRegistry.class).in(Singleton.class);
         bind(RepositoryManager.class).in(Singleton.class);
+        bind(SecretResolver.class).to(SecretsStore.class).in(Singleton.class);
+        bind(SecretsStore.class).to(DefaultSecretsStore.class).in(Singleton.class);
         bind(QueryCatalogRESTServiceRegistry.class).in(Singleton.class);
         bind(CacheManager.class).in(Singleton.class);
         bind(LabelCache.class).in(Singleton.class);

@@ -76,6 +76,10 @@ export interface FieldDefinition {
    */
   maxOccurs: number;
   /**
+   * Number used for ordering Field Definition.
+   */
+  order: number;
+  /**
    * List of default values assigned to field.
    */
   defaultValues: ReadonlyArray<string>;
@@ -152,6 +156,7 @@ export interface FieldDefinition {
 /** @see FieldDefinition */
 export interface FieldDefinitionProp {
   id: string;
+  iri?: string;
   label?: string | ReadonlyArray<Rdf.Literal>;
   description?: string;
   categories?: ReadonlyArray<string | Rdf.Iri>;
@@ -160,6 +165,7 @@ export interface FieldDefinitionProp {
   range?: string | Rdf.Iri | ReadonlyArray<string | Rdf.Iri>;
   minOccurs?: number | 'unbound';
   maxOccurs?: number | 'unbound';
+  order?: number | 'unbound';
   defaultValues?: ReadonlyArray<string>;
   selectPattern?: string;
   askPattern?: string;
@@ -213,6 +219,12 @@ export function normalizeFieldDefinition(
     definition.maxOccurs = Infinity;
   } else {
     definition.maxOccurs = parseInt(definition.maxOccurs, 10);
+  }
+
+  if (!definition.order || definition.order === 'unbound') {
+    definition.order = 0;
+  } else {
+    definition.order = parseInt(definition.order, 10);
   }
 
   if (typeof definition.domain === 'string') {

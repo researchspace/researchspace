@@ -57,39 +57,39 @@ public class Permissions {
         public static enum Action {
             @PermissionsDocField(
                 desc = "Grants permission to view template page html code.",
-                pattern = "pages:edit:view:<page_iri>|regex(<regex_expression>)",
+                pattern = "pages:edit:view:{<page_iri>|regex(<regex_expression>)}",
                 example = "/com/metaphacts/security/aclhelp/page_edit_view.html"
             )
             EDIT_VIEW("edit:view"),
 
             @PermissionsDocField(
                 desc = "Grants permission to save template and page html code.",
-                pattern = "pages:edit:save:<page_iri>|regex(<regex_expression>)",
+                pattern = "pages:edit:save:{<page_iri>|regex(<regex_expression>)}",
                 example = "/com/metaphacts/security/aclhelp/page_edit_save.html"
             )
             EDIT_SAVE("edit:save"),
 
             @PermissionsDocField(
                 desc = "Grants permission to export templates and static pages",
-                pattern = "pages:info:export:<page_iri>|regex(<regex_expression>)"
+                pattern = "pages:info:export:{<page_iri>|regex(<regex_expression>)}"
             )
             INFO_EXPORT("info:export"),
 
             @PermissionsDocField(
                 desc = "Grants permission to view meta-information about templates and static pages",
-                pattern = "pages:info:view:<page_iri>|regex(<regex_expression>)"
+                pattern = "pages:info:view:{<page_iri>|regex(<regex_expression>)}"
             )
             INFO_VIEW("info:view"),
 
             @PermissionsDocField(
                 desc = "Grants permission to delete templates and static pages",
-                pattern = "pages:info:delete:<page_iri>|regex(<regex_expression>)"
+                pattern = "pages:info:delete:{<page_iri>|regex(<regex_expression>)}"
             )
             INFO_DELETE("info:delete"),
 
             @PermissionsDocField(
                 desc = "Grants permission to view pages with given URIs.",
-                pattern = "pages:view:<page_iri>|regex(<regex_expression>)",
+                pattern = "pages:view:{<page_iri>|regex(<regex_expression>)}",
                 example = "/com/metaphacts/security/aclhelp/page_view.html"
             )
             VIEW("view");
@@ -161,6 +161,9 @@ public class Permissions {
 
         @PermissionsDocField(desc = "Grants permission to create new role.")
         public static final String CREATE = "accounts:roles:create";
+
+        @PermissionsDocField(desc = "Grants permission to edit a role.")
+        public static final String EDIT = "accounts:roles:edit";
 
         @PermissionsDocField(desc = "Grants permission to assign a role to user.")
         public static final String ASSIGN_TO_USER = "accounts:roles:assign";
@@ -309,19 +312,19 @@ public class Permissions {
         public static final String READ = "read";
         @PermissionsDocField(
             desc = "Grants permission to create items to the specified container.",
-            pattern = "api:ldp:container:<container_iri>|<item_rdf_type_iri>:create",
+            pattern = "api:ldp:container:{<container_iri>|<item_rdf_type_iri>}:create",
             example = "/com/metaphacts/security/aclhelp/api_container_create.html"
         )
         public static final String CREATE = "create";
         @PermissionsDocField(
             desc = "Grants permission to update items to the specified container.",
-            pattern = "api:ldp:container:<container_iri>|<item_rdf_type_iri>:(update:any)|(update:owner)",
+            pattern = "api:ldp:container:{<container_iri>|<item_rdf_type_iri>}:(update:any)|(update:owner)",
             example = "/com/metaphacts/security/aclhelp/api_container_update.html"
         )
         public static final String UPDATE = "update";
         @PermissionsDocField(
             desc = "Grants permission to delete items to the specified container.",
-            pattern = "api:ldp:container:<container_iri>|<item_rdf_type_iri>:(delete:any)|(delete:owner)",
+            pattern = "api:ldp:container:{<container_iri>|<item_rdf_type_iri>}:(delete:any)|(delete:owner)",
             example = "/com/metaphacts/security/aclhelp/api_container_delete.html"
         )
         public static final String DELETE = "delete";
@@ -491,6 +494,16 @@ public class Permissions {
                 example="/com/metaphacts/security/aclhelp/logs_configure.html"
             )
             public static final String PREFIX_CONFIGURE = "logs:configure:";
+    }
+    
+    @PermissionsDocGroup(desc = "Permissions for managing ontologies.")
+    public static class ONTOLOGIES {
+        @PermissionsDocField(
+                desc = "Permissions for authoring ontologies.",
+                pattern = "ontologies:*:*"
+        )
+        public static final String PREFIX_AUTHORING = "ontologies:";
+        
     }
 
     @PermissionsDocGroup(desc = "Permissions for managing data quality jobs.")

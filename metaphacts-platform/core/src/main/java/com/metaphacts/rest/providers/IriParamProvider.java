@@ -22,9 +22,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import javax.inject.Singleton;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
+import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -46,15 +50,19 @@ public class IriParamProvider implements ParamConverterProvider {
             return new ParamConverter<T>() {
                 @Override
                 public T fromString(final String value) {
-                    if(value== null){
+                    if(value == null){
                         return null;
                     }
                     try {
+                        boolean isAbsoluteIri = ParsedIRI.create(value).isAbsolute();
+                        if (!isAbsoluteIri) {
+                            throw new IllegalArgumentException("IRI \"" + value +"\" is not an absolute IRI.");
+                        }
                         // value has been already URL-decoded by jersey
                         IRI uri = vf.createIRI(value);
                         return rawType.cast(uri);
                     } catch (final IllegalArgumentException ex) {
-                        throw new RuntimeException(ex);
+                        throw new WebApplicationException(getErrorResponse(ex));
                     }
                 }
     
@@ -63,6 +71,14 @@ public class IriParamProvider implements ParamConverterProvider {
                         throws IllegalArgumentException {
                     
                     return value !=null ? value.toString() : null;
+                }
+
+                protected Response getErrorResponse(IllegalArgumentException ex) {
+                    return Response
+                        .status(400)
+                        .entity(ex.getMessage())
+                        .type(MediaType.TEXT_PLAIN)
+                        .build();
                 }
             };
         }

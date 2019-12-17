@@ -39,6 +39,7 @@ module workflow {
   export const hasStep = iri('hasStep');
   export const nextStep = iri('nextStep');
   export const assigneeQuery = iri('assigneeQuery');
+  export const subject = iri('subject');
 }
 
 export default workflow;

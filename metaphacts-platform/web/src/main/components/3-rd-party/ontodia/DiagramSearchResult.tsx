@@ -20,6 +20,7 @@ import * as Immutable from 'immutable';
 import * as _ from 'lodash';
 import * as React from 'react';
 import { Workspace, DiagramModel, ElementTemplateState, InternalApi } from 'ontodia';
+
 import { Cancellation } from 'platform/api/async';
 import { Component, SemanticContext } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';

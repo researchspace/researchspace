@@ -30,7 +30,7 @@ import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import {
   FieldValue, AtomicValue, EmptyValue, SparqlBindingValue, ErrorKind, DataState,
 } from '../FieldValues';
-import { AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
+import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
 import { ValidationMessages } from './Decorations';
 import { queryValues } from '../QueryValues';
 
@@ -39,7 +39,7 @@ export interface SelectInputProps extends AtomicValueInputProps {
   placeholder?: string;
 }
 
-export interface State {
+interface State {
   valueSet?: Immutable.List<SparqlBindingValue>;
 }
 
@@ -187,8 +187,13 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   }
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
-    return `Select ${(getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase()} here...`;
+    const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
+    return `Select ${fieldName} here...`;
   }
+
+  static makeHandler = AtomicValueInput.makeAtomicHandler;
 }
+
+SingleValueInput.assertStatic(SelectInput);
 
 export default SelectInput;

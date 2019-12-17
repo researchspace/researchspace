@@ -57,7 +57,6 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.metaphacts.config.NamespaceRegistry;
@@ -69,6 +68,7 @@ import com.metaphacts.rest.feature.CacheControl.NoCache;
 import com.metaphacts.security.AnonymousUserFilter;
 import com.metaphacts.security.LDAPRealm;
 import com.metaphacts.security.MetaphactsSecurityManager;
+import com.metaphacts.security.PermissionUtil;
 import com.metaphacts.security.Permissions.ACCOUNTS;
 import com.metaphacts.security.Permissions.PERMISSIONS;
 import com.metaphacts.security.Permissions.ROLES;
@@ -171,16 +171,13 @@ public class SecurityEndpoint {
         public void setRoleName(String roleName) {
             this.roleName = roleName;
         }
-        @SuppressWarnings("unused")
-        public String getPermissions() {
+
+        public List<String> getPermissions() {
             return permissions;
-        }
-        public void setPermissions(String permissions) {
-            this.permissions = permissions;
         }
 
         public String roleName;
-        public String permissions;
+        public List<String> permissions;
     }
 
     @GET()
@@ -216,6 +213,19 @@ public class SecurityEndpoint {
         }
     }
 
+    @PUT()
+    @NoCache
+    @Path("isPermissionValid")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RequiresAuthentication
+    public boolean isPermissionValid(String permission) {
+        if(PermissionUtil.isPermissionValid(permission)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     @GET()
     @NoCache
     @Path("getAllRoleDefinitions")
@@ -224,13 +234,47 @@ public class SecurityEndpoint {
     @RequiresPermissions({ROLES.QUERY, PERMISSIONS.QUERY})
     public List<RoleDefinition> getAllAvailableRoles() {
         List<RoleDefinition> roleDefinitions = Lists.newArrayList();
-        for(SimpleRole role :getShiroTextRealm().getRoles().values()){
+        for(SimpleRole role :getShiroTextRealm().getRoles().values()) {
             RoleDefinition roleDefinition = new RoleDefinition();
+            roleDefinition.permissions = new ArrayList<String>();
             roleDefinition.setRoleName(role.getName());
-            roleDefinition.setPermissions(StringUtils.join(role.getPermissions(),','));
+            for(Permission individualPermission : role.getPermissions()) {
+                roleDefinition.permissions.add(individualPermission.toString());
+            }
             roleDefinitions.add(roleDefinition);
         }
         return roleDefinitions;
+    }
+
+    @PUT()
+    @Path("updateRoleDefinitions")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RequiresAuthentication
+    @RequiresPermissions(ROLES.EDIT)
+    public Response updateRoleDefinitions(RoleDefinition[] roles) throws Exception {
+        Map<String, List<String>> map = Maps.newHashMap();
+        boolean isPermissionValid = true;
+        try {
+            for(RoleDefinition role : roles) {
+                String roleName = role.roleName;
+                List<String> permissions = new ArrayList<String>();
+                for(String permission : role.getPermissions()) {
+                    isPermissionValid = PermissionUtil.isPermissionValid(permission);
+                    if(isPermissionValid) {
+                        permissions.add(PermissionUtil.normalizePermission(permission));
+                    } else {
+                        throw new Exception("Something went wrong while saving \"" + permission.toUpperCase() + "\". Please update it.");
+                    }
+                }
+                map.put(roleName, permissions);
+                //throw new Exception("Please enter a valid permission.");
+            }
+            getShiroTextRealm().updateRoles(map);
+        } catch (Exception e) {
+            logger.error("The user entred permission is invalid.");
+            return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
+        }
+        return Response.ok().build();
     }
 
     @DELETE()
@@ -343,7 +387,7 @@ public class SecurityEndpoint {
             try {
                 jGenerator.writeBooleanField(input, SecurityUtils.getSubject().isPermitted(input));
             } catch(IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         };
         final StreamingOutput stream = JsonUtil.processJsonMap(jp, processor);

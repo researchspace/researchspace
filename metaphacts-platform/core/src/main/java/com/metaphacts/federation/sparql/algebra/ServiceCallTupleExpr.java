@@ -38,20 +38,21 @@ import com.metaphacts.federation.repository.service.SparqlServiceUtils;
 public class ServiceCallTupleExpr extends Service {
 
     private static final long serialVersionUID = 7713913969861730777L;
-    private ServiceDescriptor descriptor;
 
-    public ServiceCallTupleExpr(Var serviceRef, TupleExpr serviceExpr,
-            String serviceExpressionString, Map<String, String> prefixDeclarations, String baseURI,
-            boolean silent, ServiceDescriptor serviceDescriptor) {
-        super(serviceRef, serviceExpr, serviceExpressionString, prefixDeclarations, baseURI,
-                silent);
+    private final ServiceDescriptor descriptor;
+    private final Service wrappedService;
+
+    public ServiceCallTupleExpr(Service wrapped, ServiceDescriptor serviceDescriptor) {
+        super(wrapped.getServiceRef(), wrapped.getServiceExpr(), wrapped.getServiceExpressionString(),
+                wrapped.getPrefixDeclarations(), wrapped.getBaseURI(), wrapped.isSilent());
+
         this.descriptor = serviceDescriptor;
+        this.wrappedService = wrapped;
     }
 
-    public ServiceCallTupleExpr(Service wrapped, ServiceDescriptor descriptor) {
-        this(wrapped.getServiceRef(), wrapped.getServiceExpr(),
-                wrapped.getServiceExpressionString(), wrapped.getPrefixDeclarations(),
-                wrapped.getBaseURI(), wrapped.isSilent(), descriptor);
+    @Override
+    public Set<String> getServiceVars() {
+        return wrappedService.getServiceVars();
     }
 
     public Set<Var> getInputVars() {
@@ -80,9 +81,5 @@ public class ServiceCallTupleExpr extends Service {
 
     public ServiceDescriptor getDescriptor() {
         return descriptor;
-    }
-
-    public void setDescriptor(ServiceDescriptor descriptor) {
-        this.descriptor = descriptor;
     }
 }

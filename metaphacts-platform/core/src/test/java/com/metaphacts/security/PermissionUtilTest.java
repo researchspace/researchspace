@@ -18,17 +18,28 @@
 
 package com.metaphacts.security;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.Permission;
+import org.apache.shiro.config.Ini;
+import org.apache.shiro.util.PermissionUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
+import com.metaphacts.api.sparql.SparqlUtil.SparqlOperation;
 import com.metaphacts.junit.AbstractIntegrationTest;
 import com.metaphacts.repository.RepositoryManager;
-import com.metaphacts.security.PermissionUtil;
-import com.metaphacts.api.sparql.SparqlUtil.SparqlOperation;
 
 /**
  * @author Johannes Trame <jt@metaphacts.com>
@@ -37,9 +48,81 @@ import com.metaphacts.api.sparql.SparqlUtil.SparqlOperation;
 public class PermissionUtilTest extends AbstractIntegrationTest {
     private final String sparqlPermissionShiroFile = "classpath:com/metaphacts/security/shiro-query-rights.ini";
 
-
     @Rule
     public ShiroRule shiroRule = new ShiroRule();
+    
+    @Inject
+    public WildcardPermissionResolver wildcardPermissionResolver;
+    
+    @Test
+    public void isPermissionTypeInvalidTest() {
+        List<String> testPermissions = new ArrayList<String>();
+        testPermissions.add("accou{nts:roles:query");
+        testPermissions.add("pa=ges:view:<page_iri>|regex(<regex_expression>)");
+        testPermissions.add("fo rms:ldp:delete");
+        for(String permission : testPermissions) {
+            Assert.assertFalse(PermissionUtil.isPermissionValid(permission));
+        }
+    }
+    
+    @Test
+    public void isPermissionAfterTypeInvalidTest() {
+        List<String> testPermissions = new ArrayList<String>();
+        testPermissions.add("accounts:role{s:query");
+        testPermissions.add("pages:view:<page_iri>|regex(<regex_ex}pression>)");
+        testPermissions.add("forms:ldp:del{}ete");
+        testPermissions.add("accounts:roles:qu\nery");
+        for(String permission : testPermissions) {
+            Assert.assertFalse(PermissionUtil.isPermissionValid(permission));
+        }
+    }
+    
+    @Test
+    public void isPermissionValid() {
+        List<String> testPermissions = new ArrayList<String>();
+        testPermissions.add("accounts:roles:query");
+        testPermissions.add("pages:view:<page_iri>|regex(<regex_expression>)");
+        testPermissions.add("forms:ldp:delete");
+        for(String permission : testPermissions) {
+            Assert.assertTrue(PermissionUtil.isPermissionValid(permission));
+        }
+    }
+    
+    @Test
+    public void normalizePermission() {
+        String testPermission = "accounts:roles:      query";
+        Assert.assertTrue(!PermissionUtil.normalizePermission(testPermission).contains(" "));
+        Assert.assertEquals(PermissionUtil.normalizePermission(testPermission), "accounts:roles:query");
+    }
+    
+    @Test
+    @Ignore("Ignoring this case for now. This will work when we add a pass the sensitivity as true in"
+            + "WildcardPermission(String wildcardString, boolean caseSensitive)")   
+    public void permissionStringCaseSensitivityTest() {
+        String testPermission = "acCouNts:RoLeS:QUeRY";
+        Permission result = wildcardPermissionResolver.resolvePermission(testPermission);
+        Assert.assertEquals(result.toString(), testPermission);
+    }
+    
+    @Test
+    public void validatePlatformDefaultPermissions() throws Exception {
+        File file = new File("../../metaphacts-platform/app/config/shiro.ini");
+        validatePermissions(file);
+    }
+    
+    public static void validatePermissions(File file) throws Exception {
+        try (InputStream stream = new FileInputStream(file)) {
+            Ini ini = new Ini();
+            ini.load(stream);
+            Ini.Section rolesSection = ini.getSection("roles");
+            for(String commaSeperatedPermissions : rolesSection.values()) {
+                WildcardPermissionResolver permissionResolver = new WildcardPermissionResolver();
+                for(Permission permission : PermissionUtils.resolveDelimitedPermissions(commaSeperatedPermissions, permissionResolver)) {
+                    Assert.assertTrue("Permission in default shiro.ini should be valid", PermissionUtil.isPermissionValid(permission.toString()));
+                }
+            }
+        }
+    }
     
     @Test
     @SubjectAware(

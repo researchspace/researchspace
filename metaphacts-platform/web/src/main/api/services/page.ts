@@ -169,7 +169,6 @@ export module PageService {
         .send(selected.map(cleanRevisionInfo));
 
     return requestAsProperty(req)
-      .mapErrors(err => err.response.statusText)
       .map(res => true);
   }
 

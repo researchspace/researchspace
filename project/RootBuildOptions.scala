@@ -5,7 +5,7 @@ import java.io.FileNotFoundException
 object RootBuildOptions {
   val buildJsonParamName = "buildjson"
   private val buildJsonParam = sys.props.get(buildJsonParamName)
-  val platformVersion = "3.2.0"
+  val platformVersion = "3.3.0"
   private val defaultBuildJsonPath = "default-root-build.json"
   val buildJsonPath = buildJsonParam.getOrElse(defaultBuildJsonPath)
   private val json = {

@@ -31,6 +31,8 @@ import { TargetedPopover } from 'platform/components/ui/TargetedPopover';
 
 import 'yasgui-yasqe/dist/yasqe.css';
 
+import * as styles from './SparqlEditor.scss';
+
 const DEFAULT_POPOVER_TEMPLATE = `
 <div style="white-space: normal">
 <strong><mp-label iri="{{iri}}"></mp-label></strong><br/>
@@ -77,6 +79,7 @@ export interface State {
   resourceIri?: Rdf.Iri;
   targetTop?: number;
   targetLeft?: number;
+  enablePopover?: boolean;
 }
 
 export class SparqlEditor extends Component<SparqlEditorProps, State> {
@@ -89,7 +92,11 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
 
   constructor(props: SparqlEditorProps) {
     super(props);
-    this.state = {targetTop: 0, targetLeft: 0};
+    this.state = {
+      targetTop: 0,
+      targetLeft: 0,
+      enablePopover: true,
+    };
     this.id = Math.random().toString(36).slice(2);
   }
 
@@ -147,7 +154,7 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
 
     const wrapper = this.yasqe.getWrapperElement();
     if (wrapper) {
-      wrapper.addEventListener('mouseover', this.onMouseOver);
+      wrapper.addEventListener('click', this.onMouseClick);
     }
   }
 
@@ -166,15 +173,15 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
   componentWillUnmount() {
     const wrapper = this.yasqe.getWrapperElement();
     if (wrapper) {
-      wrapper.removeEventListener('mouseover', this.onMouseOver);
+      wrapper.removeEventListener('click', this.onMouseClick);
     }
   }
 
-  private onMouseOver = (e: MouseEvent) => {
-    this.__onMouseOver(e);
+  private onMouseClick = (e: MouseEvent) => {
+    this.__onMouseClick(e);
   }
 
-  private __onMouseOver = debounce((e: MouseEvent) => {
+  private __onMouseClick = debounce((e: MouseEvent) => {
     const coords = {
       left: e.clientX + document.documentElement.scrollLeft,
       top: e.clientY + document.documentElement.scrollTop,
@@ -186,8 +193,8 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
 
   private renderPopover() {
     const {popoverTemplate} = this.props;
-    const {resourceIri, targetTop, targetLeft} = this.state;
-    if (!resourceIri) { return null; }
+    const {resourceIri, targetTop, targetLeft, enablePopover} = this.state;
+    if (!resourceIri || !enablePopover) { return null; }
     const content = (
       createElement(TemplateItem, {
         template: {source: popoverTemplate, options: {'iri': resourceIri.value}},
@@ -213,7 +220,9 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
   }
 
   render() {
-    return D.div({ id: this.id }, this.renderPopover());
+    return D.div({id: this.id, className: styles.sparqlEditor},
+      this.renderPopover()
+    );
   }
 
   getQuery(): YasqeValue {
@@ -270,6 +279,9 @@ function getResourceIriFromToken(token: YasguiYasqe.YasqeToken): Rdf.Iri | undef
     }
   } else if (token.type === 'variable-3') {
     const resourceIri = Rdf.fullIri(token.string);
+    if (!resourceIri.value.length) {
+      return undefined;
+    }
     const prefixKey = findKey(prefixes, prefix => prefix === resourceIri.value);
     return prefixKey ? undefined : resourceIri;
   }

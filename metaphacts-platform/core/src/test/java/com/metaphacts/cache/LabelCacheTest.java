@@ -18,17 +18,18 @@
 
 package com.metaphacts.cache;
 
-import java.util.*;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.metaphacts.config.NamespaceRegistry;
-import com.metaphacts.config.PropertyPattern;
-import com.metaphacts.config.UnknownConfigurationException;
-import com.metaphacts.junit.PlatformStorageRule;
-import com.metaphacts.junit.TestPlatformStorage;
-import com.metaphacts.sparql.renderer.MpSparqlQueryRenderer;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -37,16 +38,31 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.metaphacts.config.NamespaceRegistry;
+import com.metaphacts.config.PropertyPattern;
+import com.metaphacts.config.UnknownConfigurationException;
 import com.metaphacts.junit.AbstractRepositoryBackedIntegrationTest;
 import com.metaphacts.junit.NamespaceRule;
+import com.metaphacts.junit.PlatformStorageRule;
+import com.metaphacts.junit.TestPlatformStorage;
+import com.metaphacts.sparql.renderer.MpSparqlQueryRenderer;
 
 /**
  * Test cases for {@link LabelCache} functionality.
@@ -637,6 +653,86 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
         Optional<Literal> label = labelCache.getLabel(asIRI(IRI1), repositoryRule.getRepository(), null);
         Assert.assertTrue(label.isPresent());
         Assert.assertEquals(IRI1_LABEL_NOLANG, label.get().stringValue());
+    }
+
+    @Test
+    @Ignore
+    public void testPerformance() throws Exception {
+        
+        String endpoint = "https://query.wikidata.org/sparql";
+//        String endpoint = "https://wikidata.metaphacts.com/bigdata/sparql";
+
+        // optionally activate more complex preferredLabels
+//        List<String> preferredLabels = Lists.newArrayList("<http://www.w3.org/2000/01/rdf-schema#label>",
+//                "^<http://wikiba.se/ontology#directClaim>/<http://www.w3.org/2000/01/rdf-schema#label>");
+//        setUIConfigurationParameter("preferredLabels", preferredLabels);
+
+        System.out.println("Running benchmark on " + endpoint);
+
+        for (int nResources : Lists.newArrayList(10, 100, 1000, 5000, 10000, 50000)) {
+
+            System.out.println();
+            runBenchmark(endpoint, nResources);
+            getUnderlyingCache().invalidate();
+        }
+
+    }
+
+    protected void runBenchmark(String endpoint, int nResources) throws Exception {
+
+        Repository repo = new SPARQLRepository(endpoint);
+        repo.init();
+        
+        Set<IRI> resources = Sets.newHashSet();
+        try (RepositoryConnection conn = repo.getConnection()) {
+            TupleQuery tq = conn.prepareTupleQuery(
+                            "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n" + 
+                            "PREFIX wd: <http://www.wikidata.org/entity/>\n"
+                            + "SELECT ?person WHERE { ?person wdt:P31 wd:Q5 . } LIMIT " + nResources
+                    );
+            
+            try (TupleQueryResult tqr = tq.evaluate()) {
+                while (tqr.hasNext()) {
+                    BindingSet b = tqr.next();
+                    resources.add((IRI) b.getValue("person"));
+                }
+            }
+        }
+        
+        System.out.println("Benchmark with " + resources.size() + " resources");
+        
+        Stopwatch watch = Stopwatch.createStarted();
+        
+        labelCache.getLabels(resources, repo, "en");
+        System.out.println("Duration [Labels Retrieved]: " + watch.elapsed(TimeUnit.MILLISECONDS) + "ms");
+
+        watch = Stopwatch.createStarted();
+
+        // from cache
+        labelCache.getLabels(resources, repo, "en");
+        System.out.println("Duration [Labels retrieved (from cache)]: " + watch.elapsed(TimeUnit.MILLISECONDS) + "ms");
+
+        // invalidate every second item
+        ResourcePropertyCache<Object, Literal> underlyingCache = getUnderlyingCache();
+        AtomicInteger i = new AtomicInteger(0);
+        underlyingCache.invalidate(
+                resources.stream().filter(iri -> (i.incrementAndGet() % 2 == 0)).collect(Collectors.toSet()));
+
+        watch = Stopwatch.createStarted();
+
+        labelCache.getLabels(resources, repo, "en");
+        System.out.println(
+                "Duration [Labels retrieved (50% invalidated)]: " + watch.elapsed(TimeUnit.MILLISECONDS) + "ms");
+
+        repo.shutDown();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected ResourcePropertyCache<Object, Literal> getUnderlyingCache() throws Exception {
+        // use reflection, as field is not visible
+        Field f = LabelCache.class.getDeclaredField("cache");
+        f.setAccessible(true);
+        return (ResourcePropertyCache<Object, Literal>) f.get(labelCache);
     }
 
     void setPreferredLabelRdfsLabel() {

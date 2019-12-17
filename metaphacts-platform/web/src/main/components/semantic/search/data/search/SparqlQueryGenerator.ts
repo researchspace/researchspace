@@ -52,10 +52,11 @@ function setDisjunct(disjucnct: Model.SetDisjunct) {
 }
 
 function textDisjunct(config: SemanticSearchConfig, conjunct: Model.Conjunct) {
-  const patternConfig = getConfigPatternForCategory(config, conjunct.range.iri) as Text;
-  const escapeLuceneSyntax: boolean = !(patternConfig && patternConfig.escapeLuceneSyntax === false);
+  const patternConfig = (getConfigPatternForCategory(config, conjunct.range.iri) || {}) as Text;
   return function(disjunct: Model.TextDisjunct) {
-    const val = escapeLuceneSyntax ? SparqlUtil.makeLuceneQuery(disjunct.value) : Rdf.literal(disjunct.value);
+    const val = SparqlUtil.makeLuceneQuery(
+      disjunct.value, patternConfig.escapeLuceneSyntax, patternConfig.tokenizeLuceneQuery,
+    );
     return {[SEMANTIC_SEARCH_VARIABLES.RESOURCE_VAR]: val};
  };
 }

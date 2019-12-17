@@ -20,16 +20,39 @@ import sbt._
 object dependencies {
   //dependencies
   //main libs versions
-  val RDF4J_VERSION = "2.5.4"
+  val RDF4J_VERSION = "3.0.2"
   val LOG4J_VERSION = "2.12.1"
   val JERSEY_VERSION = "2.22.2"
-  val JACKSON_VERSION = "2.9.9"
+  val JACKSON_VERSION = "2.10.1"
   val GUICE_VERSION = "4.0"
 
   //Sesame related
   val sesame = Seq(
+    "org.eclipse.rdf4j" % "rdf4j-repository-manager" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-repository-sail" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-repository-sparql" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-repository-http" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-sail-nativerdf" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-sail-memory" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-sail-federation" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-api" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-binary" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-jsonld" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-n3" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-nquads" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-ntriples" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-rdfjson" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-rdfxml" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-trig" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-trix" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-rio-turtle" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-model" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-query" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-queryalgebra-model" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-util" % RDF4J_VERSION,
     "org.eclipse.rdf4j" % "rdf4j-queryrender" % RDF4J_VERSION,
-    "org.eclipse.rdf4j" % "rdf4j-storage" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-queryresultio-sparqljson" % RDF4J_VERSION,
+    "org.eclipse.rdf4j" % "rdf4j-queryresultio-text" % RDF4J_VERSION,
     "com.github.jsonld-java" % "jsonld-java" % "0.12.0"
   )
 
@@ -63,7 +86,7 @@ object dependencies {
     "com.fasterxml.jackson.core" % "jackson-annotations",
     "com.fasterxml.jackson.jaxrs" % "jackson-jaxrs-base",
     "com.fasterxml.jackson.jaxrs" % "jackson-jaxrs-json-provider"
-
+	// Note: for JDK8 we explicitly exclude jakarta.activation transitive dependency
   ).map(_ % JACKSON_VERSION force())
 
   //Dependency Injection
@@ -125,7 +148,11 @@ object dependencies {
     "org.eclipse.rdf4j" -> "rdf4j-model",
     "org.eclipse.rdf4j" -> "rdf4j-query",
     "org.eclipse.rdf4j" -> "rdf4j-rio-api",
-    "org.eclipse.rdf4j" -> "rdf4j-queryalgebra-model"
+    "org.eclipse.rdf4j" -> "rdf4j-queryalgebra-model",
+    
+    // exclude jakarta activation (not required in JDK8)
+    "jakarta.activation" -> "jakarta.activation-api",
+    "jakarta.xml.bind" -> "jakarta.xml.bind-api"
   )
 
   val apacheCommons = Seq(

@@ -28,66 +28,7 @@
 
     <h3>1.2 Views</h3>
     <p>Views can be seen as various tools applicable for either visualization or modification of the resource. Each view has the following properties:</p>
-    <table class='table table-striped table-bordered' style='margin-bottom: 0'>
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Comment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-        	<td>id*</td>
-          <td>Unique identifier of the view.</td>
-        </tr>
-        <tr>
-          <td>template*</td>
-          <td>
-            <semantic-link iri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is used to render the view when users drop a resource on it. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> as context variables.<br />
-            <b>The template MUST have a single HTML root element.</b>
-   				</td>
-        </tr>
-        <tr>
-          <td>label*</td>
-          <td>Label of the view.</td>
-        </tr>
-        <tr>
-          <td>description</td>
-          <td>Discription of the view.</td>
-        </tr>
-        <tr>
-          <td>image</td>
-          <td>Image that will be displayed in the Dashboard Item as the representation for the specific View.</td>
-        </tr>
-        <tr>
-          <td>iconClass</td>
-          <td>Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.</td>
-        </tr>
-        <tr>
-          <td>checkQuery</td>
-          <td>SPARQL Ask query that is used to check whether it is possible to display a specific resource type in the specific view. Resource IRI is injected into the query using the <code>?value</code> binding variable.</td>
-        </tr>
-        <tr>
-          <td>resourceNotRequired</td>
-          <td>Allows initiating a component/template without a resource. For instance, <code><ontodia /></code> component can be initiated in the Dashboard without a specific resource. When <code>resourceNotRequired</code> is set to <code>true</code> the version of the dialogue is rendered to suggests "Create new" option for the user, which means that the user can start this particular View from scratch and populate it with resources later.</td>
-        </tr>
-        <tr>
-        	<td>itemLabelTemplate</td>
-          <td>
-          	<semantic-link iri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the label of a frame, it is used in the frame controller. By default the <code><mp-label /></code> component is used. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> as context variables.<br />
-            <b>The template MUST have a single HTML root element.</b>
-          </td>
-        </tr>
-        <tr>
-        	<td>itemBodyTemplate</td>
-          <td>
-          	<semantic-link iri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> as context variables.<br />
-            <b>The template MUST have a single HTML root element.</b>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p class='help-block'>* - required</p>
+    <mp-documentation type='DashboardViewConfig' disable-transform-attributes=true></mp-documentation>
 
     <h3>1.3 Resources pane</h3>
     <p>Provides resources to be used in the dashboard, it can be any UI component, e.g. mp-set-management, semantic-table, semantic-tree, etc. Resources can be dragged from the Resources pane and dropped onto a specific view to display it there. To do so, the <code><mp-draggable /></code> component can be used, it takes inner HTML, which it receives as a child element, and makes it automatically draggable. Child element could be any HTML-element but strictly not an text node.</p>
@@ -198,6 +139,81 @@
         <template id='view3'>
 					<div style='flex: 1; padding: 20px;'>
           	<mp-label iri='{{iri}}'></mp-label>
+					</div>
+        </template>
+      </rs-dashboard>
+    </div>
+    ]]>
+    </mp-code-example>
+    
+    <h2>4 Linked Views</h2>
+    <p>Dashboard allows linking two or more views by defining the <code>linked-views</code> property of the Dashboard component. This will add a new item to the Dashboard Items. When one drops a resource on the item, linked views will be initiated in separated frames. Each linked view has the following properties:</p>
+    <mp-documentation type='DashboardLinkedViewConfig' disable-transform-attributes=true></mp-documentation>
+    
+    <h2>5 Example: Refresh one frame by an action in another frame</h2>
+    <mp-code-example>
+    <![CDATA[
+    <div style='height: 500px'>
+      <rs-dashboard views='[{
+        "id": "view-1",
+        "label": "View 1",
+        "description": "Description",
+        "iconClass": "fa fa-circle",
+        "template": "{{> view1}}",
+				"frameVariable": "view1Variable"
+      }, {
+        "id": "view-2",
+        "label": "View 2",
+        "description": "Description",
+        "iconClass": "fa fa-square",
+        "template": "{{> view2}}",
+				"frameVariable": "view2Variable"
+      }]'
+			linked-views='[{
+        "id": "view-3",
+        "label": "View 1 + View 2",
+        "description": "Description",
+        "iconClass": "fa fa-star",
+        "viewIds": ["view-1", "view-2"]
+      }]'>
+        <semantic-table
+          query="
+              prefix person: <http://example.com/person/> 
+              prefix org: <http://example.com/org/> 
+              prefix foaf: <http://xmlns.com/foaf/0.1/>
+              SELECT ?person WHERE {                    
+                VALUES (?person) { 
+                  (person:alice)
+                  (person:carol)
+                  (person:mike)
+                  (person:bob)
+                }
+              }"
+          options='{"showFilter": false}'
+        ></semantic-table>
+
+        <template id='view1'>
+					<div style='flex: 1; padding: 20px;'>
+            <mp-event-target-refresh id='{{view1Variable}}-component'>
+              <semantic-query query='SELECT * {BIND(NOW() as ?update)}'></semantic-query>
+            </mp-event-target-refresh>
+            {{#if view2Variable}}
+              <mp-event-trigger id='{{view1Variable}}-refresh' type='Component.Refresh' targets='["{{view2Variable}}-component"]'>
+                <button class='btn btn-default'>Refresh View 2</button>
+              </mp-event-trigger>
+            {{/if}}
+					</div>
+        </template>
+        <template id='view2'>
+					<div style='flex: 1; padding: 20px;'>
+          	<mp-event-target-refresh id='{{view2Variable}}-component'>
+              <semantic-query query='SELECT * {BIND(NOW() as ?update)}'></semantic-query>
+            </mp-event-target-refresh>
+						{{#if view1Variable}}
+              <mp-event-trigger id='{{view2Variable}}-refresh' type='Component.Refresh' targets='["{{view1Variable}}-component"]'>
+                <button class='btn btn-default'>Refresh View 1</button>
+              </mp-event-trigger>
+						{{/if}}
 					</div>
         </template>
       </rs-dashboard>

@@ -37,6 +37,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.name.Names;
+import com.metaphacts.cache.CacheManager;
 import com.metaphacts.config.Configuration;
 import com.metaphacts.security.sso.SSOCallbackFilter;
 import com.metaphacts.security.sso.SSOLogoutFilter;
@@ -60,7 +61,6 @@ public class ShiroGuiceModule extends ShiroWebModule {
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void configureShiroWeb() {
 
@@ -132,7 +132,8 @@ public class ShiroGuiceModule extends ShiroWebModule {
     @Override
     protected void bindWebSecurityManager(final AnnotatedBindingBuilder<? super WebSecurityManager>  bind) {
         try {
-            bind.toConstructor(MetaphactsSecurityManager.class.getConstructor(Collection.class, Configuration.class)).asEagerSingleton();
+            bind.toConstructor(MetaphactsSecurityManager.class.getConstructor(Collection.class, Configuration.class,
+                    CacheManager.class)).asEagerSingleton();
         } catch (NoSuchMethodException e) {
             throw new ConfigurationException("This is a serious configuration error while setting up the ShiroModule", e);
         }

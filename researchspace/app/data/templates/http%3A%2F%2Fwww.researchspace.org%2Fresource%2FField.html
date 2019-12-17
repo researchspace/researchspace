@@ -10,42 +10,17 @@
 
 [[#*inline "newAssertionButton"]]
 <div style="padding-top:24px">
-  <i class="fa fa-plus" aria-hidden="true"></i>
-  <semantic-link
-    uri="http://www.researchspace.org/resource/Assertion"
-    urlqueryparam-field="[[urlParam "field"]]"
-  urlqueryparam-subject="[[urlParam "subject"]]"
-  ><span style="margin-left:6px;"><strong>Assert new value</strong></span>
-  </semantic-link>
+  <mp-event-trigger id='assert-new-value' type='Component.TemplateUpdate' targets='["assertion"]'>
+    <button class='btn btn-link'>
+      <i class="fa fa-plus" aria-hidden="true"></i>
+      <span style="margin-left:6px;"><strong>Assert new value</strong></span>
+    </button>
+  </mp-event-trigger>
 </div>
 [[/inline]]
 
 [[#*inline "assertions"]]
 <div class='rs-field-assertions'>
-  <div class='row'>
-    <bs-col sm=6>
-      <mp-panel collapsible=true default-expanded=true bs-style='success'>
-        <mp-panel-header>
-          <div data-flex-layout="row">
-            <span>British Museum Assertions</span>
-          </div>
-        </mp-panel-header>
-        <mp-panel-body>
-          <div>
-            <mp-field-visualization
-              subject='[[urlParam "subject"]]'
-              fields='[[fieldDefinitions field=(urlParam "field")]]'
-              template='{{> rsp:FieldBasedCanonicalValueVisualization fieldIri="[[urlParam "field"]]"}}'
-            ></mp-field-visualization>
-            <div>
-              [[> newAssertionButton]]
-            </div>
-          </div>
-        </mp-panel-body>
-      </mp-panel>
-    </bs-col>
-  </div>
-
   <div class='row'>
     <bs-col sm=6>
       <mp-panel collapsible=true default-expanded=true bs-style='info'>
@@ -81,6 +56,12 @@
                               template='{{> rsp:FieldBasedAssertedValueVisualization}}'
                             ></mp-field-visualization>
                           </div>
+                          <mp-event-trigger id='assert-new-value' type='Component.TemplateUpdate' targets='["assertion"]' data='{"assertion": "{{assertion.value}}"}'>
+                            <button class='btn btn-default btn-xs pull-right' title='Edit assertion' style='margin-left: 5px;'>
+                              <i class='fa fa-pencil'></i> Edit
+                            </button>
+                          </mp-event-trigger>
+                          <div class='clearfix'></div>
                         </li>
                         {{/each}}
                       </ol>
@@ -93,6 +74,24 @@
           </div>
         </mp-panel-body>
       </mp-panel>
+    </bs-col>
+    <bs-col sm=6>
+      <mp-event-target-template-render id='assertion' template='{{> template}}'>
+        <template id='template'>
+          {{#if assertion}}
+          <rs-assertion assertion='{{assertion}}'
+            value-template='{{> rsp:FieldValueVisualization}}'
+            form-template='{{> rsp:AssertionFormTemplate}}'>
+          </rs-assertion>
+          {{else}}
+          <rs-assertion target='[[urlParam "subject"]]'
+            fields='[[fieldDefinitions field=(urlParam "field")]]'
+            value-template='{{> rsp:FieldValueVisualization}}'
+            form-template='{{> rsp:AssertionFormTemplate}}'>
+          </rs-assertion>
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
     </bs-col>
   </div>
 </div>

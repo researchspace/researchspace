@@ -118,7 +118,7 @@ describe('SemanticForm', () => {
     }).then(basicForm => {
       const form = basicForm.wrapper;
       expect(form.find('PlainTextInput').length,
-        'can remove field when does not exceed minOccur').to.be.eql(1);
+        'can remove field when does not fall behind minOccur').to.be.eql(0);
       const removeButton = form.find(REMOVE_BUTTON_SELECTOR);
       expect(removeButton.length,
         'can\'t remove field when its exceed minOccur').to.be.eql(0);

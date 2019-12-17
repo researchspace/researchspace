@@ -34,6 +34,7 @@ import {
   BrowserPersistence, isValidChild, componentHasType, universalChildren
 } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
+import { trigger } from 'platform/api/events';
 
 import { FieldDefinitionProp } from './FieldDefinition';
 import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
@@ -53,6 +54,11 @@ import { SparqlPersistence as SparqlPersistenceClass } from './persistence/Sparq
 import { RecoverNotification } from './static/RecoverNotification';
 
 import { CompositeInput } from './inputs/CompositeInput';
+import * as FormEvents from './FormEvents';
+
+export type PostAction = (
+  'none' | 'reload' | 'redirect' | 'event' | string | ((subject: Rdf.Iri) => void)
+);
 
 /**
  * @see getPostActionUrlQueryParams().
@@ -99,7 +105,7 @@ export interface ResourceEditorFormProps {
    * Can be either "none", "reload" or "redirect" (redirects to the subject of the form)
    * or any IRI string to which the form will redirect.
    */
-  postAction?: 'none' | 'reload' | 'redirect' | string | ((subject: Rdf.Iri) => void);
+  postAction?: PostAction;
   debug?: boolean;
   /**
    * Used as source id for emitted events.
@@ -395,21 +401,29 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
           )
           .map(() => finalModel)
       ).observe({
-          value: finalModel => {
-            // only ignore setState() and always reset localStorage and perform post-action
-            // event if the form is laready unmounted
-            this.resetStorage();
-            if (!this.unmounted) {
-              this.setState({model: finalModel, submitting: false});
-            }
-            this.performPostAction(finalModel.subject);
-          },
-          error: error => {
-            if (!this.unmounted) {
-              this.setState({submitting: false});
-            }
-            addNotification({level: 'error', message: 'Failed to submit the form'}, error);
-          },
+        value: finalModel => {
+          // only ignore setState() and always reset localStorage and perform post-action
+          // event if the form is already unmounted
+          this.resetStorage();
+          if (!this.unmounted) {
+            this.setState({model: finalModel, submitting: false});
+          }
+          const isNewSubject =
+            !this.initialState.model ||
+            CompositeValue.isPlaceholder(this.initialState.model.subject);
+          performFormPostAction({
+            postAction: this.props.postAction,
+            subject: finalModel.subject,
+            eventProps: {isNewSubject, sourceId: this.props.id},
+            queryParams: getPostActionUrlQueryParams(this.props),
+          });
+        },
+        error: error => {
+          if (!this.unmounted) {
+            this.setState({submitting: false});
+          }
+          addNotification({level: 'error', message: 'Failed to submit the form'}, error);
+        },
       });
     } else {
       this.setState(state => ({model: validatedModel, submitting: false}));
@@ -495,41 +509,69 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   private getFormId = (): string => {
     return this.props.formId ? this.props.formId : getCurrentResource().value;
   }
+}
 
   /**
-   * Performs either a reload (default) or an redirect after the form as been submited
-   * and the data been saved.
+   * Performs either a reload (default) or a redirect after the form has been submited
+   * and the data been saved. Alsow can trigger the events:
+   * - FormEvents.FormResourceCreated
+   * - FormEvents.FormResourceUpdate
+   * if the action is 'event'
+   * if the action is 'none' nothing happen
    * TODO should be moved outside when separating the components
    */
-  private performPostAction = (subject: Rdf.Iri): void => {
-    if (this.props.postAction === 'none') { return; }
+  export function performFormPostAction(parameters: {
+    postAction: PostAction;
+    subject: Rdf.Iri;
+    eventProps: {isNewSubject: boolean, sourceId: string};
+    queryParams?: { [paramKey: string]: string },
+  }) {
+    const {postAction = 'reload', subject, eventProps, queryParams} = parameters;
+    if (postAction === 'none') { return; }
 
-    if (!this.props.postAction || this.props.postAction === 'reload') {
+    if (postAction === 'reload') {
       refresh();
-    } else if (this.props.postAction === 'redirect') {
+    } else if (postAction === 'redirect') {
       navigateToResource(
         subject,
-        getPostActionUrlQueryParams(this.props)
+        queryParams
       ).onValue(v => v);
-    } else if (typeof this.props.postAction === 'function') {
-      this.props.postAction(subject);
+    } else if (postAction === 'event') {
+      if (!eventProps.sourceId) {
+        throw new Error('If you want use postAction \'event\', you have to define the id as well.');
+      }
+      if (eventProps.isNewSubject) {
+        trigger({
+          eventType: FormEvents.FormResourceCreated,
+          source: eventProps.sourceId,
+          data: {iri: subject.value}
+        });
+      } else {
+        trigger({
+          eventType: FormEvents.FormResourceUpdated,
+          source: eventProps.sourceId,
+          data: {iri: subject.value}
+        });
+      }
+      return;
+    } else if (typeof postAction === 'function') {
+      postAction(subject);
     } else {
-      navigateToResource(
-        Rdf.iri(this.props.postAction),
-        getPostActionUrlQueryParams(this.props)
-      ).onValue(v => v);
+      navigateToResource(Rdf.iri(postAction), queryParams).onValue(v => v);
     }
   }
-}
 
 function normalizePersistenceMode(
   persistenceProp:
     TriplestorePersistenceConfig['type'] |
     TriplestorePersistenceConfig |
-    TriplestorePersistence,
+    TriplestorePersistence |
+    undefined,
   repository: string
 ): TriplestorePersistence {
-  if (isTriplestorePersistence(persistenceProp)) {
+  if (!persistenceProp) {
+    return new LdpPersistence();
+  } else if (isTriplestorePersistence(persistenceProp)) {
     return persistenceProp;
   }
 
@@ -571,7 +613,7 @@ const POST_ACTION_QUERY_PARAM_PREFIX = 'urlqueryparam';
  * Extracts user-defined `urlqueryparam-<KEY>` query params from
  * a form configuration to provide them on post action navigation.
  */
-function getPostActionUrlQueryParams(props: ResourceEditorFormProps) {
+export function getPostActionUrlQueryParams(props: ResourceEditorFormProps) {
   const params: { [paramKey: string]: string } = {};
 
   for (const key in props) {

@@ -209,12 +209,19 @@ const LUCENE_ESCAPE_REGEX = /([+\-&|!(){}\[\]^"~*?:\\])/g;
  * Create a Lucene full text search query from a user input by
  * splitting it on whitespaces and escaping any special characters.
  */
-export function makeLuceneQuery(inputText: string): Rdf.Literal {
+export function makeLuceneQuery(
+  inputText: string,
+  escape = true,
+  tokenize = true,
+): Rdf.Literal {
   const words = inputText.split(' ')
     .map(w => w.trim())
     .filter(w => w.length > 0)
-    .map(w => w.replace(LUCENE_ESCAPE_REGEX, '\\$1'))
-    .map(w => w + '*').join(' ');
+    .map(w => {
+      if (escape) { w = w.replace(LUCENE_ESCAPE_REGEX, '\\$1'); }
+      if (tokenize) { w += '*'; }
+      return w;
+    }).join(' ');
   return Rdf.literal(words);
 }
 

@@ -18,10 +18,14 @@
 
 import * as React from 'react';
 
-import { universalChildren, isValidChild, componentHasType } from 'platform/components/utils';
-import { SemanticTable, SemanticTableConfig } from 'platform/components/semantic/table';
+import { Rdf } from 'platform/api/rdf';
 
-import { SemanticSearchContext, ResultContext } from './SemanticSearchApi';
+import { universalChildren, isValidChild, componentHasType } from 'platform/components/utils';
+import {
+  SemanticTable, SemanticTableConfig, ColumnConfiguration
+} from 'platform/components/semantic/table';
+
+import { SemanticSearchContext, ResultContext, GraphScopeContext } from './SemanticSearchApi';
 
 export class SemanticSearchTableResult extends React.Component {
   render() {
@@ -34,11 +38,11 @@ export class SemanticSearchTableResult extends React.Component {
 }
 
 interface InnerProps {
-  context: ResultContext;
+  context: ResultContext & GraphScopeContext;
 }
 
 interface State {
-  columnConfiguration?: any[];
+  columnConfiguration?: ReadonlyArray<ColumnConfiguration>;
 }
 
 export class SemanticSearchTableResultInner extends React.Component<InnerProps, State> {
@@ -61,19 +65,12 @@ export class SemanticSearchTableResultInner extends React.Component<InnerProps, 
   }
 
   private prepareColumnConfiguration() {
-    const {searchProfileStore, availableDomains} = this.props.context;
-    const columnConfiguration: any[] = [];
-    searchProfileStore.map(store =>
-      availableDomains.map(domains =>
-        domains.forEach((domain, iri) => {
-          const variableName = domain.replace(/^\?/, '');
-          columnConfiguration.push({
-            variableName,
-            displayName: store.categories.has(iri) ? store.categories.get(iri).label : variableName,
-          });
-        })
-      )
-    );
+    const {graphScopeResults} = this.props.context;
+
+    const columnConfiguration = graphScopeResults.isJust
+      ? prepareGraphScopeColumns(this.props.context)
+      : prepareSearchProfileColumns(this.props.context);
+
     this.setState({columnConfiguration});
   }
 
@@ -101,6 +98,49 @@ export class SemanticSearchTableResultInner extends React.Component<InnerProps, 
   render() {
     return this.mapChildren(this.props.children);
   }
+}
+
+function prepareSearchProfileColumns(context: ResultContext): ColumnConfiguration[] {
+  const {searchProfileStore, availableDomains} = context;
+  const columns: ColumnConfiguration[] = [];
+  const store = searchProfileStore.isJust ? searchProfileStore.get() : undefined;
+  const domains = availableDomains.isJust ? availableDomains.get() : undefined;
+  if (domains) {
+    domains.forEach((domain, iri) => {
+      const variableName = domain.replace(/^\?/, '');
+      columns.push({
+        variableName,
+        displayName: store && store.categories.has(iri)
+          ? store.categories.get(iri).label : variableName,
+      });
+    });
+  }
+  return columns;
+}
+
+// TODO: This method should not exists; instead this information
+// should be present in the search profile
+function prepareGraphScopeColumns(
+  context: ResultContext & GraphScopeContext
+): ColumnConfiguration[] {
+  const {searchProfileStore, graphScopeResults} = context;
+  const store = searchProfileStore.isJust ? searchProfileStore.get() : undefined;
+  const columns: ColumnConfiguration[] = [];
+  if (graphScopeResults.isJust) {
+    for (const column of graphScopeResults.get().columns) {
+      const variableName = column.id.replace(/^\?/, '');
+      let displayName: string;
+      if (column.type === 'var-concept') {
+        const iri = Rdf.fullIri(column.tgConcept.iri);
+        displayName = store && store.categories.has(iri)
+          ? store.categories.get(iri).label : variableName;
+      } else {
+        displayName = column.attribute.label;
+      }
+      columns.push({variableName, displayName});
+    }
+  }
+  return columns;
 }
 
 export default SemanticSearchTableResult;

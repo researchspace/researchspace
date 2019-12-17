@@ -17,3 +17,5 @@ addSbtPlugin("com.etsy" % "sbt-checkstyle-plugin" % "3.0.0")
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
 
 addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-RC3")
+
+addSbtPlugin("net.vonbuchholtz" % "sbt-dependency-check" % "1.3.0")

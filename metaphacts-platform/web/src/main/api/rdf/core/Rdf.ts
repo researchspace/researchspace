@@ -86,6 +86,8 @@ module Rdf {
       return this instanceof BNode;
     }
 
+    abstract toJSON(): any;
+
     public toString(): string { throw Error('Node.toString() is not implemented'); }
   }
 
@@ -103,15 +105,16 @@ module Rdf {
     }
 
     @serializer
-    public toJSON() {
+    toJSON() {
       return {
+        'termType': 'NamedNode',
         'value': this.value,
       };
     }
 
     @deserializer
-    public static fromJSON(str: {value: string}) {
-      return new Iri(str.value);
+    static fromJSON(obj: Pick<Iri, 'value'>) {
+      return new Iri(obj.value);
     }
   }
   export function iri(value: string) {
@@ -138,16 +141,16 @@ module Rdf {
   const XSD_BOOLEAN = iri('http://www.w3.org/2001/XMLSchema#boolean');
 
   export class Literal extends Node {
-    private _dataType: Iri;
+    private _datatype: Iri;
     private _lang: string;
 
     constructor(value: string, datatypeOrLanguage: Iri | string) {
       super(value);
       if (typeof datatypeOrLanguage === 'string') {
-        this._dataType = RDF_LANG_STRING;
+        this._datatype = RDF_LANG_STRING;
         this._lang = datatypeOrLanguage;
       } else {
-        this._dataType = datatypeOrLanguage;
+        this._datatype = datatypeOrLanguage;
         this._lang = '';
       }
     }
@@ -157,7 +160,7 @@ module Rdf {
     }
 
     get datatype(): Iri {
-      return this._dataType;
+      return this._datatype;
     }
 
     get language(): string {
@@ -182,24 +185,24 @@ module Rdf {
     }
 
     @serializer
-    public toJSON() {
-      if (this.language) {
-        return {
-          'value': this.value,
-          'dataType': this.datatype,
-          'lang': this.language,
-        };
-      } else {
-        return {
-          'value': this.value,
-          'dataType': this.datatype,
-        };
-      }
+    toJSON() {
+      return {
+        'termType': 'Literal',
+        'value': this.value,
+        'datatype': this.datatype,
+        'language': this.language,
+      };
     }
 
     @deserializer
-    public static fromJSON(obj: { value: string; dataType: Rdf.Iri; lang: string }): Literal {
-      return new Literal(obj.value, obj.lang ? obj.lang : obj.dataType);
+    static fromJSON(
+      obj: Pick<Literal, 'value' | 'datatype' | 'language'> &
+        { readonly dataType?: Rdf.Iri; readonly lang?: string }
+    ): Literal {
+      // preserve backwards-compatibility with previous serialization
+      const datatype = obj.datatype ? Iri.fromJSON(obj.datatype) : obj.dataType;
+      const language = typeof obj.language === 'string' ? obj.language : obj.lang;
+      return new Literal(obj.value, language ? language : datatype);
     }
   }
 
@@ -226,6 +229,19 @@ module Rdf {
 
     public toString() {
       return `${this.value}`;
+    }
+
+    @serializer
+    public toJSON() {
+      return {
+        'termType': 'BlankNode',
+        'value': this.value,
+      };
+    }
+
+    @deserializer
+    static fromJSON(obj: Pick<BNode, 'value'>): BNode {
+      return new BNode(obj.value);
     }
   }
 

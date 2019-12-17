@@ -20,21 +20,22 @@ import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as classnames from 'classnames';
 
-import { Cancellation } from 'platform/api/async/Cancellation';
+import { Cancellation } from 'platform/api/async';
+
 import { FieldValue, SparqlBindingValue, ErrorKind, DataState } from '../FieldValues';
-import { queryValues } from '../QueryValues';
 import {
   MultipleValuesInput,
   MultipleValuesProps,
-  checkCardinalityAndDuplicates,
-  ValuesWithErrors
+  MultipleValuesHandlerProps,
+  CardinalityCheckingHandler
 } from './MultipleValuesInput';
+import { queryValues } from '../QueryValues';
 
 const CHECKLIST_CLASS = 'semantic-form-checklist-input';
 
 export type ChecklistType = 'radio' | 'checkbox';
 
-export interface ChecklistProps extends MultipleValuesProps {
+export interface ChecklistInputProps extends MultipleValuesProps {
   /**
    * Allow to add custom css-class of Checklist.
    */
@@ -58,7 +59,7 @@ export interface ChecklistProps extends MultipleValuesProps {
   type?: ChecklistType;
 }
 
-export interface State {
+interface State {
   readonly valueSet?: Immutable.List<SparqlBindingValue>;
 }
 
@@ -77,11 +78,11 @@ export interface State {
  * <semantic-form-checklist-input for='field-name' type='radio'></semantic-form-checklist-input>
  */
 
-export class Checklist extends MultipleValuesInput<ChecklistProps, State> {
+export class ChecklistInput extends MultipleValuesInput<ChecklistInputProps, State> {
   private readonly cancellation = new Cancellation();
   private isLoading = true;
 
-  constructor(props: ChecklistProps, context: any) {
+  constructor(props: ChecklistInputProps, context: any) {
     super(props, context);
     this.state = {
       valueSet: Immutable.List<SparqlBindingValue>(),
@@ -129,8 +130,8 @@ export class Checklist extends MultipleValuesInput<ChecklistProps, State> {
   }
 
   private onValueChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { updateValues } = this.props;
-    const { valueSet } = this.state;
+    const {updateValues, handler} = this.props;
+    const {valueSet} = this.state;
     const checked = event.target.checked;
     updateValues(({values, errors}) => {
       let newValues: Immutable.List<SparqlBindingValue> = Immutable.List<SparqlBindingValue>();
@@ -156,8 +157,10 @@ export class Checklist extends MultipleValuesInput<ChecklistProps, State> {
           return checked && isEqualValues;
         }).toList();
       }
-      const validated = this.validate({
-        values: newValues.map(value => FieldValue.fromLabeled(value)), errors: errors});
+      const validated = handler.validate({
+        values: newValues.map(value => FieldValue.fromLabeled(value)),
+        errors: errors,
+      });
       return validated;
     });
   }
@@ -169,15 +172,6 @@ export class Checklist extends MultipleValuesInput<ChecklistProps, State> {
       type === 'radio' ? 'radio' :
       'checkbox'
     );
-  }
-
-  validate({values, errors}: ValuesWithErrors) {
-    const otherErrors = errors.filter(e => e.kind !== ErrorKind.Input).toList();
-    const cardinalityErrors = checkCardinalityAndDuplicates(values, this.props.definition);
-    return {
-      values: values,
-      errors: otherErrors.concat(cardinalityErrors),
-    };
   }
 
   private renderCheckItem = (value: SparqlBindingValue, checked: boolean, key: string) => {
@@ -223,6 +217,12 @@ export class Checklist extends MultipleValuesInput<ChecklistProps, State> {
       </div>
     );
   }
+
+  static makeHandler(props: MultipleValuesHandlerProps<ChecklistInputProps>) {
+    return new CardinalityCheckingHandler(props);
+  }
 }
 
-export default Checklist;
+MultipleValuesInput.assertStatic(ChecklistInput);
+
+export default ChecklistInput;

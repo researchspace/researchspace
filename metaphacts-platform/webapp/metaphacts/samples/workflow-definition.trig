@@ -1,0 +1,55 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix : <http://www.metaphacts.com/ontologies/platform/workflow#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix workflow: <http://example.com/workflow/> .
+@prefix person: <http://example.com/person/> .
+@prefix Platform: <http://www.metaphacts.com/ontologies/platform#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+<http://www.metaphacts.com/ontologies/platform#workflowDefinitionContainer/context> {
+    Platform:workflowDefinitionContainer a ldp:Container, ldp:Resource , prov:Entity ;
+        rdfs:label "Workflow Definitions Container" .
+}
+
+<http://example.com/workflow/definition-1/context> {
+    Platform:workflowDefinitionContainer ldp:contains workflow:definition-1 .
+
+    workflow:definition-1 a :WorkflowDefinition , ldp:Resource ;
+        rdfs:label "Workflow Definition" ;
+        :hasStep workflow:toDo,
+                  workflow:inProgress ,
+                  workflow:inReview ,
+                  workflow:done .
+
+    workflow:toDo a :WorkflowStep ;
+        rdfs:label "To Do" ;
+        :nextStep workflow:inProgress ;
+        :assigneeQuery workflow:assigneeQuery .
+
+    workflow:inProgress a :WorkflowStep ;
+        rdfs:label "In Progress" ;
+        :nextStep workflow:inReview ;
+        :assigneeQuery workflow:assigneeQuery .
+
+    workflow:inReview a :WorkflowStep ;
+        rdfs:label "In Review" ;
+        :nextStep workflow:inProgress ,
+                  workflow:done ;
+        :assigneeQuery workflow:assigneeQuery .
+
+    workflow:done a :WorkflowStep ;
+        rdfs:label "Done" ;
+        :assigneeQuery workflow:assigneeQuery .
+
+    workflow:assigneeQuery a sp:Query ;
+        sp:text """PREFIX person: <http://example.com/person/>
+          SELECT ?assignee WHERE {
+            VALUES(?assignee) { (person:alice) (person:bob) }
+        }""" .
+}
+
+<http://www.metaphacts.com/ontologies/platform#workflowDefinitionContainer/context> {
+  _:node ldp:contains Platform:workflowDefinitionContainer .
+}

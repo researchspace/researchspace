@@ -28,6 +28,7 @@ module crmdig {
   export const D3_Formal_Derivation = iri('D3_Formal_Derivation');
   export const D29_Annotation_Object = iri('D29_Annotation_Object');
   export const D30_Annotation_Event = iri('D30_Annotation_Event');
+  export const D35_Area = iri('D35_Area');
 
   export const L21_used_as_derivation_source = iri('L21_used_as_derivation_source');
   export const L22_created_derivative = iri('L22_created_derivative');

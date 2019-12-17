@@ -18,18 +18,22 @@
 
 package com.metaphacts.services.fields;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.metaphacts.api.sparql.SparqlOperationBuilder;
-import com.metaphacts.cache.CacheManager;
-import com.metaphacts.cache.PlatformCache;
-import com.metaphacts.data.json.JsonUtil;
-import com.metaphacts.data.rdf.container.FieldDefinitionContainer;
-import com.metaphacts.repository.RepositoryManager;
-import com.metaphacts.vocabulary.FIELDS;
-import com.metaphacts.vocabulary.XsdUtils;
+import static java.util.stream.Collectors.toList;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -42,17 +46,22 @@ import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.queryrender.RenderUtils;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import static java.util.stream.Collectors.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.metaphacts.api.sparql.SparqlOperationBuilder;
+import com.metaphacts.cache.CacheManager;
+import com.metaphacts.cache.PlatformCache;
+import com.metaphacts.data.json.JsonUtil;
+import com.metaphacts.data.rdf.container.FieldDefinitionContainer;
+import com.metaphacts.repository.RepositoryManager;
+import com.metaphacts.vocabulary.FIELDS;
+import com.metaphacts.vocabulary.XsdUtils;
 
 public class FieldDefinitionManager implements PlatformCache {
+    
+    public static final String CACHE_ID = "repository.FieldDefinitionManager";
+    
     private static final Logger logger = LogManager.getLogger(FieldDefinitionManager.class);
 
     private final RepositoryManager repositoryManager;
@@ -61,9 +70,9 @@ public class FieldDefinitionManager implements PlatformCache {
     @Inject
     public FieldDefinitionManager(RepositoryManager repositoryManager, CacheManager cacheManager) {
         this.repositoryManager = repositoryManager;
-        this.cache = CacheBuilder.newBuilder()
-            .maximumSize(1000)
-            .expireAfterAccess(30, TimeUnit.MINUTES)
+        this.cache = cacheManager
+            .newBuilder(CACHE_ID, cacheBuilder -> cacheBuilder.maximumSize(1000)
+                        .expireAfterAccess(30, TimeUnit.MINUTES))
             .build(new CacheLoader<IRI, Optional<FieldDefinition>>() {
                 @Override
                 public Optional<FieldDefinition> load(IRI key) {
@@ -80,7 +89,7 @@ public class FieldDefinitionManager implements PlatformCache {
 
     @Override
     public String getId() {
-        return "FieldDefinitionManager";
+        return CACHE_ID;
     }
 
     @Override

@@ -30,7 +30,11 @@ export interface SimpleBelief {
   type: 'simple';
   value: SimpleBeliefValue;
 }
-export type SimpleBeliefValue = 'Agree' | 'Disagree' | 'No Opinion';
+export enum SimpleBeliefValue {
+  Agree = 'Agree',
+  Disagree = 'Disagree',
+  NoOpinion = 'No Opinion',
+}
 
 export interface BaseBelief {
   iri: Data.Maybe<Rdf.Iri>;

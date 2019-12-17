@@ -22,26 +22,29 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.shiro.SecurityUtils;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
+import com.metaphacts.cache.CacheManager;
+import com.metaphacts.config.Configuration;
 import com.metaphacts.junit.MetaphactsJerseyTest;
 import com.metaphacts.junit.MetaphactsShiroRule;
-import com.metaphacts.security.MetaphactsSecurityManager;
 
 public class TemplateEndpointTest extends MetaphactsJerseyTest {
     private final String templatePermissionShiroFile = "classpath:com/metaphacts/security/shiro-templates-rights.ini";
     
-    @Rule
-    public MetaphactsShiroRule rule = new MetaphactsShiroRule();
-    
     @Inject
-    public MetaphactsSecurityManager securityManager;
+    public Configuration configuration;
+
+    @Inject
+    private CacheManager cacheManager;
+    
+    @Rule
+    public MetaphactsShiroRule rule = new MetaphactsShiroRule(() -> configuration)
+            .withCacheManager(() -> cacheManager);
 
     @Override
     protected void register(ResourceConfig resourceConfig) {

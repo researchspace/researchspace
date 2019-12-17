@@ -49,6 +49,10 @@ export function put(url: string) {
   return request.put(getAbsoluteUrl(url));
 }
 
+export function patch(url: string) {
+  return request.patch(getAbsoluteUrl(url));
+}
+
 export function head(url: string) {
   return request.head(getAbsoluteUrl(url));
 }

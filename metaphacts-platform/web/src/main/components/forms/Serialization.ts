@@ -31,6 +31,8 @@ interface CompositePatch {
   readonly type: typeof CompositeValue.type;
   /** RDF IRI represented in the N3 format */
   readonly subject: string;
+  /** RDF node represented in the N3 format */
+  readonly discriminator?: string;
   readonly fields: { readonly [fieldId: string]: FieldPatch }
 }
 
@@ -63,7 +65,11 @@ export function computeValuePatch(base: FieldValue, changed: FieldValue): ValueP
   FieldValue.unknownFieldType(base);
 }
 
-function computeCompositePatch(base: CompositeValue, changed: CompositeValue): CompositePatch {
+function computeCompositePatch(base: CompositeValue, changed: CompositeValue): ValuePatch {
+  if (!equalRdfTerms(base.discriminator, changed.discriminator)) {
+    return asPatch(changed);
+  }
+
   const visited: { [fieldId: string]: true } = {};
   const patchFields: { [fieldId: string]: FieldPatch } = {};
   let hasAtLeastOnePatch = false;
@@ -101,6 +107,17 @@ function computeCompositePatch(base: CompositeValue, changed: CompositeValue): C
   } : null;
 }
 
+function equalRdfTerms(
+  a: Rdf.Node | null | undefined,
+  b: Rdf.Node | null | undefined
+): boolean {
+  return (
+    !a ? !b :
+    !b ? !a :
+    a.equals(b)
+  );
+}
+
 function computeFieldPatch(base: FieldState, changed: FieldState): FieldPatch {
   const values = changed.values.map((changedValue, index) => {
     const baseValue = base.values.get(index, FieldValue.empty);
@@ -120,6 +137,8 @@ function asPatch(value: FieldValue): ValuePatch {
     case CompositeValue.type: return {
       type: CompositeValue.type,
       subject: turtle.serialize.nodeToN3(value.subject),
+      discriminator: value.discriminator
+        ? turtle.serialize.nodeToN3(value.discriminator) : undefined,
       fields: value.fields.map((state): FieldPatch => {
         const values = state.values.map(asPatch).toArray();
         return {baseLength: values.length, values};
@@ -151,7 +170,13 @@ export function applyValuePatch(base: FieldValue, patch: ValuePatch): FieldValue
   return base;
 }
 
-function applyCompositePatch(base: CompositeValue, patch: CompositePatch): CompositeValue {
+function applyCompositePatch(base: CompositeValue, patch: CompositePatch): FieldValue {
+  const patchDiscriminator = patch.discriminator
+    ? tryDeserializeN3(patch.discriminator) : undefined;
+  if (!equalRdfTerms(base.discriminator, patchDiscriminator)) {
+    return asValue(patch);
+  }
+
   if (!patch.fields) { return base; }
 
   const fields = base.fields.map((baseState, fieldId) => {
@@ -205,10 +230,13 @@ function asValue(patch: ValuePatch): FieldValue {
             errors: FieldError.noErrors,
           }];
         });
+        const discriminator = patch.discriminator
+          ? tryDeserializeN3(patch.discriminator) : undefined;
         return {
           type: CompositeValue.type,
           definitions: Immutable.Map<string, FieldDefinition>(),
           subject: subjectIri,
+          discriminator,
           fields: Immutable.Map<string, FieldState>(states),
           errors: FieldError.noErrors,
         };

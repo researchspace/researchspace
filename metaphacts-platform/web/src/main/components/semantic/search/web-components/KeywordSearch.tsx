@@ -163,8 +163,10 @@ class KeywordSearchInner extends React.Component<InnerProps, State> {
 
   private buildQuery =
     (baseQuery: SparqlJs.SelectQuery) => (token: string): SparqlJs.SelectQuery => {
-      const { searchTermVariable, escapeLuceneSyntax } = this.props;
-      const value = escapeLuceneSyntax ? SparqlUtil.makeLuceneQuery(token) : Rdf.literal(token);
+      const {searchTermVariable, escapeLuceneSyntax, tokenizeLuceneQuery} = this.props;
+      const value = SparqlUtil.makeLuceneQuery(
+        token, escapeLuceneSyntax, tokenizeLuceneQuery,
+      );
       return SparqlClient.setBindings(
         baseQuery, {[searchTermVariable]: value}
       );

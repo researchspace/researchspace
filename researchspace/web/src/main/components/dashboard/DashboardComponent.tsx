@@ -23,7 +23,7 @@ import { WorkspaceLayout, WorkspaceLayoutNode, WorkspaceLayoutType } from 'ontod
 import { Component } from 'platform/api/components';
 import { TemplateItem } from 'platform/components/ui/template';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
-import { ConfirmationDialog } from "platform/components/ui/confirmation-dialog";
+import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 
 import { DashboardItem, DashboardViewConfig } from './DashboardItem';
 
@@ -31,18 +31,15 @@ import * as styles from './Dashboard.scss';
 
 const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
 
-export interface View extends DashboardViewConfig {
-  itemLabelTemplate?: string;
-  itemBodyTemplate?: string;
-}
-
 export interface Item {
-  id: string;
-  index: number;
-  viewId?: string;
-  resourceIri?: string;
-  isDirty?: boolean;
-  isExpanded?: boolean;
+  readonly id: string;
+  readonly index: number;
+  readonly viewId?: string;
+  readonly resourceIri?: string;
+  readonly isDirty?: boolean;
+  readonly isExpanded?: boolean;
+  readonly linkedBy?: string;
+  readonly data?: { [key: string]: any };
 }
 namespace Item {
   let count = 0;
@@ -52,46 +49,91 @@ namespace Item {
   }
 }
 
+export interface DashboardLinkedViewConfig {
+  /**
+   * Unique identifier of the view.
+   */
+  id: string;
+  /**
+   * Label of the view.
+   */
+  label: string;
+  /**
+   * Linked views IDs.
+   */
+  viewIds: ReadonlyArray<string>;
+  /**
+   * Description of the view.
+   */
+  description?: string;
+  /**
+   * Image that will be displayed in the Dashboard Item as the representation for the specific View.
+   */
+  image?: string;
+  /**
+   * Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
+   */
+  iconClass?: string;
+  /**
+   * SPARQL Ask query that is used to check whether it is possible to display a specific resource type in the specific view. Resource IRI is injected into the query using the <code>?value</code> binding variable.
+   */
+  checkQuery?: string;
+}
+
 export interface Props {
-  views: Array<View>;
+  /**
+   * Defines possible visualizations of resources
+   */
+  views: ReadonlyArray<DashboardViewConfig>;
+  /**
+   * Defines possible linked views
+   */
+  linkedViews?: ReadonlyArray<DashboardLinkedViewConfig>;
+  /**
+   * Minimum size of a frame
+   *
+   * @default 150
+   */
   frameMinSize?: number;
 }
 
 export interface State {
-  items?: { [id: string]: Item };
+  items?: ReadonlyArray<Item>;
   focus?: string;
 }
 
 export class DashboardComponent extends Component<Props, State> {
   static defaultProps: Partial<Props> = {
     frameMinSize: 150,
+    linkedViews: [],
   };
 
   constructor(props: Props, context: any) {
     super(props, context);
-    const item = Item.emptyItem();
     this.state = {
-      items: {[item.id]: item},
+      items: [
+        Item.emptyItem(),
+      ],
     };
   }
 
   private onAddNewItem = () => {
     this.setState((prevState): State => {
-      const newItems = {...prevState.items};
+      const newItems = [...prevState.items];
       const item = Item.emptyItem();
-      newItems[item.id] = item;
+      newItems.push(item);
       return {items: newItems};
-    })
+    });
   }
 
   onExpandItem(itemId: string) {
     this.setState((prevState): State => {
-      const newItems = {...prevState.items};
-      const item = newItems[itemId];
-      newItems[itemId] = {
-        ...item,
-        isExpanded: !item.isExpanded,
-      };
+      const newItems = prevState.items.map(item => {
+        if (item.id === itemId) {
+          return {...item, isExpanded: !item.isExpanded};
+        }
+        return item;
+      });
       return {items: newItems};
     });
   }
@@ -102,17 +144,17 @@ export class DashboardComponent extends Component<Props, State> {
     const focusedClassName = isFocused ? styles.itemLabelActive : '';
     const dirtyClassName = item.isDirty ? 'text-danger' : '';
     const view = item.viewId
-      ? this.props.views.find(view => view.id === item.viewId)
+      ? this.props.views.find(({id}) => id === item.viewId)
       : undefined;
     if (view && item.resourceIri) {
       let icon = <span>[{view.label}]&nbsp;</span>;
       if (view.iconClass) {
-        icon = <i className={`${view.iconClass} ${styles.itemIcon}`} />;
+        icon = <i className={view.iconClass} />;
       } else if (view.image) {
-        icon = <img src={view.image} className={styles.itemIcon} alt={view.label} />;
+        icon = <img src={view.image} className={styles.itemImage} alt={view.label} />;
       }
       return <span className={`${styles.itemLabel} ${focusedClassName}`}>
-        {icon}
+        <span className={styles.itemIcon}>{icon}</span>
         <span className={dirtyClassName}>
           <TemplateItem key={item.id} template={{
             source: view.itemLabelTemplate || DEFAULT_ITEM_LABEL_TEMPLATE,
@@ -129,7 +171,7 @@ export class DashboardComponent extends Component<Props, State> {
 
   private renderBody(item: Item) {
     const view = item.viewId
-      ? this.props.views.find(view => view.id === item.viewId)
+      ? this.props.views.find(({id}) => id === item.viewId)
       : undefined;
     if (!view || !view.itemBodyTemplate) { return null; }
     return <TemplateItem key={item.id} template={{
@@ -138,13 +180,26 @@ export class DashboardComponent extends Component<Props, State> {
     }} />;
   }
 
+  private removeItem(itemId: string) {
+    this.setState((prevState): State => {
+      const newItems = [...prevState.items];
+      const index = newItems.findIndex(item => item.id === itemId);
+      newItems.splice(index, 1);
+      return {items: newItems};
+    });
+  }
+
   private onRemoveItem(item: Item) {
     const removeItem = () => {
-      this.setState((prevState): State => {
-        const newItems = {...prevState.items};
-        delete newItems[item.id];
-        return {items: newItems};
-      })
+      if (item.linkedBy) {
+        this.state.items.forEach(({id, linkedBy}) => {
+          if (linkedBy === item.linkedBy) {
+            this.removeItem(id);
+          }
+        });
+      } else {
+        this.removeItem(item.id);
+      }
     };
     if (item.isDirty) {
       const dialogRef = 'removing-confirmation';
@@ -169,12 +224,11 @@ export class DashboardComponent extends Component<Props, State> {
 
   private renderItems() {
     const {items} = this.state;
-    if (!Object.keys(items).length) {
+    if (!items.length) {
       return <div className='text-center'>No frames</div>;
     }
     return <div className={`list-group ${styles.itemsList}`}>
-      {Object.keys(items).map(id => {
-        const item = items[id];
+      {items.map(item => {
         const body = this.renderBody(item);
         return <div key={item.id} className='list-group-item'
           onClick={() =>
@@ -183,7 +237,7 @@ export class DashboardComponent extends Component<Props, State> {
           <div className={styles.itemLabelContainer}>
             {body ? (
               <button className={`btn btn-xs ${styles.expandItemButton}`}
-                onClick={() => this.onExpandItem(id)}>
+                onClick={() => this.onExpandItem(item.id)}>
                 <i className={
                   `fa ${item.isExpanded ? 'fa fa-caret-down' : 'fa-caret-right'}`
                 }/>
@@ -198,7 +252,7 @@ export class DashboardComponent extends Component<Props, State> {
           {body && item.isExpanded ? body : null}
         </div>;
       })}
-    </div>
+    </div>;
   }
 
   private onSelectView({itemId, viewId, resourceIri}: {
@@ -206,55 +260,93 @@ export class DashboardComponent extends Component<Props, State> {
     viewId: string;
     resourceIri: string;
   }) {
+    const {linkedViews} = this.props;
     this.setState((prevState): State => {
-      const newItems = {...prevState.items};
-      const item = newItems[itemId];
-      newItems[itemId] = {
-        ...item,
-        viewId: viewId,
-        resourceIri: resourceIri,
-      };
+      const newItems = [...prevState.items];
+      newItems.forEach((item, index) => {
+        if (item.id !== itemId) { return; }
+        const linkedView = linkedViews.find(view => view.id === viewId);
+        if (linkedView) {
+          const index = newItems.findIndex(({id}) => id === itemId);
+          const items = linkedView.viewIds.map(id => ({
+            ...Item.emptyItem(),
+            viewId: id,
+            resourceIri: resourceIri,
+            linkedBy: itemId,
+          }));
+          newItems.splice(index, 1, ...items);
+        } else {
+          newItems[index] = {...item, viewId, resourceIri};
+        }
+      });
       return {items: newItems};
-    })
+    });
   }
 
   private onStatusChange(itemId: string, isDirty: boolean) {
     this.setState((prevState): State => {
-      const newItems = {...prevState.items};
-      const item = newItems[itemId];
-      newItems[itemId] = {
-        ...item,
-        isDirty: isDirty,
-      };
+      const newItems = prevState.items.map(item => {
+        if (item.id === itemId) {
+          return {...item, isDirty};
+        }
+        return item;
+      });
       return {items: newItems};
-    })
+    });
   }
 
-  private onResourceChange(itemId: string, resourceIri: string) {
+  private onResourceChange(itemId: string, resourceIri: string, data?: { [key: string]: string }) {
     this.setState((prevState): State => {
-      const newItems = {...prevState.items};
-      const item = newItems[itemId];
-      newItems[itemId] = {
-        ...item,
-        resourceIri: resourceIri,
-      };
+      const newItems = prevState.items.map(item => {
+        if (item.id === itemId) {
+          return {...item, resourceIri, data};
+        }
+        return item;
+      });
       return {items: newItems};
-    })
+    });
   }
 
   private renderView(item: Item) {
-    const {views} = this.props;
+    const {views, linkedViews} = this.props;
+    const allViews: Array<DashboardViewConfig> = [...views];
+    linkedViews.forEach(linkedView => {
+      allViews.push({
+        id: linkedView.id,
+        label: linkedView.label,
+        template: '',
+        image: linkedView.image,
+        iconClass: linkedView.iconClass,
+        description: linkedView.description,
+        checkQuery: linkedView.checkQuery,
+      });
+    });
+    const linkedFrames: Array<{ frameId: string; frameVariable: string }> = [];
+    if (item.linkedBy) {
+      this.state.items.forEach(({id: frameId, viewId, linkedBy}) => {
+        if (linkedBy === item.linkedBy) {
+          const view = views.find(({id}) => id === viewId);
+          if (view) {
+            linkedFrames.push({frameId, frameVariable: view.frameVariable});
+          }
+        }
+      });
+    }
     return <div key={item.id} className={styles.viewContainer}>
       <DashboardItem id={item.id}
-        views={views}
+        views={allViews}
+        viewId={item.viewId}
+        resourceIri={item.resourceIri}
+        data={item.data}
+        linkedFrames={linkedFrames}
         onSelect={({viewId, resourceIri}) =>
           this.onSelectView({itemId: item.id, viewId: viewId, resourceIri: resourceIri})
         }
         onStatusChange={isDirty =>
           this.onStatusChange(item.id, isDirty)
         }
-        onResourceChange={resourceIri =>
-          this.onResourceChange(item.id, resourceIri)
+        onResourceChange={(resourceIri, data) =>
+          this.onResourceChange(item.id, resourceIri, data)
         }
         onFocus={() => this.setState({focus: item.id})} />
     </div>;
@@ -292,22 +384,19 @@ export class DashboardComponent extends Component<Props, State> {
         defaultSize: 300,
       }, {
         type: WorkspaceLayoutType.Column,
-        children: Object.keys(items).map(id => {
-          const item = items[id];
-          return {
-            id: item.id,
-            type: WorkspaceLayoutType.Component,
-            content: this.renderView(item) as React.ReactElement<any>,
-            heading: this.renderLabel(item),
-            minSize: this.props.frameMinSize,
-          };
-        }),
+        children: items.map(item => ({
+          id: item.id,
+          type: WorkspaceLayoutType.Component,
+          content: this.renderView(item) as React.ReactElement<any>,
+          heading: this.renderLabel(item),
+          minSize: this.props.frameMinSize,
+        })),
         undocked: true,
       }],
     };
-    return <WorkspaceLayout layout={layout} _onResize={() => {
+    return <WorkspaceLayout layout={layout} _onResize={() =>
       window.dispatchEvent(new Event('resize'))
-    }} />
+    } />;
   }
 }
 

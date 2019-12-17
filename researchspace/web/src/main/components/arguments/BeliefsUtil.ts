@@ -43,10 +43,11 @@ export function getBeliefGraphs(belief: Belief): Kefir.Property<Array<Rdf.Pointe
 function getBeliefGraphForAssertedBelief(
   belief: AssertedBelief,
 ): Kefir.Property<Rdf.PointedGraph> {
+  const beliefIri = createBeliefIri(belief);
   return propSetForAssertedBelief(belief).flatMap(
     propSet =>
-      savePropositionSet(propSet, belief).map(
-        propSetIri => serializeBelief(belief, propSetIri)
+      savePropositionSet(propSet, beliefIri, belief).map(
+        propSetIri => serializeBelief(beliefIri, belief, propSetIri)
       )
   ).toProperty();
 }
@@ -70,18 +71,18 @@ function getBeliefGraphForArgumentsBelief(
 function getBeliefsForField(
   belief: ArgumentsFieldBelief
 ): Kefir.Property<Rdf.PointedGraph> {
+  const beliefIri = createBeliefIri(belief);
   return propSetForArgumentsBelief(belief).flatMap(
     propSet =>
-      savePropositionSet(propSet, belief).map(
-        propSetIri => serializeBelief(belief, propSetIri)
+      savePropositionSet(propSet, beliefIri, belief).map(
+        propSetIri => serializeBelief(beliefIri, belief, propSetIri)
       )
   ).toProperty();
 }
 
 function serializeBelief(
-  belief: Belief, propSetIri: Rdf.Iri
+  beliefIri: Rdf.Iri, belief: Belief, propSetIri: Rdf.Iri
 ): Rdf.PointedGraph {
-  const beliefIri = createBeliefIri(belief);
   const label = createBeliefLabel(belief);
   const triples = [
     Rdf.triple(beliefIri, vocabularies.rdf.type, crminf.I2_Belief),
@@ -185,15 +186,15 @@ function getBeliefsForAssertion(assertionIri: Rdf.Iri): Kefir.Property<Array<Rdf
 }
 
 function savePropositionSet(
-  propositions: PropositionSet, belief: Belief
+  propositions: PropositionSet, beliefIri: Rdf.Iri, belief: Belief
 ): Kefir.Property<Rdf.Iri> {
-  const propositionSetIri =
-      createPropositionIri(
-        createBeliefIri(belief)
-      );
-  const propositionSetGraph =
-    serializePropSet(belief, propositions);
-  return ldpc(rso.PropositionsContainer.value).addResource(
+  const propositionSetIri = createPropositionIri(beliefIri);
+  const propositionSetGraph = serializePropSet(belief, propositions);
+  const service = ldpc(rso.PropositionsContainer.value);
+  if (belief.iri.isJust) {
+    return service.update(propositionSetIri, propositionSetGraph);
+  }
+  return service.addResource(
     propositionSetGraph, maybe.Just(propositionSetIri.value)
   );
 }

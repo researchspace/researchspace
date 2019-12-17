@@ -46,23 +46,30 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.authz.SimpleRole;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
-import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.google.common.collect.Sets;
+import com.metaphacts.secrets.SecretResolver;
 
 /**
- * Extends the {@link JndiLdapRealm} to enable custom mappings from full
+ * Extends the {@link DefaultLdapRealm} to enable custom mappings from full
  * qualified LDAP groups to roles. Permissions will be read from the
  * {@link ShiroTextRealm}.
- *
+ * 
+ * <p>
+ * The following configuration values are subject to secret resolution (see {@link SecretResolver} for details):
+ * <ul>
+ * <li>username for system user</li>
+ * <li>password for system user</li>
+ * </ul>
+ * </p>
  *
  * @author Johannes Trame <jt@metaphacts.com>
  */
-@SuppressWarnings("deprecation")
-public class LDAPRealm extends JndiLdapRealm implements UserMetadataProvider {
+public class LDAPRealm extends DefaultLdapRealm implements UserMetadataProvider {
 
     private static final Logger logger = LogManager.getLogger(LDAPRealm.class);
     

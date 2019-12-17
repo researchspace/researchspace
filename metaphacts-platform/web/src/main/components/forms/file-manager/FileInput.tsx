@@ -16,10 +16,10 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
+import * as Kefir from 'kefir';
 import * as React from 'react';
 import * as _ from 'lodash';
 import * as ReactBootstrap from 'react-bootstrap';
-import * as Kefir from 'kefir';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
@@ -28,11 +28,14 @@ import { FileManager } from 'platform/api/services/file-manager';
 import { Alert, AlertConfig, AlertType } from 'platform/components/ui/alert';
 import { Dropzone } from 'platform/components/ui/dropzone';
 
-import * as styles from './FileManager.scss';
-import { AtomicValueInputProps, AtomicValueInput } from '../inputs';
-import { EmptyValue, CompositeValue, AtomicValue, FieldValue } from '../FieldValues';
+import {
+  AtomicValueInputProps, AtomicValueInput, AtomicValueHandler,
+  SingleValueInput, SingleValueHandlerProps,
+} from '../inputs/SingleValueInput';
+import { EmptyValue, CompositeValue, AtomicValue, FieldValue, ErrorKind } from '../FieldValues';
 import FileVisualizer from './FileVisualizer';
 
+import * as styles from './FileManager.scss';
 
 interface FileInputConfig {
   /** Target storage ID. */
@@ -96,7 +99,8 @@ interface State {
 }
 
 /**
- * File uploader which works in a couple with field and is used as an input components on forms page.
+ * File uploader which works in a couple with field and is used as
+ * an input components on forms page.
  * (See documentation page for semantic forms.)
  */
 export class FileInput extends AtomicValueInput<FileInputProps, State> {
@@ -109,35 +113,20 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
       progress: undefined,
       progressText: undefined,
     };
+    this.getHandler()._setFileManager(this.getFileManager());
+  }
+
+  private getHandler(): FileHandler {
+    const {handler} = this.props;
+    if (!(handler instanceof FileHandler)) {
+      throw new Error('Invalid value handler for CompositeInput');
+    }
+    return handler;
   }
 
   private getFileManager() {
     const {repository} = this.context.semanticContext;
     return new FileManager({repository});
-  }
-
-  finalize(owner: EmptyValue | CompositeValue, value: EmptyValue | AtomicValue): Kefir.Property<FieldValue> {
-    if (value.type === EmptyValue.type) {
-      return Kefir.constant(value);
-    }
-    const resourceIri = value.value as Rdf.Iri;
-    if (!FileManager.isTemporaryResource(resourceIri)) {
-      return Kefir.constant(value);
-    } else {
-      const fileManager = this.getFileManager();
-      return fileManager.getFileResource(resourceIri).flatMap(resource => {
-        return fileManager.createResourceFromTemporaryFile({
-          fileName: resource.fileName,
-          storage: this.props.storage,
-          temporaryStorage: this.props.tempStorage,
-          generateIriQuery: this.props.generateIriQuery,
-          resourceQuery: this.props.resourceQuery,
-          mediaType: resource.mediaType,
-        }).map(createdResourceIri => {
-          return AtomicValue.set(value, {value: createdResourceIri});
-        });
-      }).toProperty();
-    }
   }
 
   onDropAccepted(files: File[]) {
@@ -241,18 +230,18 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
     } else {
       return this.renderProgress();
     }
-  };
+  }
 
   renderProgress() {
     return <div className={styles.emptyBody}>
       Loading..
-    </div>
+    </div>;
   }
 
   renderError() {
     return <div className={styles.emptyBody}>
       Error
-    </div>
+    </div>;
   }
 
   renderDropZone() {
@@ -302,6 +291,60 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
       }
     }
   }
+
+  static makeHandler(props: SingleValueHandlerProps<FileInputProps>) {
+    return new FileHandler(props);
+  }
 }
+
+class FileHandler extends AtomicValueHandler {
+  private readonly baseInputProps: FileInputProps;
+  private fileManager: FileManager | undefined;
+
+  constructor(props: SingleValueHandlerProps<FileInputProps>) {
+    super(props);
+    this.baseInputProps = props.baseInputProps;
+  }
+
+  // HACK: we need to access FileManager but it depends on outer semantic context
+  // which is unfortune. In the future is would be better to provide repository
+  // explicitly in props to avoid this.
+  _setFileManager(fileManager: FileManager) {
+    this.fileManager = fileManager;
+  }
+
+  finalize(
+    value: EmptyValue | AtomicValue,
+    owner: EmptyValue | CompositeValue
+  ): Kefir.Property<FieldValue> {
+    if (value.type === EmptyValue.type) {
+      return Kefir.constant(value);
+    }
+    const resourceIri = value.value as Rdf.Iri;
+    if (!FileManager.isTemporaryResource(resourceIri)) {
+      return Kefir.constant(value);
+    } else if (this.fileManager) {
+      return this.fileManager.getFileResource(resourceIri).flatMap(resource => {
+        return this.fileManager.createResourceFromTemporaryFile({
+          fileName: resource.fileName,
+          storage: this.baseInputProps.storage,
+          temporaryStorage: this.baseInputProps.tempStorage,
+          generateIriQuery: this.baseInputProps.generateIriQuery,
+          resourceQuery: this.baseInputProps.resourceQuery,
+          mediaType: resource.mediaType,
+        }).map(createdResourceIri => {
+          return AtomicValue.set(value, {value: createdResourceIri});
+        });
+      }).toProperty();
+    } else {
+      return Kefir.constant(FieldValue.replaceError(value, {
+        kind: ErrorKind.Validation,
+        message: 'Cannot finalize FileInput value without a FileManager instance'
+      }));
+    }
+  }
+}
+
+SingleValueInput.assertStatic(FileInput);
 
 export default FileInput;

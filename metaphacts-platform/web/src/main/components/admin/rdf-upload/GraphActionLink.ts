@@ -103,10 +103,10 @@ export class GraphActionLink extends Component<Props, State> {
       const acceptHeader = SparqlUtil.getMimeType(this.props.fileEnding);
       const ending = this.props.fileEnding && endsWith(this.props.graphuri, this.props.fileEnding )
         ? ''
-        : '.' + this.props.fileEnding;
+        : this.props.fileEnding;
       const fileName = startsWith(this.props.graphuri, 'file:///' )
         ? this.props.graphuri.replace('file:///', '') + ending
-        : 'graph-export-' + moment().format('YYYY-MM-DDTHH-m-s') + '.' + ending;
+        : 'graph-export-' + moment().format('YYYY-MM-DDTHH-mm-ss') + '.' + ending;
       RDFGraphStoreService.downloadGraph({
         targetGraph: Rdf.iri(this.props.graphuri),
         acceptHeader,

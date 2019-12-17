@@ -85,7 +85,8 @@ public abstract class ResourcePropertyCache<Key, Property> implements PlatformCa
             return repositoryMap.get(repository).getAll(resourceIRIs);
         } catch (ExecutionException e) {
             logger.warn("Execution error while populating cache: " + e.getMessage());
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -94,21 +95,54 @@ public abstract class ResourcePropertyCache<Key, Property> implements PlatformCa
 
         logger.debug("Initializing cache for repository: {}", repository);
         repositoryMap.put(repository,
-            CacheBuilder.newBuilder()
-            .maximumSize(1000)
-            .expireAfterAccess(30, TimeUnit.MINUTES)
-            .build(new CacheLoader<Key, Optional<Property>>() {
-                @Override
-                public Optional<Property> load(Key key) {
-                    return queryAll(repository, Collections.singletonList(key)).get(key);
-                }
+                createCacheBuilder()
+                        .build(new CacheLoader<Key, Optional<Property>>() {
+                            @Override
+                            public Optional<Property> load(Key key) {
+                                return queryAll(repository, Collections.singletonList(key)).get(key);
+                            }
 
-                @Override
-                public Map<Key, Optional<Property>> loadAll(Iterable<? extends Key> keys) throws Exception {
-                    return queryAll(repository, keys);
-                }
-            })
-        );
+                            @Override
+                            public Map<Key, Optional<Property>> loadAll(Iterable<? extends Key> keys) throws Exception {
+                                return queryAll(repository, keys);
+                            }
+                        }));
+    }
+
+    /**
+     * Create the {@link CacheBuilder}.
+     * 
+     * <p>
+     * If available, use the {@link CacheManager} provided by
+     * {@link #cacheService()}
+     * </p>
+     * 
+     * <p>
+     * Default settings:
+     * </p>
+     * 
+     * <ul>
+     * <li>maximumSize: 1000</li>
+     * <li>expireAfterAccess: 30 minutes</li>
+     * </ul>
+     * 
+     * <p>
+     * Sub-classes may provide a configuration suitable for the use case.
+     * </p>
+     * 
+     * @return
+     */
+    protected CacheBuilder<Object, Object> createCacheBuilder() {
+        if (cacheManager().isPresent()) {
+            return cacheManager().get().newBuilder(cacheId, cacheBuilder -> {
+                cacheBuilder.maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES);
+            });
+        }
+        return CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES);
+    }
+
+    protected Optional<CacheManager> cacheManager() {
+        return Optional.empty();
     }
 
     @Override

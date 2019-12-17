@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "DatasetAlignmentConfig": {
             "properties": {
@@ -115,6 +115,9 @@
         "InlineCategory": {
             "description": "Inline configuration for a category",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "iri": {
                     "description": "IRI of the category/relation.\nMust be expressed as a full IRI enclosed in '<>'",
                     "type": "string"
@@ -130,6 +133,7 @@
             },
             "propertyOrder": [
                 "thumbnail",
+                "color",
                 "iri",
                 "label"
             ],
@@ -443,7 +447,8 @@
         "Text": {
             "properties": {
                 "escapeLuceneSyntax": {
-                    "description": "A flag determining whether any special Lucene syntax must be escaped.\nDefault: true",
+                    "default": true,
+                    "description": "A flag determining whether any special Lucene syntax will be escaped.\nWhen `false` lucene syntax in the user input is not escaped.",
                     "type": "boolean"
                 },
                 "helpPage": {
@@ -460,13 +465,19 @@
                     "default": "`$subject ?__relation__ ?__value__ .`",
                     "description": "Injected variables:\n   * `__value__` - string literal with user input. User input is split into words and interleaved with `*`. E.g for the user input \"Hello World\", injected literal will be \"Hello* World*\"",
                     "type": "string"
+                },
+                "tokenizeLuceneQuery": {
+                    "default": true,
+                    "description": "A flag determining whether the user input is tokenized by whitespace into words postfixed by `*`. \nE.g. the search for `Hello World` becomes `Hello* World*`.",
+                    "type": "boolean"
                 }
             },
             "propertyOrder": [
                 "kind",
                 "queryPattern",
                 "helpPage",
-                "escapeLuceneSyntax"
+                "escapeLuceneSyntax",
+                "tokenizeLuceneQuery"
             ],
             "required": [
                 "kind",

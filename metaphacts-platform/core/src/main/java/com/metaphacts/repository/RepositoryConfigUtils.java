@@ -20,8 +20,8 @@ package com.metaphacts.repository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,27 +29,35 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.metaphacts.services.storage.api.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositorySchema;
+import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.sail.config.SailConfigSchema;
+import org.eclipse.rdf4j.sail.federation.config.FederationConfig;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.metaphacts.services.storage.api.ObjectKind;
+import com.metaphacts.services.storage.api.ObjectMetadata;
+import com.metaphacts.services.storage.api.ObjectRecord;
+import com.metaphacts.services.storage.api.ObjectStorage;
+import com.metaphacts.services.storage.api.PlatformStorage;
+import com.metaphacts.services.storage.api.StoragePath;
 
 /**
  * Collection of static utilities mainly around reading, parsing and serializing
@@ -211,8 +219,9 @@ public class RepositoryConfigUtils {
         /* normalize repository config id */
         repConfig.setID(normalizeRepositoryConfigId(repConfig.getID()));
 
+        Resource repositoryNode = SimpleValueFactory.getInstance().createBNode();
         final Model model = new LinkedHashModel();
-        repConfig.export(model);
+        repConfig.export(model, repositoryNode);
         return model;
     }
 
@@ -271,6 +280,9 @@ public class RepositoryConfigUtils {
                 .put("sr", SailRepositorySchema.NAMESPACE)
                 .put("rdfs", RDFS.NAMESPACE)
                 .put("mph", MpRepositoryVocabulary.NAMESPACE)
+                .put("ephedra", MpRepositoryVocabulary.FEDERATION_NAMESPACE)
+                .put("fedsail", FederationConfig.NAMESPACE)
+                .put("sparqlr", SPARQLRepositoryConfig.NAMESPACE)
                 .build();
         for(Entry<String, String> e : prefixes.entrySet()){
             model.setNamespace(e.getKey(), e.getValue());

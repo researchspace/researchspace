@@ -128,6 +128,16 @@ export enum DataState {
   Verifying,
 }
 
+export function mergeDataState(a: DataState, b: DataState) {
+  if (a === DataState.Loading || b === DataState.Loading) {
+    return DataState.Loading;
+  } else if (a === DataState.Verifying || b === DataState.Verifying) {
+    return DataState.Verifying;
+  } else {
+    return DataState.Ready;
+  }
+}
+
 export interface FieldState {
   readonly values: Immutable.List<FieldValue>;
   readonly errors: Immutable.List<FieldError>;
@@ -152,6 +162,11 @@ export interface CompositeValue {
   readonly type: 'composite';
   readonly subject: Rdf.Iri;
   readonly definitions: Immutable.Map<string, FieldDefinition>;
+  /**
+   * Discriminator field value for form switch component to match composite value
+   * with corresponding switch case.
+   */
+  readonly discriminator?: Rdf.Node;
   readonly fields: Immutable.Map<string, FieldState>;
   /**
    * Errors related to form (e.g. configuration errors),
@@ -217,7 +232,7 @@ export namespace FieldValue {
 
   export function setErrors(
     value: AtomicValue | CompositeValue,
-    errors: Immutable.List<FieldError>,
+    errors: Immutable.List<FieldError>
   ): AtomicValue | CompositeValue {
     if (!errors) {
       throw new Error('Cannot set field value errors to null or undefined');

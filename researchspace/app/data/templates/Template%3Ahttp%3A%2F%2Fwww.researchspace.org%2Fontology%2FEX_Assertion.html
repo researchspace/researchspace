@@ -37,23 +37,57 @@
     <div class='page__header'>
       [[>rsp:AssertionHeader]]
     </div>
-    <div class="page__body--borderless">
-      <!--
-                <mp-overlay-dialog title="Graph" type='lightbox'>
-                  <mp-overlay-dialog-trigger>
-                    <button class='btn btn-xs btn-default'>
-                      Graph View
-                    </button>
-                  </mp-overlay-dialog-trigger>
-                  <mp-overlay-dialog-content>
-                    <mp-page-loader iri="http://www.researchspace.org/resource/ArgumentsLightbox"></mp-page-loader>
-                  </mp-overlay-dialog-content>
-                </mp-overlay-dialog>
--->
-          <rs-argument assertion-iri='[[this]]'
-                       value-template='[[> rsp:FieldValueVisualization]]'
-                       form-template='[[> rsp:AssertionFormTemplate]]'
-          ></rs-argument>
+    <div class="page__body">
+      <h1>
+        Assertion
+      </h1>
+      <label>Title</label>
+      <p>
+      	[[singleValueFromSelect "SELECT ?title WHERE { ?? rdfs:label ?title }"]]
+      </p>
+      <label>Description</label>
+      <p>
+        [[#if (ask "ASK { ?? crm:P3_has_note ?description }")]]
+      		[[singleValueFromSelect "SELECT ?description WHERE { ?? crm:P3_has_note ?description }"]]
+        [[else]]
+        	n/a
+        [[/if]]
+      </p>
+      <label>Narrative</label>
+      <p>
+        [[#if (ask "ASK { ?? crm:P70i_is_documented_in ?narrative }")]]
+      		<semantic-link iri='[[singleValueFromSelect "SELECT ?narrative WHERE { ?? crm:P70i_is_documented_in ?narrative }"]]'></semantic-link>
+        [[else]]
+        	n/a
+        [[/if]]
+      </p>
+      <h1>
+        Premise
+        <mp-event-trigger id='dom-refresh' type='Premise.AddArgument' targets='["premise"]'>
+          <button class='btn btn-primary btn-sm' title="Add premise" style='margin-left: 5px;'>
+            <i class='fa fa-plus'></i>
+          </button>
+        </mp-event-trigger>
+      </h1>
+      
+      <rs-premise id='premise' assertion='[[this]]'></rs-premise>
+      
+      <h1>Conclusion</h1>
+      <label>Argued Field</label>
+      <p>
+      	<semantic-link iri='[[singleValueFromSelect "SELECT ?field WHERE { ?? rso:targetsField ?field }"]]'></semantic-link>
+      </p>
+      <label>Values</label>
+      <semantic-table query='SELECT ?value ?belief WHERE {
+          ?? rso:PX_asserts ?beliefEntity .
+          ?beliefEntity rso:PX_asserts_value ?value ;
+                        crminf:J5_holds_to_be ?belief .
+        }'
+      	options='{"showFilter": false}'></semantic-table>
+			<br /><br />
+      <mp-event-trigger id='save-changes' type='Premise.SaveArguments' targets='["premise"]'>
+        <button class='btn btn-primary'>Save Changes</button>
+      </mp-event-trigger>
     </div>
   [[/rsp:ClipboardSidebar]]
 </div>

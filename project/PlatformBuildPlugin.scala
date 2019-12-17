@@ -44,7 +44,12 @@ import org.apache.commons.configuration2.io.FileHandler
 import collection.JavaConversions._
 
 case class BuildConfig(
-  log: String, debug: Boolean, buildEnv: String, noYarn: Boolean, PLATFORM_OPTS: Seq[String]
+  log: String,
+  debug: Boolean,
+  buildEnv: String,
+  noYarn: Boolean,
+  runtimeDirectory: Option[String],
+  PLATFORM_OPTS: Seq[String]
 )
 
 case class BundledAppConfig(
@@ -196,12 +201,12 @@ object PlatformBuildPlugin extends AutoPlugin {
       else (Seq())),
     containerPort := 10214,
     containerForkOptions := {
-
+      val runtimeDirectory = configuration.runtimeDirectory.getOrElse(baseDirectory.value + "/runtime")
       new ForkOptions(
         runJVMOptions = Seq(
-          "-DruntimeDirectory=" + baseDirectory.value + "/runtime",
+          "-DruntimeDirectory=" + runtimeDirectory,
           // sets the location to the config folder to a temporary location for development
-          "-Dcom.metaphacts.config.baselocation=" + baseDirectory.value + "/runtime/config",
+          "-Dcom.metaphacts.config.baselocation=" + runtimeDirectory + "/config",
           // make apps writable in local development mode
           "-Dconfig.mutablePluginApps=true",
           // instruct the platfrom to load JS assets from webpack dev server
@@ -531,6 +536,7 @@ object PlatformBuildPlugin extends AutoPlugin {
       b("debug", false),
       s("buildEnv", "dev"),
       b("noYarn", false),
+      sys.props.get("runtimeDirectory"),
       getPlatformOpts(Seq())
     )
   }

@@ -163,6 +163,8 @@ export class RdfUpload extends Component<Props, State> {
     const val = (e.target as any).value.trim();
     if (!_.isEmpty(val)) {
       this.setState({ targetGraph: maybe.Just(val) });
+    } else {
+      this.setState({ targetGraph: maybe.Nothing() });
     }
   }
 

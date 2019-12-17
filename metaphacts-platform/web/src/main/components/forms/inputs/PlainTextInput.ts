@@ -31,7 +31,7 @@ import { Rdf, vocabularies, XsdDataTypeValidation } from 'platform/api/rdf';
 
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, EmptyValue, FieldError, DataState } from '../FieldValues';
-import { AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
+import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
 import { ValidationMessages } from './Decorations';
 
 interface Language { key: string; value: string; }
@@ -79,7 +79,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
         this.renderElement(),
         this.renderLanguageSelect()
       ),
-      createElement(ValidationMessages, {errors: FieldValue.getErrors(this.props.value)}),
+      createElement(ValidationMessages, {errors: FieldValue.getErrors(this.props.value)})
     );
   }
 
@@ -196,8 +196,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
           },
           title: rdfNode ? rdfNode.toString() : undefined,
           readOnly: !this.canEdit,
-        }),
-        createElement(FormControl.Feedback, {})
+        })
       );
     }
   }
@@ -233,6 +232,8 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
   private createDefaultPlaceholder(definition: FieldDefinition): string {
     return `Enter ${(getPreferredLabel(definition.label) || 'value').toLocaleLowerCase()} here...`;
   }
+
+  static makeHandler = AtomicValueInput.makeAtomicHandler;
 }
 
 function getLanguageFromNode(node: Rdf.Node): string | undefined {
@@ -248,5 +249,7 @@ function getTextAreaStyle(style: ValidationStyle): CSSProperties {
     default: return {};
   }
 }
+
+SingleValueInput.assertStatic(PlainTextInput);
 
 export default PlainTextInput;

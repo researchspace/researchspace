@@ -20,6 +20,7 @@ package com.metaphacts.security;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +37,7 @@ import org.apache.shiro.config.Ini;
 import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.util.PermissionUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -57,6 +59,19 @@ public class ShiroTextRealm extends IniRealm {
         super();
         this.config=config;
         setIni(getIniFromConfig(config));
+        setCredentialsMatcher(passwordMatcher);
+        setPermissionResolver(new WildcardPermissionResolver());
+        init();
+    }
+
+    /**
+     * Constructor for testing purpose only to not require environment
+     * 
+     * @param passwordMatcher
+     */
+    /* packager */ ShiroTextRealm(Ini ini, CredentialsMatcher passwordMatcher) {
+        super();
+        setIni(ini);
         setCredentialsMatcher(passwordMatcher);
         setPermissionResolver(new WildcardPermissionResolver());
         init();
@@ -129,12 +144,47 @@ public class ShiroTextRealm extends IniRealm {
         this.addAccount(username, password, new String[]{});
     }
     
+    public void addRole(String roleName, Set<Permission> permissionsSet) {
+        add(new SimpleRole(roleName, permissionsSet));
+    }
+
+    public void updateRoles(Map<String, List<String>> updateRolesMap) {
+        Ini ini = getIni();
+        logger.info("Updating roles by user : " + SecurityService.getUserName());
+        Ini.Section rolesSection = ini.getSection(ROLES_SECTION_NAME);
+        ROLES_LOCK.writeLock().lock();
+        try {
+            for (Map.Entry<String, List<String>> entry : updateRolesMap.entrySet()) {
+                Set<Permission> permissions = PermissionUtils.resolvePermissions(entry.getValue(), getPermissionResolver());
+                rolesSection.put(entry.getKey(), StringUtils.join(permissions, ", "));
+                addRole(entry.getKey(), permissions);
+            }
+            HashSet<String> unionKeys = new HashSet<>();
+            unionKeys.addAll(getRoles().keySet()); // Actual role names
+            unionKeys.removeAll(updateRolesMap.keySet());
+            for (String roleNameToDelete : unionKeys) {
+                logger.info("Deleting role : " + roleNameToDelete);
+                rolesSection.remove(roleNameToDelete);
+                this.roles.remove(roleNameToDelete); // Removing from the in-memory stores
+            }
+        } finally {
+            ROLES_LOCK.writeLock().unlock();
+        }
+
+        saveIni(ini);
+    }
+    
     public void deleteAccount(String username){
         logger.trace("Deleting account with principal: "+username);
         if(!this.accountExists(username))
             throw new IllegalArgumentException("User with principal "+username + " does not exist.");
+        USERS_LOCK.writeLock().lock();
+        try {
+        	this.users.remove(username);
+        } finally {
+            USERS_LOCK.writeLock().unlock();
+        }
         
-        this.users.remove(username);
         Ini ini = getIni();
         Ini.Section usersSection = ini.getSection(USERS_SECTION_NAME);
         usersSection.remove(username);

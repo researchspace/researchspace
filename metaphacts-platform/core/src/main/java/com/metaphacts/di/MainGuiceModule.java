@@ -27,7 +27,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletContext;
 
-import com.metaphacts.services.fields.FieldDefinitionManager;
 import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.authc.credential.PasswordMatcher;
@@ -55,6 +54,7 @@ import com.metaphacts.federation.repository.MpSparqlServiceRegistry;
 import com.metaphacts.querycatalog.QueryCatalogRESTServiceRegistry;
 import com.metaphacts.repository.RepositoryManager;
 import com.metaphacts.security.ShiroTextRealm;
+import com.metaphacts.services.fields.FieldDefinitionManager;
 import com.metaphacts.services.fields.FieldsBasedSearch;
 import com.metaphacts.servlet.MProxyServlet;
 import com.metaphacts.servlet.SparqlServlet;

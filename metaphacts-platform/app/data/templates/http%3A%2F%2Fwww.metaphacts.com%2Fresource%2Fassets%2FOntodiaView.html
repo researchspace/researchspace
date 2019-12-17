@@ -18,6 +18,7 @@
                  [[> "http://www.metaphacts.com/resource/OntodiaViewOntologyOnlyClasses" param=(urlParam "ontologyIri") ]]
                  metadata='<> <http://www.metaphacts.com/ontologies/platform#diagramForOntology> <[[urlParam "ontologyIri"]]> .'
                  query-params='{"ontologyIri": "[[urlParam "ontologyIri"]]"}'
+                 query="construct {?class rdfs:comment 'dummyprop'} where {  GRAPH ?g {<[[urlParam "ontologyIri"]]> ?prop ?obj. ?class a ?classType. VALUES ?classType {owl:Class rdfs:Class}}}"
                [[else]]
                  [[> "http://www.metaphacts.com/resource/OntodiaViewClassCheck" ]]
                [[/if]]
@@ -65,12 +66,15 @@
           <li>
             <semantic-link iri='[[urlParam "ontologyIri"]]'></semantic-link>
           </li>
-        [[else]]
-          <li>
-            <semantic-link title="Assets" iri="http://www.metaphacts.com/resource/assets/OntodiaDiagrams">Diagrams</semantic-link>
-          </li>
         [[/if]]
-
+        <li>
+          <semantic-link
+          	title="Assets"
+            iri="http://www.metaphacts.com/resource/assets/OntodiaDiagrams"
+            [[#if (urlParam "ontologyIri")]]urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]'[[/if]]>
+            Diagrams
+         	</semantic-link>
+        </li>
         <semantic-context repository='assets'>
           <li class="active">[[#if (urlParam "diagram")]]<mp-label iri="[[urlParam "diagram"]]"></mp-label>[[else]]New Diagram[[/if]]</li>
         </semantic-context>

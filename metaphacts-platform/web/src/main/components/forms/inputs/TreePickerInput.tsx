@@ -30,7 +30,7 @@ import {
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, ErrorKind } from '../FieldValues';
 import {
-  MultipleValuesInput, MultipleValuesProps, checkCardinalityAndDuplicates,
+  MultipleValuesInput, MultipleValuesProps, MultipleValuesHandlerProps, CardinalityCheckingHandler,
 } from './MultipleValuesInput';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
 
@@ -153,12 +153,8 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   }
 
   private onValuesChanged(values: Immutable.List<FieldValue>) {
-    const {definition, updateValues} = this.props;
-    updateValues(({errors}) => {
-      const otherErrors = errors.filter(e => e.kind !== ErrorKind.Input).toList();
-      const cardinalityErrors = checkCardinalityAndDuplicates(values, definition);
-      return {values, errors: otherErrors.concat(cardinalityErrors)};
-    });
+    const {updateValues, handler} = this.props;
+    updateValues(({errors}) => handler.validate({values, errors}));
   }
 
   private renderCreateNewButton() {
@@ -176,6 +172,10 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   private toggleNestedForm = () => {
     this.setState((state): State => ({nestedFormOpen: !state.nestedFormOpen}));
   }
+
+  static makeHandler(props: MultipleValuesHandlerProps<TreePickerInputProps>) {
+    return new CardinalityCheckingHandler(props);
+  }
 }
 
 function toSetOfIris(values: Immutable.List<FieldValue>) {
@@ -189,5 +189,7 @@ function createDefaultPlaceholder(definition: FieldDefinition): string {
   const entityLabel = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
   return `Search or browse for values of ${entityLabel} here...`;
 }
+
+MultipleValuesInput.assertStatic(TreePickerInput);
 
 export default TreePickerInput;

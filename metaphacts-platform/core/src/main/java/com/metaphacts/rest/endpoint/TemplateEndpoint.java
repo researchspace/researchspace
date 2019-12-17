@@ -94,6 +94,7 @@ import com.metaphacts.services.storage.StorageUtils;
 import com.metaphacts.services.storage.api.ObjectKind;
 import com.metaphacts.services.storage.api.ObjectMetadata;
 import com.metaphacts.services.storage.api.ObjectRecord;
+import com.metaphacts.services.storage.api.ObjectStorage;
 import com.metaphacts.services.storage.api.PlatformStorage;
 import com.metaphacts.services.storage.api.StorageException;
 import com.metaphacts.services.storage.api.StoragePath;
@@ -691,7 +692,12 @@ public class TemplateEndpoint extends ResourceConfig {
         for (RevisionInfo info : selected) {
             IRI iri = vf.createIRI(info.iri);
             StoragePath objectId = TemplateByIriLoader.templatePathFromIri(iri);
-            platformStorage.getStorage(info.appId).deleteObject(
+            ObjectStorage storage = platformStorage.getStorage(info.appId);
+            if (!storage.isMutable()) {
+                throw new WebApplicationException("Failed to delete page '" + info.iri + "': storage is read only",
+                        Status.INTERNAL_SERVER_ERROR);
+            }
+            storage.deleteObject(
                 objectId, platformStorage.getDefaultMetadata());
         }
     }

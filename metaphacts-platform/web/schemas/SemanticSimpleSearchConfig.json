@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "properties": {
         "defaultQuery": {
             "description": "SPARQL SELECT query string. If present will be used to show default suggestions without the need for the user to type anything.",
@@ -7,7 +7,7 @@
         },
         "escapeLuceneSyntax": {
             "default": true,
-            "description": "A flag determining whether any special Lucene syntax must be escaped.\nBy default Lucene syntax is escaped and user input is tokenized into words prefixed by `*`.\nE.g for the search `Hello World` -> `Hello* World*`.\nWhen `false` user input is propagated unchanged to the query.",
+            "description": "A flag determining whether any special Lucene syntax will be escaped.\nWhen `false` lucene syntax in the user input is not escaped.",
             "type": "boolean"
         },
         "minSearchTermLength": {
@@ -35,6 +35,11 @@
         "template": {
             "description": "<semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for suggestion item.",
             "type": "string"
+        },
+        "tokenizeLuceneQuery": {
+            "default": true,
+            "description": "A flag determining whether the user input is tokenized by whitespace into words postfixed by `*`. \nE.g. the search for `Hello World` becomes `Hello* World*`.",
+            "type": "boolean"
         }
     },
     "propertyOrder": [
@@ -45,7 +50,8 @@
         "searchTermVariable",
         "minSearchTermLength",
         "placeholder",
-        "escapeLuceneSyntax"
+        "escapeLuceneSyntax",
+        "tokenizeLuceneQuery"
     ],
     "required": [
         "query"

@@ -18,25 +18,35 @@
 
 package com.metaphacts.cache;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.common.collect.Iterables;
-import com.metaphacts.config.PropertyPattern;
-import com.metaphacts.repository.RepositoryManager;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.repository.Repository;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.metaphacts.config.Configuration;
 import com.metaphacts.config.NamespaceRegistry;
+import com.metaphacts.config.PropertyPattern;
 import com.metaphacts.config.groups.UIConfiguration;
-
-import javax.annotation.Nullable;
 
 /**
  * Extraction and caching logics for batched access to URI labels, according
@@ -54,8 +64,12 @@ import javax.annotation.Nullable;
  */
 @Singleton
 public class LabelCache {
+
+    public static final String CACHE_ID = "repository.LabelCache";
+
     private Configuration config;
     private NamespaceRegistry namespaceRegistry;
+    private final CacheManager cacheManager;
 
     private static class CacheKey {
         public final IRI iri;
@@ -81,11 +95,20 @@ public class LabelCache {
         }
     }
 
-    private ResourcePropertyCache<CacheKey, Literal> cache = new ResourcePropertyCache<CacheKey, Literal>("LabelCache") {
+    private ResourcePropertyCache<CacheKey, Literal> cache = new ResourcePropertyCache<CacheKey, Literal>(CACHE_ID) {
         @Override
         protected IRI keyToIri(CacheKey key) {
             return key.iri;
         }
+        
+        /**
+         * Provide customized cache specification for label cache
+         */
+        @Override
+        protected CacheBuilder<Object,Object> createCacheBuilder() {
+            return cacheManager.newBuilder(CACHE_ID,
+                    cacheBuilder -> cacheBuilder.maximumSize(100000).expireAfterAccess(6, TimeUnit.HOURS));
+        };
 
         /**
          * Extracts the preferred labels for a given IRI according to the specs
@@ -106,6 +129,44 @@ public class LabelCache {
                 return Collections.emptyMap();
             }
 
+            int batchSize = 1000;
+            int numberOfThreads = 5;
+
+            // if less than batch size items are requested, immediately execute
+            if (keys instanceof Collection<?> && ((Collection<?>) keys).size() <= batchSize) {
+                return queryAllBatched(repository, keys);
+            }
+
+            Map<CacheKey, Optional<Literal>> res = Maps.newConcurrentMap();
+            ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
+            try {
+                StreamSupport.stream(Iterables.partition(keys, batchSize).spliterator(), false).forEach(batch -> {
+                    executorService.execute(() -> res.putAll(queryAllBatched(repository, batch)));
+                });
+            } finally {
+                executorService.shutdown();
+                try {
+                    executorService.awaitTermination(30, TimeUnit.SECONDS);
+                } catch (InterruptedException e1) {
+                    logger.warn("Failed to wait for label computation: " + e1.getMessage());
+                    executorService.shutdownNow();
+                    throw new RuntimeException("Timeout while querying repository for labels", e1);
+                }
+            }
+
+            return res;
+        }
+        
+        /**
+         * Batched variant of {@link #queryAll(Repository, Iterable)}.
+         * 
+         * @param repository
+         * @param keys
+         * @return
+         * @see #queryAll(Repository, Iterable)
+         */
+        private Map<CacheKey, Optional<Literal>> queryAllBatched(Repository repository,
+                Iterable<? extends CacheKey> keys) {
             List<String> preferredLabels = config.getUiConfig().getPreferredLabels();
             try {
                 // convert to IRI list (filtering out invalid IRIs)
@@ -149,6 +210,7 @@ public class LabelCache {
     ) {
         this.config = config;
         this.namespaceRegistry = namespaceRegistry;
+        this.cacheManager = cacheManager;
         cacheManager.register(cache);
     }
 

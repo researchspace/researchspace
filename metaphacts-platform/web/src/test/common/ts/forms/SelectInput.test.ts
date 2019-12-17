@@ -33,16 +33,23 @@ mockLanguagePreferences();
 
 const DATATYPE = Rdf.iri('http://www.w3.org/2001/XMLSchema-datatypes#string');
 
-const BASIC_PROPS: SelectInputProps = {
-  definition: normalizeFieldDefinition({
-    id: 'nameProp',
-    label: 'labelProp',
-    xsdDatatype: DATATYPE,
-    minOccurs: 1,
-    maxOccurs: 1,
-    valueSetPattern: '',
-  }),
+const definition = normalizeFieldDefinition({
+  id: 'nameProp',
+  label: 'labelProp',
+  xsdDatatype: DATATYPE,
+  minOccurs: 1,
+  maxOccurs: 1,
+  valueSetPattern: '',
+});
+
+const baseInputProps: SelectInputProps = {
   for: 'date',
+};
+
+const BASIC_PROPS: SelectInputProps = {
+  ...baseInputProps,
+  definition,
+  handler: SelectInput.makeHandler({definition, baseInputProps}),
   value: FieldValue.empty,
 };
 

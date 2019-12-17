@@ -72,10 +72,12 @@ import com.metaphacts.repository.RepositoryManager;
 import com.metaphacts.repository.memory.MpMemoryRepository;
 import com.metaphacts.repository.memory.MpMemoryRepositoryFactory;
 import com.metaphacts.rest.feature.CacheControl.NoCache;
+import com.metaphacts.security.Permissions;
 import com.metaphacts.security.Permissions.REPOSITORY_CONFIG;
 import com.metaphacts.services.storage.api.ObjectKind;
 import com.metaphacts.services.storage.api.PlatformStorage;
 import com.metaphacts.services.storage.api.StorageException;
+import com.metaphacts.services.storage.api.StorageLocation;
 import com.metaphacts.services.storage.api.StoragePath;
 
 /**
@@ -119,7 +121,8 @@ public class RepositoryManagerEndpoint {
         Map<String, Boolean> availableConfigs = repositoryManager.getAvailableRepositoryConfigs();
 
         return availableConfigs.entrySet().stream()
-                .filter(entry -> checkPermission(REPOSITORY_CONFIG.PREFIX_VIEW + entry.getKey()))
+                .filter(entry -> checkPermission(
+                        Permissions.SPARQL.PREFIX + entry.getKey() + ":" + Permissions.SPARQL.QUERY_SELECT_POSTFIX))
                 .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
     }
 
@@ -235,7 +238,6 @@ public class RepositoryManagerEndpoint {
     public Response getTurtleRepositoryTemplate(
             @NotNull @PathParam("templateID") String templateId) {
 
-        InputStream resourceInputStream;
         try {
             Optional<PlatformStorage.FindResult> foundTemplate = platformStorage
                 .findObject(getObjectIdForTemplate(templateId));
@@ -245,20 +247,22 @@ public class RepositoryManagerEndpoint {
                     .entity("Repository template '" + templateId + "' could not be found").build();
             }
 
-            resourceInputStream = foundTemplate.get().getRecord().getLocation().readContent();
+            final StorageLocation storageLocation = foundTemplate.get().getRecord().getLocation();
+            StreamingOutput stream = (OutputStream os) -> {
+                try (InputStream resourceInputStream = storageLocation.readContent()) {
+                    IOUtils.copy(resourceInputStream, os);
+                    os.flush();
+                } catch (IOException e) {
+                    throw new IOException("Error reading repository template '" + templateId + "': " + e.getMessage(), e);
+                }
+            };
+            return Response.ok().entity(stream).build();
         } catch (IOException e) {
             String message = "Error reading repository template '" + templateId + "'";
             logger.debug(message, e);
             return Response.status(Status.INTERNAL_SERVER_ERROR)
                 .entity(message).build();
         }
-
-        StreamingOutput stream = (OutputStream os) -> {
-            IOUtils.copy(resourceInputStream, os);
-            IOUtils.closeQuietly(resourceInputStream);
-            IOUtils.closeQuietly(os);
-        };
-        return Response.ok().entity(stream).build();
     }
 
     @POST

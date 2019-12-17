@@ -1,0 +1,44 @@
+
+
+allprojects {
+	buildDir 'target'
+}
+
+
+def appProjects = subprojects.findAll { it.parent != null && it.parent.name == 'apps' }
+
+
+configure(appProjects) {
+
+	project.logger.info("Configuring app project " + project.name)
+	
+	apply plugin: 'java'
+	
+	def appCopySpec = project.copySpec {
+		from (project.getProjectDir()) {
+			include("assets/**/*")
+			include("classes/**/*")
+			include("config/**/*")
+			include("data/**/*")
+			include("images/**/*")	// TODO deprecated
+			include("ldp/**/*")
+			include("lib/**/*")
+			include("plugin.properties")
+			include("_bootstrap/**/*")
+			
+		}
+	}
+	
+	def appsTargetFolder = rootProject.file("target/apps")
+	def deployFolder = project.file("target/deploy");
+
+	task deploy(type: Copy) {
+		into deployFolder;
+		with appCopySpec;
+	}
+
+	task appZip(type: Zip, dependsOn: 'deploy') {
+		from deployFolder;
+		destinationDirectory = appsTargetFolder
+	}
+}

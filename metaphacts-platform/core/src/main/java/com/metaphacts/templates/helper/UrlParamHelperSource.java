@@ -54,7 +54,7 @@ public class UrlParamHelperSource {
                     return new Handlebars.SafeString(StringEscapeUtils.escapeHtml4(params).toString()).toString();
                 }
         }
-        logger.debug("Did not find requested url param with name {}", paramName);
+        logger.trace("Did not find requested url param with name {}", paramName);
         return "";
       }
 }

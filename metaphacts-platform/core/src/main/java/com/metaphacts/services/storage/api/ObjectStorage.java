@@ -18,16 +18,17 @@
 
 package com.metaphacts.services.storage.api;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 /**
  * Represents an abstract storage of so-called objects which are BLOBs indexed by {@link ObjectKind}
  * and string IDs and have metadata associated with each one.
  */
-public interface ObjectStorage {
+public interface ObjectStorage extends AutoCloseable {
     /**
      * @return {@code true} if it's possible to modify storage data through mutation methods
      * {@link #appendObject}, {@link #deleteObject}, etc; {@code false} if storage is read-only
@@ -99,4 +100,12 @@ public interface ObjectStorage {
         StoragePath path,
         ObjectMetadata metadata
     ) throws StorageException;
+
+    /**
+     * Define any close behavior
+     */
+    @Override
+    default void close() throws Exception {
+
+    }
 }

@@ -127,6 +127,8 @@ object Licenses {
     case DepModuleInfo("org.slf4j", _, _) => LicenseInfo(Licenses.builtin.MITStyle, "MIT style", "http://www.slf4j.org/license.html")
     case DepModuleInfo("com.codepoetics", "protonpack", _) => LicenseInfo(Licenses.builtin.MITStyle, "MIT", "https://raw.githubusercontent.com/poetix/protonpack/protonpack-1.15/LICENSE")
     case DepModuleInfo("org.bouncycastle", _, _) => LicenseInfo(Licenses.builtin.MITStyle, "MIT style", "https://www.bouncycastle.org/licence.html")
+    case DepModuleInfo("org.spongycastle", _, _) => LicenseInfo(Licenses.builtin.MITStyle, "MIT style", "https://www.bouncycastle.org/licence.html")
+    case DepModuleInfo("com.madgag.spongycastle", _, _) => LicenseInfo(Licenses.builtin.MITStyle, "MIT style", "https://www.bouncycastle.org/licence.html")
 
     // Eclipse
     case DepModuleInfo("org.eclipse.rdf4j", _, version) => licenseinfo.LicenseEclipse

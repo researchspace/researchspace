@@ -19,19 +19,14 @@ package com.metaphacts.api.dto.query;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.parser.ParsedOperation;
-import org.eclipse.rdf4j.query.parser.ParsedQuery;
-import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
 
 import com.metaphacts.api.dto.InconsistentDtoException;
 import com.metaphacts.api.dto.base.DTOBase;
 import com.metaphacts.api.sparql.SparqlUtil;
-
-import com.google.common.collect.Maps;
 
 /**
  * Abstract base class representing a query template, including information about the query itself
@@ -65,7 +60,6 @@ public abstract class Query<T extends ParsedOperation> extends DTOBase {
         this.standardPrefixes = standardPrefixes;
     }
 
-    @SuppressWarnings("unchecked")
     public T getQuery() throws InconsistentDtoException {
 
         try {
@@ -105,14 +99,8 @@ public abstract class Query<T extends ParsedOperation> extends DTOBase {
     }
 
     protected String prependPrefixes() {
-        Set<String> mentionedPrefixes = SparqlUtil.extractPrefixes(this.queryString);
-        
-        Map<String, String> prefixesToAdd = Maps.newHashMap(this.standardPrefixes);
-        for (String pre : mentionedPrefixes) {
-            prefixesToAdd.remove(pre);
-        }
-        
-        return SparqlUtil.prependPrefixes(this.queryString, prefixesToAdd);
+        // Note: the utility class makes sure to not pre-pend already defined prefixes
+        return SparqlUtil.prependPrefixes(this.queryString, this.standardPrefixes);
     }
 
 }

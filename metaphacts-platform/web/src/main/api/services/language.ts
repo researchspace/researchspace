@@ -104,10 +104,12 @@ function computeLanguageRanks(): Map<string, number> {
  *
  * See LabelCache.java `chooseLabelWithPreferredLanguage()` for reference.
  */
-export function selectPreferredLabel(
-  labels: ReadonlyArray<Rdf.Literal>,
+export function selectPreferredLabel<
+  T extends { readonly value: string; readonly language: string } = Rdf.Literal
+>(
+  labels: ReadonlyArray<T>,
   selectedLanguage?: string
-): Rdf.Literal | undefined {
+): T | undefined {
   // fast path: no labels detected
   if (labels.length === 0) {
     return undefined;
@@ -115,7 +117,7 @@ export function selectPreferredLabel(
 
   const {languageRanks} = getOrComputePreferences();
 
-  let bestObserved: Rdf.Literal | undefined;
+  let bestObserved: T | undefined;
   let bestObservedRank = Number.MAX_SAFE_INTEGER;
   for (const label of labels) {
     const {language} = label;

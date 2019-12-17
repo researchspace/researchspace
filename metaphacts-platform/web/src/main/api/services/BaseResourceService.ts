@@ -19,32 +19,27 @@
 import * as Kefir from 'kefir';
 import { post } from 'platform/api/http';
 import * as Immutable from 'immutable';
-import * as _ from 'lodash';
-import * as Maybe from 'data.maybe';
 
 import { BatchedPool, requestAsProperty } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
 import { QueryContext } from 'platform/api/sparql';
 
 export class BaseResourceService {
+  private serviceUrl: string;
+  private pools = new Map<string, BatchedPool<string, string>>();
+
   constructor(serviceUrl: string) {
     this.serviceUrl = serviceUrl;
   }
 
-  private serviceUrl: string;
-  private pools: {[key: string]: BatchedPool<string, string>} = {};
   private getPool(context?: QueryContext) {
-    const repository =
-      Maybe.fromNullable(context).chain(
-        sctx => Maybe.fromNullable(sctx.repository)
-      ).getOrElse('default');
-    if (!_.has(this.pools, repository)) {
-      this.pools[repository] =
-        new BatchedPool<string, string>({
-          fetch: iris => this.fetchResources(iris.toArray(), repository)
-        });
+    const repository = getRepositoryFromContext(context);
+    if (!this.pools.has(repository)) {
+      this.pools.set(repository, new BatchedPool<string, string>({
+        fetch: iris => this.fetchResources(iris.toArray(), repository)
+      }));
     }
-    return this.pools[repository];
+    return this.pools.get(repository);
   }
 
   getResource(iri: Rdf.Iri, context?: QueryContext): Kefir.Property<string> {
@@ -54,9 +49,21 @@ export class BaseResourceService {
   getResources(
     iris: ReadonlyArray<Rdf.Iri>, context?: QueryContext
   ): Kefir.Property<Immutable.Map<Rdf.Iri, string>> {
-    if (_.isEmpty(iris)) {
+    if (iris.length === 0) {
       return Kefir.constant(Immutable.Map());
     }
+
+    const pool = this.getPool(context);
+    if (iris.length >= pool.batchSize) {
+      const repository = getRepositoryFromContext(context);
+      return this.fetchResources(iris.map(iri => iri.value), repository)
+        .map(labels => Immutable.Map<Rdf.Iri, string>().withMutations(map => {
+          for (const iri of iris) {
+            map.set(iri, labels.get(iri.value));
+          }
+        }));
+    }
+
     return Kefir.combine(
       iris.map(
         iri => this.getResource(iri, context).map(value => [iri, value] as [Rdf.Iri, string])
@@ -76,11 +83,19 @@ export class BaseResourceService {
   }
 
   protected fetchResources(resources: string[], repository: string) {
-    type Batch = { [resourceIri: string]: string };
     const request = this.createRequest(resources, repository);
     return requestAsProperty(request).map(response => {
       const batch = response.body as { [key: string]: string };
       return Immutable.Map(batch);
     });
   }
+}
+
+function getRepositoryFromContext(context: QueryContext | undefined): string {
+  if (context) {
+    if (context.repository) {
+      return context.repository;
+    }
+  }
+  return 'default';
 }

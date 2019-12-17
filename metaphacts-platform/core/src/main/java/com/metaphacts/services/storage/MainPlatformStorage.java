@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Injector;
 import com.metaphacts.config.Configuration;
 import com.metaphacts.plugin.PlatformPlugin;
 import com.metaphacts.plugin.PlatformPluginManager;
@@ -83,9 +84,9 @@ public class MainPlatformStorage implements PlatformStorage {
     }
 
     @Inject
-    public MainPlatformStorage(PlatformPluginManager pluginManager, StorageRegistry storageRegistry) {
+    public MainPlatformStorage(PlatformPluginManager pluginManager, StorageRegistry storageRegistry, Injector injector) {
         try {
-            initialize(pluginManager, storageRegistry);
+            initialize(pluginManager, storageRegistry, injector);
         } catch (StorageConfigException | StorageException ex) {
             logger.error("Failed to initialize platform storage system: " + ex.getMessage());
             logger.debug("Details: ", ex);
@@ -94,15 +95,15 @@ public class MainPlatformStorage implements PlatformStorage {
     }
 
     private void initialize(
-        PlatformPluginManager pluginManager, StorageRegistry storageRegistry
+        PlatformPluginManager pluginManager, StorageRegistry storageRegistry, Injector injector
     ) throws StorageConfigException, StorageException {
-        StorageConfigLoader storageConfigLoader = new StorageConfigLoader(storageRegistry);
+        StorageConfigLoader storageConfigLoader = new StorageConfigLoader(storageRegistry, injector);
         LinkedHashMap<String, StorageConfig> internalConfigs = storageConfigLoader
             .readInternalStorageConfig(PlatformStorage.class.getClassLoader());
 
         for (Map.Entry<String, StorageConfig> entry : internalConfigs.entrySet()) {
             logger.info("Adding internal storage '{}':", entry.getKey());
-            addStorageFromConfig(storageRegistry, entry.getKey(), entry.getValue());
+            addStorageFromConfig(storageRegistry, injector, entry.getKey(), entry.getValue());
         }
 
         List<PlatformPlugin> plugins = PlatformPluginManager
@@ -122,7 +123,7 @@ public class MainPlatformStorage implements PlatformStorage {
             if (storages.containsKey(entry.getKey())) {
                 logger.info("Overriding storage '" + entry.getKey() + "' by storage configuration:");
             }
-            addStorageFromConfig(storageRegistry, entry.getKey(), entry.getValue());
+            addStorageFromConfig(storageRegistry, injector, entry.getKey(), entry.getValue());
         }
 
         if (!storages.containsKey(DEVELOPMENT_RUNTIME_STORAGE_KEY)) {
@@ -201,7 +202,7 @@ public class MainPlatformStorage implements PlatformStorage {
     }
 
     private void addStorageFromConfig(
-        StorageRegistry storageRegistry, String storageId, StorageConfig config
+        StorageRegistry storageRegistry, Injector injector, String storageId, StorageConfig config
     ) throws StorageException {
         logger.info("Creating {} storage '{}' with config type {}",
             config.isMutable() ? "mutable" : "readonly", storageId, config.getClass().getName());
@@ -212,6 +213,9 @@ public class MainPlatformStorage implements PlatformStorage {
                 pathMapping, StoragePath.EMPTY, StoragePath.parse(config.getSubroot())
             );
         }
+        
+        // perform injection to StorageConfig
+        injector.injectMembers(config);
 
         StorageCreationParams params = new StorageCreationParams(
             pathMapping, PlatformStorage.class.getClassLoader());
@@ -332,5 +336,21 @@ public class MainPlatformStorage implements PlatformStorage {
             .filter(desc -> desc.storedKindPrefix.isPrefixOf(prefix))
             .map(desc -> new StorageStatus(desc.storageId, desc.storage.isMutable()))
             .collect(toList());
+    }
+
+    /**
+     * Shutdown the main platform storage
+     */
+    public void shutdown() {
+
+        logger.info("Shutting main platform storage and managed child storages");
+        for (StorageDescription storageDesc : storages.values()) {
+            try {
+                storageDesc.storage.close();
+            } catch (Throwable t) {
+                logger.warn("Failed to shutdown storage " + storageDesc.storageId + ": " + t.getMessage());
+                logger.debug("Details:", t);
+            }
+        }
     }
 }

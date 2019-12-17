@@ -66,10 +66,10 @@ public abstract class SPARQLAuthenticatingRepositoryConfig extends MpSPARQLRepos
         throws RepositoryConfigException
     {
         super.validate();
-        if(StringUtils.isEmpty(getUsername())){
+        if(requiresUsername() && StringUtils.isEmpty(getUsername())){
             throw new RepositoryConfigException("No username specified for SPARQL authenticating repository.");
         }
-        if (StringUtils.isEmpty(getPassword())) {
+        if (requiresPassword() && StringUtils.isEmpty(getPassword())) {
             throw new RepositoryConfigException("No password specified for SPARQL authenticating repository.");
         }
     }
@@ -103,6 +103,24 @@ public abstract class SPARQLAuthenticatingRepositoryConfig extends MpSPARQLRepos
         catch (ModelException e) {
             throw new RepositoryConfigException(e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Specifies whether the username is required (used by validation). Sub-classes may override this method 
+     * to indicate that the username is optional, e.g. for other types of authentication.
+     * @return <code>true</code> if the username is required, <code>false</code> otherwise
+     */
+    protected boolean requiresUsername() {
+        return true;
+    }
+    
+    /**
+     * Specifies whether the password is required (used by validation). Sub-classes may override this method 
+     * to indicate that the password is optional, e.g. for other types of authentication.
+     * @return <code>true</code> if the password is required, <code>false</code> otherwise
+     */
+    protected boolean requiresPassword() {
+        return true;
     }
 
 }

@@ -52,12 +52,12 @@
     fallback-template='{{> fallback-template}}'
     annotation-tooltip='{{> annotation-tooltip}}'>
 
-    <!-- fallback template to display annotation in sidebar -->
     <template id='fallback-template'>
-      Missing type for annotation <semantic-link iri='{{iri.value}}'></semantic-link>
+      <div>
+      	Missing type for annotation <semantic-link iri='{{iri.value}}'></semantic-link>
+      </div>
     </template>
 
-    <!-- template for tooltip on mouse hover -->
     <template id='annotation-tooltip'>
       <div>
         {{#if allowEdit}}
@@ -87,35 +87,50 @@
       </div>
     </template>
 
-    <!-- annotation type declarations: -->
-
     <rs-text-annotation-type label="Note"
       rdf-type='https://example.com/schema/Note'
-      icon-url='/images/annotation_note_icon.svg'>
+      icon-url='/images/argument.svg'>
 
-      <!-- template to display Note annotation in sidebar -->
       <template id='annotation'>
         <semantic-query query='
           SELECT ?iri ?text WHERE {
             BIND({{iri}} as ?iri)
-            ?iri <https://example.com/schema/noteText> ?text
+            ?iri <http://www.w3.org/ns/oa#hasBody>/<https://example.com/schema/noteText> ?text
           }' template='{{> display-note}}'>
           <template id='display-note'>
             <div>
-              {{text.value}}
+              {{bindings.0.text.value}}
               <semantic-link iri='{{iri.value}}'>Open</semantic-link>
+              <div class='btn-group'>
+                {{#if allowEdit}}
+                <button name='edit'
+                  class='btn btn-xs btn-default dpub-ctrl-buttons-style'
+                  data-annotation='{{iri.value}}'
+                  title='Edit annotation'>
+                  <span class='fa fa-pencil' style='pointer-events: none;'></span>
+                </button>
+                {{/if}}
+                {{#if allowDelete}}
+                <button name='delete'
+                  class='btn btn-xs btn-default dpub-ctrl-buttons-style'
+                  data-annotation='{{iri.value}}'
+                  title='Delete annotation'>
+                  <span class='fa fa-trash' style='pointer-events: none;'></span>
+                </button>
+                {{/if}}
+              </div>
             </div>
           </template>
         </semantic-query>
       </template>
-
-      <!-- form markup to create/edit Note annotation -->
-      <semantic-form-composite-input for='oaHasBody'
+      
+   <semantic-form-composite-input for='oaHasBody'
         new-subject-template='body'
         fields='[
           {
             "id": "type",
             "label": "Type",
+            "xsdDatatype": "xsd:anyURI",
             "selectPattern": "SELECT $value WHERE { $subject rdf:type $value }",
             "insertPattern": "INSERT { $subject rdf:type $value } WHERE {}",
             "deletePattern": "DELETE { $subject rdf:type $value } WHERE {}"

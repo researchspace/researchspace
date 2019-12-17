@@ -47,14 +47,20 @@ export interface SemanticSimpleSearchBaseConfig {
   placeholder?: string;
 
   /**
-   * A flag determining whether any special Lucene syntax must be escaped.
-   * By default Lucene syntax is escaped and user input is tokenized into words prefixed by `*`.
-   * E.g for the search `Hello World` -> `Hello* World*`.
-   * When `false` user input is propagated unchanged to the query.
+   * A flag determining whether any special Lucene syntax will be escaped.
+   * When `false` lucene syntax in the user input is not escaped.
    *
    * @default true
    */
   escapeLuceneSyntax?: boolean;
+
+  /**
+   * A flag determining whether the user input is tokenized by whitespace into words postfixed by `*`. 
+   * E.g. the search for `Hello World` becomes `Hello* World*`.
+   *
+   * @default true
+   */
+  tokenizeLuceneQuery?: boolean
 }
 
 export interface SemanticSimpleSearchConfig extends SemanticSimpleSearchBaseConfig {

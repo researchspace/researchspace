@@ -34,7 +34,7 @@ import {
   matchArgument, ObservationType, BeliefAdoptionType, InferenceType,
   ArgumentsBeliefTypeFieldKind, ArgumentsBeliefTypeAssertionKind,
   BeliefTypeArgumentsKind, ArgumentsAssertionBelief, ArgumentsFieldBelief,
-  ArgumentsBelief,
+  ArgumentsBelief, SimpleBeliefValue,
 } from './ArgumentsApi';
 import { getArgumentsFieldDefinition } from './FieldUtils';
 import { getBeliefGraphs } from './BeliefsUtil';
@@ -166,7 +166,7 @@ function deserializeBelief(pg: Rdf.PointedGraph): Kefir.Property<ArgumentsBelief
       assertion: assertion.get(),
       belief: {
         type: 'simple',
-        value: 'Agree',
+        value: SimpleBeliefValue.Agree,
       }
     };
     return Kefir.constant(assertionBelief);
@@ -189,7 +189,7 @@ function deserializeBelief(pg: Rdf.PointedGraph): Kefir.Property<ArgumentsBelief
           originRepository: repository,
           belief: {
             type: 'simple',
-            value: 'Agree',
+            value: SimpleBeliefValue.Agree,
           }
         };
         return fieldBelief;

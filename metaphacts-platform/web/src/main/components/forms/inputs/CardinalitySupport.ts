@@ -36,24 +36,26 @@ import {
   isValidChild, componentHasType, hasBaseDerivedRelationship, universalChildren,
 } from 'platform/components/utils';
 
-import { getPreferredLabel } from '../FieldDefinition';
+import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import {
-  FieldValue, EmptyValue, CompositeValue, DataState, ErrorKind, FieldError,
+  FieldValue, EmptyValue, CompositeValue, DataState, ErrorKind, FieldError, mergeDataState
 } from '../FieldValues';
 
-import { SingleValueInput, SingleValueInputProps as SingleValueProps } from './SingleValueInput';
+import { SingleValueInput, SingleValueInputProps, SingleValueHandler } from './SingleValueInput';
 import {
-  MultipleValuesInput, MultipleValuesProps, ValuesWithErrors, checkCardinalityAndDuplicates,
+  MultipleValuesInput, MultipleValuesProps, MultipleValuesHandler, MultipleValuesHandlerProps,
+  ValuesWithErrors, checkCardinalityAndDuplicates,
 } from './MultipleValuesInput';
 import { CompositeInput } from './CompositeInput';
 import { FormSwitch } from './FormSwitch';
 
-export interface CardinalitySupportProps extends MultipleValuesProps {}
+export interface CardinalitySupportProps extends MultipleValuesProps {
+  children?: ReactNode;
+}
 
 const COMPONENT_NAME = 'cardinality-support';
-const SYNTHETIC_INPUT_KEY = 'synthetic';
 
-type ChildInput = SingleValueInput<SingleValueProps, any>;
+type ChildInput = SingleValueInput<SingleValueInputProps, unknown>;
 
 /**
  * Wraps {@link SingleValueInput} and exposes self as {@link MultipleValuesInput}
@@ -67,10 +69,18 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
    * React element keys corresponding to field values, to prevent incorrect
    * virtual DOM merging when adding or deleting values.
    */
-  private valueKeys: string[];
+  private valueKeys: string[] = [];
 
-  private readonly inputs = new Map<string, ChildInput>();
+  private readonly inputs = new Map<string, ChildInput[]>();
   private lastRenderedDataState: DataState | undefined;
+
+  private getHandler(): CardinalitySupportHandler {
+    const {handler} = this.props;
+    if (!(handler instanceof CardinalitySupportHandler)) {
+      throw new Error('Invalid value handler for CardinalitySupport');
+    }
+    return handler;
+  }
 
   shouldComponentUpdate(nextProps: CardinalitySupportProps, nextState: {}) {
     if (this.state !== nextState) { return true; }
@@ -87,40 +97,6 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
         previous.values.every((item, index) => item === nextProps.values.get(index))
       )
     );
-  }
-
-  mapChildren(children: ReactNode, value: FieldValue, index: number, synthetic: boolean) {
-    const key = synthetic ? SYNTHETIC_INPUT_KEY : this.valueKeys[index];
-    return Children.map(children, child => {
-      if (isValidChild(child)) {
-        const element = child as ReactElement<any>;
-        if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
-          const props: SingleValueProps & ClassAttributes<ChildInput> = {
-            for: this.props.for,
-            definition: this.props.definition,
-            dataState: synthetic ? DataState.Loading : this.props.dataState,
-            value: value,
-            updateValue: reducer => {
-              if (synthetic) { return; }
-              this.onValuesChanged(values => values.update(index, reducer));
-            },
-            ref: input => {
-              if (input) {
-                this.inputs.set(key, input);
-              } else {
-                this.inputs.delete(key);
-              }
-            },
-          };
-          return cloneElement(element, props);
-        } else if ('children' in element.props) {
-          return cloneElement(element, {}, universalChildren(
-            this.mapChildren(element.props.children, value, index, synthetic)
-          ));
-        }
-      }
-      return child;
-    });
   }
 
   render(): ReactElement<any> {
@@ -150,7 +126,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
           }),
           onClick: this.addNewValue,
         }, `+ Add ${fieldLabel}`)
-      ) : null,
+      ) : null
     );
   }
 
@@ -162,26 +138,25 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
       ? `${COMPONENT_NAME}__group-instance`
       : `${COMPONENT_NAME}__single-instance`;
 
-    const usingSyntheticInput = this.props.values.size === 0;
-    if (usingSyntheticInput) {
-      // add synthetic input instance to be able to validate and finalize
-      // values even if there are no actual values present
-      const syntheticInput = D.div(
-        {
-          key: SYNTHETIC_INPUT_KEY,
-          className: `${className} ${COMPONENT_NAME}__synthetic-instance`,
-          style: {display: 'none'}
-        },
-        universalChildren(this.mapChildren(
-          this.props.children, FieldValue.empty, 0, true))
-      );
-      return [syntheticInput];
-    }
-
     return this.props.values.map((value, index) => D.div(
       {key: this.valueKeys[index], className},
-      universalChildren(
-        this.mapChildren(this.props.children, value, index, false)),
+      renderChildInputs(
+        this.props,
+        this.getHandler(),
+        value,
+        this.valueKeys[index],
+        reducer => {
+          this.onValuesChanged(values => values.update(index, reducer));
+        },
+        (key, inputIndex, input) => {
+          let refs = this.inputs.get(key);
+          if (!refs) {
+            refs = [];
+            this.inputs.set(key, refs);
+          }
+          refs[inputIndex] = input;
+        }
+      ),
       canRemoveValue
         ? createElement(Button, {
             className: COMPONENT_NAME + '__remove-value',
@@ -191,16 +166,9 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
   }
 
   private ensureValueKeys(valueCount: number) {
-    if (!this.valueKeys) { this.valueKeys = []; }
     while (this.valueKeys.length < valueCount) {
       this.valueKeys.push(uniqueId());
     }
-  }
-
-  private getAnyInput(): SingleValueInput<SingleValueProps, any> {
-    if (this.inputs.size === 0) { return undefined; }
-    const anyInputKey = getFirst(this.inputs.keys());
-    return this.inputs.get(anyInputKey);
   }
 
   private addNewValue = () => {
@@ -215,23 +183,94 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
   private onValuesChanged(
     reducer: (previous: Immutable.List<FieldValue>) => Immutable.List<FieldValue>
   ) {
+    const handler = this.getHandler();
     this.props.updateValues(previous => {
       const newValues = reducer(previous.values);
-      const validated = this.validate({values: newValues, errors: previous.errors}, false);
+      const validated = handler.validate({values: newValues, errors: previous.errors}, false);
       return validated;
     });
   }
 
   dataState(): DataState {
-    const states = Array.from(this.inputs.keys(), key => {
-      if (key === SYNTHETIC_INPUT_KEY) { return DataState.Ready; }
-      return this.inputs.get(key).dataState();
+    let result = DataState.Ready;
+    for (const key of this.valueKeys) {
+      const refs = this.inputs.get(key);
+      if (!refs) {
+        result = mergeDataState(result, DataState.Loading);
+        continue;
+      }
+      for (const ref of refs) {
+        if (ref) {
+          result = mergeDataState(result, ref.dataState());
+        }
+      }
+    }
+    return result;
+  }
+
+  static makeHandler(
+    props: MultipleValuesHandlerProps<CardinalitySupportProps>
+  ): CardinalitySupportHandler {
+    return new CardinalitySupportHandler(props);
+  }
+}
+
+function renderChildInputs(this: void,
+  inputProps: CardinalitySupportProps,
+  inputHandler: CardinalitySupportHandler,
+  value: FieldValue,
+  key: string,
+  updateValue: (reducer: (value: FieldValue) => FieldValue) => void,
+  onInputMount: (key: string, inputIndex: number, input: ChildInput | null) => void
+) {
+  let nextIndex = 0;
+  function mapChildren(this: void, children: ReactNode) {
+    return universalChildren(Children.map(children, child => {
+      if (isValidChild(child)) {
+        const element = child as ReactElement<any>;
+        if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
+          const inputIndex = nextIndex;
+          nextIndex++;
+
+          if (inputIndex > inputHandler.handlers.length) {
+            throw new Error(
+              `Missing handler for cardinality field ${inputProps.for} at index ${inputIndex}`
+            );
+          }
+          const handler = inputHandler.handlers[inputIndex];
+
+          const props: SingleValueInputProps & ClassAttributes<ChildInput> = {
+            for: inputProps.for,
+            handler,
+            definition: inputProps.definition,
+            dataState: inputProps.dataState,
+            value: value,
+            updateValue,
+            ref: input => onInputMount(key, inputIndex, input),
+          };
+          return cloneElement(element, props);
+        } else if (element.props.children) {
+          return cloneElement(element, {}, mapChildren(element.props.children));
+        }
+      }
+      return child;
+    }));
+  }
+  return mapChildren(inputProps.children);
+}
+
+class CardinalitySupportHandler implements MultipleValuesHandler {
+  readonly definition: FieldDefinition;
+  readonly handlers: ReadonlyArray<SingleValueHandler>;
+
+  constructor(props: MultipleValuesHandlerProps<CardinalitySupportProps>) {
+    this.definition = props.definition;
+    this.handlers = findInputs(props.baseInputProps.children).map(input => {
+      return SingleValueInput.getHandlerOrDefault(input.type as any, {
+        definition: this.definition,
+        baseInputProps: input.props,
+      });
     });
-    return (
-      states.some(s => s === DataState.Loading) ? DataState.Loading :
-      states.some(s => s === DataState.Verifying) ? DataState.Verifying :
-      DataState.Ready
-    );
   }
 
   /**
@@ -256,34 +295,65 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
     if (FieldValue.isEmpty(value)) { return value; }
     const cleanValue = FieldValue.setErrors(value, FieldError.noErrors);
     // combine errors from every child input
-    return this.getAnyInput().validate(cleanValue);
+    let validated: FieldValue = cleanValue;
+    for (const handler of this.handlers) {
+      validated = handler.validate(validated);
+    }
+    return validated;
   }
 
   private validateCardinality(values: Immutable.List<FieldValue>): Immutable.List<FieldError> {
-    const anyInput = this.getAnyInput();
-    const compositeInput = anyInput instanceof CompositeInput ? anyInput : undefined;
-    const preparedValues = compositeInput ? values.map(v => {
-      // finalize subject to distinguish composites
-      return FieldValue.isComposite(v) ? compositeInput.finalizeSubject(FieldValue.empty, v) : v;
-    }) : values;
-    return checkCardinalityAndDuplicates(preparedValues, this.props.definition);
+    let preparedValues = values;
+    for (const handler of this.handlers) {
+      if (handler.finalizeSubject) {
+        preparedValues = values.map(v => {
+          // finalize subject to distinguish composites
+          return FieldValue.isComposite(v) ? handler.finalizeSubject(FieldValue.empty, v) : v;
+        });
+      }
+    }
+    return checkCardinalityAndDuplicates(preparedValues, this.definition);
   }
 
   finalize(
-    owner: EmptyValue | CompositeValue,
-    values: Immutable.List<FieldValue>
+    values: Immutable.List<FieldValue>,
+    owner: EmptyValue | CompositeValue
   ): Kefir.Property<Immutable.List<FieldValue>> {
-    const anyInput = this.getAnyInput();
-    const properties = values.map(value => anyInput.finalize(owner, value)).toArray();
-
-    if (properties.length > 0) {
-      return Kefir.zip(properties)
-        .map(properties => Immutable.List(properties))
-        .toProperty();
-    } else {
-      return Kefir.constant(Immutable.List<FieldValue>());
+    let finalizing = Kefir.constant(values);
+    for (const handler of this.handlers) {
+      finalizing = finalizing.flatMap(intermediates => {
+        const tasks = intermediates.map(value => handler.finalize(value, owner)).toArray();
+        if (tasks.length > 0) {
+          return Kefir.zip(tasks)
+            .map(properties => Immutable.List(properties))
+            .toProperty();
+        } else {
+          return Kefir.constant(Immutable.List<FieldValue>());
+        }
+      }).toProperty();
     }
+    return finalizing;
   }
+}
+
+function findInputs(inputChildren: ReactNode): ReactElement<SingleValueInputProps>[] {
+  const foundInputs: ReactElement<SingleValueInputProps>[] = [];
+
+  function collectInputs(children: ReactNode) {
+    Children.forEach(children, child => {
+      if (isValidChild(child)) {
+        const element = child as ReactElement<any>;
+        if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
+          foundInputs.push(element);
+        } else if (element.props.children) {
+          collectInputs(element.props.children);
+        }
+      }
+    });
+  }
+
+  collectInputs(inputChildren);
+  return foundInputs;
 }
 
 function isInputGroup(children: ReactNode) {
@@ -300,12 +370,6 @@ function isInputGroup(children: ReactNode) {
     || !componentHasType(child, SingleValueInput as any);
 }
 
-function getFirst<T>(items: IterableIterator<T>): T {
-  const entry = items.next();
-  if (entry.done) {
-    throw new Error('Cannot get a first entry of an empty IterableIterator');
-  }
-  return entry.value;
-}
+MultipleValuesInput.assertStatic(CardinalitySupport);
 
 export default CardinalitySupport;

@@ -192,7 +192,10 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
 
 
   private FIELDS_QUERY = SparqlUtil.Sparql`
-    SELECT ?field { ?field <http://www.metaphacts.com/ontology/fields#domain> ?__type__ }
+    SELECT ?field {
+    ?field <http://www.metaphacts.com/ontology/fields#domain> ?__type__ .
+    <http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains> ?field .
+    }
   ` as SparqlJs.SelectQuery;
   private getFieldsForRecord =
     (record: Rdf.Iri, types: Array<Rdf.Iri>): Kefir.Property<Array<ArgumentsFieldDefinition>> => {

@@ -38,23 +38,30 @@ interface AutocompleteProps extends HTMLAttributes<HTMLElement> {
 
 const DATATYPE = Rdf.iri('http://www.w3.org/2001/XMLSchema-datatypes#string');
 
-const BASIC_PROPS: AutocompleteInputProps = {
-  definition: normalizeFieldDefinition({
-    id: 'nameProp',
-    label: 'labelProp',
-    xsdDatatype: DATATYPE,
-    minOccurs: 1,
-    maxOccurs: 1,
-    valueSetPattern: '',
-  }),
-  for: 'date',
+const definition = normalizeFieldDefinition({
+  id: 'autocomplete1',
+  label: 'labelProp',
+  xsdDatatype: DATATYPE,
+  minOccurs: 1,
+  maxOccurs: 1,
+  valueSetPattern: '',
+});
+
+const baseInputProps: AutocompleteInputProps = {
+  for: 'autocomplete1',
+};
+
+const completeInputProps: AutocompleteInputProps = {
+  ...baseInputProps,
+  definition,
+  handler: AutocompleteInput.makeHandler({definition, baseInputProps}),
   value: FieldValue.empty,
 };
 
 const AUTOCOMPLETE_SELECTOR = 'AutoCompletionInput';
 
 describe('AutocompleteInput Component', () => {
-  const autocompleteComponent = shallow(createElement(AutocompleteInput, BASIC_PROPS));
+  const autocompleteComponent = shallow(createElement(AutocompleteInput, completeInputProps));
   const autocomplete = autocompleteComponent.find(AUTOCOMPLETE_SELECTOR);
   const fieldProps = autocomplete.props() as AutocompleteProps;
 
@@ -73,7 +80,7 @@ describe('AutocompleteInput Component', () => {
 
   it('call callback when value is changed', () => {
     const callback = sinon.spy();
-    const props: AutocompleteInputProps = {...BASIC_PROPS, updateValue: callback};
+    const props: AutocompleteInputProps = {...completeInputProps, updateValue: callback};
     const wrapper = shallow(createElement(AutocompleteInput, props));
     const inputProps = wrapper.find(AUTOCOMPLETE_SELECTOR).props() as AutocompleteProps;
     inputProps.actions.onSelected();

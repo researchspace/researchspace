@@ -18,9 +18,13 @@
 
 package com.metaphacts.rest;
 
+import java.util.ServiceLoader;
+
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import com.metaphacts.rest.endpoint.AppAdminEndpoint;
@@ -48,6 +52,8 @@ import com.metaphacts.rest.endpoint.URLMinifierEndpoint;
  */
 @ApplicationPath("rest")
 public class RestApplication extends AbstractPlatformApplication {
+
+    private static final Logger logger = LogManager.getLogger(RestApplication.class);
 
     @Inject
     public RestApplication(ServiceLocator serviceLocator) {
@@ -112,6 +118,12 @@ public class RestApplication extends AbstractPlatformApplication {
         register(SystemAdminEndpoint.class);
 
         register(LogAdminEndpoint.class);
+
+        // registration using service loader
+        for (RestEndpoint endpoint : ServiceLoader.load(RestEndpoint.class)) {
+            logger.trace("Loaded rest endpoint {}", endpoint.getClass());
+            register(endpoint.getClass());
+        }
     }
 
 }

@@ -19,18 +19,14 @@
 package com.metaphacts.junit;
 
 import java.util.Collection;
-
-import javax.inject.Inject;
+import java.util.Collections;
+import java.util.function.Supplier;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.config.Ini;
-import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
-import org.apache.shiro.realm.text.IniRealm;
-import org.apache.shiro.util.Factory;
 import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.runners.model.FrameworkMethod;
@@ -40,11 +36,10 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.github.sdorra.shiro.internal.SubjectAwareDescriptor;
 import com.github.sdorra.shiro.internal.SubjectAwares;
+import com.metaphacts.cache.CacheManager;
 import com.metaphacts.config.Configuration;
-import com.metaphacts.security.WildcardPermissionResolver;
-
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.authz.ModularRealmAuthorizer;
+import com.metaphacts.security.MetaphactsSecurityManager;
+import com.metaphacts.security.MetaphactsSecurityTestUtils;
 
 /**
  * Extension of {@link ShiroRule} which uses {@link MetaphactsSecurityManager}
@@ -55,39 +50,38 @@ import org.apache.shiro.authz.ModularRealmAuthorizer;
 public class MetaphactsShiroRule extends ShiroRule {
     
     
-    protected class MetaphactsTestIniSecurityManagerFactory extends IniSecurityManagerFactory {
+    private Supplier<Configuration> configurationSupplier;
 
-        WildcardPermissionResolver permissionResolver = new WildcardPermissionResolver();
+    /**
+     * optional collection of realms
+     */
+    private Supplier<Collection<Realm>> realms;
+    
+    private Supplier<CacheManager> cacheManagerSupplier;
 
-        public MetaphactsTestIniSecurityManagerFactory(String iniResourcePath) {
-            super(iniResourcePath);
-        }
-
-        @Override
-        protected Realm createRealm(Ini ini) {
-            
-            IniRealm realm = new IniRealm();
-            realm.setPermissionResolver(permissionResolver);
-            realm.setName(INI_REALM_NAME);
-            realm.setIni(ini); //added for SHIRO-322
-            return realm;
-        }
-
-        @Override
-        protected SecurityManager createInstance(Ini ini) {
-            // TODO Auto-generated method stub
-            DefaultSecurityManager securityManager = (DefaultSecurityManager)super.createInstance(ini);
-            
-            ModularRealmAuthorizer authorizer = (ModularRealmAuthorizer) securityManager.getAuthorizer();
-            authorizer.setPermissionResolver(permissionResolver);
-            return securityManager;
-        }
-        
-        
-        
+    /**
+     * Note: Realm needs to be provided with {@link SubjectAware} annotation
+     * 
+     * @param configurationSupplier
+     */
+    public MetaphactsShiroRule(Supplier<Configuration> configurationSupplier) {
+        this.configurationSupplier = configurationSupplier;
     }
 
-    public MetaphactsShiroRule() {
+    public MetaphactsShiroRule(String iniResourcePath, Supplier<Configuration> configurationSupplier) {
+        this((Supplier<Collection<Realm>>) (() -> Collections
+                .<Realm>singletonList(MetaphactsSecurityTestUtils.loadRealm(iniResourcePath))),
+                configurationSupplier);
+    }
+
+    public MetaphactsShiroRule(Supplier<Collection<Realm>> realms, Supplier<Configuration> configurationSupplier) {
+        this.realms = realms;
+        this.configurationSupplier = configurationSupplier;
+    }
+    
+    public MetaphactsShiroRule withCacheManager(Supplier<CacheManager> cacheManagerSupplier) {
+        this.cacheManagerSupplier = cacheManagerSupplier;
+        return this;
     }
 
     @Override
@@ -111,9 +105,7 @@ public class MetaphactsShiroRule extends ShiroRule {
 
             @Override
             public void evaluate() throws Throwable {
-                if (desc.isMerged()) {
-                    initializeSecurityManager(desc);
-                }
+                before(desc);
 
                 try {
                     base.evaluate();
@@ -124,21 +116,43 @@ public class MetaphactsShiroRule extends ShiroRule {
         };
     }
 
-    /**
-     * Method description
-     *
-     *
-     * @param subjectAware
-     */
-    private void initializeSecurityManager(SubjectAwareDescriptor subjectAware) {
-        String cfg = subjectAware.getConfiguration();
+    protected void before(SubjectAwareDescriptor descriptor) {
+        initializeSecurityManager(descriptor);
+        loginSubject(descriptor);
+    }
 
-        if (cfg.length() > 0) {
-            Factory<SecurityManager> factory = new MetaphactsTestIniSecurityManagerFactory(cfg);
-            SecurityManager securityManager = factory.getInstance();
-            SecurityUtils.setSecurityManager(securityManager);
+
+    private void initializeSecurityManager(SubjectAwareDescriptor subjectAware) {
+
+        SecurityManager securityManager = null;
+
+        // if realms are set explicitly use these
+        if (realms != null) {
+            securityManager = MetaphactsSecurityTestUtils.createInstance(realms.get(),
+                    configurationSupplier.get(), cacheManagerSupplier.get());
         }
 
+        if (subjectAware.isMerged()) {
+            String cfg = subjectAware.getConfiguration();
+            if (securityManager != null && cfg.length() > 0) {
+                throw new IllegalStateException(
+                        "Either realms or the SubjectAware annotation can provide the realm configuration.");
+            }
+    
+            if (cfg.length() > 0) {
+                securityManager = MetaphactsSecurityTestUtils.createInstance(cfg,
+                        configurationSupplier.get(), cacheManagerSupplier.get());
+            }
+        }
+
+        if (securityManager == null) {
+            throw new IllegalStateException("Security manager has not been initialized");
+        }
+
+        SecurityUtils.setSecurityManager(securityManager);
+    }
+
+    private void loginSubject(SubjectAwareDescriptor subjectAware) {
         String username = subjectAware.getUsername();
 
         if ((username != null) && (username.length() > 0)) {

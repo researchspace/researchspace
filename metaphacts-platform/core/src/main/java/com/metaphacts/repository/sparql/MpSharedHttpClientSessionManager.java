@@ -21,6 +21,7 @@ package com.metaphacts.repository.sparql;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.eclipse.rdf4j.http.client.SharedHttpClientSessionManager;
@@ -50,6 +51,8 @@ public class MpSharedHttpClientSessionManager extends SharedHttpClientSessionMan
             configBuilder = configBuilder.setConnectTimeout(connectionTimeout * 1000);
             configBuilder = configBuilder.setSocketTimeout(connectionTimeout * 1000);
         }
+        configBuilder.setCookieSpec(CookieSpecs.STANDARD);
+
         RequestConfig requestConfig = configBuilder.build();
         HttpClientBuilder mpHttpClientBuilder = HttpClientBuilder
                                                     .create()

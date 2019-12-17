@@ -16,7 +16,6 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
 
 import { Component } from 'platform/api/components';
@@ -24,19 +23,41 @@ import { Rdf, vocabularies, XsdDataTypeValidation } from 'platform/api/rdf';
 
 import { FieldDefinition } from '../FieldDefinition';
 import {
-  FieldValue, AtomicValue, CompositeValue, SparqlBindingValue, LabeledValue,
+  FieldValue, AtomicValue, CompositeValue, LabeledValue,
   EmptyValue, DataState, FieldError, ErrorKind,
 } from '../FieldValues';
 
 export interface SingleValueInputProps {
   /** Key to associate with FieldDefinition by name */
   for?: string;
+  handler?: SingleValueHandler;
   definition?: FieldDefinition;
   dataState?: DataState;
   value?: FieldValue;
   updateValue?: (reducer: (value: FieldValue) => FieldValue) => void;
   /** @see MultipleValuesProps.renderHeader */
   renderHeader?: boolean;
+}
+
+export interface SingleValueHandler {
+  validate(value: FieldValue): FieldValue;
+  finalize(
+    value: FieldValue,
+    owner: EmptyValue | CompositeValue
+  ): Kefir.Property<FieldValue>;
+  finalizeSubject?(
+    value: FieldValue,
+    owner: EmptyValue | CompositeValue
+  ): CompositeValue;
+}
+
+export interface SingleValueHandlerProps<InputProps> {
+  definition: FieldDefinition | undefined;
+  baseInputProps: InputProps;
+}
+
+interface SingleValueInputStatic {
+  makeHandler(props: SingleValueHandlerProps<any>): SingleValueHandler;
 }
 
 export abstract class SingleValueInput<P extends SingleValueInputProps, S> extends Component<P, S> {
@@ -48,17 +69,26 @@ export abstract class SingleValueInput<P extends SingleValueInputProps, S> exten
     return DataState.Ready;
   }
 
-  validate(selected: FieldValue): FieldValue {
-    return selected;
-  }
-
-  finalize(owner: EmptyValue | CompositeValue, value: FieldValue): Kefir.Property<FieldValue> {
-    return Kefir.constant(value);
-  }
-
   protected canEdit() {
     const dataState = this.props.dataState;
     return dataState === DataState.Ready || dataState === DataState.Verifying;
+  }
+
+  static readonly defaultHandler: SingleValueHandler = {
+    validate: value => value,
+    finalize: (value, owner) => Kefir.constant(value),
+  };
+
+  static assertStatic(constructor: SingleValueInputStatic) { /* nothing */ }
+
+  static getHandlerOrDefault(
+    componentType: Partial<SingleValueInputStatic>,
+    handlerProps: SingleValueHandlerProps<any>
+  ): SingleValueHandler {
+    if (!(componentType && componentType.makeHandler)) {
+      return SingleValueInput.defaultHandler;
+    }
+    return componentType.makeHandler(handlerProps);
   }
 }
 
@@ -69,24 +99,35 @@ export interface AtomicValueInputProps extends SingleValueInputProps {
 export class AtomicValueInput<P extends AtomicValueInputProps, S> extends SingleValueInput<P, S> {
   constructor(props: P, context: any) {
     super(props, context);
-    this.assertAtomicOrEmpty(props.value);
+    AtomicValueHandler.assertAtomicOrEmpty(props.value);
   }
 
   componentWillReceiveProps(props: P) {
-    this.assertAtomicOrEmpty(props.value);
+    AtomicValueHandler.assertAtomicOrEmpty(props.value);
   }
 
   protected setAndValidate(value: FieldValue) {
-    this.props.updateValue(() => this.validate(value));
+    this.props.updateValue(() => this.props.handler.validate(value));
+  }
+
+  static makeAtomicHandler(props: SingleValueHandlerProps<AtomicValueInputProps>) {
+    return new AtomicValueHandler(props);
+  }
+}
+
+export class AtomicValueHandler implements SingleValueHandler {
+  private definition: FieldDefinition;
+
+  constructor(props: SingleValueHandlerProps<AtomicValueInputProps>) {
+    this.definition = props.definition;
   }
 
   validate(selected: EmptyValue): EmptyValue;
   validate(selected: FieldValue): AtomicValue;
   validate(selected: FieldValue): AtomicValue | EmptyValue {
-    const atomic = this.assertAtomicOrEmpty(selected);
+    const atomic = AtomicValueHandler.assertAtomicOrEmpty(selected);
     if (FieldValue.isEmpty(atomic)) { return atomic; }
-    const newValue = validateType(atomic, this.props.definition.xsdDatatype);
-
+    const newValue = validateType(atomic, this.definition.xsdDatatype);
     return AtomicValue.set(newValue, {
       // preserve non-validation errors
       errors: atomic.errors
@@ -96,12 +137,16 @@ export class AtomicValueInput<P extends AtomicValueInputProps, S> extends Single
     });
   }
 
-  assertAtomicOrEmpty(value: FieldValue): AtomicValue | EmptyValue {
+  static assertAtomicOrEmpty(value: FieldValue): AtomicValue | EmptyValue {
     if (FieldValue.isEmpty(value) || FieldValue.isAtomic(value)) {
       return value;
     } else {
       throw new Error('Expected atomic or empty value');
     }
+  }
+
+  finalize(value: FieldValue, owner: EmptyValue | CompositeValue) {
+    return SingleValueInput.defaultHandler.finalize(value, owner);
   }
 }
 

@@ -67,7 +67,32 @@
       </div>
     </div>
 
+		
+    <h3>Sorting and Filtering</h3>
 
+		<div class="documentation__example">
+      <div class="documentation__example__description">
+				Typically searching and filtering applies to the displayed data, i.e. the labels for resources or the literal values. 
+When specifying a <code>column-configuration</code> with a custom <code>cellTemplate</code>, sorting and filtering does not apply to the content shown using the cell template. Instead, a <code>variableName</code> can be specified for a column (in addition to the cell template), in which case the variable's content is used for sorting and filtering.
+			</div>
+      <div class="documentation__example__demo" id='demo3'>
+              <mp-code-example>
+<![CDATA[
+<semantic-table 
+  query="[[>Help:SemanticTableSampleQuery]]"
+  column-configuration='[
+  	{"variableName": "s",
+    "displayName": "Subject",
+    "cellTemplate": "<div><i class=\"fa fa-user\" style=\"margin-right: 5px\"></i><semantic-link iri={{s.value}} /></div>" 
+    }
+  ]'
+></semantic-table>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+      
+      
     <h3> Disabling Filter and Custom Pagination </h3>
 
     <div class="documentation__example">
@@ -118,5 +143,35 @@
         </mp-code-example>
       </div>
     </div>
+    
+    
+        <h3>Numerical sorting</h3>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        The table supports built-in numerical sorting using XML schema information, i.e. literals with data type <code>xsd:Number</code> and specialized types (integer, float, double, ...).
+      </div>
+      <div class="documentation__example__demo" id='demo4'>
+        <mp-code-example>
+<![CDATA[
+<semantic-table
+    query="
+      prefix person: <http://example.com/person/> 
+      prefix foaf: <http://xmlns.com/foaf/0.1/>
+      SELECT ?person ?age WHERE {                    
+        VALUES (?person ?prop ?age) { 
+          (person:alice foaf:age 35)
+          (person:lisa foaf:age 1)
+          (person:martin foaf:age 26)
+          (person:max foaf:age 17)
+        }
+      }"
+></semantic-table>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+    
+    
   </div>
 </div>

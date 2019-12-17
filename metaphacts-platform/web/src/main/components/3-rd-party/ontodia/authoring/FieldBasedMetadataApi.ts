@@ -23,22 +23,42 @@ import {
   LinkModel, ElementIri, LinkDirection,
 } from 'ontodia';
 
+import { Rdf } from 'platform/api/rdf';
 import { xsd } from 'platform/api/rdf/vocabularies';
-import { FieldDefinition } from 'platform/components/forms';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
-import { getEntityMetadata } from './AuthoringPersistence';
-import { EntityMetadata } from './OntodiaEntityMetadata';
-import {SparqlClient} from 'platform/api/sparql';
-import { iri, Iri, Node } from 'platform/api/rdf/core/Rdf';
-import {Dictionary, select} from 'platform/api/sparql/SparqlClient';
-import {parseQuerySync} from 'platform/api/sparql/SparqlUtil';
+import { FieldDefinition, generateSubjectByTemplate } from 'platform/components/forms';
+
+import { EntityMetadata, isObjectProperty } from './OntodiaEntityMetadata';
+import { getEntityMetadata } from './OntodiaPersistenceCommon';
 
 export class FieldBasedMetadataApi implements MetadataApi {
 
   constructor(
-    fields: ReadonlyArray<FieldDefinition>,
     private entityMetadata: Map<string, EntityMetadata>
-  ) {
+  ) {}
+
+  generateNewElementIri(types: ElementTypeIri[]): Promise<ElementIri> {
+    let subjectTemplate: string = undefined;
+    if (types && types.length !== 0) {
+      const typeIri = types[0];
+      const metadata = this.entityMetadata.get(typeIri);
+      if (metadata) {
+        subjectTemplate = metadata.newSubjectTemplate;
+      }
+    }
+
+    let newIri: ElementIri;
+    const uuid = () => Math.floor((1 + Math.random()) * 0x100000000).toString(16).substring(1);
+    if (subjectTemplate) {
+      const filledTemplate = generateSubjectByTemplate(subjectTemplate, undefined, undefined).value;
+      const postfix = subjectTemplate.toLocaleLowerCase().indexOf('{{uuid}}') === -1 ? uuid() : '';
+      newIri = `${filledTemplate}${postfix}` as ElementIri;
+    } else {
+      newIri = `NewEntity-${uuid()}` as ElementIri;
+    }
+
+    return Promise.resolve(newIri);
   }
 
   canDropOnCanvas(source: ElementModel, ct: CancellationToken): Promise<boolean> {
@@ -56,11 +76,27 @@ export class FieldBasedMetadataApi implements MetadataApi {
   possibleLinkTypes(
     source: ElementModel, target: ElementModel, ct: CancellationToken
   ): Promise<Array<{ linkTypeIri: LinkTypeIri, direction: LinkDirection }>> {
+
+    return Promise.all([
+      this.getPossibleLinkTypes(source, target, ct),
+      this.getPossibleLinkTypes(target, source, ct),
+    ]).then(([outgoingPossibleLinks, incomingPossibleLinks]) => {
+      return outgoingPossibleLinks.map(linkTypeIri => ({
+        linkTypeIri, direction: LinkDirection.out,
+      })).concat(incomingPossibleLinks.map(linkTypeIri => ({
+        linkTypeIri, direction: LinkDirection.in,
+      })));
+    });
+  }
+
+  private getPossibleLinkTypes(
+    source: ElementModel, target: ElementModel, ct: CancellationToken
+  ): Promise<LinkTypeIri[]> {
     return Promise.resolve().then(() => {
       const metadata = getEntityMetadata(source, this.entityMetadata);
       if (!metadata) { return Promise.resolve([]); }
       const queryStr = `
-      select distinct ?field ?direction where {
+      select distinct ?field where {
         {
           ?sourceType rdfs:subClassOf* ?domain.
           FILTER (BOUND(?domain))
@@ -69,21 +105,50 @@ export class FieldBasedMetadataApi implements MetadataApi {
           ?targetType rdfs:subClassOf* ?range.
           FILTER (BOUND(?range))
         }
-        BIND("out" as ?direction)
       }`;
 
-      let query: SparqlJs.SelectQuery = parseQuerySync<SparqlJs.SelectQuery>(queryStr);
+      let query: SparqlJs.SelectQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(queryStr);
 
-      query = addResourceFieldValues(metadata.fieldByIri, query);
+      query = addResourceFieldValues(metadata, query);
       query = addSourceTypesValues(query, source.types);
       query = addTargetTypesValues(query, target.types);
 
-      return select(query).map(res =>
-        res.results.bindings.map(row => ({
-          linkTypeIri: row.field.value as LinkTypeIri,
-          direction: row.direction.value as LinkDirection,
-        }))
+      return SparqlClient.select(query).map(res =>
+        res.results.bindings.map(row => row.field.value as LinkTypeIri)
       ).toPromise();
+    });
+  }
+
+  getPossibleIncomingFields(
+    subject: ElementModel, ct: CancellationToken
+  ): Promise<FieldDefinition[]> {
+    return Promise.resolve().then(() => {
+      const queryStr = `
+        SELECT DISTINCT ?type WHERE {
+            ?type rdfs:subClassOf* ?range.
+            VALUES (?range) {
+              ${subject.types.map(type => `(<${type}>)`).join(' ')}
+            }
+        }`;
+
+      const query: SparqlJs.SelectQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(queryStr);
+
+      return SparqlClient.select(query).map(res =>
+        res.results.bindings.map(row => row.type.value as ElementTypeIri)
+      ).map(targetTypes => {
+        const incomingFields: FieldDefinition[] = [];
+        this.entityMetadata.forEach(metadata => {
+          metadata.fieldById.forEach(field => {
+            for (const range of field.range) {
+              if (targetTypes.indexOf(range.value as ElementTypeIri) !== -1) {
+                incomingFields.push(field);
+                break;
+              }
+            }
+          });
+        });
+        return incomingFields;
+      }).toPromise();
     });
   }
 
@@ -94,22 +159,27 @@ export class FieldBasedMetadataApi implements MetadataApi {
       const metadata = getEntityMetadata(source, this.entityMetadata);
       if (!metadata) { return Promise.resolve([]); }
       const queryStr = `
-      select distinct ?creatableType ?field where {
-        FILTER (BOUND(?range))
-        ?creatableType rdfs:subClassOf* ?range .
-      }`;
+      select distinct ?creatableType where {
+        {
+          FILTER (BOUND(?range))
+          ?creatableType rdfs:subClassOf* ?range .
+        } UNION {
+          FILTER (BOUND(?domain))
+          ?creatableType rdfs:subClassOf* ?domain .
+        }
+      } group by ?creatableType`;
 
-      let query: SparqlJs.SelectQuery = parseQuerySync<SparqlJs.SelectQuery>(queryStr);
+      let query: SparqlJs.SelectQuery = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(queryStr);
 
-      query = addResourceFieldValues(metadata.fieldByIri, query);
+      query = addResourceFieldValues(metadata, query);
       query = addSourceTypesValues(query, source.types);
       const creatableTypes = Array.from(this.entityMetadata.keys());
 
       query = SparqlClient.prepareParsedQuery(
-        creatableTypes.map(type => ({'creatableType': iri(type)}))
+        creatableTypes.map(type => ({'creatableType': Rdf.iri(type)}))
       )(query) as SparqlJs.SelectQuery;
 
-      return select(query).map(res =>
+      return SparqlClient.select(query).map(res =>
         res.results.bindings.map(row => row.creatableType.value as ElementTypeIri)
       ).toPromise();
     });
@@ -160,41 +230,32 @@ export class FieldBasedMetadataApi implements MetadataApi {
     const metadata = getEntityMetadata(source, this.entityMetadata);
     return Promise.resolve(Boolean(metadata) && metadata.fieldByIri.has(link.linkTypeId));
   }
-
-  async generateNewElementIri() {
-    function random32BitDigits() {
-      return Math.floor((1 + Math.random()) * 0x100000000).toString(16).substring(1);
-    }
-    // generate by half because of restricted numerical precision
-    const uuid = random32BitDigits() + random32BitDigits() + random32BitDigits() + random32BitDigits();
-    return `http://ontodia.org/newEntity_${uuid}` as ElementIri;
-  }
 }
 
 function addResourceFieldValues(
-  fields: Immutable.Map<string, FieldDefinition>,
+  metadata: EntityMetadata,
   query: SparqlJs.SelectQuery
 ) {
-  const fieldValues: Dictionary<Node>[] = [];
-  fields
-    .filter(field => xsd.anyURI.equals(field.xsdDatatype))
+  const fieldValues: Array<{ [varName: string]: Rdf.Node }> = [];
+  metadata.fieldByIri
+    .filter(field => isObjectProperty(field, metadata))
     .forEach(field => {
       if (isNotNullOrEmpty(field.domain)) {
         field.domain.forEach( d => {
           if (isNotNullOrEmpty(field.range)) {
             field.range.forEach(  r => {
-              fieldValues.push({ field: iri(field.iri), domain: d, range: r });
+              fieldValues.push({ field: Rdf.iri(field.iri), domain: d, range: r });
             });
           } else {
-            fieldValues.push({ field: iri(field.iri), domain: d});
+            fieldValues.push({ field: Rdf.iri(field.iri), domain: d});
           }
         });
       } else if (isNotNullOrEmpty(field.range)) {
         field.range.forEach(  r => {
-          fieldValues.push({ field: iri(field.iri), range: r });
+          fieldValues.push({ field: Rdf.iri(field.iri), range: r });
         });
       } else {
-        fieldValues.push({field: iri(field.iri)});
+        fieldValues.push({field: Rdf.iri(field.iri)});
       }
   });
   const queryWithFields = SparqlClient.prepareParsedQuery(fieldValues)(query);
@@ -203,16 +264,16 @@ function addResourceFieldValues(
 
 function addSourceTypesValues(query: SparqlJs.SelectQuery, types: ElementTypeIri[]) {
   return SparqlClient.prepareParsedQuery(
-    types.map(type => ({'sourceType': iri(type)}))
+    types.map(type => ({'sourceType': Rdf.iri(type)}))
   )(query) as SparqlJs.SelectQuery as SparqlJs.SelectQuery;
 }
 
 function addTargetTypesValues(query: SparqlJs.SelectQuery, types: ElementTypeIri[]) {
   return SparqlClient.prepareParsedQuery(
-    types.map(type => ({'targetType': iri(type)}))
+    types.map(type => ({'targetType': Rdf.iri(type)}))
   )(query) as SparqlJs.SelectQuery;
 }
 
-function isNotNullOrEmpty (a: ReadonlyArray<Iri>) {
+function isNotNullOrEmpty(a: ReadonlyArray<Rdf.Iri>) {
   return a && a.length > 0;
 }

@@ -18,5 +18,6 @@
 
 export { SemanticTable, SemanticTableProps, SemanticTableConfig } from './SemanticTable';
 export {
-  Table, TableProps, TableConfig, TableLayout, TableColumnConfiguration, CellRendererProps
+  Table, TableProps, TableConfig, TableLayout, CellRendererProps,
+  ColumnConfiguration, TableColumnConfiguration,
 } from './Table';

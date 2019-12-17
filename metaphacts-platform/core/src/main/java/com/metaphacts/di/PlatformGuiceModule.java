@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.inject.Injector;
 import com.google.inject.servlet.ServletModule;
+import com.metaphacts.secrets.SecretResolver;
 import com.metaphacts.services.storage.api.PlatformStorage;
 import com.metaphacts.servlet.MProxyServlet;
 import com.metaphacts.servlet.ProxyConfigs;
@@ -70,7 +71,8 @@ public class PlatformGuiceModule extends ServletModule {
         serve("/sparql").with(SparqlServlet.class);
 
         PlatformStorage platformStorage = coreInjector.getProvider(PlatformStorage.class).get();
-        Map<String, Map<String, String>> proxies = ProxyConfigs.getConfigs(platformStorage);
+        SecretResolver secretResolver = coreInjector.getProvider(SecretResolver.class).get();
+        Map<String, Map<String, String>> proxies = ProxyConfigs.getConfigs(platformStorage, secretResolver);
 
         for (Entry<String, Map<String, String>> proxy : proxies.entrySet()) {
             logger.info("Registering proxy {}", proxy.getKey());

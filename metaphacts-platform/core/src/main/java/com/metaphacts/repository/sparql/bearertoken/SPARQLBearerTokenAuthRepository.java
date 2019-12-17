@@ -20,16 +20,27 @@ package com.metaphacts.repository.sparql.bearertoken;
 
 import java.util.Map;
 
-import com.metaphacts.repository.sparql.MpSPARQLProtocolSession;
 import org.eclipse.rdf4j.http.client.SPARQLProtocolSession;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.metaphacts.repository.sparql.MpSPARQLProtocolSession;
+import com.metaphacts.secrets.SecretsHelper;
+import com.metaphacts.secrets.SecretResolver;
 
 /**
  * Implementation of a {@link SPARQLRepository} that requires a bearer token authentication.
  * The token is provided in the repository config file by means of the 
  * &lt;<http://www.metaphacts.com/ontologies/platform/repository#authenticationToken&gt; property.
+ * 
+ * <p>
+ * The following configuration values are subject to secret resolution (see {@link SecretResolver} for details):
+ * <ul>
+ * <li>authenticationToken</li>
+ * </ul>
+ * </p>
  * 
  * @author Andriy Nikolov <an@metaphacts.com>
  *
@@ -37,6 +48,8 @@ import com.google.common.collect.Maps;
 public class SPARQLBearerTokenAuthRepository extends SPARQLRepository {
 
     protected String authenticationToken;
+    @Inject(optional=true)
+    protected SecretResolver secretResolver;
 
     public SPARQLBearerTokenAuthRepository(String queryEndpointUrl, String updateEndpointUrl) {
         super(queryEndpointUrl, updateEndpointUrl);
@@ -52,6 +65,14 @@ public class SPARQLBearerTokenAuthRepository extends SPARQLRepository {
 
     public void setAuthenticationToken(String authenticationToken) {
         this.authenticationToken = authenticationToken;
+    }
+    
+    @Override
+    protected void initializeInternal() throws RepositoryException {
+        // replace token with resolved secret (if applicable)
+        setAuthenticationToken(SecretsHelper.resolveSecretOrFallback(secretResolver, getAuthenticationToken()));
+        
+        super.initializeInternal();
     }
 
     @Override

@@ -1,0 +1,44 @@
+rootProject.name = 'platform-externals'
+
+// define sub-projects
+def subProjects = []
+
+subProjects.each { include it }
+
+// dynamically discovered app modules
+for (appParentDir in findAppParentDirs()) {
+	println appParentDir
+	appParentDir.eachFile() { app ->
+		if (isAppDir(app)) {
+			include toFullProjectName(appParentDir, app.name)
+		}
+	}
+}
+
+
+def findAppParentDirs() {
+	def appParentDirs = [];
+	file('.').eachFile() { module ->
+		// check if the module has an apps folder
+		if (new File(module, "build.sbt").isFile() 	// for now check on existence of sbt definition
+				&& new File(module, "apps").isDirectory()) {
+			appParentDirs << new File(module, "apps");
+		}
+	}
+	return appParentDirs;
+}
+
+def isAppDir(File dir) {
+	if (!dir.isDirectory()) {
+		return false;
+	}
+	if (!(new File(dir, 'plugin.properties').isFile())) {
+		return false;
+	}
+	return true;
+}
+
+def toFullProjectName(File parentFolder, String projectName) {
+	String relPath = rootProject.projectDir.toPath().relativize(parentFolder.toPath()).toString();
+	relPath.replace('/', ':').replace('\\', ':') + ':' + projectName
+}

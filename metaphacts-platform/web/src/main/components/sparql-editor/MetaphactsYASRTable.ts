@@ -26,7 +26,7 @@ import * as classnames from 'classnames';
 import ReactSelect, { Option } from 'react-select';
 
 import { SparqlClient } from 'platform/api/sparql';
-import { Table } from 'platform/components/semantic/table';
+import { Table, TableLayout } from 'platform/components/semantic/table';
 
 interface YasrObject {
   results: {
@@ -69,24 +69,26 @@ function table(jsonResult) {
 
     render () {
       const {resultsPerPage} = this.state;
+      const prefetchAndShowLabels = Boolean(this.state.showLabels);
       const table = createElement(Table, {
         key: 'sparql-endpoint-result-table',
         data: Either.Right<any[], SparqlClient.SparqlSelectResult>(
            <SparqlClient.SparqlSelectResult> SparqlClient.sparqlJsonToSelectResult(jsonResult)
         ),
         numberOfDisplayedRows: maybe.Nothing<number>(),
-        layout: maybe.Just<{}>(
+        layout: maybe.Just<TableLayout>(
           {
             options: {resultsPerPage},
             tupleTemplate: maybe.Nothing<string>(),
-            showLabels: this.state.showLabels,
+            showLabels: prefetchAndShowLabels,
+            prefetchLabels: prefetchAndShowLabels,
           }
         ),
         showLiteralDatatype: true,
         showCopyToClipboardButton: true,
       });
-      const buttonLabel = this.state.showLabels ? 'Fetch Labels: ON' : 'Fetch Labels: OFF';
-      const className = this.state.showLabels ? 'btn-success' : 'btn-danger';
+      const buttonLabel = prefetchAndShowLabels ? 'Fetch Labels: ON' : 'Fetch Labels: OFF';
+      const className = prefetchAndShowLabels ? 'btn-success' : 'btn-danger';
       return D.div({},
           D.button({
               key: 'sparql-endpoint-label-toogle-button',

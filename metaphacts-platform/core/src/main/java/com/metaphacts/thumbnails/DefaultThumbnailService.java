@@ -18,19 +18,6 @@
 
 package com.metaphacts.thumbnails;
 
-import com.google.common.collect.Iterables;
-import com.metaphacts.cache.CacheManager;
-import com.metaphacts.config.PropertyPattern;
-import com.metaphacts.cache.ResourcePropertyCache;
-import com.metaphacts.config.Configuration;
-import com.metaphacts.config.NamespaceRegistry;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.repository.Repository;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,20 +25,44 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.repository.Repository;
+
+import com.google.common.collect.Iterables;
+import com.metaphacts.cache.CacheManager;
+import com.metaphacts.cache.ResourcePropertyCache;
+import com.metaphacts.config.Configuration;
+import com.metaphacts.config.NamespaceRegistry;
+import com.metaphacts.config.PropertyPattern;
+
 /**
  * @author Alexey Morozov
  */
 @Singleton
 public class DefaultThumbnailService implements ThumbnailService {
+    
+    public static final String DEFAULT_THUMBNAIL_SERVICE_CACHE_ID = "repository.DefaultThumbnailService";
+
     private Configuration config;
     private NamespaceRegistry namespaceRegistry;
+    private final CacheManager cacheManager;
 
-    private ResourcePropertyCache<IRI, Value> cache = new ResourcePropertyCache<IRI, Value>("DefaultThumbnailService") {
+    private ResourcePropertyCache<IRI, Value> cache = new ResourcePropertyCache<IRI, Value>(
+            DEFAULT_THUMBNAIL_SERVICE_CACHE_ID) {
         @Override
         protected IRI keyToIri(IRI iri) {
             return iri;
         }
 
+        @Override
+        protected java.util.Optional<CacheManager> cacheManager() {
+            return Optional.of(cacheManager);
+        };
+        
         @Override
         protected Map<IRI, Optional<Value>> queryAll(Repository repository, Iterable<? extends IRI> iris) {
             if (Iterables.isEmpty(iris)) {
@@ -100,6 +111,7 @@ public class DefaultThumbnailService implements ThumbnailService {
         this.config = config;
         this.namespaceRegistry = namespaceRegistry;
         thumbnailServiceRegistry.register(this);
+        this.cacheManager = cacheManager;
         cacheManager.register(cache);
     }
 

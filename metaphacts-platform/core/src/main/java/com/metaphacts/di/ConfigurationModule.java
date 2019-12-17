@@ -22,6 +22,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.metaphacts.plugin.PlatformPluginManager;
 import com.metaphacts.sail.rest.sql.MpJDBCDriverManager;
+import com.metaphacts.secrets.DefaultSecretsStore;
+import com.metaphacts.secrets.SecretResolver;
+import com.metaphacts.secrets.SecretsStore;
 import com.metaphacts.services.storage.MainPlatformStorage;
 import com.metaphacts.services.storage.api.PlatformStorage;
 import com.metaphacts.services.storage.api.StorageRegistry;
@@ -43,5 +46,7 @@ public class ConfigurationModule extends AbstractModule {
         bind(MpJDBCDriverManager.class).in(Singleton.class);
         bind(PlatformPluginManager.Starter.class).asEagerSingleton();
         bind(NamespaceRegistry.class).in(Singleton.class);
+        bind(SecretsStore.class).to(DefaultSecretsStore.class).in(Singleton.class);
+        bind(SecretResolver.class).to(SecretsStore.class).in(Singleton.class);
     }
 }

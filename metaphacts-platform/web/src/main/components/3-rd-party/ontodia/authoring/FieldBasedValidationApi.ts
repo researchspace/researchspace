@@ -17,8 +17,8 @@
  */
 
 import {
-  ValidationApi, ElementError, LinkTypeIri,
-  PropertyTypeIri, ElementIri, ElementTypeIri, LinkModel, LinkError, ValidationEvent, Element, DiagramModel,
+  ValidationApi, ElementError, LinkTypeIri, PropertyTypeIri, ElementTypeIri,
+  LinkModel, LinkError, ValidationEvent, Element, DiagramModel,
 } from 'ontodia';
 
 import * as Kefir from 'kefir';
@@ -26,21 +26,18 @@ import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
 import { xsd } from 'platform/api/rdf/vocabularies';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+
 import {
-  FieldValue, FieldDefinition, checkCardinalityAndDuplicates, CompositeValue, ErrorKind,
+  FieldValue, FieldDefinition, checkCardinalityAndDuplicates, CompositeValue, ErrorKind
 } from 'platform/components/forms';
-
-import {
-  applyEventsToCompositeValue, fetchInitialModel, getEntityMetadata,
-} from './AuthoringPersistence';
-import { EntityMetadata } from './OntodiaEntityMetadata';
-import { tryBeginValidation } from 'platform/components/forms/FormModel';
 import { collectErrors } from 'platform/components/forms/static/FormErrors';
-import { parseQuerySync } from 'platform/api/sparql/SparqlUtil';
-import { ask } from 'platform/api/sparql/SparqlClient';
-import SparqlClient = require('platform/api/sparql/SparqlClient');
+import { tryBeginValidation } from 'platform/components/forms/FormModel';
 
-const EMPTY_GENERATED_IRIS: ReadonlyMap<ElementIri, Rdf.Iri> = new Map<ElementIri, Rdf.Iri>();
+import { EntityMetadata } from './OntodiaEntityMetadata';
+import {
+  fetchInitialModel, getEntityMetadata, applyEventsToCompositeValue
+} from './OntodiaPersistenceCommon';
 
 export class FieldBasedValidationApi implements ValidationApi {
   constructor(private entityMetadata: Map<string, EntityMetadata>) {}
@@ -51,7 +48,7 @@ export class FieldBasedValidationApi implements ValidationApi {
     const linkByType = new Map<LinkTypeIri, LinkModel[]>();
     const errors: (ElementError | LinkError)[] = [];
 
-    if (metadata === undefined && state.index.elements.has(target.id)) {
+    if (metadata === undefined && state.elements.has(target.id)) {
       errors.push({
         type: 'element',
         target: target.id,
@@ -112,8 +109,7 @@ export class FieldBasedValidationApi implements ValidationApi {
         state,
         metadata,
         initialModel,
-        generatedIris: EMPTY_GENERATED_IRIS,
-      }),
+      })
     );
 
     const streamsOfChanges = compositeStream.map(composite => {
@@ -233,12 +229,12 @@ function getTargetOfLinkModel(model: DiagramModel, linkModel: LinkModel): Elemen
 
 export function oneOfCheckedTypeAreDescendantOrEqual(
   targetTypeIris: ReadonlyArray<Rdf.Iri>,
-  availableTypes: ElementTypeIri[],
+  availableTypes: ElementTypeIri[]
 ): Promise<boolean> {
   const queryStr = `ASK WHERE {
     ?domain rdfs:subClassOf* ?targetDomain .
   }`;
-  let query: SparqlJs.AskQuery = parseQuerySync<SparqlJs.AskQuery>(queryStr);
+  let query: SparqlJs.AskQuery = SparqlUtil.parseQuerySync<SparqlJs.AskQuery>(queryStr);
 
   query = SparqlClient.prepareParsedQuery(
     targetTypeIris.map(targetTypeIri => ({'targetDomain': targetTypeIri}))
@@ -247,5 +243,5 @@ export function oneOfCheckedTypeAreDescendantOrEqual(
     availableTypes.map(type => ({'domain': Rdf.iri(type)}))
   )(query) as SparqlJs.AskQuery;
 
-  return ask(query).toPromise();
+  return SparqlClient.ask(query).toPromise();
 }

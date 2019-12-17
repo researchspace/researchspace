@@ -42,11 +42,15 @@
       placeholder='Search for ontology elements by label. Type at least three characters to start searching.'                      
       query='
         SELECT ?subject WHERE { 
-          ?subject a ?class . 
-          ?subject rdfs:label ?label .
-          FILTER REGEX(STR(?label), ?__token__, "i")
+          GRAPH ?g {
+            ?ontologyIri a owl:Ontology .
+            ?subject a ?class . 
+            ?subject rdfs:label ?label .
+            FILTER REGEX(STR(?label), ?__token__, "i")
+           }
         }
       '
+      tokenize-lucene-query=false
     ></semantic-search-query-keyword>
   <div data-flex-layout="row stretch-stretch">
     <!-- 

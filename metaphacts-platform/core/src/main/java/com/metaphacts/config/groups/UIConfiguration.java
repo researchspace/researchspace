@@ -40,7 +40,6 @@ import com.google.common.collect.Lists;
 import com.metaphacts.api.sparql.SparqlOperationBuilder;
 import com.metaphacts.config.ConfigurationParameter;
 import com.metaphacts.config.ConfigurationParameterHook;
-import com.metaphacts.config.ConfigurationUtil;
 import com.metaphacts.config.InvalidConfigurationException;
 import com.metaphacts.config.NamespaceRegistry;
 import com.metaphacts.config.PropertyPattern;
@@ -172,10 +171,9 @@ public class UIConfiguration extends ConfigurationGroupBase {
     
     
     @ConfigurationParameterHook
-    public void onUpdatePreferredLabels(String configIdInGroup, String configValue, PropertiesConfiguration targetConfig) throws ConfigurationException {
+    public void onUpdatePreferredLabels(String configIdInGroup, List<String> configValues, PropertiesConfiguration targetConfig) throws ConfigurationException {
         try {
-            String[] preferredLabelsValues = configValue.split(",");
-            for(String singlePreferredLabel: preferredLabelsValues) {
+            for (String singlePreferredLabel : configValues) {
                 PropertyPattern.parse(singlePreferredLabel, namespaceRegistry);
             }
         } catch (MalformedQueryException e) {
@@ -184,10 +182,9 @@ public class UIConfiguration extends ConfigurationGroupBase {
     }
 
     @ConfigurationParameterHook
-    public void onUpdatePreferredThumbnails(String configIdInGroup, String configValue, PropertiesConfiguration targetConfig) throws ConfigurationException {
+    public void onUpdatePreferredThumbnails(String configIdInGroup, List<String> configValues, PropertiesConfiguration targetConfig) throws ConfigurationException {
         try {
-            String[] preferredThumbnailsValues = configValue.split(",");
-            for(String singlePreferredThumbnail: preferredThumbnailsValues) {
+            for (String singlePreferredThumbnail : configValues) {
                 PropertyPattern.parse(singlePreferredThumbnail, namespaceRegistry);
             }
         } catch (MalformedQueryException e) {
@@ -196,19 +193,15 @@ public class UIConfiguration extends ConfigurationGroupBase {
     }
 
     @ConfigurationParameterHook
-    public void onUpdateTemplateIncludeQuery(String configIdInGroup, String configValue, PropertiesConfiguration targetConfig) throws ConfigurationException {
-
-        // unescape configValue (=> commas might be escaped)
-        List<String> list = ConfigurationUtil.configValueAsList(configValue);
-        if (list.isEmpty() || list.size() > 1) {
+    public void onUpdateTemplateIncludeQuery(String configIdInGroup, List<String> configValues, PropertiesConfiguration targetConfig) throws ConfigurationException {
+        if (configValues.size() != 1) {
             throw new ConfigurationException(
                     "The parameter \"templateIncludeQuery\" must point to a single valid query.");
         }
 
-        String queryString = list.get(0);
+        String queryString = configValues.get(0);
 
-        SparqlOperationBuilder<TupleQuery> builder = SparqlOperationBuilder.<TupleQuery>create(queryString,
-                TupleQuery.class);
+        SparqlOperationBuilder<TupleQuery> builder = SparqlOperationBuilder.create(queryString, TupleQuery.class);
         Repository db = new SailRepository(new MemoryStore());
         db.init();
 

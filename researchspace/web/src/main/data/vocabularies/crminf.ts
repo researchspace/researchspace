@@ -27,6 +27,7 @@ module crminf {
   export const I4_Proposition_Set = iri('I4_Proposition_Set');
   export const I5_Inference_Making = iri('I5_Inference_Making');
   export const I7_Belief_Adoption = iri('I7_Belief_Adoption');
+  export const I3_Inference_Logic = iri('I3_Inference_Logic');
 
   export const J1_used_as_premise = iri('J1_used_as_premise');
   export const J2_concluded_that = iri('J2_concluded_that');

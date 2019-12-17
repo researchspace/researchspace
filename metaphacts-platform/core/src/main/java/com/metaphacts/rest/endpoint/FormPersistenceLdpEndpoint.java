@@ -28,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.metaphacts.config.NamespaceRegistry;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -78,6 +79,9 @@ public class FormPersistenceLdpEndpoint {
     @Inject
     private LDPApiInternalRegistry ldpCache;
 
+    @Inject
+    private NamespaceRegistry nsRegistry;
+
     private ValueFactory vf = SimpleValueFactory.getInstance();
 
     /**
@@ -127,7 +131,9 @@ public class FormPersistenceLdpEndpoint {
                         stopwatch.reset();
                         stopwatch.start();
                     }
-                    GraphQuery graphOperation = SparqlOperationBuilder.<GraphQuery>create(constructString, GraphQuery.class ).build(con);
+                    GraphQuery graphOperation = SparqlOperationBuilder
+                        .<GraphQuery>create(constructString, GraphQuery.class)
+                        .resolveUser(nsRegistry.getUserIRI()).build(con);
                     try(GraphQueryResult res =  graphOperation.evaluate()){
                         model.addAll(QueryResults.asModel(res));
                     }

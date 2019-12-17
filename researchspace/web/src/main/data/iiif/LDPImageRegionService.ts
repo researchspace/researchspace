@@ -19,13 +19,27 @@
 import * as Kefir from 'kefir';
 import * as _ from 'lodash';
 import * as SparqlJs from 'sparqljs';
+import * as Immutable from 'immutable';
 
 import { Rdf } from 'platform/api/rdf';
 import * as JsonLd from 'platform/api/rdf/formats/JsonLd';
 import { SparqlClient, QueryContext, SparqlUtil } from 'platform/api/sparql';
 import { LdpService } from 'platform/api/services/ldp';
 
-import { rso } from '../vocabularies/vocabularies';
+import * as Forms from 'platform/components/forms';
+
+import { rso, crmdig } from '../vocabularies/vocabularies';
+
+import {
+  SubjectTemplate,
+  ImageRegionType,
+  ImageRegionLabel,
+  ImageRegionBoundingBox,
+  ImageRegionValue,
+  ImageRegionViewport,
+  ImageRegionIsPrimaryAreaOf,
+  ImageRegionFields,
+} from './ImageRegionSchema';
 
 const IIIF_PRESENTATION_CONTEXT = require('./ld-resources/iiif-context.json');
 const ANNOTATION_FRAME = require('./ld-resources/annotation-frame.json');
@@ -37,41 +51,59 @@ export interface Region {
 export interface OARegionAnnotation {
   '@id': string;
   resource: any | any[];
+  on: ReadonlyArray<{
+    full: string;
+    selector: {
+      default: { value: string };
+      item: { value: string };
+    };
+  }>;
+  'http://www.researchspace.org/ontology/viewport': string;
 }
 
 /**
  * ldp client for AnnotationContainer container
  */
 export class LdpRegionServiceClass extends LdpService {
+  private readonly persistence = new Forms.LdpPersistence({type: 'ldp', repository: 'default'});
 
   constructor(container: string) {
     super(container);
   }
 
   /**
-   * Add new annotation to the AnnotationContainer.
+   * Add new annotation
    */
   public addRegion(region: Region): Kefir.Property<Rdf.Iri> {
-    return this.createResourceRequest(
-        this.getContainerIRI(),
-        {data: JSON.stringify(region.annotation), format: 'application/ld+json'}
-    ).map(iri => new Rdf.Iri(iri));
+    const currentModel = convertAnnotationToCompositeValue(region.annotation);
+    return this.persistence.persist(Forms.FieldValue.empty, currentModel).map(() => {
+      return currentModel.subject;
+    });
   }
 
   /*
    * Update annotation
    */
   public updateRegion(annotationIri: Rdf.Iri, region: Region): Kefir.Property<Rdf.Iri> {
-    return this.sendUpdateResourceRequest(
-      annotationIri,
-      {data: JSON.stringify(region.annotation), format: 'application/ld+json'}
-    );
+    return this.isOldRegion(annotationIri).flatMap(isOldRegion => {
+      const currentModel = convertAnnotationToCompositeValue(region.annotation);
+      if (isOldRegion) {
+        return this.deleteResource(annotationIri).flatMap(() => {
+          return this.persistence.persist(Forms.FieldValue.empty, currentModel);
+        });
+      }
+      return fetchInitialAnnotationModel(annotationIri).flatMap(initialModel => {
+        return this.persistence.persist(initialModel, currentModel);
+      });
+    }).map(() => {
+      return annotationIri;
+    }).toProperty();
   }
 
   public search(objectIri: Rdf.Iri): Kefir.Property<OARegionAnnotation[]> {
-    // we assume that regions are always stored in the assets repository
+    // we assume that regions are always stored in the default repository
     return SparqlClient.select(
-      this.selectForRegions(objectIri), {context: {repository: 'assets'}}
+      this.selectForRegions(objectIri), {context: {repository: 'default'}}
     ).flatMap(result => {
       if (result.results.bindings.length === 0) {
        return Kefir.constant<OARegionAnnotation[]>([]);
@@ -87,10 +119,12 @@ export class LdpRegionServiceClass extends LdpService {
   }
 
   public getRegionFromSparql(
-    regionIri: Rdf.Iri
+    regionIri: Rdf.Iri,
+    constructQuery?: SparqlJs.ConstructQuery
   ): Kefir.Property<OARegionAnnotation> {
+    const query = constructQuery || this.constructForRegion(regionIri);
     return SparqlClient.sendSparqlQuery(
-      this.constructForRegion(regionIri), 'application/ld+json', {context: {repository: 'assets'}}
+      query, 'application/ld+json', {context: {repository: 'default'}}
     ).map(res => JSON.parse(res)).flatMap(this.processRegionJsonResponse).toProperty();
   }
 
@@ -180,6 +214,25 @@ CONSTRUCT {
       }
     );
   }
+
+  deleteRegion(annotationIri: Rdf.Iri) {
+    return this.isOldRegion(annotationIri).flatMap(isOldRegion => {
+      if (isOldRegion) {
+        return this.deleteResource(annotationIri);
+      }
+      return fetchInitialAnnotationModel(annotationIri).flatMap(annotationModel =>
+        this.persistence.persist(annotationModel, Forms.FieldValue.empty)
+      );
+    }).toProperty();
+  }
+
+  private isOldRegion(annotationIri: Rdf.Iri): Kefir.Property<boolean> {
+    return this.get(annotationIri).flatMap(() => {
+      return Kefir.constant(true);
+    }).flatMapErrors(() => {
+      return Kefir.constant(false);
+    }).toProperty();
+  }
 }
 
 export function getAnnotationTextResource(annotation: OARegionAnnotation): {chars: string} {
@@ -189,6 +242,97 @@ export function getAnnotationTextResource(annotation: OARegionAnnotation): {char
     return _.find(
       resources, resource => resource['@type'] === 'dctypes:Text');
   }
+}
+
+export function convertAnnotationToCompositeValue(
+  annotation: OARegionAnnotation
+): Forms.CompositeValue {
+  const initial: Forms.CompositeValue = {
+    type: Forms.CompositeValue.type,
+    subject: Rdf.iri(annotation['@id']),
+    definitions: Immutable.Map<string, Forms.FieldDefinition>(
+      ImageRegionFields.map(field => [field.id, field])
+    ),
+    fields: Immutable.Map<string, Forms.FieldState>(),
+    errors: Forms.FieldError.noErrors,
+  };
+  const textResource = getAnnotationTextResource(annotation);
+  const fieldStates: Array<[string, Forms.FieldState]> = ImageRegionFields.map(field => {
+    let values: Immutable.List<Forms.FieldValue>;
+    let fieldState = Forms.FieldState.empty;
+    if (field.id === ImageRegionType.id) {
+      values = Immutable.List<Forms.FieldValue>(
+        [rso.EX_Digital_Image_Region, crmdig.D35_Area].map(value => {
+          return Forms.FieldValue.fromLabeled({value});
+        })
+      );
+    } else if (field.id === ImageRegionLabel.id) {
+      const value = Rdf.literal(textResource.chars);
+      values = Immutable.List<Forms.FieldValue>(
+        [Forms.FieldValue.fromLabeled({value})]
+      );
+    } else if (field.id === ImageRegionBoundingBox.id) {
+      values = Immutable.List<Forms.FieldValue>(
+        annotation.on.map(on => {
+          const value = Rdf.literal(on.selector.default.value);
+          return Forms.FieldValue.fromLabeled({value});
+        })
+      );
+    } else if (field.id === ImageRegionValue.id) {
+      values = Immutable.List<Forms.FieldValue>(
+        annotation.on.map(on => {
+          const value = Rdf.literal(on.selector.item.value);
+          return Forms.FieldValue.fromLabeled({value});
+        })
+      );
+    } else if (field.id === ImageRegionViewport.id) {
+      const value = Rdf.literal(
+        annotation['http://www.researchspace.org/ontology/viewport']
+      );
+      values = Immutable.List<Forms.FieldValue>(
+        [Forms.FieldValue.fromLabeled({value})]
+      );
+    } else if (field.id === ImageRegionIsPrimaryAreaOf.id) {
+      values = Immutable.List<Forms.FieldValue>(
+        annotation.on.map(on => {
+          const value = Rdf.iri(on.full);
+          return Forms.FieldValue.fromLabeled({value});
+        })
+      );
+    }
+    fieldState = Forms.FieldState.set(fieldState, {values});
+    return [field.id, fieldState];
+  });
+  const subject = Forms.generateSubjectByTemplate(SubjectTemplate, undefined, initial);
+  const fields = Immutable.Map<string, Forms.FieldState>(fieldStates);
+  return Forms.CompositeValue.set(initial, {subject, fields});
+}
+
+function fetchInitialAnnotationModel(
+  annotationIri: Rdf.Iri
+): Kefir.Property<Forms.CompositeValue> {
+  const initial: Forms.CompositeValue = {
+    type: Forms.CompositeValue.type,
+    subject: annotationIri,
+    definitions: Immutable.Map<string, Forms.FieldDefinition>(
+      ImageRegionFields.map(field => [field.id, field])
+    ),
+    fields: Immutable.Map<string, Forms.FieldState>(),
+    errors: Forms.FieldError.noErrors,
+  };
+  const valuesFetching = ImageRegionFields.map(field =>
+    Forms.queryValues(field.selectPattern, annotationIri).map(bindings => {
+      const values = Immutable.List(
+        bindings.map(b => Forms.FieldValue.fromLabeled(b))
+      );
+      const state = Forms.FieldState.set(Forms.FieldState.empty, {values});
+      return [field.id, state] as [string, Forms.FieldState];
+    })
+  );
+  return Kefir.zip(valuesFetching).map(fields => {
+    const nonEmpty = fields.filter(([id, state]) => state.values.size > 0);
+    return Forms.CompositeValue.set(initial, {fields: Immutable.Map(nonEmpty)});
+  }).toProperty();
 }
 
 export const LdpRegionService = new LdpRegionServiceClass(rso.ImageRegionContainer.value);

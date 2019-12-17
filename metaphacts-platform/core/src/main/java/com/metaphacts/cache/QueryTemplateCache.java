@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.metaphacts.api.dto.querytemplate.QueryTemplate;
 import com.metaphacts.api.rest.client.APICallFailedException;
 import com.metaphacts.api.rest.client.QueryCatalogAPIClient;
@@ -46,9 +45,10 @@ import com.metaphacts.repository.RepositoryManager;
 @Singleton
 public class QueryTemplateCache implements PlatformCache {
 
+    public static final String CACHE_ID = "platform.QueryTemplateCache";
+
     private static final Logger logger = LogManager.getLogger(QueryTemplateCache.class);
-    protected Cache<IRI, QueryTemplate<?>> queryTemplateCache = CacheBuilder.newBuilder()
-            .maximumSize(5).expireAfterAccess(5, TimeUnit.MINUTES).build();
+    protected final Cache<IRI, QueryTemplate<?>> queryTemplateCache;
 
     protected LDPApiInternalRegistry ldpCache;
     protected NamespaceRegistry namespaceRegistry;
@@ -59,6 +59,10 @@ public class QueryTemplateCache implements PlatformCache {
             throws Exception {
         this.ldpCache = ldpCache;
         this.namespaceRegistry = namespaceRegistry;
+        queryTemplateCache = cacheManager
+                .newBuilder(CACHE_ID,
+                        cacheBuilder -> cacheBuilder.maximumSize(5).expireAfterAccess(5, TimeUnit.MINUTES))
+                .build();
         cacheManager.register(this);
     }
 

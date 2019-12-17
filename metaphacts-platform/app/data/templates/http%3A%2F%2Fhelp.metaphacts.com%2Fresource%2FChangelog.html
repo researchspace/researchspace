@@ -1,0 +1,142 @@
+[[!-- inline handlebars partial to avoid boilerplating the changelog table layout --]]
+[[#*inline "releasenote-table"]]
+    <table id="issuetable" style="border:0px;" cellpadding="3" cellspacing="1" width="100%">
+      <thead>
+        <tr class="rowHeader">
+
+          <th class="colHeaderLink headerrow-issuetype" data-id="issuetype">
+            Issue Type
+          </th>
+
+          <th class="colHeaderLink headerrow-issuekey" data-id="issuekey">
+            Key
+          </th>
+
+          <th class="colHeaderLink headerrow-customfield_11004" data-id="customfield_11004">
+            Release Title
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+          [[> @partial-block ]]
+      </tbody>
+    </table>
+[[/inline]]
+[[#if GettingStarted]]
+[[else]]
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Help" uri='[[resolvePrefix "Help:Start"]]'>Help</semantic-link>
+  </li>
+  <li class="active">Changelog</li>
+</ol>
+[[/if]]
+<div class="page">
+  <div class="page__header page__header--no-image"><h2>Changelog</h2></div>
+
+  <div class='page__body'>
+    
+    <hr>
+    <h2 id="3.3.0">3.3.0</h2>
+    <hr>
+    <h3>Release Notes</h3>
+    [[#> releasenote-table]]
+      [[> Help:ReleaseNoteTable_3.3.0]]
+    [[/releasenote-table]]
+
+    <h3>Breaking Changes</h3>
+    
+    <h4>Escape-Lucene-Syntax setting in semantic search components</h4>
+    
+    <p>In the semantic search components (e.g. the <code>semantic-simple-search</code> component) the <code>escape-lucene-syntax</code> setting is now split into two distinct settings: <code>escape-lucene-syntax</code> and <code>tokenize-lucene-query</code>. This is to avoid overloading the setting with two orthogonal configurations and provide more control to the application developer. In some applications where <code>escape-lucene-syntax</code> was explicitly set to <code>false</code> it may now be required to also set <code>tokenize-lucene-query</code> to <code>false</code>.</p>
+    
+
+    <h3>Upgrade Notes</h3>
+    
+    <h4>Retrieving and rendering labels in tables</h4>
+    
+    <p>Starting with 3.3.0 labels in tables are pre-fetched at rendering time of the table. This allows for client-side sorting and filtering using the displayed values. Previously labels were fetched on-demand (e.g. while paging). If required by an existing application (e.g. for performance reasons for very large tables) the previous behavior can be configured on the <code>semantic-table</code> instance using the <code>prefetch-labels</code> setting.</p>
+    
+   
+    
+    <hr>
+	<h2 id="3.2.0">3.2.0</h2>
+    <hr>
+    <h3>Release Notes</h3>
+    [[#> releasenote-table]]
+      [[> Help:ReleaseNoteTable_3.2.0]]
+    [[/releasenote-table]]
+
+    <h3>Breaking Changes</h3>
+    <h4>Docker Container and Volume</h4>
+
+    In <i>3.2.0</i> the Docker container has been optimized:
+    <ul>
+      <li>The Jetty web server does not run as <code>root</code> and no longer changes file ownership in volumes so the (existing) file permissions matter!</li>
+      <li>The <code>docker-compose</code> files have been adjusted accordingly. Any local copy should be updated to the latest version from our public <a href="https://bitbucket.org/metaphacts/metaphactory-docker-compose" target="_blank">docker-compose GIT repository</a> before using it with the released <i>3.2.0</i> Docker container!</li>
+      <li>See <a title="Installation and Deployment" href="/resource/Help:Installation#docker-volumes">Installation and Deployment</a> for using volumes and best practices on file permissions.</li>
+    </ul>
+    
+    <h3>Upgrade Notes</h3>
+    
+    <h4>Permissions</h4>
+    
+    <p>In 3.2 the following permissions have been introduced or refined. Existing installations may require an update of the role definitions in <code>shiro.ini</code> for new functionality to properly work.</p>
+    
+    <table>
+      <tr><th><b>Permission</b></th><th><b>Description</b></th></tr>
+      <tr><td><code>logs:read:*</code></td><td>Permissions for displaying log files</td></tr>
+      <tr><td><code>logs:configure:*</code></td><td>Permissions for configuring the logging system (e.g. the logging profile).</td></tr>
+    </table>
+    
+    <br/>
+    <p>Refer to the <semantic-link title="Help Security" uri='[[resolvePrefix "Help:Security"]]'>security documentation</semantic-link> for further details.</p>
+ 
+
+    <hr>
+	  <h2 id="3.1.0">3.1.0</h2>
+    <hr>
+    <h3>Release Notes</h3>
+    [[#> releasenote-table]]
+      [[> Help:ReleaseNoteTable_3.1.0]]
+    [[/releasenote-table]]
+   
+
+		<h3>Breaking Changes</h3>
+    
+    <p>No breaking changes in 3.1.0</p>
+    <hr>
+    <h2 id="3.0.0">3.0.0</h2>
+    <hr>
+    <h3>Highlights</h3>
+
+      <ul>
+        <li>Improved platform lifecycle management to allow for seamless updates</li>
+        <li>Enhanced access-control management, incl. fine-granular ACLs for pages and support for permissions on individual SPARQL repositories</li>
+        <li>Improved visualization options through additional handlebar.js helper functions for number formatting, as well as documentation and examples for more sophisticated chart styling</li>
+        <li>Ability to upload files in forms and to runtime app storages (beta version)</li>
+      </ul>
+
+    <h3>Breaking Changes</h3>
+    <h4>Platform Lifecycle</h4>
+    <p>
+      In <i>3.0.0</i> the default location for persisting configuration- and template files to the file system has changed. Both folders <code>/data</code> and <code>/config</code> have been moved to a single folder <code>/runtime-data</code>, which is located in the root of the platform's workspace (i.e. absolute <code>/runtime-data</code> in the docker container). In the docker distribution <code>/runtime-data</code> is declared as a volume, i.e. will persist even if the platform container is removed. The basic folder- and file structure within <code>/runtime-data/data</code> and <code>/runtime-data/config</code> remains.
+   </p>
+    <p>
+      At the platform's inital start <code>/runtime-data</code> will be empty, except for a single file <code>/runtime-data/config/shiro.ini</code>, which is the default security configuration file. All other default files and configurations are now binary bundled. This means that if you make additions or changes to your platform instance during runtime, those additions or changes will appear in isolation in the <code>/runtime-data</code> folders and selectively shadow the defaults, i.e. files won't physically be mixed with platform's default settings as in the previous versions.
+    </p>
+   <p>
+     Some folders in the basic app structure have been deprecated and simplified. This affects in particular the <code>/images</code> and <code>/resources</code> folder. platform will create a so called "fallback" storage to maintain downward compatibility with your old apps. However, with migrating to 3.0.0 it is strongly recommended to move these folders to the new location (see <semantic-link title="Documentation" iri="[[resolvePrefix "Help:Apps"]]">Help:Apps</semantic-link> for details), since the "fallback" storages will blow-up the storage list artificially.
+    </p>
+
+    <p>
+      For migrating artefacts from old platform installations (&#60;= 2.4.0), it is highly recommended to extract / copy only your customizations and to <b>NOT</b> simply copy/move the entire <code>/data</code> and <code>/config</code> folders from your old to the new installation.<br>
+      You may run, for example, <code>find /data/templates /config  -newermt "Dec 11, 2017" | zip extract.zip -@</code> to extract all changed files after a certain date (typically the date of the deployment, i.e. run <code>ls -all /data/templates</code> to see all files and modification dates) into a zip file. It is recommended to clean this initial extract, i.e. to reduce, for example, the entries in <code>/config/namespaces.prop</code> to your domain / use-case specific entries to not shadow any defaults.<br>
+      LDP assets (for example, queries or fields) from your old installation can be exported using the <semantic-link title="LDP" iri='[[resolvePrefix "Platform:rootContainer"]]'>the LDP Container export</semantic-link>. Importing the container into the new installation through the LDP admin interface will save these LDP artefacts as *.trig files to the <code>/runtime-data/ldp</code> folder, i.e. they become part of the runtime app and can be extracted / ported to other installations as all other app artefacts.
+    </p>
+    
+  </div>
+</div>

@@ -25,7 +25,7 @@ import { AutoCompletionInput } from 'platform/components/ui/inputs';
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, EmptyValue } from '../FieldValues';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
-import { AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
+import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
 import { ValidationMessages } from './Decorations';
 
 export interface AutocompleteInputProps extends AtomicValueInputProps {
@@ -141,10 +141,13 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
   }
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
-    return `Search and select ${(getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase()} here...`;
+    const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
+    return `Search and select ${fieldName} here...`;
   }
+
+  static makeHandler = AtomicValueInput.makeAtomicHandler;
 }
 
-
+SingleValueInput.assertStatic(AutocompleteInput);
 
 export default AutocompleteInput;

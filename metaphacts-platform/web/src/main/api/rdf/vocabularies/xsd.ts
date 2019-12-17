@@ -16,6 +16,8 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
+import * as Immutable from 'immutable';
+
 import * as Rdf from '../core/Rdf';
 
 module xsd {
@@ -31,6 +33,7 @@ module xsd {
   export const _string = iri('string');
   export const langString = iri('langString');
   export const integer = iri('integer');
+  export const float = iri('float');
   export const double = iri('double');
   export const boolean = iri('boolean');
   export const date = iri('date');
@@ -38,6 +41,9 @@ module xsd {
   export const dateTime = iri('dateTime');
   export const decimal = iri('decimal');
   export const anyURI = iri('anyURI');
+  export const positiveInteger = iri('positiveInteger');
+  export const negativeInteger = iri('negativeInteger');
+  export const nonPositiveInteger = iri('nonPositiveInteger');
   export const nonNegativeInteger = iri('nonNegativeInteger');
 
   export const LIST_TYPES = [
@@ -51,6 +57,17 @@ module xsd {
     { value: double.value, label: 'xsd:double'},
     { value: decimal.value, label: 'xsd:decimal'},
   ];
+
+  export const NUMERIC_TYPES = Immutable.Set<Rdf.Iri>([
+    integer,
+    positiveInteger,
+    negativeInteger,
+    nonPositiveInteger,
+    nonNegativeInteger,
+    float,
+    double,
+    decimal,
+  ]);
 }
 
 export default xsd;

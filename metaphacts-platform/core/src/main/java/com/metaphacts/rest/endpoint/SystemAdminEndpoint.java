@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 import javax.ws.rs.POST;
@@ -78,24 +79,44 @@ public class SystemAdminEndpoint {
     private boolean touch(File contextXml) {
         try {
             Files.setLastModifiedTime(contextXml.toPath(), FileTime.fromMillis(System.currentTimeMillis()));
-            logger.info("Successfully touched {}", contextXml);
+            logger.debug("Successfully touched {}", contextXml);
             return true;
         }
         catch (Exception e) {
             // setting last modified time seems to require file ownership, if that fails we try to 
             // open the file for writing (in append mode) without actually writing anything
-            logger.error("failed to reload app by touching {}: {}", contextXml, e.getMessage());
-            logger.error("ROOT.xml: {}, readable: {}, writable: {}", contextXml.getPath(), contextXml.canRead(), contextXml.canWrite());
-            logger.error("trying write-append");
+            logger.debug("failed to reload app by touching {}: {}", contextXml, e.getMessage());
+            logger.debug("ROOT.xml: {}, readable: {}, writable: {}", contextXml.getPath(), contextXml.canRead(), contextXml.canWrite());
             try (FileOutputStream fos = new FileOutputStream(contextXml, true)) {
+                logger.debug("trying write-append");
                 byte[] empty = new byte[0];
                 fos.write(empty);
-                return true;
+                logger.debug("Successfully touched {}", contextXml);
             }
             catch (Exception e2) {
-                // TODO consider calling "touch" via local shell execution as fallback when the 
-                // current user is not the owner of the file
-                logger.error("failed to reload app by touching {}: {}", contextXml, e2.getMessage());
+                logger.debug("failed to reload app by touching {}: {}", contextXml, e2.getMessage());
+            }
+            // calling "touch" via local shell execution as fallback when the
+            // current user is not the owner of the file
+            try {
+                logger.debug("trying write-append using /bin/sh -c \"touch ROOT.xml\"");
+                ProcessBuilder processBuilder = new ProcessBuilder();
+                processBuilder.command("/bin/touch", contextXml.getAbsolutePath());
+                Process process = processBuilder.start();
+                logger.debug("Successfully touched {} using /bin/sh -c \"touch ROOT.xml\"", contextXml);
+                process.waitFor(5, TimeUnit.SECONDS);
+                int exitValue = process.exitValue();
+                if(exitValue==0) {
+                    logger.debug("Exit code is 0");
+                    return true;
+                }
+                else {
+                    logger.debug("Exit code: " +exitValue);
+                    return false;
+                }
+            } catch (Exception e3) {
+                logger.debug("failed to reload app by touching {} using /bin/sh -c \"touch ROOT.xml\" : {} ",
+                        contextXml, e3.getMessage());
                 return false;
             }
         }

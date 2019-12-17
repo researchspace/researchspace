@@ -16,13 +16,12 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import * as Kefir from 'kefir';
-import * as React from 'react';
 import { WorkspaceProps, Workspace } from 'ontodia';
 
 import { ExtensionPoint } from 'platform/api/module-loader';
 
-import { OntodiaProps } from './Ontodia';
+import { OntodiaPersistence } from './authoring/OntodiaPersistence';
+import { OntodiaProps, OntodiaPersistenceMode } from './Ontodia';
 import { ToolbarProps } from './Toolbar';
 
 // Important! This module is an extension point definition or an implementation, so it
@@ -44,6 +43,7 @@ export interface OntodiaFactory {
   onNewDigaramInitialized(
     componentProps: OntodiaProps, workspace: Workspace
   ): void;
+  getPersistence(mode: OntodiaPersistenceMode): OntodiaPersistence;
 }
 
 export const OntodiaExtension = new ExtensionPoint<OntodiaFactory>();

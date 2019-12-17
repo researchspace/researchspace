@@ -22,13 +22,18 @@ import { Children, ReactNode, cloneElement } from 'react';
 import { Component } from 'platform/api/components';
 
 import {
-  CompositeValue, FieldDefinition, SemanticForm,
+  ResourceEditorFormProps, CompositeValue, FieldDefinition,
+  SemanticForm, computeValuePatch, FieldValue, generateSubjectByTemplate,
 } from 'platform/components/forms';
 import { isValidChild, universalChildren } from 'platform/components/utils';
 
 import * as styles from './EntityForm.scss';
+import { Rdf } from 'platform/api/rdf';
 
 export interface EntityFormProps {
+  newSubjectTemplate?: string;
+  suggestIri?: boolean;
+  acceptIriAuthoring?: boolean;
   fields: ReadonlyArray<FieldDefinition>;
   model: CompositeValue;
   onSubmit: (newData: CompositeValue) => void;
@@ -37,15 +42,19 @@ export interface EntityFormProps {
 
 interface State {
   model: CompositeValue;
+  suggestIri: boolean;
 }
 
 export class EntityForm extends Component<EntityFormProps, State> {
   private initModel: CompositeValue;
-
+  private formRef: SemanticForm;
   constructor(props: EntityFormProps, context) {
     super(props, context);
-    this.initModel = this.props.model;
-    this.state = {model: this.initModel};
+    const suggestIri = this.props.suggestIri === undefined ?
+      this.modelEqualToSuggested(this.props.model) : this.props.suggestIri;
+    this.initModel = suggestIri ?
+      this.modifyModelsIriBySuggestion(this.props.model) : this.props.model;
+    this.state = {model: this.initModel, suggestIri: suggestIri};
   }
 
   componentWillReceiveProps(nextProps: EntityFormProps) {
@@ -76,12 +85,92 @@ export class EntityForm extends Component<EntityFormProps, State> {
     });
   }
 
+  private onModelUpdate(newModel: CompositeValue) {
+    const modelToSet =
+      this.state.suggestIri ? this.modifyModelsIriBySuggestion(newModel) : newModel;
+    this.setState({model: modelToSet});
+  }
+
+  private modifyModelsIriBySuggestion(model: CompositeValue): CompositeValue {
+    return {
+      ...model,
+      subject: generateSubjectByTemplate(
+        this.props.newSubjectTemplate,
+        undefined,
+        { ...model, subject: new Rdf.Iri('')}
+      ),
+    };
+  }
+
+  private modelEqualToSuggested(model: CompositeValue): boolean {
+    return generateSubjectByTemplate(
+      this.props.newSubjectTemplate,
+      undefined,
+      { ...model, subject: new Rdf.Iri('')}
+    ).value === model.subject.value;
+  }
+
   private onSubmit = () => {
-    this.props.onSubmit(this.state.model);
+    this.formRef.finalize(this.state.model).observe({
+      value: model => {
+        this.props.onSubmit(model);
+      },
+      error: () => this.props.onSubmit(this.state.model),
+    });
   }
 
   private onReset = () => {
     this.setState({model: this.initModel});
+  }
+
+  private onChangeIri(e: React.FormEvent<HTMLInputElement>) {
+    const target = (e.target as HTMLInputElement);
+    const iri = target.value;
+    this.setState(prevState => {
+        return {
+            suggestIri: false,
+            model: {
+                ...prevState.model,
+                subject: new Rdf.Iri(iri),
+            }
+        };
+    });
+  }
+
+  private onChangeSuggestingMode() {
+    this.setState(prevState => {
+      const newSuggestionMode = !prevState.suggestIri;
+      const curModel = prevState.model;
+        return {
+          suggestIri: newSuggestionMode,
+          model: newSuggestionMode ? this.modifyModelsIriBySuggestion(curModel) : curModel,
+        };
+    });
+  }
+
+  private renderIri() {
+    const {model, suggestIri} = this.state;
+    return (
+        <div className='semantic-form-input-decorator semantic-form-input-decorator--with-header'>
+            <div style={{display: 'flex'}}>
+              <label style={{marginLeft: -12}}>IRI</label>
+              <label style={{marginLeft: 5, opacity: 0.8}}>
+                (Suggest IRI
+                  <input
+                    type='checkbox'
+                    checked={suggestIri}
+                    onClick={() => this.onChangeSuggestingMode()}
+                  />
+                )
+              </label>
+            </div>
+            <input
+                className='plain-text-field__text form-control'
+                value={model.subject.value}
+                onChange={e => this.onChangeIri(e)}
+            />
+        </div>
+    );
   }
 
   render() {
@@ -89,10 +178,14 @@ export class EntityForm extends Component<EntityFormProps, State> {
     return (
       <div className={styles.dialog}>
         <div className={styles.content}>
-          <SemanticForm fields={this.props.fields}
+          {this.props.acceptIriAuthoring ? this.renderIri() : null}
+          <SemanticForm
+            newSubjectTemplate={this.props.newSubjectTemplate}
+            ref={form => this.formRef = form}
+            fields={this.props.fields}
             model={this.state.model}
             onLoaded={() => { /* nothing */ }}
-            onChanged={model => this.setState({model})}>
+            onChanged={model => this.onModelUpdate(model)}>
             {mapped}
           </SemanticForm>
         </div>

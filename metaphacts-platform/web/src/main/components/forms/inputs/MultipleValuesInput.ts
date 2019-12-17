@@ -24,12 +24,13 @@ import { Rdf } from 'platform/api/rdf';
 
 import { FieldDefinition } from '../FieldDefinition';
 import {
-  FieldValue, EmptyValue, CompositeValue, SparqlBindingValue, DataState, FieldError, ErrorKind,
+  FieldValue, EmptyValue, CompositeValue, DataState, FieldError, ErrorKind,
 } from '../FieldValues';
 
 export interface MultipleValuesProps {
   /** Key to associate with FieldDefinition by name */
   for: string;
+  handler?: MultipleValuesHandler;
   definition?: FieldDefinition;
   dataState?: DataState;
   defaultValue?: string;
@@ -49,6 +50,23 @@ export interface MultipleValuesProps {
   renderHeader?: boolean;
 }
 
+export interface MultipleValuesHandler {
+  validate(values: ValuesWithErrors): ValuesWithErrors;
+  finalize(
+    values: Immutable.List<FieldValue>,
+    owner: EmptyValue | CompositeValue
+  ): Kefir.Property<Immutable.List<FieldValue>>;
+}
+
+export interface MultipleValuesHandlerProps<InputProps> {
+  definition: FieldDefinition;
+  baseInputProps: InputProps;
+}
+
+interface MultipleValuesInputStatic {
+  makeHandler(props: MultipleValuesHandlerProps<any>): MultipleValuesHandler;
+}
+
 export type ValuesWithErrors = {
   values: Immutable.List<FieldValue>;
   errors: Immutable.List<FieldError>;
@@ -61,21 +79,51 @@ export abstract class MultipleValuesInput<P extends MultipleValuesProps, S>
     return DataState.Ready;
   }
 
+  static readonly defaultHandler: MultipleValuesHandler = {
+    validate: values => values,
+    finalize: (values, owner) => Kefir.constant(values),
+  };
+
+  static assertStatic(constructor: MultipleValuesInputStatic) { /* nothing */ }
+
+  static getHandlerOrDefault(
+    componentType: MultipleValuesInputStatic,
+    handlerProps: MultipleValuesHandlerProps<any>
+  ): MultipleValuesHandler {
+    if (!(componentType && componentType.makeHandler)) {
+      return MultipleValuesInput.defaultHandler;
+    }
+    return componentType.makeHandler(handlerProps);
+  }
+}
+
+export class CardinalityCheckingHandler implements MultipleValuesHandler {
+  private definition: FieldDefinition;
+
+  constructor(props: MultipleValuesHandlerProps<MultipleValuesProps>) {
+    this.definition = props.definition;
+  }
+
   validate({values, errors}: ValuesWithErrors): ValuesWithErrors {
-    return {values, errors: FieldError.noErrors};
+    const otherErrors = errors.filter(e => e.kind !== ErrorKind.Input).toList();
+    const cardinalityErrors = checkCardinalityAndDuplicates(values, this.definition);
+    return {
+      values: values,
+      errors: otherErrors.concat(cardinalityErrors),
+    };
   }
 
   finalize(
-    owner: EmptyValue | CompositeValue,
-    values: Immutable.List<FieldValue>
+    values: Immutable.List<FieldValue>,
+    owner: EmptyValue | CompositeValue
   ): Kefir.Property<Immutable.List<FieldValue>> {
-    return Kefir.constant(values.filter(FieldValue.isAtomic).toList());
+    return MultipleValuesInput.defaultHandler.finalize(values, owner);
   }
 }
 
 export function checkCardinalityAndDuplicates(
   values: Immutable.List<FieldValue>, definition: FieldDefinition
-) {
+): Immutable.List<FieldError> {
   let errors = FieldError.noErrors;
 
   // filter empty values and duplicates, emit "duplicate value" errors

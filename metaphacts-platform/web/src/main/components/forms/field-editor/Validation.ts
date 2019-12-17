@@ -35,7 +35,7 @@ export function collectStateErrors(state: State): Error[] {
 
   const values = [
     state.id, state.description, state.xsdDatatype,
-    state.min, state.max, state.testSubject, state.selectPattern, state.insertPattern,
+    state.min, state.max, state.order, state.testSubject, state.selectPattern, state.insertPattern,
     state.deletePattern, state.askPattern, state.valueSetPattern, state.autosuggestionPattern,
   ];
   for (const value of values) {
@@ -131,6 +131,21 @@ export function validateMax(v: string): Value {
   }
 }
 
+/**
+ * Returns a valid order observable value if value is >= 0 or unbound,
+ * an error observable otherwise.
+ */
+export function validateOrder(v: string): Value {
+  const num = Number(v);
+  if (Number.isInteger(num) && num >= 0 ) {
+    return {value: v};
+  } else {
+    return {
+      value: v,
+      error: new Error('Order must be >= 0'),
+    };
+  }
+}
 /**
  * Returns a valid value (SPARQL insert) observable if supplied queryString is a valid
  * SPARQL INSERT query and fulfills all constraints e.g. containing ?value ?subject.

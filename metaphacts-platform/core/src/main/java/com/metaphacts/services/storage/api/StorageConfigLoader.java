@@ -35,12 +35,16 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.io.FileHandler;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.inject.Injector;
+
 public class StorageConfigLoader {
     
     private final StorageRegistry storageRegistry;
+    private final Injector injector;
     
-    public StorageConfigLoader(StorageRegistry storageRegistry){
+    public StorageConfigLoader(StorageRegistry storageRegistry, Injector injector){
         this.storageRegistry = storageRegistry;
+        this.injector = injector;
     }
 
     /**
@@ -68,7 +72,7 @@ public class StorageConfigLoader {
         }
     }
 
-    private LinkedHashMap<String, StorageConfig> readStorageConfigFromStream(InputStream is)
+    public LinkedHashMap<String, StorageConfig> readStorageConfigFromStream(InputStream is)
             throws ConfigurationException {
         PropertiesConfiguration config = createEmptyConfig();
         FileHandler handler = new FileHandler(config);
@@ -100,6 +104,8 @@ public class StorageConfigLoader {
 
             StorageFactory factory = storageRegistry.get(storageType).orElseThrow(
                 () -> new StorageConfigException("Unknown storage type '" + storageType + "'"));
+            
+            injector.injectMembers(factory);
 
             StorageConfig parsedConfig = factory.parseStorageConfig(storageType, properties);
             try {

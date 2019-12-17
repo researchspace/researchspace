@@ -44,17 +44,20 @@ import { Controlled as CodeMirror } from 'react-codemirror2';
 import * as codemirror from 'codemirror';
 
 import {
-  navigateToResource, navigationConfirmation,
+  navigateToResource, navigationConfirmation, navigateToUrl
 } from 'platform/api/navigation';
 import { Rdf, vocabularies } from 'platform/api/rdf';
-import { PageService, TemplateContent, TemplateStorageStatus } from 'platform/api/services/page';
+import { PageService, TemplateContent, TemplateStorageStatus, RevisionInfo } from 'platform/api/services/page';
 import { ResourceLink, ResourceLinkAction } from 'platform/api/navigation/components';
 
 import { StorageSelector, chooseDefaultTargetApp } from 'platform/components/admin/config-manager';
 import { getOverlaySystem, OverlayDialog} from 'platform/components/ui/overlay';
 import { BrowserPersistence } from 'platform/components/utils';
+import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
+import * as uri from 'urijs';
 
 import '../../scss/page-editor.scss';
+import { ErrorPresenter } from 'platform/components/ui/notification';
 
 const Button = createFactory(ReactBootstrap.Button);
 const ButtonToolbar = createFactory(ReactBootstrap.ButtonToolbar);
@@ -94,6 +97,7 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
 
   private navigationListenerUnsubscribe?: () => void;
   private radioGroupEntries: RadioGroupEntry[];
+  private pageInfo: RevisionInfo[];
 
   constructor(props: PageEditorProps, context: any) {
     super(props, context);
@@ -246,10 +250,17 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
           ButtonToolbar(
             {className: 'pull-right template-cancel-save'},
             Button({
-              bsStyle: 'danger',
+              bsStyle: 'default',
               disabled: this.state.saving,
+              style: {backgroundColor: 'lightGrey'},
               onClick: this.onCancel,
             }, 'Cancel'),
+            Button({
+              bsStyle: 'danger',
+              disabled: this.isDeleteBtnDisabled(),
+              onClick: this.onClickDeleteBtn,
+              style: {marginLeft: '11px'}
+            }, 'Delete Page'),
             Button({
               bsStyle: 'primary',
               onClick: () => this.onSave(),
@@ -261,7 +272,7 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
               bsStyle: 'default',
               onClick: () => this.onSave({action: ResourceLinkAction[ResourceLinkAction.edit]}),
               disabled: this.state.saving,
-              style: {marginLeft: 11},
+              style: {marginLeft: '11px'}
             }, 'Save')
           )
         )
@@ -269,8 +280,82 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
     );
   }
 
+  private isDeleteBtnDisabled = () => {
+    const {saving, storageStatus, pageSource} = this.state;
+    // Disabled if the page doesn't exist or the storage is readonly
+    // i.e the appID is either null or undefined.
+    return saving ||
+    !pageSource.appId ||
+    !storageStatus.some(status => status.appId === pageSource.appId && status.writable);
+  }
   private onEditorDidMount = (editor: codemirror.Editor) => {
     this.editor = editor;
+  }
+
+  private onClickDeleteBtn = () => {
+    if (this.navigationListenerUnsubscribe) {
+      this.navigationListenerUnsubscribe();
+    }
+    this.pageInfo = [{
+      appId: this.state.pageSource.appId,
+      iri: this.props.iri.value,
+      revision: this.state.pageSource.revision
+    }];
+    const dialogRef = 'deletion-confirmation';
+    const onHide = () => getOverlaySystem().hide(dialogRef);
+    const props = {
+      message: 'Do you really want to delete this template?',
+      onHide,
+      onConfirm: confirm => {
+        onHide();
+        if (confirm) {
+          this.deletePage();
+        }
+      },
+    };
+    getOverlaySystem().show(
+      dialogRef,
+      createElement(ConfirmationDialog, props)
+    );
+  }
+
+  private deletePage = () => {
+    PageService.deleteTemplateRevisions(this.pageInfo).observe({
+      value: success => {
+        if (success) {
+          navigateToUrl(uri('/')).observe({/**/});
+        }
+      },
+      error: err => {
+        this.setState({
+          loading: true,
+        });
+        const dialogRef = `page-saving-error`;
+
+        getOverlaySystem().show(
+          dialogRef,
+          createElement(
+            OverlayDialog, {
+            onHide: () => {
+              getOverlaySystem().hide(dialogRef);
+              this.setState({ saving: false });
+            },
+            type: 'modal',
+            title: 'Error while deleting the page',
+            show: true,
+          }, D.div({}),
+            D.div({}, createElement(ErrorPresenter, { error: err })),
+            Button({
+              bsStyle: 'success',
+              className: 'pull-right',
+              onClick: () => {
+                getOverlaySystem().hide(dialogRef);
+                this.setState({ saving: false });
+              }
+            }, 'Ok'))
+        );
+      },
+    });
   }
 
   private isTemplateApplied(iri: Rdf.Iri, pageSource: TemplateContent) {

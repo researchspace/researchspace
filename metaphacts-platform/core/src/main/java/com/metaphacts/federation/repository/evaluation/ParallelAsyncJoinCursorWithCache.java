@@ -153,7 +153,7 @@ public class ParallelAsyncJoinCursorWithCache
                 rightQueue.done();
             }
             allSubmitted.set(true);
-            logger.debug("Submitted all: " + counter.get());
+            logger.trace("Submitted all: " + counter.get());
         } catch (RuntimeException e) {
             logger.warn("sumbission exception: " + e.getMessage(), e);
             rightQueue.toss(e);
@@ -239,7 +239,7 @@ public class ParallelAsyncJoinCursorWithCache
             int countDown = counter.decrementAndGet();
             try {
                 rightQueue.put(result);
-                logger.debug("Received: " + countDown);
+                logger.trace("Received: " + countDown);
             } catch (RuntimeException e) {
                 rightQueue.toss(e);
                 logger.trace("Closing: " + e.getMessage(), e);

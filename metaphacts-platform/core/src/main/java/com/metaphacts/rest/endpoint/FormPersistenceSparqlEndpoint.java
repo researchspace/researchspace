@@ -28,6 +28,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.metaphacts.config.NamespaceRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.authz.annotation.Logical;
@@ -57,6 +58,9 @@ public class FormPersistenceSparqlEndpoint {
     @Inject
     private CacheManager cacheManager;
 
+    @Inject
+    private NamespaceRegistry nsRegistry;
+
     /**
      * Executes and array of SPARQL INSERT and DELETE query strings in one transaction. 
      * 
@@ -84,7 +88,9 @@ public class FormPersistenceSparqlEndpoint {
                 // TODO currently we can't execute all update operations in one transaction, see https://github.com/eclipse/rdf4j/issues/972
                 try{
                     for (String updateString : deleteAndInserts) {
-                        Update update = SparqlOperationBuilder.<Update>create(updateString, Update.class).build(con);
+                        Update update = SparqlOperationBuilder
+                            .<Update>create(updateString, Update.class)
+                            .resolveUser(nsRegistry.getUserIRI()).build(con);
                         update.execute();
                     }
                 } catch(Exception e) {

@@ -20,7 +20,7 @@
  * @author Mike Kelly <mkelly@britishmuseum.org>
  */
 
-import { Component, createElement, createFactory } from 'react';
+import { createElement, createFactory } from 'react';
 import * as D from 'react-dom-factories';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as classNames from 'classnames';
@@ -28,6 +28,7 @@ import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
+import { Component } from 'platform/api/components';
 import {SparqlClient} from 'platform/api/sparql';
 
 import TemplateItem from 'platform/components/ui/template/TemplateItem';

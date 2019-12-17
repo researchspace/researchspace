@@ -17,20 +17,17 @@
  */
 
 import * as React from 'react';
-import { ReactElement, Children, ReactNode, cloneElement } from 'react';
+import { ReactElement, Children, ReactNode } from 'react';
 import * as Immutable from 'immutable';
-import * as SparqlJs from 'sparqljs';
 import { ElementTypeIri } from 'ontodia';
 
 import { Component } from 'platform/api/components';
-import { Rdf } from 'platform/api/rdf';
-import { xsd, rdf } from 'platform/api/rdf/vocabularies';
-import { SparqlUtil } from 'platform/api/sparql';
+import { xsd } from 'platform/api/rdf/vocabularies';
 
 import {
-  ResourceEditorForm, ResourceEditorFormProps, FieldDefinitionProp, CompositeInput,
-  CompositeInputProps, CompositeValue, FieldValue, FieldState, FieldError, ErrorKind,
-  SemanticForm, FieldDefinition, normalizeFieldDefinition, validateFieldConfiguration,
+  ResourceEditorForm, ResourceEditorFormProps,
+  CompositeInput, CompositeInputProps,
+  FieldDefinition, normalizeFieldDefinition,
   FieldMapping, mapChildToComponent,
 } from 'platform/components/forms';
 import { isValidChild, componentHasType, universalChildren } from 'platform/components/utils';
@@ -118,9 +115,7 @@ function collectMetadataFromFormOrComposite(
     throw new Error(`Missing 'typeIri' prop for ontodia-entity-metadata`);
   }
 
-  const fields = form.props.fields
-    .map(normalizeFieldDefinition)
-    .map(def => augmentPatternWithEntityType(def, entityTypeIri));
+  const fields = form.props.fields.map(normalizeFieldDefinition);
   const fieldByIri = Immutable.Map(
     fields.map(f => [f.iri, f] as [string, FieldDefinition])
   );
@@ -169,7 +164,7 @@ function validateFormFieldsDatatype(children: ReactNode | undefined, metadata: E
     const mapping = mapChildToComponent(child);
     if (!mapping || FieldMapping.isComposite(mapping)) { return; }
     if (FieldMapping.isInput(mapping)) {
-      const field = metadata.fieldById.get(mapping.props.for);
+      const field = metadata.fieldById.get(mapping.element.props.for);
       if (isObjectProperty(field, metadata)) {
         throw new Error(`XSD Datatype of the field <${field.iri}> isn't literal`);
       }
@@ -218,26 +213,6 @@ function extractEntityFormAndMetadata(
   const filteredChildren = universalChildren(children.filter(child => child !== metadataElement));
   const form = React.cloneElement(entityForm, {}, filteredChildren);
   return {form, metadataElement};
-}
-
-function augmentPatternWithEntityType(
-  field: FieldDefinition,
-  entityTypeIri: string
-): FieldDefinition {
-  const query = SparqlUtil.parseQuery(field.selectPattern);
-  if (query.type !== 'query') {
-    return field;
-  }
-  query.where.unshift({
-    type: 'bgp',
-    triples: [{
-      subject: '?subject' as SparqlJs.Term,
-      predicate: rdf.type.value as SparqlJs.Term,
-      object: entityTypeIri as SparqlJs.Term,
-    }]
-  });
-  const selectPattern = SparqlUtil.serializeQuery(query);
-  return {...field, selectPattern};
 }
 
 export function isObjectProperty(field: FieldDefinition, metadata: EntityMetadata) {

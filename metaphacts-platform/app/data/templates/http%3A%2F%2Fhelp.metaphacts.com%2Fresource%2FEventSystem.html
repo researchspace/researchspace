@@ -59,7 +59,7 @@
       <li><code><semantic-tree /></code></li>
       <li><code><ontodia /></code></li>
     </ul>
-    
+
     <h2>Event components</h2>
     <p>
       Along with the events the special event components are provided.
@@ -86,6 +86,14 @@
       <code><mp-event-target-template-render /></code> - refreshes the template component and passes it new properties when receiving the <code>Component.TemplateUpdate</code> event.
     </p>
     <mp-documentation type="EventTargetTemplateRenderConfig"></mp-documentation>
+    <p>
+      <code><mp-event-target-redirect/></code> - Component which provides redirect feature. In response to the event <code>RedirectAction.perform</code> component perform redirect/reload operation where the IRI of the target resource can be passed via parameters or together with event.
+    </p>
+    <mp-event-target-redirect
+      id='redirect-to-resource'
+      action='redirect'
+    ></mp-event-target-redirect>
+    <mp-documentation type="RedirectActionProps"></mp-documentation>
 
     <bs-alert bs-style='info'>
       <strong>Info!</strong>
@@ -97,7 +105,7 @@
       NOTE: In order for this examples to work, please download the <a href="/metaphacts/samples/sample.ttl">sample data</a> (simple right click and save as). You can now load this data into the backing store via the <semantic-link uri="[[resolvePrefix "Admin:DataImportExport"]]"> data import and export</semantic-link> administration page.
     </p>
     <p>
-      [[#if (ask "ASK {  <http://example.org/bob#me> a <http://xmlns.com/foaf/0.1/Person>  }") ]] 
+      [[#if (ask "ASK {  <http://example.org/bob#me> a <http://xmlns.com/foaf/0.1/Person>  }") ]]
       <span style="color:green;font-weight: bold; ">Check: It seems that you have already correctly loaded the sample data.</span>
       [[else]]
       <span style="color:red;font-weight: bold; ">Check: It seems that you have not yet loaded the sample data.</span>
@@ -146,20 +154,20 @@
 							</div>
           	</bs-tab>
           <bs-tab event-key='2' title='Table'>
-            <semantic-table 
+            <semantic-table
               query='
-								SELECT ?person WHERE {                    
-                  VALUES (?person) { 
+								SELECT ?person WHERE {
+                  VALUES (?person) {
                     (<http://example.org/bob#me>)
                     (<http://example.org/alice#me> )
                   }
               	}
 							'
-              column-configuration='[  
+              column-configuration='[
                 {
-                  "variableName": "person", 
-                  "displayName": "Persons", 
-                  "cellTemplate": "{{> default iri=person.value}}" 
+                  "variableName": "person",
+                  "displayName": "Persons",
+                  "cellTemplate": "{{> default iri=person.value}}"
                 }
               ]'
             >
@@ -215,8 +223,8 @@
           <bs-tab event-key='2' title='Table' unmount-on-exit=true>
             <semantic-table id='table-xy'
               query='
-								SELECT ?person WHERE {                    
-                  VALUES (?person) { 
+								SELECT ?person WHERE {
+                  VALUES (?person) {
                     (<http://example.org/bob#me>)
                     (<http://example.org/alice#me> )
                   }
@@ -239,5 +247,101 @@
       </div>
     ]]>
     </mp-code-example>
+
+    <h3>Redirect to the resource after the form has been submitted</h3>
+    <mp-code-example>
+    <![CDATA[
+      <semantic-form
+        id='semantic-form-example'
+        post-action='event'
+        new-subject-template='http://example.com/person-name-{{UUID}}'
+        fields='[
+          {
+            "id": "name",
+            "label": "Name",
+            "description": "",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT $value WHERE {$subject rdfs:label $value}",
+            "insertPattern": "INSERT {$subject rdfs:label $value}WHERE{}"
+          }
+        ]'>
+        <semantic-form-text-input for='name'></semantic-form-text-input>
+        <button name='submit'>Create</button>
+        <button name='reset'>Reset</button>
+      </semantic-form>
+      <mp-event-proxy id='form-resource-created' on-event-type='Form.ResourceUpdated'
+        proxy-event-type='RedirectAction.perform' proxy-targets='["redirect-to-resource"]'>
+      </mp-event-proxy>
+      <mp-event-target-redirect
+        id='redirect-to-resource'
+        action='redirect'
+      ></mp-event-target-redirect>
+    ]]>
+    </mp-code-example>
+
+    <h2>Ontodia Events</h2>
+    <p>
+    	Ontodia Component supports the following events:
+    </p>
+    <mp-documentation type="OntodiaEventData" disable-transform-attributes=true hide-required-label=true></mp-documentation>
+    <h3>Example: Focus on an element</h3>
+    <mp-code-example>
+<![CDATA[
+<bs-row>
+	<bs-col md='6'>
+    <semantic-table
+      query='
+          PREFIX person: <http://example.com/person/>
+
+          SELECT ?person WHERE {
+            VALUES (?person) {
+              (person:alice)
+              (person:carol)
+              (person:mike)
+              (person:bob)
+            }
+          }'
+      options='{"showFilter": false}'
+      column-configuration='[{"variableName": "person", "displayName": "Person", "cellTemplate": "{{> template}}"}]'
+    >
+      <template id='template'>
+        <mp-event-trigger id='demo-ontodia-focus' type='Ontodia.FocusOnElement' targets='["demo-ontodia"]' data='{"iri": "{{person.value}}"}'>
+          <a href='{{person.value}}'><mp-label iri='{{person.value}}'></mp-label></a>
+        </mp-event-trigger>
+      </template>
+    </semantic-table>
+  </bs-col>
+  <bs-col md='6' style='height: 500px;'>
+    <ontodia id='demo-ontodia'
+			settings='nostats'
+			query='
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX person: <http://example.com/person/>
+
+        CONSTRUCT {
+          ?s ?p ?o
+        } WHERE {
+          {
+            SELECT ?s ?p ?o WHERE {
+              VALUES (?s ?p ?o)
+              {
+                (person:alice foaf:knows person:bob)
+                (person:alice foaf:knows person:carol)
+                (person:carol foaf:knows person:mike)
+                (person:mike foaf:knows person:carol)
+                (person:bob foaf:knows person:carol)
+                (person:alice foaf:knows person:mike)
+              }
+            }
+          }
+  			}
+      '
+    ></ontodia>
+  </bs-col>
+</bs-row>
+]]>
+      </mp-code-example>
   </div>
 </div>

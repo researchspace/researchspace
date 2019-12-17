@@ -34,18 +34,25 @@ import {
   queryIIIFImageOrRegion, ImageOrRegionInfo,
 } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
-import { LdpAnnotationEndpoint } from '../../data/iiif/AnnotationEndpoint';
+import {
+  LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri,
+} from '../../data/iiif/AnnotationEndpoint';
 
 import { chooseMiradorLayout } from './SideBySideComparison';
 
 import { renderMirador, removeMirador, scrollToRegions } from './mirador/Mirador';
 
-export interface ImageRegionEditorProps {
+export interface ImageRegionEditorConfig {
   id?: string;
   imageOrRegion: string | { [iri: string]: Array<string> };
   imageIdPattern: string;
   iiifServerUrl: string;
   repositories?: Array<string>;
+}
+
+export interface ImageRegionEditorProps extends ImageRegionEditorConfig {
+  annotationEndpoint?: AnnotationEndpoint;
+  onMiradorInitialized?: (miradorInstance: Mirador.Instance) => void;
 }
 
 interface ImageRegionEditorState {
@@ -82,7 +89,7 @@ export class ImageRegionEditorComponentMirador
   };
 
   private miradorElement: HTMLElement;
-    private miradorInstance: Mirador.Instance;
+  private miradorInstance: Mirador.Instance;
 
   constructor(props: ImageRegionEditorProps, context: any) {
     super(props, context);
@@ -183,7 +190,7 @@ export class ImageRegionEditorComponentMirador
       this.miradorInstance = renderMirador({
         targetElement: element,
         miradorConfig,
-        onInitialized: mirador =>
+        onInitialized: mirador => {
           scrollToRegions(mirador, ({canvasId}) => {
             for (const [iri, image] of Array.from(this.state.info)) {
               if (canvasId === image.imageIRI.value) {
@@ -191,8 +198,11 @@ export class ImageRegionEditorComponentMirador
               }
             }
             return undefined;
-          }),
-      });
+          });
+          if (this.props.onMiradorInitialized) {
+            this.props.onMiradorInitialized(mirador);
+          }
+      }});
     });
   }
 
@@ -237,9 +247,10 @@ export class ImageRegionEditorComponentMirador
   private miradorConfigFromManifest(
     manifests: Array<Manifest>
   ): Mirador.Options {
-    const imagesInfo = this.state.info as Map<string, ImageOrRegionInfo>;
+    const {id, annotationEndpoint} = this.props;
+    const imagesInfo = this.state.info as ImagesInfoByIri;
     return {
-      id: this.props.id, // The CSS ID selector for the containing element.
+      id: id, // The CSS ID selector for the containing element.
       layout: chooseMiradorLayout(manifests.length),
       saveSession: false,
       data: manifests.map(manifest => ({
@@ -251,7 +262,7 @@ export class ImageRegionEditorComponentMirador
         name: 'ResearchSpace annotation endpoint',
         module: 'AdapterAnnotationEndpoint',
         options: {
-          endpoint: new LdpAnnotationEndpoint({imagesInfo}),
+          endpoint: annotationEndpoint || new LdpAnnotationEndpoint({imagesInfo}),
         },
       },
       availableAnnotationDrawingTools: [

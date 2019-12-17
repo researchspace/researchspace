@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import com.metaphacts.services.storage.api.StoragePath;
@@ -168,8 +169,7 @@ public abstract class ConfigurationGroupBase implements ConfigurationGroup {
                 throw new IllegalArgumentException(
                     "Cannot set multiple values for non-list configuration parameter");
             }
-            Object configValue = ConfigurationUtil.listAsConfigValue(configValues);
-            internalSetParameter(parameterName, configValue, targetAppId);
+            internalSetParameter(parameterName, configValues, targetAppId);
         } catch (ConfigurationException e) {
             logger.warn("Error while saving configuration: " + e.getMessage());
             throw new RuntimeException(e);
@@ -223,57 +223,30 @@ public abstract class ConfigurationGroupBase implements ConfigurationGroup {
      * @throws Exception 
      */
     private synchronized void internalSetParameter(
-        String configIdInGroup, Object configValue, String targetAppId
+        String configIdInGroup, List<String> configValues, String targetAppId
     ) throws ConfigurationException {
 
         ObjectStorage storage = platformStorage.getStorage(targetAppId);
 
         try {
-            logger.info("Saving new value: {} [at {}] -> {}", configIdInGroup, targetAppId, configValue);
+            logger.info("Saving new values: {} [at {}] -> {}", configIdInGroup, targetAppId, configValues);
             PropertiesConfiguration targetConfig =
                 (PropertiesConfiguration)config.getConfiguration(targetAppId);
             if (targetConfig == null) {
                 targetConfig = ConfigurationUtil.createEmptyConfig();
             }
 
+            Object configValue = ConfigurationUtil.listAsConfigValue(configValues);
             if (configValue == null) {
                 targetConfig.clearProperty(configIdInGroup);
             } else {
-                try (ScanResult scanResult = new ClassGraph()
-                    .enableClassInfo()
-                    .enableAnnotationInfo()
-                    .enableMethodInfo()
-                    .enableStaticFinalFieldConstantInitializerValues()
-                    .whitelistPackages("com.metaphacts.config.groups")
-                    .scan()) {
-                    List<Method> allDeclaredMethods = new ArrayList<Method>();
-                    for (ClassInfo routeClassInfo : scanResult.getClassesWithMethodAnnotation(ConfigurationParameterHook.class.getName())) {
-                        Class<?> classWithConfigurationHook = routeClassInfo.loadClass();
-                        allDeclaredMethods = Arrays.asList(classWithConfigurationHook.getDeclaredMethods());
-                        for (Method method : allDeclaredMethods) {
-                            if (method.isAnnotationPresent(ConfigurationParameterHook.class)) {
-                                if (method.getName().equals("onUpdate"+StringUtils.capitalize(configIdInGroup))) {
-                                    method.invoke(this, configIdInGroup, configValue.toString(), targetConfig);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    targetConfig.setProperty(configIdInGroup, configValue);
-                    // in principal we could also move setProperty to the hooks itself in the future
-                    // and invalidate only specific caches
-                    cacheManager.invalidateAll();
-                } catch (Exception e) {
-                    if (e.getCause() instanceof ConfigurationException) {
-                        throw (ConfigurationException) e.getCause();
-                    } else { 
-                        // this may include target invocation exceptions for other reasons than the
-                        // configuration exception
-                    	throw new RuntimeException(e);
-                    }
-                    
-                }
+                checkParameterValueByUpdateHook(configIdInGroup, configValues, targetConfig);
+                targetConfig.setProperty(configIdInGroup, configValue);
             }
+
+            // in principal we could also move setProperty to the hooks itself in the future
+            // and invalidate only specific caches
+            cacheManager.invalidateAll();
 
             try (ByteArrayOutputStream content = new ByteArrayOutputStream()) {
                 FileHandler handler = new FileHandler(targetConfig);
@@ -292,6 +265,51 @@ public abstract class ConfigurationGroupBase implements ConfigurationGroup {
         } catch (InvalidConfigurationException e) {
             throw new ConfigurationException(e);
         }
+    }
+
+    private void checkParameterValueByUpdateHook(
+        String configIdInGroup,
+        List<String> configValues,
+        PropertiesConfiguration targetConfig
+    ) throws ConfigurationException {
+        Method updateHook = findParameterUpdateHook(configIdInGroup);
+        if (updateHook != null) {
+            try {
+                updateHook.invoke(this, configIdInGroup, configValues, targetConfig);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof ConfigurationException) {
+                    throw (ConfigurationException) e.getCause();
+                }
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Nullable
+    private Method findParameterUpdateHook(String configIdInGroup) {
+        ClassGraph updateHookGraph = new ClassGraph()
+            .enableClassInfo()
+            .enableAnnotationInfo()
+            .enableMethodInfo()
+            .enableStaticFinalFieldConstantInitializerValues()
+            .whitelistPackages("com.metaphacts.config.groups");
+
+        try (ScanResult scanResult = updateHookGraph.scan()) {
+            for (ClassInfo routeClassInfo : scanResult.getClassesWithMethodAnnotation(ConfigurationParameterHook.class.getName())) {
+                Class<?> classWithConfigurationHook = routeClassInfo.loadClass();
+                for (Method method : classWithConfigurationHook.getDeclaredMethods()) {
+                    if (method.isAnnotationPresent(ConfigurationParameterHook.class)) {
+                        if (method.getName().equals("onUpdate" + StringUtils.capitalize(configIdInGroup))) {
+                            return method;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

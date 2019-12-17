@@ -29,7 +29,7 @@ import { Rdf, vocabularies, XsdDataTypeValidation } from 'platform/api/rdf';
 
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, EmptyValue } from '../FieldValues';
-import { AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
+import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
 import { ValidationMessages } from './Decorations';
 
 import './datetime.scss';
@@ -91,7 +91,7 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
         inputProps: {placeholder},
       }),
 
-      createElement(ValidationMessages, {errors: FieldValue.getErrors(this.props.value)}),
+      createElement(ValidationMessages, {errors: FieldValue.getErrors(this.props.value)})
     );
   }
 
@@ -121,6 +121,8 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
       value: Rdf.literal(isoDate, this.datatype),
     });
   }
+
+  static makeHandler = AtomicValueInput.makeAtomicHandler;
 }
 
 export function getModeFromDatatype(datatype: Rdf.Iri): DatePickerMode {
@@ -167,7 +169,10 @@ function localMomentAsIfItWasUtc(localMoment: Moment) {
 
 function defaultPlaceholder(definition: FieldDefinition, mode: DatePickerMode) {
   const valueType = mode === 'time' ? 'time' : 'date';
-  return `Select or enter ${(getPreferredLabel(definition.label) || valueType).toLocaleLowerCase()} here...`;
+  const fieldName = (getPreferredLabel(definition.label) || valueType).toLocaleLowerCase();
+  return `Select or enter ${fieldName} here...`;
 }
+
+SingleValueInput.assertStatic(DatePickerInput);
 
 export default DatePickerInput;

@@ -48,7 +48,7 @@ class GraphStoreService {
     ): Kefir.Property<string> {
       const req = request
           .post(GRAPH_STORE_SERVICEURL)
-          .query({uri: targetGraph.value, repository: repository})
+          .query({graph: targetGraph.value, repository: repository})
           .send(turtleString)
           .type('text/turtle');
 
@@ -113,7 +113,7 @@ class GraphStoreService {
 
         return Kefir.fromNodeCallback<boolean>(
             (cb) => req.end((err, res: request.Response) => {
-                cb(this.errorToString(err), res.ok ? true : null);
+                cb(err, res.ok ? true : null);
             })
         ).toProperty();
     }
@@ -138,7 +138,7 @@ class GraphStoreService {
 
       return Kefir.fromNodeCallback<boolean>(
         (cb) => req.end((err, res: request.Response) => {
-          cb(this.errorToString(err), res.ok ? true : null);
+          cb(err, res.ok ? true : null);
         })
       ).toProperty();
   }

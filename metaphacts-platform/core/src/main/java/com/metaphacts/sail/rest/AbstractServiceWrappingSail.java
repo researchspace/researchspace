@@ -106,6 +106,11 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
         this.mapInputParametersByProperty = Maps.newHashMap();
     
         ServiceDescriptor descriptor = this.getServiceDescriptor();
+
+        if (descriptor == null) {
+            throw new IllegalStateException("Service descriptor is not configured or does not exist. Hint: does "
+                    + this.serviceID + " point to an existing service descriptor?");
+        }
     
         // Collect definitions of input parameters from the service descriptor
         readParametersFromConfig(descriptor, descriptor.getInputParameters(),

@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "assignee": {
+            "description": "IRI of the first step assignee (by default unassigned)",
+            "type": "string"
+        },
+        "className": {
+            "description": "CSS class for the component",
+            "type": "string"
+        },
+        "definition": {
+            "description": "IRI of a workflow definition",
+            "type": "string"
+        },
+        "firstStep": {
+            "description": "First step of workflow instantiation",
+            "type": "string"
+        },
+        "id": {
+            "description": "Unique id to refer to in case of using in couple with event system.",
+            "type": "string"
+        },
+        "metadataQuery": {
+            "description": "Sparql query to construct metadata for worflow instantiation\nExample:\n```\nmetadata-query='CONSTRUCT {\n   ?metadataIri <http://example.com/hasLanguage>\n   \"english\"^^<http://www.w3.org/2001/XMLSchema#string>;\n   <http://example.com/hasPrice> \"1000\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n} WHERE {}\n```",
+            "type": "string"
+        },
+        "newWorkflowIriTemplate": {
+            "description": "URI template to customize worflow IRI generation.\n`{{UUID}}` placeholder allows to substitute a random UUID.",
+            "type": "string"
+        },
+        "subject": {
+            "description": "IRI of a resource to handled by workflow",
+            "type": "string"
+        },
+        "useEventSystem": {
+            "description": "In that case the body of the component is empty,\ncomponent listen to 'Workflow.Create' event and\nfires 'Workflow.Created' event.",
+            "type": "boolean"
+        }
+    },
+    "propertyOrder": [
+        "definition",
+        "firstStep",
+        "subject",
+        "id",
+        "useEventSystem",
+        "assignee",
+        "metadataQuery",
+        "newWorkflowIriTemplate",
+        "className"
+    ],
+    "required": [
+        "definition",
+        "firstStep"
+    ],
+    "type": "object"
+}
+

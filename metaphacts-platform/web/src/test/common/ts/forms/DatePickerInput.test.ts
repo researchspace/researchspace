@@ -46,24 +46,31 @@ const DATE_TIME = 'http://www.w3.org/2001/XMLSchema-datatypes#dateTime';
 const DATE = 'http://www.w3.org/2001/XMLSchema-datatypes#date';
 const TIME = 'http://www.w3.org/2001/XMLSchema-datatypes#time';
 
-const BASIC_PROPS: DatePickerProps = {
-  definition: normalizeFieldDefinition({
-    id: 'nameProp',
-    label: 'labelProp',
-    xsdDatatype: Rdf.iri(DATE_TIME),
-    minOccurs: 1,
-    maxOccurs: 1,
-    selectPattern: '',
-  }),
-  for: 'date',
-  value: FieldValue.fromLabeled({
-    value: Rdf.literal('2016-05-23T10:20:13+05:30', vocabularies.xsd.dateTime),
-  }),
+const definition = normalizeFieldDefinition({
+  id: 'date1',
+  label: 'labelProp',
+  xsdDatatype: Rdf.iri(DATE_TIME),
+  minOccurs: 1,
+  maxOccurs: 1,
+  selectPattern: '',
+});
+
+const baseInputProps: DatePickerProps = {
+  for: 'date1',
+  definition,
   mode: undefined,
 };
 
+const completeInputProps: DatePickerProps = {
+  ...baseInputProps,
+  handler: DatePickerInput.makeHandler({definition, baseInputProps}),
+  value: FieldValue.fromLabeled({
+    value: Rdf.literal('2016-05-23T10:20:13+05:30', vocabularies.xsd.dateTime),
+  }),
+};
+
 describe('DatePickerInput Component', () => {
-  const datepickerComponent = mount(createElement(DatePickerInput, BASIC_PROPS));
+  const datepickerComponent = mount(createElement(DatePickerInput, completeInputProps));
   const datepicker = datepickerComponent.find('DatePickerInput');
 
   it('render with default parameters', () => {
@@ -73,7 +80,7 @@ describe('DatePickerInput Component', () => {
   describe('modes', () => {
     it('can get mode from props', () => {
       const mode: DatePickerMode = 'date';
-      let props = clone(BASIC_PROPS);
+      let props = clone(completeInputProps);
       props.mode = mode;
       const component = mount(createElement(DatePickerInput, props));
       const componentProps: DatePickerProps = component.props();
@@ -81,7 +88,7 @@ describe('DatePickerInput Component', () => {
     });
 
     describe('date', () => {
-      const props = clone(BASIC_PROPS);
+      const props = clone(completeInputProps);
       props.definition.xsdDatatype = Rdf.iri(DATE);
 
       const component = shallow(createElement(DatePickerInput, props));
@@ -103,7 +110,7 @@ describe('DatePickerInput Component', () => {
 
       it('pass correct value after change', () => {
         const callback = sinon.spy();
-        const clonedProps = clone(BASIC_PROPS);
+        const clonedProps = clone(completeInputProps);
         clonedProps.updateValue = callback;
         clonedProps.definition.xsdDatatype = Rdf.iri(DATE);
         const wrapper = mount(createElement(DatePickerInput, clonedProps));
@@ -115,7 +122,7 @@ describe('DatePickerInput Component', () => {
     });
 
     describe('time', () => {
-      const props = clone(BASIC_PROPS);
+      const props = clone(completeInputProps);
       props.definition.xsdDatatype = Rdf.iri(TIME);
 
       const component = shallow(createElement(DatePickerInput, props));
@@ -129,7 +136,7 @@ describe('DatePickerInput Component', () => {
     });
 
     describe('datetime', () => {
-      const props = clone(BASIC_PROPS);
+      const props = clone(completeInputProps);
       props.definition.xsdDatatype = Rdf.iri(DATE_TIME);
 
       const component = shallow(createElement(DatePickerInput, props));
@@ -145,7 +152,7 @@ describe('DatePickerInput Component', () => {
 
   it('call callback when value is changed', () => {
     const callback = sinon.spy();
-    const props: DatePickerProps = {...BASIC_PROPS, updateValue: callback};
+    const props: DatePickerProps = {...completeInputProps, updateValue: callback};
     const wrapper = mount(createElement(DatePickerInput, props));
     wrapper.find('input').simulate('change', {'target': {'value': '05/11/22 11:55:22'}});
     expect(callback.called).to.be.true;

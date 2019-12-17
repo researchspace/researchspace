@@ -19,6 +19,7 @@
 package com.metaphacts.api.sparql;
 
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -126,16 +127,28 @@ public class SparqlUtil {
     }
 
     // matches case-insensitive and multi-line groups that
-    // start with prefix, one to infinite whitespace, followed by any or none character,
+    // start with prefix, one to infinite whitespace, followed by any or none character (incl. unicode),
     // followed by a ":", followed zero to infinite whitespace, followed by any character enclosed by "<" and ">"
-    static final Pattern PREFIX_PATTERN = Pattern.compile("prefix\\s+([a-z]*)[:]{0,}\\s*[\\<]{1}[^\\<]*[\\>]{1}",
+    // Note: this regex is not strict w.r.t to the standard defined at https://www.w3.org/TR/sparql11-query/#rPN_PREFIX
+    // e.g. it would allow a prefix starting with a digit
+    // However, as we use it for duplicate checks only (i.e. whether to prepend platform defined prefixes or not) we
+    // are relaxing the standard.
+    static final Pattern PREFIX_PATTERN = Pattern.compile("prefix\\s+([^:\\s]*)[:]{0,}\\s*[\\<]{1}[^\\<]*[\\>]{1}",
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     /**
      * Extracts a set of prefixes from a SPARQL operation string using regex.
      * @param operationString
      * @return
      */
-    public static Set<String> extractPrefixes(String operationString){
+    static Set<String> extractPrefixes(String operationString) {
+        
+        // check if the operation string actually contains "PREFIX" before applying the regex
+        // => most queries will not define any prefixes but rely on the namespace definitions
+        // of the platform
+        if (!operationString.toLowerCase().contains("prefix")) {
+            return Collections.emptySet();
+        }
+        
         Set<String> prefixes = Sets.newHashSet();
         Matcher prefixMatcher = PREFIX_PATTERN.matcher(operationString);
         while (prefixMatcher.find()) {

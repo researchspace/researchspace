@@ -71,7 +71,8 @@ describe('instance to json serialization', () => {
                   value: {
                     '#type': 'Iri',
                     '#value': {
-                      value: 'http://example.com',
+                      'termType': 'NamedNode',
+                      'value': 'http://example.com',
                     },
                   },
                 },

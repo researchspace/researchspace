@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "properties": {
         "className": {
             "description": "Custom css classes for the input element",
@@ -15,12 +15,12 @@
             "type": "string"
         },
         "domain": {
-            "description": "Specify search domain category IRI (full IRI enclosed in <>). Required, if component is used together with facets.",
+            "description": "Specify search domain category IRI (full IRI enclosed in <>).\nRequired, if component is used together with facets.",
             "type": "string"
         },
         "escapeLuceneSyntax": {
             "default": true,
-            "description": "A flag determining whether any special Lucene syntax must be escaped.\nBy default Lucene syntax is escaped and user input is tokenized into words prefixed by `*`.\nE.g for the search `Hello World` -> `Hello* World*`.\nWhen `false` user input is propagated unchanged to the query.",
+            "description": "A flag determining whether any special Lucene syntax will be escaped.\nWhen `false` lucene syntax in the user input is not escaped.",
             "type": "boolean"
         },
         "minSearchTermLength": {
@@ -44,6 +44,11 @@
         "style": {
             "description": "Custom css styles for the input element",
             "type": "string"
+        },
+        "tokenizeLuceneQuery": {
+            "default": true,
+            "description": "A flag determining whether the user input is tokenized by whitespace into words postfixed by `*`. \nE.g. the search for `Hello World` becomes `Hello* World*`.",
+            "type": "boolean"
         }
     },
     "propertyOrder": [
@@ -56,7 +61,8 @@
         "searchTermVariable",
         "minSearchTermLength",
         "placeholder",
-        "escapeLuceneSyntax"
+        "escapeLuceneSyntax",
+        "tokenizeLuceneQuery"
     ],
     "required": [
         "query"

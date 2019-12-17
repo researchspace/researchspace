@@ -24,10 +24,13 @@ export interface DashboardEvents {
    */
   'Dashboard.StatusChanged': { hasChanges: boolean };
 
-    /**
+  /**
    * Event which should be triggered when the current resource has been changed.
    */
-  'Dashboard.ResourceChanged': { resourceIri: string };
+  'Dashboard.ResourceChanged': {
+    resourceIri: string;
+    data?: { [key: string]: any }; // additional info that can be passed with the event
+  };
 }
 const event: EventMaker<DashboardEvents> = EventMaker;
 

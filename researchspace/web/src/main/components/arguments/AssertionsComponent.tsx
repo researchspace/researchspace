@@ -44,9 +44,9 @@ import {
 
 import {
   ArgumentsContext, ArgumentsContextTypes, AssertedBelief, AssertedBeliefTypeKind,
-  ArgumentsFieldDefinition,
+  ArgumentsFieldDefinition, SimpleBeliefValue,
 } from './ArgumentsApi';
-import * as styles from './AssertionComponent.scss';
+import * as styles from './AssertionsComponent.scss';
 
 export interface AssertionsProps {
   title: string
@@ -267,7 +267,7 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
       originRepository: repository,
       belief: {
         type: 'simple',
-        value: 'No Opinion',
+        value: SimpleBeliefValue.NoOpinion,
       }
     });
 
@@ -294,7 +294,7 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
               const belief = AssertionsComponent.getDefaultBelief(
                 this.props.target, this.props.field, value, false, 'default'
               );
-              belief.belief.value = 'Agree';
+              belief.belief.value = SimpleBeliefValue.Agree;
               return [value, belief];
             }) as Array<[Rdf.Node, AssertedBelief]>;
           this.props.onBeliefsChange(Map(beliefs));

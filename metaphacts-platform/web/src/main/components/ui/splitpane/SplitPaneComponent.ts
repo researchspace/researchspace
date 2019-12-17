@@ -185,6 +185,10 @@ export class SplitPaneComponent extends Component<Props, State> {
           return isOpen ? cloneElement(element, {onClick: this.handleOpen}) : null;
         }
 
+        if (element.type === SplitPaneComponent) {
+          return element;
+        }
+
         return cloneElement(element, {}, ...this.mapChildren(element.props.children));
       })
     );
@@ -192,7 +196,7 @@ export class SplitPaneComponent extends Component<Props, State> {
 
   render() {
     const {minSize, className, resizerClassName, style, sidebarStyle, resizerStyle, split,
-           contentStyle, children} = this.props;
+           contentStyle, children, primary} = this.props;
     const isOpen = this.state.isOpen;
 
     const props = {
@@ -207,12 +211,17 @@ export class SplitPaneComponent extends Component<Props, State> {
       pane1Style: sidebarStyle,
       pane2Style: contentStyle,
       split,
+      primary,
     };
 
-    const firstChild = children[0];
-    const firstChildStyle = assign(
+    let [sidebarChild, contentChild] = [children[0], children[1]];
+    if (primary === 'second') {
+      [sidebarChild, contentChild] = [contentChild, sidebarChild];
+    }
+
+    const sidebarChildStyle = assign(
       {},
-      firstChild.props.style,
+      sidebarChild.props.style,
       configHasDock(this.props) ? {
         position: 'sticky',
         top: this.props.navHeight + 'px',
@@ -220,14 +229,17 @@ export class SplitPaneComponent extends Component<Props, State> {
       } : null,
     );
 
-    return createElement(SplitPane, props,
-      cloneElement(
-        firstChild,
-        {style: firstChildStyle},
-        ...this.mapChildren(firstChild.props.children)
+    let [firstChild, secondChild] = [
+      cloneElement(sidebarChild, {style: sidebarChildStyle},
+        ...this.mapChildren(sidebarChild.props.children)
       ),
-      this.mapChildren(children[1])
-    );
+      this.mapChildren(contentChild)
+    ];
+    if (primary === 'second') {
+      [firstChild, secondChild] = [secondChild, firstChild];
+    }
+
+    return createElement(SplitPane, props, firstChild, secondChild);
   }
 
   /**

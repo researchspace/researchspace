@@ -45,16 +45,30 @@ import com.google.common.collect.Lists;
  * @author Andriy Nikolov an@metaphacts.com
  */
 public class WildcardPermission extends org.apache.shiro.authz.permission.WildcardPermission {
-
+    private static final long serialVersionUID = 1L;
     private static final Pattern iriEscapePattern = Pattern.compile("<(.*?):(.*?)>");
     private static final Pattern regexEscapePattern = Pattern.compile("regex\\(.*\\)$");
     
     protected Map<String, Pattern> regexPatterns;
+    protected  String wildcardString;
 
     public WildcardPermission(String wildcardString) {
-        super(wildcardString);
+        this(wildcardString, DEFAULT_CASE_SENSITIVE);
+        // store the original permission string so we can return it  
+        // unchanged in toString(), e.g. to save it to a role definition
+        this.wildcardString = wildcardString;
+    }
+
+    public WildcardPermission(String wildcardString, boolean caseSensitive) {
+        super(wildcardString, caseSensitive);
         this.regexPatterns = Maps.newHashMap();
         initRegexParts(wildcardString);
+    }
+    
+    @Override
+    public String toString() {
+        // return the unchanged original permission string
+        return wildcardString;
     }
 
     @Override

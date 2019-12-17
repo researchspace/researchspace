@@ -304,8 +304,9 @@ public class RepositoryManager implements RepositoryManagerInterface {
     private void sendTestQuery(String id, Repository repository){
         logger.info("Testing connection for repository \"{}\".", id);
         try(RepositoryConnection con = repository.getConnection()){
-            try(TupleQueryResult tqr = con.prepareTupleQuery("SELECT * WHERE { GRAPH ?g { ?a ?b ?c} } LIMIT 1").evaluate()){
+            try (TupleQueryResult tqr = con.prepareTupleQuery("SELECT * WHERE { ?a ?b ?c } LIMIT 1").evaluate()) {
                 if (tqr.hasNext()) {
+                    Iterations.asList(tqr); // explicitly consume the iteration
                     logger.info(
                             "Connection to repository \"{}\" has been established successfully.",
                             id);
@@ -317,9 +318,7 @@ public class RepositoryManager implements RepositoryManagerInterface {
             }
         }catch(Exception e){
             logger.error(
-                    "Failed to send test query to repository \"{}\": {} \n"
-                  + "If you are using the ZIP distribution, the reason might be that the graph database is not yet initialized i.e. in this case you may ignore this warning. ",
-                    id, e.getMessage());
+                    "Failed to send test query to repository \"{}\": {} \n", id, e.getMessage());
         }
     }
 

@@ -17,7 +17,6 @@
  */
 
 import { createElement, Props, ReactNode } from 'react';
-import * as D from 'react-dom-factories';
 import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
 
@@ -28,15 +27,19 @@ import { Spinner } from 'platform/components/ui/spinner';
 
 import { FieldDefinitionProp, FieldDefinition, normalizeFieldDefinition } from '../FieldDefinition';
 import {
-  FieldValue, EmptyValue, CompositeValue, FieldError, FieldState, DataState,
+  FieldValue, EmptyValue, CompositeValue, FieldError, FieldState, DataState, mergeDataState
 } from '../FieldValues';
-import { validateFieldConfiguration, renderFields } from '../FieldMapping';
+import { InputMapping, validateFieldConfiguration, renderFields } from '../FieldMapping';
 import {
   fieldInitialState, generateSubjectByTemplate, loadDefaults, tryBeginValidation,
 } from '../FormModel';
 
-import { SingleValueInput, SingleValueInputProps } from './SingleValueInput';
-import { MultipleValuesInput, MultipleValuesProps, ValuesWithErrors } from './MultipleValuesInput';
+import {
+  SingleValueInput, SingleValueInputProps, SingleValueHandler, SingleValueHandlerProps
+} from './SingleValueInput';
+import {
+  MultipleValuesInput, MultipleValuesProps, MultipleValuesHandler, ValuesWithErrors
+} from './MultipleValuesInput';
 
 export interface CompositeInputProps extends SingleValueInputProps {
   fields: ReadonlyArray<FieldDefinitionProp>;
@@ -57,17 +60,27 @@ const READY_INPUT_STATE: InputState = {
 
 const VALIDATION_DEBOUNCE_DELAY = 500;
 
+type ChildInput = MultipleValuesInput<MultipleValuesProps, unknown>;
+
 export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
   private readonly cancellation = new Cancellation();
   private compositeOperations = this.cancellation.derive();
 
   private shouldReload = true;
   private compositeState: DataState.Loading | DataState.Ready = DataState.Ready;
-  private inputs: { [fieldId: string]: MultipleValuesInput<MultipleValuesProps, any> } = {};
+  private inputRefs = new Map<string, Array<ChildInput | null>>();
   private inputStates = new Map<string, InputState>();
 
   constructor(props: ComponentProps, context: any) {
     super(props, context);
+  }
+
+  private getHandler(): CompositeHandler {
+    const {handler} = this.props;
+    if (!(handler instanceof CompositeHandler)) {
+      throw new Error('Invalid value handler for CompositeInput');
+    }
+    return handler;
   }
 
   componentDidMount() {
@@ -105,17 +118,15 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
 
   private loadComposite(props: ComponentProps) {
     this.compositeOperations = this.cancellation.deriveAndCancel(this.compositeOperations);
-
-    const allDefinitions = normalizeDefinitons(props.fields);
-    const {inputs, errors} = validateFieldConfiguration(allDefinitions, props.children);
+    const handler = this.getHandler();
 
     // filter model from unused field definitions
     // (the ones without corresponding input)
     const filterUnusedFields = <T>(items: Immutable.Iterable<string, T>) =>
-      items.filter((item, fieldId) => inputs.has(fieldId)).toMap();
+      items.filter((item, fieldId) => handler.inputs.has(fieldId)).toMap();
 
-    const definitions = filterUnusedFields(allDefinitions);
-    const rawComposite = createRawComposite(props.value, definitions, errors);
+    const definitions = filterUnusedFields(handler.definitions);
+    const rawComposite = createRawComposite(props.value, definitions, handler.configurationErrors);
 
     this.compositeState = DataState.Loading;
     this.inputStates.clear();
@@ -123,7 +134,7 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
     props.updateValue(() => rawComposite);
     this.compositeOperations.map(
       // add zero delay to force asynchronous observer call
-      loadDefaults(rawComposite, inputs)
+      loadDefaults(rawComposite, handler.inputs)
         .flatMap(v => Kefir.later(0, v))
     ).observe({
       value: change => {
@@ -139,7 +150,7 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
 
   private onFieldValuesChanged = (
     def: FieldDefinition,
-    reducer: (previous: ValuesWithErrors) => ValuesWithErrors,
+    reducer: (previous: ValuesWithErrors) => ValuesWithErrors
   ) => {
     this.props.updateValue(previous => this.setFieldValue(def, previous, reducer));
   }
@@ -147,21 +158,31 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
   private setFieldValue(
     def: FieldDefinition,
     oldValue: FieldValue,
-    reducer: (previous: ValuesWithErrors) => ValuesWithErrors,
+    reducer: (previous: ValuesWithErrors) => ValuesWithErrors
   ): FieldValue {
     if (!FieldValue.isComposite(oldValue)) { return; }
 
     const newValue = reduceFieldValue(def.id, oldValue, reducer);
-
-    const input = this.inputs[def.id];
-    const isInputLoading = !input || input.dataState() === DataState.Loading;
-    if (isInputLoading) {
+    if (this.isInputLoading(def.id)) {
       this.inputStates.set(def.id, READY_INPUT_STATE);
     } else {
       this.startValidatingField(def, oldValue, newValue);
     }
 
     return newValue;
+  }
+
+  private isInputLoading(fieldId: string): boolean {
+    const refs = this.inputRefs.get(fieldId);
+    if (!refs) {
+      return true;
+    }
+    for (const ref of refs) {
+      if (!ref || ref.dataState() === DataState.Loading) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private startValidatingField(
@@ -199,20 +220,29 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
     } else if (this.compositeState !== DataState.Ready) {
       return this.compositeState;
     }
-    const states = this.props.value.definitions.map(def => def.id)
-      .map(fieldId => {
-        const input = this.inputs[fieldId];
-        if (!input) { return DataState.Loading; }
-        const state = this.inputStates.get(fieldId) || READY_INPUT_STATE;
-        return state.dataState === DataState.Ready
-          ? this.inputs[fieldId].dataState()
-          : state.dataState;
-      });
-    return (
-      states.some(s => s === DataState.Loading) ? DataState.Loading :
-      states.some(s => s === DataState.Verifying) ? DataState.Verifying :
-      DataState.Ready
-    );
+
+    let result = DataState.Ready;
+
+    const fieldIds = this.props.value.definitions.map(def => def.id).toArray();
+    for (const fieldId of fieldIds) {
+      const refs = this.inputRefs.get(fieldId);
+      if (!refs) {
+        result = mergeDataState(result, DataState.Loading);
+        continue;
+      }
+      const state = this.inputStates.get(fieldId) || READY_INPUT_STATE;
+      result = mergeDataState(result, state.dataState);
+      if (state.dataState === DataState.Ready) {
+        continue;
+      }
+      for (const ref of refs) {
+        if (ref) {
+          result = mergeDataState(result, ref.dataState());
+        }
+      }
+    }
+
+    return result;
   }
 
   private dataStateForField = (fieldId: string): DataState => {
@@ -221,49 +251,6 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
     }
     const state = this.inputStates.get(fieldId) || READY_INPUT_STATE;
     return state.dataState;
-  }
-
-  validate(selected: FieldValue): FieldValue {
-    if (!FieldValue.isComposite(selected)) {
-      return selected;
-    }
-    return CompositeValue.set(selected, {
-      fields: selected.fields.map((state, fieldId) => {
-        const input = this.inputs[fieldId];
-        if (!input) { return state; }
-        return FieldState.set(state, input.validate(state));
-      }).toMap(),
-    });
-  }
-
-  finalizeSubject(owner: EmptyValue | CompositeValue, value: FieldValue): CompositeValue {
-    const sourceValue: CompositeValue = FieldValue.isComposite(value)
-      ? value : createRawComposite(value);
-
-    const ownerSubject = FieldValue.isComposite(owner) ? owner.subject : undefined;
-    return CompositeValue.set(sourceValue, {
-      subject: generateSubjectByTemplate(this.props.newSubjectTemplate, ownerSubject, sourceValue),
-    });
-  }
-
-  finalize(owner: EmptyValue | CompositeValue, value: FieldValue): Kefir.Property<CompositeValue> {
-    const finalizedComposite = this.finalizeSubject(owner, value);
-
-    const fieldProps = finalizedComposite.fields.map((state, fieldId) => {
-      const input = this.inputs[fieldId];
-      const valuesStream = input
-        ? input.finalize(finalizedComposite, state.values)
-        : Kefir.constant(Immutable.List<FieldValue>());
-
-      return valuesStream.map(values => {
-        return FieldState.set(state, {values, errors: FieldError.noErrors});
-      })
-    }).toMap();
-
-    const fields = zipImmutableMap(fieldProps);
-    return fields.map(fields => {
-      return CompositeValue.set(finalizedComposite, {fields});
-    });
   }
 
   render() {
@@ -275,12 +262,105 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
     const children = renderFields(
       this.props.children,
       composite,
+      this.getHandler().handlers,
       this.dataStateForField,
       this.onFieldValuesChanged,
-      (inputId, input) => this.inputs[inputId] = input,
+      this.onMountInput
     );
 
-    return D.div({className: 'composite-input'}, children);
+    return createElement('div', {className: 'composite-input'}, children);
+  }
+
+  private onMountInput = (
+    inputId: string,
+    inputIndex: number,
+    inputRef: MultipleValuesInput<MultipleValuesProps, any> | null
+  ) => {
+    let refs = this.inputRefs.get(inputId);
+    if (!refs) {
+      refs = [];
+      this.inputRefs.set(inputId, refs);
+    }
+    refs[inputIndex] = inputRef;
+  }
+
+  static makeHandler(props: SingleValueHandlerProps<CompositeInputProps>): CompositeHandler {
+    return new CompositeHandler(props);
+  }
+}
+
+class CompositeHandler implements SingleValueHandler {
+  readonly newSubjectTemplate: string | undefined;
+  readonly definitions: Immutable.Map<string, FieldDefinition>;
+  readonly inputs: Immutable.Map<string, ReadonlyArray<InputMapping>>;
+  readonly configurationErrors: Immutable.List<FieldError>;
+  readonly handlers: Immutable.Map<string, ReadonlyArray<MultipleValuesHandler>>;
+
+  constructor({baseInputProps}: SingleValueHandlerProps<CompositeInputProps>) {
+    this.newSubjectTemplate = baseInputProps.newSubjectTemplate;
+    this.definitions = normalizeDefinitons(baseInputProps.fields);
+    const {inputs, errors} = validateFieldConfiguration(this.definitions, baseInputProps.children);
+    this.inputs = inputs;
+    this.configurationErrors = errors;
+    this.handlers = inputs.map(mappings =>
+      mappings.map(mapping =>
+        MultipleValuesInput.getHandlerOrDefault(mapping.inputType as any, {
+          definition: this.definitions.get(mapping.for),
+          baseInputProps: mapping.element.props
+        })
+      )
+    ).toMap();
+  }
+
+  validate(value: FieldValue) {
+    if (!FieldValue.isComposite(value)) {
+      return value;
+    }
+    return CompositeValue.set(value, {
+      fields: value.fields.map((state, fieldId) => {
+        const handlers = this.handlers.get(fieldId);
+        if (!handlers || handlers.length === 0) {
+          return state;
+        }
+        let validated = state;
+        for (const handler of handlers) {
+          validated = handler.validate(validated);
+        }
+        return FieldState.set(state, validated);
+      }).toMap(),
+    });
+  }
+
+  finalize(value: FieldValue, owner: EmptyValue | CompositeValue): Kefir.Property<CompositeValue> {
+    const finalizedComposite = this.finalizeSubject(value, owner);
+
+    const fieldProps = finalizedComposite.fields.map((state, fieldId) => {
+      const handlers = this.handlers.get(fieldId);
+      if (!handlers || handlers.length === 0) {
+        return Kefir.constant(state);
+      }
+      let finalizing = Kefir.constant(state.values);
+      for (const handler of handlers) {
+        finalizing = finalizing.flatMap(v => handler.finalize(v, finalizedComposite)).toProperty();
+      }
+      return finalizing.map(values => {
+        return FieldState.set(state, {values, errors: FieldError.noErrors});
+      });
+    }).toMap();
+
+    return zipImmutableMap(fieldProps).map(fields => {
+      return CompositeValue.set(finalizedComposite, {fields});
+    });
+  }
+
+  finalizeSubject(value: FieldValue, owner: EmptyValue | CompositeValue): CompositeValue {
+    const sourceValue: CompositeValue = FieldValue.isComposite(value)
+      ? value : createRawComposite(value);
+
+    const ownerSubject = FieldValue.isComposite(owner) ? owner.subject : undefined;
+    return CompositeValue.set(sourceValue, {
+      subject: generateSubjectByTemplate(this.newSubjectTemplate, ownerSubject, sourceValue),
+    });
   }
 }
 
@@ -294,23 +374,21 @@ function normalizeDefinitons(rawFields: ReadonlyArray<FieldDefinitionProp>) {
   });
 }
 
-function zipImmutableMap<Type>(
-  map: Immutable.Map<string, Kefir.Property<Type>>
-): Kefir.Property<Immutable.Map<string, Type>> {
+function zipImmutableMap<K, V>(
+  map: Immutable.Map<K, Kefir.Property<V>>
+): Kefir.Property<Immutable.Map<K, V>> {
   const mapAsArray = map.map((kefirValue, key) => {
-    return kefirValue.map(value => {
-      return {key, value};
-    });
+    return kefirValue.map(value => ({key, value}));
   }).toArray();
 
-  if(mapAsArray.length > 0) {
-    return Kefir.zip(mapAsArray).map(values => {
-      const newMap = {};
-      values.forEach(({key, value}) => {
-        newMap[key] = value;
-      });
-      return Immutable.Map<string, Type>(newMap);
-    }).toProperty();
+  if (mapAsArray.length > 0) {
+    return Kefir.zip(mapAsArray).map(values =>
+      Immutable.Map<K, V>().withMutations(newMap => {
+        for (const {key, value} of values) {
+          newMap.set(key, value);
+        }
+      })
+    ).toProperty();
   } else {
     return Kefir.constant(Immutable.Map());
   }
@@ -319,7 +397,7 @@ function zipImmutableMap<Type>(
 function createRawComposite(
   sourceValue: FieldValue,
   definitions = Immutable.Map<string, FieldDefinition>(),
-  errors = FieldError.noErrors,
+  errors = FieldError.noErrors
 ): CompositeValue {
   return {
     type: CompositeValue.type,
@@ -352,7 +430,7 @@ function mergeInitialValues(base: CompositeValue, patch: CompositeValue): Compos
 function reduceFieldValue(
   fieldId: string,
   previous: CompositeValue,
-  reducer: (previous: ValuesWithErrors) => ValuesWithErrors,
+  reducer: (previous: ValuesWithErrors) => ValuesWithErrors
 ) {
   const fieldState = previous.fields.get(fieldId, FieldState.empty);
   const updatedState = FieldState.set(fieldState, reducer({
@@ -362,5 +440,7 @@ function reduceFieldValue(
   const fields = previous.fields.set(fieldId, updatedState);
   return CompositeValue.set(previous, {fields});
 }
+
+SingleValueInput.assertStatic(CompositeInput);
 
 export default CompositeInput;

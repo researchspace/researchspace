@@ -89,6 +89,12 @@ public class FormAuthenticationFilter extends org.apache.shiro.web.filter.authc.
          */
         MDCFilter.wrapIntoMDC(() -> logger.debug("User \"{}\" authenticated successfully.",
                 subject.getPrincipal()), (HttpServletRequest) request);
+
+        // initialize the authorization information inside the realm
+        // => note: this is not actually a permission check, but rather a means
+        // for initializing the cache
+        subject.isPermitted("authorization-init");
+
         return super.onLoginSuccess(token, subject, request, response);
     }   
     

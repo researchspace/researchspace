@@ -38,6 +38,8 @@ export class BatchedPool<Input, Output> {
   private emitter: Kefir.Emitter<Input>;
   private bufferedStream: Kefir.Stream<FetchResult<Input, Output>>;
 
+  readonly batchSize: number;
+
   constructor(params: {
     fetch: (inputs: Immutable.Set<Input>) => Kefir.Property<Immutable.Map<Input, Output>>;
     batchSize?: number;
@@ -47,6 +49,8 @@ export class BatchedPool<Input, Output> {
       batchSize = DEFAULT_BATCH_SIZE,
       delayIntervalMs = DEFAULT_INTERVAL_MS,
     } = params;
+
+    this.batchSize = batchSize;
 
     const stream = Kefir.stream<Input>(
       emitter => { this.emitter = emitter; });

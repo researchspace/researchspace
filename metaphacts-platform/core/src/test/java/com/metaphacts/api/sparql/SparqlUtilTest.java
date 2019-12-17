@@ -29,13 +29,6 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultFormat;
@@ -45,12 +38,14 @@ import org.eclipse.rdf4j.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.rio.rdfxml.RDFXMLWriter;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.metaphacts.api.sparql.SparqlUtil.SparqlOperation;
 
 /**
@@ -92,6 +87,20 @@ public class SparqlUtilTest {
     }
     
     @Test
+    public void testExtractPrefixes_special() {
+        String query = 
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+                "PREFIX with-dash: <http://example.org/with-dash/>\n" + 
+                "PREFIX number123:   <http://example.org/withNumber/>\n" +
+                "PREFIX Àünicode:\t <http://example.org/unicode/>\n" +
+                "SELECT * WHERE {" + 
+                "  ?s ?p ?o \n" +
+                "} ";
+        Assert.assertEquals(Sets.newHashSet("rdfs", "with-dash", "number123", "Àünicode"),
+                SparqlUtil.extractPrefixes(query));
+    }
+    
+    @Test
     public void testExtractPrefixesWithNoLinebreaks(){
         List<String> expected = Lists.newArrayList("","foaf", "dc", "xsd");
         String operationString = "prefix foaf:<http://xmlns.com/foaf/0.1/> PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>prefix dc:   <http://purl.org/dc/elements/1.1/>\n PREFIX : <http://metaphacts.com/> ";
@@ -105,10 +114,13 @@ public class SparqlUtilTest {
         prefixMap.put("dcat", "http://www.w3.org/ns/dcat#");
         prefixMap.put("skos", "http://www.w3.org/2004/02/skos/core#");
         prefixMap.put("sp", "http://spinrdf.org/sp#");
+        prefixMap.put("dc", "http://purl.org/dc/elements/1.1/");
+        prefixMap.put("with-dash", "http://example.org/with-dash/");
         String operationString = "#asf \n prefix foaf:<http://xmlns.com/foaf/0.1/>\n "
                 + "PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n "
                 + "prefix dc:   <http://purl.org/dc/elements/1.1/>\n "
                 + "PREFIX : <http://metaphacts.com/> "
+                + "PREFIX with-dash: <http://example.org/with-dash/> "
                 + "SELECT $subject WHERE {"
                 + "$subject a foaf:Agent."
                 + "}LIMIT 10";
@@ -119,6 +131,7 @@ public class SparqlUtilTest {
                 + "PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n "
                 + "prefix dc:   <http://purl.org/dc/elements/1.1/>\n "
                 + "PREFIX : <http://metaphacts.com/> "
+                + "PREFIX with-dash: <http://example.org/with-dash/> "
                 + "SELECT $subject WHERE {"
                 + "$subject a foaf:Agent."
                 + "}LIMIT 10";

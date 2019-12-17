@@ -25,7 +25,7 @@ import { Rdf, XsdDataTypeValidation, vocabularies } from 'platform/api/rdf';
 
 import { FieldDefinition } from './FieldDefinition';
 import {
-  FieldValue, SparqlBindingValue, FieldError, ErrorKind, CompositeValue, FieldState, AtomicValue,
+  FieldValue, FieldError, ErrorKind, CompositeValue, FieldState, AtomicValue,
 } from './FieldValues';
 import { FieldMapping, InputMapping } from './FieldMapping';
 import { validate, queryValues, restoreLabel } from './QueryValues';
@@ -36,26 +36,29 @@ export interface CompositeChange {
 
 const DEFALUT_SUBJECT_TEMPLATE = '{{UUID}}';
 
+type SubjectReplacer = (placeholder: Placeholder, composite?: CompositeValue) => string;
+
+type Placeholder =
+  { type: 'UUID' } |
+  { type: 'FieldValue'; id: string };
+
 export function generateSubjectByTemplate(
   template: string | undefined,
   ownerSubject: Rdf.Iri | undefined,
-  composite: CompositeValue,
+  composite: CompositeValue | undefined,
+  replacer: SubjectReplacer = makeDefaultSubjectReplacer()
 ): Rdf.Iri {
-  if (!CompositeValue.isPlaceholder(composite.subject)) {
+  if (composite && !CompositeValue.isPlaceholder(composite.subject)) {
     return composite.subject;
   }
+
   const iriTemplate = template || DEFALUT_SUBJECT_TEMPLATE;
   const subject = iriTemplate.replace(/{{([^{}]+)}}/g, (match, placeholder) => {
-    if (placeholder === 'UUID') {
-      return uuid.v4();
-    } else if (composite.definitions.has(placeholder)) {
-      const state = composite.fields.get(placeholder);
-      const first = (state ? state.values.first() : undefined) || FieldValue.empty;
-      const valueContent = FieldValue.isAtomic(first) ? first.value.value : '';
-      return encodeURIComponent(valueContent);
-    } else {
-      return '';
-    }
+    const p: Placeholder = (
+      placeholder === 'UUID' ? {type: 'UUID'} :
+      {type: 'FieldValue', id: placeholder}
+    );
+    return replacer(p, composite);
   });
 
   const isAbsoluteUri = URI(subject).scheme();
@@ -65,6 +68,21 @@ export function generateSubjectByTemplate(
 
   const combinedPath = URI.joinPaths(ownerSubject.value, subject).toString();
   return Rdf.iri(URI(ownerSubject.value).pathname(combinedPath).toString());
+}
+
+export function makeDefaultSubjectReplacer(): SubjectReplacer {
+  return (placeholder, composite) => {
+    if (placeholder.type === 'UUID') {
+      return uuid.v4();
+    } else if (composite && placeholder.type === 'FieldValue' && composite.definitions.has(placeholder.id)) {
+      const state = composite.fields.get(placeholder.id);
+      const first = (state ? state.values.first() : undefined) || FieldValue.empty;
+      const valueContent = FieldValue.isAtomic(first) ? first.value.value : '';
+      return encodeIri(valueContent);
+    } else {
+      return '';
+    }
+  };
 }
 
 export function readyToSubmit(
@@ -90,9 +108,9 @@ export function readyToSubmit(
  *  changes with initial field values.
  */
 export function loadDefaults(
-  composite: CompositeValue, inputs: Immutable.Map<string, InputMapping>,
+  composite: CompositeValue,
+  inputs: Immutable.Map<string, ReadonlyArray<InputMapping>>
 ): Kefir.Stream<CompositeChange> {
-
 
   interface FetchedValues {
     def: FieldDefinition;
@@ -100,13 +118,15 @@ export function loadDefaults(
     error?: string;
   }
 
-  const initialValues = composite.definitions
-    .map(def => loadInitialOrDefaultValues(composite.subject, def, inputs.get(def.id))
+  const initialValues = composite.definitions.map(def => {
+    const mappings = inputs.get(def.id);
+    const mapping = mappings && mappings.length > 0 ? mappings[0] : undefined;
+    return loadInitialOrDefaultValues(composite.subject, def, mapping)
       .map<FetchedValues>(values => ({def, values: Immutable.List(values)}))
       .flatMapErrors<FetchedValues>(error => Kefir.constant({
         def, error: `Failed to load initial values: ${formatError(error)}`,
-      }))
-    ).toArray();
+      }));
+  }).toArray();
 
   if (initialValues.length === 0) {
     return noChanges();
@@ -185,7 +205,7 @@ function setSizeAndFill<T>(list: ReadonlyArray<T>, newSize: number, fillValue: T
 function lookForDefaultValues(
   def: FieldDefinition, mapping: InputMapping
 ): Kefir.Property<FieldValue[]> {
-  const {defaultValue, defaultValues} = mapping.props;
+  const {defaultValue, defaultValues} = mapping.element.props;
   if (defaultValue || defaultValues) {
     const values = defaultValue ? [defaultValue] : defaultValues;
     const fieldValues = values.map(value => parseDefaultValue(value, def));
@@ -236,7 +256,7 @@ function createDefaultValue(value: string, def: FieldDefinition): AtomicValue {
 export function tryBeginValidation(
   field: FieldDefinition,
   previousComposite: CompositeValue,
-  newComposite: CompositeValue,
+  newComposite: CompositeValue
 ): Kefir.Stream<CompositeChange> | undefined {
 
   if (!field.constraints || field.constraints.length === 0) {
@@ -290,4 +310,24 @@ export function fieldInitialState(def: FieldDefinition): FieldState {
   const values = Immutable.List<FieldValue>()
     .setSize(valueCount).map(() => FieldValue.empty);
   return FieldState.set(FieldState.empty, {values});
+}
+
+/**
+ * Pattern to find code points to escape when encoding IRI as object ID; it matches:
+ * <ul>
+ *  <li> ASCII control characters and space {@code 0x00-0x20} </li>
+ *  <li> common illegal path characters: &lt; &gt; : ? * " | </li>
+ *  <li> path separators: / \ </li>
+ *  <li> recommended to avoid by AWS S3: &amp; $ @ = ; + , # {@code 0x7f-0xFF}</li>
+ *  <li> escape character: % </li>
+ * </ul>
+ */
+const DISALLOWED_CHARACTERS = /[\u0000-\u0020<>:?*"|/\\&$@=+,#\u007f-\u00ff%\s]/ig;
+const COLLAPSE_UNDERSCORES = /_+/ig;
+
+export function encodeIri(fileName: string) {
+  let transformed = fileName;
+  transformed = transformed.replace(DISALLOWED_CHARACTERS, '_');
+  transformed = transformed.replace(COLLAPSE_UNDERSCORES, '_');
+  return transformed;
 }

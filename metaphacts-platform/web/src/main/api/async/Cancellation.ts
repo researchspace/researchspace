@@ -45,6 +45,10 @@ export class Cancellation {
   private isCancelled = false;
   private cancelHandlers: Array<() => void> = [];
 
+  get aborted() {
+    return this.isCancelled;
+  }
+
   /**
    * Wraps observable as another which produces the same values and errors,
    * unsibscribes from source and ends when .cancelAll() invoked.

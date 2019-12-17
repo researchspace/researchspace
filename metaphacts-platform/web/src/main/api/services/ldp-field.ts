@@ -50,6 +50,7 @@ function deserialize(fieldIri: Rdf.Iri, graph: Rdf.Graph): FieldDefinitionProp {
     xsdDatatype: [field.xsd_datatype],
     minOccurs: [field.min_occurs],
     maxOccurs: [field.max_occurs],
+    order: [field.order],
     selectPattern: [field.select_pattern, sp.text],
     deletePattern: [field.delete_pattern, sp.text],
     askPattern: [field.ask_pattern, sp.text],

@@ -65,6 +65,6 @@ export class LdpAnnotationEndpoint implements AnnotationEndpoint {
   }
 
   remove(annotationIri: Rdf.Iri) {
-    return LdpRegionService.deleteResource(annotationIri) as Kefir.Property<any>;
+    return LdpRegionService.deleteRegion(annotationIri) as Kefir.Property<any>;
   }
 }

@@ -106,6 +106,21 @@ interface BaseConfig extends ControlledProps {
   id?: string;
 
   /**
+   * Determines if the table should automatically fetch and display labels for resource IRIs.
+   *
+   * @default true
+   */
+  showLabels?: boolean;
+
+  /**
+   * Prefetches labels for all resource IRIs in the data to support sorting and filtering
+   * by resource labels.
+   *
+   * @default false
+   */
+  prefetchLabels?: boolean;
+
+  /**
    * Enable displaying datatypes of literals. This option is applicable only to default cell templates.
    * @default false
    */
@@ -208,6 +223,8 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
     let layout: TableLayout = {
       tupleTemplate: maybe.fromNullable(isRowConfig(this.props) ? this.props.tupleTemplate : null),
       options: this.props.options,
+      showLabels: this.props.showLabels,
+      prefetchLabels: this.props.prefetchLabels,
     };
     layout = this.handleDeprecatedLayout(layout);
     const {currentPage, onControlledPropChange, ...otherProps} = this.props;

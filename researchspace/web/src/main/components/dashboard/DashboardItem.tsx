@@ -30,34 +30,57 @@ import { listen } from 'platform/api/events';
 import * as styles from './Dashboard.scss';
 import * as DashboardEvents from './DashboardEvents';
 
+const DEFAULT_VARIABLE = 'dashboardId';
+
 export interface DashboardViewConfig {
-  id: string;
-
-  label: string;
-
   /**
-   * Id of template, which will be using to show view. 
+   * Unique identifier of the view.
+   */
+  id: string;
+  /**
+   * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is used to render the view when users drop a resource on it. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * **The template MUST have a single HTML root element.**
    */
   template: string;
-
-  image?: string;
-
   /**
-   * class of icon, if images don`t accessible.
+   * Label of the view.
+   */
+  label: string;
+  /**
+   * Description of the view.
+   */
+  description?: string;
+  /**
+   * Image that will be displayed in the Dashboard Item as the representation for the specific View.
+   */
+  image?: string;
+  /**
+   * Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
    */
   iconClass?: string;
-
-  description?: string;
-
   /**
-   * Set special restriction fot using some specific types during the dropping.
-   * Must use 'value' in query which will replace to iri of the current draggable resource
+   * SPARQL Ask query that is used to check whether it is possible to display a specific resource type in the specific view. Resource IRI is injected into the query using the <code>?value</code> binding variable.
    */
   checkQuery?: string;
   /**
-   * Allows initiating a component/template without the resource
+   * Allows initiating a component/template without a resource. For instance, <code><ontodia></ontodia></code> component can be initiated in the Dashboard without a specific resource. When <code>resourceNotRequired</code> is set to <code>true</code> the version of the dialogue is rendered to suggests "Create new" option for the user, which means that the user can start this particular View from scratch and populate it with resources later.
    */
   resourceNotRequired?: boolean;
+  /**
+   * Defined the variable name that will be passed to the template to propagate the frame ID.
+   * @default 'dashboardId'
+   */
+  frameVariable?: string;
+  /**
+   * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the label of a frame, it is used in the frame controller. By default the <code><mp-label></mp-label></code> component is used. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * **The template MUST have a single HTML root element.**
+   */
+  itemLabelTemplate?: string;
+  /**
+   * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
+   * **The template MUST have a single HTML root element.**
+   */
+  itemBodyTemplate?: string;
 }
 
 export interface DashboardItemProps {
@@ -67,40 +90,53 @@ export interface DashboardItemProps {
   id: string;
 
   /**
-   * Config specifies data to define views for dashboard. 
+   * Config specifies data to define views for dashboard.
    */
-  views: DashboardViewConfig[];
-
+  views: ReadonlyArray<DashboardViewConfig>;
   /**
-   * Callback which using for transfer id of a special view and iri of a resource. 
+   * Selected resource visualization
+   */
+  viewId?: string;
+  /**
+   * Selected resource
+   */
+  resourceIri?: string;
+  /**
+   * Additional info that will be propagated to the template
+   */
+  data?: { [key: string]: any };
+  /**
+   * Linked Views
+   */
+  linkedFrames?: ReadonlyArray<{ frameId: string; frameVariable: string }>;
+  /**
+   * Callback which using for transfer id of a special view and iri of a resource.
    */
   onSelect?(data: { viewId: string; resourceIri?: string }): void;
 
   /**
-   * Callback which using for indicate users that an active dashboard's component was changed.  
+   * Callback which using for indicate users that an active dashboard's component was changed.
    */
   onStatusChange?(hasChanges: boolean): void;
 
   /**
-   * Callback which using for indicate users that a used resource was changed. 
+   * Callback which using for indicate users that a used resource was changed.
    */
-  onResourceChange?(resourceIri: string): void;
+  onResourceChange?(resourceIri: string, data?: { [key: string]: string }): void;
 
   /**
-   * Callback which using for indicate users that a current dashboard isFocused. 
+   * Callback which using for indicate users that a current dashboard isFocused.
    */
   onFocus?(isFocus: boolean): void;
 }
 
 export interface State {
-  resourceIri?: string;
-  viewId?: string;
   selectedView?: string;
 }
 
 /**
- * 
- * @example 
+ *
+ * @example
  * <rs-dashboard-item id='test-1'
  *   views='[
  *     {"id": "ontodia", "label": "Ontodia", "template": "{{> ontodia-template}}", "description": "Example", "image": "https://example/img.jpg"},
@@ -141,13 +177,13 @@ export interface State {
  *     {{/if}}
  *   </template>
  * </rs-dashboard-item>
- */      
+ */
 export class DashboardItem extends Component<DashboardItemProps, State> {
   private cancellation = new Cancellation();
 
   constructor(props: DashboardItemProps, context: any) {
     super(props, context);
-    this.state = {}
+    this.state = {};
   }
 
   componentWillUnmount() {
@@ -155,48 +191,54 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   }
 
   componentDidMount() {
-    const { onStatusChange, onResourceChange, onFocus} = this.props;
-    this.cancellation.map(listen({eventType: DashboardEvents.StatusChanged, target: this.props.id})).observe({
+    const {id, onStatusChange, onResourceChange} = this.props;
+    this.cancellation.map(
+      listen({
+        eventType: DashboardEvents.StatusChanged,
+        target: id,
+      })
+    ).observe({
       value: ({data}) => {
-        onStatusChange ? onStatusChange(data.hasChanges): undefined;
+        if (onStatusChange) {
+          onStatusChange(data.hasChanges);
+        }
       }
     });
-    this.cancellation.map(listen({eventType: DashboardEvents.ResourceChanged, target: this.props.id})).observe({
+    this.cancellation.map(
+      listen({
+        eventType: DashboardEvents.ResourceChanged,
+        target: id
+      })
+    ).observe({
       value: ({data}) => {
-        onResourceChange ? onResourceChange(data.resourceIri) : undefined;
-        this.setState({resourceIri: data.resourceIri});
+        if (onResourceChange) {
+          onResourceChange(data.resourceIri, data.data);
+        }
       }
     });
-    onFocus ? onFocus(true) : undefined;
+    this.onFocus();
   }
 
-  componentDidUpdate(prevProps: DashboardItemProps, prevState: State) {
-    const {onSelect} = this.props;
-    const {resourceIri, viewId} = this.state;
-    if (viewId !== prevState.viewId || resourceIri !== prevState.resourceIri && onSelect) {
-      onSelect({viewId, resourceIri});
+  private onFocus = () => {
+    const {onFocus} = this.props;
+    if (onFocus) {
+      onFocus(true);
     }
   }
 
   onDrop = (resourceIri: Rdf.Iri, viewId: string) => {
-    const {onFocus} = this.props;
-    this.setState({resourceIri: resourceIri.value, viewId});
-    onFocus ? onFocus(true) : undefined;
-  }
-
-  onDropAfterOpen = () => {
-    const { onFocus } = this.props;
-    onFocus ? onFocus(true) : undefined;
+    const {onSelect} = this.props;
+    if (onSelect) {
+      onSelect({viewId, resourceIri: resourceIri.value});
+    }
+    this.onFocus();
   }
 
   private renderDefaultDropArea = (
     view: DashboardViewConfig,
-    index: number,
-    image: JSX.Element,
-    icon: JSX.Element
+    image: React.ReactNode | undefined
   ) => {
-    return <DropArea key={`${view.id}_${index}`}
-      query={view.checkQuery}
+    return <DropArea query={view.checkQuery}
       onDrop={(iri) => this.onDrop(iri, view.id)}
       childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
       dropMessageStyle={{display: 'none'}}
@@ -208,7 +250,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       <div className={styles.defaultComponent}
         onClick={() => this.setState({selectedView: view.id})}>
         <div className={'media'}>
-          <div className={'media-left media-middle'}>{image ? image : icon}</div>
+          <div className={'media-left media-middle'}>{image}</div>
           <div className={'media-body'} style={{height: '64px'}}>
             <strong className={'media-heading'}>{view.label}</strong>
             <div>{view.description}</div>
@@ -219,19 +261,25 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   }
 
   private renderDefaultDashboard = () => {
-    const { views, onFocus } = this.props;
+    const {views} = this.props;
     return (
       <div className={`${styles.defaultDashboard} container-fluid`}
-        onClick={() => onFocus ? onFocus(true) : undefined}>
+        onClick={this.onFocus}>
         <Row>
-          {views.map((view, index) => {
-            const image = view.image ? <img src={view.image} className={`media-object ${styles.image}`} /> : undefined;
-            const icon = view.iconClass ? <span className={`${view.iconClass} ${styles.icon}`}></span> : undefined;
-            return <Col key={`${view.id}-${index}`} md={4} xs={4} lg={4} sm={4}>
+          {views.map(view => {
+            let image: React.ReactNode | undefined;
+            if (view.image) {
+              image = <img src={view.image}
+                className={`media-object ${styles.image}`}
+                alt={view.label} />;
+            } else if (view.iconClass) {
+              image = <span className={`${view.iconClass} ${styles.icon}`} />;
+            }
+            return <Col key={view.id} md={4} xs={4} lg={4} sm={4}>
               <div className={styles.defaultColumnItem}>
-                {this.renderDefaultDropArea(view, index, image, icon)}
+                {this.renderDefaultDropArea(view, image)}
               </div>
-            </Col>
+            </Col>;
           })}
         </Row>
       </div>
@@ -239,11 +287,15 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   }
 
   private renderEmptySelectedComponent = () => {
-    const { views, onFocus } = this.props;
-    const view = views.find(view => view.id === this.state.selectedView);
-    const image = view.image ? <img src={view.image} className={styles.imageComponent}/> : undefined;
-    const icon = view.iconClass ? <span className={`${view.iconClass} ${styles.icon} ${styles.iconComponent}`}></span> : undefined;
-    return <div className={styles.emptyPageDropArea} onClick={() => onFocus ? onFocus(true) : undefined}>
+    const {views, onSelect} = this.props;
+    const view = views.find(v => v.id === this.state.selectedView);
+    let image: React.ReactNode | undefined;
+    if (view.image) {
+      image = <img src={view.image} className={styles.imageComponent} alt={view.label} />;
+    } else if (view.iconClass) {
+      image = <span className={`${view.iconClass} ${styles.icon} ${styles.iconComponent}`} />;
+    }
+    return <div className={styles.emptyPageDropArea} onClick={this.onFocus}>
       <DropArea onDrop={(iri) => this.onDrop(iri, view.id)}
         query={view.checkQuery}
         childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
@@ -255,7 +307,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           disabled: {backgroundColor: '#ff000054'}
         }}>
         <div className={styles.emptyPageTitle}>
-          {image ? image : icon}
+          {image}
           <div>
             <div className={styles.emptyPageLabel}>{view.label}</div>
             <div className={styles.emptyPageDescription}>{view.description}</div>
@@ -268,7 +320,9 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
               or<br />
               <a href='' onClick={e => {
                 e.preventDefault();
-                this.setState({viewId: view.id});
+                if (onSelect) {
+                  onSelect({viewId: view.id});
+                }
               }}>Create New {view.label}</a>
             </div>
           ) : null}
@@ -278,23 +332,29 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   }
 
   private renderComponent = () => {
-    const { id, views, onFocus } = this.props;
-    const {resourceIri, viewId} = this.state;
-    const view = views.find(view => view.id === viewId);
+    const {id, views, viewId, resourceIri, data, linkedFrames = []} = this.props;
+    const view = views.find(v => v.id === viewId);
+    const {template, frameVariable = DEFAULT_VARIABLE} = view;
+    const options = {
+      iri: resourceIri,
+      [frameVariable]: id,
+      data,
+    };
+    linkedFrames.forEach(linkedView =>
+      options[linkedView.frameVariable] = linkedView.frameId
+    );
     return <div className={styles.template}
-      onClick={() => onFocus ? onFocus(true) : undefined}
-      onWheel={() => onFocus ? onFocus(true) : undefined}
-      onDrop={this.onDropAfterOpen}>
-      <TemplateItem template={{
-        source: view.template,
-        options: {iri: resourceIri, dashboardId: id}}
-      } />
+      onClick={this.onFocus}
+      onWheel={this.onFocus}
+      onDrop={this.onFocus}>
+      <TemplateItem template={{source: template, options}} />
     </div>;
   }
 
   render() {
-    const {viewId, selectedView} = this.state;
-    if (this.props.views.length === 0) { return null; }
+    const {views, viewId} = this.props;
+    const {selectedView} = this.state;
+    if (views.length === 0) { return null; }
     if (viewId) {
       return this.renderComponent();
     }

@@ -84,6 +84,12 @@ public class MpFederationConnection extends AbstractFederationConnection {
 
     private static final Logger logger = LogManager.getLogger(MpFederationConnection.class);
 
+    /**
+     * Specific logger for the query plan
+     */
+    private static final Logger ephedraQueryPlanLogger = LogManager
+            .getLogger("platform.logging.ephedra.QueryPlanLogger");
+
     protected class MpFederationTripleSource implements TripleSource {
 
         private final boolean inf;
@@ -171,6 +177,10 @@ public class MpFederationConnection extends AbstractFederationConnection {
         }
         
         logger.trace("Optimized query model:\n{}", query);
+
+        // log the query plan to a specific named logger
+        ephedraQueryPlanLogger.info("Optimized ephedra query plan:\n{}", query);
+
         return query;
     }
 
@@ -250,6 +260,10 @@ public class MpFederationConnection extends AbstractFederationConnection {
         new MpPrepareOwnedTupleExpr().optimize(query, dataset, bindings);
 
         logger.trace("Optimized query model:\n{}", query);
+
+        // log the query plan to a specific named logger
+        ephedraQueryPlanLogger.info("Optimized ephedra query plan:\n{}", query);
+
         return query;
     }
     

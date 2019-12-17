@@ -20,6 +20,7 @@ export const itemLabelContainer: string;
 export const itemLabel: string;
 export const itemLabelActive: string;
 export const itemIcon: string;
+export const itemImage: string;
 export const addItemButton: string;
 export const deleteItemButton: string;
 export const expandItemButton: string;

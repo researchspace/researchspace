@@ -21,7 +21,7 @@ import * as _ from 'lodash';
 import * as Kefir from 'kefir';
 import * as Immutable from 'immutable';
 
-import { BatchedPool } from 'platform/api/async';
+import { BatchedPool, requestAsProperty } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
 
 export interface SecurityUtilI {
@@ -59,6 +59,12 @@ export namespace Permissions {
   }
 }
 
+export interface PermissionDocumentation {
+  readonly acl: string;
+  readonly description: string;
+  readonly example: string;
+}
+
 export interface UserI {
   principal?: string;
   isAuthenticated: boolean;
@@ -81,7 +87,7 @@ export interface Account {
 
 export interface RoleDefinition {
   roleName: string;
-  permission: string;
+  permissions: Array<string>;
 }
 
 export class NotEnoughPermissionsError extends Error {
@@ -193,6 +199,13 @@ export class SecurityUtil implements SecurityUtilI {
          ).toProperty();
     }
 
+    getDocumentationForAllPermissions(): Kefir.Property<PermissionDocumentation[]> {
+      const req = request.get('/rest/security/getAllPermissionsDoc').
+        type('application/json')
+        .accept('application/json');
+      return requestAsProperty(req).map(res => res.body);
+    }
+
     public createAccount(account: Account): Kefir.Property<boolean> {
       const req = request.post('/rest/security/createAccount')
         .send(account)
@@ -235,12 +248,28 @@ export class SecurityUtil implements SecurityUtilI {
       return Kefir.fromNodeCallback<RoleDefinition[]>(
         (cb) => req.end((err, res: request.Response) => {
           cb(
-            err != null ? err.message : null,
+            err != null ? err : null,
             res.ok ? <RoleDefinition[]>JSON.parse(res.text) : null
           );
         })
       ).toProperty();
+    }
 
+    isPermissionValid(permission: string): Kefir.Property<boolean> {
+      const req = request.put('/rest/security/isPermissionValid')
+        .send(permission)
+        .type('application/json')
+        .accept('application/json');
+
+      return requestAsProperty(req).map(res => res.body);
+    }
+
+    updateRoleDefinitions(roles: RoleDefinition[]): Kefir.Property<boolean> {
+      const req = request.put('/rest/security/updateRoleDefinitions')
+        .send(roles)
+        .type('application/json');
+
+      return requestAsProperty(req).map(res => res.ok);
     }
 }
 

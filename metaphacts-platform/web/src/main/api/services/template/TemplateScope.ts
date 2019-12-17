@@ -173,7 +173,9 @@ export class TemplateScope {
             this.handlebars.registerPartial(iri, dependency.ast);
           }
         });
-      }).then(() => this.handlebars.compile(parsed.ast));
+      }).then(() => {
+        return this.handlebars.compile(parsed.ast)
+      });
     });
   }
 
@@ -184,9 +186,7 @@ export class TemplateScope {
     } else if (isRemoteReference(reference)) {
       return TemplateScope._fetchRemoteTemplate(Rdf.iri(reference));
     } else {
-      return Promise.reject(new Error(
-        `Parial template reference '${reference}' is not an IRI and not found ` +
-        `in current template scope.`));
+      return null;
     }
   }
 }
@@ -236,13 +236,23 @@ function recursiveResolve(
       dependencies.set(reference, null);
     }
 
+    // if we can't resolve reference then just skip it,
+    // anyway handlebars will throw error for unresolved partials,
+    // but it will also gracefuly handle fallback if defined.
     const fetchedDependencies = referencesToLoad.map(
-      reference => load(reference)
-        .then(template => ({reference, template}))
-        .catch(error => {
-          throw new WrappingError(`Failed to load template '${reference}'`, error);
-        })
-    );
+      reference => {
+        const loaded = load(reference);
+        if (loaded) {
+          return loaded.then(template => ({reference, template}))
+            .catch(error => {
+              throw new WrappingError(`Failed to load template '${reference}'`, error);
+            });
+        } else {
+          dependencies.delete(reference);
+          return null;
+        }
+      }
+    ).filter(d => d != null);
 
     return Promise.all(fetchedDependencies);
   }).then(fetched => {

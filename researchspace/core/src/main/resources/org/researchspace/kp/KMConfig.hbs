@@ -1,0 +1,42 @@
+{{#each this}}
+
+<semantic-form new-subject-template="http://researchspace.rem.sh/person/\{{UUID}}"
+  fields='[[
+  fieldDefinitions
+    type="http://www.researchspace.org/instances/fields/EntityType"
+    label="http://www.researchspace.org/instances/fields/EntityHasLabel"
+    image="http://www.researchspace.org/instances/fields/EntityHasImage"
+    connect="http://www.researchspace.org/instances/fields/EntityhasConnection"
+
+  {{#each kps}}
+    {{name}}="{{iri}}"
+  {{/each}}
+  ]]'>
+
+  <ontodia-entity-metadata
+    entity-type-iri="{{iri}}"
+    type-iri='http://www.researchspace.org/instances/fields/EntityType'
+    label-iri='http://www.researchspace.org/instances/fields/EntityHasLabel'
+    image-iri='http://www.researchspace.org/instances/fields/EntityHasImage'
+  ></ontodia-entity-metadata>
+
+  <semantic-form-text-input for="label"></semantic-form-text-input>
+  <semantic-form-text-input for="image"></semantic-form-text-input>
+
+  {{#each kps}}
+    {{#if isDatatypeProperty}}
+      {{#if isString}}
+        <semantic-form-text-input for="{{name}}"></semantic-form-text-input>
+      {{/if}}
+      {{#if isDateTime}}
+        <semantic-form-datetime-input for='{{name}}'></semantic-form-datetime-input>
+      {{/if}}
+    {{/if}}
+  {{/each}}
+
+  <button name="submit" class="btn btn-sm btn-success">Save</button>
+  <button name="reset" class="btn btn-sm btn-default">Reset</button>
+  <button name="cancel" class="btn btn-sm btn-danger pull-right">Cancel</button>
+</semantic-form>
+
+{{/each}}

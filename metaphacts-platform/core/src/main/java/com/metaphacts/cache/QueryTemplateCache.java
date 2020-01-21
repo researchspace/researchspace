@@ -88,7 +88,7 @@ public class QueryTemplateCache implements PlatformCache {
 
     /**
      * Method made public to support JUnit tests.
-     * 
+     *
      * @throws Exception
      */
     public QueryTemplateCatalogAPIClient getApiClient() throws Exception {

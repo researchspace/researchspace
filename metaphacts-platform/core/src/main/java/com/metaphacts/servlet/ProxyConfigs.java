@@ -69,7 +69,9 @@ public class ProxyConfigs {
         private String loginName;
         private String loginPassword;
         private String loginBase64;
-        
+
+        private String tokenQueryName;
+        private String tokenQueryValue;
 
         private String preserveCookies;
         private String handleRedirects;
@@ -140,6 +142,22 @@ public class ProxyConfigs {
         public void setLoginBase64(String loginBase64) {
             this.loginBase64 = loginBase64;
         }
+
+        public String getTokenQueryName() {
+            return tokenQueryName;
+        }
+
+        public void setTokenQueryName(String tokenQueryName) {
+            this.tokenQueryName = tokenQueryName;
+        }
+
+        public String getTokenQueryValue() {
+            return tokenQueryValue;
+        }
+
+        public void setTokenQueryValue(String tokenQueryValue) {
+            this.tokenQueryValue = tokenQueryValue;
+        }
     }
 
     public static Map<String, Map<String, String>> getConfigs(PlatformStorage platformStorage, SecretResolver secretResolver) {
@@ -181,6 +199,8 @@ public class ProxyConfigs {
                 pmap.put("loginPassword", SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginPassword));
                 pmap.put("loginBase64", SecretsHelper.resolveSecretOrFallback(secretResolver, proxyConfig.loginBase64));
                 pmap.put("log", "true");
+
+                pmap.put(proxyConfig.tokenQueryName, proxyConfig.tokenQueryValue);
                 
                 pmap.put(ProxyServlet.P_PRESERVEHOST, proxyConfig.preserveHost);
                 pmap.put(ProxyServlet.P_PRESERVECOOKIES, proxyConfig.preserveCookies);

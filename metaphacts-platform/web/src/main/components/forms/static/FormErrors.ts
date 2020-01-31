@@ -16,7 +16,6 @@
  * of the GNU Lesser General Public License from http://www.gnu.org/
  */
 
-import { createFactory } from 'react';
 import * as D from 'react-dom-factories';
 import * as classnames from 'classnames';
 
@@ -58,7 +57,7 @@ export class FormErrors extends StaticComponent<FormErrorsProps, {}> {
   }
 }
 
-interface CollectedError {
+export interface CollectedError {
   readonly path: ReadonlyArray<string>;
   readonly kind: ErrorKind;
   readonly message: string;
@@ -94,7 +93,4 @@ export function collectErrors(
   });
 }
 
-export type component = FormErrors;
-export const component = FormErrors;
-export const factory = createFactory(component);
-export default component;
+export default FormErrors;

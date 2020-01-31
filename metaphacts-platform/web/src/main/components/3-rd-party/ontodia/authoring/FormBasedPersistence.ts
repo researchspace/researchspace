@@ -25,7 +25,7 @@ import {
   CompositeValue, EmptyValue, FieldState, FieldValue, LdpPersistence, computeValuePatch
 } from 'platform/components/forms';
 
-import { EntityMetadata } from './OntodiaEntityMetadata';
+import { EntityMetadata, isObjectProperty } from './OntodiaEntityMetadata';
 import {
   OntodiaPersistence, OntodiaPersistenceParams, OntodiaPersistenceResult
 } from './OntodiaPersistence';
@@ -191,8 +191,11 @@ function diffAndFinalizeEntities(
   const finalizedEntities = new Map<ElementIri, ElementModel | null>();
   shallowCurrent.forEach((current, elementIri) => {
     const {value, metadata} = current;
-    const model = FieldValue.isComposite(value)
-      ? convertCompositeValueToElementModel(value, metadata) : null;
+    let model: ElementModel | null = null;
+    if (FieldValue.isComposite(value)) {
+      const modelWithLinks = convertCompositeValueToElementModel(value, metadata);
+      model = filterObjectProperties(modelWithLinks, metadata);
+    }
     finalizedEntities.set(elementIri, model);
   });
 
@@ -303,4 +306,19 @@ function composeContainerTrees(
     composedRoots.set(composedRoot.iri, composedRoot);
   }
   return composedRoots;
+}
+
+function filterObjectProperties(
+  model: ElementModel, metadata: EntityMetadata
+): ElementModel {
+  const filteredProperties: ElementModel['properties'] = {};
+  for (const propertyIri in model.properties) {
+    if (Object.prototype.hasOwnProperty.call(model.properties, propertyIri)) {
+      const field = metadata.fieldByIri.get(propertyIri);
+      if (!(field && isObjectProperty(field, metadata))) {
+        filteredProperties[propertyIri] = model.properties[propertyIri];
+      }
+    }
+  }
+  return {...model, properties: filteredProperties};
 }

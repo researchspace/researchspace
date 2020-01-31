@@ -146,6 +146,16 @@ export interface OntodiaConfig {
    * Elements to display on initialization
    */
   iris?: string[];
+
+  /**
+   * Controls if component should re-request all links from data provider when showing existing
+   * graph (via loading the diagram or executing CONSTRUCT query), if link is not found in the
+   * data, it is shown as dashed. Setting this to false speeds up initialization and the links on
+   * the diagram will be shown exactly as they were when the diagram was saved.
+   * @default true
+   */
+  requestLinksOnInit?: boolean;
+
   /**
    * Sparql SELECT query to get images of elements.
    *
@@ -711,6 +721,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
         settings: this.props.providerSettings,
         forceFields: this.forceFields,
       });
+      if (this.validationApi) {
+        this.validationApi.setDataProvider(this.dataProvider);
+      }
 
       this.importLayout();
 
@@ -974,13 +987,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
   private onChangesPersisted = (result: OntodiaPersistenceResult) => {
     const model = this.workspace.getModel();
     const editor = this.workspace.getEditor();
-    const irisToUpdate: ElementIri[] = [];
 
     for (const element of [...model.elements]) {
       const changed = result.finalizedEntities.get(element.iri);
       if (changed) {
         element.setData(changed);
-        irisToUpdate.push(changed.id);
       } else if (changed === null) {
         model.removeElement(element.id);
       }
@@ -996,8 +1007,6 @@ export class Ontodia extends Component<OntodiaProps, State> {
     editor.setAuthoringState(AuthoringState.empty);
     editor.cancelSelection();
     model.history.reset();
-
-    this.workspace.zoomToFit();
 
     trigger({
       source: this.props.id,
@@ -1152,13 +1161,15 @@ export class Ontodia extends Component<OntodiaProps, State> {
     preloadedElements?: Dictionary<ElementModel>;
     diagram?: SerializedDiagram;
   }): Promise<void> => {
+    const validateLinks =
+      (this.props.requestLinksOnInit === undefined) ? true : this.props.requestLinksOnInit;
     const model = this.workspace.getModel(),
       params = layout || {};
     return model.importLayout({
       dataProvider: this.dataProvider,
       preloadedElements: params.preloadedElements || {},
       diagram: params.diagram,
-      validateLinks: true,
+      validateLinks: validateLinks,
     });
   }
 

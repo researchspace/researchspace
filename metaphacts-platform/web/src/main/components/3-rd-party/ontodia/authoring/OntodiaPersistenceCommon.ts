@@ -31,7 +31,11 @@ import {
 
 import { EntityMetadata, isObjectProperty } from './OntodiaEntityMetadata';
 
-export function fetchInitialModel(subject: Rdf.Iri, metadata: EntityMetadata) {
+export function fetchInitialModel(
+  subject: Rdf.Iri,
+  metadata: EntityMetadata,
+  fieldsToFetch = metadata.fieldById
+): Kefir.Property<CompositeValue> {
   const initial: CompositeValue = {
     type: CompositeValue.type,
     subject,
@@ -40,7 +44,7 @@ export function fetchInitialModel(subject: Rdf.Iri, metadata: EntityMetadata) {
     errors: FieldError.noErrors,
   };
 
-  const valuesFetching = metadata.fieldById.toArray().map(definition =>
+  const valuesFetching = fieldsToFetch.toArray().map(definition =>
     queryValues(definition.selectPattern, subject).map(bindings => {
       const values = bindings.map(b => FieldValue.fromLabeled(b));
       const state = FieldState.set(FieldState.empty, {values: Immutable.List(values)});

@@ -44,6 +44,8 @@ import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import com.metaphacts.cache.CacheManager;
 import com.metaphacts.config.Configuration;
 
+import io.buji.pac4j.token.Pac4jToken;
+
 /**
  * Platform specific security manager. Contains custom logics for Shiro realms,
  * caching, and session (timeout) management.
@@ -149,13 +151,24 @@ public class MetaphactsSecurityManager extends DefaultWebSecurityManager {
         super.onSuccessfulLogin(token, info, subject);
 
         // add to cache
-        // Note: we explicitly use the encrypted credentials from the
-        // AuthenticationToken in the cache and do the comparison using the
-        // PasswordService
-        Cache<Object, Object> authCache = getCacheManager().getCache(AUTH_CACHE_NAME);
-        Object encryptedCredentials = passwordService.encryptPassword(token.getCredentials());
-        AuthenticationInfo encryptedEntry = new SimpleAuthenticationInfo(info.getPrincipals(), encryptedCredentials);
-        authCache.put(token.getPrincipal(), encryptedEntry);
+        try {
+
+            // Exclude SAML tokens (i.e. Pac4j)
+            if (token instanceof Pac4jToken) {
+                return;
+            }
+            // Note: we explicitly use the encrypted credentials from the
+            // AuthenticationToken in the cache and do the comparison using the
+            // PasswordService
+            Cache<Object, Object> authCache = getCacheManager().getCache(AUTH_CACHE_NAME);
+            Object encryptedCredentials = passwordService.encryptPassword(token.getCredentials());
+            AuthenticationInfo encryptedEntry = new SimpleAuthenticationInfo(info.getPrincipals(),
+                    encryptedCredentials);
+            authCache.put(token.getPrincipal(), encryptedEntry);
+        } catch (Exception e) {
+            logger.warn("Failed to add token to authentication cache: " + e.getMessage());
+            logger.debug("Details:", e);
+        }
 
     }
 

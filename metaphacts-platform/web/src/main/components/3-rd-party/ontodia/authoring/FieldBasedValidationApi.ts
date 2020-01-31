@@ -17,231 +17,281 @@
  */
 
 import {
-  ValidationApi, ElementError, LinkTypeIri, PropertyTypeIri, ElementTypeIri,
-  LinkModel, LinkError, ValidationEvent, Element, DiagramModel,
+  ValidationApi, ElementError, LinkTypeIri, PropertyTypeIri, ElementIri, ElementTypeIri,
+  LinkModel, LinkError, ValidationEvent, Element, DiagramModel, AuthoringState, DataProvider
 } from 'ontodia';
 
+import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
-import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
-import { xsd } from 'platform/api/rdf/vocabularies';
-import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import {
-  FieldValue, FieldDefinition, checkCardinalityAndDuplicates, CompositeValue, ErrorKind
+  FieldValue, FieldDefinition, checkCardinalityAndDuplicates, CompositeValue, EmptyValue
 } from 'platform/components/forms';
-import { collectErrors } from 'platform/components/forms/static/FormErrors';
+import { CollectedError, collectErrors } from 'platform/components/forms/static/FormErrors';
 import { tryBeginValidation } from 'platform/components/forms/FormModel';
 
-import { EntityMetadata } from './OntodiaEntityMetadata';
+import {
+  BaseTypeClosureRequest, hasCompatibleType, observableToCancellablePromise
+} from './FieldBasedMetadataApi';
+import { EntityMetadata, isObjectProperty } from './OntodiaEntityMetadata';
 import {
   fetchInitialModel, getEntityMetadata, applyEventsToCompositeValue
 } from './OntodiaPersistenceCommon';
 
 export class FieldBasedValidationApi implements ValidationApi {
-  constructor(private entityMetadata: Map<string, EntityMetadata>) {}
+  private dataProvider: DataProvider | undefined;
+
+  constructor(
+    private entityMetadata: Map<ElementTypeIri, EntityMetadata>
+  ) {}
+
+  setDataProvider(dataProvider: DataProvider) {
+    this.dataProvider = dataProvider;
+  }
 
   validate(e: ValidationEvent): Promise<Array<ElementError | LinkError>> {
-    const {target, state, outboundLinks, model} = e;
+    const {target, state} = e;
     const metadata = getEntityMetadata(target, this.entityMetadata);
-    const linkByType = new Map<LinkTypeIri, LinkModel[]>();
-    const errors: (ElementError | LinkError)[] = [];
 
     if (metadata === undefined && state.elements.has(target.id)) {
-      errors.push({
-        type: 'element',
-        target: target.id,
-        message: `Metadata are not defined for the '${target.types}' types`,
-      });
-      return Promise.resolve(errors);
-    }
-
-    const checkLinksStreams: Promise<void>[] = [];
-    // Validate related links
-    outboundLinks.forEach(linkModel => {
-      if (!linkByType.has(linkModel.linkTypeId)) { linkByType.set(linkModel.linkTypeId, []) }
-      linkByType.get(linkModel.linkTypeId).push(linkModel);
-
-      const definition = metadata.fieldByIri.get(linkModel.linkTypeId);
-      if (definition) {
-        const checkDomainPromise =
-          oneOfCheckedTypeAreDescendantOrEqual(definition.domain, target.types).then(
-            meetsDomainLimitation => {
-              if (!meetsDomainLimitation) {
-                const domainStr = definition.domain.map(({value}) => value).join(', ');
-                errors.push({
-                  type: 'link',
-                  target: linkModel,
-                  message: `The source element should have one of the types '${domainStr}'`,
-                });
-              }
-            }
-          );
-        checkLinksStreams.push(checkDomainPromise);
-
-        const linkTarget = getTargetOfLinkModel(model, linkModel);
-        if (linkTarget) {
-          const checkRangePromise =
-            oneOfCheckedTypeAreDescendantOrEqual(definition.range, linkTarget.data.types).then(
-              meetsRangeLimitation => {
-                if (!meetsRangeLimitation) {
-                  const rangeStr = definition.range.map(({value}) => value).join(', ');
-                  errors.push({
-                    type: 'link',
-                    target: linkModel,
-                    message: `The target element should have one of the types '${rangeStr}'`,
-                  });
-                }
-              }
-            );
-          checkLinksStreams.push(checkRangePromise);
-        }
-      }
-    });
-
-    const domainRangePromise = Promise.all(checkLinksStreams);
-
-    // Validate related elements
-    const compositeStream = fetchInitialModel(Rdf.iri(target.id), metadata).map(initialModel =>
-      applyEventsToCompositeValue({
-        elementIri: target.id,
-        state,
-        metadata,
-        initialModel,
-      })
-    );
-
-    const streamsOfChanges = compositeStream.map(composite => {
-      if (FieldValue.isEmpty(composite)) {
-        return [];
-      }
-
-      const emptyComposite = CompositeValue.set(composite, {
-        errors: composite.errors.clear(),
-        fields: composite.fields.clear(),
-      })
-
-      return composite.fields.map((fieldState, fieldId) => {
-        const definition = composite.definitions.get(fieldId);
-        if (!definition) { return; }
-
-        return tryBeginValidation(
-          definition,
-          emptyComposite,
-          composite
-        );
-      }).filter(stream => Boolean(stream)).toArray();
-    });
-
-    const changesStreams = streamsOfChanges.flatMap(change => {
-      if (change.length === 0) {
-        return Kefir.constant([]);
-      } else {
-        const zippedChanges = Kefir.zip(change);
-        return zippedChanges;
-      }
-    });
-
-    const releveantCompositeStream = Kefir.combine([compositeStream, changesStreams]).map(([composite, changesStreams]) => {
-      if (FieldValue.isEmpty(composite)) {
-        return undefined;
-      }
-      let validated = composite;
-      for (const change of changesStreams) {
-          validated = change(validated);
-      }
-      return validated;
-    });
-
-    const relatedElementsPromise = releveantCompositeStream.map(relevantComposit => {
-      if (relevantComposit) {
-        const collectedErrors: CollectedError[] = [];
-        collectErrors([], relevantComposit, collectedErrors);
-
-        collectedErrors.forEach(({message, path}) => {
-          errors.push({
-            type: 'element',
-            target: target.id,
-            message: message,
-            propertyType: path.join('/') as PropertyTypeIri,
-          });
-        });
-
-        relevantComposit.fields.forEach((fieldState, fieldId) => {
-          const definition = relevantComposit.definitions.get(fieldId);
-          checkCardinalityAndDuplicates(fieldState.values, definition).forEach(({message}) => {
-            if (isLinkTypeDefinition(definition)) {
-              const links = linkByType.get(definition.iri as LinkTypeIri);
-              if (links) {
-                links.forEach(link => {
-                  errors.push({
-                    type: 'link',
-                    target: link,
-                    message,
-                  });
-                })
-              }
-            }
-            errors.push({
-              type: 'element',
-              target: target.id,
-              message,
-              propertyType: definition.iri as PropertyTypeIri,
-            });
-          });
-        });
-      }
-      return errors;
-    }).toPromise();
-
-    return domainRangePromise.then(() => {
-      return relatedElementsPromise;
-    }).catch(e => {
       const error: ElementError = {
         type: 'element',
         target: target.id,
-        message:  `Next error has appeared during the validation process: ${e.message}`,
+        message: `Cannot find metadata for any of the entity types`,
+      };
+      return Promise.resolve([error]);
+    }
+
+    const combinedTask = Kefir.combine({
+      domainRangeErrors: this.checkDomainRangeCompatibility(e, metadata),
+      relatedElementsErrors: this.checkRelatedElements(e, metadata),
+    }, ({domainRangeErrors, relatedElementsErrors}) => {
+      return [...domainRangeErrors, ...relatedElementsErrors];
+    }).flatMapErrors<Array<ElementError | LinkError>>(err => {
+      const error: ElementError = {
+        type: 'element',
+        target: target.id,
+        message: `Unexpected error during the validation process: ${err.message}`,
+      };
+      return Kefir.constant([error]);
+    });
+    return observableToCancellablePromise(combinedTask, e.cancellation);
+  }
+
+  private checkDomainRangeCompatibility(
+    e: ValidationEvent,
+    metadata: EntityMetadata
+  ): Kefir.Property<LinkError[]> {
+    const {target, outboundLinks, model} = e;
+
+    const typeRequest = new BaseTypeClosureRequest();
+    typeRequest.addAll(target.types);
+
+    for (const link of outboundLinks) {
+      const linkSource = findLinkSource(model, link);
+      if (linkSource) {
+        typeRequest.addAll(linkSource.data.types);
       }
-      return [error];
+
+      const linkTarget = findLinkTarget(model, link);
+      if (linkTarget) {
+        typeRequest.addAll(linkTarget.data.types);
+      }
+    }
+
+    return typeRequest.query().map(typeClosure => {
+      const errors: LinkError[] = [];
+      for (const link of outboundLinks) {
+        const definition = metadata.fieldByIri.get(link.linkTypeId);
+        if (!definition) {
+          continue;
+        }
+
+        const linkSource = findLinkSource(model, link);
+        const sourceTypes = linkSource ? linkSource.data.types : undefined;
+        if (sourceTypes && !hasCompatibleType(definition.domain, sourceTypes, typeClosure)) {
+          const domainStr = definition.domain.map(({value}) => value).join(', ');
+          errors.push({
+            type: 'link',
+            target: link,
+            message: `The source element should have one of the types '${domainStr}'`,
+          });
+        }
+
+        const linkTarget = findLinkTarget(model, link);
+        const targetTypes = linkTarget ? linkTarget.data.types : undefined;
+        if (targetTypes && !hasCompatibleType(definition.range, targetTypes, typeClosure)) {
+          const rangeStr = definition.range.map(({value}) => value).join(', ');
+          errors.push({
+            type: 'link',
+            target: link,
+            message: `The target element should have one of the types '${rangeStr}'`,
+          });
+        }
+      }
+      return errors;
     });
   }
-}
 
-interface CollectedError {
-  readonly path: ReadonlyArray<string>;
-  readonly kind: ErrorKind;
-  readonly message: string;
-}
+  private checkRelatedElements(
+    e: ValidationEvent,
+    metadata: EntityMetadata
+  ): Kefir.Property<Array<ElementError | LinkError>> {
+    const {target, state} = e;
 
-function isLinkTypeDefinition(definition: FieldDefinition) {
-  return xsd.anyURI.equals(definition.xsdDatatype);
-}
+    if (!this.dataProvider) {
+      return Kefir.constantError<any>(new Error('Missing data provider to fetch entity state'));
+    }
 
-function getTargetOfLinkModel(model: DiagramModel, linkModel: LinkModel): Element | undefined {
-  const link = model.links.find(link => link.data === linkModel);
-  if (link) {
-    return model.targetOf(link);
-  } else {
-    return undefined;
+    const initialModelTask = AuthoringState.isNewElement(state, target.id)
+      ? Kefir.constant<CompositeValue>({
+        type: CompositeValue.type,
+        subject: Rdf.iri(target.id),
+        definitions: metadata.fieldById,
+        fields: Immutable.Map(),
+        errors: Immutable.List(),
+      })
+      : fetchExistingEnitityState(target.id, metadata, this.dataProvider);
+
+    return initialModelTask
+      .flatMap<CompositeValue | EmptyValue>(initialModel => {
+        const composite = applyEventsToCompositeValue({
+          elementIri: target.id,
+          state,
+          metadata,
+          initialModel,
+        });
+        return FieldValue.isEmpty(composite)
+          ? Kefir.constant(composite)
+          : validateWholeComposite(composite);
+      })
+      .map<Array<ElementError | LinkError>>(composite => {
+        return extractValidationErrorsFromComposite(e, composite, metadata);
+      })
+      .toProperty();
   }
 }
 
-export function oneOfCheckedTypeAreDescendantOrEqual(
-  targetTypeIris: ReadonlyArray<Rdf.Iri>,
-  availableTypes: ElementTypeIri[]
-): Promise<boolean> {
-  const queryStr = `ASK WHERE {
-    ?domain rdfs:subClassOf* ?targetDomain .
-  }`;
-  let query: SparqlJs.AskQuery = SparqlUtil.parseQuerySync<SparqlJs.AskQuery>(queryStr);
+function findLinkSource(model: DiagramModel, data: LinkModel): Element | undefined {
+  const foundLink = model.links.find(link => link.data === data);
+  return foundLink ? model.sourceOf(foundLink) : undefined;
+}
 
-  query = SparqlClient.prepareParsedQuery(
-    targetTypeIris.map(targetTypeIri => ({'targetDomain': targetTypeIri}))
-  )(query);
-  query = SparqlClient.prepareParsedQuery(
-    availableTypes.map(type => ({'domain': Rdf.iri(type)}))
-  )(query) as SparqlJs.AskQuery;
+function findLinkTarget(model: DiagramModel, data: LinkModel): Element | undefined {
+  const foundLink = model.links.find(link => link.data === data);
+  return foundLink ? model.targetOf(foundLink) : undefined;
+}
 
-  return SparqlClient.ask(query).toPromise();
+function validateWholeComposite(composite: CompositeValue): Kefir.Property<CompositeValue> {
+  const emptyComposite = CompositeValue.set(composite, {
+    fields: composite.fields.clear(),
+    errors: composite.errors.clear(),
+  });
+
+  const validations: Array<ReturnType<typeof tryBeginValidation>> = [];
+
+  composite.fields.forEach((fieldState, fieldId) => {
+    const definition = composite.definitions.get(fieldId);
+    if (definition) {
+      const validationTask = tryBeginValidation(definition, emptyComposite, composite);
+      if (validationTask) {
+        validations.push(validationTask);
+      }
+    }
+  });
+
+  if (validations.length === 0) {
+    return Kefir.constant(composite);
+  } else {
+    return Kefir.zip(validations).map(changes => {
+      let validated = composite;
+      for (const change of changes) {
+        validated = change(composite);
+      }
+      return validated;
+    }).toProperty();
+  }
+}
+
+function extractValidationErrorsFromComposite(
+  e: ValidationEvent,
+  composite: CompositeValue | EmptyValue,
+  metadata: EntityMetadata
+): Array<ElementError | LinkError> {
+  const {target, outboundLinks} = e;
+
+  if (FieldValue.isEmpty(composite)) {
+    return [];
+  }
+
+  const collectedErrors: CollectedError[] = [];
+  collectErrors([], composite, collectedErrors);
+
+  const errors: Array<ElementError | LinkError> = [];
+  collectedErrors.forEach(({message, path}) => {
+    errors.push({
+      type: 'element',
+      target: target.id,
+      message: message,
+      propertyType: path.join('/') as PropertyTypeIri,
+    });
+  });
+
+  const linkByType = new Map<LinkTypeIri, LinkModel[]>();
+  for (const link of outboundLinks) {
+    if (!linkByType.has(link.linkTypeId)) {
+      linkByType.set(link.linkTypeId, []);
+    }
+    linkByType.get(link.linkTypeId).push(link);
+  }
+
+  composite.fields.forEach((fieldState, fieldId) => {
+    const definition = composite.definitions.get(fieldId);
+    checkCardinalityAndDuplicates(fieldState.values, definition).forEach(({message}) => {
+      if (isObjectProperty(definition, metadata)) {
+        const links = linkByType.get(definition.iri as LinkTypeIri);
+        if (links) {
+          for (const link of links) {
+            errors.push({
+              type: 'link',
+              target: link,
+              message,
+            });
+          }
+        }
+      }
+      errors.push({
+        type: 'element',
+        target: target.id,
+        message,
+        propertyType: definition.iri as PropertyTypeIri,
+      });
+    });
+  });
+
+  return errors;
+}
+
+function fetchExistingEnitityState(
+  target: ElementIri,
+  metadata: EntityMetadata,
+  dataProvider: DataProvider
+): Kefir.Property<CompositeValue> {
+  return Kefir.fromPromise(
+    dataProvider.linkTypesOf({elementId: target})
+  ).flatMap(linkCounts => {
+    const foundFields = new Set<FieldDefinition>();
+    for (const {id, outCount} of linkCounts) {
+      const field = metadata.fieldByIri.get(id);
+      if (field && outCount > 0) {
+        foundFields.add(field);
+      }
+    }
+    const fieldsToFetchById = metadata.fieldById
+      .filter(field => foundFields.has(field))
+      .toMap();
+    return fetchInitialModel(Rdf.iri(target), metadata, fieldsToFetchById);
+  }).toProperty();
 }

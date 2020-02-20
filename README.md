@@ -24,10 +24,21 @@ alt="ResearchSpace Overview" width="640" border="1" /></a>
 **To Be Added**
 
 # Demo 
-We are currently working on bringing together domain-specific examples for non-technical and technical users of ResearchSpace. The following is a snapshot from ongoing research on *Connecting Through Time and Space an ancient Nubian Settlement and a North London Residential Tower Block*.
-![Researchspace Example Knowledge Map](https://www.researchspace.org/images/knowledgemaps/ResearchKnowledgeMap.png "Creating a Knowledge Base while Visualy Tracing your Research with Knowledge Maps")
-*Figure: Creating a Knowledge Base (RDF Graph) by Visualy Tracing your Research with Knowledge Maps*
+Changing the methods of research in the humanities requires innovation in how we combine the qualitative with the quantitative through collaborative research, expressive structured data, and a human-centered and participatory approach to the ‘knowledge graph’.
 
+> A  “a knowledge graph is a continually changing informational structure that mediates between a human, the world and a computer. The graph itself is ontologically based and enhanced by human epistemology. These are closely linked in that the ontology provides real world references and a structure of interrelated entities or processes, while the epistemology uses the graph to interpret and generate new knowledge. Growing the graph is based on both automated reasoning and crucially, collaborative human thinking and creativity.”
+
+[Oldman and Tanase](https://link.springer.com/chapter/10.1007/978-3-030-00668-6_20)
+
+This demo is an invitation to explore new ways of researching using as example our research on the hanging scroll "A Courtesan Reading a Letter" by Kitagawa Utamaro.
+
+
+[Download Preview Demo with Example Data](https://github.com/researchspace/researchspace/releases/download/v3.4.0-preview/researchspace-3.4-preview-demo-bundle.zip) - ResearchSpace bundled with demo data, [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer.
+
+[Download Preview Release](https://github.com/researchspace/researchspace/releases/download/v3.4.0-preview/researchspace-3.4-preview-bundle.zip) - empty ResearchSpace bundle with [blazegraph triplestore](https://blazegraph.com/) and [digilib](https://robcast.github.io/digilib/) IIIF viewer.
+
+![Conservation Process for A Courtesan Reading a Letter by Kitagawa Utamaro](./readme-assets/Conservation_Process.png)
+*Figure: Conservation Process for A Courtesan Reading a Letter by Kitagawa Utamaro*
 
 
 # Technical Documentation

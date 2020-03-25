@@ -32,10 +32,9 @@ import {
 import { CollectedError, collectErrors } from 'platform/components/forms/static/FormErrors';
 import { tryBeginValidation } from 'platform/components/forms/FormModel';
 
-import {
-  BaseTypeClosureRequest, hasCompatibleType, observableToCancellablePromise
-} from './FieldBasedMetadataApi';
-import { EntityMetadata, isObjectProperty } from './OntodiaEntityMetadata';
+import { observableToCancellablePromise } from '../AsyncAdapters';
+import { BaseTypeClosureRequest, hasCompatibleType } from './FieldBasedMetadataApi';
+import { EntityMetadata, isObjectProperty } from './FieldConfigurationCommon';
 import {
   fetchInitialModel, getEntityMetadata, applyEventsToCompositeValue
 } from './OntodiaPersistenceCommon';
@@ -149,7 +148,7 @@ export class FieldBasedValidationApi implements ValidationApi {
       ? Kefir.constant<CompositeValue>({
         type: CompositeValue.type,
         subject: Rdf.iri(target.id),
-        definitions: metadata.fieldById,
+        definitions: metadata.fieldByIri,
         fields: Immutable.Map(),
         errors: Immutable.List(),
       })
@@ -289,7 +288,7 @@ function fetchExistingEnitityState(
         foundFields.add(field);
       }
     }
-    const fieldsToFetchById = metadata.fieldById
+    const fieldsToFetchById = metadata.fieldByIri
       .filter(field => foundFields.has(field))
       .toMap();
     return fetchInitialModel(Rdf.iri(target), metadata, fieldsToFetchById);

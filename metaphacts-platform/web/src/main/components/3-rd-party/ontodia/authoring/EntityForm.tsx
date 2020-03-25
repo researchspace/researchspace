@@ -22,8 +22,8 @@ import { Children, ReactNode, cloneElement } from 'react';
 import { Component } from 'platform/api/components';
 
 import {
-  ResourceEditorFormProps, CompositeValue, FieldDefinition,
-  SemanticForm, computeValuePatch, FieldValue, generateSubjectByTemplate,
+  CompositeValue, FieldDefinition, SemanticForm, generateSubjectByTemplate,
+  wasIriGeneratedByTemplate,
 } from 'platform/components/forms';
 import { isValidChild, universalChildren } from 'platform/components/utils';
 
@@ -32,7 +32,6 @@ import { Rdf } from 'platform/api/rdf';
 
 export interface EntityFormProps {
   newSubjectTemplate?: string;
-  suggestIri?: boolean;
   acceptIriAuthoring?: boolean;
   fields: ReadonlyArray<FieldDefinition>;
   model: CompositeValue;
@@ -50,11 +49,12 @@ export class EntityForm extends Component<EntityFormProps, State> {
   private formRef: SemanticForm;
   constructor(props: EntityFormProps, context) {
     super(props, context);
-    const suggestIri = this.props.suggestIri === undefined ?
-      this.modelEqualToSuggested(this.props.model) : this.props.suggestIri;
-    this.initModel = suggestIri ?
-      this.modifyModelsIriBySuggestion(this.props.model) : this.props.model;
-    this.state = {model: this.initModel, suggestIri: suggestIri};
+    const isIriGeneratedByTemplate = this.modelEqualToSuggested(this.props.model);
+    this.initModel = this.props.model;
+    this.state = {
+      model: this.initModel,
+      suggestIri: Boolean(this.props.acceptIriAuthoring) && isIriGeneratedByTemplate,
+    };
   }
 
   componentWillReceiveProps(nextProps: EntityFormProps) {
@@ -86,28 +86,32 @@ export class EntityForm extends Component<EntityFormProps, State> {
   }
 
   private onModelUpdate(newModel: CompositeValue) {
-    const modelToSet =
-      this.state.suggestIri ? this.modifyModelsIriBySuggestion(newModel) : newModel;
+    const modelToSet = this.props.acceptIriAuthoring && this.state.suggestIri
+      ? this.modifyModelsIriBySuggestion(newModel) : newModel;
     this.setState({model: modelToSet});
   }
 
   private modifyModelsIriBySuggestion(model: CompositeValue): CompositeValue {
+    if (this.modelEqualToSuggested(model)) {
+      return model;
+    }
     return {
       ...model,
       subject: generateSubjectByTemplate(
         this.props.newSubjectTemplate,
         undefined,
-        { ...model, subject: new Rdf.Iri('')}
+        {...model, subject: new Rdf.Iri('')}
       ),
     };
   }
 
   private modelEqualToSuggested(model: CompositeValue): boolean {
-    return generateSubjectByTemplate(
+    return wasIriGeneratedByTemplate(
+      model.subject.value,
       this.props.newSubjectTemplate,
       undefined,
-      { ...model, subject: new Rdf.Iri('')}
-    ).value === model.subject.value;
+      {...model, subject: new Rdf.Iri('')}
+    );
   }
 
   private onSubmit = () => {

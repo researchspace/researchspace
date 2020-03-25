@@ -24,27 +24,6 @@
             ],
             "type": "object"
         },
-        "FormBasedPersistenceProps": {
-            "properties": {
-                "debug": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "enum": [
-                        "form"
-                    ],
-                    "type": "string"
-                }
-            },
-            "propertyOrder": [
-                "type",
-                "debug"
-            ],
-            "required": [
-                "type"
-            ],
-            "type": "object"
-        },
         "FullTextSearchSettings": {
             "description": "Full text search settings,\ndeveloper could use anything from search extensions of triplestore to regular expressions match\nSee wikidata and dbpedia examples for reusing full text search capabilities of Blazegraph and Virtuozo",
             "properties": {
@@ -331,37 +310,6 @@
             ],
             "type": "object"
         },
-        "OntologyPersistenceProps": {
-            "properties": {
-                "repository": {
-                    "type": "string"
-                },
-                "targetGraphIri": {
-                    "type": "string"
-                },
-                "type": {
-                    "enum": [
-                        "ontology"
-                    ],
-                    "type": "string"
-                },
-                "typePattern": {
-                    "type": "string"
-                }
-            },
-            "propertyOrder": [
-                "type",
-                "targetGraphIri",
-                "repository",
-                "typePattern"
-            ],
-            "required": [
-                "repository",
-                "targetGraphIri",
-                "type"
-            ],
-            "type": "object"
-        },
         "PropertyConfiguration": {
             "description": "Specifies property abstraction configuration",
             "properties": {
@@ -560,10 +508,6 @@
             "description": "`true` if persisted component should be added to the default set of the current user",
             "type": "boolean"
         },
-        "authoringMode": {
-            "description": "Switches Ondodia to authoring mode.\n\nAuthoring mode requires entity metadata to be specified (using semantic forms as children)\nin order to work.",
-            "type": "boolean"
-        },
         "autoZoom": {
             "description": "If true zoomToFit to call on each addElements event.",
             "type": "boolean"
@@ -747,20 +691,6 @@
             "description": "Custom label for \"Save data\" button.",
             "type": "string"
         },
-        "persistence": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/OntologyPersistenceProps"
-                },
-                {
-                    "$ref": "#/definitions/FormBasedPersistenceProps"
-                }
-            ],
-            "default": {
-                "type": "form"
-            },
-            "description": "Defines persistence mode to use in authoring mode."
-        },
         "postSaving": {
             "description": "Controls whether Ontodia should navigate to a newly saved diagram.",
             "enum": [
@@ -861,8 +791,6 @@
         "acceptBlankNodes",
         "saveDiagramLabel",
         "persistChangesLabel",
-        "authoringMode",
-        "persistence",
         "findRelationshipQuery",
         "hideNavigationConfirmation",
         "postSaving"

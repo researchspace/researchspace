@@ -30,6 +30,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import com.metaphacts.rest.endpoint.AppAdminEndpoint;
 import com.metaphacts.rest.endpoint.CacheEndpoint;
 import com.metaphacts.rest.endpoint.ConfigurationEndpoint;
+import com.metaphacts.rest.endpoint.FieldEndpoint;
 import com.metaphacts.rest.endpoint.LogAdminEndpoint;
 import com.metaphacts.rest.endpoint.OntologyManagerEndpoint;
 import com.metaphacts.rest.endpoint.RdfNamespaceEndpoint;
@@ -60,41 +61,45 @@ public class RestApplication extends AbstractPlatformApplication {
         super(serviceLocator);
 
         /*
-         *  /rest/template
+         * /rest/template
          */
         register(TemplateEndpoint.class);
         /*
-         *  /rest/security
+         * /rest/fields
+         */
+        register(FieldEndpoint.class);
+        /*
+         * /rest/security
          */
         register(SecurityEndpoint.class);
 
         /*
-         *  /rest/data/rdf/namespace
+         * /rest/data/rdf/namespace
          */
         register(RdfNamespaceEndpoint.class);
         /*
-         *  /rest/data/data/rdf/utils
+         * /rest/data/data/rdf/utils
          */
         register(ResourceUtilsEndpoint.class);
         /*
-         *  /rest/config
+         * /rest/config
          */
         register(ConfigurationEndpoint.class);
         /*
-         *  /rest/cache
+         * /rest/cache
          */
         register(CacheEndpoint.class);
         /*
-         *  /rest/url-minify
+         * /rest/url-minify
          */
         register(URLMinifierEndpoint.class);
         /*
-         *  /rest/sets
+         * /rest/sets
          */
         register(SetManagementEndpoint.class);
 
         /*
-         *  /rest/repositories
+         * /rest/repositories
          */
         register(RepositoryManagerEndpoint.class);
 
@@ -104,17 +109,19 @@ public class RestApplication extends AbstractPlatformApplication {
         register(OntologyManagerEndpoint.class);
 
         /*
-         * Exception mapper for a generic {@link Exception} not caught in the method itself.
+         * Exception mapper for a generic {@link Exception} not caught in the method
+         * itself.
          */
         register(DefaultExceptionMapper.class);
 
         /*
-         * Exception mapper for a security {@link Exception} not caught in the method itself.
+         * Exception mapper for a security {@link Exception} not caught in the method
+         * itself.
          */
         register(ForbiddenExceptionMapper.class);
 
         register(AppAdminEndpoint.class);
-        
+
         register(SystemAdminEndpoint.class);
 
         register(LogAdminEndpoint.class);

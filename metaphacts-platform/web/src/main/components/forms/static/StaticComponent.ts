@@ -26,7 +26,7 @@ import { FieldValue } from '../FieldValues';
 export interface StaticFieldProps extends HTMLAttributes<HTMLElement> {
   for?: string;
   definition?: FieldDefinition;
-  model: FieldValue;
+  model?: FieldValue;
 }
 
 export abstract class StaticComponent<P extends StaticFieldProps, S> extends Component<P, S> {

@@ -94,6 +94,18 @@ export class Cancellation {
   }
 
   /**
+   * Unregisters specified handler from cancel notifications.
+   */
+  offCancel(handler: () => void) {
+    if (!this.isCancelled && this.cancelHandlers) {
+      const index = this.cancelHandlers.findIndex(handler);
+      if (index >= 0) {
+        this.cancelHandlers.splice(index, 1);
+      }
+    }
+  }
+
+  /**
    * Makes this Cancellation cancelled and ends all wrapped observables.
    */
   cancelAll() {

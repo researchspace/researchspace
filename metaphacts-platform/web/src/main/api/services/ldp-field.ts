@@ -20,8 +20,13 @@ import * as _ from 'lodash';
 import { Just, Nothing } from 'data.maybe';
 import * as Kefir from 'kefir';
 
-import { LdpService } from 'platform/api/services/ldp';
+import { requestAsProperty } from 'platform/api/async';
+import * as request from 'platform/api/http';
 import { Rdf, vocabularies } from 'platform/api/rdf';
+
+import { LdpService } from 'platform/api/services/ldp';
+import { getLabels } from 'platform/api/services/resource-label';
+
 const { sp, field, rdfs, VocabPlatform } = vocabularies;
 
 import {
@@ -98,4 +103,38 @@ function deserialize(fieldIri: Rdf.Iri, graph: Rdf.Graph): FieldDefinitionProp {
     defaultValues,
     treePatterns,
   } as FieldDefinitionProp;
+}
+
+const FIELDS_REST_PATH = '/rest/fields/definitions';
+
+export function getGeneratedFieldDefinitions(
+  iris: ReadonlyArray<Rdf.Iri>
+): Kefir.Property<FieldDefinitionProp[]> {
+  if (iris.length === 0) {
+    return Kefir.constant([]);
+  }
+  const req = request
+    .post(FIELDS_REST_PATH)
+    .send({
+      fields: iris.map(iri => iri.value),
+    })
+    .type('application/json')
+    .accept('application/json');
+
+    return requestAsProperty(req)
+      .map(res => JSON.parse(res.text) as FieldDefinitionProp[])
+      .flatMap(fields => {
+        return getLabels(
+          fields
+            .filter(f => f.label === undefined || f.label === null)
+            .map(f => Rdf.iri(f.iri)),
+          {context: {}}
+        ).map(labels => {
+          return fields.map(f => ({
+            ...f,
+            label: labels.get(Rdf.iri(f.iri))
+          }));
+        });
+      })
+      .toProperty();
 }

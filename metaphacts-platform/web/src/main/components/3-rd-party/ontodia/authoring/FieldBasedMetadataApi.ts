@@ -20,16 +20,18 @@ import * as Kefir from 'kefir';
 import * as SparqlJs from 'sparqljs';
 import {
   CancellationToken, ElementModel, ElementTypeIri, LinkTypeIri, MetadataApi, PropertyTypeIri,
-  LinkModel, ElementIri, LinkDirection,
+  LinkModel, ElementIri, LinkDirection, PLACEHOLDER_ELEMENT_TYPE,
 } from 'ontodia';
 
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+import { getLabel } from 'platform/api/services/resource-label';
 
 import { generateSubjectByTemplate } from 'platform/components/forms';
 
-import { EntityMetadata, isObjectProperty } from './OntodiaEntityMetadata';
-import { getEntityMetadata } from './OntodiaPersistenceCommon';
+import { observableToCancellablePromise } from '../AsyncAdapters';
+import { EntityMetadata, isObjectProperty } from './FieldConfigurationCommon';
+import { getEntityMetadata, convertElementModelToCompositeValue } from './OntodiaPersistenceCommon';
 
 export class FieldBasedMetadataApi implements MetadataApi {
 
@@ -37,27 +39,54 @@ export class FieldBasedMetadataApi implements MetadataApi {
     private entityMetadata: Map<ElementTypeIri, EntityMetadata>
   ) {}
 
-  generateNewElementIri(types: ElementTypeIri[]): Promise<ElementIri> {
-    let subjectTemplate: string = undefined;
+  async generateNewElement(
+    types: ReadonlyArray<ElementTypeIri>,
+    ct: CancellationToken
+  ): Promise<ElementModel> {
+    let typeIri: ElementTypeIri | undefined;
     if (types && types.length !== 0) {
-      const typeIri = types[0];
-      const metadata = this.entityMetadata.get(typeIri);
-      if (metadata) {
-        subjectTemplate = metadata.newSubjectTemplate;
+      typeIri = types[0];
+    }
+
+    let typeLabel: string;
+    if (typeIri && typeIri !== PLACEHOLDER_ELEMENT_TYPE) {
+      typeLabel = await observableToCancellablePromise(getLabel(Rdf.iri(typeIri)), ct);
+    } else {
+      typeLabel = 'Entity';
+    }
+
+    const newModel: ElementModel = {
+      id: '' as ElementIri,
+      types: [...types],
+      label: {values: [{value: `New ${typeLabel}`, language: ''}]},
+      properties: {},
+    };
+    return {
+      ...newModel,
+      id: this.generateIriForModel(newModel),
+    };
+  }
+
+  generateIriForModel(model: ElementModel): ElementIri {
+    let metadata: EntityMetadata | undefined;
+    if (model.types.length > 0) {
+      const firstType = model.types[0];
+      if (firstType !== PLACEHOLDER_ELEMENT_TYPE) {
+        metadata = this.entityMetadata.get(firstType);
       }
     }
-
-    let newIri: ElementIri;
-    const uuid = () => Math.floor((1 + Math.random()) * 0x100000000).toString(16).substring(1);
-    if (subjectTemplate) {
-      const filledTemplate = generateSubjectByTemplate(subjectTemplate, undefined, undefined).value;
-      const postfix = subjectTemplate.toLocaleLowerCase().indexOf('{{uuid}}') === -1 ? uuid() : '';
-      newIri = `${filledTemplate}${postfix}` as ElementIri;
+    if (metadata) {
+      const newComposite = convertElementModelToCompositeValue(
+        {...model, id: '' as ElementIri}, metadata
+      );
+      const generatedIri = generateSubjectByTemplate(
+        metadata.newSubjectTemplate, undefined, newComposite
+      );
+      return generatedIri.value as ElementIri;
     } else {
-      newIri = `NewEntity-${uuid()}` as ElementIri;
+      const uuid = () => Math.floor((1 + Math.random()) * 0x100000000).toString(16).substring(1);
+      return `NewEntity-${uuid()}` as ElementIri;
     }
-
-    return Promise.resolve(newIri);
   }
 
   canDropOnCanvas(source: ElementModel, ct: CancellationToken): Promise<boolean> {
@@ -217,7 +246,7 @@ export class FieldBasedMetadataApi implements MetadataApi {
 export class BaseTypeClosureRequest {
   private static BASE_TYPES_QUERY = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(
     'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
-    'SELECT ?type ?base WHERE { ?type rdfs:subClassOf* ?base }'
+    'SELECT REDUCED ?type ?base WHERE { ?type rdfs:subClassOf* ?base }'
   );
 
   readonly derivedTypes = new Set<ElementTypeIri>();
@@ -266,68 +295,4 @@ export function hasCompatibleType(
     }
   }
   return false;
-}
-
-export function observableToCancellablePromise<T>(
-  observable: Kefir.Observable<T>,
-  ct: CancellationToken
-): Promise<T> {
-  if (ct.aborted) {
-    return Promise.reject(makeCancelledError());
-  }
-  return new Promise<T>((resolve, reject) => {
-    let resolved = false;
-    let observableSubscription: Kefir.Subscription | undefined;
-    let tokenSubscription: (() => void) | undefined;
-
-    const markResolvedAndCleanup = () => {
-      if (resolved) { return; }
-      resolved = true;
-      if (observableSubscription) {
-        observableSubscription.unsubscribe();
-      }
-      if (tokenSubscription) {
-        ct.removeEventListener('abort', tokenSubscription);
-      }
-    };
-
-    observableSubscription = observable.observe({
-      value: value => {
-        if (resolved) { return; }
-        markResolvedAndCleanup();
-        if (ct.aborted) {
-          reject(makeCancelledError());
-          return;
-        }
-        resolve(value);
-      },
-      error: error => {
-        if (resolved) { return; }
-        markResolvedAndCleanup();
-        if (ct.aborted) {
-          reject(makeCancelledError());
-          return;
-        }
-        reject(error);
-      },
-      end: () => {
-        if (resolved) { return; }
-        markResolvedAndCleanup();
-        reject(new Error('Observable ended without producing a value or an error'));
-      }
-    });
-
-    if (!resolved) {
-      if (ct.aborted) {
-        markResolvedAndCleanup();
-      } else {
-        tokenSubscription = () => markResolvedAndCleanup();
-        ct.addEventListener('abort', tokenSubscription);
-      }
-    }
-  });
-}
-
-function makeCancelledError() {
-  return new Error('The operation was cancelled');
 }

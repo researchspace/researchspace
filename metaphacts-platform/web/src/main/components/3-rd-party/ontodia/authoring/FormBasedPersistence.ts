@@ -25,7 +25,7 @@ import {
   CompositeValue, EmptyValue, FieldState, FieldValue, LdpPersistence, computeValuePatch
 } from 'platform/components/forms';
 
-import { EntityMetadata, isObjectProperty } from './OntodiaEntityMetadata';
+import { EntityMetadata, isObjectProperty } from './FieldConfigurationCommon';
 import {
   OntodiaPersistence, OntodiaPersistenceParams, OntodiaPersistenceResult
 } from './OntodiaPersistence';
@@ -51,12 +51,12 @@ export class FormBasedPersistence implements OntodiaPersistence {
 
     const {toFetch, changed} = collectEntitiesState(params);
     return fetchEntities(params, toFetch).flatMap(initials => {
-      const {deepPrevious, deepCurrent, finalizedEntities} =
+      const {previousStates, currentStates, finalizedEntities} =
         diffAndFinalizeEntities(this.props, params, changed, initials);
 
       const batch: Kefir.Property<void>[] = [];
-      deepPrevious.forEach(previousState => {
-        const currentState = deepCurrent.get(previousState.iri);
+      previousStates.forEach(previousState => {
+        const currentState = currentStates.get(previousState.iri);
         batch.push(formPersistence.persist(previousState.value, currentState.value));
       });
 
@@ -131,8 +131,8 @@ function diffAndFinalizeEntities(
   initials: Map<ElementIri, IntialEntityData>
 ) {
   const {state, entityMetadata} = params;
-  const shallowPrevious = new Map<ElementIri, EntityState>();
-  const shallowCurrent = new Map<ElementIri, EntityState>();
+  const previousStates = new Map<ElementIri, EntityState>();
+  const currentStates = new Map<ElementIri, EntityState>();
 
   changed.forEach(elementIri => {
     const initial = initials.get(elementIri);
@@ -169,19 +169,16 @@ function diffAndFinalizeEntities(
     } else {
       throw new Error(`Failed to load intial state for entity <${elementIri}>`);
     }
-    shallowPrevious.set(elementIri, previousState);
-    shallowCurrent.set(elementIri, currentState);
+    previousStates.set(elementIri, previousState);
+    currentStates.set(elementIri, currentState);
   });
 
-  const deepPrevious = composeContainerTrees(shallowPrevious, entityMetadata);
-  const deepCurrent = composeContainerTrees(shallowCurrent, entityMetadata);
-
   if (props.debug) {
-    if (deepPrevious.size !== deepCurrent.size) {
+    if (previousStates.size !== currentStates.size) {
       console.error('Different diff lengths!');
     }
-    deepPrevious.forEach((previous, iri) => {
-      const current = deepCurrent.get(iri);
+    previousStates.forEach((previous, iri) => {
+      const current = currentStates.get(iri);
       console.log(`Diff for entity`, iri, computeValuePatch(previous.value, current.value));
       console.log(' where previous', computeValuePatch(FieldValue.empty, previous.value));
       console.log(' where current', computeValuePatch(FieldValue.empty, current.value));
@@ -189,7 +186,7 @@ function diffAndFinalizeEntities(
   }
 
   const finalizedEntities = new Map<ElementIri, ElementModel | null>();
-  shallowCurrent.forEach((current, elementIri) => {
+  currentStates.forEach((current, elementIri) => {
     const {value, metadata} = current;
     let model: ElementModel | null = null;
     if (FieldValue.isComposite(value)) {
@@ -199,7 +196,7 @@ function diffAndFinalizeEntities(
     finalizedEntities.set(elementIri, model);
   });
 
-  return {deepPrevious, deepCurrent, finalizedEntities};
+  return {previousStates, currentStates, finalizedEntities};
 }
 
 function getNewElementModel(state: AuthoringState, elementIri: ElementIri) {
@@ -242,70 +239,6 @@ function fetchEntities(
     });
     return result;
   }).toProperty();
-}
-
-function composeContainerTrees(
-  diffs: ReadonlyMap<ElementIri, EntityState>,
-  allMetadata: ReadonlyMap<ElementTypeIri, EntityMetadata>
-): Map<ElementIri, EntityState> {
-  const roots = Array.from((diffs as Map<ElementIri, EntityState>).values())
-    .filter(diff => !diff.metadata.parent);
-
-  const composedEnitites = new Map<ElementIri, EntityState>();
-
-  function composeEntity(entity: EntityState): EntityState {
-    if (composedEnitites.has(entity.iri)) {
-      return;
-    }
-
-    const {value} = entity;
-    if (FieldValue.isEmpty(value)) {
-      composedEnitites.set(entity.iri, entity);
-      return entity;
-    }
-
-    let {fields} = value;
-    fields.forEach(({values}, fieldIri) => {
-      let valuesChanged = false;
-      const newValues = values.map(v => {
-        if (FieldValue.isAtomic(v)) {
-          const target = v.value;
-
-          const diff = diffs.get(target.value as ElementIri);
-          const parent = diff ? diff.metadata.parent : undefined;
-          const isCompatibleParent = parent
-            && parent.fieldIri === fieldIri
-            && parent.type === entity.metadata.entityType;
-          if (target.isIri() && isCompatibleParent && !composedEnitites.has(diff.iri)) {
-            const composed = composeEntity(diff);
-            return composed.value;
-          }
-        }
-        return v;
-      });
-      if (valuesChanged) {
-        fields = fields.update(
-          fieldIri, previous => FieldState.set(previous, {values: newValues})
-        );
-      }
-    });
-
-    let result = entity;
-    if (fields !== value.fields) {
-      result = {
-        ...entity,
-        value: CompositeValue.set(value, {fields}),
-      };
-    }
-    return result;
-  }
-
-  const composedRoots = new Map<ElementIri, EntityState>();
-  for (const root of roots) {
-    const composedRoot = composeEntity(root);
-    composedRoots.set(composedRoot.iri, composedRoot);
-  }
-  return composedRoots;
 }
 
 function filterObjectProperties(

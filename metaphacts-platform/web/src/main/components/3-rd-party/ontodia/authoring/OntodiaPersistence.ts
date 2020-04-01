@@ -19,7 +19,7 @@
 import * as Kefir from 'kefir';
 import { AuthoringState, ElementIri, ElementTypeIri, ElementModel } from 'ontodia';
 
-import { EntityMetadata } from './OntodiaEntityMetadata';
+import { EntityMetadata } from './FieldConfigurationCommon';
 
 export interface OntodiaPersistence {
   readonly supportsIriEditing: boolean;

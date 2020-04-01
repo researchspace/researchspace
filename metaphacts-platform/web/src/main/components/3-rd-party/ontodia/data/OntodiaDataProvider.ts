@@ -28,7 +28,7 @@ import {
   PropertyConfiguration
 } from 'ontodia';
 
-import { Rdf } from 'platform/api/rdf';
+import { WrappingError } from 'platform/api/async';
 import { SparqlUtil, SparqlTypeGuards, VariableRenameBinder } from 'platform/api/sparql';
 import { getBaseUrl } from 'platform/api/http';
 import { FieldDefinition } from 'platform/components/forms';
@@ -193,45 +193,57 @@ function createPropertyConfiguration(
 }
 
 function fieldToLinkConfig(field: FieldDefinition): LinkConfiguration {
-  const parsedQuery = SparqlUtil.parseQuery(field.selectPattern);
-  if (parsedQuery.type === 'query' && parsedQuery.queryType === 'SELECT') {
-    const domain = field.domain ? field.domain.map(iri => iri.value) : undefined;
+  const parsedQuery = parseSelectPattern(field);
+  const domain = field.domain ? field.domain.map(iri => iri.value) : undefined;
 
-    const directPredicate = parseDirectPredicate(parsedQuery.where);
-    if (directPredicate) {
-      return {id: field.iri, domain, path: directPredicate};
-    }
-
-    new VariableRenameBinder('subject', 'source').query(parsedQuery);
-    new VariableRenameBinder('value', 'target').query(parsedQuery);
-
-    return {
-      id: field.iri,
-      domain,
-      path: serializePatterns(parsedQuery.where),
-    };
+  const directPredicate = parseDirectPredicate(parsedQuery.where);
+  if (directPredicate) {
+    return {id: field.iri, domain, path: directPredicate};
   }
+
+  new VariableRenameBinder('subject', 'source').query(parsedQuery);
+  new VariableRenameBinder('value', 'target').query(parsedQuery);
+
+  return {
+    id: field.iri,
+    domain,
+    path: serializePatterns(parsedQuery.where),
+  };
 }
 
 function fieldToPropertyConfig(field: FieldDefinition): PropertyConfiguration {
-  const parsedQuery = SparqlUtil.parseQuery(field.selectPattern);
-  if (parsedQuery.type === 'query' && parsedQuery.queryType === 'SELECT') {
-    const domain = field.domain ? field.domain.map(iri => iri.value) : undefined;
+  const parsedQuery = parseSelectPattern(field);
+  const domain = field.domain ? field.domain.map(iri => iri.value) : undefined;
 
-    const directPredicate = parseDirectPredicate(parsedQuery.where);
-    if (directPredicate) {
-      return {id: field.iri, domain, path: directPredicate};
-    }
-
-    new VariableRenameBinder('subject', 'inst').query(parsedQuery);
-    /* keep the same name for 'value' variable */
-
-    return {
-      id: field.iri,
-      domain,
-      path: serializePatterns(parsedQuery.where),
-    };
+  const directPredicate = parseDirectPredicate(parsedQuery.where);
+  if (directPredicate) {
+    return {id: field.iri, domain, path: directPredicate};
   }
+
+  new VariableRenameBinder('subject', 'inst').query(parsedQuery);
+  /* keep the same name for 'value' variable */
+
+  return {
+    id: field.iri,
+    domain,
+    path: serializePatterns(parsedQuery.where),
+  };
+}
+
+function parseSelectPattern(field: FieldDefinition): SparqlJs.SelectQuery {
+  if (!field.selectPattern) {
+    throw new Error(`Expected a selectPattern for field: ${field.iri}`);
+  }
+  let parsedQuery: SparqlJs.SelectQuery;
+  try {
+    parsedQuery = SparqlUtil.parseQuery(field.selectPattern);
+  } catch (err) {
+    throw new WrappingError(`Failed to parse selectPattern for field: ${field.iri}`, err);
+  }
+  if (!(parsedQuery.type === 'query' && parsedQuery.queryType === 'SELECT')) {
+    throw new Error(`Expected a SELECT query in selectPattern for field: ${field.iri}`);
+  }
+  return parsedQuery;
 }
 
 function serializePatterns(patterns: SparqlJs.Pattern[]): string {

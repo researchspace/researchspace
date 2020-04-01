@@ -1,0 +1,534 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "FieldConstraint": {
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "validatePattern": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "validatePattern",
+                "message"
+            ],
+            "required": [
+                "message",
+                "validatePattern"
+            ],
+            "type": "object"
+        },
+        "FieldDefinitionProp": {
+            "properties": {
+                "askPattern": {
+                    "type": "string"
+                },
+                "autosuggestionPattern": {
+                    "type": "string"
+                },
+                "categories": {
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Iri"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "type": "array"
+                },
+                "constraints": {
+                    "items": {
+                        "$ref": "#/definitions/FieldConstraint"
+                    },
+                    "type": "array"
+                },
+                "defaultValues": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "deletePattern": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "domain": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Iri"
+                        },
+                        {
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/definitions/Iri"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insertPattern": {
+                    "type": "string"
+                },
+                "iri": {
+                    "type": "string"
+                },
+                "label": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "$ref": "#/definitions/Literal"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "maxOccurs": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "unbound"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "minOccurs": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "unbound"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "order": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "unbound"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "range": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Iri"
+                        },
+                        {
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/definitions/Iri"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "selectPattern": {
+                    "type": "string"
+                },
+                "testSubject": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Iri"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "treePatterns": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/SimpleTreeConfig"
+                        },
+                        {
+                            "$ref": "#/definitions/FullTreeConfig"
+                        }
+                    ]
+                },
+                "valueSetPattern": {
+                    "type": "string"
+                },
+                "xsdDatatype": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Iri"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "propertyOrder": [
+                "id",
+                "iri",
+                "label",
+                "description",
+                "categories",
+                "domain",
+                "xsdDatatype",
+                "range",
+                "minOccurs",
+                "maxOccurs",
+                "order",
+                "defaultValues",
+                "selectPattern",
+                "askPattern",
+                "constraints",
+                "valueSetPattern",
+                "deletePattern",
+                "insertPattern",
+                "autosuggestionPattern",
+                "treePatterns",
+                "testSubject"
+            ],
+            "required": [
+                "id"
+            ],
+            "type": "object"
+        },
+        "FormBasedPersistenceProps": {
+            "properties": {
+                "debug": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "enum": [
+                        "form"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "debug"
+            ],
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        },
+        "FullTreeConfig": {
+            "properties": {
+                "childrenQuery": {
+                    "description": "Children query with [?parent] input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "parentsQuery": {
+                    "description": "Parent nodes query with [?item] inputs through VALUES(...) clause\nand [?item, ?parent, ?parentLabel] outputs.",
+                    "type": "string"
+                },
+                "rootsQuery": {
+                    "description": "Tree roots query with no input and [?item, ?label, ?hasChildren] output variables.",
+                    "type": "string"
+                },
+                "searchQuery": {
+                    "description": "Search query with [?__token__] input and [?item, ?score, ?label, ?hasChildren] outputs.",
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "full"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "rootsQuery",
+                "childrenQuery",
+                "parentsQuery",
+                "searchQuery"
+            ],
+            "required": [
+                "childrenQuery",
+                "parentsQuery",
+                "rootsQuery",
+                "searchQuery",
+                "type"
+            ],
+            "type": "object"
+        },
+        "Iri": {
+            "properties": {
+                "_value": {
+                    "type": "string"
+                },
+                "termType": {
+                    "enum": [
+                        "NamedNode"
+                    ],
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "termType",
+                "equals",
+                "toString",
+                "toJSON",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_value",
+                "termType",
+                "value"
+            ],
+            "type": "object"
+        },
+        "Literal": {
+            "properties": {
+                "_datatype": {
+                    "$ref": "#/definitions/Iri"
+                },
+                "_lang": {
+                    "type": "string"
+                },
+                "_value": {
+                    "type": "string"
+                },
+                "datatype": {
+                    "$ref": "#/definitions/Iri"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "termType": {
+                    "enum": [
+                        "Literal"
+                    ],
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "_datatype",
+                "_lang",
+                "termType",
+                "datatype",
+                "language",
+                "toString",
+                "equals",
+                "toJSON",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_datatype",
+                "_lang",
+                "_value",
+                "datatype",
+                "language",
+                "termType",
+                "value"
+            ],
+            "type": "object"
+        },
+        "OntologyPersistenceProps": {
+            "properties": {
+                "repository": {
+                    "type": "string"
+                },
+                "targetGraphIri": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "ontology"
+                    ],
+                    "type": "string"
+                },
+                "typePattern": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "targetGraphIri",
+                "repository",
+                "typePattern"
+            ],
+            "required": [
+                "repository",
+                "targetGraphIri",
+                "type"
+            ],
+            "type": "object"
+        },
+        "SimpleTreeConfig": {
+            "properties": {
+                "relationPattern": {
+                    "description": "Output bindings: `?item`, `?parent`",
+                    "type": "string"
+                },
+                "scheme": {
+                    "description": "Binds to `?__scheme__` variable in the `schemePattern`",
+                    "type": "string"
+                },
+                "schemePattern": {
+                    "description": "Input bindings: `?__scheme__`\nOutput bindings: `?item`",
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "simple"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "scheme",
+                "schemePattern",
+                "relationPattern"
+            ],
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "allowRequestFields": {
+            "default": true,
+            "description": "Allows to fetch field definitions from the backend API.",
+            "type": "boolean"
+        },
+        "authoringMode": {
+            "description": "Switches Ontodia to authoring mode.\n\nAuthoring mode requires entity metadata to be specified (using semantic forms as children)\nin order to work.",
+            "type": "boolean"
+        },
+        "children": {
+            "additionalProperties": true,
+            "description": "Children can be either ontodia-entity-metadata or ontodia-field-input-override",
+            "properties": {
+            },
+            "type": "object"
+        },
+        "debug": {
+            "default": false,
+            "description": "Renders debug info into DOM when placed as stand-alone component and also to the console.",
+            "type": "boolean"
+        },
+        "defaultImageIri": {
+            "description": "Default field to be used for entity image",
+            "type": "string"
+        },
+        "defaultLabelIri": {
+            "description": "Default field to be used for entity label",
+            "type": "string"
+        },
+        "defaultSubjectTemplate": {
+            "description": "Default template to create Iri for new entities.",
+            "type": "string"
+        },
+        "fields": {
+            "description": "Fields to be used in Ontodia instance. Could be populated inline or with backend helper.",
+            "items": {
+                "$ref": "#/definitions/FieldDefinitionProp"
+            },
+            "type": "array"
+        },
+        "forceDatatypeFields": {
+            "description": "Forces certain fields of xsd:anyUri datatype to be treated as entity properties\nto be modified inside entity form instead of object properties treated and modified\nas an edge in the graph, like entity image Iri, or some vocabulary reference.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "persistence": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/FormBasedPersistenceProps"
+                },
+                {
+                    "$ref": "#/definitions/OntologyPersistenceProps"
+                }
+            ],
+            "default": "{type: \"form\"}",
+            "description": "Defines persistence mode to use in authoring mode."
+        },
+        "typeIri": {
+            "description": "Field that is used for entity type. In most cases field should use rdf:type as a property.",
+            "type": "string"
+        }
+    },
+    "propertyOrder": [
+        "authoringMode",
+        "persistence",
+        "debug",
+        "fields",
+        "allowRequestFields",
+        "typeIri",
+        "defaultLabelIri",
+        "defaultImageIri",
+        "defaultSubjectTemplate",
+        "forceDatatypeFields",
+        "children"
+    ],
+    "required": [
+        "children",
+        "typeIri"
+    ],
+    "type": "object"
+}
+

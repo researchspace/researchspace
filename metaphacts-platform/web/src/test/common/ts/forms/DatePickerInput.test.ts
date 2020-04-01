@@ -30,12 +30,12 @@ import {
   DatePickerInput,
   DatePickerInputProps as DatePickerProps,
   DatePickerMode,
-  OUTPUT_UTC_DATE_FORMAT,
-  OUTPUT_UTC_TIME_FORMAT,
-  utcMomentFromRdfLiteral,
   FieldValue,
   normalizeFieldDefinition,
 } from 'platform/components/forms';
+import {
+  OUTPUT_UTC_DATE_FORMAT, OUTPUT_UTC_TIME_FORMAT, utcMomentFromRdfLiteral,
+} from 'platform/components/forms/inputs/DatePickerInput';
 
 import { shallow, mount } from 'platform-tests/configuredEnzyme';
 import { mockLanguagePreferences } from 'platform-tests/mocks';

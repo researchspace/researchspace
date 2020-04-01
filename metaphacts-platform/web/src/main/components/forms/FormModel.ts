@@ -20,6 +20,7 @@ import * as uuid from 'uuid';
 import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
 import * as URI from 'urijs';
+import { escapeRegExp } from 'lodash';
 
 import { Rdf, XsdDataTypeValidation, vocabularies } from 'platform/api/rdf';
 
@@ -68,6 +69,31 @@ export function generateSubjectByTemplate(
 
   const combinedPath = URI.joinPaths(ownerSubject.value, subject).toString();
   return Rdf.iri(URI(ownerSubject.value).pathname(combinedPath).toString());
+}
+
+export function wasIriGeneratedByTemplate(
+  generatedIri: string,
+  template: string,
+  ownerSubject: Rdf.Iri | undefined,
+  composite: CompositeValue | undefined
+): boolean {
+  const replacer = makeDefaultSubjectReplacer();
+  const escapeTable: { [K in Placeholder['type']]: string | undefined } = {
+    'UUID': uuid.v4(),
+    'FieldValue': undefined,
+  };
+  const newGeneratedIri = generateSubjectByTemplate(
+    template, ownerSubject, composite,
+    (p, comp) => {
+      const escaped = escapeTable[p.type];
+      return escaped ? escaped : replacer(p, comp);
+    }
+  );
+  const regexpEscaped = escapeRegExp(newGeneratedIri.value).replace(
+    escapeRegExp(escapeTable.UUID),
+    '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+  );
+  return new RegExp(regexpEscaped).test(generatedIri);
 }
 
 export function makeDefaultSubjectReplacer(): SubjectReplacer {

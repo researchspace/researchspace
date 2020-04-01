@@ -17,154 +17,192 @@
  */
 
 import * as React from 'react';
-import { ReactElement, Children, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import * as Immutable from 'immutable';
-import { ElementTypeIri } from 'ontodia';
+import { ElementTypeIri, CancellationToken } from 'ontodia';
 
-import { Component } from 'platform/api/components';
-import { xsd } from 'platform/api/rdf/vocabularies';
+import { Rdf } from 'platform/api/rdf';
+import { FieldDefinition, FieldMapping, mapChildToComponent } from 'platform/components/forms';
 
 import {
-  ResourceEditorForm, ResourceEditorFormProps,
-  CompositeInput, CompositeInputProps,
-  FieldDefinition, normalizeFieldDefinition,
-  FieldMapping, mapChildToComponent,
-} from 'platform/components/forms';
-import { isValidChild, componentHasType, universalChildren } from 'platform/components/utils';
+  FieldConfigurationContext, EntityMetadata, assertFieldConfigurationItem, isObjectProperty
+} from './FieldConfigurationCommon';
 
 export interface OntodiaEntityMetadataProps {
+
+  /**
+   * Iri of the type to be configured. For example, 'http://xmlns.com/foaf/0.1/person'
+   */
   entityTypeIri: string;
+
+  /**
+   * Ordered list of fields to be used for this entity. Automatically generated forms will honor
+   * the order of the fields specified here.
+   */
+  fields: ReadonlyArray<string>;
+
+  /**
+   * Field Iri for entity label override
+   */
   labelIri?: string;
-  typeIri?: string;
+
+  /**
+   * Field Iri for entity image override
+   */
   imageIri?: string;
-  forceIris?: string[];
+
+  /**
+   * Subject template override for generating Iri of new entities
+   */
+  newSubjectTemplate?: string;
+
+  /**
+   * Semantic form override. If developer wants to override auto-generated form,
+   * it should be placed inside <ontodia-entity-metadata>.
+   */
+  children?: JSX.Element;
 }
 
 /**
  * @example
- * <semantic-form new-subject-template='http://www.example.com/company/{{UUID}}'
- *   fields='... (hasType, companyName, companyAddress)'>
- *   <ontodia-entity-metadata entity-type-iri='http://example.com/Company'
- *     label-iri='http://www.example.com/fields/companyName'
- *     type-iri='http://www.example.com/fields/hasType'>
- *   </ontodia-entity-metadata>
+ * <ontodia-entity-metadata
+ *   entity-type-iri='http://example.com/Company'
+ *   fields='["field-iri-1", "field-iri-2", ...]'
+ *   label-iri='http://www.example.com/fields/companyName'
+ *   image-iri='http://www.example.com/fields/hasType'
+ *   new-subject-template='http://www.example.com/company/{{UUID}}'
+ *   force-iris='["datatype-field-1", ...]'>
  *
  *   <semantic-form-text-input for='http://www.example.com/fields/companyName'>
  *   </semantic-form-text-input>
  *
- *   <semantic-form-composite-input for='http://www.example.com/fields/companyAddress'
- *     fields='... (addressCountry, addressCity, etc)'>
- *     <ontodia-entity-metadata entity-type-iri='http://example.com/Address'
- *       type-iri='http://www.example.com/fields/hasType'>
- *     </ontodia-entity-metadata>
+ *   <semantic-form-composite-input
+ *     for='http://www.example.com/fields/companyAddress'
+ *     fields='...'>
  *     <!-- inputs for addressCountry, addressCity, etc) -->
  *   </semantic-form-composite-input>
  *
  *   <semantic-form-errors></semantic-form-errors>
  *   <button name="submit" class="btn btn-default">Save</button>
  *   <button name="reset" class="btn btn-default">Reset</button>
- * </semantic-form>
+ * </ontodia-entity-metadata>
  */
-export class OntodiaEntityMetadata extends Component<OntodiaEntityMetadata, {}> {}
+export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadataProps, {}> {
+  render(): null { return null; }
 
-export interface EntityMetadata {
-  readonly parent?: EntityParent;
-  readonly entityType: ElementTypeIri;
-  readonly labelField: FieldDefinition;
-  readonly typeField: FieldDefinition;
-  readonly imageField?: FieldDefinition;
-  readonly fieldById: Immutable.Map<string, FieldDefinition>;
-  readonly fieldByIri: Immutable.Map<string, FieldDefinition>;
-  readonly newSubjectTemplate: string;
-  readonly formChildren: ReactNode;
-  readonly forceFields?: Immutable.Map<string, FieldDefinition>;
-}
-
-export interface EntityParent {
-  readonly type: ElementTypeIri;
-  readonly fieldIri: string;
-}
-
-export function extractAuthoringMetadata(
-  markup: ReadonlyArray<ReactElement<any>>
-): Map<ElementTypeIri, EntityMetadata> {
-  const metadata = new Map<ElementTypeIri, EntityMetadata>();
-  for (const child of markup) {
-    if (componentHasType(child, ResourceEditorForm)) {
-      collectMetadataFromFormOrComposite(child, undefined, metadata);
+  static getRequiredFields(
+    props: OntodiaEntityMetadataProps,
+    ct: CancellationToken
+  ): Promise<Rdf.Iri[]> {
+    const fieldIris: Rdf.Iri[] = [];
+    if (props.labelIri) {
+      fieldIris.push(Rdf.iri(props.labelIri));
     }
+    if (props.imageIri) {
+      fieldIris.push(Rdf.iri(props.imageIri));
+    }
+    if (props.fields) {
+      for (const otherField of props.fields) {
+        fieldIris.push(Rdf.iri(otherField));
+      }
+    }
+    return Promise.resolve(fieldIris);
   }
-  return metadata;
+
+  static async configure(
+    props: OntodiaEntityMetadataProps,
+    context: FieldConfigurationContext
+  ): Promise<void> {
+    extractAuthoringMetadata(props, context);
+  }
 }
 
-function collectMetadataFromFormOrComposite(
-  formOrComposite: ReactElement<ResourceEditorFormProps | CompositeInputProps>,
-  parent: EntityParent | undefined,
-  collectedMetadata: Map<ElementTypeIri, EntityMetadata>
+assertFieldConfigurationItem(OntodiaEntityMetadata);
+
+function extractAuthoringMetadata(
+  props: OntodiaEntityMetadataProps,
+  context: FieldConfigurationContext
 ) {
-  const {form, metadataElement} = extractEntityFormAndMetadata(formOrComposite);
-  const {entityTypeIri, labelIri, typeIri, imageIri, forceIris} = metadataElement.props;
+  const {fieldByIri: allFieldByIri, typeIri, datatypeFields} = context;
+  const {
+    entityTypeIri,
+    fields,
+    labelIri = context.defaultLabelIri,
+    imageIri = context.defaultImageIri,
+    newSubjectTemplate = context.defaultSubjectTemplate,
+  } = props;
 
   if (typeof entityTypeIri !== 'string') {
-    throw new Error(`Missing 'entityTypeIri' prop for ontodia-entity-metadata`);
+    throw new Error(`Missing 'entity-type-iri' property for <ontodia-entity-metadata>`);
+  }
+  if (!fields) {
+    throw new Error(`Missing 'fields' property for <ontodia-entity-metadata>`);
   }
   if (typeof labelIri !== 'string') {
-    throw new Error(`Missing 'labelIri' prop for ontodia-entity-metadata`);
-  }
-  if (typeof typeIri !== 'string') {
-    throw new Error(`Missing 'typeIri' prop for ontodia-entity-metadata`);
+    throw new Error(`Missing 'label-iri' property for <ontodia-entity-metadata>`);
   }
 
-  const fields = form.props.fields.map(normalizeFieldDefinition);
-  const fieldByIri = Immutable.Map(
-    fields.map(f => [f.iri, f] as [string, FieldDefinition])
-  );
-  const labelField = fieldByIri.get(labelIri);
-  const typeField = fieldByIri.get(typeIri);
-  const imageField = fieldByIri.get(imageIri);
+  const labelField = allFieldByIri.get(labelIri);
+  const typeField = allFieldByIri.get(typeIri);
+  const imageField = allFieldByIri.get(imageIri);
 
-  if (!labelField) {
-    throw new Error(`Missing field definition for label field <${labelIri}>`);
-  }
   if (!typeField) {
-    throw new Error(`Missing field definition for type field <${typeIri}>`);
+    throw new Error(
+      `<ontodia-entity-metadata> for <${entityTypeIri}>: missing type field <${typeIri}>`
+    );
+  }
+  if (!labelField) {
+    throw new Error(
+      `<ontodia-entity-metadata> for <${entityTypeIri}>: missing label field <${labelIri}>`
+    );
   }
 
-  const formChildren = Children.toArray(form.props.children).filter(child => {
-    const mapping = mapChildToComponent(child);
-    return !mapping || !FieldMapping.isComposite(mapping);
+  const mappedFields = fields.map(fieldIri => {
+    const field = allFieldByIri.get(fieldIri);
+    if (!field) {
+      throw new Error(
+        `<ontodia-entity-metadata> for <${entityTypeIri}>: missing field <${labelIri}>`
+      );
+    }
+    return field;
   });
-  const forceFields = forceIris ? fields.filter(f => forceIris.indexOf(f.iri) >= 0) : [];
+
+  const headFields = [typeField, labelField];
+  if (imageField) {
+    headFields.push(imageField);
+  }
+
+  const entityFields = [...headFields, ...mappedFields];
+  const fieldByIri = Immutable.Map(
+    entityFields.map(f => [f.iri, f] as [string, FieldDefinition])
+  );
+
   const metadata: EntityMetadata = {
-    parent,
     entityType: entityTypeIri as ElementTypeIri,
-    labelField,
-    typeField,
-    imageField,
-    fieldById: Immutable.Map(
-      fields.map(f => [f.id, f] as [string, FieldDefinition])
-    ),
+    fields: entityFields,
     fieldByIri,
-    newSubjectTemplate: form.props.newSubjectTemplate,
-    formChildren,
-    forceFields: Immutable.Map(
-      forceFields.map(f => [f.iri, f] as [string, FieldDefinition])
+    datatypeFields: Immutable.Set<string>(
+      datatypeFields.filter(fieldIri => fieldByIri.has(fieldIri))
     ),
+    typeField,
+    labelField,
+    imageField,
+    newSubjectTemplate,
+    formChildren: props.children,
   };
 
-  validateFormFieldsDatatype(form.props.children, metadata);
+  validateFormFieldsDatatype(metadata.formChildren, metadata);
 
-  collectedMetadata.set(metadata.entityType, metadata);
-  collectMetadataFromMarkup(form.props.children, metadata.entityType, collectedMetadata);
+  context.collectedMetadata.set(metadata.entityType, metadata);
 }
 
 function validateFormFieldsDatatype(children: ReactNode | undefined, metadata: EntityMetadata) {
   if (!children) { return; }
-  Children.forEach(children, child => {
+  React.Children.forEach(children, child => {
     const mapping = mapChildToComponent(child);
     if (!mapping || FieldMapping.isComposite(mapping)) { return; }
     if (FieldMapping.isInput(mapping)) {
-      const field = metadata.fieldById.get(mapping.element.props.for);
+      const field = metadata.fieldByIri.get(mapping.element.props.for);
       if (isObjectProperty(field, metadata)) {
         throw new Error(`XSD Datatype of the field <${field.iri}> isn't literal`);
       }
@@ -172,54 +210,6 @@ function validateFormFieldsDatatype(children: ReactNode | undefined, metadata: E
       validateFormFieldsDatatype(mapping.children, metadata);
     }
   });
-}
-
-function collectMetadataFromMarkup(
-  children: ReactNode | undefined,
-  parentType: ElementTypeIri,
-  collectedMetadata: Map<ElementTypeIri, EntityMetadata>
-) {
-  if (!children) { return; }
-  React.Children.forEach(children, child => {
-    if (isValidChild(child)) {
-      if (componentHasType(child, CompositeInput)) {
-        const parent: EntityParent = {
-          type: parentType,
-          fieldIri: (child.props as CompositeInputProps).for,
-        };
-        collectMetadataFromFormOrComposite(child, parent, collectedMetadata);
-      } else {
-        collectMetadataFromMarkup(child.props.children, parentType, collectedMetadata);
-      }
-    }
-  });
-}
-
-interface EntityFormAndMetadata {
-  form: ReactElement<ResourceEditorFormProps | CompositeInputProps>;
-  metadataElement: ReactElement<OntodiaEntityMetadataProps>;
-}
-
-function extractEntityFormAndMetadata(
-  entityForm: ReactElement<ResourceEditorFormProps | CompositeInputProps>
-): EntityFormAndMetadata {
-  const children = Children.toArray(entityForm.props.children);
-  const metadataElement = children.find(
-    child => componentHasType(child, OntodiaEntityMetadata)
-  ) as ReactElement<OntodiaEntityMetadataProps> | undefined;
-  if (!metadataElement) {
-    throw new Error(`Entity form should have a single semantic-entity-metadata as direct child`);
-  }
-  const filteredChildren = universalChildren(children.filter(child => child !== metadataElement));
-  const form = React.cloneElement(entityForm, {}, filteredChildren);
-  return {form, metadataElement};
-}
-
-export function isObjectProperty(field: FieldDefinition, metadata: EntityMetadata) {
-  const isImageField = metadata.imageField && metadata.imageField.iri === field.iri;
-  const isForceField = metadata.forceFields.has(field.iri);
-  return !isImageField && !isForceField &&
-    (!field.xsdDatatype || xsd.anyURI.equals(field.xsdDatatype));
 }
 
 export default OntodiaEntityMetadata;

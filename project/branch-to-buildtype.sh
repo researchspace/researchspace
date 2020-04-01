@@ -5,6 +5,7 @@ BRANCH_NAME="$1"
 # script to determine the build type
 # develop -> develop
 # master -> develop
+# develop-* -> develop (patch releases)
 # release/* -> release
 # feature/* -> CI
 # bugfix/* -> CI
@@ -16,6 +17,8 @@ BRANCH_NAME="$1"
 if [[ "$BRANCH_NAME" = "develop" ]]; then
     echo "develop"
 elif [[ "$BRANCH_NAME" = "master" ]]; then
+    echo "develop"
+elif [[ "$BRANCH_NAME" =~ develop-.+$ ]]; then
     echo "develop"
 elif [[ "$BRANCH_NAME" =~ release-.+$ ]]; then
     echo "release"

@@ -21,38 +21,33 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const defaultsFn = require('./defaults');
 
-/**
- * @param {{ [key: string]: string }} env
- */
-module.exports = function (env) {
+module.exports = function () {
     const defaults = defaultsFn();
-    var config = require('./webpack.config.js')(defaults);
+    var config = require('./webpack.config.js')(true);
     config.mode = 'production';
 
-    config.optimization = {
-        minimize: true,
-        minimizer: [
-            new TerserPlugin({
-                terserOptions: {
-                    keep_fnames: true,
-                    ecma: '2016',
-                    output: {
-                        comments: false,
-                    },
+    config.optimization.minimize = true;
+    config.optimization.minimizer = [
+        new TerserPlugin({
+            terserOptions: {
+                keep_fnames: true,
+                ecma: '2016',
+                output: {
+                    comments: false,
                 },
-                extractComments: false,
-            }),
-        ],
-    };
+            },
+            extractComments: false,
+        }),
+    ];
 
     /*
      * Add chunkhash to filename to make sure that we bust
      * browser cache on redeployment.
      */
     config.output.filename = function(chunkData) {
-        return chunkData.chunk.name === 'page-renderer' ? '[name]-bundle.js': "[name]-[chunkhash]-bundle.js";
+        return chunkData.chunk.name === 'page-renderer' ? '[name].js': "[name]-[contenthash].js";
     };
-    config.output.chunkFilename = "[name]-[chunkhash]-bundle.js";
+    config.output.chunkFilename = "[name]-[contenthash].js";
 
     let tsLoader = config.module.rules[0].use[0];
 

@@ -27,7 +27,7 @@ const defaults = require('./defaults')();
  * @param {ReturnType<import('./defaults')>} defaults
  * @returns {import('webpack').Configuration}
  */
-module.exports = function() {
+module.exports = function(isProd) {
     const {
         ROOT_DIR,
         DIST,
@@ -35,14 +35,6 @@ module.exports = function() {
         SRC,
         PROJECT,
     } = defaults;
-
-    /**
-     * Env
-     * Get npm lifecycle event to identify the environment
-     */
-    var ENV = process.env.npm_lifecycle_event;
-    var isTest = ENV === 'test' || ENV === 'test-watch';
-    var isProd = ENV === 'build';
 
     const publicPath = '/assets/no_auth/';
 
@@ -59,8 +51,8 @@ module.exports = function() {
         },
         output: {
             path: path.join(DIST, 'no_auth'),
-            filename: '[name]-bundle.js',
-            chunkFilename: '[name]-bundle.js',
+            filename: '[name].js',
+            chunkFilename: '[name].js',
             publicPath
         },
         optimization: {
@@ -268,7 +260,11 @@ module.exports = function() {
                 filename: 'bundles-manifest.json',
                 path: defaults.DIST
             }),
-            new MiniCssExtractPlugin()
+            new MiniCssExtractPlugin({
+                ignoreOrder: true,
+                filename: isProd ? '[name]-[contenthash].css' : '[name].css',
+                chunkFilename: isProd ? '[name]-[contenthash].css' : '[name].css',
+            })
         ]
     };
 

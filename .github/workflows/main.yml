@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # if build was triggered by labeled action we want to execute it only if it is build_image label
+    if: github.event.action != 'labeled' || github.event.label.name == 'build_image'
+    
+    steps:
+      - uses: actions/checkout@v1
+
+      # setup JDK 11
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      # setup node 12.x
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      # cache gradle wrapper files, reset cache if we update gradle-wrapper version in gradle-wrapper.properties file
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
+
+      # cache dependencies resolved by gradle, reset cache when build.gradle is updated
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('build.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
+
+      # cache dependencies resolved by npm, reset cache when package-lock.json us updated
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # run tests with gradle only if no build_image label is present, otherwise tests are run as part of buildZip task
+      - name: test
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') == false
+        uses: eskatos/gradle-command-action@v1
+        env:
+          CHROMIUM_BIN: /usr/bin/google-chrome
+        with:
+          arguments: test
+
+      # build war and zip only if build_image label is present
+      - name: war
+        if: contains(github.event.pull_request.labels.*.name, 'build_image')
+        uses: eskatos/gradle-command-action@v1
+        env:
+          CHROMIUM_BIN: /usr/bin/google-chrome
+        with:
+          arguments: buildZip
+
+      - name: docker build
+        if: contains(github.event.pull_request.labels.*.name, 'build_image')
+        run: |
+          export DOCKER_FOLDER="$(pwd)/dist/docker"
+          cp build/libs/ROOT-*.war $DOCKER_FOLDER/platform/ROOT.war
+          mkdir $DOCKER_FOLDER/platform/etc
+          cp src/main/webapp/etc/* $DOCKER_FOLDER/platform/etc
+          mkdir $DOCKER_FOLDER/platform/config
+          cp -r src/main/resources/org/researchspace/apps/assets/config/* $DOCKER_FOLDER/platform/config
+          cd $DOCKER_FOLDER/platform
+          docker build -t researchspace/platform-ci:${GITHUB_SHA} .
+
+      - name: Push docker image
+        if: contains(github.event.pull_request.labels.*.name, 'build_image')
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
+          docker push researchspace/platform-ci:${GITHUB_SHA}
+
+      # upload zip bundle 
+      - if: contains(github.event.pull_request.labels.*.name, 'build_image')
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: zip-bundle
+          path: build/output/researchspace-*

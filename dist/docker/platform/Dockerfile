@@ -1,16 +1,16 @@
-ARG  JETTY_VERSION=9.4.18-jre8-alpine
+ARG JETTY_VERSION=9.4.27-jre11-slim
 FROM jetty:${JETTY_VERSION}
-MAINTAINER metaphacts support@metaphacts.com
+MAINTAINER ResearchSpace researchspace@britishmuseum.org
 
-LABEL maintainer="metaphacts support@metaphacts.com"
+LABEL maintainer="ResearchSpace researchspace@britishmuseum.org"
 
 USER root
 
 # install additional packages
-RUN apk --update add vim && rm -rf /var/cache/apk/*
+# RUN apk --update add vim && rm -rf /var/cache/apk/*
 
 # add user jetty to group root which is used for most of the permissions
-# user jetty has uid 100
+# user jetty has uid 999
 # group root has gid 0
 RUN addgroup jetty root
 
@@ -30,7 +30,7 @@ RUN echo "fixing group ownership for Jetty base, home, and temp folders" \
 	&& chmod -R g+s "$JETTY_HOME"
 
 
-COPY --chown=100:0 entrypoint.sh /
+COPY --chown=999:0 entrypoint.sh /
 RUN chmod a+x /entrypoint.sh
 
 
@@ -38,37 +38,37 @@ RUN chmod a+x /entrypoint.sh
 RUN echo "setting up platform, apps, and runtime folders" \
 	&& umask 0002 \
 	&& mkdir /firstStart \
-	&& chown -R 100:0 "/firstStart" \
+	&& chown -R 999:0 "/firstStart" \
 	&& chmod -R g=u "/firstStart" \
 	&& chmod -R g+ws "/firstStart" \
 	&& mkdir /apps \
-	&& chown -R 100:0 "/apps" \
+	&& chown -R 999:0 "/apps" \
 	&& chmod -R g=u "/apps" \
 	&& chmod -R g+ws "/apps" \
 	&& mkdir /runtime-data \
 	&& mkdir -p /runtime-data/config/repositories \
 	&& mkdir -p /runtime-data/data/repositories \
-	&& chown -R 100:0 "/runtime-data" \
+	&& chown -R 999:0 "/runtime-data" \
 	&& chmod -R g=u "/runtime-data" \
 	&& chmod -R g+ws "/runtime-data" \
 	&& mkdir /var/lib/jetty/logs \
-	&& chown -R 100:0 "/var/lib/jetty/logs" \
+	&& chown -R 999:0 "/var/lib/jetty/logs" \
 	&& chmod -R g=u "/var/lib/jetty/logs" \
 	&& chmod -R g+ws "/var/lib/jetty/logs"
 
-COPY --chown=100:0 jetty-logging.properties /var/lib/jetty/resources/jetty-logging.properties
-COPY --chown=100:0 etc/ /var/lib/jetty/webapps/etc
+COPY --chown=999:0 jetty-logging.properties /var/lib/jetty/resources/jetty-logging.properties
+COPY --chown=999:0 etc/ /var/lib/jetty/webapps/etc
 
-COPY --chown=100:0 shiro-tools-hasher-1.3.2-cli.jar /firstStart/
-COPY --chown=100:0 first-passwd-init.sh /firstStart/
+COPY --chown=999:0 shiro-tools-hasher-1.3.2-cli.jar /firstStart/
+COPY --chown=999:0 first-passwd-init.sh /firstStart/
 
-COPY --chown=100:0 ROOT.xml /var/lib/jetty/webapps/ROOT.xml
-COPY --chown=100:0 ROOT.war /var/lib/jetty/webapps/ROOT.war
+COPY --chown=999:0 ROOT.xml /var/lib/jetty/webapps/ROOT.xml
+COPY --chown=999:0 ROOT.war /var/lib/jetty/webapps/ROOT.war
 
-COPY --chown=100:0 config/shiro.ini /runtime-data/config/shiro.ini
+COPY --chown=999:0 config/shiro.ini /runtime-data/config/shiro.ini
 # one final, recursive change of permissions in /runtime-data
 RUN chmod g+w "/var/lib/jetty/webapps/ROOT.xml" \
-	&& chown -R 100:0 "/runtime-data" \
+	&& chown -R 999:0 "/runtime-data" \
 	&& chmod -R g=u "/runtime-data" \
 	&& chmod -R g+ws "/runtime-data"
 

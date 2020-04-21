@@ -21,7 +21,7 @@ const webpack = require('webpack');
 const defaults = require('./defaults')();
 
 module.exports = function() {
-    const config = require('./webpack.config.js')();
+    const config = require('./webpack.config.js')(false);
     // enable sourceMaps for ts loader
 
     let tsLoader = config.module.rules[0].use[1];

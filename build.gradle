@@ -64,7 +64,7 @@ war {
 
 
 farms {
-    farm 'ResearchSpace', {
+    farm 'researchspace', {
         webapp project,
             contextPath: '/'
 
@@ -81,7 +81,7 @@ farms {
 }
 
 products {
-    product 'ResearchSpace', {}
+    product 'researchspace', {}
 }
 
 // configuration for local jetty container
@@ -195,7 +195,7 @@ task startWebpack(type: com.github.psxpaul.task.ExecFork) {
 tasks.startWebpack.dependsOn npmInstall
 
 // define custom start task so we have more convenient names than
-// farmRunResearchSpace, appRun, farmRunDebugResearchSpace, appRunDebug, productBuildResearchSpace
+// farmRunresearchspace, appRun, farmRunDebugresearchspace, appRunDebug, archiveProductresearchspace
 task runAll
 task run
 task debugAll
@@ -212,11 +212,11 @@ project.afterEvaluate {
     tasks.prepareInplaceWebApp.dependsOn startWebpack
 
     // connect our custom tasks with tasks from gretty
-    tasks.debugAll.dependsOn tasks.farmRunDebugResearchSpace
+    tasks.debugAll.dependsOn tasks.farmRunDebugresearchspace
     tasks.debug.dependsOn tasks.appRunDebug
-    tasks.runAll.dependsOn tasks.farmRunResearchSpace
+    tasks.runAll.dependsOn tasks.farmRunresearchspace
     tasks.run.dependsOn tasks.appRun
-    tasks.buildZip.dependsOn tasks.buildProductResearchSpace
+    tasks.buildZip.dependsOn tasks.archiveProductresearchspace
 }
 
 // execute frontend tests

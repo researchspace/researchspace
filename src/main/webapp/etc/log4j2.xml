@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Default log4j profile, logging to STDOUT and logs/platform.log     -->
+<!--                                                                    -->
+<!-- The logger is configured to                                        -->
+<!-- (a) log out everthing >= WARNING for the platform,                 -->
+<!-- (b) log out everything >= WARNING for the key libraries, and       -->
+<!-- (c) log our everything >= ERROR for everything else.               -->
+<!--                                                                    -->
+<!-- This will result in a small amount of log messages, suitable       -->
+<!-- for deployments and stable production system where only critical   -->
+<!-- and potentially critical issues shall be logged.                   -->
+<!--                                                                    -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       -->
+<!--     !!!!!!!!!! RECOMMENDED FOR PRODUCTION SYSTEMS !!!!!!!!!!       -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       -->
+<!--                                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<Configuration xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="log4j-xinclude-appenders.xml" />
+
+  <Loggers>
+
+    <Logger name="org.researchspace" level="info" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+    <!-- additional platform specific loggers that can be switched on individually (INFO) -->
+    <Logger name="platform.logging" level="OFF" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="httpclient.wire" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="io.github.classgraph" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <!--
+      Apache library configuration: show ERRORs only.
+
+      The only exception is for beanutils, which we set to display errors only.
+      This is to avoid logging of errors in combination with apache configuration,
+      see https://issues.apache.org/jira/browse/BEANUTILS-477 (we may remove
+      th special handling for beanutils once the latter ticket has been resovled)
+    -->
+    <Logger name="org.apache.commons.beanutils" level="error" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.apache" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.eclipse" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="sun" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.glassfish.jersey" level="warn">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.apache.shiro" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Root level="error">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+
+  </Loggers>
+
+</Configuration>

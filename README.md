@@ -2,6 +2,8 @@
   <img src='https://www.researchspace.org/images/rslogo_blackonwhite_crop.png' alt='ResearchSpace' />
 </p>
 
+<p align='center'>ResearchSpace is licensed under the GNU Affero General Public License, version 3 or later (AGPL v3 or later). see LICENSE file </p>
+
 - - -
 
 <p align="center">
@@ -48,7 +50,7 @@ The ResearchSpace platform's **browser compatibility** is **Google Chrome (minim
 Use of this platform in other browsers or older versions of Chrome or Firefox is not currently supported.
 
 # License
-The ResearchSpace is distributed under LGPL-2.1.
+The ResearchSpace is distributed under AGPL-3.0 or later.
 
 # How to try it?
 
@@ -65,7 +67,6 @@ The easiest way to try researchspace is to use a [setup with docker-compose](#se
          * [Prerequisites Installation on <em>Ubuntu 18.04 (Bionic Beaver)</em>](#prerequisites-installation-on-ubuntu-1804-bionic-beaver)
          * [Prerequisites Installation on <em>MacOS Mojave</em>](#prerequisites-installation-on-macos-mojave)
          * [Prerequisites Installation on <em>Windows 10</em>](#prerequisites-installation-on-windows-10)
-         * [RDF Database (Triplestore)](#rdf-database-triplestore)
       * [Running the ResearchSpace in Development Mode](#running-the-researchspace-in-development-mode)
       * [Testing](#testing)
       * [Debugging](#debugging)
@@ -85,7 +86,6 @@ The easiest way to try researchspace is to use a [setup with docker-compose](#se
       * [Troubleshooting](#troubleshooting)
          * [Security certificate issues when building the platform](#security-certificate-issues-when-building-the-platform)
          * [Fetching and installing dependencies may fail on the first run](#fetching-and-installing-dependencies-may-fail-on-the-first-run)
-         * [Java version](#java-version)
 
 <!-- Added by: artem, at: Tue Nov  5 18:47:57 EET 2019 -->
 
@@ -103,163 +103,122 @@ To setup ResearchSpace you need to execute `docker-compose up -d` from the folde
 ## Prerequisites
 It is possible to use an unix-based OS as well as Windows for development against the platform. As prerequisites you need to have installed on your machine:
 
-* OpenJDK 8 (preferred, but Oracle JDK 8 is fine too)
-* Node.js LTS (8.x, 10.x, 12.x)
-* SBT
-* Yarn
-* an RDF database or at least access to such. We recommend to use Blazegraph
+* JDK 11 (you can use Java 14 to run the ResearchSpace but version 11 is currently the only supported version for development).
+* Latest Node.js LTS (12.x) is recommended, but any newer Node.js version should be also fine.
 
-In particular, on OSX and Unix systems the most stable versions for SBT and Node.js are usually available from common package managers (e.g. homebrew, apt) and as such easy to install and to upgrade.
+In particular, on OSX and Unix systems the most stable versions for Node.js are usually available from common package managers (e.g. homebrew, apt) and as such easy to install and to upgrade.
 
 On Windows the use of [Chocolatey](https://chocolatey.org/) is highly recommended.
 
-### Prerequisites Installation on *Ubuntu 18.04 (Bionic Beaver)*
+### Prerequisites Installation on *Ubuntu*
 
-**Docker**
+**Java 11 JDK**
 
-1. `sudo apt-get update && sudo apt install docker.io`
-2. `sudo docker run hello-world` to test docker
-3. Enable docker to run without using sudo, read the following [instructions](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo**
-
-**Java 8 JDK**
-
-`sudo apt install openjdk-8-jdk`
-
-**Scala Interactive Build Tool**
-
-`echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list`
-`sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823`
-`sudo apt-get update && sudo apt install sbt`
+`sudo apt install openjdk-11-jdk`
 
 **Node.js**
 
-Using version 8.x which is default in Ubuntu 18.04 (versions 10 and 12 will also work).
-
+`curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -`
 `sudo apt install nodejs npm`
 
-**Yarn**
-
-`curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -`
-`echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list`
-`sudo apt-get update && sudo apt install yarn`
-
-### Prerequisites Installation on *MacOS Mojave*
+### Prerequisites Installation on *MacOS*
 
 **Homebrew Installation**
 
 `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 
-**Docker**
+**Java 11**
 
-1. `brew cask install docker`
-2. Launch the Docker app and a blue whale will confirm if all is running well
-3. `docker run hello-world` to test docker
+`brew tap AdoptOpenJDK/openjdk`
+`brew cask install adoptopenjdk11`
 
-**Java 8**
-
-`brew tap homebrew/cask-versions`
-`brew cask install adoptopenjdk8`
-
-**Scala Interactive Build Tool**
-
-`brew install sbt`
-
-**Node.js (latest LTS)**
+**Node.js**
 
 `brew install node`
-
-**Yarn**
-
-`brew install yarn`
 
 ### Prerequisites Installation on *Windows 10*
 See [installation instruction](https://chocolatey.org/docs/installation) for [Chocolatey](https://chocolatey.org).
 
-**Java 8**
+**Java 11**
 
-`choco install adoptopenjdk8 -y`
-
-**SBT**
-
-On Windows it is important to install sbt v0.13.15, because the latest sbt has Windows specific bug - https://github.com/sbt/sbt/issues/5174
-
-`choco install sbt --version=0.13.15 -y`
+`choco install adoptopenjdk11 -y`
 
 **Node**
 
 `choco install nodejs-lts -y`
 
-**Yarn**
-
-`choco install yarn -y`
-
-
-### RDF Database (Triplestore)
-
-For most developments (i.e. for starting-up the platform properly) you will need to have a RDF database in place. The database does not necessarily need to run on your local machine as long as it is accessible over a standard conform SPARQL endpoint interface. For your convenience, we recommend to run, for example, Blazegraph as a container on your local docker daemon so you can easily run serveral databases in parallel and switch between them:
-
-`docker run --name researchspace-blazegraph -d --restart=unless-stopped -p 10080:8080 --env JAVA_OPTS="" researchspacepublic/blazegraph:2.2.0-RC-2016_12_09-researchspace-geo`
-
-
 ## Running the ResearchSpace in Development Mode
 
-1. Compile and initialise the files using SBT in batch mode
-2. Configure the platform to use a local Blazegraph instance as its default repository
-3. Start the SBT build environment in interactive mode.
+In development mode we recommend to run ResearchSpace with bundled blazegraph and digilib, but you can also run it with your own triplestore and iiif server.
+
+When build is completed go to [http://127.0.0.1:10214/](http://127.0.0.1:10214/), where you should see the login screen. Default platform access username and password are  `admin:admin`
+
+### Run ResearchSpace with bundeled blazegraph triplestore and digilib IIIF server
 
 Enter the following into your terminal (for Linux and Mac):
 
 ```sh
-mkdir -p runtime/config && echo "sparqlEndpoint=http://localhost:10080/blazegraph/sparql" >> runtime/config/environment.prop
-sh ./build.sh -Dbuildjson=researchspace/researchspace-root-build.json
+./gradlew runAll
 ```
 
-For Windows from PowerShell
+For Windows:
 ```sh
-mkdir runtime\config ; echo "sparqlEndpoint=http://localhost:10080/blazegraph/sparql" | Out-File runtime\config\environment.prop
-.\build.bat "-Dbuildjson=researchspace/researchspace-root-build.json"
+.\gradlew.bat runAll
 ```
 
-SBT will resolve some dependencies and present the SBT prompt.
-
-Once in the SBT console, run `~jetty:start` which will compile all sources and start the jetty server. The tilde `~` will make SBT to watch source directories for changes in order to trigger incremental compilation, so any change to the server-side or client-side sources triggers re-deployment, which takes no more than a few seconds until they are picked-up by Jetty.
+Gradle will resolve some dependencies and then compile all sources and start the jetty server. Gradle watchs source directories for changes in order to trigger incremental compilation, so any change to the server-side or client-side sources triggers re-deployment, which takes no more than a few seconds until they are picked-up by Jetty.
 
 Note, it may take a few minutes to complete starting the platform on the first run; it should be quicker on subsequent runs.
 
 You should see console output similar to:
 
 ```
-*************************************************************************************
-* Main platform servlet context initialised. Press CTRL+C to terminate the process. *
-*************************************************************************************
-```
-followed by
-```
-2017-11-01 16:04:25.820:INFO:oejs.AbstractConnector:main: Started ServerConnector@4fddf222{HTTP/1.1,[http/1.1]}{0.0.0.0:10214}
-2017-11-01 16:04:25.823:INFO:oejs.Server:main: Started @14366ms
+21:24:49 INFO  Jetty 9.4.24.v20191120 started and listening on port 10214
+21:24:49 INFO   runs at:
+21:24:49 INFO    http://localhost:10214/
+21:24:49 INFO  Bigdata runs at:
+21:24:49 INFO    http://localhost:10214/blazegraph
+21:24:49 INFO  digilib runs at:
+21:24:49 INFO    http://localhost:10214/digilib
 ```
 
-Finally, go to [http://127.0.0.1:10214/](http://127.0.0.1:10214/), where you should see the login screen. Default platform access username and password are  `admin:admin`.
+### Run ResearchSpace with your own triplestore and IIIF server
+
+Adjust `sparqlEndpoint`, `iiifScaler` and `imageStorageRoot` properties in the `gradle.properties`.
+Then enter the following into your terminal (for Linux and Mac):
+
+```sh
+./gradlew run
+```
+
+For Windows:
+```sh
+.\gradlew.bat run
+```
+
+You should see console output similar to:
+
+```
+21:24:49 INFO  Jetty 9.4.24.v20191120 started and listening on port 10214
+21:24:49 INFO   runs at:
+21:24:49 INFO    http://localhost:10214/
+```
 
 ## Testing
 > :warning: **WARNING**: Chromium or Google Chrome browser is required for client-side tests.
 
-Running `test` command in the SBT console will execute all backend tests (Java JUnit) as well as client-side unit tests (using mainly mocha, chai, sinon). To just execute the client-side test, you can also run `npm run test` in the `project/webpack` folder. We also have a number of integration tests, see `researchspace/integration-tests`.
+Running `./gradlew test` command will execute all backend tests (Java JUnit) as well as client-side unit tests (using mainly mocha, chai, sinon). To just execute the client-side test, you can also run `npm run test`. We also have a number of integration tests, see `integration-tests`.
 
 ## Debugging
 
 #### Backend
-Run `build.sh` with an additional parameter `-Ddebug=true` will open a remote debugging port when starting jetty with `~jetty:start`.
-Once the SBT console displays the message "Listening for transport dt_socket at address: 5005" you can connect to the respective port using, for example, the remote debugging functionality in Eclipse (Run -> Debug Configurations .. -> New "Remote Java Application" -> Choose a name, `localhost` as host and `5005` as port parameter).
+Run `./gradlew debugAll` if you are using digilib/blazegraph bundle or `./gradlew debug` for standalone platform.
+Once the gradle console displays the message "Listening for transport dt_socket at address: 5005" you can connect to the respective port using, for example, the remote debugging functionality in Eclipse (Run -> Debug Configurations .. -> New "Remote Java Application" -> Choose a name, `localhost` as host and `5005` as port parameter).
 
 #### Frontend
 You can use standard browser developer tools for debugging the frontend. Furthermore, there is a dedicated plugin called "React Developer Tools" (available for Chrome, Firefox** for debugging and tracing states of React components.
 
 There are several convenient specifics, if in the development mode:
-
-**Hot-Reloading**
-
-Changes to JS/TS and CSS/LESS files are compiled and pushed during runtime. We are using so called "hot loaders" which will try to "swap" changes live into the client application i.e. without the need to reload the entire page in the browser.
 
 **Source Attachments**
 
@@ -268,18 +227,12 @@ Sourcemaps are being attached (`webpack://./src`) i.e. you can debug in the Type
 ### Backend Logging
 The platform's backend is using log4j2 (and respective adapters) for logging. It is setup with four pre-configured log profiles.
 The default profile is "debug", however, the profile can easily be switched by supplying the `build.sh -Dlog={log4j2-debug,log4j2-trace,log4j2-trace2,log4j2}` environment variable
-in the sbt console. The `log4j2-trace` and `log4j2-trace2` profile produce a lot of log messages, however, they can be particularly useful when one needs to trace, for example, request headers or queries without goint to debug low level APIs.
-
-**Please note:** If an old `log4j2.xml` file is still present in the compilation `/target/webapp/WEB-INF` folder, it will always be preceded over the file set via the `-Dlog` env variable. Execute `clean` and `clean-files` in the sbt console to clean the target folder.
+in the gradle console. The `log4j2-trace` and `log4j2-trace2` profile produce a lot of log messages, however, they can be particularly useful when one needs to trace, for example, request headers or queries without goint to debug low level APIs.
 
 ## Building WAR artefact
-> :warning: **WARNING**: There is a bug in SBT 1.* that prevents automatic assets cleanup (https://github.com/sbt/sbt/pull/4999), so you need to manually remove `project/webpack/assets` folder before building the WAR artefact. 
-
 To build ResearchSpace WAR artefact that can be deployed into Java Servlet Container (like jetty), execute the following command, replace `VERSION_NUMBER` with some valid [semantic versioning](https://semver.org/) number.
 
-`rm -rf project/webpack/assets`
-
-`sh ./build.sh -DplatformVersion=VERSION_NUMBER -Dbuildjson=researchspace/researchspace-root-build.json -DbuildEnv=prod clean package`
+`./gradlew clean war`
 
 When the packaging process is complete you will find the .war file in `/target/platform-VERSION_NUMBER.war`.
 
@@ -287,7 +240,7 @@ When the packaging process is complete you will find the .war file in `/target/p
 
 The creation of the platform Docker image consists of packaging the ResearchSpace platform as a Java webapp (the .war file we have just created) in a Java servlet container, Jetty.
 
-Dockerfile file is located in `metaphacts-platform/dist/docker` folder. This file contains the instructions for building the platform's Docker image that is based on an official Jetty server as image.
+Dockerfile file is located in `dist/docker` folder. This file contains the instructions for building the platform's Docker image that is based on an official Jetty server as image.
 
 
 To build the image first we need to copy artefacts produced by the platform build process.
@@ -295,12 +248,12 @@ To build the image first we need to copy artefacts produced by the platform buil
 **Copy artifacts to docker folder**
 
 ```
-export DOCKER_FOLDER="$(pwd)/metaphacts-platform/dist/docker"
+export DOCKER_FOLDER="$(pwd)/dist/docker"
 cp target/platform-*.war $DOCKER_FOLDER/platform/ROOT.war
 mkdir $DOCKER_FOLDER/platform/etc
-cp metaphacts-platform/webapp/etc/* $DOCKER_FOLDER/platform/etc
+cp src/main/webapp/etc/* $DOCKER_FOLDER/platform/etc
 mkdir $DOCKER_FOLDER/platform/config
-cp -r  metaphacts-platform/app/config/* $DOCKER_FOLDER/platform/config
+cp -r  app/config/* $DOCKER_FOLDER/platform/config
 ```
 
 **Build the image**
@@ -310,35 +263,39 @@ cd $DOCKER_FOLDER/platform
 docker build -t researchspace:VERSION_TAG .
 ```
 
-### Setup IDE
-You can use various IDEs and text editors like Eclipse, IDEA, VSCode, Atom and Emacs to work on the project. While there exist some add-ons for JavaScript and Typescript in Eclipse, it is in principle possible to develop everything in only one IDE, e.g. Eclipse or IDEA. However, in particular for the JavaScript/TypeScript development it can be convenient to use editors such as VSCode, Atom or Emacs with much more powerful plugins.
+## Setup IDE
+You can use various IDEs and text editors like Eclipse, IDEA, VSCode, Emacs an VIM to work on the project. 
+
+While there exist some add-ons for JavaScript and Typescript in Eclipse, it is in principle possible to develop everything in only one IDE, e.g. Eclipse or IDEA. However, in particular for the JavaScript/TypeScript development it can be convenient to use editors such as VSCode, Emacs or VIM with much more powerful plugins.
 
 #### Eclipse
-If you are used to develop in Eclipse, you can automatically generate a new Eclipse project by executing the `build.sh`, which is located in the project root folder.
-Once in the SBT console, execute the command `eclipse` which will first resolve all required dependencies and then will automatically generate the classpath file as well as required Eclipse metadata files. Finally, you can import the project into your Eclipse Workspace using the "Existing Projects into Workspace" wizard.
+If you are used to develop in Eclipse, you can automatically generate a new Eclipse project by executing the `./gradlew eclipse`, which is located in the project root folder.
+The command will first resolve all required dependencies and then will automatically generate the classpath file as well as required Eclipse metadata files. Finally, you can import the project into your Eclipse Workspace using the "Existing Projects into Workspace" wizard.
 
 #### VSCode
-When developing frontend code in the Visual Studio Code we recommend setting TypeScript compiler to locally installed one by clicking on compiler version number in the status bar while viewing any `*.ts` file, or manually setting `"typescript.tsdk": "project/webpack/node_modules/typescript/lib"` in the `.vscode/settings.json`.
+There is predefined workspace configuration in the `.vscode/settings.json`, so the project can be directly opened in the VSCode.
 
-#### Known Issues
-* Git - do not clone the project from GIT using Eclipse (c.f. this [bug report](https://bugs.eclipse.org/bugs/show_bug.cgi?id=342372));
-* IntelliJ IDEA - should add `-Dsbt.override.build.repos=true -Dsbt.repository.config=./project/repositories` to VM parameters when importing the project (c.f. this [answer](https://stackoverflow.com/questions/26933523/why-intellij-cant-find-sbt-snapshot-dependencies/27173389#27173389)).
+We recommend to install the following plugins:
+* [prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+* [eslint plugin](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+
+When developing frontend code in the Visual Studio Code we recommend setting TypeScript compiler to locally installed one by clicking on compiler version number in the status bar while viewing any `*.ts` file.
 
 ## Codestyle & Linting
 
 ### Java
 
-You will find a readymade Java checkstyle file in `project/checkstyle.xml`. We recommend to use the [eclipse-cs](https://github.com/checkstyle/eclipse-cs) plugin. You can install the plugin if you drag&drop the following link into your eclipse: [Install](http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=150) . Afterwards  you should create a new global check configuration and import the checkstyle file: Preferences -> Checkstyle -> New… -> Name "metaphacts-platform" -> Import … (Select from `project/checkstyle.xml`) -> Set as Default (optional).
+Generated eclipse project has predefined code formatter that is automatically enabled. Please always reformat your java code with eclipse before submiting PR. 
 
 ### Typescript & SCSS
 
-You will find a `tslint.json` file in the root folder of the project, which should automatically be recognised by your IDE and respective linting extensions. Make sure that your IDE has installed the latest tslint plugin/extension, i.e.  the `tslint@1.0.x` extension in Visual Code (View -> Extensions -> search … 'tslint' ) is deprecated and you should install `tslint@1.2.x` or newer, which is a separate extension and requires to uninstall the old extension.
+We use [Prettier](https://prettier.io/) as code formatter for all `ts/tsx/js/scss` files. And [typescript-eslint](https://typescript-eslint.io) as a linter for typescript files.
 
 ## Generate JSON Schema from JSDoc
 
-To generate generate JSON schema from any TypeScript interface to use in the documentation with `mp-documentation`, add interface name to `platform-web-build.json` under `generatedJsonSchemas` property and execute the following command at `project/webpack` directory:
+To generate generate JSON schema from any TypeScript interface to use in the documentation with `mp-documentation`, execute the following command:
 
-`yarn run generate-schema <project-name> <interface-name>`
+`npm run generate-schema <interface-name>`
 
 
 ## Troubleshooting
@@ -353,14 +310,4 @@ To add the certificate to your java keystore:
 
 You may also need to disable strict ssl settings in yarn:
 
-`yarn config set strict-ssl "false"`
-
-
-### Fetching and installing dependencies may fail on the first run
-
-We have been reported that fetching and installing dependencies may fail on the first run, i.e. when running `build.(bat|sh)` initially, there might be random `npm` errors/race conditions. These are typically related to compiling certain `npm` (peer/dev)  dependencies  (depending on the node.js version and operation system being used) . Usually running `build.(bat|sh)` a second time will solve the issue. Once the dependencies are compiled/installed, these will be cached unless running `build.(bat|sh) clean`.
-
-
-### Java version
-
-Mac users reported issues building the platform using Java 10. Setup of ResearchSpace is tested and working with Java 8. You are recommended to use [jEnv](http://www.jenv.be/) to manage multiple versions of Java if required.
+`npm config set strict-ssl "false"`

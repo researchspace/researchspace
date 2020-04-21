@@ -1,0 +1,102 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import '~basic-styles.scss';
+
+$arrow-top: 5px;
+$arrow-side: -13px;
+$button-height: 30px;
+$button-arrow-border: $button-height * 0.74;
+$lightgrey-border: 1px #ccc solid;
+
+@mixin clauseItemAfter {
+  border: $lightgrey-border;
+  content: '';
+  position: absolute;
+  width: $button-height;
+  height: $button-height;
+  top: $arrow-top;
+  right: -14px;
+  transform: scaleX(0.7) rotate(45deg);
+  padding: 0;
+  z-index: 1;
+  border-bottom: none;
+  border-left: none;
+}
+
+@mixin newAssertionItem {
+  border: 1px #ccc solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 2 * $padding-base-horizontal + $button-arrow-border / 2;
+  padding-right: 2 * $padding-base-horizontal;
+  position: relative;
+  height: 100%;
+
+  &::after {
+    @include clauseItemAfter();
+  }
+}
+
+.valueHolder {
+  :global(.cardinality-support) {
+    margin: 0;
+  }
+
+  // hide border for nested forms in value assertions
+  :global(.cardinality-support__group-instance) {
+    border: 0;
+  }
+
+  // hide nested form removal button, we have dedicate button for that
+  :global(.cardinality-support__group-instance > .cardinality-support__remove-value) {
+    display: none;
+  }
+}
+
+.actions {
+  margin-top: $padding-base-horizontal;
+
+  :global(.btn-success) {
+    margin-left: 12px;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  // buttons have box-model box sizing, add 2 pixels to fit them in
+  height: 42px;
+}
+
+.subject {
+  @include newAssertionItem();
+  border-right: none;
+}
+.field {
+  @include newAssertionItem();
+  border-left: none;
+  border-right: none;
+}
+
+.valuesRow {
+  margin-bottom: $padding-base-vertical;
+}

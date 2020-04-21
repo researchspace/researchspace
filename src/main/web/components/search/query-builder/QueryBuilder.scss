@@ -1,0 +1,398 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @author Artem Kozlov <ak@metaphacts.com>
+ */
+
+@import '~basic-styles.scss';
+@import '../commons/variables.scss';
+
+@mixin clauseItemAfter {
+  border: $rs-lightgrey-border;
+  content: '';
+  position: absolute;
+  width: $rs-button-arrow-border;
+  height: $rs-button-arrow-border;
+  top: $rs-arrow-top;
+  right: -14px;
+  transform: scaleX(0.7) rotate(45deg);
+  padding: 0;
+  z-index: 1;
+  border-bottom: none;
+  border-left: none;
+}
+
+.searchAreaHolder {
+  display: flex;
+  justify-content: flex-start;
+  align-items: top;
+  padding: 0;
+
+  img {
+    height: 40px;
+    width: 40px;
+  }
+
+  :global .alert-warning {
+    background-color: transparent;
+    border: none;
+  }
+
+  :global .alert {
+    text-align: right;
+    padding: 0 $padding-base-horizontal;
+  }
+}
+
+.searchCollapseExpand {
+  color: $brand-primary;
+  cursor: pointer;
+  margin-right: $padding-base-horizontal;
+}
+
+.searchExpand {
+  composes: searchCollapseExpand;
+  @include icon(caret-up);
+  transform: rotate(90deg);
+}
+
+.searchCollapse {
+  composes: searchCollapseExpand;
+  @include icon(caret-down);
+}
+
+.searchSummaryHolder {
+  display: flex;
+  align-items: center;
+  margin-bottom: $padding-base-vertical * 2;
+}
+
+.searchExpand {
+  composes: searchCollapseExpand;
+  @include icon(caret-up);
+}
+
+.searchCollapse {
+  composes: searchCollapseExpand;
+  @include icon(caret-down);
+}
+
+.guideHolder {
+  position: absolute;
+  right: 0;
+  margin-right: $padding-base-horizontal * 2;
+}
+
+.guidePanel {
+  border: 1px solid $rs-color-lightgrey;
+  border-radius: 4px;
+  margin-bottom: $form-group-margin-bottom;
+}
+
+.guideLinks {
+  margin: $padding-base-vertical * 1.5 0 $padding-base-vertical 0;
+
+  li {
+    font-weight: 600;
+    padding: 0 $padding-base-horizontal * 2 $padding-base-vertical/2 0;
+  }
+}
+
+.panelHeader {
+  background-color: $rs-color-verylightgrey;
+  border-bottom: 1px solid $rs-color-lightgrey;
+  padding: $padding-base-vertical;
+}
+
+.searchArea {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-bottom: $padding-base-vertical;
+}
+
+.searchClauseArea {
+  margin: 0;
+}
+
+.searchClauseHolder {
+  display: flex;
+  flex-direction: column;
+}
+
+.searchClause {
+  margin: 10px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: auto;
+  border: $rs-lightgrey-border;
+  // buttons have box-model box sizing, add 2 pixels to fit them in
+  height: $rs-button-height + 2;
+
+  //safari bug
+  position: relative;
+
+  &:hover {
+    .addDisjunctButton,
+    .addConjunctButton {
+      cursor: pointer;
+      visibility: visible;
+    }
+  }
+}
+
+@mixin categorySelector {
+  li {
+    border-top: $rs-lightgrey-border;
+    &:first-child {
+      border-top: none;
+    }
+  }
+}
+
+.selectedItem {
+  display: flex;
+  align-items: center;
+  padding-left: $padding-base-horizontal + $rs-button-arrow-border / 2;
+  padding-right: $padding-base-horizontal;
+  cursor: auto;
+
+  height: $rs-button-height;
+  border-width: 0;
+
+  &::after {
+    @include clauseItemAfter();
+    background-color: $rs-button-background-color;
+  }
+
+  &:hover {
+    background-color: $rs-button-background-color !important;
+    &::after {
+      background-color: $rs-button-background-color;
+    }
+    &::before {
+      background-color: $rs-button-background-color;
+    }
+  }
+}
+
+.itemHolder {
+  height: $rs-button-height;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+
+  padding-left: $padding-base-horizontal;
+  padding-right: $padding-base-horizontal;
+
+  min-width: $rs-widest-button-size;
+
+  &:hover {
+    .editButton {
+      cursor: pointer;
+      visibility: visible;
+    }
+  }
+}
+
+.actionableItem {
+  &:hover {
+    background-color: darken($rs-button-background-color, 10%) !important;
+    &::after {
+      background-color: darken($rs-button-background-color, 10%);
+    }
+    &::before {
+      background-color: $rs-button-background-color;
+    }
+  }
+}
+
+.domainSelection {
+  @include categorySelector();
+  margin-left: $padding-base-horizontal;
+}
+
+.categorySelectionItem {
+  justify-content: flex-start;
+}
+
+.rangeSelection {
+  @include categorySelector();
+  margin: 10px 20px;
+}
+
+.relationSelector {
+  margin: 10px 20px;
+}
+
+.relationPlaceholder {
+  @include itemHolder();
+  composes: selectedItem;
+}
+
+.selectedDomain {
+  composes: selectedItem;
+  padding-left: 0;
+}
+
+.selectedRange {
+  composes: selectedItem;
+}
+
+.selectedRelation {
+  composes: selectedItem;
+}
+
+.selectedTerm {
+  composes: selectedItem;
+}
+
+.addConjunctButton {
+  visibility: hidden;
+  @include itemHolder();
+  composes: selectedItem actionableItem;
+}
+
+.addDisjunctButton {
+  visibility: hidden;
+  @include itemHolder();
+  composes: selectedItem actionableItem;
+}
+
+.mapSelectionButton {
+  background-image: url(../images/MapSelection.svg);
+  background-repeat: no-repeat;
+  background-position: 8px 2px;
+  background-size: 40px 32px;
+  height: $rs-button-height;
+  width: 60px;
+}
+
+.removeConjunctButton {
+  height: $rs-button-height;
+  border-width: 0;
+  margin-left: auto;
+  padding-left: 2 * $padding-base-horizontal;
+
+  &:hover {
+    text-decoration: none;
+    cursor: pointer;
+  }
+}
+
+.nestedSearchButton {
+  padding: 0;
+  height: $rs-button-height;
+  position: relative;
+  border-radius: 0 3px 3px 0;
+  img {
+    height: 35px;
+    width: 60px;
+  }
+}
+
+.magnifierIcon {
+  background-image: url(../images/magnifying_glass.svg);
+  background-repeat: no-repeat;
+  height: 40px;
+  width: 40px;
+  display: block;
+  position: absolute;
+  left: 10px;
+}
+
+.nestedSearchHolder {
+  margin-left: 10vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.activeTerm {
+  color: black;
+}
+
+.searchBasedTermSelectorHolder {
+  margin-left: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-content: center;
+}
+
+.searchBasedTermSelector {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  button {
+    border-radius: 0;
+  }
+  button.nestedSearchButton {
+    border-radius: 0 3px 3px 0;
+  }
+}
+
+.searchBasedTermSelectorLabel {
+  padding-right: $padding-base-horizontal;
+}
+
+.resourceSelector {
+  width: $rs-input-width;
+  height: $rs-button-height;
+  z-index: $zindex-input-element;
+
+  :global .Select-arrow-zone {
+    visibility: hidden;
+    width: 1px;
+  }
+
+  :global .Select-control {
+    height: $rs-button-height;
+  }
+
+  :global .Select-input {
+    height: $rs-button-height - 2;
+  }
+}
+
+.hierarchySelector {
+  width: $rs-input-width;
+}
+
+.andSeparator {
+  padding: $padding-base-vertical $padding-base-horizontal;
+  font-weight: bold;
+  border: $rs-lightgrey-border;
+}
+
+.whereSeparator {
+  padding: $padding-base-vertical $padding-base-horizontal;
+  font-weight: bold;
+  border: $rs-lightgrey-border;
+}
+
+.editButton {
+  margin-right: $padding-base-horizontal;
+  visibility: hidden;
+}

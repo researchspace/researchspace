@@ -1,0 +1,125 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.researchspace.rest.endpoint;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
+import java.util.concurrent.TimeUnit;
+
+import javax.inject.Singleton;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.researchspace.rest.feature.CacheControl.NoCache;
+import org.researchspace.security.Permissions.SYSTEM;
+
+/**
+ * @author Johannes Trame <jt@metaphacts.com>
+ *
+ */
+@Singleton
+@Path("admin/system")
+public class SystemAdminEndpoint {
+    private static final Logger logger = LogManager.getLogger(SystemAdminEndpoint.class);
+
+    @POST()
+    @Path("restart")
+    @NoCache
+    @RequiresAuthentication
+    @RequiresPermissions(SYSTEM.RESTART)
+    public Response restartSystem() {
+        // restart is performed by looking for a file ${jetty.base}/webapps/ROOT.xml
+        // and 'touch'ing it (i.e. update write timestamp) to make Jetty reload the
+        // webapp
+        File contextXml = null;
+        File jettyBase = null;
+        String jettyBasePath = System.getProperty("jetty.base", "/var/lib/jetty");
+        if (jettyBasePath != null) {
+            jettyBase = new File(jettyBasePath);
+        }
+        if (jettyBase != null && jettyBase.isDirectory()) {
+            contextXml = new File(jettyBase, "webapps/ROOT.xml");
+        }
+        if (contextXml != null && contextXml.isFile()) {
+            logger.info("Asking Jetty to restart webapp");
+            if (touch(contextXml)) {
+                return Response.ok().build();
+            } else {
+                return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+        logger.error("failed to reload app: ${jetty.base}/webapps/ROOT.xml does not exist");
+        return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+    }
+
+    private boolean touch(File contextXml) {
+        try {
+            Files.setLastModifiedTime(contextXml.toPath(), FileTime.fromMillis(System.currentTimeMillis()));
+            logger.debug("Successfully touched {}", contextXml);
+            return true;
+        } catch (Exception e) {
+            // setting last modified time seems to require file ownership, if that fails we
+            // try to
+            // open the file for writing (in append mode) without actually writing anything
+            logger.debug("failed to reload app by touching {}: {}", contextXml, e.getMessage());
+            logger.debug("ROOT.xml: {}, readable: {}, writable: {}", contextXml.getPath(), contextXml.canRead(),
+                    contextXml.canWrite());
+            try (FileOutputStream fos = new FileOutputStream(contextXml, true)) {
+                logger.debug("trying write-append");
+                byte[] empty = new byte[0];
+                fos.write(empty);
+                logger.debug("Successfully touched {}", contextXml);
+            } catch (Exception e2) {
+                logger.debug("failed to reload app by touching {}: {}", contextXml, e2.getMessage());
+            }
+            // calling "touch" via local shell execution as fallback when the
+            // current user is not the owner of the file
+            try {
+                logger.debug("trying write-append using /bin/sh -c \"touch ROOT.xml\"");
+                ProcessBuilder processBuilder = new ProcessBuilder();
+                processBuilder.command("/bin/touch", contextXml.getAbsolutePath());
+                Process process = processBuilder.start();
+                logger.debug("Successfully touched {} using /bin/sh -c \"touch ROOT.xml\"", contextXml);
+                process.waitFor(5, TimeUnit.SECONDS);
+                int exitValue = process.exitValue();
+                if (exitValue == 0) {
+                    logger.debug("Exit code is 0");
+                    return true;
+                } else {
+                    logger.debug("Exit code: " + exitValue);
+                    return false;
+                }
+            } catch (Exception e3) {
+                logger.debug("failed to reload app by touching {} using /bin/sh -c \"touch ROOT.xml\" : {} ",
+                        contextXml, e3.getMessage());
+                return false;
+            }
+        }
+    }
+
+}

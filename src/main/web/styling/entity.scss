@@ -1,0 +1,157 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// Default page styles
+.rs-page {
+  table th {
+    font-weight: bold;
+  }
+
+  &__summary {
+    /** scale tables with field values to the whole page size */
+    table {
+      width: 100%;
+    }
+
+    table td {
+      padding: 10px !important;
+    }
+
+    thead > tr > th {
+      padding-top: 0 !important;
+    }
+
+    &-image {
+      width: 350px;
+      margin-right: $padding-base-horizontal;
+    }
+
+    &-content {
+      margin-left: $padding-base-horizontal;
+    }
+  }
+
+  &__field {
+    ol {
+      padding-left: $padding-base-horizontal;
+    }
+  }
+
+  &__field-values {
+    list-style-type: none;
+
+    ol {
+      margin-left: 2em;
+    }
+
+    & > li {
+      counter-increment: count-me;
+    }
+
+    & > li::before {
+      content: counter(count-me) '. ';
+      display: block;
+      position: relative;
+      max-width: 0px;
+      max-height: 0px;
+      left: -1.3em;
+      color: darken($rs-color-lightgrey, 10%);
+    }
+  }
+
+  &__field-value {
+    white-space: pre-line;
+    max-width: 600px;
+  }
+
+  &__count--title {
+    width: 140px;
+    vertical-align: top;
+  }
+
+  &__field-label-holder {
+    width: 220px;
+    vertical-align: top;
+  }
+
+  &__field-label {
+    display: inline-block;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.page {
+  &__header {
+    &-tagline {
+      margin-top: 14px;
+    }
+
+    &-thumbnail {
+      .no-image-available .add-image-button {
+        visibility: hidden;
+      }
+
+      &:hover {
+        .no-image-available .add-image-button {
+          visibility: visible;
+        }
+      }
+    }
+
+    &-field-title,
+    .field-type-title {
+      margin: 0 $padding-base-horizontal / 3;
+      background-color: #8fbc8f;
+      color: #fff;
+      padding: 2px $padding-base-horizontal / 2;
+    }
+  }
+}
+
+// end Default page styles
+
+// Object Annotation Tab
+
+// Disable disclosure icon chrome
+details.create-new-annotation summary::-webkit-details-marker {
+  display: none;
+}
+// disable disclosure icon firefox
+details.create-new-annotation > summary:first-of-type {
+  list-style-type: none;
+}
+details.create-new-annotation {
+  margin-bottom: $padding-base-vertical * 2;
+  summary {
+    outline: none;
+  }
+
+  summary a {
+    margin-left: $padding-base-horizontal;
+  }
+}
+
+details::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+// end Object Annotation Tab

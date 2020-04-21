@@ -1,0 +1,149 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import '~basic-styles.scss';
+
+$sourceTermColor: orange;
+$pathHighlightColor: green;
+
+$dragAreaBorder: 1px dashed #aaaaaa;
+$dragAreaBackgroundLight: #ffffff;
+
+.component {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.componentSpinner {
+  position: unset;
+  left: unset;
+  top: unset;
+  margin: auto;
+}
+
+.alignmentTreeContainer {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.alignmentTree {
+  flex: auto;
+}
+
+.alignmentNodeRow {
+  .decoratedNodeBody {
+    &:global(.mp-droppable-enabled) {
+      color: gray;
+    }
+    &:global(.mp-droppable-hover) {
+      color: white;
+      background-color: black;
+      font-weight: bold;
+      padding: 3px;
+      border: 1px dashed white;
+    }
+  }
+  &:hover .nodeInfoButton {
+    visibility: visible;
+  }
+}
+
+.draggableWrapper {
+  background: #f1f1f1;
+  border: $dragAreaBorder;
+  padding: 3px;
+  cursor: move;
+
+  &:hover:not(:active) {
+    background: $dragAreaBackgroundLight;
+  }
+
+  .draggableHandle {
+    display: inline-block;
+    width: 5px;
+    height: 10px;
+    margin-right: 5px;
+    background: url('./dragHandle.svg');
+    background-repeat: repeat-y;
+  }
+}
+
+.decorateAlignParent {
+  color: $sourceTermColor;
+}
+.decorateAlignLeaf {
+  color: $sourceTermColor;
+}
+.decorateHighlightParent {
+  color: $pathHighlightColor;
+  text-decoration: underline;
+}
+.decorateHighlightLeaf {
+  &:before {
+    content: '• ';
+  }
+  color: $pathHighlightColor;
+}
+
+.baseTerm {
+  /**/
+}
+.alignedTerm {
+  color: $sourceTermColor;
+}
+
+.unalignButton,
+.findAlignedButton,
+.nodeInfoButton {
+  margin-left: 5px;
+  height: 23px;
+}
+.nodeInfoButton {
+  width: 23px;
+  visibility: collapse;
+}
+
+.scrollNotification {
+  margin: 5px 10px;
+
+  .scrollToName {
+    font-weight: bold;
+  }
+
+  .scrollSpinner {
+    margin-left: 10px;
+    left: unset;
+    top: unset;
+  }
+
+  .cancelScrollingTo {
+    margin-left: 10px;
+  }
+}
+
+.nodeInfoPopup {
+  &:global(.popover) {
+    /* use selector with higher CSS specificity */
+    max-width: unset;
+  }
+  > :global(.arrow) {
+    display: none;
+  }
+}

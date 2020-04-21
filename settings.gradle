@@ -1,44 +1,20 @@
-rootProject.name = 'platform-externals'
+/**
+ * ResearchSpace
+ * Copyright (C) 2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-// define sub-projects
-def subProjects = []
-
-subProjects.each { include it }
-
-// dynamically discovered app modules
-for (appParentDir in findAppParentDirs()) {
-	println appParentDir
-	appParentDir.eachFile() { app ->
-		if (isAppDir(app)) {
-			include toFullProjectName(appParentDir, app.name)
-		}
-	}
-}
-
-
-def findAppParentDirs() {
-	def appParentDirs = [];
-	file('.').eachFile() { module ->
-		// check if the module has an apps folder
-		if (new File(module, "build.sbt").isFile() 	// for now check on existence of sbt definition
-				&& new File(module, "apps").isDirectory()) {
-			appParentDirs << new File(module, "apps");
-		}
-	}
-	return appParentDirs;
-}
-
-def isAppDir(File dir) {
-	if (!dir.isDirectory()) {
-		return false;
-	}
-	if (!(new File(dir, 'plugin.properties').isFile())) {
-		return false;
-	}
-	return true;
-}
-
-def toFullProjectName(File parentFolder, String projectName) {
-	String relPath = rootProject.projectDir.toPath().relativize(parentFolder.toPath()).toString();
-	relPath.replace('/', ':').replace('\\', ':') + ':' + projectName
-}
+// we use ROOT as a project name to make sure that gretty buildProduct task puts researchspace into ROOT.war inside jetty, because it uses project name as war name
+rootProject.name = 'ROOT'

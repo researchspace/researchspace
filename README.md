@@ -61,33 +61,40 @@ The easiest way to try researchspace is to use a [setup with docker-compose](#se
 # Overview
 
 <!--ts-->
+   * [Knowledge Base](#knowledge-base)
+   * [Demo](#demo)
+   * [Technical Documentation](#technical-documentation)
+   * [License](#license)
+   * [How to try it?](#how-to-try-it)
+   * [Overview](#overview)
    * [Setup with docker](#setup-with-docker)
    * [Developing and building from sources](#developing-and-building-from-sources)
       * [Prerequisites](#prerequisites)
-         * [Prerequisites Installation on <em>Ubuntu 18.04 (Bionic Beaver)</em>](#prerequisites-installation-on-ubuntu-1804-bionic-beaver)
-         * [Prerequisites Installation on <em>MacOS Mojave</em>](#prerequisites-installation-on-macos-mojave)
+         * [Prerequisites Installation on <em>Ubuntu</em>](#prerequisites-installation-on-ubuntu)
+         * [Prerequisites Installation on <em>MacOS</em>](#prerequisites-installation-on-macos)
          * [Prerequisites Installation on <em>Windows 10</em>](#prerequisites-installation-on-windows-10)
       * [Running the ResearchSpace in Development Mode](#running-the-researchspace-in-development-mode)
+         * [Run ResearchSpace with bundeled blazegraph triplestore and digilib IIIF server](#run-researchspace-with-bundeled-blazegraph-triplestore-and-digilib-iiif-server)
+         * [Run ResearchSpace with your own triplestore and IIIF server](#run-researchspace-with-your-own-triplestore-and-iiif-server)
       * [Testing](#testing)
       * [Debugging](#debugging)
             * [Backend](#backend)
             * [Frontend](#frontend)
          * [Backend Logging](#backend-logging)
       * [Building WAR artefact](#building-war-artefact)
-      * [Building the Docker image](#building-the-docker-image)
-         * [Setup IDE](#setup-ide)
+      * [Build zip bundle](#build-zip-bundle)
+      * [Building Docker image](#building-docker-image)
+      * [Setup IDE](#setup-ide)
             * [Eclipse](#eclipse)
             * [VSCode](#vscode)
-            * [Known Issues](#known-issues)
       * [Codestyle &amp; Linting](#codestyle--linting)
          * [Java](#java)
          * [Typescript &amp; SCSS](#typescript--scss)
       * [Generate JSON Schema from JSDoc](#generate-json-schema-from-jsdoc)
       * [Troubleshooting](#troubleshooting)
          * [Security certificate issues when building the platform](#security-certificate-issues-when-building-the-platform)
-         * [Fetching and installing dependencies may fail on the first run](#fetching-and-installing-dependencies-may-fail-on-the-first-run)
 
-<!-- Added by: artem, at: Tue Nov  5 18:47:57 EET 2019 -->
+<!-- Added by: artem, at: Tue Apr 21 20:59:15 EEST 2020 -->
 
 <!--te-->
 
@@ -236,8 +243,10 @@ To build ResearchSpace WAR artefact that can be deployed into Java Servlet Conta
 
 When the packaging process is complete you will find the .war file in `/target/platform-VERSION_NUMBER.war`.
 
-## Building the Docker image
+## Build zip bundle
+It is possible to build ResearchSpace bundeled into a simple runnable zip archive together with blazegraph and digilib: `./gradlew clean buildZip`
 
+## Building Docker image
 The creation of the platform Docker image consists of packaging the ResearchSpace platform as a Java webapp (the .war file we have just created) in a Java servlet container, Jetty.
 
 Dockerfile file is located in `dist/docker` folder. This file contains the instructions for building the platform's Docker image that is based on an official Jetty server as image.
@@ -249,11 +258,12 @@ To build the image first we need to copy artefacts produced by the platform buil
 
 ```
 export DOCKER_FOLDER="$(pwd)/dist/docker"
-cp target/platform-*.war $DOCKER_FOLDER/platform/ROOT.war
+cp build/libs/ROOT-*.war $DOCKER_FOLDER/platform/ROOT.war
 mkdir $DOCKER_FOLDER/platform/etc
 cp src/main/webapp/etc/* $DOCKER_FOLDER/platform/etc
 mkdir $DOCKER_FOLDER/platform/config
-cp -r  app/config/* $DOCKER_FOLDER/platform/config
+cp -r src/main/resources/org/researchspace/apps/assets/config/* $DOCKER_FOLDER/platform/config
+
 ```
 
 **Build the image**

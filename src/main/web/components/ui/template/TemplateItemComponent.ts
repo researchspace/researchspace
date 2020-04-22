@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createElement } from 'react';
+import { createElement, Fragment } from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 
 import { ModuleRegistry } from 'platform/api/module-loader';
@@ -25,15 +25,40 @@ import { ModuleRegistry } from 'platform/api/module-loader';
 /**
  * This component render custom html elements.
  * It takes inner html, parses it into the react element and then renders the result inside.
+ *
+ * It is useful when one wants to render platform template with some 3-rd party component
+ * that expects plain HTML as an input,
+ * like annotation popover in Mirador, or feature popover in openlayers.
+ *
+ * This component is registered as `mp-template-item` web component in the `app.ts` file.
  */
 export class TemplateItemComponent extends HTMLElement {
+
+  private root: HTMLElement;
+
   connectedCallback() {
-    ModuleRegistry.parseHtmlToReact(this.innerHTML).then((res) => {
-      render(createElement('div', {}, res), this);
-    });
+    // this is ugly hack to workaround issue with event propagation when react root
+    // is inside custom web component,
+    // see https://github.com/facebook/react/issues/9242
+    const shadow = this.attachShadow({ mode: 'open' }) as any;
+    this.root = document.createElement('div');
+    shadow.appendChild(this.root);
+
+    Object.defineProperty(this.root, 'ownerDocument', { value: shadow });
+    shadow.createElement = (...args: any) => (document as any).createElement(...args);
+    shadow.createElementNS = (...args: any) => (document as any).createElementNS(...args);
+    shadow.createTextNode = (...args: any) => (document as any).createTextNode(...args);
+
+    ModuleRegistry.parseHtmlToReact(this.innerHTML).then(
+      res => {
+        // we need to use Fragment here because res can be a single element or array of elements
+        // see https://reactjs.org/docs/fragments.html
+        render(createElement(Fragment, {}, res), this.root);
+      }
+    );
   }
 
   disconnectedCallback() {
-    unmountComponentAtNode(this);
+    unmountComponentAtNode(this.root);
   }
 }

@@ -88,6 +88,24 @@ public class MProxyServlet extends ProxyServlet {
         this.key = key;
     }
 
+    // by default ProxyServlet is using request.pathInfo for path rewriting,
+    // that by default decodes encoded characters, as a result it can happen that
+    // proxy request is different from original request.
+    // So we need to use getRequestURI for this purpose.
+    // see https://github.com/mitre/HTTP-Proxy-Servlet/pull/158
+    @Override
+    protected String rewritePathInfoFromRequest(HttpServletRequest servletRequest) {
+        String path = servletRequest.getContextPath().concat(servletRequest.getServletPath());
+        return servletRequest.getRequestURI().substring(path.length());
+    }
+
+    // No need to encode uri.
+    // We already use encoded requestURI in the rewritePathInfoFromRequest.
+    @Override
+    protected CharSequence encodeUriQuery(CharSequence in, boolean encodePercent) {
+        return in;
+    }
+
     @Override
     protected HttpResponse doExecute(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
             HttpRequest proxyRequest) throws IOException {

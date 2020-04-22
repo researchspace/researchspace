@@ -30,7 +30,10 @@ module.exports = {
 
         // explicit any is sometimes OK, implicit any is not OK
         // we can re-enable this rule later when codebase is a bit more clean
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+
+        // quite useless and confusing, because typescript is doing scope checks anyway
+        "@typescript-eslint/no-use-before-define": "off"
     },
     settings: {
         react: {

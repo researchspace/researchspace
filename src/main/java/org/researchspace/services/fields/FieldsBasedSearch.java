@@ -19,10 +19,17 @@
 
 package org.researchspace.services.fields;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +37,12 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.algebra.*;
+import org.eclipse.rdf4j.query.algebra.Compare;
+import org.eclipse.rdf4j.query.algebra.Filter;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.UnaryTupleOperator;
+import org.eclipse.rdf4j.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.Var;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
 import org.eclipse.rdf4j.rio.ntriples.NTriplesUtil;
 import org.researchspace.cache.LabelCache;
@@ -40,10 +52,9 @@ import org.researchspace.sparql.renderer.MpSparqlQueryRenderer;
 import org.researchspace.sparql.visitors.VarRenameVisitor;
 import org.researchspace.templates.TemplateContext;
 
-import javax.inject.Inject;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class FieldsBasedSearch {
     private static final Logger logger = LogManager.getLogger(FieldsBasedSearch.class);
@@ -134,7 +145,7 @@ public class FieldsBasedSearch {
         String queryPattern;
         String rangePattern = null;
         try {
-            queryPattern = transformFieldInsertQueryToRelationPattern(kind, field.getInsertPattern());
+            queryPattern = transformFieldSelectQueryToRelationPattern(kind, field.getSelectPattern());
             if (field.getSelectPattern() != null) {
                 rangePattern = transformFieldSelectQueryToCategoryPattern(field.getSelectPattern());
             }
@@ -166,16 +177,12 @@ public class FieldsBasedSearch {
         return relation;
     }
 
-    private String transformFieldInsertQueryToRelationPattern(RelationKind kind, String insertQuery) {
-        String query = namespaceRegistry.prependSparqlPrefixes(insertQuery);
-
-        List<UpdateExpr> updates = QueryParserUtil.parseUpdate(QueryLanguage.SPARQL, query, null).getUpdateExprs();
-        if (!(updates.size() == 1 && updates.get(0) instanceof Modify)) {
-            throw new RuntimeException("Insert query should contain only single modify operation");
-        }
-
-        TupleExpr insert = ((Modify) updates.get(0)).getInsertExpr();
-        TupleExpr mapped = mapRelationPattern(kind, insert.clone());
+    private String transformFieldSelectQueryToRelationPattern(RelationKind kind, String selectQuery) {
+        String query = namespaceRegistry.prependSparqlPrefixes(selectQuery);
+        UnaryTupleOperator select = ((UnaryTupleOperator) QueryParserUtil
+                .parseTupleQuery(QueryLanguage.SPARQL, query, null).getTupleExpr());
+        TupleExpr where = select.getArg();
+        TupleExpr mapped = mapRelationPattern(kind, where.clone());
         return renderTupleExpression(mapped);
     }
 
@@ -204,7 +211,11 @@ public class FieldsBasedSearch {
 
     private String transformFieldSelectQueryToCategoryPattern(String selectQuery) {
         String query = namespaceRegistry.prependSparqlPrefixes(selectQuery);
+        // getTupleExpr gives us WHERE clause of the SELECT query
         TupleExpr queryExpr = QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null).getTupleExpr();
+        // in the field select query convention is to use ?value for field values
+        // but in the search convention is to use __value__ for search parameter
+        // so we need to rename it here
         queryExpr.visit(new VarRenameVisitor("value", "__value__"));
         return renderTupleExpression(queryExpr);
     }
@@ -214,7 +225,7 @@ public class FieldsBasedSearch {
             String rendered = new MpSparqlQueryRenderer().render(expr);
             return rendered;
         } catch (Exception ex) {
-            throw Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         }
     }
 }

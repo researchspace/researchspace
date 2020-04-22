@@ -20,7 +20,14 @@ import * as React from 'react';
 
 import { vocabularies } from 'platform/api/rdf';
 
-import * as Inputs from '../inputs';
+import { SingleValueInputProps } from '../inputs/SingleValueInput';
+import { MultipleValuesProps } from '../inputs/MultipleValuesInput';
+import { AutocompleteInput } from '../inputs/AutocompleteInput';
+import { TreePickerInput } from '../inputs/TreePickerInput';
+import { SelectInput } from '../inputs/SelectInput';
+import { DatePickerInput } from '../inputs/DatePickerInput';
+import { CheckboxInput } from '../inputs/CheckboxInput';
+import { PlainTextInput } from '../inputs/PlainTextInput';
 import { FormErrors } from '../static';
 import { FieldDefinition } from '../FieldDefinition';
 
@@ -41,7 +48,7 @@ export interface InputOverrideTarget {
   datatype?: string;
 }
 
-export type FieldInputElement = React.ReactElement<Inputs.SingleValueInputProps | Inputs.MultipleValuesProps>;
+export type FieldInputElement = React.ReactElement<SingleValueInputProps | MultipleValuesProps>;
 
 export function generateFormFromFields(params: GenerateFormFromFieldsParams): JSX.Element[] {
   const content: JSX.Element[] = [];
@@ -76,15 +83,15 @@ export function generateFormFromFields(params: GenerateFormFromFieldsParams): JS
 
 function generateInputForField(field: FieldDefinition): JSX.Element {
   if (field.treePatterns) {
-    return <Inputs.TreePickerInput for={field.id} />;
+    return <TreePickerInput for={field.id} />;
   }
 
   if (field.autosuggestionPattern) {
-    return <Inputs.AutocompleteInput for={field.id} />;
+    return <AutocompleteInput for={field.id} />;
   }
 
   if (field.valueSetPattern) {
-    return <Inputs.SelectInput for={field.id} />;
+    return <SelectInput for={field.id} />;
   }
 
   if (field.xsdDatatype) {
@@ -92,17 +99,17 @@ function generateInputForField(field: FieldDefinition): JSX.Element {
       case xsd.date.value:
       case xsd.time.value:
       case xsd.dateTime.value: {
-        return <Inputs.DatePickerInput for={field.id} />;
+        return <DatePickerInput for={field.id} />;
       }
       case xsd.boolean.value: {
-        return <Inputs.CheckboxInput for={field.id} />;
+        return <CheckboxInput for={field.id} />;
       }
       case xsd._string.value:
       case rdf.langString.value: {
-        return <Inputs.PlainTextInput for={field.id} />;
+        return <PlainTextInput for={field.id} />;
       }
     }
   }
 
-  return <Inputs.PlainTextInput for={field.id} />;
+  return <PlainTextInput for={field.id} />;
 }

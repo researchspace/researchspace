@@ -20,15 +20,16 @@ import * as React from 'react';
 import * as Immutable from 'immutable';
 import { Cancellation } from 'platform/api/async';
 import { FieldDefinition, normalizeFieldDefinition } from '../FieldDefinition';
+
 import {
   SingleValueInput,
   SingleValueInputProps,
   SingleValueHandler,
   SingleValueHandlerProps,
-  CompositeInput,
-  CompositeInputProps,
-} from '../inputs';
-import { componentHasType, componentDisplayName } from 'platform/components/utils';
+} from '../inputs/SingleValueInput';
+import { CompositeInput, CompositeInputProps } from '../inputs/CompositeInput';
+
+import { componentHasType } from 'platform/components/utils';
 import FormSwitchCase, { FormSwitchCaseProps } from './FormSwitchCase';
 import { FieldValue, DataState, CompositeValue, EmptyValue, ErrorKind } from '../FieldValues';
 import HiddenInput, { HiddenInputProps } from '../inputs/HiddenInput';

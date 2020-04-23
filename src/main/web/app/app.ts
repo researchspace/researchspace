@@ -250,6 +250,9 @@ export class MainAppComponent extends Component<
 
     if (_.isNaN(sessionTimeout) && _.isNaN(lastRequestTime)) {
       return;
+    } else if (sessionTimeout < 0) {
+      window.clearInterval(this.sessionIntervalID);
+      return;
     }
 
     const timeLeftMinutes = moment(sessionTimeout).diff(moment(Date.now() - lastRequestTime), 'minutes');

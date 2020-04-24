@@ -163,7 +163,7 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
 
     @ConfigurationParameter
     public Integer getShiroSessionTimeoutSecs() {
-        return getInteger("shiroSessionTimeoutSecs", 1800 /* = 30 mins */);
+        return getInteger("shiroSessionTimeoutSecs", -1 /* = infinite */);
     }
 
     /**

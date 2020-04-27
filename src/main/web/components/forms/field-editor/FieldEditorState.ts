@@ -397,7 +397,7 @@ export function unwrapState(state: State) {
     defaultValues: ReadonlyArray<string>;
     treePatterns: TreeQueriesConfig;
   };
-  const mapped = mapValues(fields, (value) => value.map((v) => v.value).getOrElse(undefined)) as Unwrapped;
+  const mapped = mapValues(fields, (value) => value.map((v) => v.value).getOrElse(undefined)) as unknown as Unwrapped;
   mapped.label = label.map(({ value, lang }) =>
     lang.length ? Rdf.langLiteral(value.value, lang) : Rdf.literal(value.value)
   );

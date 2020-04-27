@@ -279,7 +279,12 @@ export function resolveResourceIri(url: uri.URI): Kefir.Property<Data.Maybe<Rdf.
     const iriStr = url.search(true)['uri'];
     return Kefir.constant(Maybe.Just(Rdf.iri(iriStr)));
   } else {
-    const prefixedIriStr = url.filename();
+    // treat everything after /resource context path as a prefixed IRI
+    // this allows us to have resolvable IRIs even for nested context paths
+    // e.g with Default namespace = http://localhost:10214/resource/
+    // request to http://localhost:10214/resource/person/Bob URL will be properly resolved
+    // to <http://localhost:10214/resource/person/Bob> resource
+    const prefixedIriStr = url.path().substring('/resource/'.length);
     return getFullIri(prefixedIriStr);
   }
 }

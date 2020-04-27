@@ -1,0 +1,150 @@
+.ontodia-halo {
+  position: absolute;
+  pointer-events: none;
+
+  border: 1.5px dashed #d8956d;
+  border-radius: 2px;
+  box-shadow: 0 0 5px 0 #d8956d inset;
+
+  $buttonWidth: 20px;
+  $buttonHeight: 20px;
+  $buttonMargin: 2px;
+
+  @mixin halo-button {
+    position: absolute;
+    background-color: transparent;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 0 none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    pointer-events: auto;
+    width: $buttonWidth;
+    height: $buttonHeight;
+
+    opacity: 0.5;
+    transition: opacity 0.3s;
+    &:hover {
+      opacity: 1;
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.2;
+    }
+  }
+
+  @mixin spinner {
+    position: absolute;
+    width: $buttonWidth;
+    height: $buttonHeight;
+  }
+
+  @mixin n-docked {
+    top: -($buttonHeight + $buttonMargin);
+    left: 50%;
+    margin-left: -($buttonWidth / 2);
+  }
+
+  @mixin nw-docked {
+    top: -($buttonHeight + $buttonMargin);
+    left: -($buttonWidth + $buttonMargin);
+  }
+
+  @mixin ne-docked {
+    top: -($buttonHeight + $buttonMargin);
+    right: -($buttonWidth + $buttonMargin);
+  }
+
+  @mixin e-docked {
+    top: 50%;
+    margin-top: -($buttonHeight / 2);
+    right: -($buttonWidth + $buttonMargin);
+  }
+
+  @mixin w-docked {
+    top: 50%;
+    margin-top: -($buttonHeight / 2);
+    left: -($buttonWidth + $buttonMargin);
+  }
+
+  @mixin s-docked {
+    bottom: -($buttonHeight + $buttonMargin);
+    left: 50%;
+    margin-left: -($buttonWidth / 2);
+  }
+
+  @mixin sw-docked {
+    bottom: -($buttonHeight + $buttonMargin);
+    left: -($buttonWidth + $buttonMargin);
+  }
+
+  @mixin se-docked {
+    bottom: -($buttonHeight + $buttonMargin);
+    right: -($buttonWidth + $buttonMargin);
+  }
+
+  &__navigate {
+    @include halo-button;
+    @include e-docked;
+
+    &--open {
+      background-image: url("../images/connections.svg");
+    }
+
+    &--closed {
+      background-image: url("../images/close-connections.svg");
+    }
+  }
+
+  &__folow {
+    @include halo-button;
+    @include w-docked;
+
+    background-image: url("../images/link.svg");
+  }
+
+  &__remove {
+    @include halo-button;
+    @include ne-docked;
+    background-image: url("../images/delete.svg");
+  }
+
+  &__expand {
+    @include halo-button;
+    @include s-docked;
+
+    &--open {
+      background-image: url("../images/expand-properties.png");
+    }
+
+    &--closed {
+      background-image: url("../images/collapse-properties.png");
+    }
+  }
+
+  &__add-to-filter {
+    @include halo-button;
+    @include se-docked;
+    background-image: url("../images/add-to-filter.png");
+  }
+
+  &__revert {
+    @include halo-button;
+    @include n-docked;
+    background-image: url("../images/font-awesome/undo-solid.svg");
+  }
+
+  &__establish-connection {
+    @include halo-button;
+    @include sw-docked;
+    background-image: url("../images/font-awesome/plug.svg");
+  }
+
+  &__establish-connection-spinner {
+    @include spinner;
+    @include sw-docked;
+  }
+}

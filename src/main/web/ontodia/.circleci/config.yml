@@ -1,0 +1,175 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  checkout:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:8.12
+
+    working_directory: /tmp/workspace/ontodia
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+
+      - run: yarn install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+          - ontodia
+
+  build:
+    docker:
+    # specify the version you desire here
+    - image: circleci/node:8.12
+
+    working_directory: /tmp/workspace/ontodia
+
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run: yarn run build-all
+      - run: yarn run typings
+
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+          - ontodia
+
+  build-examples:
+    docker:
+    # specify the version you desire here
+    - image: circleci/node:8.12
+
+    working_directory: /tmp/workspace/ontodia
+
+    steps:
+    - attach_workspace:
+        at: /tmp/workspace
+
+    - run: yarn run build-examples
+
+    - store_artifacts:
+        path: /tmp/workspace/ontodia/dist/examples
+        destination: ontodia
+
+  lint:
+    docker:
+    # specify the version you desire here
+    - image: circleci/node:8.12
+
+    working_directory: /tmp/workspace/ontodia
+
+    steps:
+    - attach_workspace:
+        at: /tmp/workspace
+
+    - run: yarn run lint
+
+  publish:
+    docker:
+      - image: circleci/node:8.12
+    working_directory: /tmp/workspace/ontodia
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: prepare npm config
+          command: |
+             echo "//registry.npmjs.org/:_authToken=$NPM_PUBLISH" >> ~/.npmrc
+      - run:
+          name: specify correct version for npm
+          command: npm --no-git-tag-version --allow-same-version version $CIRCLE_TAG
+      - run:
+          name: publish npm package
+          command: |
+            [[ $CIRCLE_TAG =~ "-dev" ]] && npm publish --tag=dev || npm publish
+
+  trigger-publish:
+    docker:
+      - image: circleci/node:8.12
+    working_directory: /tmp/workspace/ontodia
+    steps:
+      - run:
+          name: trigger publishing workflow
+          command: $PUBLISH_CMD
+
+workflows:
+  version: 2
+  untagged-build:
+    jobs:
+      - checkout
+      - build:
+          requires:
+            - checkout
+      - build-examples:
+          requires:
+          - checkout
+      - lint:
+          requires:
+            - checkout
+  tagged-build:
+    jobs:
+      - checkout:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build:
+          requires:
+          - checkout
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-examples:
+          requires:
+          - checkout
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - lint:
+          requires:
+          - checkout
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - publish:
+          requires:
+            - build
+            - lint
+            - build-examples
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - trigger-publish:
+          requires:
+            - publish
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+

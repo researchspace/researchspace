@@ -127,23 +127,6 @@ export const SpatialDisjunctKinds: {
 export const LiteralDisjunctKind = 'Literal';
 export const NumericRangeDisjunctKind = 'NumericRange';
 
-export type DisjunctKind =
-  | typeof EntityDisjunctKinds.Resource
-  | typeof EntityDisjunctKinds.Set
-  | typeof EntityDisjunctKinds.SavedSearch
-  | typeof EntityDisjunctKinds.Search
-  | typeof TextDisjunctKind
-  | typeof TemporalDisjunctKinds.Date
-  | typeof TemporalDisjunctKinds.DateRange
-  | typeof TemporalDisjunctKinds.DateDeviation
-  | typeof TemporalDisjunctKinds.Year
-  | typeof TemporalDisjunctKinds.YearRange
-  | typeof TemporalDisjunctKinds.YearDeviation
-  | typeof SpatialDisjunctKinds.Distance
-  | typeof SpatialDisjunctKinds.BoundingBox
-  | typeof LiteralDisjunctKind
-  | typeof NumericRangeDisjunctKind;
-
 export interface ResourceDisjunct extends AbstractDisjunct<Resource> {
   readonly kind: typeof EntityDisjunctKinds.Resource;
 }
@@ -251,14 +234,14 @@ interface AbstractDisjunct<T> {
   readonly value: T;
 }
 
-type DisjunctKind =
+export type DisjunctKind =
   | EntityDisjunctKind
   | TemporalDisjunctT
   | SpatialDisjunctKind
   | typeof TextDisjunctKind
   | typeof LiteralDisjunctKind
   | typeof NumericRangeDisjunctKind;
-type EntityDisjunctKind =
+export type EntityDisjunctKind =
   | typeof EntityDisjunctKinds.Resource
   | typeof EntityDisjunctKinds.Set
   | typeof EntityDisjunctKinds.Search
@@ -270,7 +253,7 @@ export type TemporalDisjunctT =
   | typeof TemporalDisjunctKinds.Year
   | typeof TemporalDisjunctKinds.YearRange
   | typeof TemporalDisjunctKinds.YearDeviation;
-type SpatialDisjunctKind = typeof SpatialDisjunctKinds.Distance | typeof SpatialDisjunctKinds.BoundingBox;
+export type SpatialDisjunctKind = typeof SpatialDisjunctKinds.Distance | typeof SpatialDisjunctKinds.BoundingBox;
 
 // matchers
 export interface ConjunctMatcher<T> {

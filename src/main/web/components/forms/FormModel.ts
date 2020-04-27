@@ -39,7 +39,11 @@ const DEFALUT_SUBJECT_TEMPLATE = '{{UUID}}';
 
 type SubjectReplacer = (placeholder: Placeholder, composite?: CompositeValue) => string;
 
-type Placeholder = { type: 'UUID' } | { type: 'FieldValue'; id: string };
+const FIELD_VALUE_LOCAL_NAME = 'FIELD_VALUE_LOCAL_NAME';
+type Placeholder =
+  | { type: 'UUID' }
+  | { type: 'FieldValue'; id: string }
+  | { type: typeof FIELD_VALUE_LOCAL_NAME; id: string };
 
 export function generateSubjectByTemplate(
   template: string | undefined,
@@ -52,8 +56,18 @@ export function generateSubjectByTemplate(
   }
 
   const iriTemplate = template || DEFALUT_SUBJECT_TEMPLATE;
-  const subject = iriTemplate.replace(/{{([^{}]+)}}/g, (match, placeholder) => {
-    const p: Placeholder = placeholder === 'UUID' ? { type: 'UUID' } : { type: 'FieldValue', id: placeholder };
+  const subject = iriTemplate.replace(/{{([^{}]+)}}/g, (match, placeholder: string) => {
+    let p: Placeholder;
+    if (placeholder === 'UUID') {
+      p = { type: 'UUID' };
+    } else if (placeholder.startsWith(FIELD_VALUE_LOCAL_NAME)) {
+      p = {
+        type: FIELD_VALUE_LOCAL_NAME,
+        id: placeholder.replace(FIELD_VALUE_LOCAL_NAME, '').trim(),
+      };
+    } else {
+      p = { type: 'FieldValue', id: placeholder };
+    }
     return replacer(p, composite);
   });
 
@@ -77,6 +91,7 @@ export function wasIriGeneratedByTemplate(
   const escapeTable: { [K in Placeholder['type']]: string | undefined } = {
     UUID: uuid.v4(),
     FieldValue: undefined,
+    FIELD_VALUE_LOCAL_NAME: undefined,
   };
   const newGeneratedIri = generateSubjectByTemplate(template, ownerSubject, composite, (p, comp) => {
     const escaped = escapeTable[p.type];
@@ -93,11 +108,19 @@ export function makeDefaultSubjectReplacer(): SubjectReplacer {
   return (placeholder, composite) => {
     if (placeholder.type === 'UUID') {
       return uuid.v4();
-    } else if (composite && placeholder.type === 'FieldValue' && composite.definitions.has(placeholder.id)) {
+    } else if (
+      composite &&
+      (placeholder.type === 'FieldValue' || placeholder.type === FIELD_VALUE_LOCAL_NAME) &&
+      composite.definitions.has(placeholder.id)
+    ) {
       const state = composite.fields.get(placeholder.id);
       const first = (state ? state.values.first() : undefined) || FieldValue.empty;
       const valueContent = FieldValue.isAtomic(first) ? first.value.value : '';
-      return encodeIri(valueContent);
+      if (placeholder.type === FIELD_VALUE_LOCAL_NAME && valueContent) {
+        return Rdf.getLocalName(valueContent);
+      } else {
+        return encodeIri(valueContent);
+      }
     } else {
       return '';
     }

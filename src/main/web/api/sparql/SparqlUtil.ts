@@ -23,7 +23,6 @@ import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
 import { getCurrentResource } from 'platform/api/navigation';
-import { ConfigHolder } from 'platform/api/services/config-holder';
 
 import { isQuery, isTerm, isIri } from './TypeGuards';
 
@@ -31,9 +30,11 @@ import { isQuery, isTerm, isIri } from './TypeGuards';
 // to initialize it explicitly in all tests, but the expectation is that
 // in production run init is called on the system startup
 let Parser: SparqlJs.SparqlParser = new SparqlJs.Parser();
-export let RegisteredPrefixes: { [key: string]: string } = {};
+export let RegisteredPrefixes: {
+  Default: string; Admin: string; Help: string;
+} & { [key: string]: string };
 export function init(registeredPrefixes: { [key: string]: string }) {
-  RegisteredPrefixes = registeredPrefixes;
+  RegisteredPrefixes = registeredPrefixes as typeof RegisteredPrefixes;
   Parser = new SparqlJs.Parser(registeredPrefixes);
 }
 

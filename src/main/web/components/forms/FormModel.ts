@@ -24,6 +24,7 @@ import * as URI from 'urijs';
 import { escapeRegExp } from 'lodash';
 
 import { Rdf, XsdDataTypeValidation, vocabularies } from 'platform/api/rdf';
+import { SparqlUtil } from 'platform/api/sparql';
 
 import { FieldDefinition } from './FieldDefinition';
 import { FieldValue, FieldError, ErrorKind, CompositeValue, FieldState, AtomicValue } from './FieldValues';
@@ -57,12 +58,13 @@ export function generateSubjectByTemplate(
   });
 
   const isAbsoluteUri = URI(subject).scheme();
-  if (isAbsoluteUri || !ownerSubject) {
+  if (isAbsoluteUri) {
     return Rdf.iri(subject);
   }
 
-  const combinedPath = URI.joinPaths(ownerSubject.value, subject).toString();
-  return Rdf.iri(URI(ownerSubject.value).pathname(combinedPath).toString());
+  const base = ownerSubject ? ownerSubject.value : SparqlUtil.RegisteredPrefixes.Default;
+  const combinedPath = URI.joinPaths(base, subject).toString();
+  return Rdf.iri(URI(base).pathname(combinedPath).toString());
 }
 
 export function wasIriGeneratedByTemplate(

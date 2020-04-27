@@ -1,6 +1,6 @@
 import { Component, createElement, ReactElement, cloneElement } from 'react';
 import * as ReactDOM from 'react-dom';
-import * as saveAs from 'file-saverjs';
+import * as fileSaver from 'file-saver';
 
 import { LinkRouter, LinkTemplateResolver, TemplateResolver, TypeStyleResolver } from '../customization/props';
 
@@ -347,7 +347,7 @@ export class Workspace extends Component<WorkspaceProps, WorkspaceState> {
             fileName = fileName || 'diagram.svg';
             const xmlEncodingHeader = '<?xml version="1.0" encoding="UTF-8"?>';
             const blob = new Blob([xmlEncodingHeader + svg], {type: 'image/svg+xml'});
-            saveAs(blob, fileName);
+            fileSaver.saveAs(blob, fileName);
         });
     }
 
@@ -355,7 +355,7 @@ export class Workspace extends Component<WorkspaceProps, WorkspaceState> {
         fileName = fileName || 'diagram.png';
         this.markup.paperArea.exportPNG({backgroundColor: 'white'}).then(dataUri => {
             const blob = dataURLToBlob(dataUri);
-            saveAs(blob, fileName);
+            fileSaver.saveAs(blob, fileName);
         });
     }
 

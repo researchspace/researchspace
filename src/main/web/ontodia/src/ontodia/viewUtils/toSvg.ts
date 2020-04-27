@@ -84,7 +84,12 @@ async function exportSVG(options: ToSVGOptions): Promise<SVGElement> {
 
     await convertingImages;
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    defs.innerHTML = await extractStylesheets();
+    const style = document.createElement('style');
+
+    // it is important to use textContent not innerHtml because style
+    // content can't be properly parsed as HTML
+    style.textContent = await extractStylesheets();
+    defs.appendChild(style);
     svgClone.insertBefore(defs, svgClone.firstChild);
     if (options.elementsToRemoveSelector) {
         foreachNode(svgClone.querySelectorAll(options.elementsToRemoveSelector), node => node.remove());
@@ -140,7 +145,7 @@ async function extractStylesheets() {
         );
     }
 
-    return `<style>${styleSheets.join('\n')}</style>`;
+    return `${styleSheets.join('\n')}`;
 }
 
 /**

@@ -39,7 +39,7 @@ import { convertToSerializedDiagram } from 'ontodia';
 
 import { ontodiaNsv0 } from './OntodiaVocabulary';
 
-export const OntodiaContextV1 = require('ontodia/schema/context-v1.json');
+export const OntodiaContextV1 = require('platform/ontodia/schema/context-v1.json');
 
 /**
  * Returns dictionary of images by sparql query

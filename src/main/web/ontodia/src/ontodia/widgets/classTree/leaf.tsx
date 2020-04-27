@@ -6,10 +6,10 @@ import { highlightSubstring } from '../listElementView';
 
 import { TreeNode } from './treeModel';
 
-const EXPAND_ICON = require<string>('../../../../images/tree/expand-toggle.svg');
-const COLLAPSE_ICON = require<string>('../../../../images/tree/collapse-toggle.svg');
-const DEFAULT_LEAF_ICON = require<string>('../../../../images/tree/leaf-default.svg');
-const DEFAULT_PARENT_ICON = require<string>('../../../../images/tree/leaf-folder.svg');
+const EXPAND_ICON = require('../../../../images/tree/expand-toggle.svg');
+const COLLAPSE_ICON = require('../../../../images/tree/collapse-toggle.svg');
+const DEFAULT_LEAF_ICON = require('../../../../images/tree/leaf-default.svg');
+const DEFAULT_PARENT_ICON = require('../../../../images/tree/leaf-folder.svg');
 
 interface CommonProps {
     view: DiagramView;

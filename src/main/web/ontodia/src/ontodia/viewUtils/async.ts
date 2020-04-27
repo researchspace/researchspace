@@ -2,7 +2,7 @@ import { Events, EventSource } from './events';
 
 export abstract class BatchingScheduler {
     private useAnimationFrame: boolean;
-    private scheduled: number | undefined;
+    private scheduled: any | undefined;
 
     constructor(readonly waitingTime = 0) {
         this.useAnimationFrame = waitingTime === 0;

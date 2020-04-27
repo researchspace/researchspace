@@ -212,6 +212,9 @@ module.exports = function(isProd) {
                     test: path.join(ROOT_DIR, 'node_modules/codemirror/lib/codemirror.js'),
                     loader: "expose-loader?CodeMirror",
                 },
+
+                // needed for ontodia
+                {test: /\.ttl$/, use: ['raw-loader']},
             ],
             noParse: [/.+zone\.js\/dist\/.+/]
         },

@@ -1,14 +1,14 @@
 import { TypeStyleResolver } from './props';
 
-const classIcon = require<string>('../../../images/icons/class.svg');
-const objectPropertyIcon = require<string>('../../../images/icons/objectProperty.svg');
-const datatypePropertyIcon = require<string>('../../../images/icons/datatypeProperty.svg');
-const personIcon = require<string>('../../../images/icons/person.svg');
-const countryIcon = require<string>('../../../images/icons/country.svg');
-const organizationIcon = require<string>('../../../images/icons/organization.svg');
-const locationIcon = require<string>('../../../images/icons/location.svg');
-const eventIcon = require<string>('../../../images/icons/event.svg');
-const objectIcon = require<string>('../../../images/icons/object.svg');
+const classIcon = require('../../../images/icons/class.svg');
+const objectPropertyIcon = require('../../../images/icons/objectProperty.svg');
+const datatypePropertyIcon = require('../../../images/icons/datatypeProperty.svg');
+const personIcon = require('../../../images/icons/person.svg');
+const countryIcon = require('../../../images/icons/country.svg');
+const organizationIcon = require('../../../images/icons/organization.svg');
+const locationIcon = require('../../../images/icons/location.svg');
+const eventIcon = require('../../../images/icons/event.svg');
+const objectIcon = require('../../../images/icons/object.svg');
 
 export const DefaultTypeStyleBundle: TypeStyleResolver = types => {
     if (types.indexOf('http://www.w3.org/2002/07/owl#Class') !== -1 ||

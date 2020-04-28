@@ -77,7 +77,6 @@ export interface ColumnConfiguration {
    * Custom cell visualization <semantic-link
    *   uri='http://help.metaphacts.com/resource/FrontendTemplating'>template</semantic-link>.
    * Template has access to all projection variables for a single result tuple.
-   * **The template MUST have a single HTML root element.**
    */
   cellTemplate?: string;
 }

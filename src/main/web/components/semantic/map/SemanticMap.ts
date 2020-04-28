@@ -82,13 +82,11 @@ export interface SemanticMapConfig {
 
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
-   * **The template MUST have a single HTML root element.**
    */
   tupleTemplate?: string;
 
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
-   * **The template MUST have a single HTML root element.**
    */
   noResultTemplate?: string;
 

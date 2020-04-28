@@ -92,7 +92,6 @@ interface BaseConfig extends ControlledProps {
 
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when the query returns no results
-   * **The template MUST have a single HTML root element.**
    */
   noResultTemplate?: string;
 
@@ -150,7 +149,6 @@ interface RowConfig extends BaseConfig {
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.
    * The template has access to all projection variables for a single result tuple
-   * **The template MUST have a single HTML root element.**
    */
   tupleTemplate: string;
 }

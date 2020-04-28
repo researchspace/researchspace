@@ -66,7 +66,7 @@ export function getRdfExtGraphBySparqlQuery(query: string, repositories: string[
     .toPromise();
 }
 
-export function makeRdfExtGraph(graph: RawTriple[]): unknown {
+export function makeRdfExtGraph(graph: RawTriple[]) {
   const triples = graph.map(({ subject, predicate, object }) => ({
     subject: makeRdfExtNode(subject),
     predicate: makeRdfExtNode(predicate),
@@ -76,7 +76,7 @@ export function makeRdfExtGraph(graph: RawTriple[]): unknown {
   return createGraph(triples);
 }
 
-function makeRdfExtNode(node: RawNode): unknown {
+function makeRdfExtNode(node: RawNode) {
   const { type, value } = node;
   return type === 'uri' ? createNamedNode(value) : createLiteral(value);
 }

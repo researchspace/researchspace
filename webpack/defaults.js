@@ -34,7 +34,8 @@ module.exports = function() {
             "platform/components": "components",
             "platform/styling": "styling",
             "platform": "",
-            "basic-styles.scss": "styling/basic.scss"
+            "basic-styles.scss": "styling/basic.scss",
+            "ontodia": "ontodia/src/ontodia"
         },
         "cssModulesBasedComponents": [
             "src/main/web/components/admin/config-manager",

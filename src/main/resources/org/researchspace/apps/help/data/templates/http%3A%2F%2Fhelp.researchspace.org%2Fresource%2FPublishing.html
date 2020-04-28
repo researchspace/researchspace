@@ -107,22 +107,22 @@ document:LetterToBob a foaf:Document.
       </mp-code-block>
     </li>
    </ul>
-If we would have decided for a URI schema using the default context path <code>/resource</code> and without further nesting, for example, <code>http://localhost:10214/resource/person123</code> then it would be sufficient to just set the <b>Default</b> (:) namespace in the platform's namespace registry to <code>Default=http://localhost:10214/</code>. This needs to be done by modifying the <code>/config/namespaces.prop </code> and requires a restart. If this is feasible in your use-case and domain, then this is the easiest and recommended solution.<br>
+In this case it is sufficient to just set the <b>Default</b> (:) namespace in the platform's namespace registry to <code>Default=http://localhost:10214/resource/</code>. This needs to be done by modifying the <code>/config/namespaces.prop </code> and requires a restart. If this is feasible in your use-case and domain, then this is the easiest and recommended solution.<br>
 
 <br>
-However, assuming we have decided for a nested URI schema, we will need to enumerate the different context path patterns to instruct the 303 redirects within the platform's HTTP interface.
+However, assuming we have decided for a context path different from <code>/resource/</code>, we will need to enumerate the different context path patterns to instruct the 303 redirects within the platform's HTTP interface.
 This requires to set the following properties within <code>/config/environment.prop</code>:
 	<ul> 
     <li> <code>platformBaseIri</code> to <code>platformBaseIri = http://localhost:10214</code>. This is particularly important when the host is hidden or re-written (for example, http to https re-writes) through a proxy.  </li>
-   <li> <code>pathsToRewrite</code> to <code>pathsToRewrite = /resource/document/,/resource/person/</code> enumerating ALL context path patterns.</li>
+   <li> <code>pathsToRewrite</code> to <code>pathsToRewrite = /entity/document/,/entity/person/</code> enumerating ALL context path patterns.</li>
  	</ul>
-Trying to open <code>http://localhost:10214/resource/person/Bob</code> in the browser will redirect to <code>http://localhost:10214/resource/?uri=http://localhost:10214/resource/person/Bob</code> and rendering a HTML page for Bob using the <code>Template:foaf:Person</code> template.
+Trying to open <code>http://localhost:10214/entity/person/Bob</code> in the browser will redirect to <code>http://localhost:10214/resource/?uri=http://localhost:10214/entity/person/Bob</code> and rendering a HTML page for Bob using the <code>Template:foaf:Person</code> template.
 
 	<p>
     As in the previous example, we can use <i>curl</i> again to ask for an RDF-based representation of the same resource:
     <mp-code-block mode='text/x-sh'>
 <![CDATA[
-curl -L --user admin:admin -H "Accept: application/n-triples" http://localhost:10214/resource/person/Bob
+curl -L --user admin:admin -H "Accept: application/n-triples" http://localhost:10214/entity/person/Bob
 ]]>
     </mp-code-block>
     The <code>-L</code> parameter is important, since it instructs <i>curl</i> to follow the redirect.

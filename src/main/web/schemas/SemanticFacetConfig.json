@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "DateRangeFacetValue": {
             "properties": {
@@ -161,11 +161,11 @@
             "description": "Query that is used to get values for relations, if no custom value query is specified\nin 'valueCategories' or 'valueRelations' mappings.",
             "properties": {
                 "literal": {
-                    "default": "```\nSELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {\nFILTER(?__facetRelationPattern__)\n}\nGROUP BY ?literal\nORDER BY ?literal\n```\nwhere `FILTER(?__facetRelationPattern__)` will be replaced by a relation pattern if exists\nor the default pattern:\n```\n$subject ?__relation__ ?literal\n```",
+                    "default": "```\n  SELECT ?literal (COUNT(DISTINCT $subject) AS ?count) WHERE {\n    FILTER(?__facetRelationPattern__)\n  }\n  GROUP BY ?literal\n  ORDER BY ?literal\n```\nwhere `FILTER(?__facetRelationPattern__)` will be replaced by a relation pattern if exists\nor the default pattern:\n```\n  $subject ?__relation__ ?literal\n```",
                     "type": "string"
                 },
                 "resource": {
-                    "default": "```\nSELECT ?value ?label (COUNT(DISTINCT $subject) AS ?count) WHERE {\nFILTER(?__facetRelationPattern__)\n?value rdfs:label|skos:prefLabel ?label .\n}\nGROUP BY ?value ?label\nORDER BY ?label\n```\nWhere `FILTER(?__facetRelationPattern__)` will be replaced by a relation pattern if exists\nor the default pattern:\n```\n$subject ?__relation__ ?value\n```",
+                    "default": "```\n  SELECT ?value ?label (COUNT(DISTINCT $subject) AS ?count) WHERE {\n    FILTER(?__facetRelationPattern__)\n    ?value rdfs:label|skos:prefLabel ?label .\n  }\n  GROUP BY ?value ?label\n  ORDER BY ?label\n```\nWhere `FILTER(?__facetRelationPattern__)` will be replaced by a relation pattern if exists\nor the default pattern:\n```\n  $subject ?__relation__ ?value\n```",
                     "description": "By default it uses 'preferredLabels' properties from the system ui configuration.\nE.g if `preferredLabels=rdfs:label,skos:prefLabel` default query will be -",
                     "type": "string"
                 }

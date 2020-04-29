@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "FieldConstraint": {
             "properties": {
@@ -32,7 +32,7 @@
                     "items": {
                         "anyOf": [
                             {
-                                "$ref": "#/definitions/Rdf.Iri"
+                                "$ref": "#/definitions/Iri"
                             },
                             {
                                 "type": "string"
@@ -62,13 +62,13 @@
                 "domain": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/Rdf.Iri"
+                            "$ref": "#/definitions/Iri"
                         },
                         {
                             "items": {
                                 "anyOf": [
                                     {
-                                        "$ref": "#/definitions/Rdf.Iri"
+                                        "$ref": "#/definitions/Iri"
                                     },
                                     {
                                         "type": "string"
@@ -88,11 +88,14 @@
                 "insertPattern": {
                     "type": "string"
                 },
+                "iri": {
+                    "type": "string"
+                },
                 "label": {
                     "anyOf": [
                         {
                             "items": {
-                                "$ref": "#/definitions/Rdf.LangLiteral"
+                                "$ref": "#/definitions/Literal"
                             },
                             "type": "array"
                         },
@@ -127,16 +130,29 @@
                         }
                     ]
                 },
+                "order": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                "unbound"
+                            ],
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
                 "range": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/Rdf.Iri"
+                            "$ref": "#/definitions/Iri"
                         },
                         {
                             "items": {
                                 "anyOf": [
                                     {
-                                        "$ref": "#/definitions/Rdf.Iri"
+                                        "$ref": "#/definitions/Iri"
                                     },
                                     {
                                         "type": "string"
@@ -156,7 +172,7 @@
                 "testSubject": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/Rdf.Iri"
+                            "$ref": "#/definitions/Iri"
                         },
                         {
                             "type": "string"
@@ -179,7 +195,7 @@
                 "xsdDatatype": {
                     "anyOf": [
                         {
-                            "$ref": "#/definitions/Rdf.Iri"
+                            "$ref": "#/definitions/Iri"
                         },
                         {
                             "type": "string"
@@ -189,6 +205,7 @@
             },
             "propertyOrder": [
                 "id",
+                "iri",
                 "label",
                 "description",
                 "categories",
@@ -197,6 +214,7 @@
                 "range",
                 "minOccurs",
                 "maxOccurs",
+                "order",
                 "defaultValues",
                 "selectPattern",
                 "askPattern",
@@ -254,6 +272,96 @@
             ],
             "type": "object"
         },
+        "Iri": {
+            "properties": {
+                "_value": {
+                    "type": "string"
+                },
+                "termType": {
+                    "enum": [
+                        "NamedNode"
+                    ],
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "termType",
+                "equals",
+                "toString",
+                "toJSON",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_value",
+                "termType",
+                "value"
+            ],
+            "type": "object"
+        },
+        "Literal": {
+            "properties": {
+                "_datatype": {
+                    "$ref": "#/definitions/Iri"
+                },
+                "_lang": {
+                    "type": "string"
+                },
+                "_value": {
+                    "type": "string"
+                },
+                "datatype": {
+                    "$ref": "#/definitions/Iri"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "termType": {
+                    "enum": [
+                        "Literal"
+                    ],
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "_datatype",
+                "_lang",
+                "termType",
+                "datatype",
+                "language",
+                "toString",
+                "equals",
+                "toJSON",
+                "_value",
+                "value",
+                "hashCode",
+                "cata",
+                "isIri",
+                "isLiteral",
+                "isBnode"
+            ],
+            "required": [
+                "_datatype",
+                "_lang",
+                "_value",
+                "datatype",
+                "language",
+                "termType",
+                "value"
+            ],
+            "type": "object"
+        },
         "QueryTemplate": {
             "properties": {
                 "arguments": {
@@ -298,181 +406,6 @@
             ],
             "required": [
                 "type"
-            ],
-            "type": "object"
-        },
-        "Rdf.Iri": {
-            "properties": {
-                "_rdfIriBrand": {
-                    "type": "string"
-                },
-                "_value": {
-                    "type": "string"
-                },
-                "cata": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "equals": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "hashCode": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "isBnode": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "isIri": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "isLiteral": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "toJSON": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "toString": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "value": {
-                    "type": "string"
-                }
-            },
-            "propertyOrder": [
-                "_rdfIriBrand",
-                "equals",
-                "toString",
-                "toJSON",
-                "_value",
-                "value",
-                "hashCode",
-                "cata",
-                "isIri",
-                "isLiteral",
-                "isBnode"
-            ],
-            "required": [
-                "_rdfIriBrand",
-                "_value",
-                "cata",
-                "equals",
-                "hashCode",
-                "isBnode",
-                "isIri",
-                "isLiteral",
-                "toJSON",
-                "toString",
-                "value"
-            ],
-            "type": "object"
-        },
-        "Rdf.LangLiteral": {
-            "properties": {
-                "_dataType": {
-                    "$ref": "#/definitions/Rdf.Iri"
-                },
-                "_lang": {
-                    "type": "string"
-                },
-                "_value": {
-                    "type": "string"
-                },
-                "cata": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "dataType": {
-                    "$ref": "#/definitions/Rdf.Iri"
-                },
-                "equals": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "hashCode": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "isBnode": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "isIri": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "isLiteral": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "lang": {
-                    "type": "string"
-                },
-                "toJSON": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "toString": {
-                    "propertyOrder": [
-                    ],
-                    "type": "object"
-                },
-                "value": {
-                    "type": "string"
-                }
-            },
-            "propertyOrder": [
-                "_lang",
-                "lang",
-                "equals",
-                "toString",
-                "toJSON",
-                "_dataType",
-                "dataType",
-                "_value",
-                "value",
-                "hashCode",
-                "cata",
-                "isIri",
-                "isLiteral",
-                "isBnode"
-            ],
-            "required": [
-                "_dataType",
-                "_lang",
-                "_value",
-                "cata",
-                "dataType",
-                "equals",
-                "hashCode",
-                "isBnode",
-                "isIri",
-                "isLiteral",
-                "lang",
-                "toJSON",
-                "toString",
-                "value"
             ],
             "type": "object"
         },

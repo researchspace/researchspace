@@ -3,10 +3,13 @@
     "definitions": {
         "BNode": {
             "properties": {
-                "_rdfBlankBrand": {
+                "_value": {
                     "type": "string"
                 },
-                "_value": {
+                "termType": {
+                    "enum": [
+                        "BlankNode"
+                    ],
                     "type": "string"
                 },
                 "value": {
@@ -14,8 +17,9 @@
                 }
             },
             "propertyOrder": [
-                "_rdfBlankBrand",
+                "termType",
                 "toString",
+                "toJSON",
                 "_value",
                 "value",
                 "hashCode",
@@ -26,18 +30,21 @@
                 "isBnode"
             ],
             "required": [
-                "_rdfBlankBrand",
                 "_value",
+                "termType",
                 "value"
             ],
             "type": "object"
         },
         "Iri": {
             "properties": {
-                "_rdfIriBrand": {
+                "_value": {
                     "type": "string"
                 },
-                "_value": {
+                "termType": {
+                    "enum": [
+                        "NamedNode"
+                    ],
                     "type": "string"
                 },
                 "value": {
@@ -45,7 +52,7 @@
                 }
             },
             "propertyOrder": [
-                "_rdfIriBrand",
+                "termType",
                 "equals",
                 "toString",
                 "toJSON",
@@ -58,30 +65,45 @@
                 "isBnode"
             ],
             "required": [
-                "_rdfIriBrand",
                 "_value",
+                "termType",
                 "value"
             ],
             "type": "object"
         },
         "Literal": {
             "properties": {
-                "_dataType": {
+                "_datatype": {
                     "$ref": "#/definitions/Iri"
+                },
+                "_lang": {
+                    "type": "string"
                 },
                 "_value": {
                     "type": "string"
                 },
-                "dataType": {
+                "datatype": {
                     "$ref": "#/definitions/Iri"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "termType": {
+                    "enum": [
+                        "Literal"
+                    ],
+                    "type": "string"
                 },
                 "value": {
                     "type": "string"
                 }
             },
             "propertyOrder": [
-                "_dataType",
-                "dataType",
+                "_datatype",
+                "_lang",
+                "termType",
+                "datatype",
+                "language",
                 "toString",
                 "equals",
                 "toJSON",
@@ -94,9 +116,12 @@
                 "isBnode"
             ],
             "required": [
-                "_dataType",
+                "_datatype",
+                "_lang",
                 "_value",
-                "dataType",
+                "datatype",
+                "language",
+                "termType",
                 "value"
             ],
             "type": "object"
@@ -133,7 +158,7 @@
             "type": "object"
         },
         "defaultGraphs": {
-            "description": "Specifies the default graph, i.e. will be translated into a FROM <graphiri> clause.\nSeveral default graphs will be interpreted as a single merge graph, i.e. according to the SPARQL 1.1 standard: \n\"A default graph consisting of the RDF merge of the graphs referred to in the FROM clauses.\"\n\nDefaults to an empty array, which usually means all graphs.\nHowever, this may differ across database vendors (for example, in Stardog you will have to configure the database with query.all.graphs=true )\n\nSee <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank'> https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph </a> for details.\n\nThis functionality is still beta and not yet well tested.",
+            "description": "Specifies the default graph, i.e. will be translated into a FROM <graphiri> clause.\nSeveral default graphs will be interpreted as a single merge graph, i.e. according to the SPARQL 1.1 standard:\n\"A default graph consisting of the RDF merge of the graphs referred to in the FROM clauses.\"\n\nDefaults to an empty array, which usually means all graphs.\nHowever, this may differ across database vendors (for example, in Stardog you will have to configure the database with query.all.graphs=true )\n\nSee <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank'> https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph </a> for details.\n\nThis functionality is still beta and not yet well tested.",
             "items": {
                 "type": "string"
             },

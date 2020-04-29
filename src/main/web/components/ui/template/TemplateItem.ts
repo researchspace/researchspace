@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createElement, ReactElement, cloneElement } from 'react';
+import { createElement, ReactElement, cloneElement, Props } from 'react';
 import * as D from 'react-dom-factories';
-import { isEqual } from 'lodash';
+import { isEqual, isArray } from 'lodash';
 import * as classNames from 'classnames';
 import * as Maybe from 'data.maybe';
 
@@ -29,7 +29,7 @@ import { ModuleRegistry } from 'platform/api/module-loader';
 
 import { ErrorNotification } from 'platform/components/ui/notification';
 
-export interface TemplateItemProps {
+export interface TemplateItemProps extends Props<TemplateItem> {
   template: Template;
   componentProps?: {
     [key: string]: any;
@@ -99,22 +99,27 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     }
 
     const { parsedTemplate } = this.state;
-    const root = this.getSingleRoot(parsedTemplate);
+    const root = this.flattenRoot(parsedTemplate);
 
     let component: JSX.Element;
     if (typeof root === 'string') {
       component = D.span({}, root);
+    } else if (isArray(root)) {
+      return root;
     } else if (root) {
+      // propagate also props.children, we need this for react-resizable
+      // to be able to add resize handle to templated items
+      const children = this.props.children ? [root.props.children, this.props.children] : root.props.children;
       component = cloneElement(root, {
-        ...this.props.componentProps,
         ...root.props,
+        ...this.props.componentProps,
         className: classNames(
           Maybe.fromNullable(this.props.componentProps)
             .map((cp) => cp.className)
             .getOrElse(''),
           root.props.className
         ),
-        children: root.props.children,
+        children,
       });
     } else {
       component = null;
@@ -127,12 +132,12 @@ export class TemplateItem extends Component<TemplateItemProps, State> {
     return component;
   }
 
-  private getSingleRoot(parsed: ReactElement<any> | ReactElement<any>[]): ReactElement<any> {
+  private flattenRoot(parsed: ReactElement<any> | ReactElement<any>[]) {
     if (Array.isArray(parsed)) {
       if (parsed.length === 0) {
         return null;
       } else if (parsed.length > 1) {
-        throw new Error('Expected only a single root element in the template:\n' + this.props.template.source);
+        return parsed;
       } else {
         return parsed[0];
       }

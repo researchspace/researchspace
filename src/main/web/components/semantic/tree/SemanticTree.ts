@@ -76,14 +76,12 @@ export interface SemanticTreeConfig {
    * which is used to render every tree node. Template has access to all projection
    * variables for a single result tuple.
    * By default `<semantic-link>` component is used for node visualization.
-   * **The template MUST have a single HTML root element.**
    */
   tupleTemplate?: string;
 
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link>
    * which is applied when the query returns no results.
-   * **The template MUST have a single HTML root element.**
    */
   noResultTemplate?: string;
 

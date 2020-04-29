@@ -30,7 +30,6 @@ export interface EventTargetTemplateRenderConfig {
   id: string;
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> that will be rendered with data passed as context variables.
-   * **The template MUST have a single HTML root element.**
    */
   template: string;
 }

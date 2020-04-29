@@ -37,7 +37,6 @@ export interface SemanticQueryConfig {
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link>, that gets a <a target='_blank' href='https://www.w3.org/TR/sparql11-results-json/#select-results'>bindings</a> object injected as template context i.e. the result binding to iterate over. [each helper](http://handlebarsjs.com/builtin_helpers.html#iteration) can be used to iterate over the bindings.
    * The template will only be rendered if and only if the result is not empty, so that one does not need to have additional if expressions around the component in order to hide it, for example, a list header if actually no result are to be displayed.
-   * **The template MUST have a single HTML root element.**
    * **Example:** `My Result: {{#each bindings}}{{bindingName.value}}{{/each}}` .
    * **Default:** If no template is provided, all tuples for the first projection variable will we rendered as a comma-separated list.
    */
@@ -45,7 +44,6 @@ export interface SemanticQueryConfig {
 
   /**
    * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
-   * **The template MUST have a single HTML root element.**
    */
   noResultTemplate?: string;
 

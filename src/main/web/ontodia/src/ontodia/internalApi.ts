@@ -13,10 +13,12 @@ export * from './viewUtils/spinner';
 export * from './widgets/listElementView';
 export * from './widgets/searchResults';
 
-export {
-    WorkspaceContext, WorkspaceContextWrapper, WorkspaceContextTypes,
-} from './workspace/workspaceContext';
+export { WorkspaceContext, WorkspaceContextWrapper, WorkspaceContextTypes } from './workspace/workspaceContext';
 
 export {
-    groupForceLayout, groupRemoveOverlaps, padded, biasFreePadded, getContentFittingBoxForLayout,
+  groupForceLayout,
+  groupRemoveOverlaps,
+  padded,
+  biasFreePadded,
+  getContentFittingBoxForLayout,
 } from './viewUtils/layout';

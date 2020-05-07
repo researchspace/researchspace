@@ -707,6 +707,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
         settings: configName,
         autoZoom,
         hideNavigationConfirmation,
+        imageQuery,
       } = this.props;
       const { fieldConfiguration } = this.state;
 
@@ -715,9 +716,13 @@ export class Ontodia extends Component<OntodiaProps, State> {
         onLoadWorkspace(workspace);
       }
 
+      // if there is no imageIris or only imageQuery is provided then
+      // then we resolve thumbnail through the platform thumbnail service, otherwise
+      // we use default thumbnail resolution mechanism from ontodia
+      const prepareImages = (!imageIris && !imageQuery) || imageQuery ? this.prepareImages : undefined;
       const options: SparqlDataProviderOptions = {
         endpointUrl: '',
-        prepareImages: this.prepareImages,
+        prepareImages: prepareImages,
         prepareLabels: this.prepareLabels,
         imagePropertyUris: imageIris,
         queryMethod: SparqlQueryMethod.POST,

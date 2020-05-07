@@ -9,6 +9,7 @@ export enum DockSide {
 
 export interface Props {
   heading?: React.ReactNode;
+  bodyClassName?: string;
   className?: string;
   bodyRef?: (body: HTMLDivElement) => void;
   children?: React.ReactNode;
@@ -87,6 +88,7 @@ export class AccordionItem extends React.Component<Props, State> {
       onDragHandle,
       onEndDragHandle,
       dockSide,
+      className = '',
     } = this.props;
     const { resizing } = this.state;
     const shouldRenderHandle = onBeginDragHandle && onDragHandle && onEndDragHandle;
@@ -102,7 +104,7 @@ export class AccordionItem extends React.Component<Props, State> {
         ref={(element) => (this._element = element)}
         style={style}
       >
-        <div className={`${CLASS_NAME}__inner`}>
+        <div className={`${CLASS_NAME}__inner ${className}`}>
           {heading ? (
             <div
               className={`${CLASS_NAME}__header`}

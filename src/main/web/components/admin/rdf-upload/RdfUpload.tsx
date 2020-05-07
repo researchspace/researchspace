@@ -158,7 +158,7 @@ export class RdfUpload extends Component<Props, State> {
     );
   }
 
-  private onChangeTargetGraph = (e: FormEvent<ReactBootstrap.FormControl>) => {
+  private onChangeTargetGraph = (e: FormEvent<FormControl>) => {
     e.stopPropagation();
     e.preventDefault();
     const val = (e.target as any).value.trim();
@@ -169,7 +169,7 @@ export class RdfUpload extends Component<Props, State> {
     }
   };
 
-  private onChangeKeepSourceGraphs = (e: FormEvent<ReactBootstrap.FormControl>) => {
+  private onChangeKeepSourceGraphs = (e: FormEvent<FormControl>) => {
     this.setState({ keepSourceGraphs: (e.target as any).checked });
   };
 

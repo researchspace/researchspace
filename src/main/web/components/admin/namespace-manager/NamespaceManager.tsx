@@ -230,7 +230,7 @@ export class NamespaceManager extends Component<{}, State> {
     });
   }
 
-  private onSetNamespace = (e: MouseEvent<ReactBootstrap.Button>) => {
+  private onSetNamespace = (e: MouseEvent<Button>) => {
     e.stopPropagation();
     e.preventDefault();
 

@@ -1,16 +1,24 @@
-export const component: string;
-export const headers: string;
-export const sectorHeader: string;
-export const subsectorHeader: string;
-export const sectorPopoverTarget: string;
-export const background: string;
-export const ringArea: string;
-export const grid: string;
-export const sectorLine: string;
-export const subsectorLine: string;
-export const ringLine: string;
-export const ringLabel: string;
-export const clusters: string;
-export const cluster: string;
-export const items: string;
-export const item: string;
+declare namespace RadarPlotScssModule {
+  export interface IRadarPlotScss {
+    background: string;
+    cluster: string;
+    clusters: string;
+    component: string;
+    grid: string;
+    headers: string;
+    item: string;
+    items: string;
+    ringArea: string;
+    ringLabel: string;
+    ringLine: string;
+    sectorHeader: string;
+    sectorLine: string;
+    sectorPopoverTarget: string;
+    subsectorHeader: string;
+    subsectorLine: string;
+  }
+}
+
+declare const RadarPlotScssModule: RadarPlotScssModule.IRadarPlotScss;
+
+export = RadarPlotScssModule;

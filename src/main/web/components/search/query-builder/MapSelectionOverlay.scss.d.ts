@@ -1,3 +1,11 @@
-export const actions: string;
-export const mapSelection: string;
-export const search: string;
+declare namespace MapSelectionOverlayScssModule {
+  export interface IMapSelectionOverlayScss {
+    actions: string;
+    mapSelection: string;
+    search: string;
+  }
+}
+
+declare const MapSelectionOverlayScssModule: MapSelectionOverlayScssModule.IMapSelectionOverlayScss;
+
+export = MapSelectionOverlayScssModule;

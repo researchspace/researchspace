@@ -1,9 +1,17 @@
-export const word: string;
-export const separator: string;
-export const start: string;
-export const domain: string;
-export const relation: string;
-export const Resource: string;
-export const resource: string;
-export const Text: string;
-export const text: string;
+declare namespace SearchSummaryScssModule {
+  export interface ISearchSummaryScss {
+    Resource: string;
+    Text: string;
+    domain: string;
+    relation: string;
+    resource: string;
+    separator: string;
+    start: string;
+    text: string;
+    word: string;
+  }
+}
+
+declare const SearchSummaryScssModule: SearchSummaryScssModule.ISearchSummaryScss;
+
+export = SearchSummaryScssModule;

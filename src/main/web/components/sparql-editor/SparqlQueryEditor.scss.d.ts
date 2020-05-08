@@ -1,4 +1,12 @@
-export const sparqlQueryEditor: string;
-export const controls: string;
-export const repositorySelector: string;
-export const repositorySelectorDropdown: string;
+declare namespace SparqlQueryEditorScssModule {
+  export interface ISparqlQueryEditorScss {
+    controls: string;
+    repositorySelector: string;
+    repositorySelectorDropdown: string;
+    sparqlQueryEditor: string;
+  }
+}
+
+declare const SparqlQueryEditorScssModule: SparqlQueryEditorScssModule.ISparqlQueryEditorScss;
+
+export = SparqlQueryEditorScssModule;

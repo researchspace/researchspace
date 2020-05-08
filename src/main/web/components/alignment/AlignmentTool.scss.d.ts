@@ -1,11 +1,19 @@
-export const component: string;
-export const leftPanel: string;
-export const sourcePanel: string;
-export const rightPanel: string;
-export const targetHolder: string;
-export const targetPanel: string;
-export const controlList: string;
-export const controlPanel: string;
-export const controlHolder: string;
-export const controlToolbar: string;
-export const swapTerminologies: string;
+declare namespace AlignmentToolScssModule {
+  export interface IAlignmentToolScss {
+    component: string;
+    controlHolder: string;
+    controlList: string;
+    controlPanel: string;
+    controlToolbar: string;
+    leftPanel: string;
+    rightPanel: string;
+    sourcePanel: string;
+    swapTerminologies: string;
+    targetHolder: string;
+    targetPanel: string;
+  }
+}
+
+declare const AlignmentToolScssModule: AlignmentToolScssModule.IAlignmentToolScss;
+
+export = AlignmentToolScssModule;

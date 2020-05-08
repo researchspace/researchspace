@@ -1,4 +1,12 @@
-export const component: string;
-export const group: string;
-export const languageSelector: string;
-export const saveButton: string;
+declare namespace ToolbarScssModule {
+  export interface IToolbarScss {
+    component: string;
+    group: string;
+    languageSelector: string;
+    saveButton: string;
+  }
+}
+
+declare const ToolbarScssModule: ToolbarScssModule.IToolbarScss;
+
+export = ToolbarScssModule;

@@ -1,4 +1,12 @@
-export const holder: string;
-export const day: string;
-export const month: string;
-export const year: string;
+declare namespace SimpleDateInputScssModule {
+  export interface ISimpleDateInputScss {
+    day: string;
+    holder: string;
+    month: string;
+    year: string;
+  }
+}
+
+declare const SimpleDateInputScssModule: SimpleDateInputScssModule.ISimpleDateInputScss;
+
+export = SimpleDateInputScssModule;

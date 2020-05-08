@@ -1,9 +1,25 @@
-export const component: string;
-export const propertyValuesCell: string;
-export const noValue: string;
-export const propertyValues: string;
-export const propertyValue: string;
-export const editValue: string;
-export const valuesEditor: string;
-export const propertyApps: string;
-export const propertyApp: string;
+declare namespace ConfigManagerScssModule {
+  export interface IConfigManagerScss {
+    component: string;
+    'edit-value': string;
+    editValue: string;
+    'no-value': string;
+    noValue: string;
+    'property-app': string;
+    'property-apps': string;
+    'property-value': string;
+    'property-values': string;
+    'property-values-cell': string;
+    propertyApp: string;
+    propertyApps: string;
+    propertyValue: string;
+    propertyValues: string;
+    propertyValuesCell: string;
+    'values-editor': string;
+    valuesEditor: string;
+  }
+}
+
+declare const ConfigManagerScssModule: ConfigManagerScssModule.IConfigManagerScss;
+
+export = ConfigManagerScssModule;

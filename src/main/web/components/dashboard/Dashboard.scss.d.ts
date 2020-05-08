@@ -1,26 +1,34 @@
-export const defaultDashboard: string;
-export const defaultColumnItem: string;
-export const defaultComponent: string;
-export const emptyPageLabel: string;
-export const emptyPageDescription: string;
-export const image: string;
-export const imageComponent: string;
-export const icon: string;
-export const iconComponent: string;
-export const emptyPageDropArea: string;
-export const emptyPageTitle: string;
-export const emptyPageDrop: string;
-export const template: string;
-export const dropAreaChildren: string;
-export const notOpacity: string;
-export const viewContainer: string;
-export const itemsContainer: string;
-export const itemsList: string;
-export const itemLabelContainer: string;
-export const itemLabel: string;
-export const itemLabelActive: string;
-export const itemIcon: string;
-export const itemImage: string;
-export const addItemButton: string;
-export const deleteItemButton: string;
-export const expandItemButton: string;
+declare namespace DashboardScssModule {
+  export interface IDashboardScss {
+    addItemButton: string;
+    defaultColumnItem: string;
+    defaultComponent: string;
+    defaultDashboard: string;
+    deleteItemButton: string;
+    dropAreaChildren: string;
+    emptyPageDescription: string;
+    emptyPageDrop: string;
+    emptyPageDropArea: string;
+    emptyPageLabel: string;
+    emptyPageTitle: string;
+    expandItemButton: string;
+    icon: string;
+    iconComponent: string;
+    image: string;
+    imageComponent: string;
+    itemIcon: string;
+    itemImage: string;
+    itemLabel: string;
+    itemLabelActive: string;
+    itemLabelContainer: string;
+    itemsContainer: string;
+    itemsList: string;
+    notOpacity: string;
+    template: string;
+    viewContainer: string;
+  }
+}
+
+declare const DashboardScssModule: DashboardScssModule.IDashboardScss;
+
+export = DashboardScssModule;

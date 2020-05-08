@@ -1,3 +1,11 @@
-export const radioButton: string;
-export const agree: string;
-export const disagree: string;
+declare namespace BeliefScssModule {
+  export interface IBeliefScss {
+    agree: string;
+    disagree: string;
+    radioButton: string;
+  }
+}
+
+declare const BeliefScssModule: BeliefScssModule.IBeliefScss;
+
+export = BeliefScssModule;

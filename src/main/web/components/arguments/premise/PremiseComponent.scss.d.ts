@@ -1,7 +1,15 @@
-export const evidenceList: string;
-export const evidenceItem: string;
-export const evidenceSelector: string;
-export const evidenceDropArea: string;
-export const evidence: string;
-export const evidenceCustom: string;
-export const evidenceCustomDeleteButton: string;
+declare namespace PremiseComponentScssModule {
+  export interface IPremiseComponentScss {
+    evidence: string;
+    evidenceCustom: string;
+    evidenceCustomDeleteButton: string;
+    evidenceDropArea: string;
+    evidenceItem: string;
+    evidenceList: string;
+    evidenceSelector: string;
+  }
+}
+
+declare const PremiseComponentScssModule: PremiseComponentScssModule.IPremiseComponentScss;
+
+export = PremiseComponentScssModule;

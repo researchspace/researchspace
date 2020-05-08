@@ -1,6 +1,14 @@
-export const workflow: string;
-export const state: string;
-export const assignee: string;
-export const submitButton: string;
-export const resetButton: string;
-export const spinner: string;
+declare namespace WorkflowManagerComponentScssModule {
+  export interface IWorkflowManagerComponentScss {
+    assignee: string;
+    resetButton: string;
+    spinner: string;
+    state: string;
+    submitButton: string;
+    workflow: string;
+  }
+}
+
+declare const WorkflowManagerComponentScssModule: WorkflowManagerComponentScssModule.IWorkflowManagerComponentScss;
+
+export = WorkflowManagerComponentScssModule;

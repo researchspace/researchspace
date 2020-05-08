@@ -1,4 +1,12 @@
-export const component: string;
-export const description: string;
-export const sourceTerm: string;
-export const targetTerm: string;
+declare namespace ConfirmAlignDialogScssModule {
+  export interface IConfirmAlignDialogScss {
+    component: string;
+    description: string;
+    sourceTerm: string;
+    targetTerm: string;
+  }
+}
+
+declare const ConfirmAlignDialogScssModule: ConfirmAlignDialogScssModule.IConfirmAlignDialogScss;
+
+export = ConfirmAlignDialogScssModule;

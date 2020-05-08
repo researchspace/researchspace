@@ -1,17 +1,25 @@
-export const holder: string;
-export const inputHolder: string;
-export const deviationInput: string;
-export const dateMenuInputItem: string;
-export const dateMenuPlaceholderItem: string;
-export const dateSeparator: string;
-export const dateFormatSelect: string;
-export const dateFormatSelect__option: string;
-export const dateFormatSelectOption: string;
-export const dateFormatSelect__ddMmYyyy: string;
-export const dateFormatSelectDdMmYyyy: string;
-export const dateFormatSelect__ddMmYyyyDateDeviation: string;
-export const dateFormatSelectDdMmYyyyDateDeviation: string;
-export const dateFormatSelect__yyyyAcBc: string;
-export const dateFormatSelectYyyyAcBc: string;
-export const dateFormatSelect__ddMmYyyyYearDeviation: string;
-export const dateFormatSelectDdMmYyyyYearDeviation: string;
+declare namespace DateFormatSelectorScssModule {
+  export interface IDateFormatSelectorScss {
+    dateFormatSelect: string;
+    dateFormatSelectDdMmYyyy: string;
+    dateFormatSelectDdMmYyyyDateDeviation: string;
+    dateFormatSelectDdMmYyyyYearDeviation: string;
+    dateFormatSelectOption: string;
+    dateFormatSelectYyyyAcBc: string;
+    dateFormatSelect__ddMmYyyy: string;
+    dateFormatSelect__ddMmYyyyDateDeviation: string;
+    dateFormatSelect__ddMmYyyyYearDeviation: string;
+    dateFormatSelect__option: string;
+    dateFormatSelect__yyyyAcBc: string;
+    dateMenuInputItem: string;
+    dateMenuPlaceholderItem: string;
+    dateSeparator: string;
+    deviationInput: string;
+    holder: string;
+    inputHolder: string;
+  }
+}
+
+declare const DateFormatSelectorScssModule: DateFormatSelectorScssModule.IDateFormatSelectorScss;
+
+export = DateFormatSelectorScssModule;

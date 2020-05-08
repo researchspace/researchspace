@@ -1,13 +1,21 @@
-export const online: string;
-export const offline: string;
-export const EditorArea: string;
-export const editorArea: string;
-export const RepositorySelectionArea: string;
-export const repositorySelectionArea: string;
-export const RepositoryRow: string;
-export const repositoryRow: string;
-export const RepositoryRowActive: string;
-export const repositoryRowActive: string;
-export const RepositoryButton: string;
-export const repositoryButton: string;
-export const holder: string;
+declare namespace RepositoryManagerScssModule {
+  export interface IRepositoryManagerScss {
+    EditorArea: string;
+    RepositoryButton: string;
+    RepositoryRow: string;
+    RepositoryRowActive: string;
+    RepositorySelectionArea: string;
+    editorArea: string;
+    holder: string;
+    offline: string;
+    online: string;
+    repositoryButton: string;
+    repositoryRow: string;
+    repositoryRowActive: string;
+    repositorySelectionArea: string;
+  }
+}
+
+declare const RepositoryManagerScssModule: RepositoryManagerScssModule.IRepositoryManagerScss;
+
+export = RepositoryManagerScssModule;

@@ -26,11 +26,11 @@ export interface BuiltInEventData {
   /**
    * Event which should be triggered when something should be refreshed.
    */
-  'Component.Refresh': void;
+  'Component.Refresh': object;
   /**
    * Event which should be triggered when data has been loaded.
    */
-  'Component.Loaded': void;
+  'Component.Loaded': object;
   /**
    * Event which should be triggered when a template should be updated with new properties.
    */

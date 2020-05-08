@@ -22,7 +22,7 @@ import { Component } from 'react';
 import { Cancellation } from 'platform/api/async';
 import { Event, listen, trigger } from 'platform/api/events';
 
-interface EventProxyConfig {
+export interface EventProxyConfig {
   /**
    * Used as a source id for re-triggered event
    */
@@ -54,7 +54,7 @@ interface EventProxyConfig {
    */
   data?: object;
 }
-type EventProxyProps = EventProxyConfig;
+export type EventProxyProps = EventProxyConfig;
 
 /**
  * Components that listen to specified event, and when it happens triggers some other event.

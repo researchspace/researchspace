@@ -268,7 +268,7 @@ export function resolveIris(iris: string[]): Rdf.Iri[] {
 
 // see SPARQL 1.1 grammar for all allowed characters:
 // https://www.w3.org/TR/sparql11-query/#rPN_LOCAL
-const IRI_LOCAL_PART = /^[a-zA-Z][\\-_a-zA-Z0-9]*$/;
+const IRI_LOCAL_PART = /^[a-zA-Z][-_a-zA-Z0-9]*$/;
 
 // TODO: move to NamespaceService
 export function compactIriUsingPrefix(iri: Rdf.Iri): string {

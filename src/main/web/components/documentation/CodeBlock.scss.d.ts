@@ -1,2 +1,10 @@
-export const holder: string;
-export const modeLabel: string;
+declare namespace CodeBlockScssModule {
+  export interface ICodeBlockScss {
+    holder: string;
+    modeLabel: string;
+  }
+}
+
+declare const CodeBlockScssModule: CodeBlockScssModule.ICodeBlockScss;
+
+export = CodeBlockScssModule;

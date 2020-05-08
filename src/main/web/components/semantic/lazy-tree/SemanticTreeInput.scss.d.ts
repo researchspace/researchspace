@@ -1,13 +1,21 @@
-export const holder: string;
-export const inputAndButtons: string;
-export const textInput: string;
-export const dropdown: string;
-export const tree: string;
-export const input: string;
-export const browseButton: string;
-export const dropdownFooter: string;
-export const dropdownButton: string;
-export const searchSpinner: string;
-export const searchMessage: string;
-export const error: string;
-export const highlighted: string;
+declare namespace SemanticTreeInputScssModule {
+  export interface ISemanticTreeInputScss {
+    browseButton: string;
+    dropdown: string;
+    dropdownButton: string;
+    dropdownFooter: string;
+    error: string;
+    highlighted: string;
+    holder: string;
+    input: string;
+    inputAndButtons: string;
+    searchMessage: string;
+    searchSpinner: string;
+    textInput: string;
+    tree: string;
+  }
+}
+
+declare const SemanticTreeInputScssModule: SemanticTreeInputScssModule.ISemanticTreeInputScss;
+
+export = SemanticTreeInputScssModule;

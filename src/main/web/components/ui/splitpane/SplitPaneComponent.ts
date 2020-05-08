@@ -193,7 +193,7 @@ export class SplitPaneComponent extends Component<Props, State> {
           return element;
         }
 
-        return cloneElement(element, {}, ...this.mapChildren(element.props.children));
+        return cloneElement(element, {}, this.mapChildren(element.props.children));
       })
     );
   };
@@ -246,7 +246,7 @@ export class SplitPaneComponent extends Component<Props, State> {
     );
 
     let [firstChild, secondChild] = [
-      cloneElement(sidebarChild, { style: sidebarChildStyle }, ...this.mapChildren(sidebarChild.props.children)),
+      cloneElement(sidebarChild, { style: sidebarChildStyle }, this.mapChildren(sidebarChild.props.children)),
       this.mapChildren(contentChild),
     ];
     if (primary === 'second') {

@@ -1,3 +1,11 @@
-export const holder: string;
-export const year: string;
-export const epoch: string;
+declare namespace YearInputScssModule {
+  export interface IYearInputScss {
+    epoch: string;
+    holder: string;
+    year: string;
+  }
+}
+
+declare const YearInputScssModule: YearInputScssModule.IYearInputScss;
+
+export = YearInputScssModule;

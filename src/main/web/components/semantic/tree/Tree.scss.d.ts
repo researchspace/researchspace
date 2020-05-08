@@ -1,4 +1,12 @@
-export const tree: string;
-export const leafNode: string;
-export const treeNode: string;
-export const activeNode: string;
+declare namespace TreeScssModule {
+  export interface ITreeScss {
+    activeNode: string;
+    leafNode: string;
+    tree: string;
+    treeNode: string;
+  }
+}
+
+declare const TreeScssModule: TreeScssModule.ITreeScss;
+
+export = TreeScssModule;

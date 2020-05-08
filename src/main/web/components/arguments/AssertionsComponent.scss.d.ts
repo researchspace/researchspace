@@ -1,6 +1,14 @@
-export const valueHolder: string;
-export const actions: string;
-export const header: string;
-export const subject: string;
-export const field: string;
-export const valuesRow: string;
+declare namespace AssertionsComponentScssModule {
+  export interface IAssertionsComponentScss {
+    actions: string;
+    field: string;
+    header: string;
+    subject: string;
+    valueHolder: string;
+    valuesRow: string;
+  }
+}
+
+declare const AssertionsComponentScssModule: AssertionsComponentScssModule.IAssertionsComponentScss;
+
+export = AssertionsComponentScssModule;

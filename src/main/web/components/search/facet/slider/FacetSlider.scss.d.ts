@@ -1,4 +1,12 @@
-export const slidergraph: string;
-export const handle: string;
-export const range: string;
-export const slider: string;
+declare namespace FacetSliderScssModule {
+  export interface IFacetSliderScss {
+    handle: string;
+    range: string;
+    slider: string;
+    slidergraph: string;
+  }
+}
+
+declare const FacetSliderScssModule: FacetSliderScssModule.IFacetSliderScss;
+
+export = FacetSliderScssModule;

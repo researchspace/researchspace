@@ -1,22 +1,30 @@
-export const component: string;
-export const componentSpinner: string;
-export const alignmentTreeContainer: string;
-export const alignmentTree: string;
-export const alignmentNodeRow: string;
-export const decoratedNodeBody: string;
-export const nodeInfoButton: string;
-export const draggableWrapper: string;
-export const draggableHandle: string;
-export const decorateAlignParent: string;
-export const decorateAlignLeaf: string;
-export const decorateHighlightParent: string;
-export const decorateHighlightLeaf: string;
-export const baseTerm: string;
-export const alignedTerm: string;
-export const unalignButton: string;
-export const findAlignedButton: string;
-export const scrollNotification: string;
-export const scrollToName: string;
-export const scrollSpinner: string;
-export const cancelScrollingTo: string;
-export const nodeInfoPopup: string;
+declare namespace MatchPanelScssModule {
+  export interface IMatchPanelScss {
+    alignedTerm: string;
+    alignmentNodeRow: string;
+    alignmentTree: string;
+    alignmentTreeContainer: string;
+    baseTerm: string;
+    cancelScrollingTo: string;
+    component: string;
+    componentSpinner: string;
+    decorateAlignLeaf: string;
+    decorateAlignParent: string;
+    decorateHighlightLeaf: string;
+    decorateHighlightParent: string;
+    decoratedNodeBody: string;
+    draggableHandle: string;
+    draggableWrapper: string;
+    findAlignedButton: string;
+    nodeInfoButton: string;
+    nodeInfoPopup: string;
+    scrollNotification: string;
+    scrollSpinner: string;
+    scrollToName: string;
+    unalignButton: string;
+  }
+}
+
+declare const MatchPanelScssModule: MatchPanelScssModule.IMatchPanelScss;
+
+export = MatchPanelScssModule;

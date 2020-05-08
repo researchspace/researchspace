@@ -1,9 +1,23 @@
-export const component: string;
-export const reorderedItem: string;
-export const removableItem: string;
-export const multilineEditor: string;
-export const removeItemButton: string;
-export const storageSelector: string;
-export const footer: string;
-export const submitControls: string;
-export const save: string;
+declare namespace InlineValuesEditorScssModule {
+  export interface IInlineValuesEditorScss {
+    component: string;
+    footer: string;
+    'multiline-editor': string;
+    multilineEditor: string;
+    'removable-item': string;
+    removableItem: string;
+    'remove-item-button': string;
+    removeItemButton: string;
+    'reordered-item': string;
+    reorderedItem: string;
+    save: string;
+    'storage-selector': string;
+    storageSelector: string;
+    'submit-controls': string;
+    submitControls: string;
+  }
+}
+
+declare const InlineValuesEditorScssModule: InlineValuesEditorScssModule.IInlineValuesEditorScss;
+
+export = InlineValuesEditorScssModule;

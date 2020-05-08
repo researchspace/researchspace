@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, ReactElement, createFactory, createElement } from 'react';
+import { Component, createFactory, createElement } from 'react';
 import { isEqual } from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
@@ -58,7 +58,7 @@ class PageLoaderComponent extends Component<{ iri: string }, {}> {
 
   public render() {
     if (!this.props.iri || this.props.iri.length < 1) {
-      return <ReactElement<{}>>createElement(Alert, {
+      return createElement(Alert, {
         alert: AlertType.DANGER,
         message: 'Page loader component requires an non empty iri parameter as input.',
       });
@@ -66,6 +66,7 @@ class PageLoaderComponent extends Component<{ iri: string }, {}> {
       return PageViewer({
         iri: Rdf.iri(this.props.iri),
         context: getCurrentResource(),
+        noScroll: false,
         params: { ...getCurrentUrl().search(true), ...NavigationUtils.extractParams(this.props) },
       });
     }

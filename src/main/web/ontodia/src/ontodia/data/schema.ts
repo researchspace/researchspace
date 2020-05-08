@@ -10,11 +10,15 @@ export const PLACEHOLDER_LINK_TYPE = 'http://ontodia.org/NewLink' as LinkTypeIri
 const ONTODIA_ID_URL_PREFIX = 'http://ontodia.org/data/';
 
 export namespace GenerateID {
-    export function forElement() { return `${ONTODIA_ID_URL_PREFIX}e_${generate128BitID()}`; }
-    export function forLink() { return `${ONTODIA_ID_URL_PREFIX}l_${generate128BitID()}`; }
+  export function forElement() {
+    return `${ONTODIA_ID_URL_PREFIX}e_${generate128BitID()}`;
+  }
+  export function forLink() {
+    return `${ONTODIA_ID_URL_PREFIX}l_${generate128BitID()}`;
+  }
 }
 
 export namespace TemplateProperties {
-    export const PinnedProperties = 'ontodia:pinnedProperties';
-    export const CustomLabel = 'ontodia:customLabel';
+  export const PinnedProperties = 'ontodia:pinnedProperties';
+  export const CustomLabel = 'ontodia:customLabel';
 }

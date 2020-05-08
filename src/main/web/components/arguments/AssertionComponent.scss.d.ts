@@ -1,14 +1,22 @@
-export const body: string;
-export const row: string;
-export const valueCell: string;
-export const beliefCell: string;
-export const beliefTitle: string;
-export const dotCell: string;
-export const dot: string;
-export const item: string;
-export const canonical: string;
-export const hasArgument: string;
-export const notCanonical: string;
-export const label: string;
-export const note: string;
-export const noteDot: string;
+declare namespace AssertionComponentScssModule {
+  export interface IAssertionComponentScss {
+    beliefCell: string;
+    beliefTitle: string;
+    body: string;
+    canonical: string;
+    dot: string;
+    dotCell: string;
+    hasArgument: string;
+    item: string;
+    label: string;
+    notCanonical: string;
+    note: string;
+    noteDot: string;
+    row: string;
+    valueCell: string;
+  }
+}
+
+declare const AssertionComponentScssModule: AssertionComponentScssModule.IAssertionComponentScss;
+
+export = AssertionComponentScssModule;

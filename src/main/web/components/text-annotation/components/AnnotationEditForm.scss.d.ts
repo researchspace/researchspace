@@ -1,6 +1,14 @@
-export const formContent: string;
-export const selectedFragment: string;
-export const selectedFragmentText: string;
-export const bodyInput: string;
-export const bodyTypeIcon: string;
-export const cancelButton: string;
+declare namespace AnnotationEditFormScssModule {
+  export interface IAnnotationEditFormScss {
+    bodyInput: string;
+    bodyTypeIcon: string;
+    cancelButton: string;
+    formContent: string;
+    selectedFragment: string;
+    selectedFragmentText: string;
+  }
+}
+
+declare const AnnotationEditFormScssModule: AnnotationEditFormScssModule.IAnnotationEditFormScss;
+
+export = AnnotationEditFormScssModule;

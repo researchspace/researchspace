@@ -1,23 +1,31 @@
-export const FileVisualizer: string;
-export const fileVisualizer: string;
-export const DirectFileUploader: string;
-export const directFileUploader: string;
-export const row: string;
-export const rightInputBar: string;
-export const storageInput: string;
-export const FileUploader: string;
-export const fileUploader: string;
-export const progress: string;
-export const FileManager: string;
-export const fileManager: string;
-export const alertComponent: string;
-export const uploadedImageDepiction: string;
-export const header: string;
-export const uploadedImageIri: string;
-export const fileContainer: string;
-export const caRemoveFile: string;
-export const emptyBody: string;
-export const fileIcon: string;
-export const spinner: string;
-export const mpDropZonePlaceHolder: string;
-export const uploadCompletedPlaceholder: string;
+declare namespace FileManagerScssModule {
+  export interface IFileManagerScss {
+    DirectFileUploader: string;
+    FileManager: string;
+    FileUploader: string;
+    FileVisualizer: string;
+    alertComponent: string;
+    caRemoveFile: string;
+    directFileUploader: string;
+    emptyBody: string;
+    fileContainer: string;
+    fileIcon: string;
+    fileManager: string;
+    fileUploader: string;
+    fileVisualizer: string;
+    header: string;
+    mpDropZonePlaceHolder: string;
+    progress: string;
+    rightInputBar: string;
+    row: string;
+    spinner: string;
+    storageInput: string;
+    uploadCompletedPlaceholder: string;
+    uploadedImageDepiction: string;
+    uploadedImageIri: string;
+  }
+}
+
+declare const FileManagerScssModule: FileManagerScssModule.IFileManagerScss;
+
+export = FileManagerScssModule;

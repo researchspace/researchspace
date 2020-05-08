@@ -1,3 +1,11 @@
-export const panel: string;
-export const panelHolder: string;
-export const fullScreenButton: string;
+declare namespace PanelSystemScssModule {
+  export interface IPanelSystemScss {
+    fullScreenButton: string;
+    panel: string;
+    panelHolder: string;
+  }
+}
+
+declare const PanelSystemScssModule: PanelSystemScssModule.IPanelSystemScss;
+
+export = PanelSystemScssModule;

@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import { uniqueId } from 'lodash';
+import { uniqueId, isEmpty } from 'lodash';
 import { WorkspaceLayout, WorkspaceLayoutNode, WorkspaceLayoutType } from 'ontodia';
 
 import { Component } from 'platform/api/components';
@@ -28,6 +28,9 @@ import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 import { DashboardItem, DashboardViewConfig } from './DashboardItem';
 
 import * as styles from './Dashboard.scss';
+import { Cancellation } from 'platform/api/async';
+import { listen } from 'platform/api/events';
+import { AddFrameEvent, AddFrameEventData } from './DashboardEvents';
 
 const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
 
@@ -41,12 +44,11 @@ export interface Item {
   readonly linkedBy?: string;
   readonly data?: { [key: string]: any };
 }
-namespace Item {
-  let count = 0;
-  export function emptyItem() {
-    count = count + 1;
-    return { id: uniqueId('frame'), index: count };
-  }
+
+let itemCount = 0;
+export function emptyItem() {
+  itemCount = itemCount + 1;
+  return { id: uniqueId('frame'), index: itemCount };
 }
 
 export interface DashboardLinkedViewConfig {
@@ -82,6 +84,11 @@ export interface DashboardLinkedViewConfig {
 
 export interface Props {
   /**
+   * Used when dashboard is used as a target for events.
+   */
+  id: string;
+
+  /**
    * Defines possible visualizations of resources
    */
   views: ReadonlyArray<DashboardViewConfig>;
@@ -95,6 +102,21 @@ export interface Props {
    * @default 150
    */
   frameMinSize?: number;
+
+  /**
+   * Initial state for dashboard component.
+   */
+  initialView?: {
+    /**
+     *  View key, see views parameter
+     */
+    view: string;
+
+    /**
+     * Resource IRI for which the view should be applied.
+     */
+    resource: string;
+  };
 }
 
 export interface State {
@@ -108,20 +130,61 @@ export class DashboardComponent extends Component<Props, State> {
     linkedViews: [],
   };
 
+  private readonly cancellation = new Cancellation();
+
   constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
-      items: [Item.emptyItem()],
+      items: [],
     };
   }
 
-  private onAddNewItem = () => {
+  componentDidMount() {
+    this.cancellation
+      .map(
+        listen({
+          eventType: AddFrameEvent,
+          target: this.props.id,
+        })
+      )
+      .observe({
+        value: ({ data }) => {
+          this.onAddNewItem({
+            ...emptyItem(),
+            ...(data as AddFrameEventData),
+          });
+        },
+      });
+
+    if (this.props.initialView) {
+      const item = {
+        ...emptyItem(),
+        resourceIri: this.props.initialView.resource,
+        viewId: this.props.initialView.view,
+      };
+      this.onAddNewItem(item);
+    } else {
+      this.onAddNewItem();
+    }
+  }
+
+  componentWillUnmount() {
+    this.cancellation.cancelAll();
+  }
+
+  private onAddNewItem = (item: Item = emptyItem()) => {
     this.setState(
       (prevState): State => {
         const newItems = [...prevState.items];
-        const item = Item.emptyItem();
         newItems.push(item);
         return { items: newItems };
+      },
+      () => {
+        this.onSelectView({
+          itemId: item.id,
+          viewId: item.viewId,
+          resourceIri: item.resourceIri,
+        });
       }
     );
   };
@@ -165,11 +228,27 @@ export class DashboardComponent extends Component<Props, State> {
               }}
             />
           </span>
+          <button
+            className={`btn btn-link btn-xs pull-right ${styles.deleteItemButton}`}
+            onClick={() => this.onRemoveItem(item)}
+          >
+            <i className="fa fa-times text-danger" />
+          </button>
         </span>
       );
     }
 
-    return <span className={`${styles.itemLabel} ${focusedClassName} ${dirtyClassName}`}>Frame {item.index}</span>;
+    return (
+      <span className={`${styles.itemLabel} ${focusedClassName} ${dirtyClassName}`}>
+        Frame {item.index}
+        <button
+          className={`btn btn-link btn-xs pull-right ${styles.deleteItemButton}`}
+          onClick={() => this.onRemoveItem(item)}
+        >
+          <i className="fa fa-times text-danger" />
+        </button>
+      </span>
+    );
   }
 
   private renderBody(item: Item) {
@@ -191,9 +270,14 @@ export class DashboardComponent extends Component<Props, State> {
   private removeItem(itemId: string) {
     this.setState(
       (prevState): State => {
-        const newItems = [...prevState.items];
+        let newItems = [...prevState.items];
         const index = newItems.findIndex((item) => item.id === itemId);
         newItems.splice(index, 1);
+
+        // make sure that we always have at least one frame
+        if (isEmpty(newItems)) {
+          newItems = [emptyItem()];
+        }
         return { items: newItems };
       }
     );
@@ -253,12 +337,6 @@ export class DashboardComponent extends Component<Props, State> {
                   </button>
                 ) : null}
                 {this.renderLabel(item)}
-                <button
-                  className={`btn btn-link btn-xs ${styles.deleteItemButton}`}
-                  onClick={() => this.onRemoveItem(item)}
-                >
-                  <i className="fa fa-times text-danger" />
-                </button>
               </div>
               {body && item.isExpanded ? body : null}
             </div>
@@ -281,7 +359,7 @@ export class DashboardComponent extends Component<Props, State> {
           if (linkedView) {
             const index = newItems.findIndex(({ id }) => id === itemId);
             const items = linkedView.viewIds.map((id) => ({
-              ...Item.emptyItem(),
+              ...emptyItem(),
               viewId: id,
               resourceIri: resourceIri,
               linkedBy: itemId,
@@ -371,6 +449,28 @@ export class DashboardComponent extends Component<Props, State> {
 
   render() {
     const { items } = this.state;
+    const children = React.Children.toArray(this.props.children);
+
+    const frames = items.map((item) => ({
+      id: item.id,
+      type: WorkspaceLayoutType.Component,
+      className: 'thinking-frames__frames',
+      content: this.renderView(item) as React.ReactElement<any>,
+      heading: this.renderLabel(item),
+      minSize: this.props.frameMinSize,
+    })) as any;
+    if (children.length > 1) {
+      frames.unshift({
+        id: 'heading',
+        type: WorkspaceLayoutType.Component,
+        className: 'thinking-frames__frames',
+        content: React.Children.only(children[1]) as any,
+        heading: null,
+        minSize: 60,
+        defaultSize: 60,
+      } as any);
+    }
+
     const layout: WorkspaceLayoutNode = {
       type: WorkspaceLayoutType.Row,
       children: [
@@ -378,8 +478,17 @@ export class DashboardComponent extends Component<Props, State> {
           type: WorkspaceLayoutType.Column,
           children: [
             {
+              id: 'thought-board',
+              type: WorkspaceLayoutType.Component,
+              className: 'thinking-frames__clipboard-sidebar',
+              content: React.Children.only(children[0]) as any,
+              heading: 'Clipboard',
+            },
+            {
               id: 'items',
               type: WorkspaceLayoutType.Component,
+              defaultCollapsed: true,
+              className: 'thinking-frames__frames-sidebar',
               content: (<div className={styles.itemsContainer}>{this.renderItems()}</div>) as React.ReactElement<any>,
               heading: (
                 <div>
@@ -397,24 +506,12 @@ export class DashboardComponent extends Component<Props, State> {
                 </div>
               ),
             },
-            {
-              id: 'thought-board',
-              type: WorkspaceLayoutType.Component,
-              content: React.Children.only(this.props.children) as React.ReactElement<any>,
-              heading: 'Thought Board',
-            },
           ],
           defaultSize: 300,
         },
         {
           type: WorkspaceLayoutType.Column,
-          children: items.map((item) => ({
-            id: item.id,
-            type: WorkspaceLayoutType.Component,
-            content: this.renderView(item) as React.ReactElement<any>,
-            heading: this.renderLabel(item),
-            minSize: this.props.frameMinSize,
-          })),
+          children: frames,
           undocked: true,
         },
       ],

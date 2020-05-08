@@ -1,9 +1,23 @@
-export const component: string;
-export const warning: string;
-export const mainPart: string;
-export const labeledControl: string;
-export const overrideChain: string;
-export const overriddenApp: string;
-export const effectiveApp: string;
-export const overrideArrow: string;
-export const selector: string;
+declare namespace StorageSelectorScssModule {
+  export interface IStorageSelectorScss {
+    component: string;
+    'effective-app': string;
+    effectiveApp: string;
+    'labeled-control': string;
+    labeledControl: string;
+    'main-part': string;
+    mainPart: string;
+    'overridden-app': string;
+    overriddenApp: string;
+    'override-arrow': string;
+    'override-chain': string;
+    overrideArrow: string;
+    overrideChain: string;
+    selector: string;
+    warning: string;
+  }
+}
+
+declare const StorageSelectorScssModule: StorageSelectorScssModule.IStorageSelectorScss;
+
+export = StorageSelectorScssModule;

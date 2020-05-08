@@ -1,3 +1,11 @@
-export const holder: string;
-export const inputGroup: string;
-export const helpQuestionCircle: string;
+declare namespace TextSelectionScssModule {
+  export interface ITextSelectionScss {
+    helpQuestionCircle: string;
+    holder: string;
+    inputGroup: string;
+  }
+}
+
+declare const TextSelectionScssModule: TextSelectionScssModule.ITextSelectionScss;
+
+export = TextSelectionScssModule;

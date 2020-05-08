@@ -188,17 +188,17 @@ export class TemplateScope {
   }
 
   /** Loads partial by local name or remote reference. */
-  private loadByReference = (reference: string): Promise<ParsedTemplate> => {
+  private loadByReference = (reference: string): Promise<ParsedTemplate | null> => {
     if (this.partials.has(reference)) {
       return Promise.resolve(this.partials.get(reference));
     } else if (isRemoteReference(reference)) {
       return TemplateScope._fetchRemoteTemplate(Rdf.iri(reference));
     } else {
-      return Promise.reject(
-        new Error(
-          `Parial template reference '${reference}' is not an IRI and not found ` + `in current template scope.`
-        )
-      );
+      // if we can't find partial then we just return null
+      // to resort to handlebars default resolution logic.
+      // It gives us the ability to use partial failover mechanism.
+      // see https://handlebarsjs.com/guide/partials.html#partial-blocks
+      return Promise.resolve(null);
     }
   };
 }
@@ -236,41 +236,37 @@ export class TemplateScopeBuilder {
   }
 }
 
-function recursiveResolve(
+async function recursiveResolve(
   parsedTemplate: ParsedTemplate,
   dependencies: Map<string, ParsedTemplate>,
   load: (reference: string) => Promise<ParsedTemplate>
 ): Promise<{}> {
-  return Promise.resolve(parsedTemplate)
-    .then((body) => {
-      const referencesToLoad = parsedTemplate.references.filter((reference) => !dependencies.has(reference));
+  const body = await Promise.resolve(parsedTemplate);
+  const referencesToLoad = parsedTemplate.references.filter((reference) => !dependencies.has(reference));
+  for (const reference of referencesToLoad) {
+    // mark dependency to prevent multiple loading
+    dependencies.set(reference, null);
+  }
 
-      for (const reference of referencesToLoad) {
-        // mark dependency to prevent multiple loading
-        dependencies.set(reference, null);
-      }
+  const fetchedDependencies = [];
+  for (const reference of referencesToLoad) {
+    const loaded = await load(reference);
+    if (loaded != null) {
+      fetchedDependencies.push({ reference, template: loaded });
+    } else {
+      dependencies.delete(reference);
+    }
+  }
 
-      const fetchedDependencies = referencesToLoad.map((reference) =>
-        load(reference)
-          .then((template) => ({ reference, template }))
-          .catch((error) => {
-            throw new WrappingError(`Failed to load template '${reference}'`, error);
-          })
-      );
-
-      return Promise.all(fetchedDependencies);
-    })
-    .then((fetched) => {
-      for (const { reference, template } of fetched) {
-        dependencies.set(reference, template);
-      }
-
-      return Promise.all(
-        fetched.map(({ reference, template }) =>
-          recursiveResolve(template, dependencies, load).catch((error) => {
-            throw new WrappingError(`Error while resolving dependencies of template '${reference}'`, error);
-          })
-        )
-      );
-    });
+  const fetched = await Promise.all(fetchedDependencies);
+  for (const { reference, template } of fetched) {
+    dependencies.set(reference, template);
+  }
+  return Promise.all(
+    fetched.map(({ reference, template }) =>
+      recursiveResolve(template, dependencies, load).catch((error) => {
+        throw new WrappingError(`Error while resolving dependencies of template '${reference}'`, error);
+      })
+    )
+  );
 }

@@ -1,5 +1,13 @@
-export const dropArea: string;
-export const children: string;
-export const dropMessage: string;
-export const alwaysVisible: string;
-export const messageWrapper: string;
+declare namespace DropAreaScssModule {
+  export interface IDropAreaScss {
+    alwaysVisible: string;
+    children: string;
+    dropArea: string;
+    dropMessage: string;
+    messageWrapper: string;
+  }
+}
+
+declare const DropAreaScssModule: DropAreaScssModule.IDropAreaScss;
+
+export = DropAreaScssModule;

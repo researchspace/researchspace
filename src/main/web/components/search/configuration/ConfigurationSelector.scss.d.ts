@@ -1,8 +1,16 @@
-export const configurationSelector: string;
-export const datasetSelector: string;
-export const alignmentSelector: string;
-export const configCollapseExpand: string;
-export const holder: string;
-export const viewHolder: string;
-export const configExpand: string;
-export const configCollapse: string;
+declare namespace ConfigurationSelectorScssModule {
+  export interface IConfigurationSelectorScss {
+    alignmentSelector: string;
+    configCollapse: string;
+    configCollapseExpand: string;
+    configExpand: string;
+    configurationSelector: string;
+    datasetSelector: string;
+    holder: string;
+    viewHolder: string;
+  }
+}
+
+declare const ConfigurationSelectorScssModule: ConfigurationSelectorScssModule.IConfigurationSelectorScss;
+
+export = ConfigurationSelectorScssModule;

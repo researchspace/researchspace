@@ -38,6 +38,12 @@ interface Props {
   context?: Rdf.Iri;
   params?: { [index: string]: string };
   noBackdrop?: boolean;
+
+  /**
+   * don't scroll to the top when page is loaded,
+   * e.g it doesn't make any sense to do this in case of page-loader component.
+   */
+  noScroll?: boolean;
 }
 
 interface State {
@@ -74,8 +80,10 @@ export class PageViewerComponent extends Component<Props, State> {
   }
 
   public componentDidUpdate() {
-    window.scroll(0, 0); // scroll to top when we navigated to the page
-    this.scrollToAnchor();
+    if (!this.props.noScroll) {
+      window.scroll(0, 0); // scroll to top when we navigated to the page
+      this.scrollToAnchor();
+    }
   }
 
   public componentWillReceiveProps(nextProps) {

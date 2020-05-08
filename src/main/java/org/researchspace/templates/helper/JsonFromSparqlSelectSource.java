@@ -215,8 +215,6 @@ public class JsonFromSparqlSelectSource {
             return true;
         } catch (JsonProcessingException ex) {
             return false;
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
         }
     }
 

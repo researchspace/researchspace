@@ -1186,7 +1186,9 @@ public class MpSparqlQueryRendererTest {
         testSingleQuery("constructQueryWithASubqueryAndGroupBy", query);
     }
 
+    //TODO enable when https://github.com/eclipse/rdf4j/issues/2142 is fixed
     @Test
+    @Ignore
     public void testQueryWithPropertyPathStar() throws Exception {
         String query = loadQuery("queryWithPropertyPathStar");
         testSingleQuery("queryWithPropertyPathStar", query);

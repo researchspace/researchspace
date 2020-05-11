@@ -20,7 +20,6 @@
 package org.researchspace.repository.sparql;
 
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.researchspace.secrets.SecretResolver;
 import org.researchspace.secrets.SecretsHelper;
 
@@ -40,7 +39,7 @@ import com.google.inject.Inject;
  * 
  * @author Johannes Trame <jt@metaphacts.com>
  */
-public class SPARQLAuthenticatingRepository extends SPARQLRepository {
+public class SPARQLAuthenticatingRepository extends CustomSPARQLRepository {
     private enum AuthMethod {
         None, BasicAuth, DigestAuth
     };

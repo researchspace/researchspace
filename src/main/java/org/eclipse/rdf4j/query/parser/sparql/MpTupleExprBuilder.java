@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -382,20 +381,4 @@ public class MpTupleExprBuilder extends TupleExprBuilder {
     public GraphPattern getGraphPattern() {
         return graphPattern;
     }
-
-    /**
-     * Creates an anonymous Var with a unique, randomly generated, variable name.
-     * 
-     * @return an anonymous Var with a unique, randomly generated, variable name
-     */
-    private Var createAnonVar() {
-        // dashes ('-') in the generated UUID are replaced with underscores so
-        // the
-        // varname
-        // remains compatible with the SPARQL grammar. See SES-2310.
-        final Var var = new Var("_anon_" + UUID.randomUUID().toString().replaceAll("-", "_"));
-        var.setAnonymous(true);
-        return var;
-    }
-
 }

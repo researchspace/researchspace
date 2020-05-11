@@ -61,9 +61,9 @@ public class DefaultMpSPARQLRepositoryFactory extends AbstractMpSPARQLRepository
         if (config instanceof SPARQLRepositoryConfig) {
             SPARQLRepositoryConfig httpConfig = config;
             if (httpConfig.getUpdateEndpointUrl() != null) {
-                result = new SPARQLRepository(httpConfig.getQueryEndpointUrl(), httpConfig.getUpdateEndpointUrl());
+                result = new CustomSPARQLRepository(httpConfig.getQueryEndpointUrl(), httpConfig.getUpdateEndpointUrl());
             } else {
-                result = new SPARQLRepository(httpConfig.getQueryEndpointUrl());
+                result = new CustomSPARQLRepository(httpConfig.getQueryEndpointUrl());
             }
         } else {
             throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());

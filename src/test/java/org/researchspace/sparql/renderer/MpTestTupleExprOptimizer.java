@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.algebra.Join;
 import org.eclipse.rdf4j.query.algebra.QueryModelNode;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.VariableScopeChange;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryOptimizer;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.eclipse.rdf4j.sail.federation.algebra.NaryJoin;
@@ -36,17 +37,25 @@ public class MpTestTupleExprOptimizer implements QueryOptimizer {
     protected class JoinVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
         @Override
+        protected void meetNode(QueryModelNode node) throws RuntimeException {
+            super.meetNode(node);
+            this.resetScope(node);
+        }
+
+        @Override
         public void meetOther(QueryModelNode node) throws RuntimeException {
             if (node instanceof NaryJoin) {
                 meetJoin((NaryJoin) node);
             } else {
                 super.meetOther(node);
             }
+            this.resetScope(node);
         }
 
         @Override
         public void meet(Join node) throws RuntimeException {
             meetJoin(node);
+            super.meet(node);
         }
 
         public void meetJoin(TupleExpr node) {
@@ -80,6 +89,13 @@ public class MpTestTupleExprOptimizer implements QueryOptimizer {
             return joinArgs;
         }
 
+        private void resetScope(QueryModelNode node) {
+            // ignore variable scope because it doesn't make any difference for our use-case
+            // of comparing query structures in test
+            if (node instanceof VariableScopeChange) {
+                ((VariableScopeChange) node).setVariableScopeChange(false);
+            }
+        }
     }
 
     protected TupleExpr optimized;

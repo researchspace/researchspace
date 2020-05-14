@@ -9,8 +9,15 @@ USER root
 # install additional packages
 # RUN apk --update add vim && rm -rf /var/cache/apk/*
 
+# for backward compatibility change uid and guid to the one that was in the alpine based image
+# by default on debian id 100 is reserved by _apt user
+# WARNING, it can have consequences on the work of apt,apt-get.
+RUN usermod -u 1100 _apt
+RUN usermod -u 100 jetty
+RUN groupmod -g 101 jetty
+
 # add user jetty to group root which is used for most of the permissions
-# user jetty has uid 999
+# user jetty has uid 100
 # group root has gid 0
 RUN addgroup jetty root
 
@@ -30,7 +37,7 @@ RUN echo "fixing group ownership for Jetty base, home, and temp folders" \
 	&& chmod -R g+s "$JETTY_HOME"
 
 
-COPY --chown=999:0 entrypoint.sh /
+COPY --chown=100:0 entrypoint.sh /
 RUN chmod a+x /entrypoint.sh
 
 
@@ -38,37 +45,37 @@ RUN chmod a+x /entrypoint.sh
 RUN echo "setting up platform, apps, and runtime folders" \
 	&& umask 0002 \
 	&& mkdir /firstStart \
-	&& chown -R 999:0 "/firstStart" \
+	&& chown -R 100:0 "/firstStart" \
 	&& chmod -R g=u "/firstStart" \
 	&& chmod -R g+ws "/firstStart" \
 	&& mkdir /apps \
-	&& chown -R 999:0 "/apps" \
+	&& chown -R 100:0 "/apps" \
 	&& chmod -R g=u "/apps" \
 	&& chmod -R g+ws "/apps" \
 	&& mkdir /runtime-data \
 	&& mkdir -p /runtime-data/config/repositories \
 	&& mkdir -p /runtime-data/data/repositories \
-	&& chown -R 999:0 "/runtime-data" \
+	&& chown -R 100:0 "/runtime-data" \
 	&& chmod -R g=u "/runtime-data" \
 	&& chmod -R g+ws "/runtime-data" \
 	&& mkdir /var/lib/jetty/logs \
-	&& chown -R 999:0 "/var/lib/jetty/logs" \
+	&& chown -R 100:0 "/var/lib/jetty/logs" \
 	&& chmod -R g=u "/var/lib/jetty/logs" \
 	&& chmod -R g+ws "/var/lib/jetty/logs"
 
-COPY --chown=999:0 jetty-logging.properties /var/lib/jetty/resources/jetty-logging.properties
-COPY --chown=999:0 etc/ /var/lib/jetty/webapps/etc
+COPY --chown=100:0 jetty-logging.properties /var/lib/jetty/resources/jetty-logging.properties
+COPY --chown=100:0 etc/ /var/lib/jetty/webapps/etc
 
-COPY --chown=999:0 shiro-tools-hasher-1.3.2-cli.jar /firstStart/
-COPY --chown=999:0 first-passwd-init.sh /firstStart/
+COPY --chown=100:0 shiro-tools-hasher-1.3.2-cli.jar /firstStart/
+COPY --chown=100:0 first-passwd-init.sh /firstStart/
 
-COPY --chown=999:0 ROOT.xml /var/lib/jetty/webapps/ROOT.xml
-COPY --chown=999:0 ROOT.war /var/lib/jetty/webapps/ROOT.war
+COPY --chown=100:0 ROOT.xml /var/lib/jetty/webapps/ROOT.xml
+COPY --chown=100:0 ROOT.war /var/lib/jetty/webapps/ROOT.war
 
-COPY --chown=999:0 config/shiro.ini /runtime-data/config/shiro.ini
+COPY --chown=100:0 config/shiro.ini /runtime-data/config/shiro.ini
 # one final, recursive change of permissions in /runtime-data
 RUN chmod g+w "/var/lib/jetty/webapps/ROOT.xml" \
-	&& chown -R 999:0 "/runtime-data" \
+	&& chown -R 100:0 "/runtime-data" \
 	&& chmod -R g=u "/runtime-data" \
 	&& chmod -R g+ws "/runtime-data"
 
@@ -78,7 +85,7 @@ USER jetty
 RUN java -jar "$JETTY_HOME/start.jar" --add-to-start="logging-jetty"
 
 ENV PLATFORM_OPTS=
-ENV RUNTIME_OPTS "-DruntimeDirectory=/runtime-data -Dcom.metaphacts.config.baselocation=/runtime-data/config -DappsDirectory=/apps -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini -Dlog4j.configurationFile=file:///var/lib/jetty/webapps/etc/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
+ENV RUNTIME_OPTS "-DruntimeDirectory=/runtime-data -Dorg.researchspace.config.baselocation=/runtime-data/config -DappsDirectory=/apps -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini -Dlog4j.configurationFile=file:///var/lib/jetty/webapps/etc/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
 
 
 ENTRYPOINT ["/entrypoint.sh"]

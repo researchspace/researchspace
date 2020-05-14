@@ -21,7 +21,7 @@ import * as React from 'react';
 
 export class NoResourceThumbnail extends React.Component<{}, {}> {
   render() {
-    return React.cloneElement(React.Children.only(this.props.children) as React.ReactElement<any>, this.props);
+    return React.Children.only(this.props.children) as React.ReactElement<any>;
   }
 }
 export default NoResourceThumbnail;

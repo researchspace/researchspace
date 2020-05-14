@@ -73,7 +73,7 @@ public class FieldDefinitionManager implements PlatformCache {
         this.repositoryManager = repositoryManager;
         this.cache = cacheManager
                 .newBuilder(CACHE_ID,
-                        cacheBuilder -> cacheBuilder.maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES))
+                            cacheBuilder -> cacheBuilder.maximumSize(1000))
                 .build(new CacheLoader<IRI, Optional<FieldDefinition>>() {
                     @Override
                     public Optional<FieldDefinition> load(IRI key) {

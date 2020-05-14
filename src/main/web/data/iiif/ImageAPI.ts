@@ -123,7 +123,11 @@ export function constructImageUri(serverAndPrefix: string, params: ImageRequestP
   const rotation = params.rotation || Rotation.zero;
   const quality = Quality[params.quality || Quality.Default].toLowerCase();
   const format = params.format;
-  return serverAndPrefix + `/${params.imageId}/${region}/${size}/${rotation}/${quality}.${format}`;
+  let r = `${serverAndPrefix}/${params.imageId}/${region}/${size}/${rotation}/${quality}`;
+  if (params.format !== 'auto') {
+    r = r + '.' + format;
+  }
+  return r;
 }
 
 export function constructInformationRequestUri(serverAndPrefix: string, imageId: string) {

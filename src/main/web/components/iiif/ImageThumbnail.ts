@@ -28,7 +28,9 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { Component } from 'platform/api/components';
 
 import * as ImageApi from '../../data/iiif/ImageAPI';
-import { queryIIIFImageOrRegion, ImageOrRegionInfo } from '../../data/iiif/ImageAnnotationService';
+import {
+  queryIIIFImageOrRegion, ImageOrRegionInfo, ExplicitRegion,
+} from '../../data/iiif/ImageAnnotationService';
 
 export interface Props {
   imageOrRegion: string;
@@ -37,6 +39,14 @@ export interface Props {
   width?: number | string;
   height?: number | string;
   preserveImageSize?: boolean;
+  format?: string
+
+  style?: React.CSSProperties;
+
+  // used when we want to render unsaved image region
+  bbox?: string
+  svg?: string
+  viewport?: string
 }
 
 export interface State {
@@ -65,6 +75,8 @@ type ThumbnailRequest = {
   iiifServerUrl: string;
   width: number;
   height: number;
+  format?: string | 'auto';
+  region?: ExplicitRegion
 };
 
 const REGION_OVERLAY_MARGIN_FRACTION = 0.05;
@@ -112,6 +124,8 @@ class ImageThumbnailComponent extends Component<Props, State> {
     iiifServerUrl,
     width,
     height,
+    format,
+    region
   }: ThumbnailRequest): Kefir.Stream<LoadedThumbnail> {
     type QueryResult = {
       info: ImageOrRegionInfo;
@@ -120,13 +134,13 @@ class ImageThumbnailComponent extends Component<Props, State> {
     const repository = Maybe.fromNullable(this.context.semanticContext)
       .map((c) => c.repository)
       .getOrElse('default');
-    const queryResult = queryIIIFImageOrRegion(iri, imageIdPattern, [repository]).flatMap<QueryResult>((info) =>
+    const queryResult = queryIIIFImageOrRegion(iri, imageIdPattern, [repository], region).flatMap<QueryResult>((info) =>
       ImageApi.queryImageBounds(iiifServerUrl, info.imageId).map((bounds) => ({ info, bounds }))
     );
     return queryResult.map(({ info, bounds }) => {
       const requestParams: ImageApi.ImageRequestParams = {
         imageId: info.imageId,
-        format: 'jpg',
+        format: format || 'jpg',
       };
       const requestedRegion =
         info.isRegion && info.boundingBox
@@ -157,6 +171,7 @@ class ImageThumbnailComponent extends Component<Props, State> {
   }
 
   requestThumbnail(props: Props) {
+    const { bbox, viewport, svg } = this.props;
     this.requests.plug(
       Kefir.constant({
         iri: Rdf.iri(props.imageOrRegion),
@@ -164,6 +179,8 @@ class ImageThumbnailComponent extends Component<Props, State> {
         iiifServerUrl: props.iiifServerUrl,
         width: this.props.width ? Number(this.props.width) : undefined,
         height: this.props.height ? Number(this.props.height) : undefined,
+        format: this.props.format,
+        region: this.props.bbox ? {bbox, viewport, svg} : undefined
       })
     );
   }
@@ -175,7 +192,7 @@ class ImageThumbnailComponent extends Component<Props, State> {
   render() {
     const defaultSize = this.props.preserveImageSize ? undefined : '100%';
 
-    let { width, height } = this.props;
+    let { width, height, style } = this.props;
     if (width === undefined) {
       width = defaultSize;
     }
@@ -183,7 +200,7 @@ class ImageThumbnailComponent extends Component<Props, State> {
       height = defaultSize;
     }
 
-    return D.div({ className: 'image-thumbnail', style: { width, height } }, this.renderChild());
+    return D.div({ className: 'image-thumbnail', style: { width, height, ...style } }, this.renderChild());
   }
 
   private renderChild() {

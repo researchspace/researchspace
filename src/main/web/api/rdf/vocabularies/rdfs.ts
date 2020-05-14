@@ -27,6 +27,7 @@ module rdfs {
   export const domain = iri('domain');
   export const range = iri('range');
   export const comment = iri('comment');
+  export const subClassOf = iri('subClassOf');
 
   export const Resource = iri('Resource');
 }

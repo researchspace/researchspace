@@ -39,8 +39,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.researchspace.config.Configuration;
-import org.researchspace.services.storage.api.*;
+import org.researchspace.services.storage.api.ObjectKind;
+import org.researchspace.services.storage.api.PlatformStorage;
+import org.researchspace.services.storage.api.SizedStream;
+import org.researchspace.services.storage.api.StoragePath;
 
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
@@ -62,8 +64,6 @@ public class AssetFilter implements Filter {
 
     private static final Logger logger = LogManager.getLogger(AssetFilter.class);
 
-    @Inject
-    private Configuration config;
     @Inject
     private PlatformStorage platformStorage;
 
@@ -118,11 +118,14 @@ public class AssetFilter implements Filter {
                         output.flush();
                     }
                 }
+            } else {
+                // proceed with the standard filter chain otherwise
+                chain.doFilter(request, response);
             }
+        } else {
+            // proceed with the standard filter chain otherwise
+            chain.doFilter(request, response);
         }
-
-        // proceed with the standard filter chain otherwise
-        chain.doFilter(request, response);
     }
 
     @Override

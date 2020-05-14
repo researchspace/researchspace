@@ -19,7 +19,6 @@
 
 import {
   Component,
-  createFactory,
   createElement,
   Children,
   ReactNode,
@@ -31,13 +30,16 @@ import * as SplitPane from 'react-split-pane';
 import * as assign from 'object-assign';
 import * as _ from 'lodash';
 
+import { listen } from 'platform/api/events';
+import { Cancellation } from 'platform/api/async';
+
 import { BrowserPersistence, universalChildren } from 'platform/components/utils';
 import { SplitPaneSidebarClosedComponent } from './SplitPaneSidebarClosedComponent';
 import { SplitPaneSidebarOpenComponent } from './SplitPaneSidebarOpenComponent';
 import { SplitPaneToggleOnComponent } from './SplitPaneToggleOnComponent';
 import { SplitPaneToggleOffComponent } from './SplitPaneToggleOffComponent';
 
-import { SplitPaneConfig, configHasDock } from './SplitPaneConfig';
+import {SplitPaneConfig, configHasDock, OpenPaneEvent } from './SplitPaneConfig';
 
 import './split-pane.scss';
 
@@ -102,6 +104,8 @@ export class SplitPaneComponent extends Component<Props, State> {
     navHeight: 105, // our default nav + breadcrumbs size
   };
 
+  private readonly cancellation = new Cancellation();
+
   constructor(props: Props) {
     super(props);
 
@@ -119,6 +123,16 @@ export class SplitPaneComponent extends Component<Props, State> {
     };
   }
 
+  componentDidMount() {
+    this.cancellation.map(
+      listen({eventType: OpenPaneEvent, target: this.props.id})
+    ).observe({
+      value: () => {
+        this.handleOpen(true);
+      }
+    });
+  }
+
   private getLSIdentifier = () => {
     const id = this.props.id;
     return `mp-splitpane${id ? `-${id}` : ``}`;
@@ -128,7 +142,7 @@ export class SplitPaneComponent extends Component<Props, State> {
     return this.props.persistResize || this.props.persistResize === undefined;
   };
 
-  private handleOpen = () => {
+  private handleOpen = (isOpen?: boolean) => {
     let size = this.state.size;
 
     const hasEnoughSize = size && this.consideredToBeOpened(size);
@@ -136,7 +150,8 @@ export class SplitPaneComponent extends Component<Props, State> {
       size = this.props.defaultSize;
     }
 
-    this.setState({ isOpen: !this.state.isOpen, size }, () => {
+    const newIsOpen = isOpen === undefined ? !this.state.isOpen : isOpen;
+    this.setState({isOpen: newIsOpen, size}, () => {
       if (this.isPersistResize()) {
         LocalStorageState.update(this.getLSIdentifier(), {
           isOpen: this.state.isOpen,
@@ -149,34 +164,32 @@ export class SplitPaneComponent extends Component<Props, State> {
   };
 
   private handleDrag = (size: number) => {
-    const { minSize } = this.props;
+    const {minSize} = this.props;
     const isOpen = this.consideredToBeOpened(size);
 
-    this.setState({ isOpen: isOpen, size: isOpen ? size : minSize }, () => {
+    this.setState({isOpen: isOpen, size: isOpen ? size : minSize}, () => {
       if (this.isPersistResize()) {
-        LocalStorageState.update(this.getLSIdentifier(), isOpen ? { size, isOpen } : { isOpen });
+        LocalStorageState.update(this.getLSIdentifier(),
+          isOpen ? {size, isOpen} : {isOpen});
       }
       this.triggerWindowResize();
     });
   };
 
   private consideredToBeOpened(size: number) {
-    const { minSize, snapThreshold } = this.props;
+    const {minSize, snapThreshold} = this.props;
     return size > minSize + (snapThreshold || 0);
   }
 
   private mapChildren = (children: ReactNode) => {
     const isOpen = this.state.isOpen;
+    const alwaysRender = this.props.alwaysRender;
 
     return universalChildren(
-      Children.map(children, (child) => {
-        if (!child) {
-          return null;
-        }
+      Children.map(children, child => {
+        if (!child) { return null; }
 
-        if (typeof child === 'string') {
-          return child;
-        }
+        if (typeof child === 'string') { return child; }
         const element = child as ReactElement<any>;
         const isSidebarClosed = element.type === SplitPaneSidebarClosedComponent;
         const isSidebarOpen = element.type === SplitPaneSidebarOpenComponent;
@@ -184,9 +197,18 @@ export class SplitPaneComponent extends Component<Props, State> {
         const isToggleOff = element.type === SplitPaneToggleOffComponent;
 
         if (isSidebarClosed || isToggleOn) {
-          return !isOpen ? cloneElement(element, { onClick: this.handleOpen }) : null;
-        } else if (isSidebarOpen || isToggleOff) {
-          return isOpen ? cloneElement(element, { onClick: this.handleOpen }) : null;
+          return !isOpen ? cloneElement(element, {onClick: () => this.handleOpen()}) : null;
+        } else if (isToggleOff) {
+          return isOpen ? cloneElement(element, {onClick: () => this.handleOpen()}) : null;
+        } else if (isSidebarOpen) {
+          // if panel is closed but alwaysRender is true we need to just hide
+          // the element visually
+          let style = _.cloneDeep(element.props.style);
+          if (alwaysRender && !isOpen) {
+            style.display = 'none';
+          }
+          return alwaysRender || isOpen ?
+            cloneElement(element, {onClick: () => this.handleOpen(), style}) : null;
         }
 
         if (element.type === SplitPaneComponent) {
@@ -196,21 +218,11 @@ export class SplitPaneComponent extends Component<Props, State> {
         return cloneElement(element, {}, this.mapChildren(element.props.children));
       })
     );
-  };
+  }
 
   render() {
-    const {
-      minSize,
-      className,
-      resizerClassName,
-      style,
-      sidebarStyle,
-      resizerStyle,
-      split,
-      contentStyle,
-      children,
-      primary,
-    } = this.props;
+    const {minSize, className, resizerClassName, style, sidebarStyle, resizerStyle, split,
+           contentStyle, children, primary} = this.props;
     const isOpen = this.state.isOpen;
 
     const props = {
@@ -236,18 +248,18 @@ export class SplitPaneComponent extends Component<Props, State> {
     const sidebarChildStyle = assign(
       {},
       sidebarChild.props.style,
-      configHasDock(this.props)
-        ? {
-            position: 'sticky',
-            top: this.props.navHeight + 'px',
-            height: `calc(100vh - ${this.props.navHeight}px)`,
-          }
-        : null
+      configHasDock(this.props) ? {
+        position: 'sticky',
+        top: this.props.navHeight + 'px',
+        height: `calc(100vh - ${this.props.navHeight}px)`,
+      } : null,
     );
 
     let [firstChild, secondChild] = [
-      cloneElement(sidebarChild, { style: sidebarChildStyle }, this.mapChildren(sidebarChild.props.children)),
-      this.mapChildren(contentChild),
+      cloneElement(sidebarChild, {style: sidebarChildStyle},
+        this.mapChildren(sidebarChild.props.children)
+      ),
+      this.mapChildren(contentChild)
     ];
     if (primary === 'second') {
       [firstChild, secondChild] = [secondChild, firstChild];
@@ -262,10 +274,9 @@ export class SplitPaneComponent extends Component<Props, State> {
    *
    * e.g charts, or mp-text-truncate, etc.
    */
-  private triggerWindowResize = _.debounce(() => window.dispatchEvent(new Event('resize')), 200);
+  private triggerWindowResize = _.debounce(
+    () => window.dispatchEvent(new Event('resize')), 200
+  );
 }
 
-export type component = SplitPaneComponent;
-export const component = SplitPaneComponent;
-export const factory = createFactory(component);
-export default component;
+export default SplitPaneComponent;

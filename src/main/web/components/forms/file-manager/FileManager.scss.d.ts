@@ -18,14 +18,19 @@ declare namespace FileManagerScssModule {
     progress: string;
     rightInputBar: string;
     row: string;
+    selectorHolder: string;
     spinner: string;
     storageInput: string;
     uploadCompletedPlaceholder: string;
     uploadedImageDepiction: string;
     uploadedImageIri: string;
+    urlInputHolder: string;
   }
 }
 
-declare const FileManagerScssModule: FileManagerScssModule.IFileManagerScss;
+declare const FileManagerScssModule: FileManagerScssModule.IFileManagerScss & {
+  /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
+  locals: FileManagerScssModule.IFileManagerScss;
+};
 
 export = FileManagerScssModule;

@@ -19,7 +19,7 @@
 import * as Kefir from 'kefir';
 import * as React from 'react';
 import * as _ from 'lodash';
-import * as ReactBootstrap from 'react-bootstrap';
+import { FormControl, Button, FormGroup, Radio, ProgressBar } from 'react-bootstrap';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
@@ -91,6 +91,13 @@ interface FileInputConfig {
    * custom placeholder by passing a child component.
    */
   placeholder?: string;
+
+
+  /**
+   * Upload file from the url or drop.
+   * @default false
+   */
+  fromUrlOrDrop?: boolean;
 }
 
 export interface FileInputProps extends AtomicValueInputProps, FileInputConfig {}
@@ -99,6 +106,7 @@ interface State {
   alertState?: AlertConfig;
   progress?: number;
   progressText?: string;
+  selectUrl?: boolean;
 }
 
 /**
@@ -108,6 +116,7 @@ interface State {
  */
 export class FileInput extends AtomicValueInput<FileInputProps, State> {
   private readonly cancellation = new Cancellation();
+  private urlInputRef: HTMLInputElement;
 
   constructor(props: FileInputProps, context: any) {
     super(props, context);
@@ -189,13 +198,13 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
       <div className={styles.FileManager}>
         <div className={styles.header}>
           {this.state.progress ? (
-            <ReactBootstrap.ProgressBar
+            <ProgressBar
               active={true}
               min={0}
               max={100}
               now={this.state.progress}
               label={this.state.progressText}
-            ></ReactBootstrap.ProgressBar>
+            ></ProgressBar>
           ) : resourceIri && !temporaryIri ? (
             <a className={styles.uploadedImageIri} title={resourceIri.value} href={resourceIri.value}>
               {resourceIri.value}
@@ -225,7 +234,16 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderBody = () => {
     if (FieldValue.isEmpty(this.props.value)) {
-      return this.renderDropZone();
+      if (this.props.fromUrlOrDrop) {
+        return (
+          <div className={styles.selectorHolder}>
+            {this.renderInputSelector()}
+            {this.state.selectUrl ? this.renderUrlInput() : this.renderDropZone()}
+          </div>
+        );
+      } else {
+        return this.renderDropZone();
+      }
     } else if (this.state.alertState) {
       return this.renderError();
     } else {
@@ -259,6 +277,73 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         {alert ? <div className={styles.alertComponent}>{alert}</div> : null}
       </div>
     );
+  }
+
+
+  renderUrlInput = () => {
+    const alert = this.state.alertState ? <Alert {...this.state.alertState}></Alert> : null;
+    return (
+      <React.Fragment>
+        {alert ? <div className={styles.alertComponent}>{alert}</div> : null}
+
+        <div className={styles.urlInputHolder}>
+          <FormControl inputRef={ref => { this.urlInputRef = ref; }}
+            type='text' placeholder='Please type file URL here' />
+          <Button bsStyle='primary' type='submit'
+            onClick={this.fetchFileFromUrl}
+          >Fetch</Button>
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  renderInputSelector = () => {
+    return (
+      <FormGroup>
+        <Radio name='inputSelector' inline
+          checked={!this.state.selectUrl}
+          onClick={ () => this.setState({selectUrl: false}) }
+        >
+          File Upload
+        </Radio>{' '}
+        <Radio name='inputSelector' inline
+          checked={this.state.selectUrl}
+          onClick={ () => this.setState({selectUrl: true}) }
+        >
+          URL
+        </Radio>{' '}
+      </FormGroup>
+    );
+  }
+
+  fetchFileFromUrl = () => {
+    if (!_.isEmpty(this.urlInputRef?.value)) {
+      fetch(this.urlInputRef.value)
+        .then((response) => {
+          if (!response.ok) {
+            this.setState({
+              alertState: {
+                alert: AlertType.WARNING,
+                message: 'Faild to fetch file from URL!',
+              }
+            });
+          }
+          return response.blob();
+        })
+        .then(
+          blob => {
+            this.onDropAccepted([new File([blob], this.urlInputRef.value, {type: blob.type})]);
+          }
+        ).catch((e: Error) => {
+          this.setState({
+            alertState: {
+              alert: AlertType.WARNING,
+              message: e.message + ' Please, try to upload the file manually.',
+            }
+          });
+        });
+
+    }
   }
 
   removeFile = () => {

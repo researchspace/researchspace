@@ -29,6 +29,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.api.sparql.SparqlOperationBuilder;
 import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.data.rdf.container.FileContainer;
@@ -41,6 +42,9 @@ import org.researchspace.vocabulary.LDP;
 import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.Optional;
 import java.util.Random;
@@ -54,6 +58,9 @@ public class FileManager {
 
     private final ValueFactory vf = SimpleValueFactory.getInstance();
     private final Random sequenceGenerator = new SecureRandom();
+
+    @Inject
+    private NamespaceRegistry nsRegistry;
 
     @Inject
     public FileManager() {
@@ -115,7 +122,7 @@ public class FileManager {
     }
 
     public IRI createLdpResource(ManagedFileName fileName, MpRepositoryProvider repositoryProvider,
-            String generateIriQuery, String createResourceQuery, String contextUri, String mediaType) {
+            String generateIriQuery, String createResourceQuery, String contextUri, String mediaType) throws URISyntaxException, MalformedURLException {
         FileContainer fileContainer = (FileContainer) LDPImplManager.getLDPImplementation(FileContainer.IRI,
                 Sets.newHashSet(LDP.Container, LDP.Resource), repositoryProvider);
 
@@ -130,12 +137,23 @@ public class FileManager {
             resourceIri = vf.createIRI((isContextUriEmpty ? DEFAULT_CONTEXT_IRI : contextUri) + fileName.getName());
         }
 
+        // we need to normalize generated IRI using java URI->URL class that will
+        // cleanup
+        // possible issues with IRI (like some strange symbols, etc), because
+        // IRI need to be used later as URL
+        URI uri = new URI(resourceIri.stringValue());
+        resourceIri = vf.createIRI(uri.toASCIIString());
+
         // creating resource data
         PointedGraph resourcePointedGraph = processQuery(fileName, repositoryProvider, resourceIri, createResourceQuery,
                 contextUri, mediaType);
 
         // adding resource to container
-        fileContainer.add(resourcePointedGraph);
+        if (fileContainer.containsLDPResource(resourceIri)) {
+            fileContainer.update(resourcePointedGraph);
+        } else {
+            fileContainer.add(resourcePointedGraph);
+        }
 
         return resourceIri;
     }
@@ -157,6 +175,7 @@ public class FileManager {
                 TupleQuery.class);
 
         operationBuilder = operationBuilder.setBinding(DOCUMENT_NAME, vf.createLiteral(fileName.getName()))
+                .setNamespaces(nsRegistry.getPrefixMap())
                 .setBinding(MEDIA_TYPE, vf.createLiteral(mediaType));
 
         if (contextUri != null && !contextUri.isEmpty()) {

@@ -131,6 +131,7 @@ public class FileStorageEndpoint {
             @FormDataParam("generateIriQuery") String generateIriQuery,
             @FormDataParam("createResourceQuery") String createResourceQuery,
             @FormDataParam("contextUri") String contextUri,
+            @FormDataParam("fileNameHack") String fileNameHack,
             @FormDataParam("file") FormDataContentDisposition fileDisposition, @FormDataParam("file") InputStream in,
             @FormDataParam("fileSize") long fileSize) {
         if (logger.isTraceEnabled()) {
@@ -140,8 +141,15 @@ public class FileStorageEndpoint {
         assertPermission(FILE.PREFIX_WRITE + storageId);
 
         try {
-            ManagedFileName managedName = ManagedFileName.generateFromFileName(ObjectKind.FILE,
-                    fileDisposition.getFileName(), fileManager::generateSequenceNumber);
+            // TODO, currently we allow to disable sequenceNumber generation with fileNameHack param
+            ManagedFileName managedName;
+            if (fileNameHack.equals("true")) {
+                managedName = ManagedFileName.generateFromFileName(ObjectKind.FILE,
+                        fileDisposition.getFileName(), null);
+            } else {
+                managedName = ManagedFileName.generateFromFileName(ObjectKind.FILE,
+                        fileDisposition.getFileName(), fileManager::generateSequenceNumber);
+            }
             String mediaType = fileDisposition.getType();
 
             ObjectStorage storage = platformStorage.getStorage(storageId);

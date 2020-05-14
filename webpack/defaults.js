@@ -69,7 +69,8 @@ module.exports = function() {
             "components/search/web-components",
             "components/text-annotation",
             "components/timeline",
-            "components/dashboard"
+            "components/dashboard",
+            "components/text-editor"
         ],
         jsonSchemTypes: [
             "TextAnnotationTemplateBindings",

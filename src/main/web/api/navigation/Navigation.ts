@@ -116,6 +116,18 @@ export function getCurrentUrl(): uri.URI {
 }
 
 /**
+ * Workaround for ThinkingFrames navigation.
+ * When in ThinkingFrame all navigation requests
+ * are redirected to frame component.
+ */
+let inFrame = false;
+let inFrameNavigationHandler: (iri: Rdf.Iri, props?: {}) => boolean;
+export function setFrameNavigation(enable: boolean, handler?: typeof inFrameNavigationHandler) {
+  inFrame = enable;
+  inFrameNavigationHandler = handler;
+}
+
+/**
  * Navigate to specified resource, it is possible to provide
  * additional query parameters with 'props' map.
  */
@@ -125,7 +137,11 @@ export function navigateToResource(
   repository?: string,
   fragment?: string
 ): Kefir.Property<void> {
-  return constructUrlForResource(iri, props, repository, fragment).flatMap(navigateToUrl).toProperty();
+  if (inFrame && inFrameNavigationHandler(iri, props)) {
+    return Kefir.constant(null);
+  } else {
+    return constructUrlForResource(iri, props, repository, fragment).flatMap(navigateToUrl).toProperty();
+  }
 }
 
 /**
@@ -288,5 +304,6 @@ export function resolveResourceIri(url: uri.URI): Kefir.Property<Data.Maybe<Rdf.
     return getFullIri(prefixedIriStr);
   }
 }
+
 
 initPersistentHistory(init, notifyAll);

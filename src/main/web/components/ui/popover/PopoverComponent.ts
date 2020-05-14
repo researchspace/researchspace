@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, createFactory, Children, ReactElement, cloneElement } from 'react';
+import { Component, createFactory, Children, ReactElement, cloneElement, SyntheticEvent } from 'react';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as _ from 'lodash';
 
@@ -35,6 +35,11 @@ export interface Props {
    * If empty/undefined, not title will be visible in the popover.
    */
   title: string;
+
+  /**
+   * CSS class for popover root element.
+   */
+  className?: string;
 }
 
 /**
@@ -48,7 +53,7 @@ export interface Props {
  */
 export class PopoverComponentClass extends Component<Props, {}> {
   render() {
-    const { title } = this.props;
+    const { title, className } = this.props;
 
     const children = Children.toArray(this.props.children);
     const triggerComponent = _.find(children, (child) => componentHasType(child, PopoverTriggerComponent));
@@ -57,7 +62,7 @@ export class PopoverComponentClass extends Component<Props, {}> {
     const triggerChildren = (Children.only(triggerComponent) as ReactElement<any>).props.children;
     const contentChildren = (Children.only(contentComponent) as ReactElement<any>).props.children;
 
-    const popover = Popover({ id: 'mp-popover', title: title }, contentChildren);
+    const popover = Popover({ id: 'mp-popover', title, className }, contentChildren);
     const trigger = (Children.only(triggerComponent) as ReactElement<any>).props.trigger;
     const placement = (Children.only(triggerComponent) as ReactElement<any>).props.placement;
     const rootClose = (Children.only(triggerComponent) as ReactElement<any>).props.rootClose;
@@ -68,7 +73,9 @@ export class PopoverComponentClass extends Component<Props, {}> {
         placement: placement,
         rootClose: rootClose || true,
       },
-      cloneElement(triggerChildren, {})
+      cloneElement(
+        triggerChildren, {onClick: (event: SyntheticEvent) => event.stopPropagation()}
+      )
     );
   }
 }

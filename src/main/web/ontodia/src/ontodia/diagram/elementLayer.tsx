@@ -17,6 +17,10 @@ export interface Props {
   view: DiagramView;
   group?: string;
   style: React.CSSProperties;
+
+  // we need to have scale in the element layer to properly
+  // calculate size of the element on element resize by user
+  scale: number;
 }
 
 interface State {
@@ -71,7 +75,7 @@ export class ElementLayer extends React.Component<Props, State> {
   }
 
   render() {
-    const { view, style } = this.props;
+    const { view, style, scale } = this.props;
     const { elementStates } = this.state;
 
     const elementsToRender: ElementState[] = [];
@@ -90,8 +94,9 @@ export class ElementLayer extends React.Component<Props, State> {
               key={state.element.id}
               state={state}
               view={view}
+              scale={scale}
               onInvalidate={this.requestRedraw}
-              onResize={this.requestSizeUpdate}
+              requestResize={this.requestSizeUpdate}
             />
           );
           const elementDecorator = view._decorateElement(state.element);
@@ -194,7 +199,7 @@ export class ElementLayer extends React.Component<Props, State> {
   };
 
   private requestSizeUpdate = (element: Element, node: HTMLDivElement) => {
-    this.sizeRequests.set(element.id, { element, node });
+    this.sizeRequests.set(element.id, {element, node});
     this.delayedUpdateSizes.call(this.recomputeQueuedSizes);
   };
 
@@ -255,8 +260,9 @@ function applyRedrawRequests(
 interface OverlayedElementProps {
   state: ElementState;
   view: DiagramView;
+  scale: number;
   onInvalidate: (model: Element, request: RedrawFlags) => void;
-  onResize: (model: Element, node: HTMLDivElement) => void;
+  requestResize: (model: Element, node: HTMLDivElement) => void;
 }
 
 export interface ElementContextWrapper {
@@ -270,7 +276,12 @@ export interface ElementContext {
   element: Element;
 }
 
-class OverlayedElement extends React.Component<OverlayedElementProps, {}> {
+interface OverlayedElementState {
+  height: number;
+  width: number;
+}
+
+class OverlayedElement extends React.Component<OverlayedElementProps, OverlayedElementState> {
   static childContextTypes = ElementContextTypes;
 
   private readonly listener = new EventObserver();
@@ -278,6 +289,8 @@ class OverlayedElement extends React.Component<OverlayedElementProps, {}> {
 
   private typesObserver: KeyedObserver<ElementTypeIri>;
   private propertiesObserver: KeyedObserver<PropertyTypeIri>;
+
+  private htmlElement: HTMLDivElement;
 
   getChildContext(): ElementContextWrapper {
     const ontodiaElement: ElementContext = {
@@ -313,43 +326,99 @@ class OverlayedElement extends React.Component<OverlayedElementProps, {}> {
         className={className}
         // set `element-id` to translate mouse events to paper
         data-element-id={element.id}
-        style={{ position: 'absolute', transform }}
+        style={{position: 'absolute', transform}}
         tabIndex={0}
         ref={this.onMount}
         // resize element when child image loaded
-        onLoad={this.onLoadOrErrorEvent}
-        onError={this.onLoadOrErrorEvent}
-        onClick={this.onClick}
         onDoubleClick={this.onDoubleClick}
       >
         <TemplatedElement {...this.props} />
+
+        {
+          // Warning.
+          // className for resizable element should match to the one used in the paperArea.tsx
+        }
+        <span className="ontodia-overlayed-element__resizable-handle"
+          onMouseDown={this.onInitResize}
+          onDoubleClick={this.onResetResize}
+          title="double-click on resize handle to reset the card size"
+        ></span>
       </div>
     );
   }
+
+  // resize handlers
+
+
+  private minSize: {height: number; width: number;};
+  private onInitResize = (e: React.SyntheticEvent) => {
+    // we need to preventDefault here because otherwise we
+    // can get ugly text selection in addition to resize
+    e.preventDefault();
+
+    window.addEventListener('mousemove', this.onResize);
+    window.addEventListener('mouseup', this.onResizeComplete);
+  }
+
+  private onResize = (e: MouseEvent) => {
+    this.props.state.element.setFixedSize(true);
+
+    const elementCard = this.htmlElement.firstElementChild as HTMLElement;
+
+    const rect = elementCard.getBoundingClientRect();
+    const resizeWidth = (e.clientX - rect.left) / this.props.scale;
+    const resizeHeight = (e.clientY - rect.top) / this.props.scale;
+
+    const width = resizeWidth < this.minSize.width ? this.minSize.width : resizeWidth;
+    const height = resizeHeight < this.minSize.height ? this.minSize.height : resizeHeight;
+
+    this.props.state.element.setSize({
+      width: width,
+      height: height
+    });
+
+    elementCard.style.width = width + 'px';
+    elementCard.style.height = height + 'px';
+  }
+
+  private onResizeComplete = () => {
+    window.removeEventListener('mousemove', this.onResize);
+    window.removeEventListener('mouseup', this.onResizeComplete);
+  }
+
+  private onResetResize = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+
+    if (this.props.state.element.isFixedSize) {
+      const elementCard = this.htmlElement.firstElementChild as HTMLElement;
+      elementCard.style.width = this.minSize.width + 'px';
+      elementCard.style.height = this.minSize.height + 'px';
+
+      this.props.state.element.setFixedSize(false);
+      this.requestResize();
+    }
+  }
+
+  private initSize = () => {
+    const elementCard = this.htmlElement.firstElementChild as HTMLElement;
+    this.minSize = {
+      height: parseInt(elementCard.style.height.slice(0, -2)),
+      width: parseInt(elementCard.style.width.slice(0, -2))
+    };
+
+    const { element } = this.props.state;
+    if (element.isFixedSize) {
+      elementCard.style.width = element.size.width + 'px';
+      elementCard.style.height = element.size.height + 'px';
+    }
+  }
+  // end resize handlers
 
   private onMount = (node: HTMLDivElement | undefined) => {
     if (!node) {
       return;
     }
-    const { state, onResize } = this.props;
-    onResize(state.element, node);
-  };
-
-  private onLoadOrErrorEvent = () => {
-    const { state, onResize } = this.props;
-    onResize(state.element, findDOMNode(this) as HTMLDivElement);
-  };
-
-  private onClick = (e: React.MouseEvent<EventTarget>) => {
-    if (e.target instanceof HTMLElement && e.target.localName === 'a') {
-      const anchor = e.target as HTMLAnchorElement;
-      const { view, state } = this.props;
-      const clickIntent =
-        e.target.getAttribute('data-iri-click-intent') === IriClickIntent.OpenEntityIri
-          ? IriClickIntent.OpenEntityIri
-          : IriClickIntent.OpenOtherIri;
-      view.onIriClick(decodeURI(anchor.href), state.element, clickIntent, e);
-    }
+    this.htmlElement = node;
   };
 
   private onDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -365,14 +434,15 @@ class OverlayedElement extends React.Component<OverlayedElementProps, {}> {
   componentDidMount() {
     const { state, view } = this.props;
     this.listener.listen(state.element.events, 'requestedFocus', () => {
-      const element = findDOMNode(this) as HTMLElement;
-      if (element) {
-        element.focus();
+      if (this.htmlElement) {
+        this.htmlElement.focus();
       }
     });
     this.typesObserver = observeElementTypes(view.model, 'changeLabel', this.rerenderTemplate);
     this.propertiesObserver = observeProperties(view.model, 'changeLabel', this.rerenderTemplate);
+
     this.observeTypes();
+    this.requestResize();
   }
 
   componentWillUnmount() {
@@ -388,7 +458,19 @@ class OverlayedElement extends React.Component<OverlayedElementProps, {}> {
 
   componentDidUpdate() {
     this.observeTypes();
-    this.props.onResize(this.props.state.element, findDOMNode(this) as HTMLDivElement);
+    this.requestResize();
+
+    if (this.minSize === undefined &&
+        !this.props.state.element.temporary) {
+      this.initSize();
+    }
+  }
+
+  private requestResize = () => {
+    const { isFixedSize, temporary } = this.props.state.element;
+    if (!temporary && !isFixedSize) {
+      this.props.requestResize(this.props.state.element, this.htmlElement);
+    }
   }
 
   private observeTypes() {

@@ -440,6 +440,15 @@ export class PaperArea extends React.Component<PaperAreaProps, State> {
       return;
     }
 
+    // if pointer is down on resize handle then we don't need to move the node
+    // see OverlayedElement in the elementLayer.tsx
+    if (
+      (e.target instanceof HTMLElement) &&
+      e.target.className === 'ontodia-overlayed-element__resizable-handle'
+    ) {
+      return ;
+    }
+
     const restore = RestoreGeometry.capture(this.props.view.model);
     const batch = this.props.view.model.history.startBatch(restore.title);
 

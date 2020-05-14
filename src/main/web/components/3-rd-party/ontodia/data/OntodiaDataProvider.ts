@@ -123,9 +123,10 @@ function createFieldConfiguration(
     fieldConfigDefaults = {
       ...fieldConfigDefaults,
       elementInfoQuery: `
+        PREFIX ontodia: <https://ontodia.org/context/v1.json/>
         CONSTRUCT {
-            ?inst rdf:type ?class .
-            ?inst rdfs:label ?label .
+            ?inst ontodia:type ?class .
+            ?inst ontodia:label ?label .
             ?inst ?propType ?propValue.
         } WHERE {
             VALUES (?inst) {\${ids}}

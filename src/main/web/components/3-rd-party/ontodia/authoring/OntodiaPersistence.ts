@@ -40,12 +40,3 @@ export interface OntodiaPersistenceResult {
    */
   finalizedEntities: Map<ElementIri, ElementModel | null>;
 }
-
-// This interface defined here instead of next to implementation to be able to
-// expose it in Ontodia props interface and the documentation
-export interface OntologyPersistenceProps {
-  type: 'ontology';
-  targetGraphIri: string;
-  repository: string;
-  typePattern?: string;
-}

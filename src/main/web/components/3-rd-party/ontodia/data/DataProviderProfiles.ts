@@ -64,8 +64,9 @@ BIND(IF(STRLEN(?strInst) > 33,
   VALUES (?target) {\${ids}}
 }`,
 
-  elementInfoQuery: `CONSTRUCT {
-  ?inst rdf:type ?class .
+  elementInfoQuery: `PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+CONSTRUCT {
+  ?inst ontodia:type ?class .
   ?inst ?propType ?propValue.
 } WHERE {
   VALUES (?inst) {\${ids}}
@@ -159,9 +160,11 @@ BIND(0 as ?score)
   VALUES (?target) {\${ids}}
 }`,
 
-  elementInfoQuery: `CONSTRUCT {
-  ?inst rdf:type ?class .
-  ?inst rdfs:label ?label .
+  elementInfoQuery: `PREFIX ontodia: <https://ontodia.org/context/v1.json/>
+
+CONSTRUCT {
+  ?inst ontodia:type ?class .
+  ?inst ontodia:label ?label .
   ?inst ?propType ?propValue.
 } WHERE {
   VALUES (?inst) {\${ids}}

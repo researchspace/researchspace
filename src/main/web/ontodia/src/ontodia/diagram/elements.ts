@@ -48,6 +48,7 @@ export class Element {
   private _data: ElementModel;
   private _position: Vector;
   private _size: Size;
+  private _fixedSize: boolean;
   private _expanded: boolean;
   private _group: string | undefined;
   private _elementState: ElementTemplateState | undefined;
@@ -58,6 +59,7 @@ export class Element {
     data: ElementModel;
     position?: Vector;
     size?: Size;
+    fixedSize?: boolean;
     expanded?: boolean;
     group?: string;
     elementState?: ElementTemplateState;
@@ -68,6 +70,7 @@ export class Element {
       data,
       position = { x: 0, y: 0 },
       size = { width: 0, height: 0 },
+      fixedSize,
       expanded = false,
       group,
       elementState,
@@ -78,6 +81,7 @@ export class Element {
     this._data = data;
     this._position = position;
     this._size = size;
+    this._fixedSize = fixedSize;
     this._expanded = expanded;
     this._group = group;
     this._elementState = elementState;
@@ -125,6 +129,15 @@ export class Element {
     }
     this._size = value;
     this.source.trigger('changeSize', { source: this, previous });
+  }
+
+
+  get isFixedSize(): boolean { return this._fixedSize; }
+  setFixedSize(isFixed: boolean) {
+    const previous = this._fixedSize;
+    if (previous === isFixed) { return; }
+
+    this._fixedSize = isFixed;
   }
 
   get isExpanded(): boolean {

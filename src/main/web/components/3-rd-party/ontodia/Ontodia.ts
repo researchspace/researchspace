@@ -93,8 +93,6 @@ import { ConfigHolder } from 'platform/api/services/config-holder';
 import { getLabels } from 'platform/api/services/resource-label';
 import { componentHasType } from 'platform/components/utils';
 
-import { OntodiaExtension, OntodiaFactory } from './extensions';
-
 import * as DiagramService from './data/DiagramService';
 import { SupportedConfigName, RDF_DATA_PROVIDER_NAME, createDataProvider } from './data/OntodiaDataProvider';
 import { RawTriple, getRdfExtGraphBySparqlQuery, makeRdfExtGraph } from './data/RdfExt';
@@ -110,7 +108,7 @@ import {
   OntodiaFieldConfigurationProps,
   extractFieldConfiguration,
 } from './authoring/OntodiaFieldConfiguration';
-import { OntodiaPersistenceResult, OntologyPersistenceProps } from './authoring/OntodiaPersistence';
+import { OntodiaPersistenceResult } from './authoring/OntodiaPersistence';
 import {
   getEntityMetadata,
   convertCompositeValueToElementModel,
@@ -339,7 +337,7 @@ export interface OntodiaConfig {
   postSaving?: 'navigate' | 'none';
 }
 
-export type OntodiaPersistenceMode = FormBasedPersistenceProps | OntologyPersistenceProps;
+export type OntodiaPersistenceMode = FormBasedPersistenceProps;
 
 export interface OntodiaProps extends OntodiaConfig, ClassAttributes<Ontodia> {
   onLoadWorkspace?: (workspace: Workspace) => void;
@@ -350,9 +348,10 @@ interface State {
   readonly fieldConfiguration?: FieldConfiguration;
   readonly configurationError?: any;
   readonly diagramIri?: string;
+  readonly loading: boolean;
 }
 
-const DEFAULT_FACTORY: OntodiaFactory = {
+const DEFAULT_FACTORY = {
   createWorkspace: (componentProps, workspaceProps) => createElement(Workspace, workspaceProps),
   createToolbar: (componentProps, toolbarProps) => createElement(Toolbar, toolbarProps),
   onNewDigaramInitialized: (componentProps, workspace: Workspace) => {
@@ -486,11 +485,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
 
     this.state = {
       diagramIri: props.diagram,
+      loading: true,
     };
-
-    this.loadFieldConfiguration(deriveCancellationToken(this.cancellation));
-    this.parsedMetadata = this.parseMetadata();
-    this.prepareElementTemplates();
   }
 
   componentDidUpdate(prevProps: OntodiaProps) {
@@ -533,7 +529,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
   render() {
     if (this.state.configurationError) {
       return createElement(ErrorNotification, { errorMessage: this.state.configurationError });
-    } else if (OntodiaExtension.isLoading() || !this.state.fieldConfiguration) {
+    } else if (this.state.loading) {
       return createElement(Spinner, {});
     }
 
@@ -559,7 +555,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     } = this.props;
     const { fieldConfiguration } = this.state;
 
-    const { createWorkspace, createToolbar } = OntodiaExtension.get() || DEFAULT_FACTORY;
+    const { createWorkspace, createToolbar } = DEFAULT_FACTORY;
     const props: WorkspaceProps & ClassAttributes<Workspace> = {
       ref: this.initWorkspace,
       languages: globalLanguages.length > 0 ? globalLanguages : [{ code: preferredLanguage, label: preferredLanguage }],
@@ -603,7 +599,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
   }
 
   componentDidMount() {
-    OntodiaExtension.loadAndUpdate(this, this.cancellation);
+    this.loadFieldConfiguration(deriveCancellationToken(this.cancellation))
+      .then(() => this.setState({loading: false}));
+
+    this.parsedMetadata = this.parseMetadata();
+    this.prepareElementTemplates();
 
     this.registerEventSources();
   }
@@ -1081,7 +1081,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
    * Sets diagram layout by sparql query
    */
   private setLayoutBySparqlQuery(query: string): Promise<void> {
-    const { onNewDigaramInitialized: performDiagramLayout } = OntodiaExtension.get() || DEFAULT_FACTORY;
+    const { onNewDigaramInitialized: performDiagramLayout } = DEFAULT_FACTORY;
     const repositories = this.getRepositories();
     const loadingLayout = getRdfExtGraphBySparqlQuery(query, repositories).then((graph) => {
       const layoutProvider = new GraphBuilder(this.dataProvider);
@@ -1166,7 +1166,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     });
   }
   private setLayoutByIris(iris: string[]): Promise<void> {
-    const { onNewDigaramInitialized: performDiagramLayout } = OntodiaExtension.get() || DEFAULT_FACTORY;
+    const { onNewDigaramInitialized: performDiagramLayout } = DEFAULT_FACTORY;
     const layoutProvider = new GraphBuilder(this.dataProvider);
     const buildingGraph = layoutProvider.createGraph({
       elementIds: iris.map((iri) => iri as ElementIri),
@@ -1230,7 +1230,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
     const authoringState = this.workspace.getEditor().authoringState;
 
     if (metadata) {
-      let rawModel = convertElementModelToCompositeValue(options.elementData, metadata);
+      const rawModel = convertElementModelToCompositeValue(options.elementData, metadata);
       const elementState = authoringState.elements.get(rawModel.subject.value as ElementIri);
 
       let isNewElement = false;
@@ -1428,7 +1428,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
 }
 
 function makePersistenceFromConfig(mode: OntodiaPersistenceMode = { type: 'form' }) {
-  const factory = OntodiaExtension.get() || DEFAULT_FACTORY;
+  const factory = DEFAULT_FACTORY;
   return factory.getPersistence(mode);
 }
 

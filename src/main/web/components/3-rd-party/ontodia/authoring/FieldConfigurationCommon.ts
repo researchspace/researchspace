@@ -26,7 +26,6 @@ import { xsd } from 'platform/api/rdf/vocabularies';
 import * as Forms from 'platform/components/forms';
 
 import { FormBasedPersistenceProps } from './FormBasedPersistence';
-import { OntologyPersistenceProps } from './OntodiaPersistence';
 
 export interface FieldConfiguration {
   readonly authoringMode: boolean;
@@ -37,7 +36,7 @@ export interface FieldConfiguration {
   readonly inputOverrides: ReadonlyArray<Forms.InputOverride>;
 }
 
-export type OntodiaPersistenceMode = FormBasedPersistenceProps | OntologyPersistenceProps;
+export type OntodiaPersistenceMode = FormBasedPersistenceProps;
 
 export interface FieldConfigurationItem {
   getRequiredFields?(props: any, ct: CancellationToken): Promise<ReadonlyArray<Rdf.Iri>>;

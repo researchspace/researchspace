@@ -99,7 +99,7 @@ public class FieldDefinitionSource {
         ValueFactory vf = SimpleValueFactory.getInstance();
         LinkedHashMap<String, IRI> aliasMap = new LinkedHashMap<>();
         options.hash.forEach((alias, iri) -> {
-            aliasMap.put(alias, vf.createIRI((String) iri));
+            aliasMap.put(alias, vf.createIRI(iri.toString()));
         });
         return this.generateFieldDefinitions(aliasMap.isEmpty() ? null : aliasMap, options);
     }
@@ -237,7 +237,7 @@ public class FieldDefinitionSource {
         if (param0 != null) {
             fields.add(param0);
             for (Object param : options.params) {
-                fields.add((String) param);
+                fields.add(param.toString());
             }
         }
         return generateSearchConfigForFields(fields, options);

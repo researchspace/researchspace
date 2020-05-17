@@ -24,12 +24,12 @@ import static java.util.stream.Collectors.toList;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -71,9 +71,7 @@ public class FieldDefinitionManager implements PlatformCache {
     @Inject
     public FieldDefinitionManager(RepositoryManager repositoryManager, CacheManager cacheManager) {
         this.repositoryManager = repositoryManager;
-        this.cache = cacheManager
-                .newBuilder(CACHE_ID,
-                            cacheBuilder -> cacheBuilder.maximumSize(1000))
+        this.cache = cacheManager.newBuilder(CACHE_ID, cacheBuilder -> cacheBuilder.maximumSize(1000))
                 .build(new CacheLoader<IRI, Optional<FieldDefinition>>() {
                     @Override
                     public Optional<FieldDefinition> load(IRI key) {
@@ -121,7 +119,7 @@ public class FieldDefinitionManager implements PlatformCache {
     }
 
     private static <K, V> Map<K, V> flattenOptionMap(Map<K, Optional<V>> map) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new LinkedHashMap<>();
         map.forEach((key, optional) -> {
             optional.ifPresent(value -> result.put(key, value));
         });
@@ -141,7 +139,7 @@ public class FieldDefinitionManager implements PlatformCache {
             }
         }
 
-        Map<IRI, Optional<FieldDefinition>> result = new HashMap<>();
+        Map<IRI, Optional<FieldDefinition>> result = new LinkedHashMap<>();
 
         Iterable<? extends IRI> iris = fieldIris != null ? fieldIris : foundFields.keySet();
 
@@ -199,7 +197,7 @@ public class FieldDefinitionManager implements PlatformCache {
     }
 
     private Map<IRI, FieldDefinition> frameFieldDefinitions(GraphQueryResult queryResult) {
-        Map<IRI, FieldDefinition> definitions = new HashMap<>();
+        Map<IRI, FieldDefinition> definitions = new LinkedHashMap<>();
         while (queryResult.hasNext()) {
             Statement st = queryResult.next();
             if (!(st.getSubject() instanceof IRI)) {

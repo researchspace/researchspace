@@ -39,6 +39,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.researchspace.config.Configuration;
 import org.researchspace.services.storage.api.ObjectKind;
 import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.services.storage.api.SizedStream;
@@ -66,6 +67,9 @@ public class AssetFilter implements Filter {
 
     @Inject
     private PlatformStorage platformStorage;
+
+    @Inject
+    private Configuration config;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -113,6 +117,12 @@ public class AssetFilter implements Filter {
 
                 try (SizedStream content = result.getRecord().getLocation().readSizedContent()) {
                     httpResponse.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(content.getLength()));
+
+                    // if we are not in development mode we want to cache all assets
+                    if (!this.config.getGlobalConfig().isDevelopmentMode()) {
+                        httpResponse.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=31536000,public");
+                    }
+
                     try (BufferedOutputStream output = new BufferedOutputStream(response.getOutputStream())) {
                         IOUtils.copy(content.getStream(), output);
                         output.flush();

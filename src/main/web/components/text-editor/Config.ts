@@ -1,27 +1,32 @@
 /**
  * ResearchSpace
  * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from 'react';
+export interface ResourceTemplateConfig {
+  id: string
+  // URI of type template could be applied to
+  type: string
+  // Human-readable description of template
+  label: string
+  template: string
 
-export class NoResourceThumbnail extends React.Component<{}, {}> {
-  render() {
-    return React.Children.only(this.props.children) as React.ReactElement<any>;
+  resizable?: boolean
+  defaults?: {
+    height?: string
+    width?: string
   }
 }
-export default NoResourceThumbnail;

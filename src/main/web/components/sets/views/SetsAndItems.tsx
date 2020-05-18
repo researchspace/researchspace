@@ -160,7 +160,7 @@ class SetCaption extends React.Component<SetCaptionProps, {}> {
           componentProps={{ className: `${baseClass}__set-template` }}
           template={{
             source: this.props.template(set.kind, true),
-            options: { ...set.metadata, iri: set.iri, kind: set.kind, itemCount: set.itemCount },
+            options: { ...set.metadata, iri: set.iri, kind: set.kind, itemCount: set.itemCount, itemHolder: set.itemHolder },
           }}
         />
       );

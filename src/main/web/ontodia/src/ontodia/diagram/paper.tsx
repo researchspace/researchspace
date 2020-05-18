@@ -55,7 +55,7 @@ export class Paper extends Component<PaperProps, {}> {
           <LinkLayer view={view} links={view.model.links} group={group} />
         </TransformedSvgCanvas>
         {linkLayerWidgets}
-        <ElementLayer view={view} group={group} style={htmlTransformStyle} />
+        <ElementLayer view={view} group={group} style={htmlTransformStyle} scale={scale} />
         {elementLayerWidgets}
       </div>
     );

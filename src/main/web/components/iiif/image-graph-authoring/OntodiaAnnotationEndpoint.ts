@@ -184,7 +184,7 @@ function convertAnnotationToElementModel(
   const textResource = getAnnotationTextResource(annotation);
   return {
     id: annotation['@id'] as ElementIri,
-    types: [rso.EX_Digital_Image_Region.value as ElementTypeIri, crmdig.D35_Area.value as ElementTypeIri],
+    types: [rso.EX_Digital_Image_Region.value as ElementTypeIri],
     label: { values: [{ value: textResource.chars, language: '' }] },
     properties: {
       [fields.boundingBox]: {
@@ -204,7 +204,14 @@ function convertAnnotationToElementModel(
           },
         ],
       },
-    },
+      [fields.isPrimaryAreaOf]: {
+        type: 'uri',
+        values: annotation.on.map(
+          on =>
+            ({value: on.full, type: 'uri'})
+        ),
+      },
+    }
   };
 }
 

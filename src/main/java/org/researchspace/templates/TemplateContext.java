@@ -108,6 +108,13 @@ public class TemplateContext {
     }
 
     /**
+     * Query ready, current resource IRI string representation.
+     */
+    public String getIri() {
+        return "<" + this.value.stringValue() + ">";
+    }
+
+    /**
      * Overrides toString() for template mechanism to access render [[this]] as the
      * string value of the current context value (i.e. resource)
      *

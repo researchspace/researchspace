@@ -236,12 +236,22 @@ public class NonVersionedFileStorage implements ObjectStorage {
     }
 
     private Optional<StoragePath> objectPathFromFile(Path file) {
-        String absolutePath = file.toString();
-        String absoluteBase = config.getRoot().toString();
+        // Requested file path as well as storage root
+        // can be absolute or relative to the current working directory.
+        // So we need to normalize and convert them to absolute paths.
+        Path absolutePath = file.toAbsolutePath().normalize();
+        Path absoluteBase = config.getRoot().toAbsolutePath().normalize();
+
+        // if requested path is not inside storage root we know immediately that
+        // there is no such file in this storage
         if (!absolutePath.startsWith(absoluteBase)) {
             return Optional.empty();
         }
-        String relativeFilePath = absolutePath.substring(absoluteBase.length());
+
+        // otherwise we calculate path to requested file relatively to the root
+        String relativeFilePath = absoluteBase.relativize(absolutePath).toString();
+
+        // convert real OS dependent path to neutral storage path
         String storagePath = StringUtils.removeStart(relativeFilePath.replace(File.separator, StoragePath.SEPARATOR),
                 StoragePath.SEPARATOR);
         return paths.mapBack(StoragePath.parse(storagePath));

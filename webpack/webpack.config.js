@@ -83,6 +83,12 @@ module.exports = function(isProd) {
                             return `npm.${packageName.replace('@', '')}`;
                         },
                     },
+                    styles: {
+                        name: 'styles',
+                        test: /(\.css$)|(\.scss$)/,
+                        chunks: 'all',
+                        enforce: true,
+                    },
                     default: {
                         minChunks: 1,
                         priority: -20,

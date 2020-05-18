@@ -215,7 +215,13 @@ export class FacetStore {
         const selectedValues = selected
           .get(value.relation)
           .filterNot((selectedValue) => F.partialValueEquals(value.value, selectedValue)) as List<F.FacetValue>;
-        this.selectedValues(selected.set(value.relation, selectedValues));
+
+        if (selectedValues.isEmpty()) {
+          // clean up disjunct if we deselected all values for the given relation
+          this.selectedValues(selected.remove(value.relation))
+        } else {
+          this.selectedValues(selected.set(value.relation, selectedValues));
+        }
       }
     );
 

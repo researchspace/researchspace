@@ -20,6 +20,7 @@ import * as React from 'react';
 import { uniqueId, isEmpty } from 'lodash';
 import { WorkspaceLayout, WorkspaceLayoutNode, WorkspaceLayoutType } from 'ontodia';
 
+import { setFrameNavigation } from 'platform/api/navigation';
 import { Component } from 'platform/api/components';
 import { TemplateItem } from 'platform/components/ui/template';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
@@ -29,8 +30,9 @@ import { DashboardItem, DashboardViewConfig } from './DashboardItem';
 
 import * as styles from './Dashboard.scss';
 import { Cancellation } from 'platform/api/async';
-import { listen } from 'platform/api/events';
+import { listen, trigger } from 'platform/api/events';
 import { AddFrameEvent, AddFrameEventData } from './DashboardEvents';
+import { Rdf } from 'platform/api/rdf';
 
 const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
 
@@ -166,9 +168,57 @@ export class DashboardComponent extends Component<Props, State> {
     } else {
       this.onAddNewItem();
     }
+
+    // That is ugly hack for in frame navigation until we find a better way to do this
+    setFrameNavigation(true, (iri: Rdf.Iri, props?: {}): boolean => {
+      if (iri.value.startsWith('http://www.researchspace.org/instances/narratives')) {
+        trigger({
+          eventType: 'Dashboard.AddFrame',
+          source: 'link',
+          targets: ['thinking-frames'],
+          data: {
+            resourceIri: iri.value,
+            viewId: 'semantic-narrative'
+          }
+        });
+        return true;
+      } else if (iri.value === 'http://www.researchspace.org/resource/ThinkingFrames' && props && props['viewId']) {
+        trigger({
+          eventType: 'Dashboard.AddFrame',
+          source: 'link',
+          targets: ['thinking-frames'],
+          data: {
+            resourceIri: props['resourceIri'],
+            viewId: props['viewId']
+          }
+        });
+        return true;
+      } else if (iri.value === 'http://www.researchspace.org/resource/ThinkingFrames') {
+        trigger({
+          eventType: 'Dashboard.AddFrame',
+          source: 'link',
+          targets: ['thinking-frames'],
+        });
+        return true;
+      } else if (!iri.value.startsWith('http://www.researchspace.org/resource/')) {
+        trigger({
+          eventType: 'Dashboard.AddFrame',
+          source: 'link',
+          targets: ['thinking-frames'],
+          data: {
+            resourceIri: iri.value,
+            viewId: 'resource'
+          }
+        });
+        return true;
+      } else {
+        return false;
+      }
+    });
   }
 
   componentWillUnmount() {
+    setFrameNavigation(false);
     this.cancellation.cancelAll();
   }
 

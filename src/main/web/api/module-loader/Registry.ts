@@ -22,20 +22,20 @@ import * as D from 'react-dom-factories';
 
 import * as assign from 'object-assign';
 import * as _ from 'lodash';
-import * as lambda from 'core.lambda';
 import { Set } from 'immutable';
 import * as React from 'react';
 import * as render from 'dom-serializer';
 import * as he from 'he';
 import { Parser as ToReactParser, ProcessNodeDefinitions, Node, Instruction } from 'html-to-react';
 import * as Kefir from 'kefir';
-import { fromNullable } from 'data.maybe';
 
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import * as SecurityService from 'platform/api/services/security';
 import { TemplateParser, TemplateScope } from 'platform/api/services/template';
 import { ComponentProps } from 'platform/api/components';
 import { WrappingError } from 'platform/api/async';
+
+import { Reparentable } from 'platform/components/utils/Reparentable';
 
 import { hasComponent, loadComponent } from './ComponentsStore';
 import { safeReactCreateElement } from './ReactErrorCatcher';
@@ -307,7 +307,17 @@ function processReactComponent(node: Node, children: Array<ReactNode>): Promise<
   } catch (error) {
     throw new WrappingError(`Invalid template markup at <${node.name}>`, error);
   }
-  return renderWebComponent(node.name, props, children, templateScope);
+
+  if (attributes['fixedKey'] && attributes['reparentable']) {
+    delete props.key;
+    return renderWebComponent(node.name, props, children, templateScope).then(el => {
+      return React.createElement(
+        Reparentable, {uid: attributes['fixedKey']}, el
+      );
+    });
+  } else {
+    return renderWebComponent(node.name, props, children, templateScope);
+  }
 }
 
 /**

@@ -23,7 +23,7 @@ import * as Immutable from 'immutable';
 
 import { Rdf } from 'platform/api/rdf';
 import * as JsonLd from 'platform/api/rdf/formats/JsonLd';
-import { SparqlClient, QueryContext, SparqlUtil } from 'platform/api/sparql';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import { LdpService } from 'platform/api/services/ldp';
 
 import * as Forms from 'platform/components/forms';
@@ -197,8 +197,8 @@ CONSTRUCT {
     _:fragmentSelector a oa:FragmentSelector ;
                        rdf:value ?boundingBox .
 } WHERE {
-  ?annotation a crmdig:D35_Area ;
-              rso:displayLabel ?label ;
+  ?annotation a rso:EX_Digital_Image_Region ;
+              (rso:displayLabel|rdfs:label) ?label ;
               crmdig:L49_is_primary_area_of ?img ;
               rdf:value ?svgValue .
 

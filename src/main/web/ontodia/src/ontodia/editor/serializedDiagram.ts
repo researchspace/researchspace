@@ -32,6 +32,7 @@ export interface LayoutElement {
   iri: ElementIri;
   position: Vector;
   size?: Size;
+  fixedSize?: boolean;
   angle?: number;
   isExpanded?: boolean;
   group?: string;
@@ -54,6 +55,7 @@ const serializedCellProperties = [
   'type',
   // element properties
   'size',
+  'fixedSize',
   'angle',
   'isExpanded',
   'position',
@@ -157,6 +159,7 @@ export function makeLayoutData(modelElements: ReadonlyArray<Element>, modelLinks
       iri: element.iri,
       position: element.position,
       size: element.size,
+      fixedSize: element.isFixedSize,
       isExpanded: element.isExpanded,
       group: element.group,
       elementState: element.elementState,

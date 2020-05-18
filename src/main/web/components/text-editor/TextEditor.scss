@@ -1,0 +1,242 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import "~basic-styles.scss";
+
+// Text Editor
+
+$editorWidth: 794px;
+
+:global(.Dashboard--template) {
+  height: 100%;
+}
+
+.narrativeHolder {
+  height: 100%;
+  background-color: #f8f9fa;
+  padding-bottom: 50px;
+
+  // DropArea styling
+  :global(.DropArea--dropArea) {
+    height: 27.5px;
+  }
+
+  :global(.DropArea--dropArea.mp-droppable-enabled > .DropArea--children) {
+    display: none;
+  }
+
+  :global(.DropArea--messageWrapper) {
+    height: 100%;
+    display: none;
+  }
+
+  :global(.DropArea--dropArea.mp-droppable-enabled .DropArea--messageWrapper) {
+    display: block;
+  }
+
+  :global(.DropArea--dropMessage) {
+    height: 100% !important;
+  }
+
+  :global(.DropArea--dropArea.mp-droppable-hover .DropArea--dropMessage) {
+    background-color: rgba(29, 10, 110, 0.3) !important;
+  }
+
+}
+
+.titleHolder {
+  display: flex;
+}
+
+.titleInput {
+  width: $editorWidth - 17px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.resourceBlock {
+  display: flex;
+  justify-content: center;
+  border: 2px dashed #ffffff;
+  margin: 0 0 ($line-height-computed / 2);
+  padding: 10px;
+
+  // TODO
+  & > div > :global(.card.rs-object-card.rs-search-card) {
+    margin: 0;
+  }
+}
+
+.resourceBlockActive {
+  border: 2px dashed #1d0a6e;
+}
+
+/*
+ we need to set relative position for sidebar and editor holder, so we can
+ get relative position of the editor and use it for sidebar positioning
+*/
+.sidebarAndEditorHolder {
+  overflow: auto;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.editorContainer {
+  // need for text-align to work properly
+  white-space: normal;
+
+  border: 1px solid #ddddddd1;
+  background-color: rgb(255, 255, 255);
+  width: $editorWidth;
+  box-shadow: 0 1px 3px 1px rgba(60,64,67,.15);
+
+  // for edit mode, later extract
+
+  & > div {
+    padding: 20px 96px;
+  }
+  & a {
+    cursor: text;
+    text-decoration: underline;
+  }
+
+  & a:hover {
+    background-color:  #f2f3f5;
+  }
+}
+
+.sidebarContainer {
+    position: absolute;
+}
+
+
+// Sidebar
+
+.sidebar {
+    border-right: 3px solid #f2f3f5;
+    padding: 0 5px;
+    position: absolute;
+    transition: transform .15s;
+    left: 141px;
+
+    :global(.btn) {
+      background-color: #f8f9fa;
+    }
+}
+
+
+// Toolbar
+.toolbar {
+  display: flex;
+  justify-content: center;
+  padding: $padding-base-vertical 0;
+}
+
+.draggableGripper {
+  background-image: url('/images/gripper.svg');
+  width: 5px;
+  height: 33px;
+  margin-top: 2px;
+  margin-right: $padding-base-horizontal;
+  cursor: move;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+
+.dropdown {}
+
+.sidebarDropdown {
+  border: 0;
+}
+
+.dropdownMenuItem {
+    width: 130px;
+    display: inline-block;
+    text-align: start;
+}
+
+.dropdownMenuItemIcon {
+    width: 25px;
+    display: inline-block;
+}
+
+
+.toolbar .dropdownMenuItemIcon {
+    margin-right: 10px;
+}
+.sidebar .dropdownMenuItemIcon {
+    margin-right: 5px;
+}
+
+// links
+.internalLink {
+  /**/
+}
+
+.externalLink:before {
+  font-family: FontAwesome;
+  content: "\F08E ";
+  font-size: 11px;
+}
+
+.externalLinkHolder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.linkPopover {
+  display: flex;
+  width: 245px;
+  height: $input-height-base;
+
+  & :global(.DropArea--children) {
+    align-items: center;
+    justify-content: center;
+  }
+
+  & :global(.DropArea--dropMessage) {
+    height: $input-height-base !important;
+  }
+
+  & :global(.DropArea--dropArea.mp-droppable-hover .DropArea--dropMessage) {
+    background-color: rgba(29, 10, 110, 0.3) !important;
+  }
+
+  & a {
+    text-decoration: underline;
+  }
+}
+
+:global {
+  // link editor
+  #external-link-popover .btn-group {
+    display: flex;
+    margin-left: -1px;
+  }
+
+  // see https://github.com/ianstormtaylor/slate/issues/2302
+  [data-slate-void='true'], [data-slate-spacer="true"]{
+    position: relative!important
+  }
+}

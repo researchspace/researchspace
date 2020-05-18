@@ -62,18 +62,20 @@ export interface FieldDefinitionWithData extends FieldDefinitionProp {
 interface State {
   fieldsData: Array<FieldDefinitionWithData>;
   isLoading: boolean;
+  noData: boolean;
 }
 export class FieldBasedVisualization extends Component<FieldBasedVisualizationConfig, State> {
   constructor(props, context) {
     super(props, context);
     this.state = {
       fieldsData: [],
-      isLoading: false,
+      isLoading: true,
+      noData: true,
     };
   }
 
   static defaultProps = {
-    subject: getCurrentResource().value,
+    subject: getCurrentResource().value
   };
 
   public componentDidMount() {
@@ -91,6 +93,7 @@ export class FieldBasedVisualization extends Component<FieldBasedVisualizationCo
         options: {
           subject: this.props.subject,
           fields: this.state.fieldsData,
+          noData: this.state.noData,
         },
       },
     });
@@ -100,14 +103,27 @@ export class FieldBasedVisualization extends Component<FieldBasedVisualizationCo
     const { fields, subject } = this.props;
     const subjectIri = Rdf.iri(subject);
     Kefir.combine(
-      fields.map(normalizeFieldDefinition).map((field) =>
-        queryValues(field.selectPattern, subjectIri, { context: this.context.semanticContext }).map((values) => {
-          const f = _.cloneDeep(field as FieldDefinitionWithData);
-          f.values = _.isEmpty(values) ? null : values;
-          return f;
-        })
+      fields.map(
+        normalizeFieldDefinition
+      ).map(
+        field => queryValues(
+          field.selectPattern, subjectIri, { context: this.context.semanticContext }
+        ).map(
+          values => {
+            const f = _.cloneDeep(field as FieldDefinitionWithData);
+            f.values = _.isEmpty(values) ? null : values;
+            return f;
+          }
+        )
       )
-    ).onValue((values) => this.setState({ fieldsData: values }));
+    ).onValue(
+      values =>
+        this.setState({
+          fieldsData: values,
+          isLoading: false,
+          noData: _.every(values, v => v.values === null)
+        })
+    );
   }
 }
 export default FieldBasedVisualization;

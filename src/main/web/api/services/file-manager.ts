@@ -70,6 +70,7 @@ export class FileManager {
     generateIriQuery?: string;
     resourceQuery?: string;
     onProgress?: (percent: number) => void;
+    fileNameHack?: boolean;
   }): Kefir.Property<Rdf.Iri> {
     if (!options.storage) {
       return Kefir.constantError<any>(new Error('Storage is undefined!'));
@@ -83,9 +84,10 @@ export class FileManager {
       .field('createResourceQuery', options.resourceQuery || RESOURCE_QUERY)
       .field('generateIriQuery', options.generateIriQuery || '')
       .field('contextUri', options.contextUri || '')
+      .field('fileNameHack', options.fileNameHack ? 'true' : '')
       .on('progress', (e) => {
         if (options.onProgress) {
-          options.onProgress(<number>e.percent);
+          options.onProgress(e.percent as number);
         }
       });
 

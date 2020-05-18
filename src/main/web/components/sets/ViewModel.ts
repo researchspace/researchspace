@@ -338,8 +338,15 @@ export class ViewModel {
       .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item)))
       .observe({
         value: () => {
-          this.trigger(SetManagementEvents.ItemAdded);
-          this.loadSetItems(targetSet, { forceReload: true });
+          // This is ugly hack to fully reload all sets if we add something to the
+          // Uncategorized set, we need this to fetch Knowledg Maps when they are added
+          // to the clipboard
+          if (targetSet.equals(this.getState().defaultSet)) {
+            this.loadSets({keepItems: false});
+          } else {
+            this.trigger(SetManagementEvents.ItemAdded);
+            this.loadSetItems(targetSet, {forceReload: true});
+          }
         },
         error: (error) => {
           addNotification(
@@ -527,24 +534,28 @@ export class ViewModel {
       });
   }
 
-  removeSetItem(set: Rdf.Iri, item: Rdf.Iri) {
-    this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap(() => new SetService(set.value).deleteResource(item)))
-      .observe({
-        value: () => {
-          this.loadSetItems(set, { forceReload: true });
-          this.trigger(SetManagementEvents.ItemRemoved);
-        },
-        error: (error) => {
-          addNotification(
-            {
-              level: 'error',
-              message: 'Error removing set item',
-            },
-            error
-          );
-        },
-      });
+  removeSetItem(set: Rdf.Iri | undefined, item: Rdf.Iri) {
+    const actionableSet = set || this.getState().defaultSet;
+    this.cancellation.map(
+      getSetServiceForUser(this.getContext()).flatMap(
+        () => new SetService(actionableSet.value).deleteResource(item)),
+    ).observe({
+      value: () => {
+        // The same hack as in onDropItemToSet
+        if (!set) {
+          this.loadSets({keepItems: false});
+        } else {
+          this.loadSetItems(actionableSet, {forceReload: true});
+        }
+        this.trigger(SetManagementEvents.ItemRemoved);
+      },
+      error: error => {
+        addNotification({
+          level: 'error',
+          message: 'Error removing set item',
+        }, error);
+      },
+    });
   }
 
   startRenamingSet(targetSet: Rdf.Iri) {

@@ -40,13 +40,17 @@ module.exports = function(isProd) {
 
     const config = {
         stats: 'minimal',
+
+        // we want source maps for prod and dev builds
+        // we can't use eval source-maps because they don't work
+        // with css/scss files
+        devtool: 'source-map',
         resolveLoader: {
             modules: [path.resolve(ROOT_DIR, 'node_modules'), __dirname]
         },
         cache: true,
         entry: {
             'app': path.join(SRC, 'app/app.ts'),
-            'login': path.join(SRC, 'app/login.ts'),
             'page-renderer': path.join(SRC, 'app/external/PageRenderer.ts')
         },
         output: {
@@ -127,6 +131,7 @@ module.exports = function(isProd) {
                         {
                             loader: 'css-loader',
                             options: {
+                                sourceMap: true,
                                 modules: {
                                     localIdentName: '[name]--[local]',
                                 },
@@ -135,10 +140,11 @@ module.exports = function(isProd) {
                             }
                         },
                         {
-                            loader: 'sass-loader?',
+                            loader: 'sass-loader',
                             options: {
+                                sourceMap: true,
                                 sassOptions: {
-                                    outputStyle: 'expanded'
+                                    outputStyle: 'compressed',
                                 }
                             }
                         }
@@ -151,14 +157,19 @@ module.exports = function(isProd) {
                             loader: MiniCssExtractPlugin.loader,
                         },
                         'cache-loader',
-                        'css-loader?' + JSON.stringify({
-                            importLoaders: 2
-                        }),
                         {
-                            loader: 'sass-loader?',
+                            loader: 'css-loader',
+                            options : {
+                                importLoaders: 2,
+                                sourceMap: true,
+                            }
+                        },
+                        {
+                            loader: 'sass-loader',
                             options: {
+                                sourceMap: true,
                                 sassOptions: {
-                                    outputStyle: 'expanded'
+                                    outputStyle: 'compressed'
                                 }
                             }
                         }

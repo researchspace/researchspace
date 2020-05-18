@@ -49,8 +49,6 @@ module.exports = function () {
     };
     config.output.chunkFilename = "[name]-[contenthash].js";
 
-    let tsLoader = config.module.rules[0].use[0];
-
     //enable assets optimizations
     config.plugins.push(
         defaults.tsTypeCheck(true),

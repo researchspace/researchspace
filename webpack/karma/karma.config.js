@@ -27,9 +27,10 @@ var webpack = require('webpack'),
  */
 module.exports = function (defaults) {
     const webpackConfig = webpackConfigFn(defaults);
-    delete webpackConfig.entry;
-
     webpackConfig.mode = 'development';
+    delete webpackConfig.optimization.splitChunks;
+    delete webpackConfig.entry;
+    delete webpackConfig.devtool;
 
     // add alias for test directory from metaphacts-platform web project
     webpackConfig.resolve.alias['platform-tests'] = defaults.TEST;

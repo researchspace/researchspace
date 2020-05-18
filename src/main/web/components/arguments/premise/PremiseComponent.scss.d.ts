@@ -1,4 +1,4 @@
-declare namespace PremiseComponentScssModule {
+declare namespace PremiseComponentScssNamespace {
   export interface IPremiseComponentScss {
     evidence: string;
     evidenceCustom: string;
@@ -10,6 +10,6 @@ declare namespace PremiseComponentScssModule {
   }
 }
 
-declare const PremiseComponentScssModule: PremiseComponentScssModule.IPremiseComponentScss;
+declare const PremiseComponentScssModule: PremiseComponentScssNamespace.IPremiseComponentScss;
 
 export = PremiseComponentScssModule;

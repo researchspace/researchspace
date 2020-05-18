@@ -1,4 +1,4 @@
-declare namespace TextAnnotationEditorScssModule {
+declare namespace TextAnnotationEditorScssNamespace {
   export interface ITextAnnotationEditorScss {
     addAnnotationButton: string;
     addAnnotationIcon: string;
@@ -9,6 +9,6 @@ declare namespace TextAnnotationEditorScssModule {
   }
 }
 
-declare const TextAnnotationEditorScssModule: TextAnnotationEditorScssModule.ITextAnnotationEditorScss;
+declare const TextAnnotationEditorScssModule: TextAnnotationEditorScssNamespace.ITextAnnotationEditorScss;
 
 export = TextAnnotationEditorScssModule;

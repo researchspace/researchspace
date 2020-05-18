@@ -1,4 +1,4 @@
-declare namespace StorageSelectorScssModule {
+declare namespace StorageSelectorScssNamespace {
   export interface IStorageSelectorScss {
     component: string;
     'effective-app': string;
@@ -18,6 +18,6 @@ declare namespace StorageSelectorScssModule {
   }
 }
 
-declare const StorageSelectorScssModule: StorageSelectorScssModule.IStorageSelectorScss;
+declare const StorageSelectorScssModule: StorageSelectorScssNamespace.IStorageSelectorScss;
 
 export = StorageSelectorScssModule;

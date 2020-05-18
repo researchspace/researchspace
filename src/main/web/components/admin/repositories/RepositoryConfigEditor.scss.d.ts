@@ -1,4 +1,4 @@
-declare namespace RepositoryConfigEditorScssModule {
+declare namespace RepositoryConfigEditorScssNamespace {
   export interface IRepositoryConfigEditorScss {
     ActionButton: string;
     actionButton: string;
@@ -7,6 +7,6 @@ declare namespace RepositoryConfigEditorScssModule {
   }
 }
 
-declare const RepositoryConfigEditorScssModule: RepositoryConfigEditorScssModule.IRepositoryConfigEditorScss;
+declare const RepositoryConfigEditorScssModule: RepositoryConfigEditorScssNamespace.IRepositoryConfigEditorScss;
 
 export = RepositoryConfigEditorScssModule;

@@ -118,11 +118,6 @@ public class AssetFilter implements Filter {
                 try (SizedStream content = result.getRecord().getLocation().readSizedContent()) {
                     httpResponse.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(content.getLength()));
 
-                    // if we are not in development mode we want to cache all assets
-                    if (!this.config.getGlobalConfig().isDevelopmentMode()) {
-                        httpResponse.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=31536000,public");
-                    }
-
                     try (BufferedOutputStream output = new BufferedOutputStream(response.getOutputStream())) {
                         IOUtils.copy(content.getStream(), output);
                         output.flush();

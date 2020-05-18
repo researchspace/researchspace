@@ -1,4 +1,4 @@
-declare namespace DateFormatSelectorScssModule {
+declare namespace DateFormatSelectorScssNamespace {
   export interface IDateFormatSelectorScss {
     dateFormatSelect: string;
     dateFormatSelectDdMmYyyy: string;
@@ -20,6 +20,6 @@ declare namespace DateFormatSelectorScssModule {
   }
 }
 
-declare const DateFormatSelectorScssModule: DateFormatSelectorScssModule.IDateFormatSelectorScss;
+declare const DateFormatSelectorScssModule: DateFormatSelectorScssNamespace.IDateFormatSelectorScss;
 
 export = DateFormatSelectorScssModule;

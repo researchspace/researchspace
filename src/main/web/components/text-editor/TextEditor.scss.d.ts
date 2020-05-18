@@ -1,4 +1,4 @@
-declare namespace TextEditorScssModule {
+declare namespace TextEditorScssNamespace {
   export interface ITextEditorScss {
     draggableGripper: string;
     dropdownMenuItem: string;
@@ -21,9 +21,6 @@ declare namespace TextEditorScssModule {
   }
 }
 
-declare const TextEditorScssModule: TextEditorScssModule.ITextEditorScss & {
-  /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: TextEditorScssModule.ITextEditorScss;
-};
+declare const TextEditorScssModule: TextEditorScssNamespace.ITextEditorScss;
 
 export = TextEditorScssModule;

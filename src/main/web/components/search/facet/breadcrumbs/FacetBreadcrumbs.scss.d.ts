@@ -1,4 +1,4 @@
-declare namespace FacetBreadcrumbsScssModule {
+declare namespace FacetBreadcrumbsScssNamespace {
   export interface IFacetBreadcrumbsScss {
     breadcrumbs: string;
     cancelButton: string;
@@ -11,6 +11,6 @@ declare namespace FacetBreadcrumbsScssModule {
   }
 }
 
-declare const FacetBreadcrumbsScssModule: FacetBreadcrumbsScssModule.IFacetBreadcrumbsScss;
+declare const FacetBreadcrumbsScssModule: FacetBreadcrumbsScssNamespace.IFacetBreadcrumbsScss;
 
 export = FacetBreadcrumbsScssModule;

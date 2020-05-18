@@ -1,4 +1,4 @@
-declare namespace TreeScssModule {
+declare namespace TreeScssNamespace {
   export interface ITreeScss {
     activeNode: string;
     leafNode: string;
@@ -7,6 +7,6 @@ declare namespace TreeScssModule {
   }
 }
 
-declare const TreeScssModule: TreeScssModule.ITreeScss;
+declare const TreeScssModule: TreeScssNamespace.ITreeScss;
 
 export = TreeScssModule;

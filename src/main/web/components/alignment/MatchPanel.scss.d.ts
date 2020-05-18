@@ -1,4 +1,4 @@
-declare namespace MatchPanelScssModule {
+declare namespace MatchPanelScssNamespace {
   export interface IMatchPanelScss {
     alignedTerm: string;
     alignmentNodeRow: string;
@@ -25,6 +25,6 @@ declare namespace MatchPanelScssModule {
   }
 }
 
-declare const MatchPanelScssModule: MatchPanelScssModule.IMatchPanelScss;
+declare const MatchPanelScssModule: MatchPanelScssNamespace.IMatchPanelScss;
 
 export = MatchPanelScssModule;

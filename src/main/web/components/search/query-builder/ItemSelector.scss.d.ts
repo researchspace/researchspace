@@ -1,4 +1,4 @@
-declare namespace ItemSelectorScssModule {
+declare namespace ItemSelectorScssNamespace {
   export interface IItemSelectorScss {
     active: string;
     badge: string;
@@ -13,6 +13,6 @@ declare namespace ItemSelectorScssModule {
   }
 }
 
-declare const ItemSelectorScssModule: ItemSelectorScssModule.IItemSelectorScss;
+declare const ItemSelectorScssModule: ItemSelectorScssNamespace.IItemSelectorScss;
 
 export = ItemSelectorScssModule;

@@ -1,4 +1,4 @@
-declare namespace FileManagerScssModule {
+declare namespace FileManagerScssNamespace {
   export interface IFileManagerScss {
     DirectFileUploader: string;
     FileManager: string;
@@ -28,9 +28,6 @@ declare namespace FileManagerScssModule {
   }
 }
 
-declare const FileManagerScssModule: FileManagerScssModule.IFileManagerScss & {
-  /** WARNING: Only available when `css-loader` is used without `style-loader` or `mini-css-extract-plugin` */
-  locals: FileManagerScssModule.IFileManagerScss;
-};
+declare const FileManagerScssModule: FileManagerScssNamespace.IFileManagerScss;
 
 export = FileManagerScssModule;

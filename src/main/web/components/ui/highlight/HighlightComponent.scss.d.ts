@@ -1,9 +1,9 @@
-declare namespace HighlightComponentScssModule {
+declare namespace HighlightComponentScssNamespace {
   export interface IHighlightComponentScss {
     highlight: string;
   }
 }
 
-declare const HighlightComponentScssModule: HighlightComponentScssModule.IHighlightComponentScss;
+declare const HighlightComponentScssModule: HighlightComponentScssNamespace.IHighlightComponentScss;
 
 export = HighlightComponentScssModule;

@@ -1,4 +1,4 @@
-declare namespace SemanticTimelineScssModule {
+declare namespace SemanticTimelineScssNamespace {
   export interface ISemanticTimelineScss {
     fitButton: string;
     loading: string;
@@ -6,6 +6,6 @@ declare namespace SemanticTimelineScssModule {
   }
 }
 
-declare const SemanticTimelineScssModule: SemanticTimelineScssModule.ISemanticTimelineScss;
+declare const SemanticTimelineScssModule: SemanticTimelineScssNamespace.ISemanticTimelineScss;
 
 export = SemanticTimelineScssModule;

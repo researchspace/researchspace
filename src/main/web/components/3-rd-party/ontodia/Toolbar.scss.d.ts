@@ -1,4 +1,4 @@
-declare namespace ToolbarScssModule {
+declare namespace ToolbarScssNamespace {
   export interface IToolbarScss {
     component: string;
     group: string;
@@ -7,6 +7,6 @@ declare namespace ToolbarScssModule {
   }
 }
 
-declare const ToolbarScssModule: ToolbarScssModule.IToolbarScss;
+declare const ToolbarScssModule: ToolbarScssNamespace.IToolbarScss;
 
 export = ToolbarScssModule;

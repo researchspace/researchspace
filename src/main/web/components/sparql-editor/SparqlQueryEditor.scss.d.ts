@@ -1,4 +1,4 @@
-declare namespace SparqlQueryEditorScssModule {
+declare namespace SparqlQueryEditorScssNamespace {
   export interface ISparqlQueryEditorScss {
     controls: string;
     repositorySelector: string;
@@ -7,6 +7,6 @@ declare namespace SparqlQueryEditorScssModule {
   }
 }
 
-declare const SparqlQueryEditorScssModule: SparqlQueryEditorScssModule.ISparqlQueryEditorScss;
+declare const SparqlQueryEditorScssModule: SparqlQueryEditorScssNamespace.ISparqlQueryEditorScss;
 
 export = SparqlQueryEditorScssModule;

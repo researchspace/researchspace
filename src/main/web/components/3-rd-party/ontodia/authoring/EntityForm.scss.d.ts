@@ -1,10 +1,10 @@
-declare namespace EntityFormScssModule {
+declare namespace EntityFormScssNamespace {
   export interface IEntityFormScss {
     content: string;
     dialog: string;
   }
 }
 
-declare const EntityFormScssModule: EntityFormScssModule.IEntityFormScss;
+declare const EntityFormScssModule: EntityFormScssNamespace.IEntityFormScss;
 
 export = EntityFormScssModule;

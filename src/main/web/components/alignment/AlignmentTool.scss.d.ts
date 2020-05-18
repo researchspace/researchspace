@@ -1,4 +1,4 @@
-declare namespace AlignmentToolScssModule {
+declare namespace AlignmentToolScssNamespace {
   export interface IAlignmentToolScss {
     component: string;
     controlHolder: string;
@@ -14,6 +14,6 @@ declare namespace AlignmentToolScssModule {
   }
 }
 
-declare const AlignmentToolScssModule: AlignmentToolScssModule.IAlignmentToolScss;
+declare const AlignmentToolScssModule: AlignmentToolScssNamespace.IAlignmentToolScss;
 
 export = AlignmentToolScssModule;

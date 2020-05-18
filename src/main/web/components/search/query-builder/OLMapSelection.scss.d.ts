@@ -1,4 +1,4 @@
-declare namespace OlMapSelectionScssModule {
+declare namespace OlMapSelectionScssNamespace {
   export interface IOlMapSelectionScss {
     body: string;
     btnActive: string;
@@ -11,6 +11,6 @@ declare namespace OlMapSelectionScssModule {
   }
 }
 
-declare const OlMapSelectionScssModule: OlMapSelectionScssModule.IOlMapSelectionScss;
+declare const OlMapSelectionScssModule: OlMapSelectionScssNamespace.IOlMapSelectionScss;
 
 export = OlMapSelectionScssModule;

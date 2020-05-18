@@ -1,4 +1,4 @@
-declare namespace SemanticTreeInputScssModule {
+declare namespace SemanticTreeInputScssNamespace {
   export interface ISemanticTreeInputScss {
     browseButton: string;
     dropdown: string;
@@ -16,6 +16,6 @@ declare namespace SemanticTreeInputScssModule {
   }
 }
 
-declare const SemanticTreeInputScssModule: SemanticTreeInputScssModule.ISemanticTreeInputScss;
+declare const SemanticTreeInputScssModule: SemanticTreeInputScssNamespace.ISemanticTreeInputScss;
 
 export = SemanticTreeInputScssModule;

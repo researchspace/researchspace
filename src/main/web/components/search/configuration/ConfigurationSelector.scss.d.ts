@@ -1,4 +1,4 @@
-declare namespace ConfigurationSelectorScssModule {
+declare namespace ConfigurationSelectorScssNamespace {
   export interface IConfigurationSelectorScss {
     alignmentSelector: string;
     configCollapse: string;
@@ -11,6 +11,6 @@ declare namespace ConfigurationSelectorScssModule {
   }
 }
 
-declare const ConfigurationSelectorScssModule: ConfigurationSelectorScssModule.IConfigurationSelectorScss;
+declare const ConfigurationSelectorScssModule: ConfigurationSelectorScssNamespace.IConfigurationSelectorScss;
 
 export = ConfigurationSelectorScssModule;

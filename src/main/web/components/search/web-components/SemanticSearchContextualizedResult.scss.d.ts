@@ -1,4 +1,4 @@
-declare namespace SemanticSearchContextualizedResultScssModule {
+declare namespace SemanticSearchContextualizedResultScssNamespace {
   export interface ISemanticSearchContextualizedResultScss {
     contextSelector: string;
     holder: string;
@@ -6,6 +6,6 @@ declare namespace SemanticSearchContextualizedResultScssModule {
   }
 }
 
-declare const SemanticSearchContextualizedResultScssModule: SemanticSearchContextualizedResultScssModule.ISemanticSearchContextualizedResultScss;
+declare const SemanticSearchContextualizedResultScssModule: SemanticSearchContextualizedResultScssNamespace.ISemanticSearchContextualizedResultScss;
 
 export = SemanticSearchContextualizedResultScssModule;

@@ -1,4 +1,4 @@
-declare namespace RepositoryManagerScssModule {
+declare namespace RepositoryManagerScssNamespace {
   export interface IRepositoryManagerScss {
     EditorArea: string;
     RepositoryButton: string;
@@ -16,6 +16,6 @@ declare namespace RepositoryManagerScssModule {
   }
 }
 
-declare const RepositoryManagerScssModule: RepositoryManagerScssModule.IRepositoryManagerScss;
+declare const RepositoryManagerScssModule: RepositoryManagerScssNamespace.IRepositoryManagerScss;
 
 export = RepositoryManagerScssModule;

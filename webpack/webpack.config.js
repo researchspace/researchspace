@@ -127,7 +127,12 @@ module.exports = function(isProd) {
                             loader: MiniCssExtractPlugin.loader,
                         },
                         'cache-loader',
-                        '@teamsupercell/typings-for-css-modules-loader',
+                        {
+                            loader: '@teamsupercell/typings-for-css-modules-loader',
+                            options: {
+                                disableLocalsExport: true
+                            }
+                        },
                         {
                             loader: 'css-loader',
                             options: {
@@ -144,7 +149,7 @@ module.exports = function(isProd) {
                             options: {
                                 sourceMap: true,
                                 sassOptions: {
-                                    outputStyle: 'compressed',
+                                    outputStyle: 'expanded',
                                 }
                             }
                         }
@@ -169,7 +174,8 @@ module.exports = function(isProd) {
                             options: {
                                 sourceMap: true,
                                 sassOptions: {
-                                    outputStyle: 'compressed'
+                                    // we need to use expanded to not lose selectors with no styles for which we also need to generate typescript typings
+                                    outputStyle: 'expanded'
                                 }
                             }
                         }

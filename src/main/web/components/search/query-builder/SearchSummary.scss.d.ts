@@ -1,4 +1,4 @@
-declare namespace SearchSummaryScssModule {
+declare namespace SearchSummaryScssNamespace {
   export interface ISearchSummaryScss {
     Resource: string;
     Text: string;
@@ -12,6 +12,6 @@ declare namespace SearchSummaryScssModule {
   }
 }
 
-declare const SearchSummaryScssModule: SearchSummaryScssModule.ISearchSummaryScss;
+declare const SearchSummaryScssModule: SearchSummaryScssNamespace.ISearchSummaryScss;
 
 export = SearchSummaryScssModule;

@@ -87,7 +87,7 @@ export class FieldBasedMetadataApi implements MetadataApi {
         Math.floor((1 + Math.random()) * 0x100000000)
           .toString(16)
           .substring(1);
-      return `NewEntity-${uuid()}` as ElementIri;
+      return `http://researchspace.org/NewEntity-${uuid()}` as ElementIri;
     }
   }
 

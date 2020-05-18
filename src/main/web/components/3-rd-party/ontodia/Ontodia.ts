@@ -335,6 +335,17 @@ export interface OntodiaConfig {
    * Controls whether Ontodia should navigate to a newly saved diagram.
    */
   postSaving?: 'navigate' | 'none';
+
+
+  /*
+   * If true left panel is initially open.
+   */
+  leftPanelInitiallyOpen?: boolean;
+
+  /*
+   * If true right panel is initially open.
+   */
+  rightPanelInitiallyOpen?: boolean;
 }
 
 export type OntodiaPersistenceMode = FormBasedPersistenceProps;
@@ -552,6 +563,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
       propertySuggestionQuery,
       zoomRequireCtrl,
       nodeStyles,
+      leftPanelInitiallyOpen,
+      rightPanelInitiallyOpen,
     } = this.props;
     const { fieldConfiguration } = this.state;
 
@@ -562,8 +575,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
       language: preferredLanguage,
       onSaveDiagram: readonly ? undefined : this.onSaveDiagramPressed,
       onPersistChanges: fieldConfiguration.authoringMode ? this.onPersistAuthoredChanges : undefined,
-      leftPanelInitiallyOpen: readonly ? false : undefined,
-      rightPanelInitiallyOpen: readonly ? false : undefined,
+      leftPanelInitiallyOpen: readonly ? false : leftPanelInitiallyOpen,
+      rightPanelInitiallyOpen: readonly ? false : rightPanelInitiallyOpen,
       toolbar: createToolbar(this.props, {
         saveDiagramLabel,
         persistChangesLabel,
@@ -1218,7 +1231,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
         onSave: (label) => this.onSaveModalSubmit(label, layout),
         onHide: () => getOverlaySystem().hide(dialogRef),
         show: true,
-        title: 'Save Ontodia diagram',
+        title: this.props.saveDiagramLabel || 'Save Ontodia diagram',
         placeholder: 'Enter diagram name',
       })
     );

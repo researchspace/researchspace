@@ -69,7 +69,7 @@ public class MainGuiceModule extends AbstractModule {
 
     @SuppressWarnings("unused")
     private Injector coreInjector;
-    
+
     private ServletContext servletContext;
 
     public MainGuiceModule(ServletContext servletContext, Injector coreInjector) {
@@ -114,9 +114,9 @@ public class MainGuiceModule extends AbstractModule {
         // anytime.
         // But in production mode it can be populated only once and reused for all
         // invocations.
-        if (coreInjector.getInstance(Configuration.class).getGlobalConfig().isDevelopmentMode()) {
+        if (Configuration.isDevelopmentMode()) {
             bind(AssetsMap.class).toProvider(AssetsMapProvider.class);
-            
+
             // make sure that we don't cache assets in development mode
             this.servletContext.setInitParameter("cacheControl", "max-age=0,public,no-cache");
         } else {
@@ -139,15 +139,16 @@ public class MainGuiceModule extends AbstractModule {
 
         @Override
         public AssetsMap get() {
-            // Use ACCEPT_SINGLE_VALUE_AS_ARRAY because assets map value can be either array or single element, 
+            // Use ACCEPT_SINGLE_VALUE_AS_ARRAY because assets map value can be either array
+            // or single element,
             // e.g
             // "login": {
-            //   "js": [
-            //    "/assets/runtime-bundle.js",
-            //    "/assets/default~login-bundle.js",
-            //    "/assets/login-bundle.js"
-            //   ],
-            //   "css": "/assets/default~login.css"
+            // "js": [
+            // "/assets/runtime-bundle.js",
+            // "/assets/default~login-bundle.js",
+            // "/assets/login-bundle.js"
+            // ],
+            // "css": "/assets/default~login.css"
             // }
 
             ObjectMapper mapper = new ObjectMapper().enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);

@@ -83,7 +83,7 @@ public class MainTemplate {
         public MainTemplateOpts(String version, AssetsMap assetsMap, Configuration config) {
             this.version = version;
             this.assetsMap = assetsMap;
-            this.isDev = config.getGlobalConfig().isDevelopmentMode();
+            this.isDev = Configuration.isDevelopmentMode();
             this.deploymentTitle = config.getUiConfig().getDeploymentTitle();
         }
 

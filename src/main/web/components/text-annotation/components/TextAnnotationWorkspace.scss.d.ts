@@ -1,4 +1,4 @@
-declare namespace TextAnnotationWorkspaceScssModule {
+declare namespace TextAnnotationWorkspaceScssNamespace {
   export interface ITextAnnotationWorkspaceScss {
     annotationsPanel: string;
     component: string;
@@ -6,6 +6,6 @@ declare namespace TextAnnotationWorkspaceScssModule {
   }
 }
 
-declare const TextAnnotationWorkspaceScssModule: TextAnnotationWorkspaceScssModule.ITextAnnotationWorkspaceScss;
+declare const TextAnnotationWorkspaceScssModule: TextAnnotationWorkspaceScssNamespace.ITextAnnotationWorkspaceScss;
 
 export = TextAnnotationWorkspaceScssModule;

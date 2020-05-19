@@ -1,4 +1,4 @@
-declare namespace QueryBuilderScssModule {
+declare namespace QueryBuilderScssNamespace {
   export interface IQueryBuilderScss {
     actionableItem: string;
     active: string;
@@ -51,6 +51,6 @@ declare namespace QueryBuilderScssModule {
   }
 }
 
-declare const QueryBuilderScssModule: QueryBuilderScssModule.IQueryBuilderScss;
+declare const QueryBuilderScssModule: QueryBuilderScssNamespace.IQueryBuilderScss;
 
 export = QueryBuilderScssModule;

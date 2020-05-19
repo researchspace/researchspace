@@ -1,9 +1,9 @@
-declare namespace CodeExampleScssModule {
+declare namespace CodeExampleScssNamespace {
   export interface ICodeExampleScss {
     holder: string;
   }
 }
 
-declare const CodeExampleScssModule: CodeExampleScssModule.ICodeExampleScss;
+declare const CodeExampleScssModule: CodeExampleScssNamespace.ICodeExampleScss;
 
 export = CodeExampleScssModule;

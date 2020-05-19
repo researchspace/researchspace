@@ -1,4 +1,4 @@
-declare namespace RadarPlotScssModule {
+declare namespace RadarPlotScssNamespace {
   export interface IRadarPlotScss {
     background: string;
     cluster: string;
@@ -19,6 +19,6 @@ declare namespace RadarPlotScssModule {
   }
 }
 
-declare const RadarPlotScssModule: RadarPlotScssModule.IRadarPlotScss;
+declare const RadarPlotScssModule: RadarPlotScssNamespace.IRadarPlotScss;
 
 export = RadarPlotScssModule;

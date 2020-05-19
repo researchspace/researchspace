@@ -25,7 +25,7 @@ const defaultsFn = require('../defaults.js');
 module.exports = function (config) {
   const defaults = defaultsFn();
   const karmaConfig = require('./karma.config.js')(defaults);
-
+ 
   config.set(Object.assign({}, karmaConfig, {
     logLevel: config.LOG_INFO,
     autoWatch: true,

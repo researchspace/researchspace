@@ -1,4 +1,4 @@
-declare namespace SimpleDateInputScssModule {
+declare namespace SimpleDateInputScssNamespace {
   export interface ISimpleDateInputScss {
     day: string;
     holder: string;
@@ -7,6 +7,6 @@ declare namespace SimpleDateInputScssModule {
   }
 }
 
-declare const SimpleDateInputScssModule: SimpleDateInputScssModule.ISimpleDateInputScss;
+declare const SimpleDateInputScssModule: SimpleDateInputScssNamespace.ISimpleDateInputScss;
 
 export = SimpleDateInputScssModule;

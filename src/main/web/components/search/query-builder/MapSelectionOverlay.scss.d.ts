@@ -1,4 +1,4 @@
-declare namespace MapSelectionOverlayScssModule {
+declare namespace MapSelectionOverlayScssNamespace {
   export interface IMapSelectionOverlayScss {
     actions: string;
     mapSelection: string;
@@ -6,6 +6,6 @@ declare namespace MapSelectionOverlayScssModule {
   }
 }
 
-declare const MapSelectionOverlayScssModule: MapSelectionOverlayScssModule.IMapSelectionOverlayScss;
+declare const MapSelectionOverlayScssModule: MapSelectionOverlayScssNamespace.IMapSelectionOverlayScss;
 
 export = MapSelectionOverlayScssModule;

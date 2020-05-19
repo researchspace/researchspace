@@ -1,9 +1,9 @@
-declare namespace ComponentToolbarScssModule {
+declare namespace ComponentToolbarScssNamespace {
   export interface IComponentToolbarScss {
     actions: string;
   }
 }
 
-declare const ComponentToolbarScssModule: ComponentToolbarScssModule.IComponentToolbarScss;
+declare const ComponentToolbarScssModule: ComponentToolbarScssNamespace.IComponentToolbarScss;
 
 export = ComponentToolbarScssModule;

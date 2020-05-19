@@ -1,9 +1,9 @@
-declare namespace SparqlEditorScssModule {
+declare namespace SparqlEditorScssNamespace {
   export interface ISparqlEditorScss {
     sparqlEditor: string;
   }
 }
 
-declare const SparqlEditorScssModule: SparqlEditorScssModule.ISparqlEditorScss;
+declare const SparqlEditorScssModule: SparqlEditorScssNamespace.ISparqlEditorScss;
 
 export = SparqlEditorScssModule;

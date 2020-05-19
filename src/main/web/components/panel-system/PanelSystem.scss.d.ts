@@ -1,4 +1,4 @@
-declare namespace PanelSystemScssModule {
+declare namespace PanelSystemScssNamespace {
   export interface IPanelSystemScss {
     fullScreenButton: string;
     panel: string;
@@ -6,6 +6,6 @@ declare namespace PanelSystemScssModule {
   }
 }
 
-declare const PanelSystemScssModule: PanelSystemScssModule.IPanelSystemScss;
+declare const PanelSystemScssModule: PanelSystemScssNamespace.IPanelSystemScss;
 
 export = PanelSystemScssModule;

@@ -1,4 +1,4 @@
-declare namespace YearInputScssModule {
+declare namespace YearInputScssNamespace {
   export interface IYearInputScss {
     epoch: string;
     holder: string;
@@ -6,6 +6,6 @@ declare namespace YearInputScssModule {
   }
 }
 
-declare const YearInputScssModule: YearInputScssModule.IYearInputScss;
+declare const YearInputScssModule: YearInputScssNamespace.IYearInputScss;
 
 export = YearInputScssModule;

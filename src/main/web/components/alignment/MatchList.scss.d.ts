@@ -1,4 +1,4 @@
-declare namespace MatchListScssModule {
+declare namespace MatchListScssNamespace {
   export interface IMatchListScss {
     component: string;
     entry: string;
@@ -7,6 +7,6 @@ declare namespace MatchListScssModule {
   }
 }
 
-declare const MatchListScssModule: MatchListScssModule.IMatchListScss;
+declare const MatchListScssModule: MatchListScssNamespace.IMatchListScss;
 
 export = MatchListScssModule;

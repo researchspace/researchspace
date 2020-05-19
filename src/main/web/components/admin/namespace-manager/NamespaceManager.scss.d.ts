@@ -1,4 +1,4 @@
-declare namespace NamespaceManagerScssModule {
+declare namespace NamespaceManagerScssNamespace {
   export interface INamespaceManagerScss {
     component: string;
     'update-panel': string;
@@ -6,6 +6,6 @@ declare namespace NamespaceManagerScssModule {
   }
 }
 
-declare const NamespaceManagerScssModule: NamespaceManagerScssModule.INamespaceManagerScss;
+declare const NamespaceManagerScssModule: NamespaceManagerScssNamespace.INamespaceManagerScss;
 
 export = NamespaceManagerScssModule;

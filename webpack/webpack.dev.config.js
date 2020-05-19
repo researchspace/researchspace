@@ -22,23 +22,9 @@ const defaults = require('./defaults')();
 
 module.exports = function() {
     const config = require('./webpack.config.js')(false);
-    // enable sourceMaps for ts loader
-
-    let tsLoader = config.module.rules[0].use[1];
-    const tsOptions = tsLoader.options;
-    tsOptions.compilerOptions = {
-        sourceMap: true
-    };
-
     config.plugins.push(defaults.tsTypeCheck(false));
 
     config.output.pathinfo = false;
-
-    config.plugins.push(
-        new webpack.SourceMapDevToolPlugin({
-            columns: false
-        })
-    );
 
     config.output.publicPath = 'http://localhost:3000/assets/no_auth/';
     config.devServer = {

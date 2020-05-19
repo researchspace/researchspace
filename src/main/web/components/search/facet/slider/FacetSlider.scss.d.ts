@@ -1,4 +1,4 @@
-declare namespace FacetSliderScssModule {
+declare namespace FacetSliderScssNamespace {
   export interface IFacetSliderScss {
     handle: string;
     range: string;
@@ -7,6 +7,6 @@ declare namespace FacetSliderScssModule {
   }
 }
 
-declare const FacetSliderScssModule: FacetSliderScssModule.IFacetSliderScss;
+declare const FacetSliderScssModule: FacetSliderScssNamespace.IFacetSliderScss;
 
 export = FacetSliderScssModule;

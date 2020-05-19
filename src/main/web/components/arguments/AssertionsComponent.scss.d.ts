@@ -1,4 +1,4 @@
-declare namespace AssertionsComponentScssModule {
+declare namespace AssertionsComponentScssNamespace {
   export interface IAssertionsComponentScss {
     actions: string;
     field: string;
@@ -9,6 +9,6 @@ declare namespace AssertionsComponentScssModule {
   }
 }
 
-declare const AssertionsComponentScssModule: AssertionsComponentScssModule.IAssertionsComponentScss;
+declare const AssertionsComponentScssModule: AssertionsComponentScssNamespace.IAssertionsComponentScss;
 
 export = AssertionsComponentScssModule;

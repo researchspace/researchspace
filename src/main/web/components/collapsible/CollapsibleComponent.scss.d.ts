@@ -1,9 +1,9 @@
-declare namespace CollapsibleComponentScssModule {
+declare namespace CollapsibleComponentScssNamespace {
   export interface ICollapsibleComponentScss {
     toggle: string;
   }
 }
 
-declare const CollapsibleComponentScssModule: CollapsibleComponentScssModule.ICollapsibleComponentScss;
+declare const CollapsibleComponentScssModule: CollapsibleComponentScssNamespace.ICollapsibleComponentScss;
 
 export = CollapsibleComponentScssModule;

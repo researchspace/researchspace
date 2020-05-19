@@ -1,4 +1,4 @@
-declare namespace DropAreaScssModule {
+declare namespace DropAreaScssNamespace {
   export interface IDropAreaScss {
     alwaysVisible: string;
     children: string;
@@ -8,6 +8,6 @@ declare namespace DropAreaScssModule {
   }
 }
 
-declare const DropAreaScssModule: DropAreaScssModule.IDropAreaScss;
+declare const DropAreaScssModule: DropAreaScssNamespace.IDropAreaScss;
 
 export = DropAreaScssModule;

@@ -1,4 +1,4 @@
-declare namespace InlineValuesEditorScssModule {
+declare namespace InlineValuesEditorScssNamespace {
   export interface IInlineValuesEditorScss {
     component: string;
     footer: string;
@@ -18,6 +18,6 @@ declare namespace InlineValuesEditorScssModule {
   }
 }
 
-declare const InlineValuesEditorScssModule: InlineValuesEditorScssModule.IInlineValuesEditorScss;
+declare const InlineValuesEditorScssModule: InlineValuesEditorScssNamespace.IInlineValuesEditorScss;
 
 export = InlineValuesEditorScssModule;

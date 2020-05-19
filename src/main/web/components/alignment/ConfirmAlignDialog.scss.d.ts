@@ -1,4 +1,4 @@
-declare namespace ConfirmAlignDialogScssModule {
+declare namespace ConfirmAlignDialogScssNamespace {
   export interface IConfirmAlignDialogScss {
     component: string;
     description: string;
@@ -7,6 +7,6 @@ declare namespace ConfirmAlignDialogScssModule {
   }
 }
 
-declare const ConfirmAlignDialogScssModule: ConfirmAlignDialogScssModule.IConfirmAlignDialogScss;
+declare const ConfirmAlignDialogScssModule: ConfirmAlignDialogScssNamespace.IConfirmAlignDialogScss;
 
 export = ConfirmAlignDialogScssModule;

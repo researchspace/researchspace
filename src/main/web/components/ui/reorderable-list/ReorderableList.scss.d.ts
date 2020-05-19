@@ -1,4 +1,4 @@
-declare namespace ReorderableListScssModule {
+declare namespace ReorderableListScssNamespace {
   export interface IReorderableListScss {
     component: string;
     'drag-by-handle': string;
@@ -14,6 +14,6 @@ declare namespace ReorderableListScssModule {
   }
 }
 
-declare const ReorderableListScssModule: ReorderableListScssModule.IReorderableListScss;
+declare const ReorderableListScssModule: ReorderableListScssNamespace.IReorderableListScss;
 
 export = ReorderableListScssModule;

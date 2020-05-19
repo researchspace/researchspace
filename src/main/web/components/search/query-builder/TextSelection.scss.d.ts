@@ -1,4 +1,4 @@
-declare namespace TextSelectionScssModule {
+declare namespace TextSelectionScssNamespace {
   export interface ITextSelectionScss {
     helpQuestionCircle: string;
     holder: string;
@@ -6,6 +6,6 @@ declare namespace TextSelectionScssModule {
   }
 }
 
-declare const TextSelectionScssModule: TextSelectionScssModule.ITextSelectionScss;
+declare const TextSelectionScssModule: TextSelectionScssNamespace.ITextSelectionScss;
 
 export = TextSelectionScssModule;

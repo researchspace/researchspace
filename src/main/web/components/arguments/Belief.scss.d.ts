@@ -1,4 +1,4 @@
-declare namespace BeliefScssModule {
+declare namespace BeliefScssNamespace {
   export interface IBeliefScss {
     agree: string;
     disagree: string;
@@ -6,6 +6,6 @@ declare namespace BeliefScssModule {
   }
 }
 
-declare const BeliefScssModule: BeliefScssModule.IBeliefScss;
+declare const BeliefScssModule: BeliefScssNamespace.IBeliefScss;
 
 export = BeliefScssModule;

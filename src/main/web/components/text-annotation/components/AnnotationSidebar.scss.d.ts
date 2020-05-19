@@ -1,4 +1,4 @@
-declare namespace AnnotationSidebarScssModule {
+declare namespace AnnotationSidebarScssNamespace {
   export interface IAnnotationSidebarScss {
     annotation: string;
     annotationList: string;
@@ -11,6 +11,6 @@ declare namespace AnnotationSidebarScssModule {
   }
 }
 
-declare const AnnotationSidebarScssModule: AnnotationSidebarScssModule.IAnnotationSidebarScss;
+declare const AnnotationSidebarScssModule: AnnotationSidebarScssNamespace.IAnnotationSidebarScss;
 
 export = AnnotationSidebarScssModule;

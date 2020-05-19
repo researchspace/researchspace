@@ -1,4 +1,4 @@
-declare namespace LazyTreeSelectorScssModule {
+declare namespace LazyTreeSelectorScssNamespace {
   export interface ILazyTreeSelectorScss {
     component: string;
     expandToggle: string;
@@ -11,6 +11,6 @@ declare namespace LazyTreeSelectorScssModule {
   }
 }
 
-declare const LazyTreeSelectorScssModule: LazyTreeSelectorScssModule.ILazyTreeSelectorScss;
+declare const LazyTreeSelectorScssModule: LazyTreeSelectorScssNamespace.ILazyTreeSelectorScss;
 
 export = LazyTreeSelectorScssModule;

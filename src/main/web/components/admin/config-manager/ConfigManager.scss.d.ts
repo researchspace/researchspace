@@ -1,4 +1,4 @@
-declare namespace ConfigManagerScssModule {
+declare namespace ConfigManagerScssNamespace {
   export interface IConfigManagerScss {
     component: string;
     'edit-value': string;
@@ -20,6 +20,6 @@ declare namespace ConfigManagerScssModule {
   }
 }
 
-declare const ConfigManagerScssModule: ConfigManagerScssModule.IConfigManagerScss;
+declare const ConfigManagerScssModule: ConfigManagerScssNamespace.IConfigManagerScss;
 
 export = ConfigManagerScssModule;

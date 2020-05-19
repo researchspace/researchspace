@@ -1,4 +1,4 @@
-declare namespace WorkflowManagerComponentScssModule {
+declare namespace WorkflowManagerComponentScssNamespace {
   export interface IWorkflowManagerComponentScss {
     assignee: string;
     resetButton: string;
@@ -9,6 +9,6 @@ declare namespace WorkflowManagerComponentScssModule {
   }
 }
 
-declare const WorkflowManagerComponentScssModule: WorkflowManagerComponentScssModule.IWorkflowManagerComponentScss;
+declare const WorkflowManagerComponentScssModule: WorkflowManagerComponentScssNamespace.IWorkflowManagerComponentScss;
 
 export = WorkflowManagerComponentScssModule;

@@ -1,4 +1,4 @@
-declare namespace DashboardScssModule {
+declare namespace DashboardScssNamespace {
   export interface IDashboardScss {
     addItemButton: string;
     defaultColumnItem: string;
@@ -29,6 +29,6 @@ declare namespace DashboardScssModule {
   }
 }
 
-declare const DashboardScssModule: DashboardScssModule.IDashboardScss;
+declare const DashboardScssModule: DashboardScssNamespace.IDashboardScss;
 
 export = DashboardScssModule;

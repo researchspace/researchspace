@@ -1,4 +1,4 @@
-declare namespace AnnotationEditFormScssModule {
+declare namespace AnnotationEditFormScssNamespace {
   export interface IAnnotationEditFormScss {
     bodyInput: string;
     bodyTypeIcon: string;
@@ -9,6 +9,6 @@ declare namespace AnnotationEditFormScssModule {
   }
 }
 
-declare const AnnotationEditFormScssModule: AnnotationEditFormScssModule.IAnnotationEditFormScss;
+declare const AnnotationEditFormScssModule: AnnotationEditFormScssNamespace.IAnnotationEditFormScss;
 
 export = AnnotationEditFormScssModule;

@@ -31,7 +31,9 @@ plugins {
 }
 
 
-// currently we use Java 8 for development, but ResearchSpace can be run fine on later Java versions
+version = findProperty('buildVersion') ?: '4.0-SNAPSHOT'
+
+// currently we use Java 11 for development
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
@@ -60,6 +62,10 @@ eclipse {
 war {
     from 'COPYING'
     from 'COPYING.GPLv3'
+
+    manifest {
+        attributes('Version': version)
+    }
 }
 
 

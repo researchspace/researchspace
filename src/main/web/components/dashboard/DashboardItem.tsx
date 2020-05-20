@@ -248,7 +248,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           disabled: { backgroundColor: '#ff000054' },
         }}
       >
-        <div className={styles.defaultComponent} onClick={() => this.setState({ selectedView: view.id })}>
+        <div className={styles.defaultComponent} onClick={() => this.onDefaultDropAreaClick(view)}>
           <div className={'media'}>
             <div className={'media-left media-middle'}>{image}</div>
             <div className={'media-body'} style={{ height: '64px' }}>
@@ -260,6 +260,14 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       </DropArea>
     );
   };
+
+  private onDefaultDropAreaClick = (view: DashboardViewConfig) => {
+    if (view.resourceNotRequired) {
+      this.props.onSelect({viewId: view.id});
+    } else {
+      this.setState({selectedView: view.id});
+    }
+  }
 
   private renderDefaultDashboard = () => {
     const { views } = this.props;

@@ -58,8 +58,21 @@
       stroke-width: 1px;
     }
   }
+
+  // chartjs container should have relative position for proper resizing
+  // see https://www.chartjs.org/docs/latest/general/responsive.html#important-note
+  &__renderer {
+    position: relative;
+  }
 }
 
 .semantic-chart__type-label {
   text-transform: capitalize;
+}
+
+// needed for resize when chart component is inside growable flex element,
+// to make sure that canvas doesn't grow the element
+// otherwise we get into infinite growth
+.chartjs-render-monitor {
+  position: absolute;
 }

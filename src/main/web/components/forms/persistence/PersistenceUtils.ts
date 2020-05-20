@@ -38,3 +38,16 @@ export function parseQueryStringAsUpdateOperation(queryString: string | undefine
     throw new Error('Specified deletePattern or insertPattern is not an update query.');
   }
 }
+
+/**
+ * Add WITH clause to UPDATE query to execute it on specific named graph.
+ */
+export function withNamedGraph(
+  query: SparqlJs.Update, targetGraphIri?: string
+): SparqlJs.Update {
+  if (targetGraphIri) {
+    // graph property on update opertian is missing is SparqlJs d.ts file
+    query.updates.forEach(u => u['graph'] = targetGraphIri);
+  }
+  return query;
+}

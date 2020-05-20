@@ -53,7 +53,7 @@ jobs:
 
       # run tests with gradle only if no build_image label is present and we are not building master branch, otherwise tests are run as part of buildZip task
       - name: test
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') == false && github.ref != 'refs/head/master'
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') == false && github.ref != 'refs/heads/master'
         uses: eskatos/gradle-command-action@v1
         env:
           CHROMIUM_BIN: /usr/bin/google-chrome
@@ -65,7 +65,7 @@ jobs:
 
       # build war and zip only if build_image label is present or we are building from master
       - name: war
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/head/master'
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
         uses: eskatos/gradle-command-action@v1
         env:
           CHROMIUM_BIN: /usr/bin/google-chrome
@@ -73,7 +73,7 @@ jobs:
           arguments: buildZip -PbuildVersion=${DATE}_${GITHUB_SHA}
 
       - name: docker build
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/head/master'
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
         run: |
           export DOCKER_FOLDER="$(pwd)/dist/docker"
           cp build/libs/ROOT-*.war $DOCKER_FOLDER/platform/ROOT.war
@@ -85,11 +85,11 @@ jobs:
           docker build -t researchspace/platform-ci:${DATE}_${GITHUB_SHA} .
 
       - name: tag docker image for master branch
-        if: github.ref == 'refs/head/master'
+        if: github.ref == 'refs/heads/master'
         run: docker tag researchspace/platform-ci:${DATE}_${GITHUB_SHA} researchspace/platform-ci:latest
 
       - name: Push docker image
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/head/master'
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -98,7 +98,7 @@ jobs:
           docker push researchspace/platform-ci:${DATE}_${GITHUB_SHA}
 
       - name: Push latest tag for master
-        if: github.ref == 'refs/head/master'
+        if: github.ref == 'refs/heads/master'
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -107,7 +107,7 @@ jobs:
           docker push researchspace/platform-ci:latest
 
       # upload zip bundle 
-      - if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/head/master'
+      - if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v2
         with:
           name: zip-bundle

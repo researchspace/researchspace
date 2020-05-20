@@ -28,6 +28,7 @@ import javax.inject.Singleton;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -65,9 +66,15 @@ public class RioUtils {
      */
     public void write(RDFFormat format, Model model, OutputStream out) {
         RDFWriter writer = Rio.createWriter(format, out);
+        writer.startRDF();
+
         ns.getRioNamespaces().stream()
                 .forEach(namespace -> writer.handleNamespace(namespace.getPrefix(), namespace.getName()));
         writer.set(BasicWriterSettings.PRETTY_PRINT, true);
-        Rio.write(model, writer);
+
+        for (final Statement st : model) {
+            writer.handleStatement(st);
+        }
+        writer.endRDF();
     }
 }

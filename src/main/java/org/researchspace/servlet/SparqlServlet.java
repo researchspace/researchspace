@@ -323,11 +323,11 @@ public class SparqlServlet extends HttpServlet {
                         .orElse(RDFFormat.TURTLE);
                 Optional<RDFWriterFactory> writerFactory = resultWriterRegistry.get((RDFFormat) rdfFormat);
                 RDFWriter writer = writerFactory.get().getWriter(resp.getOutputStream());
-                addNamespaces(writer);
                 logger.trace("Evaluating query with hash \"{}\" as GraphQuery using \"{}\"", queryString.hashCode(),
                         writer.getClass());
                 setContentType(resp, rdfFormat);
                 writer.startRDF();
+                addNamespaces(writer);
                 try (GraphQueryResult result = ((GraphQuery) sparqlOperation).evaluate()) {
                     while (result.hasNext()) {
                         writer.handleStatement(result.next());
@@ -387,8 +387,8 @@ public class SparqlServlet extends HttpServlet {
     }
 
     private void addNamespaces(RDFHandler handler) {
-        /// TODO get and iterate of namespaces from registry
-        // handler.handleNamespace(prefix, uri);
+        nsRegistry.getRioNamespaces().stream()
+                .forEach(namespace -> handler.handleNamespace(namespace.getPrefix(), namespace.getName()));
     }
 
     /**

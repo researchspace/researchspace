@@ -59,9 +59,18 @@ public class StorageConfigLoader {
      * Reads storage configuration from "org/researchspace/app/internalStorage.prop"
      * in the classpath resources which is generated at the compile time.
      */
-    public LinkedHashMap<String, StorageConfig> readInternalStorageConfig(ClassLoader classLoader)
+    public LinkedHashMap<String, StorageConfig> readInternalStorageConfig(ClassLoader classLoader, boolean isDev)
             throws StorageConfigException {
-        URL internalConfigUrl = classLoader.getResource("org/researchspace/apps/internalStorage.prop");
+        URL internalConfigUrl;
+
+        // setup help, admin and assets storage in development mutable mode,
+        // in production they are available from immutable classpath storage
+        if (isDev) {
+            internalConfigUrl = classLoader.getResource("org/researchspace/apps/internalStorageDev.prop");
+        } else {
+            internalConfigUrl = classLoader.getResource("org/researchspace/apps/internalStorage.prop");
+        }
+
         if (internalConfigUrl == null) {
             throw new StorageConfigException("Unable to find internal storage config");
         }

@@ -100,7 +100,7 @@ public class MainPlatformStorage implements PlatformStorage {
             throws StorageConfigException, StorageException {
         StorageConfigLoader storageConfigLoader = new StorageConfigLoader(storageRegistry, injector);
         LinkedHashMap<String, StorageConfig> internalConfigs = storageConfigLoader
-                .readInternalStorageConfig(PlatformStorage.class.getClassLoader());
+                .readInternalStorageConfig(PlatformStorage.class.getClassLoader(), Configuration.isDevelopmentMode());
 
         for (Map.Entry<String, StorageConfig> entry : internalConfigs.entrySet()) {
             logger.info("Adding internal storage '{}':", entry.getKey());

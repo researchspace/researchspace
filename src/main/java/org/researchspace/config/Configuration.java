@@ -103,6 +103,10 @@ public class Configuration {
         return StringUtils.isEmpty(value) ? "./" : value;
     }
 
+    public static boolean isDevelopmentMode() {
+        return "true".equals(System.getProperty("isDevelopmentMode"));
+    }
+
     /**
      * Base config location (relative to working dir); may be overridden by system
      * property

@@ -162,17 +162,16 @@ Mirador.Overlay.prototype.init = function (this: Mirador.Overlay) {
   overlayInit.apply(this, arguments);
 };
 
-let hackTimer: number;
 function applyRedrawHack(mirador: Mirador.Instance, onInitialized: (mirador: Mirador.Instance) => void) {
-  if (hackTimer) {
+  if (mirador.hackTimer) {
     console.error('Mirador redraw timer already set');
   }
-  hackTimer = window.setInterval(() => {
-    if (!_.isEmpty($('.mirador-viewer:visible'))) {
+  mirador.hackTimer = window.setInterval(() => {
+    if (!_.isEmpty($(`${mirador.viewer.id} .mirador-viewer:visible`))) {
       mirador.viewer.workspace.calculateLayout();
       onInitialized(mirador);
-      window.clearInterval(hackTimer);
-      hackTimer = null;
+      window.clearInterval(mirador.hackTimer);
+      mirador.hackTimer = null;
     }
   }, 500);
 }
@@ -256,15 +255,15 @@ export function renderMirador(options: {
 
 export function removeMirador(mirador: Mirador.Instance, element: HTMLElement) {
   if (mirador) {
+    if (mirador.hackTimer) {
+      window.clearInterval(mirador.hackTimer);
+      mirador.hackTimer = null;
+    }
+
     clearAllSubscriptions(mirador.eventEmitter);
   }
 
   if (element) {
     element.innerHTML = '';
-  }
-
-  if (hackTimer) {
-    window.clearInterval(hackTimer);
-    hackTimer = null;
   }
 }

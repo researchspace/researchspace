@@ -370,12 +370,7 @@ const DEFAULT_FACTORY = {
     workspace.zoomToFit();
   },
   getPersistence: (mode) => {
-    switch (mode.type) {
-      case 'form':
-        return new FormBasedPersistence(mode);
-      default:
-        throw new Error(`Ontodia graph persistence mode is not supported: "${mode.type}"`);
-    }
+    return new FormBasedPersistence(mode);
   },
 };
 

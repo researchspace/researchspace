@@ -18,6 +18,7 @@
  */
 
 import * as _ from 'lodash';
+import * as uuidLib from 'uuid';
 
 /**
  * Handlebars doesn't have any meance to use comparison operators in templates.
@@ -143,5 +144,12 @@ export const GenericFunctions = {
 
   stringify(options) {
     return JSON.stringify(options);
+  },
+
+  /**
+   * generate uuid
+   */
+  uuid() {
+    return uuidLib.v4();
   }
 };

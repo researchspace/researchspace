@@ -8,6 +8,7 @@ declare global {
       eventEmitter: EventEmitter;
       saveController: SaveController;
       viewer: Viewer;
+      hackTimer: any
     }
 
     class EventEmitter {
@@ -163,6 +164,7 @@ declare global {
     /* implementation details */
     interface Viewer {
       workspace: Workspace;
+      id: string
     }
 
     /* implementation details */

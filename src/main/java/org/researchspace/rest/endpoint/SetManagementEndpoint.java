@@ -19,13 +19,21 @@
 
 package org.researchspace.rest.endpoint;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
-import org.researchspace.data.rdf.container.UserSetRootContainer;
-
+import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.eclipse.rdf4j.model.IRI;
+import org.researchspace.config.NamespaceRegistry;
+import org.researchspace.data.rdf.container.UserSetRootContainer;
+import org.researchspace.security.PlatformSecurityManager;
+import org.researchspace.security.SecurityService;
+import org.researchspace.vocabulary.PLATFORM;
 
 /**
  * REST methods for querying
@@ -41,6 +49,10 @@ import javax.ws.rs.core.MediaType;
 @Path("sets")
 @Singleton
 public class SetManagementEndpoint {
+
+    @Inject
+    private NamespaceRegistry ns;
+
     @GET
     @Path("getUserSetRootContainerIri")
     @RequiresAuthentication
@@ -59,7 +71,18 @@ public class SetManagementEndpoint {
         return UserSetRootContainer.defaultSetIriForUser(username);
     }
 
+    /**
+     * use local name of the user IRI because the same user can have few different
+     * logins, e.g anonymous and anonymous-user.
+     * 
+     * @see PlatformSecurityManager#getAnonymousSubject()
+     */
     private String getCurrentUsername() {
-        return SecurityUtils.getSubject().getPrincipal().toString();
+        IRI userIri = ns.getUserIRI();
+        if (userIri.equals(PLATFORM.ANONYMOUS_USER_INDIVIDUAL)) {
+            return PlatformSecurityManager.ANONYMOUS_PRINCIPAL;
+        } else {
+            return SecurityService.getUserName();
+        }
     }
 }

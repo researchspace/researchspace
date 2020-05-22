@@ -106,6 +106,20 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           autofocus={false}
           query={this.props.definition.autosuggestionPattern}
           placeholder={placeholder}
+          droppable={{
+            // enable droppable for autocomplete input
+            // TODO think about the way to restrict things that can be dropped based on field range
+            query: 'ASK {}',
+            styles: {
+              enabled: {
+                outline: '3px dashed #1D0A6E'
+              },
+              enabledHover: {
+                outline: '5px dashed #1D0A6E'
+              },
+              disabled: {}
+            }
+          }}
           value={value}
           templates={{ suggestion: this.tupleTemplate }}
           actions={{

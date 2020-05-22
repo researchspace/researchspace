@@ -35,8 +35,9 @@ export interface AutoCompletionInputProps extends Props<AutoCompletionInput>, Ba
   droppable?: {
     query: string;
     styles?: {
-      enabled: any;
-      disabled: any;
+      enabled: React.CSSProperties;
+      disabled: React.CSSProperties;
+      enabledHover?: React.CSSProperties
     };
     components?: {
       disabledHover?: any;

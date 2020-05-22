@@ -19,6 +19,7 @@
 
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const defaultsFn = require('./defaults');
 
 module.exports = function () {
@@ -38,6 +39,11 @@ module.exports = function () {
             },
             extractComments: false,
         }),
+        new OptimizeCSSAssetsPlugin({
+            cssProcessorPluginOptions: {
+                preset: ['default', { discardComments: { removeAll: true } }],
+            },
+        })
     ];
 
     /*

@@ -189,7 +189,13 @@ module.exports = function(isProd) {
                             loader: MiniCssExtractPlugin.loader,
                         },
                         'cache-loader',
-                        'css-loader'
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                // plain css-loader is mainly used for mirador, where we need to enable url resolution to properly embed images form jquery-ui that is in node_modules
+                                url: true,
+                            },
+                        }
                     ],
                 },
                 {

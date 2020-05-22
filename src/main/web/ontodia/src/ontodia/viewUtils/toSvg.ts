@@ -1,4 +1,4 @@
-import { uniqueId } from 'lodash';
+import { uniqueId, includes } from 'lodash';
 
 import { DiagramModel } from '../diagram/model';
 import { Rect, Vector, boundsOf } from '../diagram/geometry';
@@ -153,30 +153,30 @@ async function extractStylesheets() {
  * @returns stylesheet with url(*) resolved as embedded data-uris
  */
 async function embedExternalResources(baseUrl: string, styles: string) {
-  const extractFontUrlRegex = /url\((.*?)\)/gm;
+  const extractUrlRegex = /url\((.*?)\)/gm;
 
-  const fontUrls: Array<string> = [];
+  const urls: Array<string> = [];
   let m;
-  while ((m = extractFontUrlRegex.exec(styles)) !== null) {
-    if (m.index === extractFontUrlRegex.lastIndex) {
-      extractFontUrlRegex.lastIndex++;
+  while ((m = extractUrlRegex.exec(styles)) !== null) {
+    if (m.index === extractUrlRegex.lastIndex) {
+      extractUrlRegex.lastIndex++;
     }
 
     // 0 is the whole match, 1 is the first matching group (in our case everything inside url())
-    const urlStr = m[1];
+    const urlStr: string = m[1];
     // if URL is data url then we don't need to do anything with it
-    if (urlStr.startsWith('data:')) {
+    if (includes(urlStr, 'data:')) {
       // it is data-url so just ignore it;
     } else {
-      fontUrls.push(urlStr);
+      urls.push(urlStr);
     }
   }
 
   // fetch all fonts as data uri
-  const fonts = await Promise.all(
-    fontUrls.map((urlStr) => {
+  const resources = await Promise.all(
+    urls.map((urlStr) => {
       // the urls that we extracted
-      let fontUrl = urlStr;
+      let resourceUrl = urlStr;
 
       // URL can be represented in three ways:
       //    <a_css_property>: url("http://mysite.example.com/mycursor.png")
@@ -188,14 +188,14 @@ async function embedExternalResources(baseUrl: string, styles: string) {
       // so we need to strip quotes to get the actual URL
       if ((urlStr.startsWith('"') && urlStr.endsWith('"')) || (urlStr.startsWith("'") && urlStr.endsWith("'"))) {
         // strip double or single quotes
-        fontUrl = urlStr.slice(1, -1);
+        resourceUrl = urlStr.slice(1, -1);
       }
-      return exportAsDataUri(new URL(fontUrl, baseUrl).href);
+      return exportAsDataUri(new URL(resourceUrl, baseUrl).href);
     })
   );
 
   // replace all urls with data uris
-  return fontUrls.reduce((s, url, i) => s.replace(url, '"' + fonts[i] + '"'), styles);
+  return urls.reduce((s, url, i) => s.replace(url, '"' + resources[i] + '"'), styles);
 }
 
 function clonePaperSvg(

@@ -182,14 +182,14 @@ export class DashboardComponent extends Component<Props, State> {
           }
         });
         return true;
-      } else if (iri.value === 'http://www.researchspace.org/resource/ThinkingFrames' && props && props['viewId']) {
+      } else if (iri.value === 'http://www.researchspace.org/resource/ThinkingFrames' && props && props['view']) {
         trigger({
           eventType: 'Dashboard.AddFrame',
           source: 'link',
           targets: ['thinking-frames'],
           data: {
-            resourceIri: props['resourceIri'],
-            viewId: props['viewId']
+            resourceIri: props['resource'],
+            viewId: props['view']
           }
         });
         return true;

@@ -20,19 +20,14 @@
 package org.researchspace.security;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.session.Session;
-import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.servlet.AdviceFilter;
-import org.apache.shiro.web.servlet.ShiroHttpSession;
-import org.researchspace.config.Configuration;
 
 /**
  * @author Johannes Trame <jt@metaphacts.com>
@@ -40,23 +35,9 @@ import org.researchspace.config.Configuration;
 public class AnonymousUserFilter extends AdviceFilter {
 
     @Inject
-    private Configuration config;
+    private Provider<PlatformSecurityManager> securityManager;
 
-    public static final String ANONYMOUS_PRINCIPAL = "anonymous";
-    private static final String ANONYMOUS_REALM = "platform";
     private static final String ORIGINAL_SUBJECT = AnonymousUserFilter.class.getName() + ".originalSubject";
-
-    private Subject buildSubject(final HttpServletRequest request) {
-        PrincipalCollection principals = new SimplePrincipalCollection(ANONYMOUS_PRINCIPAL, ANONYMOUS_REALM);
-        ShiroHttpSession shiroSession = (ShiroHttpSession) request.getSession();
-
-        // FIXME: anonymous sessions should be backed by PlatformSecurityManager instead
-        final Session session = shiroSession.getSession();
-        session.setTimeout(config.getEnvironmentConfig().getShiroSessionTimeoutSecs() * 1000 /* convert s -> ms */);
-
-        return new Subject.Builder().principals(principals).authenticated(true).session(session)
-                .sessionCreationEnabled(true).buildSubject();
-    }
 
     @Override
     protected boolean preHandle(final ServletRequest request, final ServletResponse response) throws Exception {
@@ -64,7 +45,7 @@ public class AnonymousUserFilter extends AdviceFilter {
 
         if (subject.getPrincipal() == null) {
             request.setAttribute(ORIGINAL_SUBJECT, subject);
-            subject = buildSubject((HttpServletRequest) request);
+            subject = securityManager.get().getAnonymousSubject();
             ThreadContext.bind(subject);
         }
 

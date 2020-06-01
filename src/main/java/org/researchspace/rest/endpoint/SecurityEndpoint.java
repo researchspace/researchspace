@@ -62,17 +62,16 @@ import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.rest.feature.CacheControl.MaxAgeCache;
 import org.researchspace.rest.feature.CacheControl.NoCache;
-import org.researchspace.security.AnonymousUserFilter;
 import org.researchspace.security.LDAPRealm;
-import org.researchspace.security.PlatformSecurityManager;
 import org.researchspace.security.PermissionUtil;
-import org.researchspace.security.PermissionsDocGroup;
-import org.researchspace.security.PermissionsParameterInfo;
-import org.researchspace.security.SecurityService;
-import org.researchspace.security.ShiroTextRealm;
 import org.researchspace.security.Permissions.ACCOUNTS;
 import org.researchspace.security.Permissions.PERMISSIONS;
 import org.researchspace.security.Permissions.ROLES;
+import org.researchspace.security.PermissionsDocGroup;
+import org.researchspace.security.PermissionsParameterInfo;
+import org.researchspace.security.PlatformSecurityManager;
+import org.researchspace.security.SecurityService;
+import org.researchspace.security.ShiroTextRealm;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.collect.Lists;
@@ -113,7 +112,7 @@ public class SecurityEndpoint {
         public String userURI = ns.getUserIRI().stringValue();
         public boolean isAuthenticated = SecurityUtils.getSubject().isAuthenticated();
         public boolean isAnonymous = SecurityUtils.getSubject().getPrincipal().toString()
-                .equals(AnonymousUserFilter.ANONYMOUS_PRINCIPAL);
+                .equals(PlatformSecurityManager.ANONYMOUS_PRINCIPAL);
 
     }
 

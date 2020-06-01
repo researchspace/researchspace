@@ -22,14 +22,20 @@ package org.researchspace.config;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import java.net.URLEncoder;
-
-import com.google.common.collect.*;
+import javax.inject.Inject;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -44,13 +50,21 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.researchspace.api.sparql.SparqlUtil;
-import org.researchspace.security.AnonymousUserFilter;
+import org.researchspace.security.PlatformSecurityManager;
 import org.researchspace.security.SecurityService;
-import org.researchspace.services.storage.api.*;
+import org.researchspace.services.storage.api.ObjectKind;
+import org.researchspace.services.storage.api.ObjectRecord;
+import org.researchspace.services.storage.api.ObjectStorage;
+import org.researchspace.services.storage.api.PlatformStorage;
+import org.researchspace.services.storage.api.StoragePath;
 import org.researchspace.templates.TemplateUtil;
 import org.researchspace.vocabulary.PLATFORM;
 
-import javax.inject.Inject;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * @author Michael Schmidt <ms@metaphacts.com>
@@ -387,7 +401,8 @@ public class NamespaceRegistry {
     }
 
     public IRI getUserIRI(String userName) {
-        if (userName.equals(AnonymousUserFilter.ANONYMOUS_PRINCIPAL)) {
+        if (userName.equals(PlatformSecurityManager.ANONYMOUS_PRINCIPAL)
+                || userName.equals(PlatformSecurityManager.ANONYMOUS_WRITER_PRINCIPAL)) {
             return PLATFORM.ANONYMOUS_USER_INDIVIDUAL;
         } else {
             try {

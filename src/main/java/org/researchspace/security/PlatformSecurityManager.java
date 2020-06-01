@@ -38,11 +38,14 @@ import org.apache.shiro.cache.MapCache;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.CachingRealm;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
+import org.researchspace.security.ShiroGuiceModule.ShiroFilter;
 
 import io.buji.pac4j.token.Pac4jToken;
 
@@ -60,6 +63,16 @@ public class PlatformSecurityManager extends DefaultWebSecurityManager {
 
     public static final String AUTH_CACHE_NAME = "security.authCache";
 
+    public static final String ANONYMOUS_PRINCIPAL = "anonymous";
+    /**
+     * User with this principal will have the same user IRI as anonymous user. But
+     * it can have different permissions. It is useful in situation where one wants
+     * to populate anonymous user clipboard and other stuff with some data that can
+     * be viewable by anyone but editable only be logged-in user.
+     */
+    public static final String ANONYMOUS_WRITER_PRINCIPAL = "anonymous-user";
+    private static final String ANONYMOUS_REALM = "platform";
+
     @Inject
     private ShiroTextRealm shiroTextRealm;
 
@@ -67,21 +80,22 @@ public class PlatformSecurityManager extends DefaultWebSecurityManager {
     private PasswordService passwordService;
 
     private final CacheManager cacheManager;
+    private Subject anonymousSubject;
+    private Configuration config;
 
     @Inject
     public PlatformSecurityManager(Collection<Realm> realms, Configuration config, CacheManager cacheManager) {
         super(realms);
 
         this.cacheManager = cacheManager;
+        this.config = config;
 
         // Initialize a cache manager
         final MPCacheManager _cacheManager = new MPCacheManager();
         setCacheManager(_cacheManager);
 
-        // Initialize a session manager (using Shiro's internal default web session
-        // manager)
+        // Initialize a session manager
         final DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
-
         sessionManager.setGlobalSessionTimeout(config.getEnvironmentConfig().getShiroSessionTimeoutSecs() * 1000);
 
         /*
@@ -106,7 +120,26 @@ public class PlatformSecurityManager extends DefaultWebSecurityManager {
                 ((CachingRealm) r).setCacheManager(_cacheManager);
             }
         }
+    }
 
+    // If anonymous filter is enabled we initialize anonymous user Subject as soon
+    // as it is first time requested from filter and then re-use the same subject.
+    // This way we don't even need to store any cookies for anonymous user.
+    public Subject getAnonymousSubject() {
+        if (this.anonymousSubject == null) {
+            if (this.config.getEnvironmentConfig().getShiroAuthenticationFilter().contains(ShiroFilter.anon.name())) {
+                this.anonymousSubject = this.initAnonymousSubject();
+            }
+        }
+        return this.anonymousSubject;
+    }
+
+    public Subject initAnonymousSubject() {
+        PrincipalCollection principals = new SimplePrincipalCollection(ANONYMOUS_PRINCIPAL, ANONYMOUS_REALM);
+        Subject subject = new Subject.Builder().principals(principals).authenticated(true).sessionCreationEnabled(true)
+                .buildSubject();
+        this.save(subject);
+        return subject;
     }
 
     @Override

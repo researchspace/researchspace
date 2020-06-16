@@ -31,6 +31,7 @@ import {
 
 import { WrappingError } from 'platform/api/async';
 import { SparqlUtil, SparqlTypeGuards, VariableRenameBinder } from 'platform/api/sparql';
+import { ConfigHolder } from 'platform/api/services/config-holder';
 import { getBaseUrl } from 'platform/api/http';
 import { FieldDefinition } from 'platform/components/forms';
 import { xsd, rdf } from 'platform/api/rdf/vocabularies';
@@ -67,6 +68,9 @@ export function createDataProvider(params: {
   } else {
     sparqlProfile = SUPPORTED_PROFILES['default'];
   }
+
+  // apply label properties from the config to full text search in Ontodia
+  sparqlProfile.dataLabelProperty = ConfigHolder.getUIConfig().labelPropertyPattern;
 
   // this is workaround for field-based navigation
   const fieldConfigDefaults = createFieldConfiguration(fields, forceFields);

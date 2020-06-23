@@ -68,6 +68,7 @@ The easiest way to try researchspace is to use a [setup with docker-compose](#se
    * [How to try it?](#how-to-try-it)
    * [Overview](#overview)
    * [Setup with docker](#setup-with-docker)
+   * [Setup with ZIP bundle](#setup-with-zip-bundle)
    * [Developing and building from sources](#developing-and-building-from-sources)
       * [Prerequisites](#prerequisites)
          * [Prerequisites Installation on <em>Ubuntu</em>](#prerequisites-installation-on-ubuntu)
@@ -94,16 +95,18 @@ The easiest way to try researchspace is to use a [setup with docker-compose](#se
       * [Troubleshooting](#troubleshooting)
          * [Security certificate issues when building the platform](#security-certificate-issues-when-building-the-platform)
 
-<!-- Added by: artem, at: Tue Apr 21 20:59:15 EEST 2020 -->
+<!-- Added by: artem, at: Tue 23 Jun 2020 02:42:37 PM EEST -->
 
 <!--te-->
 
 # Setup with docker
-Latest docker images for ResearchSpace are available on [Docker Hub](https://hub.docker.com/u/researchspace). 
+Latest docker images for ResearchSpace are available on [Docker Hub](https://hub.docker.com/r/researchspace/platform-ci). 
 
-*docker-compose* script for ResearchSpace setup is available in [docker-compose folder](docker-compose/simple). 
+*docker-compose* scripts for ResearchSpace setup are available in [researchspace-docker-compose repostiory](https://github.com/researchspace/researchspace-docker-compose). 
 
-To setup ResearchSpace you need to execute `docker-compose up -d` from the folder with compose file. See more details about *docker-compose* in the [official documentation](https://docs.docker.com/compose/). 
+# Setup with ZIP bundle
+Download the latest ZIP bundle from the latest [CI build](https://github.com/researchspace/researchspace/actions?query=branch%3Amaster) artefacts and follow instructions in the README file inside the ZIP.
+
 
 # Developing and building from sources
 

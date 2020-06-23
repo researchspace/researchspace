@@ -1,4 +1,4 @@
-ARG JETTY_VERSION=9.4.27-jre11-slim
+ARG JETTY_VERSION=9.4.27-jre11
 FROM jetty:${JETTY_VERSION}
 MAINTAINER ResearchSpace researchspace@britishmuseum.org
 

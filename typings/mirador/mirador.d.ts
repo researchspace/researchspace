@@ -4,6 +4,11 @@ declare global {
   namespace Mirador {
     var OpenSeadragon: (options: OpenSeadragon.ViewerOptions) => OpenSeadragon.Viewer;
 
+    const Handlebars: any;
+    const DEFAULT_SETTINGS: {
+      windowSettings?: WindowSettings;
+    }
+
     interface Instance {
       eventEmitter: EventEmitter;
       saveController: SaveController;

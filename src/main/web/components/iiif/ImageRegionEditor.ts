@@ -300,7 +300,10 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   render() {
     const { errorMessage } = this.state;
     return D.div(
-      { style: { position: 'relative', width: '100%', height: '100%' } },
+      {
+        className: 'mirador',
+        style: { position: 'relative', width: '100%', height: '100%' }
+      },
       errorMessage
         ? React.createElement(ErrorNotification, { errorMessage })
         : D.div({
@@ -309,7 +312,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               this.renderMirador(element);
             },
             id: this.props.id,
-            className: 'mirador',
             style: { width: '100%', height: '100%', position: 'relative' },
           })
     );

@@ -42,6 +42,9 @@ function ensureBusExists(emitter: EmitterMixin) {
   }
 }
 
+Mirador.DEFAULT_SETTINGS.windowSettings.canvasControls.annotations.annotationState = 'on';
+Mirador.DEFAULT_SETTINGS.windowSettings.canvasControls.annotations.annotationRefresh = true;
+
 /**
  * override event bus operations to be able to 'clearAllSubscriptions':
  * this allows us to remove and show Mirador again without complete page reload
@@ -102,7 +105,7 @@ Mirador['DummyJSONStorage'] = class {
  * overriding template for annotation viewer to append additional 'open'
  *  button with 'Open as semantic link in platform' action
  */
-const globalHandlebars = window['Handlebars'];
+const globalHandlebars = Mirador.Handlebars;
 Mirador.AnnotationTooltip.prototype.viewerTemplate = globalHandlebars.compile(
   [
     '<div class="all-annotations" id="annotation-viewer-{{windowId}}">',

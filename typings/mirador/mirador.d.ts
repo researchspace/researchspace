@@ -7,7 +7,10 @@ declare global {
     const Handlebars: any;
     const DEFAULT_SETTINGS: {
       windowSettings?: WindowSettings;
+      showAddFromURLBox?: boolean;
     }
+
+    const Window: any;
 
     interface Instance {
       eventEmitter: EventEmitter;
@@ -33,6 +36,10 @@ declare global {
 
     interface Options {
       id: string;
+
+      // this is ResearchSpace specific option, it is not actually used by mirador,
+      // see Mirador.ts for usage
+      useDetailsSidebar?: boolean;
 
       workspaceType?: string;
       workspaces?: any;
@@ -107,6 +114,10 @@ declare global {
     }
 
     interface WindowSettings {
+      // this is ResearchSpace specific option, it is not actually used by mirador,
+      // see Mirador.ts for usage
+      useDetailsSidebar?: boolean;
+
       availableViews?: WindowView[];
       viewType?: WindowView;
       bottomPanel?: boolean;
@@ -186,6 +197,7 @@ declare global {
         ImageView: ImageViewModule;
       };
       canvasID: string;
+      destroy: () => void
     }
 
     /* implementation details */

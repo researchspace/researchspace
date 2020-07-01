@@ -113,7 +113,9 @@ Mirador.AnnotationTooltip.prototype.viewerTemplate = globalHandlebars.compile(
     '{{#each annotations}}',
     '<div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">',
     '<div class="button-container">',
-    '<mp-template-item><semantic-link guess-repository=true uri="{{id}}"></semantic-link></mp-template-item>',
+    '{{#if id}}',
+    '<mp-template-item><semantic-link guess-repository=true iri="{{id}}"></semantic-link></mp-template-item>',
+    '{{/if}}',
     '<i class="fa fa fa-external-link fa-fw"></i>open</a>',
     '{{#if showUpdate}}<a href="#edit" class="edit">',
     '<i class="fa fa-pencil-square-o fa-fw"></i>{{t "edit"}}</a>{{/if}}',
@@ -185,7 +187,7 @@ function applyRedrawHack(mirador: Mirador.Instance, onInitialized: (mirador: Mir
     console.error('Mirador redraw timer already set');
   }
   mirador.hackTimer = window.setInterval(() => {
-    if (!_.isEmpty($(`${mirador.viewer.id} .mirador-viewer:visible`))) {
+    if (!_.isEmpty($(`#${mirador.viewer.id} .mirador-viewer:visible`))) {
       mirador.viewer.workspace.calculateLayout();
       onInitialized(mirador);
       window.clearInterval(mirador.hackTimer);

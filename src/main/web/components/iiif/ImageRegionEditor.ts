@@ -44,6 +44,11 @@ export interface ImageRegionEditorConfig {
   imageIdPattern: string;
   iiifServerUrl: string;
   repositories?: Array<string>;
+
+  /**
+   * Use details sidebar instead of built-in mirador details view
+   */
+  useDetailsSidebar?: boolean;
 }
 
 export interface ImageRegionEditorProps extends ImageRegionEditorConfig {
@@ -250,10 +255,11 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       .getOrElse(['default']);
 
   private miradorConfigFromManifest(manifests: Array<Manifest>): Mirador.Options {
-    const { id, annotationEndpoint } = this.props;
+    const { id, annotationEndpoint, useDetailsSidebar } = this.props;
     const imagesInfo = this.state.info as ImagesInfoByIri;
     return {
       id: id, // The CSS ID selector for the containing element.
+      useDetailsSidebar: this.props.useDetailsSidebar,
       layout: chooseMiradorLayout(manifests.length),
       saveSession: false,
       data: manifests.map((manifest) => ({

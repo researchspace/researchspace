@@ -3,7 +3,7 @@
   <div data-flex-self="size-x1" style='overflow: hidden;'>
     <mp-query-catalog-template iri='{{iri.value}}'>
       <div style='padding: 1rem 1rem'>
-        <div style='display:inline; float:left'>
+        <div style='display:inline; float:left;'>
           <mp-label iri='{{iri.value}}' highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label> -&nbsp;
         </div>
         <semantic-query query='SELECT ?desc WHERE { <{{iri.value}}> rdfs:comment ?desc }' 
@@ -40,126 +40,31 @@
 [[/inline]]
 
 
-<style>
-  /*
-      auto size for code mirror within yasqe
-      we should make this default in the SparqlEditor component
-  */
-  .yasqe .CodeMirror {height: auto!important;}
-
-  /*
-      hide page toolbar i.e. sparql endpoint is special page
-  		that is not supposed to be edited
-  */
-  .component-page-toolbar{
-      display:none;
-  }
-
-</style>
-
-<style>
-  #queries-pane-1.active, #queries-pane-2.active, #queries-pane-3.active {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-  }
-
-  .split-pane__leftsidebar--sparql .split-pane__leftsidebar-footer{
-    position:relative;
-  }
-  .set-management__sets {
-    z-index: 0;
-  }
-  .set-management__set-items {
-    padding-top: 5px;
-  }
-  .set-management--list-view, .list-group {
-    overflow-y: auto;
-  }
-  .set-management--list-view .set-management__set-item {
-    padding: 2.5px 10px;
-	}
-  .set-management__footer{
-    display:none;
-  }
-  .set-management__search {
-    padding-top: 0;
-  }
-  .set-management__search-and-filters {
-   	background-color: #fff;
-  }
-  .set-management .Select-menu-outer {
-    opacity: 0.9;
-    filter: alpha(opacity=90);
-  }
-
-  /*
-  	categories
-  */
-  .query_category{
-    background-color: #008cba;
-    color: white;
-    border-radius: 2px;
-    margin-right: 5px;
-    cursor: pointer;
-    padding: 1px 3px;
-    font-size: 90%;
-    white-space: nowrap;
-    margin-bottom: 5px;
-    float: left;
-  }
-</style>
-
-<style>
-  .open-sidebar {
-	  flex: 1;
-  	display: flex;
-  	flex-direction: column;
-  }
-  .open-sidebar__tabs {
-    display: flex;
-    flex-direction: column;
-    padding-top: 20px;
-    height: 100%;
-  }
-  .open-sidebar__tabs .tab-content {
-    flex: auto;
-    display: flex;
-    flex-direction: column;
-  } 
-  
-  .open-sidebar__tabs .tab-pane {
-    height: 100%;
-  } 
-  
-  .Pane1{
-  	height:100%;
-  }
-  .Pane2{
-  	padding-top: 43px;
-  }
-  .split-pane__leftsidebar--sparql {
-    width: inherit;
-    border-right: 1px solid #a2a2a2;
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-  }
-</style>
-
 <ol class="page-breadcrumb">
   <li>
-    <mp-link title="Home" url="/">Home</mp-link>
+      <mp-link title="Home" url="resource/Start">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
   </li>
   <li class="active">SPARQL</li>
 </ol>
-<div class='page'>
-    <mp-sparql-query-editor-context>
-        <mp-splitpane min-size=35 default-size=500 dock=true persist-resize=true snap-threshold=165 fixed-key='querycatalog-sidebar'>
-          <div class="split-pane__leftsidebar--sparql">
+<div class='page rs-sparqlPage'>
+  <mp-sparql-query-editor-context>
+      <mp-splitpane dock=true nav-height=92 min-size=42 default-size=360 default-open='false' persist-resize=true snap-threshold=165 fixed-key='querycatalog-sidebar'>
+          <div data-flex-layout='column top-stretch' style="background: #e9ecef96;" class="clipboard">
             <mp-splitpane-toggle-on>
-              <div class="split-pane__leftsidebar-caption">Query Catalog</div>
+                <button style="border: none; outline: none; width: 100%; position:absolute; top:40%; left: -53px;" 
+                class="rs-button rs-drawer-transparent rs-h2">Query Catalog</button>
             </mp-splitpane-toggle-on>
+            <mp-splitpane-toggle-off>
+                <div class="split-pane__leftsidebar-header">
+                  <button data-flex-layout='layout="row center-left' style="border: none; width: 100%; background-color: #E9ECEF; padding: 24px 24px 16px 24px;">
+                    <div class="split-pane__leftsidebar-title"><h1 style="margin:0px;">Query Catalog</h1></div>
+                    <div class="fa fa-angle-left" style="font-size: 20px; margin-left: auto; color: #1D0A6E;" aria-hidden="true"></div>
+                  </button>
+                </div>
+            </mp-splitpane-toggle-off>
             <mp-splitpane-sidebar-open class="open-sidebar">
               <bs-tabs default-active-key='[[#if (urlParam "tab")]] [[urlParam "tab"]][[else]]3[[/if]]'  id='queries' class='open-sidebar__tabs'>
                 <bs-tab title="Global Queries" event-key='1'>
@@ -194,14 +99,14 @@
                                 BIND(skos:Concept as ?type)
                               }
                             }
-                            FILTER EXISTS {?itemHolder prov:wasAttributedTo <http://www.researchspace.org/resource/user/querycatalog>}
+                            FILTER EXISTS {?itemHolder prov:wasAttributedTo <http://www.metaphacts.com/resource/user/querycatalog>}
                             BIND(COALESCE(?type, <http://spinrdf.org/spin#Template>) AS ?kind) .
                           }'
                       set-count-query='
                         PREFIX ldp: <http://www.w3.org/ns/ldp#>
                         SELECT ?set (COUNT(?item) as ?count) WHERE {
-                           ?__rootSet__ ldp:contains ?item .
-                           ?item <http://purl.org/dc/terms/subject> ?set .
+                          ?__rootSet__ ldp:contains ?item .
+                          ?item <http://purl.org/dc/terms/subject> ?set .
                         } GROUP BY ?set
                       '
                       keyword-filter='{
@@ -213,8 +118,8 @@
                                       }'
                       item-config='{
                         "<http://www.w3.org/2004/02/skos/core#Concept>": {
-                           "isSet": true,
-                           "listTemplate": "<mp-label iri={{iri.value}}></mp-label>"
+                          "isSet": true,
+                          "listTemplate": "<mp-label iri={{iri.value}}></mp-label>"
                         },
                         "<http://spinrdf.org/spin#Template>": {
                           "isSet": false,
@@ -277,8 +182,8 @@
                       set-count-query='
                         PREFIX ldp: <http://www.w3.org/ns/ldp#>
                         SELECT ?set (COUNT(?item) as ?count) WHERE {
-                           ?__rootSet__ ldp:contains ?item .
-                           ?item <http://purl.org/dc/terms/subject> ?set .
+                          ?__rootSet__ ldp:contains ?item .
+                          ?item <http://purl.org/dc/terms/subject> ?set .
                         } GROUP BY ?set
                       '
                       keyword-filter='{
@@ -290,8 +195,8 @@
                                       }'
                       item-config='{
                         "<http://www.w3.org/2004/02/skos/core#Concept>": {
-                           "isSet": true,
-                           "listTemplate": "<mp-label iri={{iri.value}}></mp-label>"
+                          "isSet": true,
+                          "listTemplate": "<mp-label iri={{iri.value}}></mp-label>"
                         },
                         "<http://spinrdf.org/spin#Template>": {
                           "isSet": false,
@@ -337,20 +242,14 @@
                 </bs-tab>
               </bs-tabs>
             </mp-splitpane-sidebar-open>
-            <div class="split-pane__leftsidebar-footer">
-              <mp-splitpane-toggle-on>
-                <div class="split-pane__leftsidebar-toggle">&raquo;</div>
-              </mp-splitpane-toggle-on>
-              <mp-splitpane-toggle-off>
-                <div class="split-pane__leftsidebar-toggle" >&laquo;</div>
-              </mp-splitpane-toggle-off>
-            </div>
-          </div>
-          <div>
-            <semantic-context repository='default'>
-              <mp-sparql-query-editor query="SELECT * WHERE {?a ?b ?c} LIMIT 10"></mp-sparql-query-editor>
-            </semantic-context>
-          </div>
-      </mp-splitpane>
-    </mp-sparql-query-editor-context>
-  </div>
+
+        </div>
+
+        <div>
+          <semantic-context repository='default'>
+            <mp-sparql-query-editor query="SELECT * WHERE {?a ?b ?c} LIMIT 10"></mp-sparql-query-editor>
+          </semantic-context>
+        </div>
+    </mp-splitpane>
+  </mp-sparql-query-editor-context>
+</div>

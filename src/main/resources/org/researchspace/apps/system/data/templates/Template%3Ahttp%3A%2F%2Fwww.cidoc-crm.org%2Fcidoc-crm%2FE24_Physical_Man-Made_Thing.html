@@ -1,0 +1,29 @@
+[[#partial "activeBreadcrumb"]]
+Thing: <mp-label iri='[[this]]'></mp-label>
+[[/partial]]
+
+[[#partial "instituteHeader"]]
+<semantic-if query='ASK {<[[this]]> crm:P105_right_held_by ?institute . ?institute rdfs:label ?instituteLabel . }'
+    then='{{> then}}' else='{{> else}}'>
+
+    <template id="then">
+        <semantic-query
+            query='SELECT ?instituteLabel WHERE {<[[this]]> crm:P105_right_held_by ?institute . ?institute rdfs:label ?instituteLabel . }'
+            template='{{> institute}}'>
+            <template id='institute'>
+                <span class="rs-h1 rs-section-header">
+                    {{#each bindings}}
+                    {{#if @first}}{{else}} - {{/if}}
+                    {{instituteLabel.value}}
+                    {{/each}}
+                    Dataset</span>
+            </template>
+        </semantic-query>
+    </template>
+    <template id="else">
+        <span class="rs-h1 rs-section-header">Dataset</span>
+    </template>
+</semantic-if>
+[[/partial]]
+
+[[> rsp:ResourceTemplate type='Thing']]

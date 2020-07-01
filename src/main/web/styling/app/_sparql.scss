@@ -1,89 +1,284 @@
 ///////////////////////Exported Code/////////////////////////////
 /* Sparql page */
-/* Part of the Sparql page css is in the <style> of the template 
-data/templates/http%3A%2F%2Fsystem.metaphacts.com%2Fresource%2FSparqlEndpoint.html
-*/
+
+.rs-sparqlPage {
+   /*
+      auto size for code mirror within yasqe
+      we should make this default in the SparqlEditor component
+  */
+  .yasqe .CodeMirror {
+    height: auto!important;
+  }
+
+  /*
+      hide page toolbar i.e. sparql endpoint is special page
+  		that is not supposed to be edited
+  */
+  .component-page-toolbar {
+      display:none;
+  }
+
+  #queries-pane-1.active, 
+  #queries-pane-2.active, 
+  #queries-pane-3.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+  }
+
+  .split-pane__leftsidebar--sparql {
+    width: inherit;
+    border-right: 1px solid #a2a2a2;
+    background: $color-white;
+    display: flex;
+    flex-direction: column;
+
+    .split-pane__leftsidebar-footer {
+      position:relative;
+    }
+  }
+
+  .split-pane__leftsidebar-toggle {
+
+    width: 50px;
+  }
+
+  .set-management__sets {
+    z-index: 0;
+  }
+
+  .set-management__set-items {
+    padding-top: 5px;
+  }
+
+  .set-management--list-view, 
+  .list-group {
+    overflow-y: auto;
+  }
+
+  .set-management--list-view .set-management__set-item {
+    padding: 2.5px 10px;
+  }
+  
+  .set-management__footer {
+    display:none;
+  }
+
+  .set-management__search {
+    padding-top: 0;
+  }
+
+  .set-management .Select-menu-outer {
+    opacity: 0.9;
+    filter: alpha(opacity=90);
+  }
+
+  /* Categories */
+  .query_category {
+
+    background-color: #008cba;
+    color: $color-white;
+    border-radius: 2px;
+    margin-right: 5px;
+    cursor: pointer;
+    padding: 1px 3px;
+    font-size: 90%;
+    white-space: nowrap;
+    margin-bottom: 5px;
+    float: left;
+  }
+    
+  .open-sidebar {
+	  flex: auto;
+  	display: flex;
+    flex-direction: column;
+    background-color: $color-grey;
+  }
+
+  .open-sidebar__tabs {
+
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .tab-content {
+      flex: auto;
+      display: flex;
+      flex-direction: column;
+      background: $color-grey;
+    } 
+
+    .tab-pane {
+      height: 100%;
+    }
+
+  } 
+  
+  .Pane2 {
+  	padding-top: 43px;
+  }
+
+  /* .Pane.vertical.Pane1 .nav, */
+  .Pane.vertical.Pane1 {
+
+      .tab-content .list-group a {
+        padding: 10px 30px;
+      }
+
+      .nav {
+        background: $color-grey;
+      }
+
+      .nav > li {
+
+        width: calc(100% / 3);
+        height: 100%;
+        text-align: center;
+
+        &:not(:last-child) {
+
+          border-right: 1px solid $color-dark;
+        }
+
+        & > a {
+  
+          padding: 0px 5px;
+        }
+      }
+
+      .nav-tabs {
+
+        border-bottom: 1px solid #dfdee9;
+      }
+
+      #queries .nav-tabs > li {
+      
+        padding-bottom: 6px;
+
+        &.active > a, 
+        &.active > a:focus, 
+        &.active > a:hover,
+        &.active {
+          color: $color-white !important;
+          background-color: $color-dark !important;
+          border: 1px solid $color-dark !important;
+          font-size: 13.5px;
+        }
+
+      }
+
+      a.list-group-item {
+
+        color: $color-dark;
+      }
+
+      .list-group-item {
+      
+        background-color: transparent;
+        margin-bottom: 1px;
+        border: none;
+
+        &:hover {
+
+          background: #dfdee9;
+        }
+      
+        & > span {
+      
+          background: #1d0a6d !important;
+          padding: 3px 5px !important;
+          margin-bottom: 5px !important;
+        }
+      }
+
+  }
+}
+
+#queries .nav-tabs > li.active > a {
+  color: $color-white !important;
+  background-color: $color-dark !important;
+  border: 1px solid $color-dark !important;
+  font-size: 13.5px;
+}
+
+#queries .tab-pane {
+  padding: 20px 0px; 
+}
+
 .yasr {
 
     font-family: $sourceSans;
     font-size: 13px;
     line-height: 1.2;
     color: $color-primary-100;
-}
 
-.yasr .yasr_btn {
+    .yasr_btn {
 
-  color: #7366ab;
-  border-color: $color-primary-100;
-}
+      color: #7366ab;
+      border-color: $color-primary-100;
 
-.yasr .yasr_btn:hover,
-.yasr .yasr_btn:focus {
+      &:hover,
+      &:focus {
 
-  background-color: #ebebeb;
-}
-
-.yasr .yasr_btn.selected, 
-.yasr .yasr_btn:focus {
-
-    background-color: $color-primary-100;
-    border-color: $color-primary-100;
-    color: $color-white;
-
-}
-
-.yasr .yasr_header>* {
-  
-  margin-top: 15px;
-
-}
-
-.yasr .yasr_downloadIcon.yasr_btn.btn_icon {
-
-    padding-top: 5px;
-    padding-bottom: 6px;
-
-    &:hover,
-    &:focus {
-
-      background-color: #ebebeb;
+        background-color: #ebebeb;
+      }
     }
+
+    .yasr_btn.selected, 
+    .yasr_btn:focus {
+
+        background-color: $color-primary-100;
+        border-color: $color-primary-100;
+        color: $color-white;
+
+    }
+
+    .yasr_header>* {
+  
+      margin-top: 15px;
+    
+    }
+
+    .yasr_downloadIcon.yasr_btn.btn_icon {
+
+      padding-top: 5px;
+      padding-bottom: 6px;
+  
+      &:hover,
+      &:focus {
+  
+        background-color: #ebebeb;
+      }
+
+      table {
+
+        td a {
+
+          text-decoration: underline;
+          color: $color-dark;
+        }
+
+        td .pagination a {
+
+          text-decoration: none;
+        }
+
+        .pagination > .active > a,
+        .pagination > .active > a:hover,
+        .pagination > .active > a:focus, 
+        .pagination > .active > span,
+        .pagination > .active > span:hover,
+        .pagination > .active > span:focus {
+
+          color: $color-white;
+        }
+      }
+  }
 }
 
 #Your_Icon path {
 
   fill: $color-primary-100 !important;
-}
-
-.yasr table td a {
-
-  text-decoration: underline;
-  color: $color-dark;
-}
-
-.yasr table td .pagination a {
-
-  text-decoration: none;
-  
-}
-
-.yasr {
-
-  table .pagination > .active > a,
-  table .pagination > .active > a:hover,
-  table .pagination > .active > a:focus, 
-  table .pagination > .active > span,
-  table .pagination > .active > span:hover,
-  table .pagination > .active > span:focus {
-
-    color: $color-white;
-  }
-}
-
-select:not([multiple]) {
-
-    padding: 0 .8em !important;
-    padding-right: 2em !important;
 }
 
 .SparqlQueryEditor__repositorySelectorDropdown {
@@ -95,41 +290,3 @@ select:not([multiple]) {
   height: 39px !important;
   border-bottom: 1px solid #ccc;
 }
-
-
-.Select-menu-outer {
-
- font-family: $sourceSans;
-
-  .Select-option {
-
-      font-size: 14px;
-      color: $color-dark;
-  }
-
-  .Select-option.is-disabled {
-      color: $color-primary-50;
-    }
-}
-
-  .Select-menu-outer .Select-option:hover,  
-  .Select-menu-outer .Select-option:focus,
-  .Select-menu-outer .Select-option:focus-within,
-  .Select-menu-outer .Select-option.is-selected, 
-  .Select-menu-outer .Select-option.is-focused {
-
-    color: $color-dark;
-    background-color: $color-primary-10;
-  }
-
-  .split-pane__leftsidebar-toggle {
-
-    width: 50px;
-  }
-
-  #queries  .tab-pane {
-    padding: 20px 0px; 
-
-}
-
-  

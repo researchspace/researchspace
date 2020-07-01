@@ -1,0 +1,107 @@
+<div style="text-transform: capitalize;">
+    <mp-label iri='[[this]]'></mp-label>
+</div>
+<div style="padding-top: 18px; height: inherit;">
+    <bs-tab-container id="tab-container" class="card-modal-tabs"
+                        default-active-key="images">
+        <bs-tabs mount-on-enter=true>
+            <bs-tab event-key="images" title="Images">
+                <div class="carousel-container">
+                  <semantic-carousel query='SELECT DISTINCT ?imgURL ?isMainRep
+                                            WHERE {
+                                              {
+                                                <[[this]]> a ?type ;
+                                                FILTER(?type != rso:EX_Digital_Image) .
+                                                ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
+                                                <[[this]]> ?representationProp ?representation .
+
+                                                OPTIONAL {
+                                                  <[[this]]> ?representationProp ?representation .
+                                                  ?representation a rso:EX_Digital_Image ;
+                                                                  crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
+                                                  BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                                                }
+                                            
+                                                OPTIONAL {
+                                                  <[[this]]> ?representationProp ?representation .
+                                                  ?representation a rso:EX_Digital_Image .
+                                                  BIND(REPLACE(STR(?representation), "^.*/(.*)$", "$1") as ?imageID) .
+                                                  BIND(?imageID as ?imgIiifId)
+                                                  BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                                                }
+                                                
+                                                BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?representation) AS ?imgURL)
+                                                BIND(IF(?representationProp = rso:PX_has_main_represenation, true, false) AS ?isMainRep)
+                                              } UNION {
+                                                <[[this]]> a rso:EX_Digital_Image ;
+                                                OPTIONAL {
+                                                  <[[this]]> a rso:EX_Digital_Image ;
+                                                  crm:P1_is_identified_by/rso:PX_has_file_name ?fileName. 
+                                                  BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                                                }
+                                                    
+                                                OPTIONAL {
+                                                  <[[this]]> a rso:EX_Digital_Image ;
+                                                  BIND(REPLACE(STR(<[[this]]>), "^.*/(.*)$", "$1") as ?imageID) .
+                                                  BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                                                }
+                                                BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURL)
+                                                BIND(true AS ?isMainRep)
+                                              }  
+                                            } ORDER BY ?imgURL'
+            
+                                    options='{"fade": true, "lazyLoad": true }'
+                                    tuple-template='{{> imageCarousel}}'
+                                    no-result-template='{{> noImages}}'
+                >
+                
+                        <template id="imageCarousel">
+                            <img style='object-fit: contain;' src='{{imgURL.value}}' 
+                                      width="480" height="300"
+                            >
+                        </template>
+                        
+                        <template id="noImages">
+                            <div class="no-media">
+                            No images available
+                            </div>
+                        </template>
+                </semantic-carousel>
+                </div>
+            </bs-tab>
+
+            <bs-tab event-key="videos" title="Videos">
+              <div class="carousel-container">
+                <semantic-carousel query='PREFIX rso: <http://www.researchspace.org/ontology/>
+                                            SELECT DISTINCT ?video 
+                                            WHERE {
+                                                <[[this]]> rso:PX_has_video ?video .
+                                                }'
+            
+                                    options='{"fade": true }'
+                                    tuple-template='{{> videoCarousel}}'
+                                    no-result-template='{{> noVideo}}'
+                >
+                
+                        <template id="videoCarousel">
+                        <div class="carousel-container"> 
+                            <iframe src='{{video.value}}' 
+                                    frameborder="0" 
+                                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
+                                      width="480" height="300"
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                        </template>
+                        
+                        <template id="noVideo">
+                            <div class="no-media">
+                            No videos available
+                            </div>
+                        </template>
+                </semantic-carousel>
+              </div>
+            </bs-tab>
+        </bs-tabs>
+    </bs-tab-container>
+</div>

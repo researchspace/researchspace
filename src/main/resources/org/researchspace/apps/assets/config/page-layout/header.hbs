@@ -1,57 +1,167 @@
-<bs-navbar data-fluid="true" class="metaphacts-header-navbar" data-fixed-top="true" data-role="navigation">
-  <bs-navbar-header>
-    <bs-navbar-brand>
-      <a href="/">
-        {{deploymentTitle}}
-      </a>
-    </bs-navbar-brand>
-    <bs-navbar-toggle/>
-  </bs-navbar-header>
-  <bs-navbar-collapse>
-    <ul class="nav navbar-nav">
-      <li>
-        <mp-link url="/sparql" title="Sparql Endpoint">SPARQL</mp-link>
-      </li>
-    </ul>
-    <bs-nav data-pull-right="true">
-      <bs-nav-dropdown title="Quick Links" id="bg-nested-dropdown">
-        <mp-anonymous-hidden>
-          <mp-resource-link-container uri="http://www.researchspace.org/resource/admin/DataImportExport">
-            <bs-menu-item>Data Import & Export</bs-menu-item>
-          </mp-resource-link-container>
-        </mp-anonymous-hidden>
-        <mp-resource-link-container uri="http://www.researchspace.org/resource/SimpleSearch">
-          <bs-menu-item>Keyword Search</bs-menu-item>
-        </mp-resource-link-container>
-        <mp-resource-link-container uri="http://www.researchspace.org/resource/NavigateToPage">
-          <bs-menu-item>Navigate to resource</bs-menu-item>
-        </mp-resource-link-container>                
-        <bs-menu-item divider='true'></bs-menu-item>
-        <mp-resource-link-container uri="http://www.researchspace.org/resource/assets/">
-          <bs-menu-item>Assets</bs-menu-item>
-        </mp-resource-link-container>
-        <bs-menu-item divider='true'></bs-menu-item>
-        <mp-resource-link-container uri="http://www.researchspace.org/resource/assets/OntodiaDiagrams">
-          <bs-menu-item>Diagrams</bs-menu-item>
-        </mp-resource-link-container>
-        <mp-resource-link-container uri="http://www.researchspace.org/resource/assets/Ontologies">
-          <bs-menu-item>Ontologies</bs-menu-item>
-        </mp-resource-link-container>
-      </bs-nav-dropdown>
-      <mp-nav-account></mp-nav-account>
-      <mp-anonymous-hidden>
-        <mp-resource-link-container uri="http://www.researchspace.org/resource/admin/">
-          <li title="System Administration">
-            <a><i class="fa fa-cog"></i></a>
-          </li>
-        </mp-resource-link-container>
-      </mp-anonymous-hidden>
-      <mp-resource-link-container uri="http://help.researchspace.org/resource/Start">
-        <li title="Help">
-          <a><i class="fa fa-question-circle"></i></a>
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="rs-header">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#rs-navbar"
+        aria-expanded="false" aria-controls="rs-navbar" aria-label="Toggle navigation">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="rs-header-logo" href="/">{{deploymentTitle}}</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="rs-navbar">
+
+      <ul class="nav navbar-nav">
+        <li class="rs-nav-about--margin">
+          <a href="https://www.researchspace.org/" target="_blank" class="rs-body-m-M">About</a>
         </li>
-      </mp-resource-link-container>
-      <mp-user-language-switch></mp-user-language-switch>
-    </bs-nav>
-  </bs-navbar-collapse>
-</bs-navbar>
+
+        {{!-- <li class="rs-nav-about--margin">
+          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" class="rs-body-m-M">Thinking Frames</semantic-link>
+        </li> --}}
+
+        {{!-- Example resources dropdown
+        <bs-nav-dropdown title="Example Resources" id="main-header-dropdown" class="rs-nav-resources--margin">
+
+            <li class="rs-dropdown-sectionTitle">Records</li>
+            <semantic-link-container uri="#"><bs-menu-item>Resource 1</bs-menu-item></semantic-link-container>
+            <semantic-link-container uri="#"><bs-menu-item>Resource 2</bs-menu-item></semantic-link-container>
+            <semantic-link-container uri="#"><bs-menu-item>Resource 3</bs-menu-item></semantic-link-container>
+            <bs-menu-item divider="true"></bs-menu-item>
+
+            <li class="rs-dropdown-sectionTitle">Semantic Narratives</li>
+            <semantic-link-container uri="#"><bs-menu-item>Resource 4</bs-menu-item></semantic-link-container>
+            <bs-menu-item divider="true"></bs-menu-item>
+
+            <li class="rs-dropdown-sectionTitle">Knowledge Maps</li>
+            <semantic-link-container uri="#"><bs-menu-item>Resource 5</bs-menu-item></semantic-link-container>
+           <bs-menu-item divider="true"></bs-menu-item>
+
+            <li class="rs-dropdown-sectionTitle">Searches</li>
+            <semantic-link-container uri="#"><bs-menu-item>Resource 6</bs-menu-item></semantic-link-container>
+            <bs-menu-item divider="true"></bs-menu-item>
+
+            <li class="rs-dropdown-sectionTitle">Arguments</li>
+            <semantic-link-container uri="#"><bs-menu-item>Resource 7</bs-menu-item></semantic-link-container>
+            
+        </bs-nav-dropdown> --}}
+
+      </ul>
+
+      <ul class="nav navbar-nav">
+
+        <li>
+          <mp-resource-link-container uri='http://www.researchspace.org/resource/ProjectDashboard'>
+            <a title="Dashboard" class="rs-body-m-M">
+              Dashboard
+            </a>
+          </mp-resource-link-container>
+        </li>
+
+        <li>
+          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" class="rs-body-m-M">Thinking Frames
+          </semantic-link>
+        </li>
+
+        <li class="rs-only-xs">
+          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" urlqueryparam-view='simple-search'
+            title="Advanced seach" style="display: inline-block;">
+            Search
+          </semantic-link>
+        </li>
+
+        <li class="rs-xs-none {{!-- rs-navigate-input --}}">
+          {{!-- <input type="text" placeholder="Navigate To .." disabled class="rs-textInput--white rs-body-m-M" style="height: 27px;"> --}}
+          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" urlqueryparam-view='simple-search'
+            title="Advanced seach" style="padding-top:3px; padding-right: 5px;">
+            <img src="/assets/images/icons/Actions/Search_white.svg" class="rs-search-icon">
+          </semantic-link>
+        </li>
+
+        {{!-- <mp-anonymous-hidden>
+          <li><mp-link url="/sparql" class="rs-body-m-M">Sparql</mp-link></li>
+        </mp-anonymous-hidden> --}}
+
+
+        <li class="rs-xs-none">
+          <semantic-link iri="http://www.researchspace.org/resource/Documentation" title="Documentation"
+            class="rs-setting-icon" style="padding-right: 5px;">
+            <i class="fa fa-question-circle"></i>
+          </semantic-link>
+        </li>
+
+
+        <li class="rs-only-xs">
+          <semantic-link iri="http://www.researchspace.org/resource/Documentation" title="Documentation">
+            Documentation
+          </semantic-link>
+        </li>
+
+        <mp-anonymous-hidden>
+          <li class="rs-only-xs">
+            <semantic-link iri="http://www.researchspace.org/resource/admin" title="System Settings">
+              Setting
+            </semantic-link>
+          </li>
+        </mp-anonymous-hidden>
+
+        <mp-anonymous-hidden>
+          <li class="rs-xs-none">
+            <semantic-link iri="http://www.researchspace.org/resource/admin" title="System Settings"
+              class="rs-setting-icon">
+              <i class="fa fa-cog"></i>
+            </semantic-link>
+          </li>
+        </mp-anonymous-hidden>
+
+        <mp-anonymous-hidden alt='<li><a href="/login" title="login" class="rs-body-m-M">Logout</a></li>'>
+          <bs-nav-dropdown title="Account" id="rs-account-dropdown" class="rs-account-dropdown">
+
+            <bs-menu-item title='userPrincipal'>
+              <semantic-query
+                query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+                template='\{{> template}}'>
+                <template id='template'>
+                  <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
+                    <div class="user-dropdown_item">
+                      <img src="/assets/images/icons/user_dark.svg" class="rs-xs-none user-dropdown_img">
+                      <span>\{{bindings.0.userName.value}}</span>
+                    </div>
+                  </semantic-link-container>
+                </template>
+              </semantic-query>
+            </bs-menu-item>
+
+            {{!--       <semantic-link-container uri="http://www.researchspace.org/resource/MyImages">
+                  <bs-menu-item title='my images'>My Images</bs-menu-item>
+                </semantic-link-container>
+
+                <semantic-link-container uri="http://www.researchspace.org/resource/MyPages">
+                  <bs-menu-item title='my pages'>My Narratives</bs-menu-item>
+                </semantic-link-container>
+
+                <semantic-link-container uri="http://www.researchspace.org/resource/MyKnowledgeMaps">
+                  <bs-menu-item title='my maps'>My Knowledge Maps</bs-menu-item>
+                </semantic-link-container>
+                
+                <bs-menu-item divider="true"></bs-menu-item> --}}
+            <bs-menu-item href="/login" title='logout'>
+              <div class="user-dropdown_item">
+                <img src="/assets/images/icons/Actions/logout_dark.svg" class="rs-xs-none user-dropdown_img">
+                <span>Logout</span>
+              </div>
+            </bs-menu-item>
+
+          </bs-nav-dropdown>
+        </mp-anonymous-hidden>
+
+
+      </ul>
+
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>

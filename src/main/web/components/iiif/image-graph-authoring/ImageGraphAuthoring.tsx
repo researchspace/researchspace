@@ -20,6 +20,7 @@ import * as React from 'react';
 import { DiagramModel, AuthoringState, sameElement, ElementTypeIri } from 'ontodia';
 
 import { Component } from 'platform/api/components';
+import { TemplateItem } from 'platform/components/ui/template';
 import { Cancellation } from 'platform/api/async/Cancellation';
 import { listen, trigger, BuiltInEvents } from 'platform/api/events';
 
@@ -34,6 +35,7 @@ import {
   OntodiaAnnotationEndpointFields,
   MiradorRegions,
 } from './OntodiaAnnotationEndpoint';
+import { Spinner } from 'platform/components/ui/spinner';
 
 export interface ImageGraphAuthoringConfig {
   /**
@@ -63,6 +65,16 @@ export interface ImageGraphAuthoringConfig {
    * Field definitions to be used to create regions.
    */
   fields: OntodiaAnnotationEndpointFields;
+
+  /**
+   * Template that is used when there are no images in the corresponding Knowledge Map
+   */
+  noImagesTemplate?: string;
+
+  /**
+   * Use details sidebar instead of built-in mirador details view
+   */
+  useDetailsSidebar?: boolean;
 }
 
 export interface State {
@@ -188,6 +200,11 @@ export interface State {
  * </div>
  */
 export class ImageGraphAuthoringComponent extends Component<ImageGraphAuthoringConfig, State> {
+
+  static defaultProps = {
+    noImagesTemplate: '<p>No images found in the corresponding Knowledge Map.</p>',
+  };
+
   private readonly cancellation = new Cancellation();
 
   private readonly annotationEndpoint: OntodiaAnnotationEndpoint;
@@ -342,8 +359,12 @@ export class ImageGraphAuthoringComponent extends Component<ImageGraphAuthoringC
     const { key, isLoading } = this.state;
     const { miradorRegions } = this.annotationEndpoint;
 
-    if (isLoading || !Object.keys(miradorRegions).length) {
-      return null;
+    if (isLoading) {
+      return <Spinner />;
+    }
+
+    if (!Object.keys(miradorRegions).length) {
+      return <TemplateItem template={{source: this.props.noImagesTemplate}} />;
     }
 
     const images = {

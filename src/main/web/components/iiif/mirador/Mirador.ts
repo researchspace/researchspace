@@ -23,6 +23,7 @@ import * as _ from 'lodash';
 
 import rso from '../../../data/vocabularies/rso';
 
+import { trigger, BuiltInEvents } from 'platform/api/events';
 import { AdapterAnnotationEndpoint } from './MiradorAnnotationEndpoint';
 import { MetaphactoryAnnotationBodyEditor } from './AnnotationBodyEditor';
 
@@ -41,6 +42,10 @@ function ensureBusExists(emitter: EmitterMixin) {
     emitter.bus = $({});
   }
 }
+
+Mirador.DEFAULT_SETTINGS.showAddFromURLBox = false;
+Mirador.DEFAULT_SETTINGS.windowSettings.canvasControls.annotations.annotationState = 'on';
+Mirador.DEFAULT_SETTINGS.windowSettings.canvasControls.annotations.annotationRefresh = true;
 
 /**
  * override event bus operations to be able to 'clearAllSubscriptions':
@@ -66,7 +71,6 @@ Mirador.EventEmitter.prototype.publish = function (this: EmitterMixin, name) {
     if (args.length > 0) {
       args[0] = Array(this.eventStackDepth + 1).join('> ') + args[0];
     }
-    console.log(args);
     // console.trace();
   }
   this.eventStackDepth++;
@@ -102,14 +106,16 @@ Mirador['DummyJSONStorage'] = class {
  * overriding template for annotation viewer to append additional 'open'
  *  button with 'Open as semantic link in platform' action
  */
-const globalHandlebars = window['Handlebars'];
+const globalHandlebars = Mirador.Handlebars;
 Mirador.AnnotationTooltip.prototype.viewerTemplate = globalHandlebars.compile(
   [
     '<div class="all-annotations" id="annotation-viewer-{{windowId}}">',
     '{{#each annotations}}',
     '<div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">',
     '<div class="button-container">',
-    '<mp-template-item><semantic-link guess-repository=true uri="{{id}}"></semantic-link></mp-template-item>',
+    '{{#if id}}',
+    '<mp-template-item><semantic-link guess-repository=true iri="{{id}}"></semantic-link></mp-template-item>',
+    '{{/if}}',
     '<i class="fa fa fa-external-link fa-fw"></i>open</a>',
     '{{#if showUpdate}}<a href="#edit" class="edit">',
     '<i class="fa fa-pencil-square-o fa-fw"></i>{{t "edit"}}</a>{{/if}}',
@@ -140,6 +146,20 @@ Mirador.OpenSeadragon = function (options) {
   return MiradorOpenSeadragon(options);
 };
 
+const miradorToggleMetadataOverlay = Mirador.Window.prototype.toggleMetadataOverlay;
+Mirador.Window.prototype.toggleMetadataOverlay = function(focusState) {
+  if(Mirador.DEFAULT_SETTINGS.windowSettings.useDetailsSidebar) {
+    trigger({
+      eventType: BuiltInEvents.ComponentTemplateUpdate,
+      source: this.id,
+      data: {iri: this.canvasID},
+      targets: ['details-view', 'open-details-sidebar']
+    });
+  } else {
+    miradorToggleMetadataOverlay.apply(this, arguments);
+  }
+}
+
 const buildAnnotation = Mirador.MiradorDualStrategy.prototype.buildAnnotation;
 Mirador.MiradorDualStrategy.prototype.buildAnnotation = function (options) {
   const annotation = buildAnnotation.apply(this, arguments);
@@ -167,7 +187,7 @@ function applyRedrawHack(mirador: Mirador.Instance, onInitialized: (mirador: Mir
     console.error('Mirador redraw timer already set');
   }
   mirador.hackTimer = window.setInterval(() => {
-    if (!_.isEmpty($(`${mirador.viewer.id} .mirador-viewer:visible`))) {
+    if (!_.isEmpty($(`#${mirador.viewer.id} .mirador-viewer:visible`))) {
       mirador.viewer.workspace.calculateLayout();
       onInitialized(mirador);
       window.clearInterval(mirador.hackTimer);
@@ -238,6 +258,8 @@ export function renderMirador(options: {
   miradorConfig: Mirador.Options;
   onInitialized: (mirador: Mirador.Instance) => void;
 }): Mirador.Instance {
+  Mirador.DEFAULT_SETTINGS.windowSettings.useDetailsSidebar =
+    options.miradorConfig.useDetailsSidebar;
   const instance = Mirador(
     assign(
       {
@@ -261,6 +283,10 @@ export function removeMirador(mirador: Mirador.Instance, element: HTMLElement) {
     }
 
     clearAllSubscriptions(mirador.eventEmitter);
+
+    for(const w of mirador.viewer.workspace.windows) {
+      w.destroy();
+    }
   }
 
   if (element) {

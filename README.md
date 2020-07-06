@@ -104,9 +104,12 @@ Latest docker images for ResearchSpace are available on [Docker Hub](https://hub
 
 *docker-compose* scripts for ResearchSpace setup are available in [researchspace-docker-compose repostiory](https://github.com/researchspace/researchspace-docker-compose). 
 
+On the first run you need to import default ontologies and knowledge patterns for CIDOC-CRM, see [instance configuration repository](https://github.com/researchspace/researchspace-instance-configurations)
+
 # Setup with ZIP bundle
 Download the latest ZIP bundle from the latest [CI build](https://github.com/researchspace/researchspace/actions?query=branch%3Amaster) artefacts and follow instructions in the README file inside the ZIP.
 
+On the first run you need to import default ontologies and knowledge patterns for CIDOC-CRM, see [instance configuration repository](https://github.com/researchspace/researchspace-instance-configurations)
 
 # Developing and building from sources
 
@@ -144,7 +147,7 @@ On Windows the use of [Chocolatey](https://chocolatey.org/) is highly recommende
 
 **Node.js**
 
-`brew install node`
+`brew install node@12`
 
 ### Prerequisites Installation on *Windows 10*
 See [installation instruction](https://chocolatey.org/docs/installation) for [Chocolatey](https://chocolatey.org).
@@ -191,6 +194,8 @@ You should see console output similar to:
 21:24:49 INFO  digilib runs at:
 21:24:49 INFO    http://localhost:10214/digilib
 ```
+
+On the first run you need to import set of default ontologies and knowledge patterns for CIDOC-CRM, see [instance configuration repository](https://github.com/researchspace/researchspace-instance-configurations)
 
 ### Run ResearchSpace with your own triplestore and IIIF server
 
@@ -244,7 +249,7 @@ To build ResearchSpace WAR artefact that can be deployed into Java Servlet Conta
 
 `./gradlew clean war`
 
-When the packaging process is complete you will find the .war file in `/target/platform-VERSION_NUMBER.war`.
+When the packaging process is complete you will find the .war file in `build/libs/ROOT-VERSION_NUMBER.war`.
 
 ## Build zip bundle
 It is possible to build ResearchSpace bundeled into a simple runnable zip archive together with blazegraph and digilib: `./gradlew clean buildZip`

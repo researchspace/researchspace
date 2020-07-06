@@ -69,8 +69,9 @@ jobs:
         uses: eskatos/gradle-command-action@v1
         env:
           CHROMIUM_BIN: /usr/bin/google-chrome
+          ORG_GRADLE_PROJECT_buildVersion: ${{env.DATE}}_${{github.sha}}
         with:
-          arguments: buildZip -PbuildVersion=${DATE}_${GITHUB_SHA}
+          arguments: buildZip
 
       - name: docker build
         if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'

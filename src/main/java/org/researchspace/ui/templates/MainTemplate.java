@@ -140,9 +140,9 @@ public class MainTemplate {
             try {
                 manifest = new Manifest(inputStream);
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
-            return manifest.getMainAttributes().getValue(java.util.jar.Attributes.Name.IMPLEMENTATION_VERSION);
+            return manifest.getMainAttributes().getValue(new java.util.jar.Attributes.Name("Version"));
         } else {
             return "develop-build";
         }

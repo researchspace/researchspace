@@ -231,27 +231,6 @@
             ],
             "type": "object"
         },
-        "FormBasedPersistenceProps": {
-            "properties": {
-                "debug": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "enum": [
-                        "form"
-                    ],
-                    "type": "string"
-                }
-            },
-            "propertyOrder": [
-                "type",
-                "debug"
-            ],
-            "required": [
-                "type"
-            ],
-            "type": "object"
-        },
         "FullTreeConfig": {
             "properties": {
                 "childrenQuery": {
@@ -328,6 +307,27 @@
             ],
             "type": "object"
         },
+        "LdpBasedPersistenceProps": {
+            "properties": {
+                "debug": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "enum": [
+                        "form"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "debug"
+            ],
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        },
         "Literal": {
             "properties": {
                 "_datatype": {
@@ -383,37 +383,6 @@
             ],
             "type": "object"
         },
-        "OntologyPersistenceProps": {
-            "properties": {
-                "repository": {
-                    "type": "string"
-                },
-                "targetGraphIri": {
-                    "type": "string"
-                },
-                "type": {
-                    "enum": [
-                        "ontology"
-                    ],
-                    "type": "string"
-                },
-                "typePattern": {
-                    "type": "string"
-                }
-            },
-            "propertyOrder": [
-                "type",
-                "targetGraphIri",
-                "repository",
-                "typePattern"
-            ],
-            "required": [
-                "repository",
-                "targetGraphIri",
-                "type"
-            ],
-            "type": "object"
-        },
         "SimpleTreeConfig": {
             "properties": {
                 "relationPattern": {
@@ -440,6 +409,35 @@
                 "scheme",
                 "schemePattern",
                 "relationPattern"
+            ],
+            "required": [
+                "type"
+            ],
+            "type": "object"
+        },
+        "SparqlPersistenceProps": {
+            "properties": {
+                "debug": {
+                    "type": "boolean"
+                },
+                "targetGraphIri": {
+                    "type": "string"
+                },
+                "targetInsertGraphIri": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "sparql"
+                    ],
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "type",
+                "targetGraphIri",
+                "targetInsertGraphIri",
+                "debug"
             ],
             "required": [
                 "type"
@@ -481,6 +479,11 @@
             "description": "Default template to create Iri for new entities.",
             "type": "string"
         },
+        "enforceConstraints": {
+            "default": false,
+            "description": "Allow user to persist changes only if there are no validation errors.",
+            "type": "boolean"
+        },
         "fields": {
             "description": "Fields to be used in Ontodia instance. Could be populated inline or with backend helper.",
             "items": {
@@ -498,10 +501,10 @@
         "persistence": {
             "anyOf": [
                 {
-                    "$ref": "#/definitions/FormBasedPersistenceProps"
+                    "$ref": "#/definitions/LdpBasedPersistenceProps"
                 },
                 {
-                    "$ref": "#/definitions/OntologyPersistenceProps"
+                    "$ref": "#/definitions/SparqlPersistenceProps"
                 }
             ],
             "default": "{type: \"form\"}",
@@ -523,6 +526,7 @@
         "defaultImageIri",
         "defaultSubjectTemplate",
         "forceDatatypeFields",
+        "enforceConstraints",
         "children"
     ],
     "required": [

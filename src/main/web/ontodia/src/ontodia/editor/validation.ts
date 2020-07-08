@@ -1,3 +1,5 @@
+import { isEmpty } from 'lodash';
+
 import { ElementIri, LinkModel, hashLink, sameLink } from '../data/model';
 import { ValidationApi, ValidationEvent, ElementError, LinkError } from '../data/validationApi';
 import { CancellationToken } from '../viewUtils/async';
@@ -8,6 +10,13 @@ import { EditorController } from './editorController';
 export interface ValidationState {
   readonly elements: ReadonlyMap<ElementIri, ElementValidation>;
   readonly links: ReadonlyHashMap<LinkModel, LinkValidation>;
+  readonly isValid: boolean;
+}
+
+interface MutableValidationState {
+  elements: Map<ElementIri, ElementValidation>;
+  links: HashMap<LinkModel, LinkValidation>;
+  isValid: boolean;
 }
 
 export interface ElementValidation {
@@ -25,39 +34,12 @@ export namespace ValidationState {
   export const emptyElement: ElementValidation = { loading: false, errors: [] };
   export const emptyLink: LinkValidation = { loading: false, errors: [] };
 
-  export function createMutable() {
+  export function createMutable(): MutableValidationState {
     return {
       elements: new Map<ElementIri, ElementValidation>(),
       links: new HashMap<LinkModel, LinkValidation>(hashLink, sameLink),
+      isValid: true,
     };
-  }
-
-  export function setElementErrors(
-    state: ValidationState,
-    target: ElementIri,
-    errors: ReadonlyArray<ElementError>
-  ): ValidationState {
-    const elements = cloneMap(state.elements);
-    if (errors.length > 0) {
-      elements.set(target, { loading: false, errors });
-    } else {
-      elements.delete(target);
-    }
-    return { ...state, elements };
-  }
-
-  export function setLinkErrors(
-    state: ValidationState,
-    target: LinkModel,
-    errors: ReadonlyArray<LinkError>
-  ): ValidationState {
-    const links = state.links.clone();
-    if (errors.length > 0) {
-      links.set(target, { loading: false, errors });
-    } else {
-      links.delete(target);
-    }
-    return { ...state, links };
   }
 }
 
@@ -97,14 +79,14 @@ export function changedElementsToValidate(previousAuthoring: AuthoringState, edi
   return toValidate;
 }
 
-export function validateElements(
+export async function validateElements(
   targets: ReadonlySet<ElementIri>,
   validationApi: ValidationApi,
   editor: EditorController,
   cancellationToken: CancellationToken
 ) {
   const previousState = editor.validationState;
-  const newState = ValidationState.createMutable();
+  let newState = ValidationState.createMutable();
 
   for (const element of editor.model.elements) {
     if (newState.elements.has(element.iri)) {
@@ -133,12 +115,18 @@ export function validateElements(
       newState.elements.set(element.iri, loadingElement);
       outboundLinks.forEach((link) => newState.links.set(link, loadingLink));
 
-      processValidationResult(result, loadingElement, loadingLink, event, editor);
+      newState = await processValidationResult(result, loadingElement, loadingLink, event, newState);
     } else {
       // use previous state for element and outbound links
-      newState.elements.set(element.iri, previousState.elements.get(element.iri));
+      const previousElementState = previousState.elements.get(element.iri);
+      newState.elements.set(element.iri, previousElementState);
+      newState.isValid =
+        newState.isValid && isEmpty(previousElementState?.errors)
       for (const link of outboundLinks) {
-        newState.links.set(link, previousState.links.get(link));
+        const previousLinkState = previousState.links.get(link);
+        newState.isValid =
+          newState.isValid && isEmpty(previousLinkState?.errors)
+        newState.links.set(link, previousLinkState);
       }
     }
   }
@@ -151,8 +139,8 @@ async function processValidationResult(
   previousElement: ElementValidation,
   previousLink: LinkValidation,
   e: ValidationEvent,
-  editor: EditorController
-) {
+  state: MutableValidationState
+): Promise<MutableValidationState> {
   let allErrors: Array<ElementError | LinkError> | null;
   try {
     allErrors = await result;
@@ -178,14 +166,23 @@ async function processValidationResult(
     }
   }
 
-  let state = editor.validationState;
   if (state.elements.get(e.target.id) === previousElement) {
-    state = ValidationState.setElementErrors(state, e.target.id, elementErrors);
+    if (elementErrors.length > 0) {
+      state.elements.set(e.target.id, { loading: false, errors: elementErrors });
+    } else {
+      state.elements.delete(e.target.id);
+    }
   }
   linkErrors.forEach((errors, link) => {
     if (state.links.get(link) === previousLink) {
-      state = ValidationState.setLinkErrors(state, link, errors);
+      if (errors.length > 0) {
+        state.links.set(link, { loading: false, errors });
+      } else {
+        state.links.delete(link);
+      }
     }
   });
-  editor.setValidationState(state);
+  state.isValid = state.isValid && isEmpty(allErrors);
+
+  return state;
 }

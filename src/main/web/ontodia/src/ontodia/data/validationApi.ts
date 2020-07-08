@@ -30,4 +30,9 @@ export interface ValidationApi {
    * Validate element and its outbound links.
    */
   validate(e: ValidationEvent): Promise<Array<ElementError | LinkError>>;
+
+  /**
+   * Check if validation constraints should be enforce in the authoring mode.
+   */
+  shouldEnforceConstraints(): boolean
 }

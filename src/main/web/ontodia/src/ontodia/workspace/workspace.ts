@@ -430,8 +430,14 @@ class ToolbarWrapper extends Component<ToolbarWrapperProps, {}> {
     const editor = workspace.getEditor();
     const { languages, onSaveDiagram, onPersistChanges, hidePanels, toolbar } = workspace.props;
 
-    const canPersistChanges = onPersistChanges ? !AuthoringState.isEmpty(editor.authoringState) : undefined;
-    const canSaveDiagram = !canPersistChanges;
+    const hasUnpersistedChanges = !AuthoringState.isEmpty(editor.authoringState);
+    let canPersistChanges = onPersistChanges ? hasUnpersistedChanges : undefined;
+    let canSaveDiagram = !canPersistChanges;
+
+    if (onPersistChanges && workspace.props.validationApi.shouldEnforceConstraints()) {
+      canSaveDiagram = !hasUnpersistedChanges;
+      canPersistChanges = canPersistChanges && editor.validationState.isValid;
+    }
 
     const defaultToolbarProps: ToolbarProps = {
       onZoomIn: workspace.zoomIn,
@@ -443,6 +449,7 @@ class ToolbarWrapper extends Component<ToolbarWrapperProps, {}> {
       canSaveDiagram,
       onSaveDiagram: onSaveDiagram ? () => onSaveDiagram(workspace) : undefined,
       canPersistChanges,
+      hasUnpersistedChanges,
       onPersistChanges: onPersistChanges ? () => onPersistChanges(workspace) : undefined,
       onForceLayout: () => {
         workspace.forceLayout();
@@ -470,6 +477,10 @@ class ToolbarWrapper extends Component<ToolbarWrapperProps, {}> {
     const { workspace } = this.props;
     const editor = workspace.getEditor();
     this.listener.listen(editor.events, 'changeAuthoringState', () => {
+      this.forceUpdate();
+    });
+
+    this.listener.listen(editor.events, 'changeValidationState', () => {
       this.forceUpdate();
     });
   }

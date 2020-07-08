@@ -56,10 +56,17 @@ import { fetchInitialModel, getEntityMetadata, applyEventsToCompositeValue } fro
 export class FieldBasedValidationApi implements ValidationApi {
   private dataProvider: DataProvider | undefined;
 
-  constructor(private entityMetadata: Map<ElementTypeIri, EntityMetadata>) {}
+  constructor(
+    private entityMetadata: Map<ElementTypeIri, EntityMetadata>,
+    private enforceConstraints: boolean
+  ) { }
 
   setDataProvider(dataProvider: DataProvider) {
     this.dataProvider = dataProvider;
+  }
+
+  shouldEnforceConstraints() {
+    return this.enforceConstraints;
   }
 
   validate(e: ValidationEvent): Promise<Array<ElementError | LinkError>> {
@@ -158,12 +165,12 @@ export class FieldBasedValidationApi implements ValidationApi {
 
     const initialModelTask = AuthoringState.isNewElement(state, target.id)
       ? Kefir.constant<CompositeValue>({
-          type: CompositeValue.type,
-          subject: Rdf.iri(target.id),
-          definitions: metadata.fieldByIri,
-          fields: Immutable.Map(),
-          errors: Immutable.List(),
-        })
+        type: CompositeValue.type,
+        subject: Rdf.iri(target.id),
+        definitions: metadata.fieldByIri,
+        fields: Immutable.Map(),
+        errors: Immutable.List(),
+      })
       : fetchExistingEnitityState(target.id, metadata, this.dataProvider);
 
     return initialModelTask

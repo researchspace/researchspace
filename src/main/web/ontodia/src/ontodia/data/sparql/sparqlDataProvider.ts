@@ -517,7 +517,7 @@ export class SparqlDataProvider implements DataProvider {
     }
 
     let outerProjection = '?inst ?class ?label ?blankType';
-    let innerProjection = '?inst';
+    let innerProjection = '?inst ?localName';
 
     let refQueryPart = '';
     let refQueryTypes = '';
@@ -558,10 +558,11 @@ export class SparqlDataProvider implements DataProvider {
       outerProjection += ` ${BlankNodes.BLANK_NODE_QUERY_PARAMETERS}`;
     }
 
+    // in this query we have such complex ORDER BY to get consistent ordering in ontodia instance search: try to order by label, normalizing case and datatype. If there is no labels then order by string representation of the IRI, also normalizing case.
     return `${defaultPrefix}
             ${fullTextSearch.prefix}
 
-        SELECT ${outerProjection}
+        SELECT DISTINCT ${outerProjection}
         WHERE {
             {
                 SELECT DISTINCT ${innerProjection} WHERE {
@@ -569,14 +570,17 @@ export class SparqlDataProvider implements DataProvider {
                     ${refQueryPart}
                     ${textSearchPart}
                     ${this.settings.filterAdditionalRestriction}
+                    BIND(REPLACE(LCASE(STR(?inst)), '(^.*)(#|/)([^/]*)$', '$3') AS ?localName)
+                    OPTIONAL { ?inst ${dataLabelProperty} ?label }
                 }
-                ${textSearchPart ? 'ORDER BY DESC(?score)' : ''}
+                ORDER BY ${textSearchPart ? 'DESC(?score)' : ''} ASC(STR(LCASE(?label))) ASC(?localName)
                 LIMIT ${params.limit} OFFSET ${params.offset}
             }
             ${refQueryTypes}
             ${resolveTemplate(this.settings.filterElementInfoPattern, { dataLabelProperty })}
             ${blankNodes ? BlankNodes.BLANK_NODE_QUERY : ''}
-        } ${textSearchPart ? 'ORDER BY DESC(?score)' : ''}
+        }
+        ORDER BY ${textSearchPart ? 'DESC(?score)' : ''} ASC(STR(LCASE(?label))) ASC(?localName)
         `;
   }
 

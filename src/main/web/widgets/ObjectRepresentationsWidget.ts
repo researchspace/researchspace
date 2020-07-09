@@ -422,7 +422,8 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
   private setImageLoaded(e) {
     const maxHeight = window.innerHeight - 50;
     _.forEach(this.allReps, (rep) => {
-      if (rep.imgURL === e.target.currentSrc) {
+      // we use includes because imgURL can be relative URL but currentSrc is always absolute
+      if (_.includes(e.target.currentSrc, rep.imgURL)) {
         rep.loaded = true;
         rep.width =
           e.target.naturalWidth <= this.props.maxModalWidth ? e.target.naturalWidth : this.props.maxModalWidth;

@@ -523,7 +523,10 @@ export class Ontodia extends Component<OntodiaProps, State> {
       if (fieldConfiguration) {
         if (fieldConfiguration.authoringMode) {
           this.metadataApi = new FieldBasedMetadataApi(fieldConfiguration.metadata);
-          this.validationApi = new FieldBasedValidationApi(fieldConfiguration.metadata);
+          this.validationApi =
+            new FieldBasedValidationApi(
+              fieldConfiguration.metadata, fieldConfiguration.enforceConstraints
+            );
         }
         this.setState({ fieldConfiguration });
       } else {

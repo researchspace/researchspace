@@ -6,6 +6,7 @@ export interface ToolbarProps {
   canSaveDiagram?: boolean;
   onSaveDiagram?: () => void;
   canPersistChanges?: boolean;
+  hasUnpersistedChanges?: boolean;
   onPersistChanges?: () => void;
   onForceLayout?: () => void;
   onClearAll?: () => void;

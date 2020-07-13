@@ -65,6 +65,8 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
   protected renderSaveButton() {
     const {
       canPersistChanges,
+      hasUnpersistedChanges,
+      canSaveDiagram,
       saveDiagramLabel,
       persistChangesLabel,
       onPersistChanges,
@@ -72,10 +74,15 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
       onSaveDiagram,
       onSaveDiagramAs,
     } = this.props;
-    if (canPersistChanges && onPersistChanges) {
+    if (onPersistChanges && hasUnpersistedChanges) {
       return (
-        <Dropdown id="persist-changes-button" className="btn-group-sm">
-          <Button bsStyle="success" onClick={onPersistChanges} className={styles.saveButton}>
+        <Dropdown id="persist-changes-button" className="btn-group-sm"
+          disabled={!canPersistChanges}
+        >
+          <Button disabled={!canPersistChanges}
+            bsStyle="success"
+            onClick={onPersistChanges} className={styles.saveButton}
+          >
             <span className="fa fa-floppy-o" aria-hidden="true" />
             &nbsp;
             {persistChangesLabel}
@@ -89,7 +96,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         </Dropdown>
       );
     }
-    if (onSaveDiagram) {
+    if (onSaveDiagram && canSaveDiagram) {
       return (
         <Dropdown id="save-diagram-button" className="btn-group-sm">
           <Button bsStyle="primary" onClick={onSaveDiagram} className={styles.saveButton}>

@@ -99,6 +99,13 @@ export interface OntodiaFieldConfigurationConfig {
   forceDatatypeFields?: ReadonlyArray<string>;
 
   /**
+   * Allow user to persist changes only if there are no validation errors.
+   *
+   * @default false
+   */
+  enforceConstraints?: boolean;
+
+  /**
    * Children can be either ontodia-entity-metadata or ontodia-field-input-override
    */
   readonly children: object;
@@ -127,6 +134,7 @@ export async function extractFieldConfiguration(
   if (!props) {
     return {
       authoringMode: false,
+      enforceConstraints: false,
       metadata: undefined,
       persistence: undefined,
       allFields: [],
@@ -143,6 +151,7 @@ export async function extractFieldConfiguration(
     allowRequestFields = true,
     fields: passedFields = [],
     forceDatatypeFields = [],
+    enforceConstraints = false,
   } = props;
   if (typeof typeIri !== 'string') {
     throw new Error(`Missing 'typeIri' property for ontodia-field-configuration`);
@@ -228,6 +237,7 @@ export async function extractFieldConfiguration(
 
   const finalConfig: FieldConfiguration = {
     authoringMode: props ? Boolean(props.authoringMode) : false,
+    enforceConstraints,
     metadata: collectedMetadata.size > 0 ? collectedMetadata : undefined,
     persistence: props ? props.persistence : undefined,
     allFields: fieldByIri.valueSeq().toArray(),

@@ -29,6 +29,7 @@ import { FormBasedPersistenceProps } from './FormBasedPersistence';
 
 export interface FieldConfiguration {
   readonly authoringMode: boolean;
+  readonly enforceConstraints: boolean;
   readonly metadata: Map<ElementTypeIri, EntityMetadata> | undefined;
   readonly persistence: OntodiaPersistenceMode | undefined;
   readonly allFields: ReadonlyArray<Forms.FieldDefinition>;

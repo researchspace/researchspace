@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # if build was triggered by labeled action we want to execute it only if it is build_image label
-    if: github.event.action != 'labeled' || github.event.label.name == 'build_image'
+    if: github.event.action != 'labeled' || github.event.label.name == 'build_image' || github.event.label.name == 'build_zip'
     
     steps:
       - uses: actions/checkout@v2
@@ -63,9 +63,19 @@ jobs:
       - name: Set current date as env variable
         run: echo "::set-env name=DATE::$(date +'%Y-%m-%d')"
 
-      # build war and zip only if build_image label is present or we are building from master
+      # build war only if build_image label is present and build_zip don't
       - name: war
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') && !contains(github.event.pull_request.labels.*.name, 'build_zip')
+        uses: eskatos/gradle-command-action@v1
+        env:
+          CHROMIUM_BIN: /usr/bin/google-chrome
+          ORG_GRADLE_PROJECT_buildVersion: ${{env.DATE}}_${{github.sha}}
+        with:
+          arguments: war
+
+      # build zip only if build_zip label is present or we are building from master
+      - name: zip
+        if: contains(github.event.pull_request.labels.*.name, 'build_zip') || github.ref == 'refs/heads/master'
         uses: eskatos/gradle-command-action@v1
         env:
           CHROMIUM_BIN: /usr/bin/google-chrome
@@ -108,7 +118,7 @@ jobs:
           docker push researchspace/platform-ci:latest
 
       # upload zip bundle 
-      - if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
+      - if: contains(github.event.pull_request.labels.*.name, 'build_zip') || github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v2
         with:
           name: zip-bundle

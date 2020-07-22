@@ -1,0 +1,50 @@
+@prefix wd: <http://www.wikidata.org/entity/> .
+@prefix wdt: <http://www.wikidata.org/prop/direct/> .
+@prefix schema: <http://schema.org/> .
+@prefix ssp: <http://www.researchspace.org/resource/system/semantic-search-profile/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix : <http://www.researchspace.org/sample#> .
+
+:wikidata-semantic-search-profile {
+  wd:Q12140 a ssp:Category;
+    rdfs:label "Drug" ;
+    rdfs:comment "Drug" ;
+    schema:thumbnail "//upload.wikimedia.org/wikipedia/commons/4/4f/Farm-Fresh_pill.png" ; # URL to the image that represents Drug in the category selection list
+    ssp:order 2 .  # specifying that Drug should be on the second place in the category selection list
+
+  wd:Q12136 a ssp:Category;
+    rdfs:label "Disease" ;
+    rdfs:comment "Disease" ;
+    schema:thumbnail "//upload.wikimedia.org/wikipedia/commons/thumb/4/43/Blue_circle_for_diabetes.svg/32px-Blue_circle_for_diabetes.svg.png" ; # URL to the image that represents Disease in the category selection list
+    ssp:order 1 .   # specifying that Disease should be on the first place in the category selection list
+
+  xsd:Decimal a ssp:Category;
+    rdfs:label "Decimal" ;
+    rdfs:comment "Decimal" ;
+    schema:thumbnail "../images/help/thenounproject/noun_184423.svg" ; 
+    ssp:order 2 .
+
+  rdfs:Literal a ssp:Category;
+    rdfs:label "Literal" ;
+    rdfs:comment "Literal" ;
+    schema:thumbnail "../images/help/thenounproject/noun_1223591.svg" ; 
+    ssp:order 3 .
+
+  wdt:P2175 a ssp:Relation ; # specifies relation
+    rdfs:label "medical condition treated" ;
+    rdfs:comment "medical condition treated" ;
+    ssp:hasDomain wd:Q12140 ; # between Drug 
+    ssp:hasRange wd:Q12136 . # and Disease
+
+  wdt:P2067 a ssp:Relation ; # specifies relation
+    rdfs:label "mass" ;
+    rdfs:comment "mass" ;
+    ssp:hasDomain wd:Q12140 ; # between Drug 
+    ssp:hasRange xsd:Decimal . # and decimal values
+
+  rdfs:label a ssp:Relation ;
+    rdfs:label "mass" ;
+    rdfs:comment "mass" ;
+    ssp:hasDomain wd:Q12140 ; # between Drug 
+    ssp:hasRange rdfs:Literal . # and literal values
+}

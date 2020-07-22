@@ -124,12 +124,12 @@ export interface SemanticChartConfig {
   disableTooltips?: boolean;
 
   /**
-   * <semantic-link iri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
    */
   noResultTemplate?: string;
 
   /**
-   * <semantic-link iri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied to render tooltip for chart points; the following properies are provided:
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied to render tooltip for chart points; the following properies are provided:
    * <mp-documentation type="ChartTooltipData"></mp-documentation>
    */
   tooltipTemplate?: string;

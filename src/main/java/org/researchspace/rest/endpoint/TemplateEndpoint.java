@@ -100,7 +100,7 @@ import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.services.storage.api.StorageException;
 import org.researchspace.services.storage.api.StoragePath;
 import org.researchspace.templates.HandlebarsHelperRegistry;
-import org.researchspace.templates.MetaphactsHandlebars;
+import org.researchspace.templates.ResearchSpaceHandlebars;
 import org.researchspace.templates.TemplateByIriLoader;
 import org.researchspace.templates.TemplateContext;
 import org.researchspace.templates.TemplateUtil;
@@ -141,7 +141,7 @@ public class TemplateEndpoint extends ResourceConfig {
     private final PlatformStorage platformStorage;
 
     private final ValueFactory vf;
-    private final MetaphactsHandlebars handlebars;
+    private final ResearchSpaceHandlebars handlebars;
 
     @Inject
     public TemplateEndpoint(Configuration config, NamespaceRegistry ns, RepositoryManager repositoryManager,
@@ -154,7 +154,7 @@ public class TemplateEndpoint extends ResourceConfig {
         this.platformStorage = platformStorage;
 
         this.vf = SimpleValueFactory.getInstance();
-        this.handlebars = new MetaphactsHandlebars(new TemplateByIriLoader(platformStorage, ns), helperRegistry);
+        this.handlebars = new ResearchSpaceHandlebars(new TemplateByIriLoader(platformStorage, ns), helperRegistry);
     }
 
     public static class RenderedTemplate {
@@ -179,7 +179,7 @@ public class TemplateEndpoint extends ResourceConfig {
             return this.templateHtml;
         }
 
-        public static String getCompiledHtml(IRI pageId, TemplateContext tc, MetaphactsHandlebars handlebars,
+        public static String getCompiledHtml(IRI pageId, TemplateContext tc, ResearchSpaceHandlebars handlebars,
                 TemplateIncludeCache includeCache) throws IOException {
 
             if (!(tc.getValue() instanceof IRI)) {

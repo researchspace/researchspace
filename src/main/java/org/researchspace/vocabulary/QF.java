@@ -29,7 +29,7 @@ public class QF {
     /**
      * Namespace. Preferred prefix is "qf:"
      */
-    public static String NAMESPACE = "http://www.metaphacts.com/ontologies/platform/queryform#";
+    public static String NAMESPACE = "http://www.researchspace.org/resource/system/queryform#";
 
     //// CLASSES //////
 

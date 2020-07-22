@@ -36,7 +36,7 @@ import com.google.inject.Provider;
 
 /**
  * Extend this class to automatically run your test with {@link JukitoRunner}
- * and {@link MetaphactsGuiceTestModule}, which will take care of basic
+ * and {@link ResearchSpaceGuiceTestModule}, which will take care of basic
  * configurations (i.e. in temporary folders) as well as binding classes for
  * dynamic and static guice injections.
  *
@@ -47,17 +47,11 @@ import com.google.inject.Provider;
  * the repository or namespaces.
  * 
  * </p>
- * 
- * TODO It seems that there is an bug in the {@link JukitoRunner} if running
- * tests in parallel. Until this bug is fixed, it is important to execute tests
- * in sbt with the setting "parallelExecution in Test := false" See
- * https://metaphacts.atlassian.net/browse/ID-142
- * 
  *
  * @author Johannes Trame <jt@metaphacts.com>
  */
 @RunWith(JukitoRunner.class)
-@UseModules(MetaphactsGuiceTestModule.class)
+@UseModules(ResearchSpaceGuiceTestModule.class)
 public abstract class AbstractIntegrationTest {
     @Inject
     protected Provider<NamespaceRegistry> ns;

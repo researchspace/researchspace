@@ -20,7 +20,7 @@
 import * as Rdf from '../core/Rdf';
 
 namespace persist {
-  export const NAMESPACE = 'http://www.metaphacts.com/ontologies/persist/';
+  export const NAMESPACE = 'http://www.researchspace.org/ontologies/persist/';
 
   export const COMPONENT_TYPE_PREFIX = NAMESPACE + 'components/';
   export const PersistedComponent = Rdf.iri(NAMESPACE + 'PersistedComponent');

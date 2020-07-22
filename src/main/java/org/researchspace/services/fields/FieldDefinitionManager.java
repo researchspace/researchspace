@@ -156,7 +156,7 @@ public class FieldDefinitionManager implements PlatformCache {
     private String makeFieldDefinitionQuery(@Nullable Iterable<? extends IRI> fieldIris) {
         String valuesClause = fieldIris == null ? ""
                 : renderValuesClause("?iri", fieldIris, Collections::singletonList);
-        return "PREFIX field: <http://www.metaphacts.com/ontology/fields#>"
+        return "PREFIX field: <http://www.researchspace.org/resource/system/fields/>"
                 + "\nPREFIX ldp: <http://www.w3.org/ns/ldp#>" + "\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
                 + "\nPREFIX sp: <http://spinrdf.org/sp#>" + "\nCONSTRUCT {" + "\n  ?iri rdfs:comment ?description ."
                 + "\n  ?iri field:minOccurs ?minOccurs ." + "\n  ?iri field:maxOccurs ?maxOccurs ."

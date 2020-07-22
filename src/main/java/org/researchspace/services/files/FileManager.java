@@ -54,7 +54,7 @@ public class FileManager {
     private static final String DOCUMENT_NAME = "__fileName__";
     private static final String MEDIA_TYPE = "__mediaType__";
     private static final String CONTEXT_URI = "__contextUri__";
-    private static final String DEFAULT_CONTEXT_IRI = "http://www.metaphacts.com/ontologies/platform#file";
+    private static final String DEFAULT_CONTEXT_IRI = "http://www.researchspace.org/resource/system/file";
 
     private final ValueFactory vf = SimpleValueFactory.getInstance();
     private final Random sequenceGenerator = new SecureRandom();

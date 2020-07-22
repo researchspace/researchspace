@@ -1,0 +1,35 @@
+<bs-tabs id='semantic-search' mount-on-enter=true>
+  <bs-tab event-key='text search' title='Text Search' class="basicSearch">
+  <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }"]]'>
+     <semantic-search-query-keyword 
+        domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
+        query='
+          SELECT ?subject WHERE { 
+             ?subject a ?type .
+             ?type rdfs:subClassOf* crm:E1_CRM_Entity .
+             ?subject rdfs:label ?label .
+             SERVICE <http://www.bigdata.com/rdf/search#search> {
+               ?label bds:search ?__token__ ;
+                        bds:minRelevance "0.3" ;
+                        bds:matchAllTerms "true"  .
+             }
+          }
+        '
+        default-query='
+            SELECT ?subject WHERE { 
+             ?subject a ?type .
+             ?type rdfs:subClassOf* crm:E1_CRM_Entity .
+            }         
+        '
+        debounce=500
+      ></semantic-search-query-keyword>
+      [[> rsp:SearchResults]]  
+    </semantic-search>
+  </bs-tab>
+  <bs-tab event-key='structured-search' title='Structured Search' class="structuredSearch">
+      <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }"]]'>
+      <semantic-search-query-builder></semantic-search-query-builder>
+      [[> rsp:SearchResults]]
+    </semantic-search>
+  </bs-tab>
+</bs-tabs>

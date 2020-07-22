@@ -38,7 +38,7 @@ import org.researchspace.vocabulary.LDP;
 
 @LDPR(iri = QueryContainer.IRI_STRING)
 public class QueryContainer extends AbstractLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#queryContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/queryContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public QueryContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

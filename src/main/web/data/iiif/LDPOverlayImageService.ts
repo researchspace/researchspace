@@ -42,9 +42,9 @@ export class LdpOverlayImageServiceClass extends LdpService {
 
     // These three hard-coded IRIs will be replaced at server-side,
     // when object IRI will be known, see @ImageOverlay.java
-    const eventIri = Rdf.iri('http://www.metaphacts.com/event');
-    const param1 = Rdf.iri('http://www.metaphacts.com/param1');
-    const param2 = Rdf.iri('http://www.metaphacts.com/param2');
+    const eventIri = Rdf.iri('http://www.researchspace.org/event');
+    const param1 = Rdf.iri('http://www.researchspace.org/param1');
+    const param2 = Rdf.iri('http://www.researchspace.org/param2');
 
     const resourceGraph = Rdf.graph([
       // common typing & labels

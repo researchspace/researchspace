@@ -67,7 +67,7 @@ const input = createFactory(ReactBootstrap.FormControl);
 const textarea = createFactory(TextareaAutosize);
 const select = createFactory(ReactSelectComponent);
 
-const FIELD_DEF_INSTANCE_BASE = 'http://www.metaphacts.com/fieldDefinition/';
+const FIELD_DEF_INSTANCE_BASE = 'http://www.researchspace.org/fieldDefinition/';
 const CLASS_NAME = 'field-editor';
 const block = bem(CLASS_NAME);
 
@@ -111,7 +111,7 @@ const DEFAULT_AUTOSUGGESTION = `SELECT ?value ?label WHERE {
 
 class FieldEditorComponent extends Component<Props, State> {
   static readonly defaultProps: Partial<Props> = {
-    categoryScheme: '<http://www.metaphacts.com/ontologies/platform/FieldCategories>',
+    categoryScheme: '<http://www.researchspace.org/resource/system/FieldCategories>',
     navigateTo: 'http://www.researchspace.org/resource/assets/Fields',
   };
   private readonly languages: ReadonlyArray<string>;

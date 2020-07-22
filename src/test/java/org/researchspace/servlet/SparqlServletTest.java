@@ -290,13 +290,13 @@ public class SparqlServletTest extends AbstractIntegrationTest {
 
     private void addTestStatements(RepositoryConnection con) throws Exception {
         List<Statement> stmts = Lists.newArrayList(
-                vf.createStatement(vf.createIRI("http://www.metaphacts.com/resource/Johannes"), RDF.TYPE,
+                vf.createStatement(vf.createIRI("http://www.researchspace.org/resource/Johannes"), RDF.TYPE,
                         vf.createIRI(FOAF.NAMESPACE, "Person")),
-                vf.createStatement(vf.createIRI("http://www.metaphacts.com/resource/Artem"), RDF.TYPE,
+                vf.createStatement(vf.createIRI("http://www.researchspace.org/resource/Artem"), RDF.TYPE,
                         vf.createIRI(FOAF.NAMESPACE, "Person")),
-                vf.createStatement(vf.createIRI("http://www.metaphacts.com/resource/Peter"), RDF.TYPE,
+                vf.createStatement(vf.createIRI("http://www.researchspace.org/resource/Peter"), RDF.TYPE,
                         vf.createIRI(FOAF.NAMESPACE, "Person")),
-                vf.createStatement(vf.createIRI("http://www.metaphacts.com/resource/Michael"), RDF.TYPE,
+                vf.createStatement(vf.createIRI("http://www.researchspace.org/resource/Michael"), RDF.TYPE,
                         vf.createIRI(FOAF.NAMESPACE, "Person")));
         con.add(stmts, vf.createIRI(FOAF.NAMESPACE, "testContext"));
     }

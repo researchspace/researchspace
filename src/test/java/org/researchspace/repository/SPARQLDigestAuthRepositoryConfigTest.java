@@ -44,7 +44,7 @@ import org.researchspace.repository.sparql.SPARQLDigestAuthRepositoryConfig;
  */
 public class SPARQLDigestAuthRepositoryConfigTest {
     ValueFactory vf = SimpleValueFactory.getInstance();
-    private final IRI baseIri = vf.createIRI("http://www.metaphacts.com/base");
+    private final IRI baseIri = vf.createIRI("http://www.researchspace.org/base");
     private final String DIGEST_AUTH_CONFIG_FILE = "/org/researchspace/repository/test-sparql-digest-auth-repository.ttl";
 
     @Rule
@@ -52,8 +52,8 @@ public class SPARQLDigestAuthRepositoryConfigTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-    private String sparqlRepositoryUrl = "http://wikidata.metaphacts.com/sparql";
-    private String sparqlRepositoryUpdateUrl = "http://wikidata.metaphacts.com/sparql/update";
+    private String sparqlRepositoryUrl = "https://query.wikidata.org/sparql";
+    private String sparqlRepositoryUpdateUrl = "https://query.wikidata.org/sparql/update";
 
     @Test
     public void testNoUser() throws Exception {

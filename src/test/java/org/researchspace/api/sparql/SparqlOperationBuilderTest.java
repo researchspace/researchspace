@@ -53,7 +53,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.researchspace.api.sparql.SparqlOperationBuilder;
-import org.researchspace.junit.MetaphactsGuiceTestModule;
+import org.researchspace.junit.ResearchSpaceGuiceTestModule;
 import org.researchspace.junit.RepositoryRule;
 
 import com.google.common.collect.Lists;
@@ -63,7 +63,7 @@ import com.google.inject.Inject;
  * @author Johannes Trame <jt@metaphacts.com>
  */
 @RunWith(JukitoRunner.class)
-@UseModules(MetaphactsGuiceTestModule.class)
+@UseModules(ResearchSpaceGuiceTestModule.class)
 public class SparqlOperationBuilderTest {
     @Inject
     @Rule
@@ -74,11 +74,11 @@ public class SparqlOperationBuilderTest {
 
     private static final ValueFactory vf = SimpleValueFactory.getInstance();
 
-    private static final IRI metaphactsURI = vf.createIRI("http://www.metaphacts.com");
+    private static final IRI researchspaceURI = vf.createIRI("http://www.researchspace.org");
 
     private static final Model testModel = new LinkedHashModel(
-            Lists.newArrayList(vf.createStatement(metaphactsURI, RDF.TYPE, FOAF.ORGANIZATION),
-                    vf.createStatement(metaphactsURI, FOAF.NAME, vf.createLiteral("metaphacts GmbH"))));
+            Lists.newArrayList(vf.createStatement(researchspaceURI, RDF.TYPE, FOAF.ORGANIZATION),
+                    vf.createStatement(researchspaceURI, FOAF.NAME, vf.createLiteral("ResearchSpace"))));
 
     @Before
     public void addTriples() throws RepositoryException {
@@ -99,7 +99,7 @@ public class SparqlOperationBuilderTest {
                 tqr = op.evaluate();
                 assertTrue(tqr.hasNext());
                 BindingSet binding = tqr.next();
-                assertEquals(metaphactsURI, binding.getValue("subject"));
+                assertEquals(researchspaceURI, binding.getValue("subject"));
                 assertEquals(FOAF.ORGANIZATION, binding.getValue("object"));
                 assertFalse(tqr.hasNext());
             } finally {
@@ -139,7 +139,7 @@ public class SparqlOperationBuilderTest {
     @Test
     public void testDescribe() throws Exception {
         SparqlOperationBuilder<GraphQuery> builder = SparqlOperationBuilder
-                .<GraphQuery>create("DESCRIBE <" + metaphactsURI.stringValue() + ">", GraphQuery.class);
+                .<GraphQuery>create("DESCRIBE <" + researchspaceURI.stringValue() + ">", GraphQuery.class);
         try (RepositoryConnection con = repositoryRule.getRepository().getConnection()) {
             GraphQuery op = builder.build(con);
             assertTrue(op instanceof GraphQuery);
@@ -184,7 +184,7 @@ public class SparqlOperationBuilderTest {
         SparqlOperationBuilder<BooleanQuery> builder = SparqlOperationBuilder
                 .<BooleanQuery>create("ASK {?? a <http://xmlns.com/foaf/0.1/Organization>}", BooleanQuery.class);
         try (RepositoryConnection con = repositoryRule.getRepository().getConnection()) {
-            BooleanQuery op = builder.resolveThis(metaphactsURI).build(con);
+            BooleanQuery op = builder.resolveThis(researchspaceURI).build(con);
             assertTrue(op instanceof BooleanQuery);
             assertTrue(op.evaluate());
         }
@@ -195,7 +195,7 @@ public class SparqlOperationBuilderTest {
         SparqlOperationBuilder<BooleanQuery> builder = SparqlOperationBuilder.<BooleanQuery>create(
                 "ASK {?__useruri__ a <http://xmlns.com/foaf/0.1/Organization>}", BooleanQuery.class);
         try (RepositoryConnection con = repositoryRule.getRepository().getConnection()) {
-            BooleanQuery op = builder.resolveUser(metaphactsURI).build(con);
+            BooleanQuery op = builder.resolveUser(researchspaceURI).build(con);
             assertTrue(op instanceof BooleanQuery);
             assertTrue(op.evaluate());
         }

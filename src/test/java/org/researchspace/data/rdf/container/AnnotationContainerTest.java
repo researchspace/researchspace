@@ -62,7 +62,7 @@ public class AnnotationContainerTest extends AbstractLDPTest {
     public void testAddAnnotation() throws Exception {
         LDPResource res = api.createLDPResource(Optional.of(annotationResource.stringValue()),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(ANNOTATION_RESOURCE_TTL), RDFFormat.TURTLE),
-                AnnotationContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                AnnotationContainer.IRI, "http://www.researchspace.org/testinstances/");
         assertEquals(AnnotationContainer.IRI, res.getParentContainer());
 
         LDPResource cnt = api.getLDPResource(AnnotationContainer.IRI);
@@ -91,7 +91,7 @@ public class AnnotationContainerTest extends AbstractLDPTest {
         api.createLDPResource(Optional.of(annotationResource.stringValue()),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(ANNOTATION_RESOURCE_WITHOUTBODY_TTL),
                         RDFFormat.TURTLE),
-                AnnotationContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                AnnotationContainer.IRI, "http://www.researchspace.org/testinstances/");
     }
 
     @Test
@@ -104,7 +104,7 @@ public class AnnotationContainerTest extends AbstractLDPTest {
         api.createLDPResource(Optional.of(annotationResource.stringValue()),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(ANNOTATION_RESOURCE_WITHOUTTYPE_TTL),
                         RDFFormat.TURTLE),
-                AnnotationContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                AnnotationContainer.IRI, "http://www.researchspace.org/testinstances/");
     }
 
 }

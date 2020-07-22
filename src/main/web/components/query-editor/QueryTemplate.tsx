@@ -519,7 +519,7 @@ export class QueryTemplate extends Component<QueryTemplateProps, State> {
               createElement(
                 ResourceLink,
                 {
-                  resource: Rdf.iri('http://www.metaphacts.com/resource/admin/EditBaseQuery'),
+                  resource: Rdf.iri('http://www.researchspace.org/resource/admin/EditBaseQuery'),
                   params: { queryiri: queryIri },
                 },
                 'here'
@@ -545,7 +545,7 @@ export class QueryTemplate extends Component<QueryTemplateProps, State> {
                     rdfs:label ?label;
                     prov:wasAttributedTo ?user.
                   FILTER(
-                    ?user in (<http://www.metaphacts.com/resource/user/querycatalog>,?__useruri__)
+                    ?user in (<http://www.researchspace.org/resource/user/querycatalog>,?__useruri__)
                   )
                   SERVICE bds:search {
                                   ?label bds:search \"*?token*\" ;
@@ -560,7 +560,7 @@ export class QueryTemplate extends Component<QueryTemplateProps, State> {
                     prov:generatedAtTime ?modified;
                     prov:wasAttributedTo ?user.
                   FILTER(
-                    ?user in (<http://www.metaphacts.com/resource/user/querycatalog>,?__useruri__)
+                    ?user in (<http://www.researchspace.org/resource/user/querycatalog>,?__useruri__)
                   )
                   OPTIONAL {?iri rdfs:label ?label}
                 } ORDER BY DESC(?modified) LIMIT 10`,

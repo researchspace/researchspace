@@ -4,7 +4,7 @@
 set -e
 
 # check if this is the first boot of an instance and if the instance_id is available (mounted folder of the docker host machine)
-if [ "$GENERATE_METAPHACTORY_PASSWORD" ] && [ -f "/instance_metadata/instance_id.txt" ] && [ ! -f "/firstStart/first-run-done" ]; then
+if [ "$GENERATE_researchspace_PASSWORD" ] && [ -f "/instance_metadata/instance_id.txt" ] && [ ! -f "/firstStart/first-run-done" ]; then
 
   echo "Creating first login password..."
 

@@ -40,7 +40,7 @@ import com.google.common.collect.Lists;
 public class MedianAggregateService implements AggregateService {
 
     public static final IRI SERVICE_ID = SimpleValueFactory.getInstance()
-            .createIRI("http://www.metaphacts.com/ontology/service/median");
+            .createIRI("http://www.researchspace.org/resource/system/service/median");
 
     public MedianAggregateService() {
         // TODO Auto-generated constructor stub

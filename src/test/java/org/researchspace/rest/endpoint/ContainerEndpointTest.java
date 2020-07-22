@@ -42,7 +42,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.researchspace.data.rdf.container.LDPApiInternal;
-import org.researchspace.junit.MetaphactsJerseyTest;
+import org.researchspace.junit.JerseyTest;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.rest.endpoint.ContainerEndpoint;
 import org.researchspace.services.storage.api.*;
@@ -52,7 +52,7 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.base.Throwables;
 
-public class ContainerEndpointTest extends MetaphactsJerseyTest {
+public class ContainerEndpointTest extends JerseyTest {
 
     private static ValueFactory VF = SimpleValueFactory.getInstance();
 
@@ -114,14 +114,14 @@ public class ContainerEndpointTest extends MetaphactsJerseyTest {
     @Test
     @SubjectAware(username = "admin", password = "admin", configuration = queryContainerPermissionsShiroFile)
     public void testAdminCreateQuery() throws Exception {
-        Response response = this.createResourceRequest("http://www.metaphacts.com/ontologies/platform#queryContainer");
+        Response response = this.createResourceRequest("http://www.researchspace.org/resource/system/queryContainer");
         Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
     }
 
     @Test
     @SubjectAware(username = "admin", password = "admin", configuration = queryContainerPermissionsShiroFile)
     public void testCreateAndDeleteWithStorage() throws Exception {
-        Response response = this.createResourceRequest("http://www.metaphacts.com/ontologies/platform#queryContainer");
+        Response response = this.createResourceRequest("http://www.researchspace.org/resource/system/queryContainer");
         Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
 
         // Check that the created resource has been saved in the storage
@@ -211,7 +211,7 @@ public class ContainerEndpointTest extends MetaphactsJerseyTest {
         try {
             String queryData = IOUtils.toString(LDPApiInternal.class.getResourceAsStream("testSampleQuery.ttl"),
                     StandardCharsets.UTF_8);
-            return target("/").queryParam("uri", "http://www.metaphacts.com/ontologies/platform#queryContainer")
+            return target("/").queryParam("uri", "http://www.researchspace.org/resource/system/queryContainer")
                     .queryParam("Slug", slug).request()
                     .post(Entity.<String>entity(queryData, RDFFormat.TURTLE.getDefaultMIMEType()));
         } catch (IOException e) {

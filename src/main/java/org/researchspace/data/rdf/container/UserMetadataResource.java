@@ -27,9 +27,9 @@ import org.researchspace.repository.MpRepositoryProvider;
  */
 @LDPR(iri = UserMetadataResource.URI_STRING)
 public class UserMetadataResource extends AbstractLDPResource {
-    public static final String URI_STRING = "http://www.metaphacts.com/ontologies/platform/userMetadataType";
+    public static final String URI_STRING = "http://www.researchspace.org/resource/system/userMetadataType";
     public static final IRI URI = vf.createIRI(URI_STRING);
-    public static final String HAS_USER_STRING = "http://www.metaphacts.com/ontologies/platform#hasUser";
+    public static final String HAS_USER_STRING = "http://www.researchspace.org/resource/system/hasUser";
     public static final IRI HAS_USER = vf.createIRI(HAS_USER_STRING);
 
     public UserMetadataResource(IRI iri, MpRepositoryProvider repositoryProvider) {

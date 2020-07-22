@@ -40,7 +40,7 @@ public class FileContainer extends DefaultLDPContainer {
 
     private static final Logger logger = LogManager.getLogger(FileContainer.class);
 
-    public static final String URI_STRING = "http://www.metaphacts.com/ontologies/platform#fileContainer";
+    public static final String URI_STRING = "http://www.researchspace.org/resource/system/fileContainer";
     public static final IRI IRI = vf.createIRI(URI_STRING);
 
     public FileContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

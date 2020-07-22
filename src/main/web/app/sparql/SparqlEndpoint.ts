@@ -26,7 +26,7 @@ export class SparqlEndpointComponent extends Component<{}, {}> {
   render() {
     return D.div(
       { className: 'page-holder' },
-      PageLoader.factory({ iri: 'http://system.metaphacts.com/resource/SparqlEndpoint' })
+      PageLoader.factory({ iri: 'http://www.researchspace.org/resource/system/SparqlEndpoint' })
     );
   }
 }

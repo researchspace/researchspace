@@ -29,13 +29,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
-import org.researchspace.junit.MetaphactsJerseyTest;
-import org.researchspace.junit.MetaphactsShiroRule;
+import org.researchspace.junit.JerseyTest;
+import org.researchspace.junit.ResearchSpaceShiroRule;
 import org.researchspace.rest.endpoint.TemplateEndpoint;
 
 import com.github.sdorra.shiro.SubjectAware;
 
-public class TemplateEndpointTest extends MetaphactsJerseyTest {
+public class TemplateEndpointTest extends JerseyTest {
     private final String templatePermissionShiroFile = "classpath:org/researchspace/security/shiro-templates-rights.ini";
 
     @Inject
@@ -45,7 +45,7 @@ public class TemplateEndpointTest extends MetaphactsJerseyTest {
     private CacheManager cacheManager;
 
     @Rule
-    public MetaphactsShiroRule rule = new MetaphactsShiroRule(() -> configuration).withCacheManager(() -> cacheManager);
+    public ResearchSpaceShiroRule rule = new ResearchSpaceShiroRule(() -> configuration).withCacheManager(() -> cacheManager);
 
     @Override
     protected void register(ResourceConfig resourceConfig) {
@@ -56,12 +56,12 @@ public class TemplateEndpointTest extends MetaphactsJerseyTest {
     @SubjectAware(username = "admin", password = "admin", configuration = templatePermissionShiroFile)
     public void testRegexPermission() throws Exception {
         Response resp = target("template/html")
-                .queryParam("iri", "http://www.metaphacts.com/resource/admin/SomeAdminPage").request().get();
+                .queryParam("iri", "http://www.researchspace.org/resource/admin/SomeAdminPage").request().get();
         Assert.assertEquals(Status.OK, resp.getStatusInfo());
-        resp = target("template/source").queryParam("iri", "http://www.metaphacts.com/resource/admin/SomeAdminPage")
+        resp = target("template/source").queryParam("iri", "http://www.researchspace.org/resource/admin/SomeAdminPage")
                 .request().get();
         Assert.assertEquals(Status.FORBIDDEN, resp.getStatusInfo());
-        resp = target("template/source").queryParam("iri", "http://www.metaphacts.com/resource/test/test").request()
+        resp = target("template/source").queryParam("iri", "http://www.researchspace.org/resource/test/test").request()
                 .get();
         Assert.assertEquals(Status.OK, resp.getStatusInfo());
     }

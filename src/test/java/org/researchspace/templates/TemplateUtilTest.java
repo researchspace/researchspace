@@ -60,48 +60,48 @@ public class TemplateUtilTest {
         /*
          * full URIs
          */
-        assertEquals(Sets.newHashSet("http://www.metaphacts.com"), TemplateUtil
-                .extractIncludeStrings("This is a full uri include [[>http://www.metaphacts.com]] in some text."));
+        assertEquals(Sets.newHashSet("http://www.researchspace.org"), TemplateUtil
+                .extractIncludeStrings("This is a full uri include [[>http://www.researchspace.org]] in some text."));
         // with whitespaces
-        assertEquals(Sets.newHashSet("http://www.metaphacts.com"), TemplateUtil
-                .extractIncludeStrings("This is a full uri include [[> http://www.metaphacts.com ]] in some text."));
+        assertEquals(Sets.newHashSet("http://www.researchspace.org"), TemplateUtil
+                .extractIncludeStrings("This is a full uri include [[> http://www.researchspace.org ]] in some text."));
 
         /*
          * full URIs quoted
          */
-        assertEquals(Sets.newHashSet("http://www.metaphacts.com"), TemplateUtil
-                .extractIncludeStrings("This is a full uri include [[>\"http://www.metaphacts.com\" ]] in some text."));
+        assertEquals(Sets.newHashSet("http://www.researchspace.org"), TemplateUtil
+                .extractIncludeStrings("This is a full uri include [[>\"http://www.researchspace.org\" ]] in some text."));
 
-        assertEquals(Sets.newHashSet("http://www.metaphacts.com"), TemplateUtil.extractIncludeStrings(
-                "This is a full uri include [[> \"http://www.metaphacts.com\" ]] in some text."));
+        assertEquals(Sets.newHashSet("http://www.researchspace.org"), TemplateUtil.extractIncludeStrings(
+                "This is a full uri include [[> \"http://www.researchspace.org\" ]] in some text."));
 
-        assertEquals(Sets.newHashSet("http://www.metaphacts.com"), TemplateUtil.extractIncludeStrings(
-                "This is a full uri include [[> \"http://www.metaphacts.com\" param1=\"value1\" param2=value2 param3=\"value3\"]] in some text."));
+        assertEquals(Sets.newHashSet("http://www.researchspace.org"), TemplateUtil.extractIncludeStrings(
+                "This is a full uri include [[> \"http://www.researchspace.org\" param1=\"value1\" param2=value2 param3=\"value3\"]] in some text."));
         /*
          * several includes
          */
         LinkedHashSet<Object> orderedSet = Sets.newLinkedHashSet();
-        orderedSet.add("http://www.metaphacts.com/1");
-        orderedSet.add("http://www.metaphacts.com/2");
-        orderedSet.add("http://www.metaphacts.com/3");
+        orderedSet.add("http://www.researchspace.org/1");
+        orderedSet.add("http://www.researchspace.org/2");
+        orderedSet.add("http://www.researchspace.org/3");
         assertEquals(orderedSet, TemplateUtil.extractIncludeStrings(
-                "Example for severa [[> http://www.metaphacts.com/1 ]] includes [[> http://www.metaphacts.com/2 ]],[[> http://www.metaphacts.com/3 ]]in some text."));
+                "Example for severa [[> http://www.researchspace.org/1 ]] includes [[> http://www.researchspace.org/2 ]],[[> http://www.researchspace.org/3 ]]in some text."));
 
         assertEquals(orderedSet, TemplateUtil.extractIncludeStrings(
-                "Example for severa [[> http://www.metaphacts.com/1 param1=\"asf\" param2=1]] includes [[> http://www.metaphacts.com/2 ]],[[> http://www.metaphacts.com/3 ]]in some text."));
+                "Example for severa [[> http://www.researchspace.org/1 param1=\"asf\" param2=1]] includes [[> http://www.researchspace.org/2 ]],[[> http://www.researchspace.org/3 ]]in some text."));
 
         /*
          * partial includes
          */
-        assertEquals(Sets.newHashSet("http://www.metaphacts.com"), TemplateUtil.extractIncludeStrings(
-                "This is a full uri include [[#>\"http://www.metaphacts.com\" ]] in some text."));
+        assertEquals(Sets.newHashSet("http://www.researchspace.org"), TemplateUtil.extractIncludeStrings(
+                "This is a full uri include [[#>\"http://www.researchspace.org\" ]] in some text."));
         // whitespace between [[ and #> is not allowed
         assertTrue(TemplateUtil
-                .extractIncludeStrings("This is a full uri include [[ #>\"http://www.metaphacts.com\" ]] in some text.")
+                .extractIncludeStrings("This is a full uri include [[ #>\"http://www.researchspace.org\" ]] in some text.")
                 .isEmpty());
         // whitespace between [[# and > is not allowed
         assertTrue(TemplateUtil
-                .extractIncludeStrings("This is a full uri include [[# >\"http://www.metaphacts.com\" ]] in some text.")
+                .extractIncludeStrings("This is a full uri include [[# >\"http://www.researchspace.org\" ]] in some text.")
                 .isEmpty());
     }
 

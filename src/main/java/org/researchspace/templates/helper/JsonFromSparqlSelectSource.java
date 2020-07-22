@@ -51,7 +51,7 @@ import com.google.common.collect.Maps;
 public class JsonFromSparqlSelectSource {
     private static final Logger logger = LogManager.getLogger(JsonFromSparqlSelectSource.class);
 
-    public static final String SYNTHETIC_JSON_DATATYPE = "http://www.metaphacts.com/ontologies/platform#syntheticJson";
+    public static final String SYNTHETIC_JSON_DATATYPE = "http://www.researchspace.org/resource/system/syntheticJson";
 
     /**
      * Same helper as {@link SingleValueFromSelectSource}, however, everything
@@ -117,9 +117,9 @@ public class JsonFromSparqlSelectSource {
      * <pre>
      * <code>SELECT ?param1 ?param2 WHERE {
      *  VALUES(?param1 ?param2){
-     *      (<http://metaphacts.com/1> "metaphacts1"^^xsd:string)
-     *      (<http://metaphacts.com/2> "metaphacts2"^^xsd:string)
-     *      (<http://metaphacts.com/j> "[1, 2, \"foo\"]"^^&lt;datatype:json&gt;)
+     *      (<http://www.researchspace.org/1> "researchspace1"^^xsd:string)
+     *      (<http://www.researchspace.org/2> "researchspace2"^^xsd:string)
+     *      (<http://www.researchspace.org/j> "[1, 2, \"foo\"]"^^&lt;datatype:json&gt;)
      *  }
      * }</code>
      * </pre>
@@ -129,9 +129,9 @@ public class JsonFromSparqlSelectSource {
      * <pre>
      *  ?param1                  |  ?param2
      *  -----------------------------------------------------
-     * &lt;http://metaphacts.com/1&gt; |  "metaphacts1"^^xsd:string
-     * &lt;http://metaphacts.com/2&gt; |  "metaphacts2"^^xsd:string
-     * &lt;http://metaphacts.com/j&gt; |  "[1, 2, \"foo\"]"^^&lt;datatype:json&gt;
+     * &lt;http://www.researchspace.org/1&gt; |  "researchspace1"^^xsd:string
+     * &lt;http://www.researchspace.org/2&gt; |  "researchspace2"^^xsd:string
+     * &lt;http://www.researchspace.org/j&gt; |  "[1, 2, \"foo\"]"^^&lt;datatype:json&gt;
      * </pre>
      *
      * will be transformed into the following JSON array of objects:
@@ -139,15 +139,15 @@ public class JsonFromSparqlSelectSource {
      * <pre>
      * [
      *   {
-     *     "param1": "http://metaphacts.com/1",
-     *     "param2": "metaphacts1"
+     *     "param1": "http://www.researchspace.org/1",
+     *     "param2": "researchspace1"
      *   },
      *   {
-     *     "param1": "http://metaphacts.com/2",
-     *     "param2": "metaphacts2"
+     *     "param1": "http://www.researchspace.org/2",
+     *     "param2": "researchspace2"
      *   },
      *   {
-     *     "param1": "http://metaphacts.com/j",
+     *     "param1": "http://www.researchspace.org/j",
      *     "param2": [1, 2, "foo"]
      *   }
      * ]

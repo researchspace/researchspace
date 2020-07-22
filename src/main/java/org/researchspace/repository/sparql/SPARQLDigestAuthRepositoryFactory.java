@@ -28,7 +28,7 @@ import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
  */
 public class SPARQLDigestAuthRepositoryFactory extends AbstractMpSPARQLRepositoryFactory {
 
-    public static final String REPOSITORY_TYPE = "metaphactory:SPARQLDigestAuthRepository";
+    public static final String REPOSITORY_TYPE = "researchspace:SPARQLDigestAuthRepository";
 
     @Override
     public String getRepositoryType() {

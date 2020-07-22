@@ -109,7 +109,7 @@ public class MpFederationServiceClauseOptimizerTest {
         mainRepo.initialize();
         mainMember = mainRepo.getConnection();
 
-        serviceMappings.put(vf.createIRI("http://www.metaphacts.com/wikidata/"), wikidataRepo);
+        serviceMappings.put(vf.createIRI("http://www.researchspace.org/wikidata/"), wikidataRepo);
     }
 
     @After

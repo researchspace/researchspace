@@ -57,9 +57,9 @@ import { renderOverlaySystem, registerOverlaySystem } from 'platform/components/
  *    <div id="application"></div>
  *    <script>
  *      addEventListener('DOMContentLoaded', () => {
- *        metaphactory.init();
+ *        researchspace.init();
  *        var app = document.getElementById('application');
- *        metaphactory.render('http://www.metaphacts.com/resource/assets/OntodiaView', {}, app);
+ *        researchspace.render('http://www.researchspace.org/resource/assets/OntodiaView', {}, app);
  *      });
  *    </script>
  *  </body>
@@ -100,7 +100,7 @@ function initPlatform(baseUrl?: string) {
       return Kefir.constant(url);
     })
     .onValue(() => {
-      console.log('metaphacts platform has been initialized successfully!');
+      console.log('ResearchSpace platform has been initialized successfully!');
     });
 }
 
@@ -120,7 +120,7 @@ function initSubsystems() {
 let platform = null;
 declare var __webpack_public_path__;
 
-window['metaphactory'] = {
+window['researchspace'] = {
   init: function (baseUrl?: string) {
     if (baseUrl) {
       __webpack_public_path__ = baseUrl + '/assets/';

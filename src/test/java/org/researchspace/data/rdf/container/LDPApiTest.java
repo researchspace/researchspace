@@ -45,7 +45,7 @@ import org.researchspace.data.rdf.container.LDPR;
 import org.researchspace.data.rdf.container.LDPResource;
 import org.researchspace.data.rdf.container.RDFStream;
 import org.researchspace.data.rdf.container.RootContainer;
-import org.researchspace.junit.MetaphactsGuiceTestModule;
+import org.researchspace.junit.ResearchSpaceGuiceTestModule;
 import org.researchspace.junit.TestUtils;
 import org.researchspace.ldptest.LDPTestContainer;
 import org.researchspace.ldptest.LDPTestResource;
@@ -73,7 +73,7 @@ import com.google.common.collect.Sets;
  * @author Johannes Trame <jt@metaphacts.com>
  */
 @RunWith(JukitoRunner.class)
-@UseModules(MetaphactsGuiceTestModule.class)
+@UseModules(ResearchSpaceGuiceTestModule.class)
 public class LDPApiTest extends AbstractLDPTest {
 
     private static final ValueFactory VF = SimpleValueFactory.getInstance();
@@ -87,7 +87,7 @@ public class LDPApiTest extends AbstractLDPTest {
     public LDPResource createNewContainer() throws Exception {
         LDPResource cnt = api.createLDPResource(Optional.of("DummyContainer"),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_CONTAINER_TTL), RDFFormat.TURTLE),
-                RootContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                RootContainer.IRI, "http://www.researchspace.org/testinstances/");
         assertEquals(RootContainer.IRI, cnt.getParentContainer());
         assertTrue(cnt.isContainer());
         assertTrue(cnt.getLDPTypes().containsAll(Sets.newHashSet(LDP.Resource, LDP.Container)));
@@ -128,7 +128,7 @@ public class LDPApiTest extends AbstractLDPTest {
 
         LDPResource res = api.createLDPResource(Optional.of("DummyResource"),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                cnt.getResourceIRI(), "http://www.metaphacts.com/testinstances/");
+                cnt.getResourceIRI(), "http://www.researchspace.org/testinstances/");
 
         Model modelToCheck = TestUtils.readTurtleInputStreamIntoModel(
                 TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), res.getResourceIRI(), res.getContextIRI());
@@ -235,7 +235,7 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testGetLDPResourceNotExists() throws Exception {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(containsString("There exists no LDP Resource"));
-        api.getLDPResource(vf.createIRI("http://www.metaphacts.com/non-existing-resource/"));
+        api.getLDPResource(vf.createIRI("http://www.researchspace.org/non-existing-resource/"));
     }
 
     /**
@@ -251,7 +251,7 @@ public class LDPApiTest extends AbstractLDPTest {
         exception.expectMessage(containsString("Only LDP Container can be added to the Platform Root Container"));
         api.createLDPResource(Optional.of("TestResource"),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                RootContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                RootContainer.IRI, "http://www.researchspace.org/testinstances/");
     }
 
     @Test
@@ -260,10 +260,10 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testGetLDPResource() throws Exception {
         LDPContainer cnt = (LDPContainer) createNewContainer();
 
-        String absolutSlugURI = "http://www.metaphacts.com/slug";
+        String absolutSlugURI = "http://www.researchspace.org/slug";
         LDPResource tmpRes = api.createLDPResource(Optional.of(absolutSlugURI),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                cnt.getResourceIRI(), "http://www.metaphacts.com/testinstances/");
+                cnt.getResourceIRI(), "http://www.researchspace.org/testinstances/");
 
         assertEquals(vf.createIRI(absolutSlugURI), tmpRes.getResourceIRI());
 
@@ -271,17 +271,17 @@ public class LDPApiTest extends AbstractLDPTest {
         assertNotNull(res);
         assertEquals(vf.createIRI(absolutSlugURI), res.getResourceIRI());
 
-        String absolutSlugURI2 = "http://www.metaphacts.com/slug2";
+        String absolutSlugURI2 = "http://www.researchspace.org/slug2";
         LDPResource res2 = api.createLDPResource(Optional.of(absolutSlugURI2),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                cnt.getResourceIRI(), "http://www.metaphacts.com/testinstances/");
+                cnt.getResourceIRI(), "http://www.researchspace.org/testinstances/");
         assertNotNull(res2);
         assertEquals(vf.createIRI(absolutSlugURI2), res2.getResourceIRI());
 
         assertEquals(2, cnt.getContainedResources().size());
         assertTrue(Sets.newHashSet((Resource) res2.getResourceIRI(), (Resource) vf.createIRI(absolutSlugURI))
                 .containsAll(cnt.getContainedResources()));
-        assertFalse(cnt.getContainedResources().contains(vf.createIRI("http://www.metaphacts.com/none-existing")));
+        assertFalse(cnt.getContainedResources().contains(vf.createIRI("http://www.researchspace.org/none-existing")));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -290,15 +290,15 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testCreateResourceWithTheSameIri() throws Exception {
         LDPContainer cnt = (LDPContainer) createNewContainer();
 
-        String absolutSlugURI = "http://www.metaphacts.com/slug";
+        String absolutSlugURI = "http://www.researchspace.org/slug";
         LDPResource tmpRes = api.createLDPResource(Optional.of(absolutSlugURI),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                cnt.getResourceIRI(), "http://www.metaphacts.com/testinstances/");
+                cnt.getResourceIRI(), "http://www.researchspace.org/testinstances/");
 
         assertEquals(vf.createIRI(absolutSlugURI), tmpRes.getResourceIRI());
         LDPResource res2 = api.createLDPResource(Optional.of(absolutSlugURI),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                cnt.getResourceIRI(), "http://www.metaphacts.com/testinstances/");
+                cnt.getResourceIRI(), "http://www.researchspace.org/testinstances/");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -307,7 +307,7 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testCreateResourceIriWithIllegalCharactersInSlag() throws Exception {
         String slugWithIllegalCharacters = "slug =>";
         api.createResourceIRI(Optional.of(slugWithIllegalCharacters),
-                vf.createIRI("http://www.metaphacts.com/testContainers"), "http://www.metaphacts.com/testinstances/");
+                vf.createIRI("http://www.researchspace.org/testContainers"), "http://www.researchspace.org/testinstances/");
     }
 
     /**
@@ -320,7 +320,7 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testCreateLDPContainerImplementationLookup() throws Exception {
         LDPResource res = api.createLDPResource(Optional.of(LDPTestContainer.iriString),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_CONTAINER_TTL), RDFFormat.TURTLE),
-                RootContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                RootContainer.IRI, "http://www.researchspace.org/testinstances/");
         assertTrue(LDPTestContainer.class.isAssignableFrom(res.getClass()));
 
         // add programmatically a LDP Resource
@@ -360,9 +360,9 @@ public class LDPApiTest extends AbstractLDPTest {
         // not exist yet and also does not have a implementation
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(containsString("Target resource htt://www.test.de/nonexisting is not a container."));
-        api.createLDPResource(Optional.of("http://www.metaphacts.com/slug"),
+        api.createLDPResource(Optional.of("http://www.researchspace.org/slug"),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                vf.createIRI("htt://www.test.de/nonexisting"), "http://www.metaphacts.com/testinstances/");
+                vf.createIRI("htt://www.test.de/nonexisting"), "http://www.researchspace.org/testinstances/");
     }
 
     @Test
@@ -382,15 +382,15 @@ public class LDPApiTest extends AbstractLDPTest {
     public void containsLDPResourceTest() throws Exception {
         LDPContainer cnt = (LDPContainer) createNewContainer();
 
-        String absolutSlugURI = "http://www.metaphacts.com/slug";
+        String absolutSlugURI = "http://www.researchspace.org/slug";
         LDPResource tmpRes = api.createLDPResource(Optional.of(absolutSlugURI),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_RESOURCE_TTL), RDFFormat.TURTLE),
-                cnt.getResourceIRI(), "http://www.metaphacts.com/testinstances/");
+                cnt.getResourceIRI(), "http://www.researchspace.org/testinstances/");
 
         LDPResource res = api.getLDPResource(vf.createIRI(absolutSlugURI));
 
         assertEquals(vf.createIRI(absolutSlugURI), tmpRes.getResourceIRI());
-        assertFalse(cnt.containsLDPResource(vf.createIRI("http://www.metaphacts.com/none-existing")));
+        assertFalse(cnt.containsLDPResource(vf.createIRI("http://www.researchspace.org/none-existing")));
         assertTrue(cnt.containsLDPResource(res.getResourceIRI()));
     }
 
@@ -416,7 +416,7 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testExportResource() throws Exception {
         LDPResource res = api.createLDPResource(Optional.of(LDPTestContainer.iriString),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_CONTAINER_TTL), RDFFormat.TURTLE),
-                RootContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                RootContainer.IRI, "http://www.researchspace.org/testinstances/");
         IRI person123 = vf.createIRI("http://www.test.com/person123");
         Literal personName = vf.createLiteral("Hans Peter");
         ((LDPTestContainer) res).add(new PointedGraph(person123,
@@ -448,7 +448,7 @@ public class LDPApiTest extends AbstractLDPTest {
         /*
          * All objects not present in subjects ldp:Container ldp:Resource -- removed by
          * metadata strip prov:Entity -- removed by metadata strip foaf:Person
-         * http://www.metaphacts.com/resource/user/admin -- removed by metadata strip
+         * http://www.researchspace.org/resource/user/admin -- removed by metadata strip
          */
         assertEquals(unknownObjects.size(), 2);
     }
@@ -459,7 +459,7 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testImportResourceContainerPresent() throws Exception {
         api.createLDPResource(Optional.of(LDPTestContainer.iriString),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_CONTAINER_TTL), RDFFormat.TURTLE),
-                RootContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                RootContainer.IRI, "http://www.researchspace.org/testinstances/");
 
         Set<IRI> possibleContainers = Sets.newHashSet();
         Set<IRI> unknownObjects = Sets.newHashSet();
@@ -470,7 +470,7 @@ public class LDPApiTest extends AbstractLDPTest {
 
         /*
          * Containers initialized:
-         * http://www.metaphacts.com/ontologies/platform#rootContainer
+         * http://www.researchspace.org/resource/system/rootContainer
          * http://www.testcontainer.com
          */
         assertEquals(possibleContainers.size(), 2);
@@ -487,7 +487,7 @@ public class LDPApiTest extends AbstractLDPTest {
     public void testImportResourceContainerPresentAndDefinedAndForce() throws Exception {
         api.createLDPResource(Optional.of(LDPTestContainer.iriString),
                 new RDFStream(TestUtils.readPlainTextTurtleInput(FILE_DUMMY_CONTAINER_TTL), RDFFormat.TURTLE),
-                RootContainer.IRI, "http://www.metaphacts.com/testinstances/");
+                RootContainer.IRI, "http://www.researchspace.org/testinstances/");
 
         Set<IRI> possibleContainers = Sets.newHashSet();
         Set<IRI> unknownObjects = Sets.newHashSet();

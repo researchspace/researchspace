@@ -39,8 +39,8 @@ import com.google.common.base.Throwables;
 @LDPR(iri = UserMetadataContainer.URI_STRING)
 public class UserMetadataContainer extends DefaultLDPContainer {
 
-    public static final String URI_STRING = "http://www.metaphacts.com/ontologies/platform#userMetadataContainer";
-    public static final String URI_ROOT_STRING = "http://www.metaphacts.com/ontologies/platform/userMetadata";
+    public static final String URI_STRING = "http://www.researchspace.org/resource/system/userMetadataContainer";
+    public static final String URI_ROOT_STRING = "http://www.researchspace.org/resource/system/userMetadata";
     public static final IRI IRI = vf.createIRI(URI_STRING);
     public static final IRI IRI_ROOT = vf.createIRI(URI_ROOT_STRING);
 

@@ -65,7 +65,7 @@ import javax.inject.Inject;
  */
 public class RepositoryConfigUtilsTest extends AbstractIntegrationTest {
     ValueFactory vf = SimpleValueFactory.getInstance();
-    private final IRI baseIri = vf.createIRI("http://www.metaphacts.com/base");
+    private final IRI baseIri = vf.createIRI("http://www.researchspace.org/base");
     private final String MEMORY_STORE_CONFIG_FILE = "/org/researchspace/repository/test-sail-memory-repository.ttl";
     private final String NATIVE_STORE_CONFIG_FILE = "/org/researchspace/repository/test-sail-native-repository.ttl";
 

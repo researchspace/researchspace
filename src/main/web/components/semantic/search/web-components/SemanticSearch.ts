@@ -195,7 +195,7 @@ export class SemanticSearch extends Component<Props, State> {
       .map((dc) => dc.datasets)
       .getOrElse([]);
     return datasets.map(({ iri, label, silent, alignments, isDefault }) => {
-      const datasetIri = iri || 'http://metaphacts.com/ontology#default';
+      const datasetIri = iri || 'http://www.researchspace.org/ontology#default';
       return {
         iri: Rdf.iri(datasetIri),
         alignments: this.mapAlignemnts(alignments),

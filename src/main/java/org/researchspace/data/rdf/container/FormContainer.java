@@ -48,7 +48,7 @@ public class FormContainer extends DefaultLDPContainer {
 
     private static final Logger logger = LogManager.getLogger(FormContainer.class);
 
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#formContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/formContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public FormContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

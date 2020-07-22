@@ -48,7 +48,7 @@ public class WorkflowContainer extends DefaultLDPContainer {
 
     private static final Logger logger = LogManager.getLogger(WorkflowContainer.class);
 
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#workflowContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/workflowContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public WorkflowContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

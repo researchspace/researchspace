@@ -37,7 +37,7 @@ import org.hamcrest.collection.IsMapContaining;
 import org.junit.Rule;
 import org.junit.Test;
 import org.researchspace.junit.LogAppenderRule;
-import org.researchspace.junit.MetaphactsJerseyTest;
+import org.researchspace.junit.JerseyTest;
 import org.researchspace.servlet.filter.MDCFilter;
 
 import com.github.sdorra.shiro.ShiroRule;
@@ -48,7 +48,7 @@ import com.google.common.collect.ImmutableMap;
  * @author Johannes Trame <jt@metaphacts.com>
  *
  */
-public class MDCFilterTest extends MetaphactsJerseyTest {
+public class MDCFilterTest extends JerseyTest {
     private final String queryContainerPermissionsShiroFile = "classpath:org/researchspace/rest/endpoint/shiro-query-container.ini";
 
     @Rule

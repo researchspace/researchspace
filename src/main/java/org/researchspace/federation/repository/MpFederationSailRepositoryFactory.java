@@ -45,14 +45,14 @@ public class MpFederationSailRepositoryFactory implements RepositoryFactory {
      * 
      * @see RepositoryFactory#getRepositoryType()
      */
-    public static final String REPOSITORY_TYPE = "metaphacts:FederationSailRepository";
+    public static final String REPOSITORY_TYPE = "researchspace:FederationSailRepository";
 
     /*---------*
      * Methods *
      *---------*/
 
     /**
-     * Returns the repository's type: <tt>metaphacts:FederationSailRepository</tt>.
+     * Returns the repository's type: <tt>researchspace:FederationSailRepository</tt>.
      */
     @Override
     public String getRepositoryType() {

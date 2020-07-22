@@ -537,7 +537,7 @@ export interface Text {
   /**
    * IRI of the help page to explain any special syntax used in the text search.
    * Must be a fully qualified IRI enclosed in <>.
-   * Default: <http://help.metaphacts.com/resource/SolrFullTextSearchSyntax> (shown if escapeLuceneSyntax is false)
+   * Default: <http://help.researchspace.org/resource/SolrFullTextSearchSyntax> (shown if escapeLuceneSyntax is false)
    *
    */
   helpPage?: string;

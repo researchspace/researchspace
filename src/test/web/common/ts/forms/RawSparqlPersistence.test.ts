@@ -48,7 +48,7 @@ describe('RawSparqlPersistence', () => {
       'prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' + 'DELETE { $subject rdfs:label $value} WHERE {}',
   });
 
-  const subject = Rdf.iri('http://www.metaphacts.com/resource/Start');
+  const subject = Rdf.iri('http://www.researchspace.org/resource/Start');
 
   const emptyModel: CompositeValue = {
     type: CompositeValue.type,
@@ -63,7 +63,7 @@ describe('RawSparqlPersistence', () => {
   it('Return INSERT query if value has been added into form model', function () {
     const expectedQuery = [
       'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>',
-      'INSERT { <http://www.metaphacts.com/resource/Start> ' +
+      'INSERT { <http://www.researchspace.org/resource/Start> ' +
         'rdfs:label "testValue"^^<http://www.w3.org/2001/XMLSchema#string>. }',
       'WHERE {  }',
     ].join('\n');
@@ -84,7 +84,7 @@ describe('RawSparqlPersistence', () => {
   it('Return DELETE query if value has been removed from form model', function () {
     const expectedQuery = [
       'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>',
-      'DELETE { <http://www.metaphacts.com/resource/Start> ' +
+      'DELETE { <http://www.researchspace.org/resource/Start> ' +
         'rdfs:label "testValue"^^<http://www.w3.org/2001/XMLSchema#string>. }',
       'WHERE {  }',
     ].join('\n');

@@ -20,7 +20,7 @@
 import { Rdf } from 'platform/api/rdf';
 
 module searchProfile {
-  export const _NAMESPACE = 'http://www.metaphacts.com/ontologies/platform/semantic-search-profile/';
+  export const _NAMESPACE = 'http://www.researchspace.org/resource/system/semantic-search-profile/';
   export const iri = (s: string) => Rdf.iri(_NAMESPACE + s);
 
   export const Profile = iri('Profile');

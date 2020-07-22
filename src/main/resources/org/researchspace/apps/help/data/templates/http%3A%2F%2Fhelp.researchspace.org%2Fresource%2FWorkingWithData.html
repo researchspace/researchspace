@@ -13,7 +13,7 @@
     <h1>Working with Data</h1>
     <h2>Background: Semantic Data Formats</h2>
     <div style="float:left;width:70%;">
-      <p> The metaphacts platform is based on open Linked Data standards for semantic data processing 
+      <p> The ResearchSpace platform is based on open Linked Data standards for semantic data processing 
         that have been created as part of the 
         <a href="http://www.w3.org/standards/semanticweb/" target="_blank">W3C's Semantic Web initiative</a>. 
         Designed to represent and process data published in the Web, in recent years these standards have
@@ -33,7 +33,7 @@
     <div style="clear:both;" />
 
     <div>
-      If you want to learn more about the standards underlying the metaphacts platform, you may get started
+      If you want to learn more about the standards underlying the ResearchSpace platform, you may get started
       by catching up with the latest W3C specs listed below:
 
       <table class="table table-striped">
@@ -75,7 +75,7 @@
 
     <h2>Overview: Inferfaces for Data Handling</h2>  
     <p>
-      The metaphacts platform provides three main APIs for data handling:
+      The ResearchSpace platform provides three main APIs for data handling:
     </p>
     <ul>
       <li><code>/sparql</code> Interface <br>Implements the <a href="http://www.w3.org/TR/sparql11-query/" target="_blank">SPARQL 1.1 Query</a> for querying data as well as the <a href="http://www.w3.org/TR/sparql11-update/" target="_blank">SPARQL 1.1 Update</a> standard for updating data. Most powerful and fexible, but also the steepest learning curve. Security permissions can be assigned on the granularity of SPARQL operation types (SELECT, ASK, CONSTRUCT, DESCRIBE, UPDATE). The interface can be used from any client software, for example, from command-line interfaces like CURL or other software libraries implementing the SPARQL protocol directly (RDF4J, Jena, RDFlib, SPARQL.js etc.). The <a href="/sparql">SPARQL editor</a> provides a convenient environment with  syntax highlighting and different output modes for constructing, testing, saving, and executing SPARQL queries manually from within the browser.</li> 
@@ -84,8 +84,8 @@
     </ul>
 
     <p>  
-      Please note, that the metaphacts platform in principle can operate on any database implementing the SPARQL 1.1 and SPARQL 1.1 Update standard. While
-      the functionality as described here is mainly graph database independent (i.e. the metaphacts platform acts as a proxy in front of the underlying database), there might be still vendor specifics due to differences in the implementation and level of compliance with the standards.
+      Please note, that the ResearchSpace platform in principle can operate on any database implementing the SPARQL 1.1 and SPARQL 1.1 Update standard. While
+      the functionality as described here is mainly graph database independent (i.e. the ResearchSpace platform acts as a proxy in front of the underlying database), there might be still vendor specifics due to differences in the implementation and level of compliance with the standards.
     </p>
 
     <h2>Data Ingestion and Manipulation from a Client</h2>
@@ -242,7 +242,7 @@ curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary 
 
     <h2>Data Loading from the Host Filesystem</h2>
 
-    Independently of whether you are using the SPARQL or the <semantic-link iri="[[resolvePrefix "Help:GraphStoreAPI"]]">Graph Store API</semantic-link> directly, all communication with the metaphacts platform and the database backend respectively is done over HTTP(S)/SPARQL. Depending on your scenario and deployment environment, there might be parameters that need to be adjusted: for instance, the maximum body size a client may post against the webserver is typically limited (e.g. the tomcat, jetty or nginx default configurations are usually around 2 MBs - c.f. <a href="http://www.eclipse.org/jetty/documentation/current/setting-form-size.html" target="_blank">Setting form size in Jetty</a>). However, <b>for ingesting larger datasets it is generally recommended to load the data from the filesystem</b>, e.g. using SPARQL Update or dedicated (but usually proprietary) graph database APIs. 
+    Independently of whether you are using the SPARQL or the <semantic-link iri="[[resolvePrefix "Help:GraphStoreAPI"]]">Graph Store API</semantic-link> directly, all communication with the ResearchSpace platform and the database backend respectively is done over HTTP(S)/SPARQL. Depending on your scenario and deployment environment, there might be parameters that need to be adjusted: for instance, the maximum body size a client may post against the webserver is typically limited (e.g. the tomcat, jetty or nginx default configurations are usually around 2 MBs - c.f. <a href="http://www.eclipse.org/jetty/documentation/current/setting-form-size.html" target="_blank">Setting form size in Jetty</a>). However, <b>for ingesting larger datasets it is generally recommended to load the data from the filesystem</b>, e.g. using SPARQL Update or dedicated (but usually proprietary) graph database APIs. 
 
     <h3>Data Loading via SPARQL Update</h3>
 
@@ -363,11 +363,11 @@ import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
 /**
  * @author Johannes Trame <jt@metaphacts.com>
  */
-public class MetaphactorySparqlRepositoryConnection {
+public class researchspaceSparqlRepositoryConnection {
 
   public static void main(String[] args) {
     final ValueFactory vf = SimpleValueFactory.getInstance();
-    RepositoryConfig repConfig = new RepositoryConfig("metaphactory","metaphactory HTTP SPARQL Repository");
+    RepositoryConfig repConfig = new RepositoryConfig("researchspace","researchspace HTTP SPARQL Repository");
     // important to use this constructor, since there is a bug in the other constructors missing to init the type
     SPARQLRepositoryConfig repImplConfig = new SPARQLRepositoryConfig();
     repImplConfig.setQueryEndpointUrl("http://127.0.0.1:10214/sparql");

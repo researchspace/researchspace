@@ -48,9 +48,9 @@ public class IriParamProviderTest extends JerseyTestNg.ContainerPerClassTest {
 
     @Test
     public void shouldReturnSameIriAsRequested() {
-        String response = target("/iri/iri").queryParam("iri", "http://metaphacts.com/testIRI").request()
+        String response = target("/iri/iri").queryParam("iri", "http://www.researchspace.org/testIRI").request()
                 .get(String.class);
-        Assert.assertEquals(response, "http://metaphacts.com/testIRI");
+        Assert.assertEquals(response, "http://www.researchspace.org/testIRI");
     }
 
     @Test
@@ -61,7 +61,7 @@ public class IriParamProviderTest extends JerseyTestNg.ContainerPerClassTest {
 
     @Test
     public void shouldReturnNoIri() {
-        String response = target("/iri/null-iri").queryParam("iri", "http://metaphacts.com/testIRI").request()
+        String response = target("/iri/null-iri").queryParam("iri", "http://www.researchspace.org/testIRI").request()
                 .get(String.class);
         Assert.assertEquals(response, "Should not happen");
     }
@@ -69,14 +69,14 @@ public class IriParamProviderTest extends JerseyTestNg.ContainerPerClassTest {
     @Test
     public void shouldReturnDefaultIri() {
         String response = target("/iri/default-iri").request().get(String.class);
-        Assert.assertEquals(response, "http://metaphacts.com/defaultIRI");
+        Assert.assertEquals(response, "http://www.researchspace.org/defaultIRI");
     }
 
     @Test
     public void shouldReturnNotDefaultIri() {
-        String response = target("/iri/default-iri").queryParam("iri", "http://metaphacts.com/testIRI").request()
+        String response = target("/iri/default-iri").queryParam("iri", "http://www.researchspace.org/testIRI").request()
                 .get(String.class);
-        Assert.assertEquals(response, "http://metaphacts.com/testIRI");
+        Assert.assertEquals(response, "http://www.researchspace.org/testIRI");
     }
 
     @Test
@@ -115,7 +115,7 @@ public class IriParamProviderTest extends JerseyTestNg.ContainerPerClassTest {
 
         @GET
         @Path("/default-iri")
-        public String getDefaultString(@DefaultValue("http://metaphacts.com/defaultIRI") @QueryParam("iri") IRI iri) {
+        public String getDefaultString(@DefaultValue("http://www.researchspace.org/defaultIRI") @QueryParam("iri") IRI iri) {
             return iri.toString();
         }
     }

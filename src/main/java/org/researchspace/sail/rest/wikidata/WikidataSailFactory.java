@@ -32,7 +32,7 @@ import org.eclipse.rdf4j.sail.config.SailImplConfig;
  */
 public class WikidataSailFactory implements SailFactory {
 
-    public static final String SAIL_TYPE = "metaphacts:WikidataTextSearch";
+    public static final String SAIL_TYPE = "researchspace:WikidataTextSearch";
 
     public WikidataSailFactory() {
         // TODO Auto-generated constructor stub

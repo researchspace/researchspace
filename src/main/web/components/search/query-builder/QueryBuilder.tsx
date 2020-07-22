@@ -89,7 +89,7 @@ import SearchSummary from './SearchSummary';
 import MapSelectionOverlay from './MapSelectionOverlay';
 import { SelectType, SelectedArea } from './OLMapSelection';
 
-const DEFAULT_TEXT_HELP_PAGE = Rdf.iri('http://help.metaphacts.com/resource/SolrFullTextSearchSyntax');
+const DEFAULT_TEXT_HELP_PAGE = Rdf.iri('http://help.researchspace.org/resource/SolrFullTextSearchSyntax');
 
 /**
  * Assign unique id to search clause holders to facilitate integration testing.

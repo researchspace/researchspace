@@ -66,7 +66,7 @@ export class LdpAnnotationServiceClass extends LdpService {
 
   private annotationToGraph(annotation: Annotation): Rdf.Graph {
     const annotationIri = Rdf.iri('');
-    const bodyResource = Rdf.iri('http://www.metaphacts.com/');
+    const bodyResource = Rdf.iri('http://www.researchspace.org/');
     let triples = [Rdf.triple(annotationIri, vocabularies.rdf.type, vocabularies.oa.Annotation)];
     if (annotation.label) {
       triples.push(Rdf.triple(annotationIri, vocabularies.rdfs.label, Rdf.literal(annotation.label)));

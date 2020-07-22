@@ -29,7 +29,7 @@ import org.researchspace.repository.MpRepositoryProvider;
  */
 @LDPR(iri = PersistedComponentContainer.IRI_STRING)
 public class PersistedComponentContainer extends DefaultLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#persistedComponentContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/persistedComponentContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public PersistedComponentContainer(IRI uri, MpRepositoryProvider repositoryProvider) {

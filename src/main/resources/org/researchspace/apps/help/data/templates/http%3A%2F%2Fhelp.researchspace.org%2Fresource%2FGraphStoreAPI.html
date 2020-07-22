@@ -21,14 +21,14 @@
       <footer><a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">Abstract from the W3C "SPARQL 1.1 Graph Store HTTP Protocol" Recommendation </a></footer>
     </blockquote>
     <p>
-      The standard interface for querying and manipulating RDF data through the metaphacts platform is the standard <a href="/sparql">SPARQL interface</a> (<code>/sparql</code>) implementing the <a href="https://www.w3.org/TR/sparql11-query/" target="_blank">SPARQL 1.1 protocol</a>.
+      The standard interface for querying and manipulating RDF data through the ResearchSpace platform is the standard <a href="/sparql">SPARQL interface</a> (<code>/sparql</code>) implementing the <a href="https://www.w3.org/TR/sparql11-query/" target="_blank">SPARQL 1.1 protocol</a>.
     </p>
     <p>
      However, loading RDF statements through the SPARQL interface usually means that a client needs to parse or generate RDF statements from local files and need to translate them into SPARQL 1.1 Update commands in order to be execute against a SPARQL 1.1 endpoint.
       Similarly, a client may need to translate and enumerate all statements in SPARQL 1.1 Update commands for modification or deletion.
     </p>
     <p>
-      To ease this process for some clients and specific use-cases, the metaphacts platform implements additionally the <a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">SPARQL 1.1 Graph Store HTTP Protocol</a> which is accessible via the context path <code>/rdf-graph-store</code> .
+      To ease this process for some clients and specific use-cases, the ResearchSpace platform implements additionally the <a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">SPARQL 1.1 Graph Store HTTP Protocol</a> which is accessible via the context path <code>/rdf-graph-store</code> .
     </p>
 
     <p>
@@ -79,7 +79,7 @@
       If no graph is specified, the server will create a graph URI.<br> If the operation was successful (in both cases - creation or merge), the server will send a <code>201 Created</code> code and will specify the graph URI being used in the <code>location</code> response header.
     </p>
     <p>
-      The client <b>SHOULD</b> specify the content type (see list of supported content types in the GET section) in the header, otherwise the metaphacts platform may not be able to guess and parse the request body and will respond with a  <code>406 Not Acceptable</code> code.
+      The client <b>SHOULD</b> specify the content type (see list of supported content types in the GET section) in the header, otherwise the ResearchSpace platform may not be able to guess and parse the request body and will respond with a  <code>406 Not Acceptable</code> code.
     </p>
     <b>Example:</b> Creating a new graph
     <mp-code-block mode='text/x-sh'>
@@ -191,7 +191,7 @@ curl -v -u admin:admin -X DELETE http://127.0.0.1:10214/rdf-graph-store?graph=ht
 
     <h3>Repository Support</h3>
     <p>
-      All requests will operate by default on platform's <code>default</code> repository. However, the metaphacts platform enables to execute the requests against any repository registered within the repository manager (c.f. <semantic-link uri="http://help.researchspace.org/resource/RepositoryManager">Help Repository Manager</semantic-link>). The repository can be specified by simply adding a request parameter <code>repository={repositoryID}</code> to the request.
+      All requests will operate by default on platform's <code>default</code> repository. However, the ResearchSpace platform enables to execute the requests against any repository registered within the repository manager (c.f. <semantic-link uri="http://help.researchspace.org/resource/RepositoryManager">Help Repository Manager</semantic-link>). The repository can be specified by simply adding a request parameter <code>repository={repositoryID}</code> to the request.
     </p>
     <b>Example: </b><br>
     <mp-code-block mode='text/x-sh'>
@@ -199,7 +199,7 @@ curl -v -u admin:admin -X DELETE http://127.0.0.1:10214/rdf-graph-store?graph=ht
     </mp-code-block>
 
     <h3>Support for TRIG, TRIX and NQUADS</h3>
-    The SPARQL 1.1 Graph Store HTTP Protocol specification is not specific about cases where RDF based serialization are posted against the Graph Store API, which do support quad encodings (namely TRIG, TRIX and NQuads). By default, the metaphacts platform ignores the graphs as encoded in the serialization and loads all statements into the graph as specified in the request parameters. However, by appending the proprietary request parameter <code>keepSourceGraphs=true</code>, the <code>POST</code> operation can be instructed to preserve the named graphs as specified in the serialization. Please note, that this is only working for <code>POST</code>.
+    The SPARQL 1.1 Graph Store HTTP Protocol specification is not specific about cases where RDF based serialization are posted against the Graph Store API, which do support quad encodings (namely TRIG, TRIX and NQuads). By default, the ResearchSpace platform ignores the graphs as encoded in the serialization and loads all statements into the graph as specified in the request parameters. However, by appending the proprietary request parameter <code>keepSourceGraphs=true</code>, the <code>POST</code> operation can be instructed to preserve the named graphs as specified in the serialization. Please note, that this is only working for <code>POST</code>.
 
     <h2>Security</h2>
     Please refer to <semantic-link uri="http://help.researchspace.org/resource/BasicSystemConfiguration">Basic System Configuration</semantic-link>, where the basic <code>"sparql:graphstore:*"</code> permission strings are specified. For the time being, permissions can only be assigned to the operations in general, but not to individual graphs. However, it is possible to extend this mechanism.

@@ -20,7 +20,7 @@
 import * as Rdf from '../core/Rdf';
 
 module workflow {
-  const NAMESPACE = 'http://www.metaphacts.com/ontologies/platform/workflow#';
+  const NAMESPACE = 'http://www.researchspace.org/resource/system/workflow#';
   const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 
   /**  TYPES **/

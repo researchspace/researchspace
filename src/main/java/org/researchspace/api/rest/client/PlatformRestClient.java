@@ -35,18 +35,18 @@ public class PlatformRestClient {
     // for now, the URL of the SPARQL endpoint is hardcoded
     private static final String SPARQL_ENDPOINT_SUFFIX = "/sparql";
 
-    public final static String BASE_IRI_STR = "http://www.metaphacts.com/";
+    public final static String BASE_IRI_STR = "http://www.researchspace.org/";
     private final ValueFactory vf = SimpleValueFactory.getInstance();
     public final IRI BASE_IRI = vf.createIRI(BASE_IRI_STR);
 
     private final IRI LDP_CONTAINER_QUERY_CATALOG = vf
-            .createIRI("http://www.metaphacts.com/ontologies/platform#queryCatalog");
+            .createIRI("http://www.researchspace.org/resource/system/queryCatalog");
 
     private final IRI LDP_CONTAINER_QUERY_TEMPLATE_CATALOG = vf
-            .createIRI("http://www.metaphacts.com/ontologies/platform#queryTemplateCatalog");
+            .createIRI("http://www.researchspace.org/resource/system/queryTemplateCatalog");
 
     private final IRI LDP_CONTAINER_QUERY_FORM_CATALOG = vf
-            .createIRI("http://www.metaphacts.com/ontologies/platform#queryFormCatalog");
+            .createIRI("http://www.researchspace.org/resource/system/queryFormCatalog");
 
     // convenient access to the SPARQL endpoint
     private SPARQLEndpointAPIClient sparqlEndpointApi;

@@ -1,0 +1,118 @@
+[[!-- rs-iiif-viewer-panel is duplicated in 3 places here but with different iris parameter, we can't use here inline partial because of this bug https://github.com/jknack/handlebars.java/issues/694 --]]
+
+{{#if ontodiaVariable}}
+<rs-image-graph-authoring
+  [[> rsp:IIIFConfig]]
+  id='{{miradorVariable}}-mirador'
+  ontodia-id='{{ontodiaVariable}}-ontodia'
+  use-details-sidebar=true
+  fields='{
+    "boundingBox": "http://www.researchspace.org/ontology/boundingBox",
+    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
+    "viewport": "http://www.researchspace.org/ontology/viewport",
+    "isPrimaryAreaOf": "http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of"
+  }'
+  no-images-template="{{> noImages}}"
+>
+  <template id='noImages'>
+    <div class="mirador-noimage-container">
+      <div class="mirador-noimage-alertMessage">
+        <div class="mirador-noimage-title">
+          <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>No images to display</div>
+        <div class="mirador-noimage-text">
+          Select the Digital Images to display in the Viewer making them visible in the knowledge map above.<br>
+          From an Entity card expand the list of Connections, then search and select
+          the images from <strong>'has representation'</strong> or <strong>'has main representation'</strong>
+        </div>
+      </div>
+      <img src="/assets/images/mirador_noimage.png">
+    </div>
+  </template>
+</rs-image-graph-authoring>
+{{else}}
+<div class='miradord-without-authoring'>
+  <style>
+    .miradord-without-authoring {
+      height: 100%;
+    }
+    .miradord-without-authoring .mirador-osd-annotation-controls {
+      display: none;
+    }
+    .miradord-without-authoring .mirador-manipulation-controls {
+      top: 0;
+    }
+  </style>
+  <semantic-switch query='PREFIX ontodia: <http://ontodia.org/schema/v1#>
+    SELECT ?type {
+      <{{iri}}> a ?type .
+      VALUES ?type { ontodia:Diagram Platform:Set }
+    }'>
+    <template id='http://ontodia.org/schema/v1#Diagram'>
+      <semantic-query query='PREFIX ontodia: <http://ontodia.org/schema/v1#>
+        SELECT (CONCAT("[", GROUP_CONCAT(CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
+          <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o
+        }'
+        template='{{> template}}'>
+        <template id='template'>
+            <rs-iiif-viewer-panel
+              [[> rsp:IIIFConfig]]
+              id='{{miradorVariable}}-mirador'
+              iris='{{bindings.0.items.value}}'
+              query="SELECT DISTINCT ?image WHERE {
+                {
+                  ?subject a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                  BIND(?subject as ?image)
+                } UNION {
+                  ?subject (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
+                  ?image a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                }
+              }">
+            </rs-iiif-viewer-panel>
+        </template>
+      </semantic-query>
+    </template>
+    <template id='http://www.researchspace.org/resource/system/Set'>
+          <rs-iiif-viewer-panel
+              [[> rsp:IIIFConfig]]
+              id='{{miradorVariable}}-mirador'
+              iris='["{{iri}}"]'
+              query="
+              PREFIX ldp: <http://www.w3.org/ns/ldp#>
+              SELECT DISTINCT ?image WHERE {
+                {
+                  ?subject ldp:contains / Platform:setItem ?image.
+                  ?image a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                } UNION {
+                  ?subject ldp:contains / Platform:setItem ?setItem .
+                  ?setItem (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
+                  ?image a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                }
+              }">
+          </rs-iiif-viewer-panel>
+    </template>
+    <template id='default'>
+            <rs-iiif-viewer-panel
+              [[> rsp:IIIFConfig]]
+              id='{{miradorVariable}}-mirador'
+              iris='[ "{{iri}}" ]'
+              use-details-sidebar=true
+              query="SELECT DISTINCT ?image WHERE {
+                {
+                  ?subject a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                  BIND(?subject as ?image)
+                } UNION {
+                  ?subject (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
+                  ?image a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                }
+              }">
+            </rs-iiif-viewer-panel>
+    </template>
+  </semantic-switch>
+</div>
+{{/if}}

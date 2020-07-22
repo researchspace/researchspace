@@ -42,7 +42,7 @@ import com.google.common.base.Throwables;
 public class URLMinifierContainer extends DefaultLDPContainer {
     private static final Logger logger = LogManager.getLogger(URLMinifierContainer.class);
 
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#urlMinifierContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/urlMinifierContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public URLMinifierContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

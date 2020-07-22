@@ -49,7 +49,7 @@ public class AnnotationContainer extends AbstractLDPContainer {
 
     private static final Logger logger = LogManager.getLogger(AnnotationContainer.class);
 
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#annotationContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/annotationContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public AnnotationContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

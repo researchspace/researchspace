@@ -37,7 +37,7 @@ public class SimpleFederationLimitTest {
 
     // @Test
     public void testRDF4J() throws Exception {
-        SPARQLRepository defaultRepository = new SPARQLRepository("http://wikidata.metaphacts.com/bigdata/sparql");
+        SPARQLRepository defaultRepository = new SPARQLRepository("https://query.wikidata.org/sparql");
         defaultRepository.initialize();
         defaultRepository.enableQuadMode(true);
 
@@ -66,8 +66,8 @@ public class SimpleFederationLimitTest {
     }
 
     // @Test
-    public void testMetaphacts() throws Exception {
-        SPARQLRepository defaultRepository = new SPARQLRepository("http://wikidata.metaphacts.com/bigdata/sparql");
+    public void testFederation() throws Exception {
+        SPARQLRepository defaultRepository = new SPARQLRepository("https://query.wikidata.org/sparql");
         defaultRepository.enableQuadMode(true);
         defaultRepository.initialize();
         MpFederation fed = new MpFederation("default", Maps.newHashMap());

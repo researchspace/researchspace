@@ -32,7 +32,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  */
 public class MPQA {
 
-    public static final String NAMESPACE = "http://www.metaphacts.com/ontologies/qa#";
+    public static final String NAMESPACE = "http://www.researchspace.org/ontologies/qa#";
 
     public static final IRI hasSPINQueryTemplate;
     public static final IRI parameter;

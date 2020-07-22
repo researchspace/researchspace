@@ -1,0 +1,72 @@
+[[!-- 
+  uses client-side templates:
+    [[> rsp:KnowledgeMapOntodiaConfig]]
+--]]
+
+<div style='flex: 1 1 0px; overflow: hidden; display: flex; flex-direction: column;'>
+{{#if iri}}
+  <semantic-switch query='
+    PREFIX ontodia: <http://ontodia.org/schema/v1#>
+    SELECT ?type {
+      OPTIONAL {
+        <{{iri}}> a ?type .
+        FILTER(?type in (ontodia:Diagram, Platform:Set))
+      }
+    }'>
+    <template id='http://ontodia.org/schema/v1#Diagram'>
+      {{> rsp:KnowledgeMapOntodiaConfig diagram=iri}}
+    </template>
+    <template id='http://www.researchspace.org/resource/system/Set'>
+      <semantic-query query='
+        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+        SELECT (CONCAT("[", GROUP_CONCAT(CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
+          <{{iri}}> ldp:contains / Platform:setItem ?o
+        }'
+        template='{{> set}}'
+      >
+        <template id='set'>
+          [[!-- reset iri to null to make sure it is not picked up in the KnowledgeMapOntodiaConfig --]]
+          {{#bind iri=null}}{{> rsp:KnowledgeMapOntodiaConfig iris=bindings.0.items.value}}{{/bind}}
+        </template>
+      </semantic-query>
+    </template>
+    <template id='default'>
+      {{> rsp:KnowledgeMapOntodiaConfig iri=iri}}
+    </template>
+  </semantic-switch>
+{{else}}
+	{{> rsp:KnowledgeMapOntodiaConfig}}
+{{/if}}
+  
+  <mp-event-proxy id='ontodia-is-dirty'
+    on-event-type='Ontodia.DiagramIsDirty'
+    on-event-source='{{ontodiaVariable}}-ontodia'
+    proxy-event-type='Dashboard.StatusChanged'
+    proxy-targets='["{{ontodiaVariable}}"]'>
+  </mp-event-proxy>
+  <mp-event-proxy id='ontodia-saved'
+    on-event-type='Ontodia.DiagramSaved'
+    on-event-source='{{ontodiaVariable}}-ontodia'
+    proxy-event-type='Dashboard.ResourceChanged'
+    proxy-targets='["{{ontodiaVariable}}"]'>
+  </mp-event-proxy>
+  <mp-event-proxy on-event-source='clipboard'
+    on-event-type='Components.SetManagement.ItemsFiltered'
+    proxy-event-type='Components.SetManagement.ItemsFiltered'
+    proxy-targets='["{{ontodiaVariable}}-ontodia"]'>
+  </mp-event-proxy>
+  <mp-event-proxy
+    id='clipboard-update-on-set-item-added'
+    on-event-source='{{ontodiaVariable}}-ontodia'
+    on-event-type='Components.SetManagement.ItemAdded'
+    proxy-event-type='Component.Refresh'
+    proxy-targets='["clipboard"]'>
+  </mp-event-proxy>
+  
+  <mp-event-proxy id='ontodia-data-persisted'
+    on-event-type='Ontodia.DataPersisted'
+    on-event-source='{{ontodiaVariable}}-ontodia'
+    proxy-event-type='Component.Refresh'
+    proxy-targets='["details-fields-view"]'>
+  </mp-event-proxy>
+</div>

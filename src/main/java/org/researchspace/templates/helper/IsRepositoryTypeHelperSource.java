@@ -38,7 +38,7 @@ import com.github.jknack.handlebars.Options;
  * {@link TemplateContext} is checked. <br>
  * <strong>Subexpression Example:</strong> <br>
  * <code>
- * [[#if (isRepositoryType "metaphactory:SPARQLRepository")]]
+ * [[#if (isRepositoryType "researchspace:SPARQLRepository")]]
  *  true branch
  * [[else]]
  *  false branch
@@ -46,7 +46,7 @@ import com.github.jknack.handlebars.Options;
  * </code><br>
  * <strong>Stand-alone</strong><br>
  * <code>
- * Is this true ?: [[#isRepositoryType "metaphactory:SPARQLRepository" "default" ]]
+ * Is this true ?: [[#isRepositoryType "researchspace:SPARQLRepository" "default" ]]
  * </code>
  * 
  * @author Andriy Nikolov an@metaphacts.com

@@ -41,17 +41,17 @@ public class MpRepositoryVocabulary {
     /**
      * Namespace for the generic repository-related configuration properties.
      */
-    public static final String NAMESPACE = "http://www.metaphacts.com/ontologies/platform/repository#";
+    public static final String NAMESPACE = "http://www.researchspace.org/resource/system/repository#";
 
     /**
      * Default namespace for the instance URIs of federation members.
      */
-    public static final String FEDERATION_MEMBER_NAMESPACE = "http://www.metaphacts.com/ontologies/platform/repository/federation#";
+    public static final String FEDERATION_MEMBER_NAMESPACE = "http://www.researchspace.org/resource/system/repository/federation#";
 
     /**
      * Namespace for the common configuration properties of custom services.
      */
-    public static final String FEDERATION_NAMESPACE = "http://www.metaphacts.com/ontologies/platform/ephedra#";
+    public static final String FEDERATION_NAMESPACE = "http://www.researchspace.org/resource/system/ephedra#";
 
     /**
      * For each federation member declared in the federation descriptor,

@@ -43,7 +43,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.*;
-import org.researchspace.junit.MetaphactsJerseyTest;
+import org.researchspace.junit.JerseyTest;
 import org.researchspace.junit.PlatformStorageRule;
 import org.researchspace.junit.TestUtils;
 import org.researchspace.rest.endpoint.ResourceEndpoint;
@@ -56,11 +56,11 @@ import com.google.common.collect.Lists;
  * @author Johannes Trame <jt@metaphacts.com>
  *
  */
-public class ResourceEndpointTest extends MetaphactsJerseyTest {
+public class ResourceEndpointTest extends JerseyTest {
 
     private final ValueFactory vf = SimpleValueFactory.getInstance();
 
-    private final IRI subject = vf.createIRI("http://metaphacts.com/test/a");
+    private final IRI subject = vf.createIRI("http://www.researchspace.org/test/a");
     private final Model testModel = new LinkedHashModel(
             Lists.newArrayList(vf.createStatement(subject, vf.createIRI("http://b"), vf.createIRI("http://c"))));
 
@@ -77,7 +77,7 @@ public class ResourceEndpointTest extends MetaphactsJerseyTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        namespaceRule.set("test", "http://metaphacts.com/test/");
+        namespaceRule.set("test", "http://www.researchspace.org/test/");
         try (RepositoryConnection con = repositoryRule.getRepository().getConnection()) {
             con.add(testModel);
         }
@@ -173,11 +173,11 @@ public class ResourceEndpointTest extends MetaphactsJerseyTest {
     public void testResourceDoesNotExist() throws IOException, InterruptedException, ExecutionException {
         String[] formats = RDFFormat.TURTLE.getMIMETypes().stream().toArray(String[]::new);
         when(req.getHeaders(HttpHeaders.ACCEPT)).then(TestUtils.getMimetypeAnswer(RDFFormat.TURTLE.getMIMETypes()));
-        Response response = target("/").queryParam("uri", "http://www.metaphacts.com/notexists").request()
+        Response response = target("/").queryParam("uri", "http://www.researchspace.org/notexists").request()
                 .accept(formats).get();
 
         Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Entity with IRI <http://www.metaphacts.com/notexists> does not exist",
+        Assert.assertEquals("Entity with IRI <http://www.researchspace.org/notexists> does not exist",
                 IOUtils.toString((InputStream) response.getEntity(), Charsets.UTF_8));
     }
 

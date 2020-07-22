@@ -21,7 +21,7 @@ import { Rdf } from 'platform/api/rdf';
 
 import { SetManagementProps, KeywordFilter } from './Configuration';
 
-export const SetKind = Rdf.iri('http://www.metaphacts.com/ontologies/platform#Set');
+export const SetKind = Rdf.iri('http://www.researchspace.org/resource/system/Set');
 const DefaultSetItemActions = `
   <div class='set-management__item-actions'>
     <bs-dropdown-button pull-right=true bs-style='link' title=''
@@ -87,7 +87,7 @@ export const MinSearchTermLength = 3;
 export const SetItemsQuery = `
 PREFIX ldp: <http://www.w3.org/ns/ldp#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX platform: <http://www.metaphacts.com/ontologies/platform#>
+PREFIX platform: <http://www.researchspace.org/resource/system/>
 PREFIX bds: <http://www.bigdata.com/rdf/search#>
 SELECT ?item ?itemHolder ?parent ?kind WHERE {
   {
@@ -132,7 +132,7 @@ export function itemConfig(kind: Rdf.Node) {
   switch (kind.toString()) {
     case SetKind.toString():
       return { isSet: true, gridTemplate: SetListTemplate, listTemplate: SetListTemplate };
-    case '<http://www.metaphacts.com/ontologies/platform#SetItem>':
+    case '<http://www.researchspace.org/resource/system/SetItem>':
       return { isSet: false, gridTemplate: GridTemplate, listTemplate: ItemListTemplate };
     default:
       return undefined;

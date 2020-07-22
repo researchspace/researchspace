@@ -44,7 +44,7 @@ import com.google.common.base.Throwables;
  */
 @LDPR(iri = UserSetRootContainer.IRI_STRING)
 public class UserSetRootContainer extends AbstractLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#userSetContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/userSetContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public UserSetRootContainer(IRI iri, MpRepositoryProvider repositoryProvider) {
@@ -82,7 +82,7 @@ public class UserSetRootContainer extends AbstractLDPContainer {
     public static String setContainerIriForUser(String username) {
         try {
             String encodedUsername = URLEncoder.encode(username, "UTF-8");
-            return String.format("http://www.metaphacts.com/ontologies/platform/user/%s/setContainer", encodedUsername);
+            return String.format("http://www.researchspace.org/resource/system/user/%s/setContainer", encodedUsername);
         } catch (UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }

@@ -38,7 +38,7 @@ import com.google.common.base.Throwables;
 
 @LDPR(iri = ValidationReportContainer.IRI_STRING)
 public class ValidationReportContainer extends DefaultLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#validationReportContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/validationReportContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public ValidationReportContainer(IRI uri, MpRepositoryProvider repositoryProvider) {

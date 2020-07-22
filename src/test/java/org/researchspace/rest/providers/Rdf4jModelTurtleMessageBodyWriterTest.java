@@ -36,14 +36,14 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Assert;
 import org.junit.Test;
-import org.researchspace.junit.MetaphactsJerseyTest;
+import org.researchspace.junit.JerseyTest;
 import org.researchspace.rest.providers.Rdf4jModelTurtleMessageBodyWriter;
 
 /**
  * @author Johannes Trame <jt@metaphacts.com>
  *
  */
-public class Rdf4jModelTurtleMessageBodyWriterTest extends MetaphactsJerseyTest {
+public class Rdf4jModelTurtleMessageBodyWriterTest extends JerseyTest {
     private final static Model testModel = new ModelBuilder().setNamespace("ex", "http://example.org/").subject("ex:s")
             .add(FOAF.NAME, "Joe").build();
 

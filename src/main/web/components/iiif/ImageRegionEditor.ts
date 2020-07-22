@@ -287,7 +287,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         },
       })),
       annotationBodyEditor: {
-        module: 'MetaphactoryAnnotationBodyEditor',
+        module: 'researchspaceAnnotationBodyEditor',
         options: {},
       },
       jsonStorageEndpoint: {

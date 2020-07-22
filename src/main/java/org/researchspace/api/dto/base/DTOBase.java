@@ -33,7 +33,7 @@ public class DTOBase implements Serializable {
 
     private static final long serialVersionUID = -6825861105426356559L;
 
-    public final static String BASE_IRI_STR = "http://www.metaphacts.com/";
+    public final static String BASE_IRI_STR = "http://www.researchspace.org/";
 
     // IRI identifying the object
     Resource id;

@@ -96,7 +96,7 @@ export interface BaseSemanticGraphConfig {
   query: string;
 
   /**
-   * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
+   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
    */
   noResultTemplate?: string;
 

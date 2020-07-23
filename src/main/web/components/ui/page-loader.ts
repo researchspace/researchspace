@@ -38,12 +38,12 @@ import { Alert, AlertType } from 'platform/components/ui/alert';
  * Component inherits all query parameters from the current page.
  *
  * @example
- * 	<mp-page-loader iri="http://www.metaphacts.com/resource/Start"></mp-page-loader>
+ * 	<mp-page-loader iri="http://www.researchspace.org/resource/Start"></mp-page-loader>
  *
  * @example
  * 	With additional URL parameter(s).
  * 	<mp-page-loader
- * 		iri="http://www.metaphacts.com/resource/Start"
+ * 		iri="http://www.researchspace.org/resource/Start"
  * 	 	urlqueryparam-param1="hello world"
  * 	></mp-page-loader>
  */

@@ -38,7 +38,7 @@ import java.util.Collections;
 
 @LDPR(iri = QueryTemplateContainer.IRI_STRING)
 public class QueryTemplateContainer extends AbstractLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#queryTemplateContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/queryTemplateContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     @Inject

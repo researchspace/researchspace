@@ -76,8 +76,7 @@ export function hasBaseDerivedRelationship(baseConstructor: any, derivedConstruc
  * Takes any {@ReactNode} children and retuns either an array or just a
  * single {@ReactElement} if the is only one child in the children array.
  * This is required to make the forms working with, for example, react-bootstrap
- * vertical tabs. See https://metaphacts.atlassian.net/browse/VD-103 and
- * https://github.com/facebook/react/issues/4424 for details.
+ * vertical tabs. See https://github.com/facebook/react/issues/4424 for details.
  */
 export function universalChildren(children: ReactNode): ReactNode {
   return Array.isArray(children) && children.length === 1 ? children[0] : children;

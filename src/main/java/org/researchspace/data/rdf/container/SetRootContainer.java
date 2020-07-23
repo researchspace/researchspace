@@ -48,7 +48,7 @@ import org.researchspace.vocabulary.PLATFORM;
  */
 @LDPR(iri = SetRootContainer.IRI_STRING)
 public class SetRootContainer extends AbstractLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#setContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/setContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public SetRootContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

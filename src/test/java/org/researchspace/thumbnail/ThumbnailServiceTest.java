@@ -55,13 +55,13 @@ public class ThumbnailServiceTest extends AbstractRepositoryBackedIntegrationTes
 
     private final IRI THUMBNAIL = vf.createIRI("http://schema.org/thumbnail");
 
-    private final IRI FOO = vf.createIRI("http://www.metaphacts.com/foo");
-    private final IRI BAR = vf.createIRI("http://www.metaphacts.com/bar");
-    private final IRI BAZ = vf.createIRI("http://www.metaphacts.com/baz");
-    private final IRI QUX = vf.createIRI("http://www.metaphacts.com/qux");
+    private final IRI FOO = vf.createIRI("http://www.researchspace.org/foo");
+    private final IRI BAR = vf.createIRI("http://www.researchspace.org/bar");
+    private final IRI BAZ = vf.createIRI("http://www.researchspace.org/baz");
+    private final IRI QUX = vf.createIRI("http://www.researchspace.org/qux");
 
-    private final IRI FOO_THUMBNAIL = vf.createIRI("http://www.metaphacts.com/foo_iri.png");
-    private final IRI BAR_THUMBNAIL = vf.createIRI("http://www.metaphacts.com/bar_literal.png");
+    private final IRI FOO_THUMBNAIL = vf.createIRI("http://www.researchspace.org/foo_iri.png");
+    private final IRI BAR_THUMBNAIL = vf.createIRI("http://www.researchspace.org/bar_literal.png");
 
     @Before
     public void setup() throws Exception {

@@ -20,7 +20,7 @@
 import * as Rdf from '../core/Rdf';
 
 module field {
-  const NAMESPACE = 'http://www.metaphacts.com/ontology/fields#';
+  const NAMESPACE = 'http://www.researchspace.org/resource/system/fields/';
   const iri = (s: string) => Rdf.iri(NAMESPACE + s);
 
   /**  TYPES **/

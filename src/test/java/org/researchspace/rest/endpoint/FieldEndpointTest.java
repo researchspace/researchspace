@@ -43,7 +43,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.researchspace.config.Configuration;
 import org.researchspace.data.rdf.container.FieldDefinitionContainer;
-import org.researchspace.junit.MetaphactsJerseyTest;
+import org.researchspace.junit.JerseyTest;
 import org.researchspace.junit.PlatformStorageRule;
 import org.researchspace.rest.endpoint.FieldEndpoint;
 import org.researchspace.vocabulary.FIELDS;
@@ -51,7 +51,7 @@ import org.researchspace.vocabulary.FIELDS;
 import com.github.sdorra.shiro.ShiroRule;
 
 @Ignore // TODO reactivate once available in develop >= 3.4
-public class FieldEndpointTest extends MetaphactsJerseyTest {
+public class FieldEndpointTest extends JerseyTest {
 
     @Inject
     public Configuration configuration;

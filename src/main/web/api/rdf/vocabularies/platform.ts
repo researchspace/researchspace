@@ -20,7 +20,7 @@
 import * as RDF from '../core/Rdf';
 
 module platform {
-  export const _NAMESPACE = 'http://www.metaphacts.com/ontologies/platform#';
+  export const _NAMESPACE = 'http://www.researchspace.org/resource/system/';
 
   export const SyntheticJsonDatatype = RDF.iri(_NAMESPACE + 'syntheticJson');
 

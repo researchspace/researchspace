@@ -1,0 +1,255 @@
+//Mixin
+@mixin font-common($family, $color, $size, $line) {
+    font-family: $family;
+    color: $color;
+    font-size: $size;
+    line-height: $line;
+}
+
+@mixin uppercase {
+    text-transform: uppercase;
+}
+
+@mixin underline {
+    text-decoration: underline;
+}
+
+@mixin character($char) {
+    letter-spacing: $char;
+}
+
+//$merriweather: "Merriweather Sans", sans-serif;
+$sourceSans: "Source Sans Pro", sans-serif;
+$nunito: "Nunito", sans-serif;
+
+////////////////////Exported Code////////////////////////////////////////////
+
+.#{$prefix}header-logo {
+    @include font-common($nunito, $color-white, 16px, 26px);
+    @include character(0.34px);
+
+    font-weight: 800;
+}
+
+/* Headings */
+$h-line: 1.2;
+
+.#{$prefix}h1, h1, .h1 {
+    @include font-common($sourceSans, $color-dark, 20px, $h-line);
+}
+
+.#{$prefix}h2, h2, .h2 {
+    @include font-common($sourceSans, $color-dark, 16px, $h-line);
+    font-weight: 600;
+}
+
+.#{$prefix}h3, h3, .h3 {
+    @include font-common($sourceSans, $color-dark, 15px, $h-line);
+    font-weight: 600;
+    @include uppercase;
+}
+
+.#{$prefix}h4, h4, .h4 {
+    @include font-common($sourceSans, $color-dark, 12px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+.#{$prefix}h5, h5, .h5 {
+    @include font-common($sourceSans, $color-primary-100, 10px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+h6, .h6 {
+    @include font-common($sourceSans, $color-primary-100, 8px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+/* Display */
+$d-line: 1.1;
+
+/* Display1 needs font */
+
+.#{$prefix}display1 {
+    @include font-common($nunito, $color-dark, 46px, $d-line);
+    font-weight: 800;
+    @include character(1px);
+}
+
+.#{$prefix}display2 {
+    @include font-common($sourceSans, $color-dark, 32px, $d-line);
+    @include character(0.7px);
+}
+
+.#{$prefix}display3 {
+    @include font-common($sourceSans, $color-dark, 20px, $d-line);
+    @include character(0.2px);
+}
+
+.#{$prefix}display4 {
+    @include font-common($sourceSans, $color-dark, 26px, $d-line);
+    @include character(0.2px);
+    @include underline;
+}
+
+/* Boby fonts */
+$b-line: 1.2;
+$b-name: body;
+
+.#{$prefix}#{$b-name}-xs-I {
+    @include font-common($sourceSans, $color-dark, 10px, $b-line);
+
+    font-style: italic;
+}
+
+.#{$prefix}#{$b-name}-xs-U {
+    @include font-common($sourceSans, $color-dark, 10px, $b-line);
+    @include underline;
+
+    font-style: italic;
+}
+
+.#{$prefix}#{$b-name}-s-M {
+    @include font-common($sourceSans, $color-dark, 12px, $b-line);
+}
+
+.#{$prefix}#{$b-name}-s-U {
+    @include font-common($sourceSans, $color-dark, 12px, $b-line);
+    @include underline;
+}
+
+.#{$prefix}#{$b-name}-s-B {
+    @include font-common($sourceSans, $color-dark, 12px, $b-line);
+
+    font-weight: 600;
+}
+
+.#{$prefix}#{$b-name}-s-I {
+    @include font-common($sourceSans, $color-dark, 12px, $b-line);
+    font-style: italic;
+}
+
+.#{$prefix}#{$b-name}-m-M {
+    @include font-common($sourceSans, $color-dark, 13.5px, $b-line);
+}
+
+.#{$prefix}#{$b-name}-m-U {
+    @include font-common($sourceSans, $color-dark, 13px, $b-line);
+    @include underline;
+}
+
+.#{$prefix}#{$b-name}-m-B {
+    @include font-common($sourceSans, $color-dark, 13px, $b-line);
+
+    font-weight: 600;
+}
+
+a {
+    color: $color-dark;
+    cursor: pointer;
+
+    &:hover {
+        color: $color-dark;
+        text-decoration: none;
+    }
+
+    &:focus, 
+    &:focus-within {
+        color: $color-primary-100;
+        text-decoration: none;
+    }
+
+}
+
+.page-editor a, 
+.page-editor a:hover,
+.page-editor a:active,
+.page-editor a:focus {
+    text-decoration: underline;
+}
+
+.page__body a {
+    color: $color-dark;
+}
+
+.#{$prefix}U-none {
+    text-decoration: none !important;
+}
+
+.text-white {
+    color: white;
+}
+
+.text-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+////Icons
+.fa-exclamation-triangle {
+    color: $color-danger;
+}
+
+.has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label,
+.has-value.Select--single > .Select-control .Select-value .Select-value-label {
+    color: $color-dark !important;
+}
+
+.field-editor__error {
+    color: $color-danger !important;
+    font-family: $sourceSans;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+}
+
+.#{$prefix}no-access-message {
+    font-family: $sourceSans;
+    color: $color-dark;
+    font-size: 15px !important;
+    line-height: 1.2;
+    margin: 30px 20px;
+}
+
+.#{$prefix}copy-IRI {
+    text-decoration:underline; 
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 10px;
+  //  margin-left: 25px;
+}
+
+
+// scrollbars
+//not working for Firefox
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.089);
+    
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+    background-color: rgba(125, 125, 125, 0.5);
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.043); 
+    
+}
+  
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}

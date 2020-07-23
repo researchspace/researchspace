@@ -35,7 +35,7 @@ import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryFactory;
  */
 public class DefaultMpSPARQLRepositoryFactory extends AbstractMpSPARQLRepositoryFactory {
 
-    public static final String REPOSITORY_TYPE = "metaphactory:SPARQLRepository";
+    public static final String REPOSITORY_TYPE = "researchspace:SPARQLRepository";
 
     public DefaultMpSPARQLRepositoryFactory() {
 

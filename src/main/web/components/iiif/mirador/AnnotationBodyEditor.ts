@@ -33,7 +33,7 @@ interface MiradorAnnotationBodyEditorOptions {
   windowId: string;
 }
 
-export class MetaphactoryAnnotationBodyEditor implements MiradorAnnotationBodyEditor {
+export class researchspaceAnnotationBodyEditor implements MiradorAnnotationBodyEditor {
   annotation: OARegionAnnotation;
   windowId: string;
 

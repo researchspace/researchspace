@@ -110,9 +110,9 @@
         </ul>
         <li><s>/resources</s> <i>&nbsp; DEPRECATED, please use /config/page-layout</i></li>
         <ul style="font-style:italic;text-decoration: line-through;">
-          <li>/com</li>
+          <li>/org</li>
           <ul>
-            <li>/metaphacts</li>
+            <li>/researchspace</li>
             <ul>
               <li>/ui</li>
               <ul>
@@ -170,7 +170,7 @@ mkdir -p /config/page-layout data/templates config/repositories config/services 
   <pre>
 <code>
 plugin.id=my-app
-plugin.provider=Metaphacts
+plugin.provider=ResearchSpace
 plugin.version=1.0.0
 #plugin.dependencies=other-app
 </code>
@@ -186,7 +186,7 @@ plugin.version=1.0.0
     <li><code>plugin.dependencies</code> optional, comma-separated list of app dependencies. If specified other apps will be loaded first and it influence the delegation order of <semantic-link iri="[[resolvePrefix "Help:Storage"]]">app storages</semantic-link>.</li>
   </ul>
    <h2>App Lifecycle</h2>
-   The metaphacts platform reads the apps artefacts (e.g., assets, templates, config files) from respective <semantic-link iri="[[resolvePrefix "Help:Storage"]]">app storages</semantic-link> and applies them according to the delegation order specified by the plugin dependencies with the runtime storage having the highest priority. 
+   The ResearchSpace platform reads the apps artefacts (e.g., assets, templates, config files) from respective <semantic-link iri="[[resolvePrefix "Help:Storage"]]">app storages</semantic-link> and applies them according to the delegation order specified by the plugin dependencies with the runtime storage having the highest priority. 
     
    <h3>Repositories and Ephedra services</h3>
    <p>Configurations of repositories and <semantic-link iri="[[resolvePrefix "Help:Ephedra"]]">Ephedra services</semantic-link> follow the same rules of priority when packaged in apps. The configuration Turtle files stored in <code>/config/repositories</code> and <code>/config/services</code> subfolders in the app distribution are accessed from the respective app storages and applied in the priority order of the apps. If two or more repository configs with the same file name are available in two different storages, only the one taken from the storage with a higher priority will be applied, thus "shadowing" completely the other ones. Thus, for example, if two apps define different ephedra federation repositories under the same name <code>ephedra</code> with different sets of federation members, only one of them gets created (instead of having a "joint" one with all federation members from both configs).</p>

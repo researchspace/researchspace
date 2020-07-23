@@ -40,17 +40,17 @@ export interface FieldBasedVisualizationConfig {
   /**
    * Definition for fields that need to be visualized.
    *
-   * See <semantic-link uri='http://help.metaphacts.com/resource/Help:SemanticForm'></semantic-link> for more details about field definitions.
+   * See <semantic-link uri='http://help.researchspace.org/resource/Help:SemanticForm'></semantic-link> for more details about field definitions.
    */
   fields: FieldDefinitionProp[];
 
   /**
-   * <semantic-link uri='http://help.metaphacts.com/resource/Help:FrontendTemplating'>Template</semantic-link>, that gets the `fields` value with the list of field definitions injected as template context.
+   * <semantic-link uri='http://help.researchspace.org/resource/Help:FrontendTemplating'>Template</semantic-link>, that gets the `fields` value with the list of field definitions injected as template context.
    * [each helper](http://handlebarsjs.com/builtin_helpers.html#iteration) can be used to iterate over the fields.
    *
    * Every field has corresponding metadata (label, xsdDatatype, etc.), as well as list of `values`.
    *
-   * See <semantic-link uri='http://help.metaphacts.com/resource/Help:SemanticForm'></semantic-link> for more details about field definitions.
+   * See <semantic-link uri='http://help.researchspace.org/resource/Help:SemanticForm'></semantic-link> for more details about field definitions.
    */
   template: string;
 }

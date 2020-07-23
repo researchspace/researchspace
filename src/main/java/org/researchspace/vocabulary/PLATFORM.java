@@ -28,7 +28,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  */
 public class PLATFORM {
 
-    public static String NAMESPACE = "http://www.metaphacts.com/ontologies/platform#";
+    public static String NAMESPACE = "http://www.researchspace.org/resource/system/";
 
     /**
      * Types

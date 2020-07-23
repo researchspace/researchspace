@@ -33,10 +33,10 @@ function composeErrorMessage(err): string {
   return err.message + '. ' + err.response.text;
 }
 
-export const SparqlRepositoryType = 'metaphactory:SPARQLRepository';
-export const NeptuneRepositoryType = 'metaphactory:NeptuneSPARQLRepository';
+export const SparqlRepositoryType = 'researchspace:SPARQLRepository';
+export const NeptuneRepositoryType = 'researchspace:NeptuneSPARQLRepository';
 export const Rdf4jRepositoryType = 'openrdf:SailRepository';
-export const EphedraRepositoryType = 'metaphacts:FederationSailRepository';
+export const EphedraRepositoryType = 'researchspace:FederationSailRepository';
 export type RepositoryType =
   | typeof SparqlRepositoryType
   | typeof NeptuneRepositoryType

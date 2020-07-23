@@ -22,7 +22,7 @@
 
     <p>
       <b>Prerequisites:</b><br>
-      This tutorial assumes that you have installed your own instance of the metaphacts platform. 
+      This tutorial assumes that you have installed your own instance of the ResearchSpace platform. 
       If this is not the case, read the <semantic-link uri="[[resolvePrefix "Help:Installation"]]">installation manual</semantic-link>.
     </p>
 
@@ -30,7 +30,7 @@
       <!-- BOX: DATA LOADING & QUERYING -->
       <div data-flex-self="center-stretch" class="feature-box text-center">
         <div class="feature-box-image text-center">
-          <img class="metaphacts-icon" src="/images/help/tutorial/icon_kg_1b_final.png"/>
+          <img src="/images/help/tutorial/icon_kg_1b_final.png"/>
         </div>
         <div class="feature-box-title text-center">
           DATA LOADING & QUERYING
@@ -44,7 +44,7 @@
       <!-- BOX: VISUALIZATION -->
       <div data-flex-self="center-stretch" class="feature-box text-center">
         <div class="feature-box-image text-center">
-          <img class="metaphacts-icon" src="/images/help/tutorial/visualization-orange-web.png"/>
+          <img src="/images/help/tutorial/visualization-orange-web.png"/>
         </div>
         <div class="feature-box-title text-center">
           VISUALIZATION
@@ -58,7 +58,7 @@
       <!-- BOX: SEARCH -->  
       <div data-flex-self="center-stretch" class="feature-box text-center">
         <div class="feature-box-image text-center">
-          <img class="metaphacts-icon" src="/images/help/tutorial/search-orange-web.png"/>
+          <img src="/images/help/tutorial/search-orange-web.png"/>
         </div>
         <div class="feature-box-title text-center">
           SEARCH
@@ -71,7 +71,7 @@
       <!-- BOX: AUTHORING -->  
       <div data-flex-self="center-stretch" class="feature-box text-center">
         <div class="feature-box-image text-center">
-          <img class="metaphacts-icon" src="/images/help/tutorial/authoring-orange-web.png"/>
+          <img src="/images/help/tutorial/authoring-orange-web.png"/>
         </div>
         <div class="feature-box-title text-center">
           AUTHORING
@@ -90,10 +90,10 @@
 
     <img src="http://www.w3.org/TR/rdf11-primer/example-graph.jpg" alt="Informal graph of the sample data"/><br>
 
-    You can download the sample data <a href="/metaphacts/samples/sample.ttl">here</a> .
+    You can download the sample data <a href="/samples/sample.ttl">here</a> .
     <section id="loading-data">
       <h2> Loading the data </h2>
-      First, please download the <a href="/metaphacts/samples/sample.ttl">sample data</a> (simple right click and save as).
+      First, please download the <a href="/samples/sample.ttl">sample data</a> (simple right click and save as).
       You can now load this data into the backing store via the 
       <semantic-link uri="[[resolvePrefix "Admin:DataImportExport"]]"> data import and export</semantic-link> administration page. 
 
@@ -339,7 +339,7 @@ PREFIX wd: <http://www.wikidata.org/entity/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-WITH <http://www.metaphacts.com/tutorial/>
+WITH <http://www.researchspace.org/tutorial/>
 INSERT {  
   <peter#me> a foaf:Person ;
       rdfs:label "Peter";
@@ -352,7 +352,7 @@ INSERT {
       </mp-code-block>
 
       The imported data will now show up as a named graph 
-      <semantic-link uri="[[resolvePrefix "Admin:NamedGraphs"]]" urlqueryparam-graph="http://www.metaphacts.com/tutorial/">&lt;http://www.metaphacts.com/tutorial/&gt;</semantic-link>
+      <semantic-link uri="[[resolvePrefix "Admin:NamedGraphs"]]" urlqueryparam-graph="http://www.researchspace.org/tutorial/">&lt;http://www.researchspace.org/tutorial/&gt;</semantic-link>
       under <semantic-link uri="[[resolvePrefix "Admin:DataImportExport"]]">Admin:DataImportExport</semantic-link>.
     </section>
 
@@ -368,14 +368,14 @@ INSERT {
     <div class="documentation__example">
   <pre><code>  
     <mp-ldp-create-new-resource-action 
-    container="http://www.metaphacts.com/tutorial/person/records"   type="http://xmlns.com/foaf/0.1/Person">
+    container="http://www.researchspace.org/tutorial/person/records"   type="http://xmlns.com/foaf/0.1/Person">
     <button>Create Person</button>
   </mp-ldp-create-new-resource-action>
   </code></pre>
   </div>  
     Or click on this button directly: 
     <mp-ldp-create-new-resource-action 
-    container="http://www.metaphacts.com/tutorial/person/records"   type="http://xmlns.com/foaf/0.1/Person">
+    container="http://www.researchspace.org/tutorial/person/records"   type="http://xmlns.com/foaf/0.1/Person">
     <button>Create Person</button>
   </mp-ldp-create-new-resource-action>
   <p>
@@ -432,7 +432,7 @@ INSERT {
                   PREFIX bds:  <http://www.bigdata.com/rdf/search#>
 
                   SELECT distinct ?value ?label ?description ?instanceof WHERE {
-                    SERVICE <https://wikidata.metaphacts.com/sparql> {  
+                    SERVICE <https://query.wikidata.org/sparql> {  
                         ?value rdfs:label ?label; 
                         <http://schema.org/description> ?description;
                         <http://www.wikidata.org/prop/direct/P31> ?type.
@@ -445,7 +445,7 @@ INSERT {
                  }	
                 ORDER BY ?q 
                 LIMIT 10",
-              "selectPattern": "SELECT $value $label WHERE { $subject foaf:topic_interest $value . SERVICE <https://wikidata.metaphacts.com/sparql> { $value rdfs:label ?label }}",
+              "selectPattern": "SELECT $value $label WHERE { $subject foaf:topic_interest $value . SERVICE <https://query.wikidata.org/sparql> { $value rdfs:label ?label }}",
               "insertPattern": "INSERT { $subject foaf:topic_interest $value. $value rdfs:label ?label } WHERE { }",
               "deletePattern": "DELETE { $subject foaf:topic_interest $value } WHERE {}"
             }

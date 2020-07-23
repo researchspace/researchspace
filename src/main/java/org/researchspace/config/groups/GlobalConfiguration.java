@@ -19,8 +19,6 @@
 
 package org.researchspace.config.groups;
 
-import com.google.common.collect.Lists;
-
 import java.util.List;
 
 import javax.inject.Inject;
@@ -29,6 +27,8 @@ import org.researchspace.config.ConfigurationParameter;
 import org.researchspace.config.InvalidConfigurationException;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.services.storage.api.PlatformStorage;
+
+import com.google.common.collect.Lists;
 
 /**
  * Configuration group for global system configuration, affecting system startup
@@ -55,11 +55,6 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
     public String getHomePage() {
         // TODO: reconsider start page once we have /page servlet in place
         return getString("homePage", ":Start");
-    }
-
-    @ConfigurationParameter
-    public boolean isDevelopmentMode() {
-        return getBoolean("isDevelopmentMode", false);
     }
 
     /****************************** VALIDATION ********************************/

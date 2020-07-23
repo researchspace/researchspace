@@ -1,0 +1,24 @@
+#
+# Example configuration template to wrap the wikidata service, please do not change anything below.
+# The wikidata-text service is already pre-installed, but will not be visible.
+# An additional ephedra service to include this as member service is additionally needed.
+#
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix mps: <http://www.researchspace.org/resource/system/service#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+
+[] a rep:Repository ;
+   rep:repositoryID "wikidata-text" ; 
+   rdfs:label "Wikidata search service repository" ;
+   rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+         sail:sailType "researchspace:WikidataTextSearch" ; 
+         ephedra:implementsService mps:WikidataTextSearch 
+      ]
+   ] .

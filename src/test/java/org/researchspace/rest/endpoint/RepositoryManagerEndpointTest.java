@@ -45,7 +45,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.data.rdf.container.LDPApiInternal;
-import org.researchspace.junit.MetaphactsJerseyTest;
+import org.researchspace.junit.JerseyTest;
 import org.researchspace.querycatalog.QueryCatalogRESTServiceRegistryRule;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.rest.endpoint.RepositoryManagerEndpoint;
@@ -55,7 +55,7 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.inject.Inject;
 
-public class RepositoryManagerEndpointTest extends MetaphactsJerseyTest {
+public class RepositoryManagerEndpointTest extends JerseyTest {
 
     protected final String qaasPermissionShiroFile = "classpath:org/researchspace/security/shiro-repositories-rights.ini";
 
@@ -85,7 +85,7 @@ public class RepositoryManagerEndpointTest extends MetaphactsJerseyTest {
     public void setUp() throws Exception {
         super.setUp();
         cacheManager.deregisterAllCaches();
-        namespaceRule.set("test", "http://metaphacts.com/test/");
+        namespaceRule.set("test", "http://www.researchspace.org/test/");
         registryRule.setLDPRepository(RepositoryManager.ASSET_REPOSITORY_ID);
 
         try (RepositoryConnection con = repositoryRule.getAssetRepository().getConnection()) {

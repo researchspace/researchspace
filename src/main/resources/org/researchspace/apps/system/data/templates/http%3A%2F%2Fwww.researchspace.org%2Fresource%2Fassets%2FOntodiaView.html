@@ -1,0 +1,129 @@
+[[!--
+
+  1. Only user with create permission will see Save Diagram in ontodia
+  2. If user opens diagram not starting from the ontology we show only first random 1000 top level classes in class view
+  3. In ontodia view for resource, we apply the same logic. But in addition to that when user is looking into resource or class, we are trying to check if we have corresponding ontology and if it is the case restrict classes only to this ontology.
+
+--]]
+
+[[#*inline "diagram"]]
+      <ontodia
+               [[> "http://www.researchspace.org/resource/assets/OntodiaSettings" ]]
+
+               [[#if (urlParam "diagram")]]
+                 diagram="[[urlParam "diagram"]]"
+               [[/if]]
+
+               [[#if (urlParam "ontologyIri")]]
+                 [[> "http://www.researchspace.org/resource/OntodiaViewOntologyOnlyClasses" param=(urlParam "ontologyIri") ]]
+                 metadata='<> <http://www.researchspace.org/resource/system/diagramForOntology> <[[urlParam "ontologyIri"]]> .'
+                 query-params='{"ontologyIri": "[[urlParam "ontologyIri"]]"}'
+                 query="construct {?class rdfs:comment 'dummyprop'} where {  GRAPH ?g {<[[urlParam "ontologyIri"]]> ?prop ?obj. ?class a ?classType. VALUES ?classType {owl:Class rdfs:Class}}}"
+               [[else]]
+                 [[> "http://www.researchspace.org/resource/OntodiaViewClassCheck" ]]
+               [[/if]]
+
+               [[#if view]]
+                 readonly=true
+                 hide-panels=true
+               [[/if]]
+
+      ></ontodia>
+[[/inline]]
+
+<style>
+  body { overflow: hidden; }
+  footer { display: none; }
+  #page-with-ontodia {
+    height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+  }
+  #page-with-ontodia .ontodia {
+    overflow: hidden;
+  }
+  #link-to-ontology-warning {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0px;
+  }
+</style>
+
+<semantic-context repository="default">
+  <div>
+    <semantic-context repository='default'>
+      <ol class="page-breadcrumb">
+        <li>
+          <mp-link title="Home" url="/">Home</mp-link>
+        </li>
+        <li>
+          <semantic-link title="Assets" iri="http://www.researchspace.org/resource/assets/">Assets</semantic-link>
+        </li>
+        [[#if (urlParam "ontologyIri")]]
+          <li>
+            <semantic-link title="Ontologies" iri="http://www.researchspace.org/resource/assets/Ontologies">Ontologies</semantic-link>
+          </li>
+          <li>
+            <semantic-link iri='[[urlParam "ontologyIri"]]'></semantic-link>
+          </li>
+        [[/if]]
+        <li>
+          <semantic-link
+          	title="Assets"
+            iri="http://www.researchspace.org/resource/assets/OntodiaDiagrams"
+            [[#if (urlParam "ontologyIri")]]urlqueryparam-ontology-iri='[[urlParam "ontologyIri"]]'[[/if]]>
+            Diagrams
+         	</semantic-link>
+        </li>
+        <semantic-context repository='assets'>
+          <li class="active">[[#if (urlParam "diagram")]]<mp-label iri="[[urlParam "diagram"]]"></mp-label>[[else]]New Diagram[[/if]]</li>
+        </semantic-context>
+      </ol>
+    </semantic-context>
+
+    <div id="page-with-ontodia" class="page">
+      [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/ontodiaDiagramContainer>:read:any")]]
+
+        [[#if (urlParam "diagram")]]
+          [[#if (urlParam "ontologyIri")]]
+          [[else]]
+            <semantic-context repository='assets'>
+              <semantic-query
+                 query='SELECT ?ontology WHERE { <[[urlParam "diagram"]]> <http://www.researchspace.org/resource/system/diagramForOntology> ?ontology } LIMIT 1'
+                 template='{{> warning}}'>
+                <template id='warning'>
+                  <bs-alert bs-style='warning' id='link-to-ontology-warning'>
+                    <i class="fa fa-exclamation-triangle fa-2x" style='margin-right: 15px'></i>
+                    <div>
+                      <p>You are editing the diagram related to the <semantic-context repository='default'><semantic-link iri='{{bindings.0.ontology.value}}'></semantic-link></semantic-context> ontology using the generic diagram editor.</p>
+                      <p>If you save the diagram, the association with the ontology will be lost. Please use the following <semantic-link iri='http://www.researchspace.org/resource/assets/OntodiaView' urlqueryparam-diagram='[[urlParam "diagram"]]' urlqueryparam-ontology-iri='{{bindings.0.ontology.value}}'>link to edit</semantic-link> the diagram, if you want keep the diagram associated with the ontology.</p>
+                    </div>
+                  </bs-alert>
+                </template>
+              </semantic-query>
+            </semantic-context>
+          [[/if]]
+        [[/if]]
+
+        [[#if (urlParam "diagram")]]
+          [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/ontodiaDiagramContainer>:update:any")]]
+            [[> diagram]]
+          [[else]]
+            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/ontodiaDiagramContainer>:update:owner")]]
+              [[> diagram]]
+            [[else]]
+              [[> diagram view=true]]
+            [[/if]]
+          [[/if]]
+        [[else]]
+          [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/ontodiaDiagramContainer>:create:any")]]
+            [[> diagram]]
+          [[else]]
+            [[> diagram view=true]]
+          [[/if]]
+        [[/if]]
+
+      [[/if]]
+    </div>
+  </div>
+</semantic-context>

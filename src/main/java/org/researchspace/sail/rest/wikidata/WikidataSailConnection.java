@@ -52,10 +52,10 @@ public class WikidataSailConnection extends AbstractRESTWrappingSailConnection {
     private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
     public static final IRI HAS_WIKIDATA_SEARCH_TOKEN = VF
-            .createIRI("http://www.metaphacts.com/ontology/hasWikidataSearchToken");
-    public static final IRI USE_LANGUAGE = VF.createIRI("http://www.metaphacts.com/ontology/useLanguage");
+            .createIRI("http://www.researchspace.org/resource/system/hasWikidataSearchToken");
+    public static final IRI USE_LANGUAGE = VF.createIRI("http://www.researchspace.org/resource/system/useLanguage");
     public static final IRI SCHEMA_ORG_DESCRIPTION = VF.createIRI("http://schema.org/description");
-    public static final IRI ORDER_NR = VF.createIRI("http://www.metaphacts.com/ontology/orderNr");
+    public static final IRI ORDER_NR = VF.createIRI("http://www.researchspace.org/resource/system/orderNr");
 
     public WikidataSailConnection(AbstractServiceWrappingSail sailBase) {
         super(sailBase);

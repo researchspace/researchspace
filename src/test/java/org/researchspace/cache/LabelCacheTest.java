@@ -630,7 +630,6 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
     public void testPerformance() throws Exception {
 
         String endpoint = "https://query.wikidata.org/sparql";
-//        String endpoint = "https://wikidata.metaphacts.com/bigdata/sparql";
 
         // optionally activate more complex preferredLabels
 //        List<String> preferredLabels = Lists.newArrayList("<http://www.w3.org/2000/01/rdf-schema#label>",

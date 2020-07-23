@@ -86,7 +86,7 @@ public class MpSPARQLProtocolSession extends SPARQLProtocolSession {
         DigestScheme digestAuth = new DigestScheme();
 
         digestAuth.overrideParamter("realm", realm);
-        digestAuth.overrideParamter("nonce", "metaphactory-nonce");
+        digestAuth.overrideParamter("nonce", "researchspace-nonce");
         HttpHost httpHost = new HttpHost(requestURI.getHost(), requestURI.getPort(), requestURI.getScheme());
         authCache.put(httpHost, digestAuth);
 

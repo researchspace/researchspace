@@ -62,7 +62,7 @@ describe('SelectInput Component', () => {
 
   it('show correct values', () => {
     const val = FieldValue.fromLabeled({
-      value: Rdf.iri('http://www.metaphacts.com/resource/example/test'),
+      value: Rdf.iri('http://www.researchspace.org/resource/example/test'),
       label: 'test',
     });
     BASIC_PROPS.value = val;

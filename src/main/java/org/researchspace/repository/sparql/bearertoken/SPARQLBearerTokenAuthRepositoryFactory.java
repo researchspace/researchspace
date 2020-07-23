@@ -26,7 +26,7 @@ import org.researchspace.repository.sparql.MpSPARQLRepositoryConfig;
 
 public class SPARQLBearerTokenAuthRepositoryFactory extends AbstractMpSPARQLRepositoryFactory {
 
-    public static final String REPOSITORY_TYPE = "metaphactory:SPARQLBearerTokenAuthRepository";
+    public static final String REPOSITORY_TYPE = "researchspace:SPARQLBearerTokenAuthRepository";
 
     @Override
     public String getRepositoryType() {

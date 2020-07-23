@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
  * @author Michael Schmidt <ms@metaphacts.com>
  */
 @RunWith(JukitoRunner.class)
-@UseModules(MetaphactsGuiceTestModule.class)
+@UseModules(ResearchSpaceGuiceTestModule.class)
 public abstract class AbstractRepositoryBackedIntegrationTest extends AbstractIntegrationTest {
 
     /**

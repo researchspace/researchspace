@@ -181,8 +181,8 @@ export class FieldSelection extends React.Component<FieldSelectionProps, State> 
 
   private FIELDS_QUERY = SparqlUtil.Sparql`
     SELECT ?field {
-    ?field <http://www.metaphacts.com/ontology/fields#domain> ?__type__ .
-    <http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains> ?field .
+    ?field <http://www.researchspace.org/resource/system/fields/domain> ?__type__ .
+    <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains> ?field .
     }
   ` as SparqlJs.SelectQuery;
   private getFieldsForRecord = (

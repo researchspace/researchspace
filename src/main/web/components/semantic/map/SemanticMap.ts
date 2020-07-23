@@ -81,12 +81,12 @@ export interface SemanticMapConfig {
   query: string;
 
   /**
-   * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
+   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for marker popup. By default shows `<semantic-link>` to the resource with a short textual description
    */
   tupleTemplate?: string;
 
   /**
-   * <semantic-link uri='http://help.metaphacts.com/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
+   * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results
    */
   noResultTemplate?: string;
 
@@ -113,7 +113,7 @@ interface MapState {
   isLoading?: boolean;
 }
 
-const MAP_REF = 'metaphacts-map-widget';
+const MAP_REF = 'researchspace-map-widget';
 
 export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
@@ -159,7 +159,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   public render() {
     if (!this.state.errorMessage.isNothing) {
       return D.div(
-        { className: 'metaphacts-map-widget' },
+        { className: 'researchspace-map-widget' },
         createElement(ErrorNotification, { errorMessage: this.state.errorMessage.get() })
       );
     } else if (this.state.tupleTemplate === undefined) {
@@ -172,7 +172,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       D.div(
         {
           ref: MAP_REF,
-          className: 'metaphacts-map-widget',
+          className: 'researchspace-map-widget',
           style: {
             height: '100%',
             width: '100%',
@@ -181,7 +181,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         },
         D.div({
           // this div is for testing purpose only
-          className: 'metaphacts-map-widget-elements',
+          className: 'researchspace-map-widget-elements',
           ref: 'ref-map-widget-elements',
           onClick: this.getMarkerFromMapAsElements.bind(this),
           style: { display: 'none' },

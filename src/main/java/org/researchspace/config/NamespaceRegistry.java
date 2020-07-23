@@ -73,7 +73,7 @@ public class NamespaceRegistry {
     private static final StoragePath CONFIG_OBJECT_ID = ObjectKind.CONFIG.resolve("namespaces.prop");
     private static final Logger logger = LogManager.getLogger(NamespaceRegistry.class);
 
-    static final String DFLT_PLATFORM_NAMESPACE = "http://www.metaphacts.com/ontologies/platform#";
+    static final String DFLT_PLATFORM_NAMESPACE = "http://www.researchspace.org/resource/system/";
     static final String DFLT_HELP_NAMESPACE = "http://help.researchspace.org/resource/";
     static final String DFLT_ADMIN_NAMESPACE = "http://www.researchspace.org/resource/admin/";
     static final String DFLT_USER_NAMESPACE = "http://www.researchspace.org/resource/user/";

@@ -58,7 +58,7 @@ import org.researchspace.services.fields.FieldDefinitionManager;
 import org.researchspace.services.fields.FieldsBasedSearch;
 import org.researchspace.services.storage.api.PlatformStorage;
 import org.researchspace.templates.HandlebarsHelperRegistry;
-import org.researchspace.templates.MetaphactsHandlebars;
+import org.researchspace.templates.ResearchSpaceHandlebars;
 import org.researchspace.templates.TemplateByIriLoader;
 import org.researchspace.templates.TemplateContext;
 import org.researchspace.templates.TemplateUtil;
@@ -100,7 +100,7 @@ public class TemplateUtilIntegrationTest extends AbstractRepositoryBackedIntegra
     @Inject
     private CacheManager cacheManager;
 
-    private MetaphactsHandlebars handlebars;
+    private ResearchSpaceHandlebars handlebars;
 
     private final ValueFactory vf = SimpleValueFactory.getInstance();
 
@@ -110,7 +110,7 @@ public class TemplateUtilIntegrationTest extends AbstractRepositoryBackedIntegra
         PlatformStorage platformStorage = platformStorageRule.getPlatformStorage();
         TemplateLoader loader = new TemplateByIriLoader(platformStorage, ns);
         RepositoryManager repositoryManager = repositoryRule.getRepositoryManager();
-        this.handlebars = new MetaphactsHandlebars(loader,
+        this.handlebars = new ResearchSpaceHandlebars(loader,
                 new HandlebarsHelperRegistry(repositoryManager,
                         new FieldDefinitionManager(repositoryManager, cacheManager),
                         new FieldsBasedSearch(ns, repositoryManager, labelCache), queryTemplateCache, labelCache));
@@ -181,7 +181,7 @@ public class TemplateUtilIntegrationTest extends AbstractRepositoryBackedIntegra
         config.getUiConfig().setParameter("templateIncludeQuery",
                 Collections.singletonList("SELECT ?type WHERE { ?? a ?type }"), TestPlatformStorage.STORAGE_ID);
 
-        IRI joe = vf.createIRI("http://www.metaphacts.com/joe");
+        IRI joe = vf.createIRI("http://www.researchspace.org/joe");
         this.addStatements(Lists.newArrayList(vf.createStatement(joe, RDF.TYPE, FOAF.PERSON),
                 vf.createStatement(joe, RDF.TYPE, FOAF.AGENT)));
         LinkedHashSet<String> set = Sets.newLinkedHashSet();
@@ -199,10 +199,10 @@ public class TemplateUtilIntegrationTest extends AbstractRepositoryBackedIntegra
                                 + SKOS.CONCEPT.stringValue() + ">)} }"),
                         TestPlatformStorage.STORAGE_ID);
         LinkedHashSet<Resource> includes = includeCache.getTypesForIncludeScheme(repositoryRule.getRepository(),
-                vf.createIRI("http://www.metaphacts.com/anyIRI"), Optional.of(namespaceRule.getNamespaceRegistry()));
+                vf.createIRI("http://www.researchspace.org/anyIRI"), Optional.of(namespaceRule.getNamespaceRegistry()));
         Assert.assertThat(Lists.newArrayList(FOAF.PERSON, FOAF.AGENT, SKOS.CONCEPT),
                 IsIterableContainingInOrder.contains(includes.toArray()));
-        IRI joe = vf.createIRI("http://www.metaphacts.com/joe");
+        IRI joe = vf.createIRI("http://www.researchspace.org/joe");
 
         LinkedHashSet<String> set = Sets.newLinkedHashSet();
         set.add("Template:" + FOAF.PERSON.stringValue());
@@ -214,11 +214,11 @@ public class TemplateUtilIntegrationTest extends AbstractRepositoryBackedIntegra
 
     @Test
     public void getPageDifferentFromContextValue() throws Exception {
-        IRI page = vf.createIRI("http://www.metaphacts.com/testpage123");
-        IRI joe = vf.createIRI("http://www.metaphacts.com/joe");
+        IRI page = vf.createIRI("http://www.researchspace.org/testpage123");
+        IRI joe = vf.createIRI("http://www.researchspace.org/joe");
 
         storeNewRevision(page, "This the page testpage123, but the context is: [[this]]");
-        assertEquals("This the page testpage123, but the context is: http://www.metaphacts.com/joe",
+        assertEquals("This the page testpage123, but the context is: http://www.researchspace.org/joe",
                 org.researchspace.rest.endpoint.TemplateEndpoint.RenderedTemplate.getCompiledHtml(page, context(joe),
                         handlebars, includeCache));
     }

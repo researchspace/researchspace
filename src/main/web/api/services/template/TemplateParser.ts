@@ -29,7 +29,7 @@ export function isTemplate(node: Node): boolean {
  *
  * For example, `<set-management>` node in this markup locally defines
  * a separate template scope with templates 'foo', 'qux' and
- * 'http://www.metaphacts.com/ontologies/platform#bar':
+ * 'http://www.researchspace.org/resource/system/bar':
  *
  * <set-management>
  *   <template id='foo'>
@@ -39,7 +39,7 @@ export function isTemplate(node: Node): boolean {
  *     <div>QUX</div>
  *     {{> @partial-block}}
  *   </template>
- *   <template id='http://www.metaphacts.com/ontologies/platform#bar'>
+ *   <template id='http://www.researchspace.org/resource/system/bar'>
  *     {{> foo}}
  *     {{#> qux}}footer{{/qux}}
  *   </template>

@@ -48,8 +48,8 @@ public class ModelUtilsTest extends AbstractIntegrationTest {
 
     @Test
     public void replaceSubjectAndObjects() throws Exception {
-        IRI oldIRI = vf.createIRI("http://www.test.com/Metaphacts");
-        IRI newIRI = vf.createIRI("http://www.metaphacts.com/Metaphacts");
+        IRI oldIRI = vf.createIRI("http://www.test.com/ResearchSpace");
+        IRI newIRI = vf.createIRI("http://www.researchspace.org/ResearchSpace");
         Assert.assertTrue(testModel.contains(oldIRI, null, null));
         Assert.assertTrue(testModel.contains(null, null, oldIRI));
         Model replacedModel = ModelUtils.replaceSubjectAndObjects(testModel, oldIRI, newIRI);
@@ -63,14 +63,14 @@ public class ModelUtilsTest extends AbstractIntegrationTest {
 
     private Model createModel() {
         Model m = new LinkedHashModel();
-        m.add(vf.createStatement(vf.createIRI("http://www.test.com/Metaphacts"), FOAF.KNOWS,
+        m.add(vf.createStatement(vf.createIRI("http://www.test.com/ResearchSpace"), FOAF.KNOWS,
                 vf.createIRI("http://www.test.com/Systap")));
-        m.add(vf.createStatement(vf.createIRI("http://www.test.com/Metaphacts"), RDFS.LABEL,
-                vf.createLiteral("Metaphacts GmbH")));
+        m.add(vf.createStatement(vf.createIRI("http://www.test.com/ResearchSpace"), RDFS.LABEL,
+                vf.createLiteral("ResearchSpace GmbH")));
         m.add(vf.createStatement(vf.createIRI("http://www.test.com/Systap"), FOAF.KNOWS,
                 vf.createIRI("http://www.test.com/Wikidata")));
         m.add(vf.createStatement(vf.createIRI("http://www.test.com/Wikidata"), FOAF.KNOWS,
-                vf.createIRI("http://www.test.com/Metaphacts")));
+                vf.createIRI("http://www.test.com/ResearchSpace")));
         return m;
     }
 

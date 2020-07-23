@@ -31,7 +31,7 @@ import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
  */
 public class VirtuosoWrapperRepositoryFactory implements RepositoryFactory {
 
-    public static final String REPOSITORY_TYPE = "metaphacts:VirtuosoWrapperRepository";
+    public static final String REPOSITORY_TYPE = "researchspace:VirtuosoWrapperRepository";
 
     @Override
     public String getRepositoryType() {

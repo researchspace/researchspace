@@ -40,7 +40,7 @@ import { Alert, AlertConfig, AlertType } from 'platform/components/ui/alert';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 import { QueryTemplate } from 'platform/components/query-editor';
 
-import { MetaphactsYASRTable } from './MetaphactsYASRTable';
+import { YASRTable } from './YASRTable';
 import { SparqlEditor } from './SparqlEditor';
 
 import { ContextTypes as EditorContextTypes, ComponentContext as EditorContext } from './SparqlQueryEditorContext';
@@ -182,12 +182,12 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
     delete YASR.plugins['pivot'];
     delete YASR.plugins['gChart'];
     delete YASR.plugins['leaflet'];
-    YASR.registerOutput('metaphactsTable', (yasr) => {
-      return MetaphactsYASRTable(yasr);
+    YASR.registerOutput('yasrTable', (yasr) => {
+      return YASRTable(yasr);
     });
     this.yasr = YASR(element, {
-      outputPlugins: ['rawResponse', 'metaphactsTable', 'boolean', 'error'],
-      output: 'metaphactsTable',
+      outputPlugins: ['rawResponse', 'yasrTable', 'boolean', 'error'],
+      output: 'yasrTable',
       useGoogleCharts: false,
       persistency: {
         results: false,

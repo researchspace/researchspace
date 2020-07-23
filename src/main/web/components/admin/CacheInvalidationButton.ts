@@ -47,9 +47,7 @@ class InvalidateCacheButton extends Component<{}, State> {
       Button(
         {
           type: 'submit',
-          bsSize: 'small',
-          bsStyle: 'primary',
-          className: 'btn btn-default',
+          className: 'btn-cache',
           onClick: this.onClick,
         },
         'Invalidate All Caches'

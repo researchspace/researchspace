@@ -26,7 +26,7 @@ import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 
 public class MpMemoryRepositoryFactory implements RepositoryFactory {
 
-    public static final String REPOSITORY_TYPE = "metaphactory:DefaultMemoryRepository";
+    public static final String REPOSITORY_TYPE = "researchspace:DefaultMemoryRepository";
 
     @Override
     public String getRepositoryType() {

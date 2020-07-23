@@ -45,7 +45,7 @@ import org.researchspace.repository.sparql.virtuoso.VirtuosoWrapperRepositoryCon
  */
 public class VirtuosoWrapperRepositoryConfigTest {
     ValueFactory vf = SimpleValueFactory.getInstance();
-    private final IRI baseIri = vf.createIRI("http://www.metaphacts.com/base");
+    private final IRI baseIri = vf.createIRI("http://www.researchspace.org/base");
     private final String BASIC_WRAPPER_CONFIG_FILE = "/org/researchspace/repository/test-virtuoso-wrapper.ttl";
 
     @Rule

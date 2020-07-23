@@ -61,7 +61,7 @@ interface TextEditorProps {
   readonly?: boolean;
 
   /**
-   * ID of the <semantic-link iri='http://help.metaphacts.com/resource/Storage'>
+   * ID of the <semantic-link iri='http://help.researchspace.org/resource/Storage'>
    * storage</semantic-link> to load text document content.
    */
   storage: string;
@@ -129,7 +129,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     resourceTemplates: [],
     storage: 'runtime',
     resourceQuery: `
-      PREFIX mp: <http://www.metaphacts.com/ontologies/platform#>
+      PREFIX mp: <http://www.researchspace.org/resource/system/>
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
       PREFIX rso: <http://www.researchspace.org/ontology/>

@@ -39,7 +39,7 @@ import com.google.inject.Singleton;
 @Deprecated
 public class VirtuosoKeywordSearchSailFactory implements SailFactory {
 
-    public static final String SAIL_TYPE = "metaphacts:VirtuosoKeywordSail";
+    public static final String SAIL_TYPE = "researchspace:VirtuosoKeywordSail";
 
     @Inject
     static Provider<RepositoryManager> repositoryManagerProvider;

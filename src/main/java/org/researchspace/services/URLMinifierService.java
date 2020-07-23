@@ -61,10 +61,10 @@ public class URLMinifierService {
     public static final int KEY_LENGTH = 5;
 
     protected static final ValueFactory vf = SimpleValueFactory.getInstance();
-    private static final String ITEM_IRI_STRING = "http://www.metaphacts.com/ontologies/platform#urlMinifierContainerItem";
-    private static final String HAS_URL_STRING = "http://www.metaphacts.com/ontologies/platform#hasURL";
+    private static final String ITEM_IRI_STRING = "http://www.researchspace.org/resource/system/urlMinifierContainerItem";
+    private static final String HAS_URL_STRING = "http://www.researchspace.org/resource/system/hasURL";
     private static final IRI HAS_URL = vf.createIRI(HAS_URL_STRING);
-    private static final String HAS_KEY_STRING = "http://www.metaphacts.com/ontologies/platform#hasKey";
+    private static final String HAS_KEY_STRING = "http://www.researchspace.org/resource/system/hasKey";
     private static final IRI HAS_KEY = vf.createIRI(HAS_KEY_STRING);
 
     @Inject

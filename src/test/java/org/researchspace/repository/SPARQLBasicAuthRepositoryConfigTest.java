@@ -44,7 +44,7 @@ import org.researchspace.repository.sparql.SPARQLBasicAuthRepositoryConfig;
  */
 public class SPARQLBasicAuthRepositoryConfigTest {
     ValueFactory vf = SimpleValueFactory.getInstance();
-    private final IRI baseIri = vf.createIRI("http://www.metaphacts.com/base");
+    private final IRI baseIri = vf.createIRI("http://www.researchspace.org/base");
     private final String BASIC_AUTHC_CONFIG_FILE = "/org/researchspace/repository/test-sparql-basic-auth-repository.ttl";
 
     @Rule
@@ -52,8 +52,8 @@ public class SPARQLBasicAuthRepositoryConfigTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-    private String sparqlRepositoryUrl = "http://wikidata.metaphacts.com/sparql";
-    private String sparqlRepositoryUpdateUrl = "http://wikidata.metaphacts.com/sparql/update";
+    private String sparqlRepositoryUrl = "https://query.wikidata.org/sparql";
+    private String sparqlRepositoryUpdateUrl = "https://query.wikidata.org/sparql/update";
 
     @Test
     public void testNoUser() throws Exception {

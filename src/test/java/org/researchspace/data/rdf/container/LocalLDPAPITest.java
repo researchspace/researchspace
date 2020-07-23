@@ -37,10 +37,10 @@ import org.researchspace.api.rest.client.QueryTemplateCatalogAPIClient;
 import org.researchspace.api.rest.client.QueryTemplateCatalogAPIClientImpl;
 import org.researchspace.data.rdf.container.LocalLDPAPIClient;
 import org.researchspace.data.rdf.container.QueryContainer;
-import org.researchspace.junit.MetaphactsGuiceTestModule;
+import org.researchspace.junit.ResearchSpaceGuiceTestModule;
 
 @RunWith(JukitoRunner.class)
-@UseModules(MetaphactsGuiceTestModule.class)
+@UseModules(ResearchSpaceGuiceTestModule.class)
 public class LocalLDPAPITest extends AbstractLDPTest {
 
     ValueFactory VF = SimpleValueFactory.getInstance();
@@ -69,7 +69,7 @@ public class LocalLDPAPITest extends AbstractLDPTest {
 
         Assert.assertEquals(1, template.getArguments().size());
         QueryArgument arg = template.getArguments().iterator().next();
-        Assert.assertEquals(VF.createIRI("http://metaphacts.com/query/test-query/arg/0"), arg.getId());
+        Assert.assertEquals(VF.createIRI("http://www.researchspace.org/query/test-query/arg/0"), arg.getId());
         Assert.assertEquals(VF.createIRI("http://www.w3.org/2001/XMLSchema#anyURI"), arg.getValueType());
         Assert.assertEquals("type", arg.getLabel());
         Assert.assertEquals("type", arg.getPredicate());

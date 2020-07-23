@@ -159,7 +159,7 @@ s3:GetBucketLocation
 -Dconfig.storage.runtime.mutable=true \
 -Dconfig.storage.runtime.endpoint=https://s3.amazonaws.com/ \
 -Dconfig.storage.runtime.signingRegion=us-east-1 \
--Dconfig.storage.runtime.bucket=my-metaphactory-app-bucket \
+-Dconfig.storage.runtime.bucket=my-researchspace-app-bucket \
 -Dconfig.storage.runtime.accessKey=XXXAWSaccessKeyXXX \
 -Dconfig.storage.runtime.secretKey=XXXAWSsecretKeyXXX \
 -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini
@@ -168,16 +168,16 @@ s3:GetBucketLocation
     <h3>Assume role instead of using Keys for S3</h3>
     <p>Instead of specifying an AWS access key and secret key, you can also specify a role name to be assumed:</p>
     <pre><code>
-    -Dconfig.storage.runtime.assumedRole=arn:aws:iam::{aws-account-id}:role/{assume-role-name} -Dconfig.storage.runtime.roleSessionName={metaphactory-name-for-session-log}
+    -Dconfig.storage.runtime.assumedRole=arn:aws:iam::{aws-account-id}:role/{assume-role-name} -Dconfig.storage.runtime.roleSessionName={researchspace-name-for-session-log}
     </code></pre>
     <p>(replace <code>{}</code> respectively). This requires local AWS credentials configured in the environment, which have permissions for <code>sts:AssumeRole</code>.</p>
     <p>The assumed role requires the same permissions as listed for users above.</p>
 
     <h3>Assume role on EC2 instances</h3>
-    <p></p>EC2 instances which are setup with a role allow metaphactory to directly utilize these roles. Please do not specify any of <code>accessKey</code>, <code>secretKey</code> or <code>assumedRole</code> to utilize these instance profile credentials</p>
+    <p></p>EC2 instances which are setup with a role allow researchspace to directly utilize these roles. Please do not specify any of <code>accessKey</code>, <code>secretKey</code> or <code>assumedRole</code> to utilize these instance profile credentials</p>
 
     <h4>Troubleshooting</h4>
-   <p>The metaphactory log will provide most relevant information, but in some cases (E.g. on 403 Access denied) the AWS CloudTrail will provide additional insights.</p>
+   <p>The researchspace log will provide most relevant information, but in some cases (E.g. on 403 Access denied) the AWS CloudTrail will provide additional insights.</p>
    <p>Check under <code>CloudTrail > Event Histroy</code> and filter by <code>Event Name > AssumeRole</code>.</p>
 
 
@@ -241,7 +241,7 @@ s3:GetBucketLocation
     <pre><code>
 -Dconfig.storage.runtime.type=git \
 -Dconfig.storage.runtime.mutable=true \
--Dconfig.storage.runtime.localPath=/my-host-or-docker-volume-path/my-metaphactory-git-apps \
+-Dconfig.storage.runtime.localPath=/my-host-or-docker-volume-path/my-researchspace-git-apps \
 -Dconfig.storage.runtime.subroot=app1 \
 -Dconfig.storage.runtime.branch=my-branch
     </code></pre>

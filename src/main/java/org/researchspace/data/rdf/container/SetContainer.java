@@ -38,10 +38,10 @@ public class SetContainer extends DefaultLDPContainer {
 
     private static final Logger logger = LogManager.getLogger(SetContainer.class);
 
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#Set";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/Set";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
-    private static final IRI setMemberPredicate = vf.createIRI("http://www.metaphacts.com/ontologies/platform#setItem");
+    private static final IRI setMemberPredicate = vf.createIRI("http://www.researchspace.org/resource/system/setItem");
 
     public SetContainer(IRI uri, MpRepositoryProvider repositoryProvider) {
         super(uri, repositoryProvider);

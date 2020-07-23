@@ -85,7 +85,7 @@ public class SparqlUtilTest {
     @Test
     public void testExtractPrefixes() {
         List<String> expected = Lists.newArrayList("", "foaf", "dc", "xsd");
-        String operationString = "#asf \n prefix foaf:<http://xmlns.com/foaf/0.1/>\n PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n prefix dc:   <http://purl.org/dc/elements/1.1/>\n PREFIX : <http://metaphacts.com/> ";
+        String operationString = "#asf \n prefix foaf:<http://xmlns.com/foaf/0.1/>\n PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n prefix dc:   <http://purl.org/dc/elements/1.1/>\n PREFIX : <http://www.researchspace.org/> ";
         assertThat(expected, containsInAnyOrder(SparqlUtil.extractPrefixes(operationString).toArray()));
     }
 
@@ -102,7 +102,7 @@ public class SparqlUtilTest {
     @Test
     public void testExtractPrefixesWithNoLinebreaks() {
         List<String> expected = Lists.newArrayList("", "foaf", "dc", "xsd");
-        String operationString = "prefix foaf:<http://xmlns.com/foaf/0.1/> PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>prefix dc:   <http://purl.org/dc/elements/1.1/>\n PREFIX : <http://metaphacts.com/> ";
+        String operationString = "prefix foaf:<http://xmlns.com/foaf/0.1/> PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>prefix dc:   <http://purl.org/dc/elements/1.1/>\n PREFIX : <http://www.researchspace.org/> ";
         assertThat(expected, containsInAnyOrder(SparqlUtil.extractPrefixes(operationString).toArray()));
     }
 
@@ -117,14 +117,14 @@ public class SparqlUtilTest {
         prefixMap.put("with-dash", "http://example.org/with-dash/");
         String operationString = "#asf \n prefix foaf:<http://xmlns.com/foaf/0.1/>\n "
                 + "PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n "
-                + "prefix dc:   <http://purl.org/dc/elements/1.1/>\n " + "PREFIX : <http://metaphacts.com/> "
+                + "prefix dc:   <http://purl.org/dc/elements/1.1/>\n " + "PREFIX : <http://www.researchspace.org/> "
                 + "PREFIX with-dash: <http://example.org/with-dash/> " + "SELECT $subject WHERE {"
                 + "$subject a foaf:Agent." + "}LIMIT 10";
         String expectedString = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n"
                 + "PREFIX dcat: <http://www.w3.org/ns/dcat#>\n" + "PREFIX sp: <http://spinrdf.org/sp#>\n"
                 + "#asf \n prefix foaf:<http://xmlns.com/foaf/0.1/>\n "
                 + "PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n "
-                + "prefix dc:   <http://purl.org/dc/elements/1.1/>\n " + "PREFIX : <http://metaphacts.com/> "
+                + "prefix dc:   <http://purl.org/dc/elements/1.1/>\n " + "PREFIX : <http://www.researchspace.org/> "
                 + "PREFIX with-dash: <http://example.org/with-dash/> " + "SELECT $subject WHERE {"
                 + "$subject a foaf:Agent." + "}LIMIT 10";
         assertEquals(expectedString, SparqlUtil.prependPrefixes(operationString, prefixMap));
@@ -173,7 +173,7 @@ public class SparqlUtilTest {
         String queryString = "#asf \n # prefix foaf:<http://xmlns.com/foaf/0.1/>\n "
                 + "# PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n "
                 + "# prefix dc:   <http://purl.org/dc/elements/1.1/>\n "
-                + " \t \t  # PREFIX : <http://metaphacts.com/> \n" + "# SELECT $subject WHERE { \n"
+                + " \t \t  # PREFIX : <http://www.researchspace.org/> \n" + "# SELECT $subject WHERE { \n"
                 + "# $subject a foaf:Agent. \n" + "# }LIMIT 10";
 
         assertTrue(SparqlUtil.isEmpty(queryString));
@@ -184,7 +184,7 @@ public class SparqlUtilTest {
         String queryString = "#asf \n # prefix foaf:<http://xmlns.com/foaf/0.1/>\n "
                 + "# PREFIX   xsd:  <http://www.w3.org/2001/XMLSchema#>\n "
                 + "# prefix dc:   <http://purl.org/dc/elements/1.1/>\n "
-                + " \t \t  SELECT * WHERE { ?x ?y ?z . } # PREFIX : <http://metaphacts.com/> \n"
+                + " \t \t  SELECT * WHERE { ?x ?y ?z . } # PREFIX : <http://www.researchspace.org/> \n"
                 + "# SELECT $subject WHERE { \n" + "# $subject a foaf:Agent. \n" + "# }LIMIT 10";
 
         assertFalse(SparqlUtil.isEmpty(queryString));

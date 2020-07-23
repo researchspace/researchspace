@@ -1,0 +1,191 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  [[#if (urlParam "previousPage")]]
+  <li>
+    <semantic-link iri='[[urlParam "previousPage"]]'>
+      [[urlParam "previousPageTitle"]]
+    </semantic-link>
+  </li>
+  [[/if]]
+  <li class="active">Thinking Frames</li>
+</ol>
+
+<style>
+  [[!-- 
+    we need to set this sizes because otherwise ontodia can't properly make initial layout
+    if node-templates is defined. This is a bug in ontodia.
+  --]]
+  .ontodia-overlayed-element  {
+    min-height: 234px;
+    min-width: 185px;
+  }
+</style>
+
+<mp-event-proxy id='clipboard-update-on-create-set'
+                on-event-type='Components.SetManagement.SetAdded'
+                proxy-event-type='Component.Refresh'
+                proxy-targets='["clipboard"]'>
+</mp-event-proxy>
+
+<mp-event-proxy id='clipboard-update-on-save-search' 
+                on-event-source='save-search-result-action'
+                proxy-event-type='Component.Refresh' 
+                proxy-targets='["clipboard"]'
+></mp-event-proxy>
+
+<mp-event-proxy id='clipboard-update-on-persisted-component' 
+                on-event-source='persit-component-action'
+                proxy-event-type='Component.Refresh' 
+                proxy-targets='["clipboard"]'
+></mp-event-proxy>
+
+
+<div class='page thinking-frames-page'>
+  [[#> rsp:DetailsSidebar]]
+  <rs-dashboard
+    [[#if (urlParam "view")]]
+      initial-view='{"view": "[[urlParam "view"]]", "resource": "[[urlParam "resource"]]"}'
+    [[/if]] 
+    [[#if view]]
+      initial-view='{"view": "[[view]]", "resource": "[[resource]]"}'
+    [[/if]] 
+
+    views='[
+    {
+    	"id": "simple-search",
+      "label": "Search",
+      "description": "Search for resources",
+      "image": "/assets/images/icons/semantic_search_dark.svg",
+      "iconClass": "fa fa-search",
+      "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
+      "template": "{{> simpleSearchTemplate}}",
+      "resourceNotRequired": true
+    },
+
+    {
+    	"id": "resource",
+      "label": "Resource",
+      "description": "View resource details",
+      "image": "/assets/images/icons/pages.svg",
+      "template": "{{> resourceTemplate}}"
+    },
+
+    {
+    	"id": "entity-editor",
+      "label": "Entity Editor",
+      "description": "Authoring a resource through the Entity Edit Form",
+      "image": "/assets/images/icons/form_edit_dark.svg",
+      "template": "{{> entityEditor}}"
+    },
+
+    {
+    	"id": "knowledge-map",
+      "label": "Knowledge Map",
+      "description": "Express research thinking and processes as networks of relations",
+      "image": "/assets/images/icons/diagram_dark.svg",
+      "iconClass": "fa fa-object-group",
+      "template": "{{> ontodiaTemplate}}",
+      "itemBodyTemplate": "{{> itemBodyTemplate}}",
+      "resourceNotRequired": true,
+      "frameVariable": "ontodiaVariable"
+    },
+
+    {
+    	"id": "semantic-narrative",
+      "label": "Semantic Narrative",
+      "description": "Compose and share your research through as evolving narrative",
+      "image": "/assets/images/icons/narrative_dark.svg",
+      "iconClass": "fa fa-file-text-o",
+      "template": "{{> semanticNarrativeTemplate}}",
+      "itemBodyTemplate": "{{> itemBodyTemplate}}",
+      "resourceNotRequired": true,
+      "frameVariable": "narrativeVariable",
+      "checkQuery": "ASK { ?value a rso:Semantic_Narrative . }"
+    },
+
+    {
+    	"id": "iiif",
+      "label": "Image Viewer",
+      "description": "View and compare High-Resolution images",
+      "image": "/assets/images/icons/images_dark.svg",
+      "iconClass": "fa fa-picture-o",
+      "template": "{{> iiifTemplate}}",
+      "frameVariable": "miradorVariable"
+    }
+    
+    ]'
+
+    [[#if (hasPermission "forms:ldp:*")]]       
+    linked-views='[{
+      "id": "image-graph-authoring",
+      "label": "Image Graph Authoring",
+      "description": "Knowledge Map + IIIF Image Viewer",
+      "image": "/assets/images/icons/image_annotation_dark2.svg",
+      "iconClass": "fa fa-file-image-o",
+      "viewIds": ["knowledge-map", "iiif"],
+      "resourceNotRequired": true
+    }
+    ]'
+    [[/if]]
+    >
+    [[> rsp:Clipboard id="clipboard" defaultViewMode="grid"]]
+    <template id='resourceTemplate'>
+      <div style='flex: 1 1 0px; overflow: auto;'>
+        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ResourceContent' context='{{iri}}'>
+        </mp-page-loader>
+    	</div>
+    </template>
+    <template id='simpleSearchTemplate'>
+      <div class='rs-search-page' style='flex: 1 1 0px; overflow: auto; padding: 20px;'>
+        <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
+        </mp-page-loader>
+    	</div>
+    </template>
+    <template id='entityEditor'>
+      [[> rsp:EntityEditor]]
+    </template>
+    <template id='ontodiaTemplate'>
+      [[> rsp:ThinkingFramesKnowledgeMapTemplate]]
+    </template>
+    <template id='iiifTemplate'>
+      [[> rsp:ThinkingFramesIIIFTemplate]]
+    </template>
+    <template id='semanticNarrativeTemplate'>
+      [[> rsp:ThinkingFramesSemanticNarrativeTemplate]]
+    </template>
+    <template id='itemBodyTemplate'>
+      <ontodia-contents id='{{dashboardId}}-ontodia' template='{{> template}}'>
+        <div>
+          <button name='submit' className='btn btn-default btn-xs'>
+            Create Set
+          </button>&nbsp;
+          <mp-popover>
+            <mp-popover-trigger placement="right" trigger='["click","hover","focus"]' root-close='false'>
+              <small><i class='fa fa-question-circle'></i></small>
+            </mp-popover-trigger>
+            <mp-popover-content>Only persisted data will be saved to a set</mp-popover-content>
+          </mp-popover>
+        </div>
+        <template id='template'>
+        {{log "sidebar" this}}
+          {{#ifCond persisted "==" true}}
+            <span class='set-management__set-item' style='padding: 10px'>
+              {{#bind iri=iri.value}}
+              {{> rsp:itemCardTemplate width=135 height=175 footer-paddingY=7 footer-paddingX=8}}
+              {{/bind}}
+            </span>
+            {{else}}
+            <span class='set-management__set-item' style='opacity: 0.4; padding: 10px'>
+              {{#bind iri=iri.value}}
+                {{> rsp:itemCardTemplate width=135 height=175 }}
+              {{/bind}}          
+            </span>
+          {{/ifCond}}
+        </template>
+      </ontodia-contents>
+    </template>
+  </rs-dashboard>
+  [[/rsp:DetailsSidebar]]
+</div>

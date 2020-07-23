@@ -45,7 +45,7 @@ export interface MetadataFromFieldsProps {
    *
    * Default query:
    * ```
-   * PREFIX field: <http://www.metaphacts.com/ontology/fields#>
+   * PREFIX field: <http://www.researchspace.org/resource/system/fields/>
    * SELECT REDUCED ?field WHERE {
    *   ?field a field:Field
    * }
@@ -54,7 +54,7 @@ export interface MetadataFromFieldsProps {
   fieldsQuery?: string;
 }
 
-const DEFAULT_FIELDS_QUERY = `PREFIX field: <http://www.metaphacts.com/ontology/fields#>
+const DEFAULT_FIELDS_QUERY = `PREFIX field: <http://www.researchspace.org/resource/system/fields/>
 SELECT REDUCED ?field WHERE {
   ?field a field:Field
 }`;

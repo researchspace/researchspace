@@ -76,7 +76,7 @@ export interface SelectedArea {
 
 type Coord = [number, number];
 
-const MAP_REF = 'metaphacts-map-selection';
+const MAP_REF = 'researchspace-map-selection';
 
 /**
  * Openlayers map selection component. Can select rectangles and circles.

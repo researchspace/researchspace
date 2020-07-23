@@ -35,7 +35,7 @@ import com.google.inject.Inject;
  * Implementation of a {@link SPARQLRepository} that requires a bearer token
  * authentication. The token is provided in the repository config file by means
  * of the
- * &lt;<http://www.metaphacts.com/ontologies/platform/repository#authenticationToken&gt;
+ * &lt;<http://www.researchspace.org/resource/system/repository#authenticationToken&gt;
  * property.
  * 
  * <p>

@@ -27,7 +27,7 @@ import { includes } from 'lodash';
 
 const { VocabPlatform, xsd, rdf, rdfs, spl, spin, dct } = vocabularies;
 
-const DEFAULT_NAMESPACE = 'http://metaphacts.com/query/';
+const DEFAULT_NAMESPACE = 'http://www.researchspace.org/query/';
 const CATEGORIES_PREDICATE = dct.subject;
 
 export class QueryTemplateServiceClass extends LdpService {

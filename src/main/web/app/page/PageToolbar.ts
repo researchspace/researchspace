@@ -155,7 +155,7 @@ class PageEditorToolbarComponent extends Component<PageEditorToolbarProps, PageE
     createElement(
       ResourceViewer,
       {
-        pageIri: 'http://www.metaphacts.com/ontologies/platform#SourceStatements',
+        pageIri: 'http://www.researchspace.org/resource/system/SourceStatements',
         title: 'Statements',
         isOpen: this.props.params['showStatements'] === 'true',
         params: { urlqueryparamShowStatements: 'true' },
@@ -168,7 +168,7 @@ class PageEditorToolbarComponent extends Component<PageEditorToolbarProps, PageE
     createElement(
       ResourceViewer,
       {
-        pageIri: 'http://www.metaphacts.com/ontologies/platform#SourceGraph',
+        pageIri: 'http://www.researchspace.org/resource/system/SourceGraph',
         title: 'Graph',
       },
       D.a({
@@ -179,7 +179,7 @@ class PageEditorToolbarComponent extends Component<PageEditorToolbarProps, PageE
     createElement(
       ResourceViewer,
       {
-        pageIri: 'http://www.metaphacts.com/ontologies/platform#SourceDiagram',
+        pageIri: 'http://www.researchspace.org/resource/system/SourceDiagram',
         title: 'Diagram',
       },
       D.a({

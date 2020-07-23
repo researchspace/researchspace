@@ -1,0 +1,47 @@
+[[#if (urlParam "frame")]]
+<style>
+  .rs-application .page.page-local-overwrite {
+    padding-top: 0 !important;
+  }
+</style>
+<div class="page page-local-overwrite">
+    [[> rsp:ResourceContent]]
+</div>
+
+[[else]]
+[[!-- Breadcrumb --]]
+<ol class="page-breadcrumb">
+    <li>
+        <mp-link title="Home" url="/">Home</mp-link>
+    </li>
+  
+   [[#block "activeBreadcrumb"]]
+   <with-types iri='[[this]]'
+        template='{{> template}}'
+        [[> rsp:TypeMappings]]
+    >
+        <template id='template'>
+            <li class="active"> 
+                {{directTypesLabels}}: <mp-label iri='[[this]]'></mp-label>
+            </li>
+        </template>
+   </with-types>
+
+   
+   [[/block]]
+</ol>
+
+[[!-- Resource Page --]]
+<div class="page">
+  [[#if (urlParam "frame")]]
+    [[> rsp:ResourceContent]]
+  [[else]]
+    [[#> rsp:ClipboardSidebar]]
+    [[#> rsp:DetailsSidebar]]
+     [[> rsp:ResourceContent]]
+    [[/rsp:DetailsSidebar]]
+    [[/rsp:ClipboardSidebar]]
+  [[/if]]
+
+</div>
+[[/if]]

@@ -43,8 +43,8 @@ public class SSOCallbackFilter implements Filter {
     /**
      * Name of the callback filter parameter in the shiro INI configuration file.
      * 
-     * @see metaphacts.security.sso.shiro-sso-oauth-default.ini
-     * @see metaphacts.security.sso.shiro-sso-saml-default.ini
+     * @see org.researchspace.security.sso.shiro-sso-oauth-default.ini
+     * @see org.researchspace.security.sso.shiro-sso-saml-default.ini
      */
     private static final String CALLBACK_FILTER = "callbackFilter";
 

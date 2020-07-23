@@ -63,15 +63,15 @@ public class OptionalParamProviderTest extends JerseyTest {
 
     @Test
     public void shouldReturnIriIfIriParamIsRequested() {
-        String response = target("/optional/iri").queryParam("iri", "http://metaphacts.com/isIri").request()
+        String response = target("/optional/iri").queryParam("iri", "http://www.researchspace.org/isIri").request()
                 .get(String.class);
-        Assert.assertEquals(response, "http://metaphacts.com/isIri");
+        Assert.assertEquals(response, "http://www.researchspace.org/isIri");
     }
 
     @Test
     public void shouldReturnElseIfNoIriParamIsRequested() {
         String response = target("/optional/iri").request().get(String.class);
-        Assert.assertEquals(response, "http://metaphacts.com/noIRI");
+        Assert.assertEquals(response, "http://www.researchspace.org/noIRI");
     }
 
     @Path("/optional")
@@ -86,7 +86,7 @@ public class OptionalParamProviderTest extends JerseyTest {
         @GET
         @Path("/iri")
         public String getOptionalIri(@QueryParam("iri") Optional<IRI> iri) {
-            return iri.orElse(vf.createIRI("http://metaphacts.com/noIRI")).stringValue();
+            return iri.orElse(vf.createIRI("http://www.researchspace.org/noIRI")).stringValue();
         }
     }
 

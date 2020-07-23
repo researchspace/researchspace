@@ -109,7 +109,7 @@ public class PermissionUtilTest extends AbstractIntegrationTest {
 
     @Test
     public void validatePlatformDefaultPermissions() throws Exception {
-        File file = new File("./src/main/resources/org/researchspace/apps/assets/config/shiro.ini");
+        File file = new File("./src/main/resources/org/researchspace/apps/default/config/shiro.ini");
         validatePermissions(file);
     }
 

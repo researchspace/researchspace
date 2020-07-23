@@ -26,7 +26,7 @@ import { Rdf, vocabularies } from 'platform/api/rdf';
 import { requestAsProperty } from 'platform/api/async';
 
 export const FILE_UPLOAD_SERVICE_URL = '/file';
-export const FILE_LDP_CONTAINER_ID = 'http://www.metaphacts.com/ontologies/platform#fileContainer';
+export const FILE_LDP_CONTAINER_ID = 'http://www.researchspace.org/resource/system/fileContainer';
 
 export const FILE_URL = '';
 export const ADMIN_URL = '/direct';

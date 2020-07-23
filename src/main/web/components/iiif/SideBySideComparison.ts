@@ -180,7 +180,7 @@ export class SideBySideComparison extends Component<Props, State> {
         })
       ),
       annotationBodyEditor: {
-        module: 'MetaphactoryAnnotationBodyEditor',
+        module: 'researchspaceAnnotationBodyEditor',
         options: {},
       },
       jsonStorageEndpoint: {

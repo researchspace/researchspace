@@ -54,9 +54,9 @@ public class WildcardPermissionTest {
     @Test
     public void permissionRegexTest() {
         WildcardPermission mine = new WildcardPermission(
-                "pages:edit:save:regex(<http://www.metaphacts.com/resource/admin/.*>)");
+                "pages:edit:save:regex(<http://www.researchspace.org/resource/admin/.*>)");
         WildcardPermission other = new WildcardPermission(
-                "pages:edit:save:<http://www.metaphacts.com/resource/admin/RepositoryManager>");
+                "pages:edit:save:<http://www.researchspace.org/resource/admin/RepositoryManager>");
         Assert.assertTrue(mine.implies(other));
     }
 
@@ -64,9 +64,9 @@ public class WildcardPermissionTest {
     public void permissionRegexLocalnameTest() {
         WildcardPermission mine = new WildcardPermission("pages:edit:save:regex(<.*(EphedraServices)>)");
         WildcardPermission other = new WildcardPermission(
-                "pages:edit:save:<http://www.metaphacts.com/resource/admin/EphedraServices>");
+                "pages:edit:save:<http://www.researchspace.org/resource/admin/EphedraServices>");
         Assert.assertTrue(mine.implies(other));
-        other = new WildcardPermission("pages:edit:save:<http://www.metaphacts.com/resource/admin/SomethingElse>");
+        other = new WildcardPermission("pages:edit:save:<http://www.researchspace.org/resource/admin/SomethingElse>");
         Assert.assertFalse(mine.implies(other));
     }
 
@@ -74,9 +74,9 @@ public class WildcardPermissionTest {
     public void permissionRegexNoTemplatesTest() {
         // Regex permissions must only apply for the templates domain
         WildcardPermission mine = new WildcardPermission(
-                "dummy:edit:save:regex(<http://www.metaphacts.com/resource/admin/.*>)");
+                "dummy:edit:save:regex(<http://www.researchspace.org/resource/admin/.*>)");
         WildcardPermission other = new WildcardPermission(
-                "dummy:edit:save:<http://www.metaphacts.com/resource/admin/RepositoryManager>");
+                "dummy:edit:save:<http://www.researchspace.org/resource/admin/RepositoryManager>");
         Assert.assertFalse(mine.implies(other));
     }
 
@@ -85,64 +85,64 @@ public class WildcardPermissionTest {
         // Regex permissions must only apply for the last (instance) part of the
         // permission string
         WildcardPermission mine = new WildcardPermission(
-                "pages:regex(<http://www.metaphacts.com/resource/admin/.*>):edit");
+                "pages:regex(<http://www.researchspace.org/resource/admin/.*>):edit");
         WildcardPermission other = new WildcardPermission(
-                "pages:<http://www.metaphacts.com/resource/admin/RepositoryManager>:edit");
+                "pages:<http://www.researchspace.org/resource/admin/RepositoryManager>:edit");
         Assert.assertFalse(mine.implies(other));
     }
 
     @Test
     public void permissionRegexAndIriTest() {
         WildcardPermission mine = new WildcardPermission(
-                "pages:<http://www.metaphacts.com/resource/permitted/ThisShouldBeAccepted>:save:regex(<http://www.metaphacts.com/resource/admin/.*>)");
+                "pages:<http://www.researchspace.org/resource/permitted/ThisShouldBeAccepted>:save:regex(<http://www.researchspace.org/resource/admin/.*>)");
         Assert.assertEquals(
-                permissionParts("pages", "<http://www.metaphacts.com/resource/permitted/ThisShouldBeAccepted>", "save",
-                        "regex(<http://www.metaphacts.com/resource/admin/.*>)"),
+                permissionParts("pages", "<http://www.researchspace.org/resource/permitted/ThisShouldBeAccepted>", "save",
+                        "regex(<http://www.researchspace.org/resource/admin/.*>)"),
                 mine.getParts());
         WildcardPermission other = new WildcardPermission(
-                "pages:<http://www.metaphacts.com/resource/permitted/ThisShouldBeAccepted>:save:<http://www.metaphacts.com/resource/admin/ThisShouldBeAccepted>");
+                "pages:<http://www.researchspace.org/resource/permitted/ThisShouldBeAccepted>:save:<http://www.researchspace.org/resource/admin/ThisShouldBeAccepted>");
         Assert.assertTrue(mine.implies(other));
         other = new WildcardPermission(
-                "pages:<http://www.metaphacts.com/resource/permitted/ThisShouldNotBeAccepted>:save:<http://www.metaphacts.com/resource/admin/ThisShouldBeAccepted>");
+                "pages:<http://www.researchspace.org/resource/permitted/ThisShouldNotBeAccepted>:save:<http://www.researchspace.org/resource/admin/ThisShouldBeAccepted>");
         Assert.assertFalse(mine.implies(other));
         other = new WildcardPermission(
-                "pages:<http://www.metaphacts.com/resource/permitted/ThisShouldBeAccepted>:save:<http://www.metaphacts.com/resource/test/ThisShouldNotBeAccepted>");
+                "pages:<http://www.researchspace.org/resource/permitted/ThisShouldBeAccepted>:save:<http://www.researchspace.org/resource/test/ThisShouldNotBeAccepted>");
         Assert.assertFalse(mine.implies(other));
     }
 
     @Test
     public void permissionRegexBlacklistTest() {
         WildcardPermission mine = new WildcardPermission(
-                "pages:edit:save:regex(<((?!(http://www.metaphacts.com/resource/admin/)|(http://www.metaphacts.com/resource/test/)).)*>)");
+                "pages:edit:save:regex(<((?!(http://www.researchspace.org/resource/admin/)|(http://www.researchspace.org/resource/test/)).)*>)");
         Assert.assertEquals(permissionParts("pages", "edit", "save",
-                "regex(<((?!(http://www.metaphacts.com/resource/admin/)|(http://www.metaphacts.com/resource/test/)).)*>)"),
+                "regex(<((?!(http://www.researchspace.org/resource/admin/)|(http://www.researchspace.org/resource/test/)).)*>)"),
                 mine.getParts());
         WildcardPermission other = new WildcardPermission(
-                "pages:edit:save:<http://www.metaphacts.com/resource/admin/RepositoryManager>");
+                "pages:edit:save:<http://www.researchspace.org/resource/admin/RepositoryManager>");
         Assert.assertEquals(permissionParts("pages", "edit", "save",
-                "<http://www.metaphacts.com/resource/admin/RepositoryManager>"), other.getParts());
+                "<http://www.researchspace.org/resource/admin/RepositoryManager>"), other.getParts());
         Assert.assertFalse(mine.implies(other));
-        other = new WildcardPermission("pages:edit:save:<http://www.metaphacts.com/resource/test/SomeTest>");
+        other = new WildcardPermission("pages:edit:save:<http://www.researchspace.org/resource/test/SomeTest>");
         Assert.assertFalse(mine.implies(other));
         other = new WildcardPermission(
-                "pages:edit:save:<http://www.metaphacts.com/resource/permitted/ThisShouldBeAccepted>");
+                "pages:edit:save:<http://www.researchspace.org/resource/permitted/ThisShouldBeAccepted>");
         Assert.assertTrue(mine.implies(other));
     }
 
     @Test
     public void permissionRegexBlacklistViewTest() {
         WildcardPermission mine = new WildcardPermission(
-                "pages:view:regex(<((?!(http://www.metaphacts.com/resource/admin/)).)*>)");
+                "pages:view:regex(<((?!(http://www.researchspace.org/resource/admin/)).)*>)");
         Assert.assertEquals(
-                permissionParts("pages", "view", "regex(<((?!(http://www.metaphacts.com/resource/admin/)).)*>)"),
+                permissionParts("pages", "view", "regex(<((?!(http://www.researchspace.org/resource/admin/)).)*>)"),
                 mine.getParts());
         WildcardPermission other = new WildcardPermission(
-                "pages:view:<http://www.metaphacts.com/resource/admin/RepositoryManager>");
+                "pages:view:<http://www.researchspace.org/resource/admin/RepositoryManager>");
         Assert.assertEquals(
-                permissionParts("pages", "view", "<http://www.metaphacts.com/resource/admin/RepositoryManager>"),
+                permissionParts("pages", "view", "<http://www.researchspace.org/resource/admin/RepositoryManager>"),
                 other.getParts());
         Assert.assertFalse(mine.implies(other));
-        other = new WildcardPermission("pages:view:<http://www.metaphacts.com/resource/test/SomeTest>");
+        other = new WildcardPermission("pages:view:<http://www.researchspace.org/resource/test/SomeTest>");
         Assert.assertTrue(mine.implies(other));
     }
 

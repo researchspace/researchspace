@@ -1,0 +1,39 @@
+[[#*inline "defaultOntodia"]]
+  <ontodia
+    [[> "http://www.researchspace.org/resource/assets/OntodiaSettings" ]]
+
+    iri="[[this]]"
+
+    [[#if (ask "ASK {?? a ?type}")]]
+      query="CONSTRUCT {?? a ?type}WHERE{?? a ?type}"
+    [[/if]]
+
+    [[!--
+      if we are looking into the resource that is of type for which we have an ontology in the database, or the resource is concept from some
+      ontology, then restrict class selector in ontodia to the classes from that ontology
+    --]]
+    [[#if (ask "ASK {?? a ?type. GRAPH ?g { ?ontology a owl:Ontology . { ?type a ?class } UNION { ?? a ?type } } }")]]
+      [[> "http://www.researchspace.org/resource/OntodiaViewOntologyOnlyClasses"]]
+    [[else]]
+      [[> "http://www.researchspace.org/resource/OntodiaViewClassCheck" ]]
+    [[/if]]
+
+    [[#if readonly]]
+      readonly=true
+    [[/if]]
+
+    hide-panels=true
+    hide-scroll-bars=true
+  >
+  </ontodia>
+[[/inline]]
+
+<div style="height: 85vh">
+  <semantic-context repository="[[#if (urlParam "repository")]][[urlParam "repository"]][[else]]default[[/if]]">
+    [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/ontodiaDiagramContainer>:create:any")]]
+      [[> defaultOntodia]]
+    [[else]]
+      [[> defaultOntodia readonly=true]]
+    [[/if]]
+  </semantic-context>
+</div>

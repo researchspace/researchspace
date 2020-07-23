@@ -42,7 +42,7 @@ import com.google.common.collect.Sets;
  */
 @LDPR(iri = RootContainer.IRI_STRING)
 public class RootContainer extends AbstractLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#rootContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/rootContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public RootContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

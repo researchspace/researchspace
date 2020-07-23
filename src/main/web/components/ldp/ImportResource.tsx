@@ -72,7 +72,7 @@ interface State {
 
 /**
  * Import LDP resource.
- * Read description of import process in comment to {@see com.metaphacts.data.rdf.container.LDPApi.importLDPResource}
+ * Read description of import process in comment to {@see org.researchspace.data.rdf.container.LDPApi.importLDPResource}
  * @example
  *  <mp-ldp-import-resource>
  *      <button class="btn btn-default">Import resource</button>

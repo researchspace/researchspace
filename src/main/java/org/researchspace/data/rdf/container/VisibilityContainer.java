@@ -44,11 +44,11 @@ public class VisibilityContainer extends DefaultLDPContainer {
 
     private static final Logger logger = LogManager.getLogger(VisibilityContainer.class);
 
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#visibilityContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/visibilityContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     private static final IRI visibilityMemberPredicate = vf
-            .createIRI("http://www.metaphacts.com/ontologies/platform#visibilityItem");
+            .createIRI("http://www.researchspace.org/resource/system/visibilityItem");
 
     public VisibilityContainer(IRI iri, MpRepositoryProvider repositoryProvider) {
         super(iri, repositoryProvider);

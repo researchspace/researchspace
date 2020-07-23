@@ -35,7 +35,7 @@ import com.google.common.base.Throwables;
  */
 @LDPR(iri = OntodiaDiagramContainer.IRI_STRING)
 public class OntodiaDiagramContainer extends DefaultLDPContainer {
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#ontodiaDiagramContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/ontodiaDiagramContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public OntodiaDiagramContainer(IRI uri, MpRepositoryProvider repositoryProvider) {

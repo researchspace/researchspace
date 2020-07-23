@@ -20,11 +20,11 @@
 import { ConfigHolder } from 'platform/api/services/config-holder';
 import { SEMANTIC_SEARCH_VARIABLES, FACET_VARIABLES, Patterns } from './SearchConfig';
 
-export const DefaultInlineProfile = '<http://metaphacts.com/semantic-search/dummyInlineDefaultProfile>';
+export const DefaultInlineProfile = '<http://www.researchspace.org/semantic-search/dummyInlineDefaultProfile>';
 
-export const DefaultProfile = '<http://www.metaphacts.com/ontologies/platform/semantic-search-profile/default-profile>';
+export const DefaultProfile = '<http://www.researchspace.org/resource/system/semantic-search-profile/default-profile>';
 export const DefaultSearchProfileCategoriesQuery = `
-  PREFIX ssp: <http://www.metaphacts.com/ontologies/platform/semantic-search-profile/>
+  PREFIX ssp: <http://www.researchspace.org/resource/system/semantic-search-profile/>
   PREFIX schema: <http://schema.org/>
 
   SELECT DISTINCT ?profile ?category ?label ?description ?thumbnail WHERE {
@@ -68,7 +68,7 @@ export const DefaultSearchProfileCategoriesQuery = `
 `;
 
 export const DefaultSearchProfileRelationsQuery = `
-  PREFIX ssp: <http://www.metaphacts.com/ontologies/platform/semantic-search-profile/>
+  PREFIX ssp: <http://www.researchspace.org/resource/system/semantic-search-profile/>
 
   SELECT DISTINCT ?profile ?relation ?label ?description ?hasDomain ?hasRange ?order WHERE {
     {
@@ -100,7 +100,7 @@ export const DefaultSearchProfileRelationsQuery = `
 
 export function DefaultTextPattern(): Patterns {
   return {
-    'http://www.metaphacts.com/ontologies/platform/semantic-search-profile/TextCategory': [
+    'http://www.researchspace.org/resource/system/semantic-search-profile/TextCategory': [
       {
         kind: 'text',
         queryPattern: `

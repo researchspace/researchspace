@@ -49,7 +49,7 @@ import com.google.inject.Injector;
 public class SparqlServletExtractOperationStringTest extends AbstractIntegrationTest {
 
     private String query = "Select * WHERE {?subject ?predicate ?object}";
-    private String update = "INSERT{<http://www.metaphacts.com/resource/Joe> a <http://xmlns.com/foaf/0.1/Person>} WHERE {?subject ?predicate ?object} LIMIT 1";
+    private String update = "INSERT{<http://www.researchspace.org/resource/Joe> a <http://xmlns.com/foaf/0.1/Person>} WHERE {?subject ?predicate ?object} LIMIT 1";
 
     SparqlServlet servlet;
 

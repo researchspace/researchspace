@@ -37,13 +37,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.researchspace.junit.MetaphactsJerseyTest;
+import org.researchspace.junit.JerseyTest;
 import org.researchspace.rest.endpoint.LogAdminEndpoint;
 
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.Sets;
 
-public class LogAdminEndpointTest extends MetaphactsJerseyTest {
+public class LogAdminEndpointTest extends JerseyTest {
 
     private final String logsPermissionsShiroFile = "classpath:org/researchspace/rest/endpoint/shiro-logs.ini";
 

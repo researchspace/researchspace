@@ -1,0 +1,58 @@
+{{#if noData}}
+<div class="table-responsive rs-table">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col" style="width: 30%">Field</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>No data available</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{{else}}
+<div class="table-responsive rs-table">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col" style="width: 30%">Field</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each fields as |field|}}
+      {{#if field.values}}
+      <tr class="rs-page__field">
+        <td class="rs-page__field-label-holder">
+          <span class="rs-page__field-label">
+            {{field.label.0.value}}
+          </span>
+        </td>
+        <td>
+          {{#ifCond (objectLength field.values) '>' 1}}
+          <ol class="rs-page__field-values">
+            {{#each field.values as |value|}}
+            <li class="rs-page__field-value">
+              {{> rsp:ResourceFieldValueVisualization field=field value=value }}
+            </li>
+            {{/each}}
+          </ol>
+          {{/ifCond}}
+          {{#ifCond (objectLength field.values) '===' 1}}
+          {{#each field.values as |value|}}
+          <span class="rs-page__field-value">{{> rsp:ResourceFieldValueVisualization field=field value=value }}</span>
+          {{/each}}
+          {{/ifCond}}
+        </td>
+      </tr>
+      {{/if}}
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/if}}

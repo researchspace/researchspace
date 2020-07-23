@@ -31,7 +31,7 @@ import org.eclipse.rdf4j.sail.config.SailImplConfig;
  */
 public class MpFederationFactory implements SailFactory {
 
-    public static final String SAIL_TYPE = "metaphacts:Federation";
+    public static final String SAIL_TYPE = "researchspace:Federation";
 
     public MpFederationFactory() {
 

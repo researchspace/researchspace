@@ -40,7 +40,7 @@ export interface SetManagementProps {
    * @default
    *   PREFIX ldp: <http://www.w3.org/ns/ldp#>
    *   PREFIX prov: <http://www.w3.org/ns/prov#>
-   *   PREFIX platform: <http://www.metaphacts.com/ontologies/platform#>
+   *   PREFIX platform: <http://www.researchspace.org/resource/system/>
    *   PREFIX bds: <http://www.bigdata.com/rdf/search#>
    *   SELECT ?item ?itemHolder ?parent ?modificationDate ?kind WHERE {
    *     {

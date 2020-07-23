@@ -462,7 +462,7 @@ const DEBOUNCE_DELAY = 300;
  */
 export class Ontodia extends Component<OntodiaProps, State> {
   static defaultProps: Partial<OntodiaProps> = {
-    navigateTo: 'http://www.metaphacts.com/resource/assets/OntodiaView',
+    navigateTo: 'http://www.researchspace.org/resource/assets/OntodiaView',
     queryParams: {},
     addToDefaultSet: false,
     nodeTemplates: {},

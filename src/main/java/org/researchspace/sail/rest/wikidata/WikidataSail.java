@@ -38,7 +38,7 @@ public class WikidataSail extends AbstractServiceWrappingSail {
     private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
     public static final IRI HAS_WIKIDATA_SEARCH_TOKEN = VF
-            .createIRI("http://www.metaphacts.com/ontology/hasWikidataSearchToken");
+            .createIRI("http://www.researchspace.org/resource/system/hasWikidataSearchToken");
 
     public WikidataSail() {
         this(WikidataSailConfig.DEFAULT_URL);

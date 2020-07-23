@@ -31,7 +31,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
  * Test to assert that the repository rule clears the repository before each
- * test method. This is important since the {@link MetaphactsGuiceTestModule}
+ * test method. This is important since the {@link ResearchSpaceGuiceTestModule}
  * only runs once per class and as such methods share some basic instances such
  * as the repository data folder.
  * 

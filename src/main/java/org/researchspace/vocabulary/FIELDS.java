@@ -28,7 +28,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  */
 public class FIELDS {
 
-    public static final String NAMESPACE = "http://www.metaphacts.com/ontology/fields#";
+    public static final String NAMESPACE = "http://www.researchspace.org/resource/system/fields/";
 
     /**
      * Types

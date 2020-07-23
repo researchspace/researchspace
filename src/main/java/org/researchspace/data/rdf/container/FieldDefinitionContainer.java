@@ -42,7 +42,7 @@ public class FieldDefinitionContainer extends DefaultLDPContainer {
 
     private static final Logger logger = LogManager.getLogger(FieldDefinitionContainer.class);
 
-    public static final String IRI_STRING = "http://www.metaphacts.com/ontologies/platform#fieldDefinitionContainer";
+    public static final String IRI_STRING = "http://www.researchspace.org/resource/system/fieldDefinitionContainer";
     public static final IRI IRI = vf.createIRI(IRI_STRING);
 
     public FieldDefinitionContainer(IRI iri, MpRepositoryProvider repositoryProvider) {

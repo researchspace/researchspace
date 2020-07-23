@@ -1,0 +1,217 @@
+<!-- card Header and  with TYPE and ID -->
+[[#if customHeader]]
+  [[#block "customHeader"]][[/block]]
+[[else]]
+<div data-flex-layout="row top-center" class="card-header">
+    <div data-flex-self="left" class="d-flex rs-default-card__header-left">
+        <img class="icon-template" src="{{getValueByKey typeToIcon allTypes '/assets/images/icons/Templates/Object.svg'}}" alt="{{directTypesLabels}}">
+        <span class="text-truncate" style="margin-left:4px;">{{directTypesLabels}}</span>
+    </div>
+  
+    {{#if id}}
+    <div data-flex-self="right" class="text-truncate rs-default-card__header-right">{{id}}</div>
+    {{/if}}
+</div>
+[[/if]]
+
+<!-- Card Image -->
+<div class="rs-default-card__img-container {{getValueByKey entityBgColor allTypes 'rs-entity_bg-purple'}}">
+  {{#if props}}
+
+    [[!-- We are inside knowledge map --]]
+    {{#if props.[http://www.researchspace.org/ontology/PX_has_video]}}
+      <iframe src='{{props.[http://www.researchspace.org/ontology/PX_has_video].values.0.value}}' frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    
+      {{else if props.[http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of]}}
+        <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+          image-or-region='{{props.[http://www.ics.forth.gr/isl/CRMdig/L49_is_primary_area_of].values.0.value}}' 
+          bbox='{{props.[http://www.researchspace.org/ontology/boundingBox].values.0.value}}'
+          viewport='{{props.[http://www.researchspace.org/ontology/viewport].values.0.value}}'
+          svg='{{props.[http://www.w3.org/1999/02/22-rdf-syntax-ns#value].values.0.value}}'
+
+          [[> rsp:IIIFConfig]]
+        >
+        </rs-iiif-image-thumbnail>
+
+    {{else if imgUrl}}
+
+        <mp-resource-thumbnail fixed-key='image-{{imgUrl}}' iri='{{imgUrl}}' class='rs-default-card__img'>
+          <mp-resource-thumbnail-fallback>
+            <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
+                <mp-resource-thumbnail-fallback>
+                  <img src='{{getValueByKey typeToImage allTypes "/assets/images/icons/entity_no-image.svg"}}' class='rs-default-card__noimg' />
+                </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+          </mp-resource-thumbnail-fallback>
+        </mp-resource-thumbnail>
+
+    {{else}}
+
+      {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+        <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+          image-or-region='{{iri}}'      
+          [[> rsp:IIIFConfig]]
+        >
+        </rs-iiif-image-thumbnail>
+
+      {{else if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image")}}
+            <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
+                <mp-resource-thumbnail-fallback>
+                  <img src='{{getValueByKey typeToImage allTypes "/assets/images/icons/entity_no-image.svg"}}' class='rs-default-card__noimg' />
+                </mp-resource-thumbnail-fallback>
+            </mp-resource-thumbnail>
+
+      {{else}}
+        <img key='no-img' src='{{getValueByKey typeToImage allTypes "/assets/images/icons/entity_no-image.svg"}}' class='rs-default-card__noimg' />
+      {{/if}}
+
+    {{/if}}
+
+  {{else}}
+
+    {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+        <rs-iiif-image-thumbnail height='480' width='640' style='height: 100%; width: 100%;'
+          image-or-region='{{iri}}'      
+          [[> rsp:IIIFConfig]]
+        >
+        </rs-iiif-image-thumbnail>
+
+    {{else}}
+      <mp-resource-thumbnail iri='{{iri}}' class='rs-default-card__img'>
+          <mp-resource-thumbnail-fallback>
+            <img src='{{getValueByKey typeToImage allTypes "/assets/images/icons/entity_no-image.svg"}}' class='rs-default-card__noimg' />
+          </mp-resource-thumbnail-fallback>
+      </mp-resource-thumbnail>
+    {{/if}}       
+
+  {{/if}}
+  
+</div>
+<div class="rs-default-card__hover">
+      [[#if hoverContent]]
+        [[#block "hoverContent"]][[/block]]
+      [[/if]]
+
+        <div class="rs-default-card__hover-options">
+      [[!--      <mp-draggable iri='{{iri}}'>
+                <div class="rs-default-card__hover-icon">
+                    <button type="button" class="rs-button" title="Drag and drop the Item">
+                        <img src="/assets/images/icons/Actions/drag_drop_dark.svg">
+                    </button>
+                </div>
+            </mp-draggable> --]]
+
+            <div class="rs-default-card__hover-icon">
+                <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
+                    data='{"iri": "{{iri}}"}' targets='["details-view", "open-details-sidebar"]'>
+                    <button type="button" class="rs-button" title="Resource Details">
+                        <img src="/assets/images/icons/sidebar_right_dark.svg">
+                    </button>
+                </mp-event-trigger>
+            </div>
+
+            <div class="rs-default-card__hover-icon">
+                <semantic-link-container uri="{{iri}}">
+                    <button type="button" class="rs-button" title="Explore Resource">
+                        <img src="/assets/images/icons/pages.svg">
+                    </button>
+                </semantic-link-container>
+            </div>
+
+            [[!-- is shown only when we are not in the frames view, hidden by css --]]
+            <div class="rs-default-card__hover-icon rs-default-card-action__km-navigate">
+                <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                    urlqueryparam-view='knowledge-map' urlqueryparam-resource='{{iri}}'>
+                    <button type="button" class="rs-button" title="Explore Knowledge Map">
+                        <img src="/assets/images/icons/diagram_dark.svg" style="height: 105%;">
+                    </button>
+                </semantic-link-container>
+            </div>
+          
+            [[!-- is shown only when we are in the frames view, hidden by css --]]
+            <div class="rs-default-card__hover-icon rs-default-card-action__km-add-frame">
+                <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                                  data='{"resourceIri": "{{iri}}", "viewId": "knowledge-map"}' 
+                                  targets='["thinking-frames"]'>
+                    <button type="button" class="rs-button" title="Explore Knowledge Map">
+                        <img src="/assets/images/icons/diagram_dark.svg" style="height: 105%;">
+                    </button>
+                </mp-event-trigger>
+            </div>
+
+            <mp-overlay-dialog title="Resource Media" type="modal" class="modal-resourceMedia">
+                <mp-overlay-dialog-trigger>
+                    <div class="rs-default-card__hover-icon">
+                        <button type="button" class="rs-button" title="Explore Media">
+                            <img src="/assets/images/icons/media2_dark.svg">
+                        </button>
+                    </div>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                  <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='{{iri}}'>
+                  </mp-page-loader>
+                        </mp-overlay-dialog-content>
+                      </mp-overlay-dialog>
+
+                      [[!-- is shown only when we are not in the frames view, hidden by css --]]
+                      <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
+                        <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                 urlqueryparam-view='iiif' urlqueryparam-resource='{{iri}}'>
+                          <button type="button" class="rs-button" title="Explore Images in IIIF Viewer">
+                            <img src="/assets/images/icons/image_dark.svg" style="width: 23px;">
+                          </button>
+                        </semantic-link-container>
+                      </div>
+
+                      [[!-- is shown only when we are in the frames view, hidden by css --]]
+                      <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
+                        <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                                          data='{"resourceIri": "{{iri}}", "viewId": "iiif"}' 
+                                          targets='["thinking-frames"]'>
+                          <button type="button" class="rs-button" title="Explore Images in IIIF Viewer">
+                            <img src="/assets/images/icons/image_dark.svg" style="width: 23px;">
+                          </button>
+                        </mp-event-trigger>
+                      </div>
+
+                      [[#if (hasPermission "forms:ldp:*")]]
+                      [[!-- is shown only when we are not in the frames view, hidden by css --]]
+                      <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
+                        <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                 urlqueryparam-view='image-graph-authoring' urlqueryparam-resource='{{iri}}'>
+                          <button type="button" class="rs-button" title="Annotate Images in IIIF Viewer">
+                            <img src="/assets/images/icons/image_annotation_dark2.svg" style="width: 23px;">
+                          </button>
+                        </semantic-link-container>
+                      </div>
+                      [[!-- is shown only when we are in the frames view, hidden by css --]]
+                      <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
+                        <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                                          data='{"resourceIri": "{{iri}}", "viewId": "image-graph-authoring"}' 
+                                          targets='["thinking-frames"]'>
+                          <button type="button" class="rs-button" title="Annotate Images in IIIF Viewer">
+                            <img src="/assets/images/icons/image_annotation_dark2.svg" style="width: 23px;">
+                          </button>
+                        </mp-event-trigger>
+                      </div>
+                      [[/if]]
+                  
+                </div>
+            </div> 
+ 
+        
+<!-- Card Footer with Object Titles (ja and English) and Artist -->
+<div class="rs-default-card__footer"
+    style="padding:{{#if footer-paddingY}}{{footer-paddingY}}{{else}}11{{/if}}px {{#if footer-paddingX}}{{footer-paddingX}}{{else}}12{{/if}}px;">
+    <div class="rs-default-card__footer-titles">
+        [[#if customFooter]]
+          [[#block "customFooter"]][[/block]]
+        [[else]]
+          {{#if label}}
+            <span class="rs-body-s-M">{{label}}</span>
+          {{else}}
+            <mp-label iri='{{iri}}' class="rs-body-s-M" highlight='{{highlight}}' highlight-props='{"style": {"color": "#dc8a4b"}}'></mp-label>
+          {{/if}}
+        [[/if]]
+    </div>
+</div>

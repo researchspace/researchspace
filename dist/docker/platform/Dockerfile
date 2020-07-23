@@ -73,6 +73,10 @@ COPY --chown=100:0 ROOT.xml /var/lib/jetty/webapps/ROOT.xml
 COPY --chown=100:0 ROOT.war /var/lib/jetty/webapps/ROOT.war
 
 COPY --chown=100:0 config/shiro.ini /runtime-data/config/shiro.ini
+
+# copy migrations scripts into docker image 
+COPY --chown=100:0 ./migrations /migrations
+
 # one final, recursive change of permissions in /runtime-data
 RUN chmod g+w "/var/lib/jetty/webapps/ROOT.xml" \
 	&& chown -R 100:0 "/runtime-data" \

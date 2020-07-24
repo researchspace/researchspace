@@ -24,8 +24,8 @@
 [[#*inline "dashboardCountCard"]]
 <mp-resource-link-container uri="[[iri]]">
   <div class='rs-btn-dashboard' role='button'>
-    <div class="rs-btn-dashboard-img">
-      <img src="[[icon]]">
+    <div class="rs-btn-dashboard-icon">
+      <i class="rs-icon [[icon]]"></i>
     </div>
     <div class="rs-btn-dashboard-text">
         <semantic-query query='
@@ -65,14 +65,15 @@
     </div>
 
     <div class="rs-dashboard-icon-area">
-      <mp-anonymous-hidden><img src="/assets/images/icons/dashboard/notification.svg"></mp-anonymous-hidden>
+   [[!--  <mp-anonymous-hidden><img src="/assets/images/icons/dashboard/notification.svg"></mp-anonymous-hidden>
       <mp-anonymous-hidden><img src="/assets/images/icons/dashboard/user.svg"></mp-anonymous-hidden>
+      --]]
     </div>
 
     <div class="rs-dashboard-km">
       [[> dashboardCountCard
           iri=(resolvePrefix "rsp:ProjectKnowledgeMaps")
-          icon="/assets/images/icons/dashboard/diagram_dashboard.svg"
+          icon="rs-icon-diagram"
           title='Knowledge Maps'
           class='rs-btn-dashboard--km'
           queryPattern='?resource a <http://ontodia.org/schema/v1#Diagram> .' 
@@ -82,7 +83,7 @@
     <div class="rs-dashboard-narrative">
       [[> dashboardCountCard
       iri=(resolvePrefix "rsp:ProjectNarratives")
-      icon="/assets/images/icons/dashboard/narrative_dashboard.svg"
+      icon="rs-icon-narrative_edit"
       title='Semantic Narratives'
       class='rs-btn-dashboard--narrative'
       queryPattern='?resource a rso:Semantic_Narrative .'
@@ -92,7 +93,7 @@
     <div class="rs-dashboard-image">
       [[> dashboardCountCard
       iri=(resolvePrefix "rsp:ProjectImages")
-      icon="/assets/images/icons/dashboard/image_dashboard.svg"
+      icon="rs-icon-images"
       title='Images'
       class='rs-btn-dashboard--img'
       queryPattern='?resource a rso:EX_Digital_Image .'
@@ -161,14 +162,14 @@
                             urlqueryparam-previous-page-title='Project Dashboard'
               >
                 <div style="display: flex; align-items: center;">
-                  <img src="/assets/images/icons/Actions/drag_points.svg" style="margin-right: 12px;">
+                  <span class="rs-icon rs-icon-drag_points"></span>
                   <span>{{title.value}}</span>
                 </div>
               </semantic-link>
           </template>
 
           <template id='user'>
-            <div>
+            <div class="text-truncate">
               <i class="fa fa-user"></i>
               <semantic-link class="rs-dashboard--a" uri="{{user.value}}"></semantic-link>
             </div>
@@ -212,12 +213,7 @@
     <div class='rs-dashboard-team'>
       <div class='rs-dashboard-sectionTitle'>Team involved</div>
       <div class="rs-dashboard-userCard_container">
-          [[> userCard name="User Name" institute="Institute" role='Role' UserImg="/assets/images/users/user.svg" pageLink=(resolvePrefix "User:admin")]]
-          [[> userCard name="User Name" institute="Institute" role='Role' UserImg="/assets/images/users/user.svg" pageLink=(resolvePrefix "User:admin")]]
-          [[> userCard name="User Name" institute="Institute" role='Role' UserImg="/assets/images/users/user.svg" pageLink=(resolvePrefix "User:admin")]]
-          [[> userCard name="User Name" institute="Institute" role='Role' UserImg="/assets/images/users/user.svg" pageLink=(resolvePrefix "User:admin")]]
-          [[> userCard name="User Name" institute="Institute" role='Role' UserImg="/assets/images/users/user.svg" pageLink=(resolvePrefix "User:admin")]]
-          [[> userCard name="User Name" institute="Institute" role='Role' UserImg="/assets/images/users/user.svg" pageLink=(resolvePrefix "User:admin")]]
+        [[> rsp:ProjectUsers]]
       </div>
     </div>
         
@@ -233,7 +229,7 @@
   <div class="rs-dashboard-userCard">
     <div class="rs-dashboard-userCard-img">
         [[#if UserImg]] <img class="rs-userCard-img" src="[[UserImg]]">
-      	[[else]] <img class="rs-userCard-img" src="/assets/images/users/user.svg"> [[/if]]
+      	[[else]] <span class="rs-icon rs-icon-user_profile"><span class="path1"></span><span class="path2"></span></span> [[/if]]
     </div>
     <div class="rs-dashboard-userCard--text">
         [[#if name]]<div class="rs-user-headerText">[[name]]</div>[[/if]]

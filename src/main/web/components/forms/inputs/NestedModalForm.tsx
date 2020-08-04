@@ -38,6 +38,7 @@ import { trigger } from 'platform/api/events';
 import * as FormEvents from 'platform/components/forms/FormEvents';
 
 export interface NestedModalFormProps {
+  subject?: Rdf.Iri
   definition: FieldDefinition;
   onSubmit: (value: AtomicValue) => void;
   onCancel: () => void;
@@ -52,11 +53,11 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 
   render() {
-    const { definition, onSubmit, onCancel, children } = this.props;
+    const { definition, onSubmit, onCancel, children, subject } = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
-      subject: Rdf.iri(''),
+      subject: subject || Rdf.iri(''),
       postAction: (subject: Rdf.Iri) => {
         if (children.props.postAction) {
           performFormPostAction({
@@ -76,7 +77,10 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
     return (
       <Modal bsSize="large" show={true} onHide={onCancel}>
         <Modal.Header closeButton={true}>
-          <Modal.Title>{`Create New ${getPreferredLabel(definition.label) || definition.id || 'Value'}`}</Modal.Title>
+          <Modal.Title>{
+            (subject ? `Create New ` : 'Edit ') +
+                        `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
+          }</Modal.Title>
         </Modal.Header>
         <Modal.Body>{cloneElement(children, propsOverride)}</Modal.Body>
       </Modal>

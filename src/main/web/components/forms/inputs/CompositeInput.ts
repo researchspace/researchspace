@@ -237,11 +237,6 @@ export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
         result = mergeDataState(result, DataState.Loading);
         continue;
       }
-      const state = this.inputStates.get(fieldId) || READY_INPUT_STATE;
-      result = mergeDataState(result, state.dataState);
-      if (state.dataState === DataState.Ready) {
-        continue;
-      }
       for (const ref of refs) {
         if (ref) {
           result = mergeDataState(result, ref.dataState());

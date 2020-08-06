@@ -31,9 +31,10 @@
             </template>
           </mp-sparql-result-counts>
       </semantic-search-result>
-      <bs-tabs default-active-key='1' unmount-on-exit=true id='search-results' animation=false class='tabs-right'>
+      <bs-tabs default-active-key='4' unmount-on-exit=true id='search-results' animation=false class='tabs-right'>
+         
           [[#if (hasPermission "forms:ldp:*")]]
-          <bs-tab event-key="4" title="Timeline" class="search-tab-timeline">
+          <bs-tab event-key="1" title="Timeline" class="search-tab-timeline">
             <div>
                 <semantic-search-result>
                 <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
@@ -93,7 +94,8 @@
             </div>
           </bs-tab>
           [[/if]]
-          <bs-tab event-key="3" title="Chart" class="search-tab-chart">
+
+          <bs-tab event-key="2" title="Chart" class="search-tab-chart">
             <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept", "http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
               <semantic-search-result id='semantic-search-result-chart'>
               <mp-component-toolbar>
@@ -121,39 +123,45 @@
               </semantic-search-result>
             </semantic-search-result-context>
           </bs-tab>
-          <bs-tab event-key="2" title="Table" class="search-tab-table">
-              <semantic-search-result> 
-                  <semantic-table id='semantic-search-result-table'
-                                  query='SELECT DISTINCT ?subject ?iri ?typeLabel WHERE {
-                                          BIND(?subject as ?iri) .
-                                          ?subject a ?type .
-                                          ?type rdfs:label ?typeLabel .
-                                          FILTER (lang(?typeLabel) = "en")
-                                        } ORDER BY ?subject'
 
-                                  options='{"showFilter":false, "resultsPerPage":10}' 
-                                  column-configuration='[
-                                        {"variableName": "typeLabel", "displayName": "Type", "cellTemplate": "{{> type}}" },
-                                        {"variableName": "subject", "displayName": "Label", "cellTemplate": "{{> label}}" }
-                                        ]'   
-                  >
+          <bs-tab event-key="3" title="Table" class="search-tab-table">
+            <semantic-search-result> 
+                <semantic-table id='semantic-search-result-table'
+                                query='SELECT DISTINCT ?subject ?iri ?typeLabel WHERE {
+                                        BIND(?subject as ?iri) .
+                                        ?subject a ?type .
+                                        ?type rdfs:label ?typeLabel .
+                                        FILTER (lang(?typeLabel) = "en")
+                                      } ORDER BY ?subject'
 
-                    <template id='type'>
+                                options='{"showFilter":false, "resultsPerPage":10}' 
+                                column-configuration='[
+                                      {"variableName": "typeLabel", "displayName": "Type", "cellTemplate": "{{> type}}" },
+                                      {"variableName": "subject", "displayName": "Label", "cellTemplate": "{{> label}}" }
+                                      ]'   
+                >
+
+                  <template id='type'>
+                    <div class="search-result-table__type" style="display: flex; align-items: center;">
+                      <i class="rs-icon rs-icon-drag_points"></i>
                       <mp-draggable iri='{{iri.value}}'>
-                        <div class="search-result-table__type">{{typeLabel.value}}</div>
+                        <div class="search-result-table__type-value">{{typeLabel.value}}</div>
                       </mp-draggable>
-                    </template>
+                    </div>
+                    
+                  </template>
 
-                    <template id='label'>
-                      <mp-draggable iri='{{iri.value}}'>
-                        <div><mp-label iri='{{iri.value}}'></mp-label></div>
-                      </mp-draggable>
-                    </template>
+                  <template id='label'>
+                    <mp-draggable iri='{{iri.value}}'>
+                      <div><mp-label iri='{{iri.value}}'></mp-label></div>
+                    </mp-draggable>
+                  </template>
 
-                  </semantic-table>
-              </semantic-search-result>
+                </semantic-table>
+            </semantic-search-result>
           </bs-tab>
-          <bs-tab event-key="1" title="Grid" class="search-tab-grid">
+
+          <bs-tab event-key="4" title="Grid" class="search-tab-grid">
             <semantic-search-result>
                 [[#if (hasPermission "forms:ldp:*")]]
                   <mp-selection-action-choice id='Action' title='With selected ...' selection='item-selection-aggregator'>
@@ -190,6 +198,7 @@
                 </semantic-table>
             </semantic-search-result>
           </bs-tab>
+
       </bs-tabs>
 
       <hr>

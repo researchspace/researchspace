@@ -1,5 +1,7 @@
 [[#if (urlParam "details")]]
 <div class="detail-sidebar-content">
+
+    [[#block "detailsResourceHeader"]]
     <div style="display: flex; margin-bottom: 18px;"">
 
         <mp-resource-thumbnail iri='[[this]]' class='detail-img'>
@@ -9,8 +11,7 @@
                         [[> rsp:TypeMappings]]
                     >
                     <template id="noImage">
-                        <img src="{{getValueByKey typeToImage allTypes '/assets/images/icons/no-image.svg'}}" 
-                        alt="{{directTypesLabels}}" title='{{directTypesLabels}}' class='detail-noimg'>
+                        <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-no-image'}} detail-icon-noimg" alt="{{directTypesLabels}}" title='{{directTypesLabels}}'></span>
                     </template>
                 </with-types>
             </mp-resource-thumbnail-fallback>
@@ -20,21 +21,19 @@
             
             <mp-draggable iri='[[this]]'>
                 <div class="rs-draggable-container">
-                    <div>
-                        <semantic-query query='SELECT ?type ?typeLabel WHERE {
-                                                <[[this]]> a ?type .
-                                                ?type rdfs:label ?typeLabel .
-                                                FILTER (lang(?typeLabel) = "en")}'
-                            template='{{> resourceType }}'>
-                            <template id='resourceType'>
-                                <div class="detail-type">
-                                    {{#each bindings}}{{typeLabel.value}}{{#if @last}}{{else}}, {{/if}}{{/each}}
-                                </div>
-                            </template>
-                        </semantic-query>
-                
-                        <mp-label iri='[[this]]' class="detail-label"></mp-label>
-                    </div>
+                    <semantic-query query='SELECT ?type ?typeLabel WHERE {
+                                            <[[this]]> a ?type .
+                                            ?type rdfs:label ?typeLabel .
+                                            FILTER (lang(?typeLabel) = "en")}'
+                        template='{{> resourceType }}'>
+                        <template id='resourceType'>
+                            <div class="detail-type">
+                                {{#each bindings}}{{typeLabel.value}}{{#if @last}}{{else}}, {{/if}}{{/each}}
+                            </div>
+                        </template>
+                    </semantic-query>
+            
+                    <mp-label iri='[[this]]' class="detail-label"></mp-label>
                 </div>
             </mp-draggable>
 
@@ -45,6 +44,7 @@
         </div>
 
     </div>
+    [[/block]]
   
     <bs-tabs class="details-tabs">
     [[#if withSummary]]
@@ -82,10 +82,10 @@
         <div style="width: 100%;">
             [[#block "resourceHeader"]]
             [[!-- Resource Header --]]
-                <div class="container-fluid rs-resource-header {{getValueByKey entityBgColor allTypes 'rs-entity_bg-purple'}}">
+                <div class="container-fluid rs-resource-header {{getValueByKey entityBgColor allTypes 'rs-entity-bg-thing'}}">
 
                     [[!-- Header top with draggable link --]]
-                    <bs-row class="row-center" style="margin: 0;">
+                    <bs-row class="row-center">
                         <bs-col xs=1 lg=2 class="px-0">
                         </bs-col>
 
@@ -94,14 +94,13 @@
                             <div class="rs-resource-header-content-underline">
                                 [[!-- defaul Header top customisable inline --]]
                                 [[#block "resourceHeaderTop"]]
-                                <div class="row d-flex rs-vertical-align" style="margin: 0px;">
+                                <div class="row d-flex rs-vertical-align">
                                     <mp-popover class="rs-resource-header-popover">
                                         <mp-popover-trigger placement="right" trigger='["hover"]' root-close='true'>
                                             <div class="col-auto rs-h4 rs-resource-header-top">
                                                 <mp-draggable iri='[[this]]'>
                                                     <div>
-                                                        <img class="icon-template" src="{{getValueByKey typeToIconList allTypes '/assets/images/icons/Templates/Object_dark.svg'}}"
-                                                        alt="object">
+                                                        <i class="rs-icon {{getValueByKey typeToIcon allTypes 'rs-icon-entity'}}"></i>
                                                         <span style="margin-left: 8px;">{{directTypesLabels}} -&nbsp;</span>
                                                         <mp-label iri='[[this]]'></mp-label>
                                                     </div>
@@ -123,18 +122,18 @@
                         </bs-col>
 
                         <bs-col xs=1 lg=2 class="px-0" style="position: relative;">
-                            <div class="rs-authoring-btnGroup {{getValueByKey entityBgColor allTypes 'rs-authoring-btnGroup__BgColor-purple'}}" >
+                            <div class="rs-authoring-btnGroup">
                                 <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                                         urlqueryparam-view='knowledge-map' urlqueryparam-resource='[[this]]'>
                                     <button type="button" class="rs-authoring-btn" title="Author Resource in Knowledge Map">
-                                        <img src="/assets/images/icons/diagram_dark.svg">
+                                        <i class="rs-icon rs-icon-diagram"></i>
                                     </button>
                                 </semantic-link-container>
                                 
                                 <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                                         urlqueryparam-view='entity-editor' urlqueryparam-resource='[[this]]'>
                                     <button type="button" class="rs-authoring-btn" title="Author Resource in Form">
-                                        <img src="/assets/images/icons/form_edit_dark.svg">
+                                        <i class="rs-icon rs-icon-form_edit"></i>
                                     </button>
                                 </semantic-link-container>
                             </div>
@@ -144,8 +143,8 @@
 
                     [[!-- Header content with image (if available) and resource primary informations --]]
                     <div>
-                        <bs-row class="row-center" style="padding:32px 0px 8px 0px; margin: 0;">
-                            <bs-col xs=11 sm=10 lg=8>
+                        <bs-row class="row-center" style="padding:32px 0px 8px 0px;">
+                            <bs-col xs=11 sm=10 lg=8 style="padding: 0px;">
                                 <div class="row" style="height:100%;">
                                     <div class="col-xs-12 col-sm-6 rs-image-container">
 
@@ -154,7 +153,7 @@
                                             <mp-overlay-dialog title="Resource Media" type="modal" class="modal-resourceMedia">
                                                 <mp-overlay-dialog-trigger>
                                                     <button type="button" class="rs-resource-img__btn" title="Explore Media">
-                                                        <img src="/assets/images/icons/expand_media_grey.svg">
+                                                        <i class="rs-icon rs-icon-expand_media"></i>
                                                     </button>
                                                 </mp-overlay-dialog-trigger>
                                                 <mp-overlay-dialog-content>
@@ -165,16 +164,16 @@
 
                                             <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                                  urlqueryparam-view='iiif' urlqueryparam-resource='[[this]]'>
-                                                <button type="button" class="rs-resource-img__btn" title="Explore Images in IIIF Viewer">
-                                                    <img src="/assets/images/icons/image_grey.svg">
+                                                <button type="button" class="rs-resource-img__btn" title="Explore Images in high resolution Viewer">
+                                                    <i class="rs-icon rs-icon-image"></i>
                                                 </button>
                                             </semantic-link-container>
 
                                             [[#if (hasPermission "forms:ldp:*")]]
                                             <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                                  urlqueryparam-view='image-graph-authoring' urlqueryparam-resource='[[this]]'>
-                                                <button type="button" class="rs-resource-img__btn" title="Annotate Images in IIIF Viewer">
-                                                    <img src="/assets/images/icons/annotation_grey.svg">
+                                                <button type="button" class="rs-resource-img__btn" title="Annotate Images">
+                                                    <i class="rs-icon rs-icon-area_annotation"></i>
                                                 </button>
                                             </semantic-link-container>
                                             [[/if]]
@@ -225,11 +224,19 @@
                                                                             BIND(true AS ?isMainRepy)
                                                                             }  
                                                                         }
-                                                                        BIND(COALESCE(?imgURLx, "{{getValueByKey typeToImage allTypes "/assets/images/icons/entity_no-image.svg"}}") AS ?imgURL)
-                                                                        BIND(COALESCE(?isMainRepx, ?isMainRepy, true) AS ?isMainRep)
+                                                                        BIND(?imgURLx AS ?imgURL)
+                                                                        BIND(COALESCE(?isMainRepx, ?isMainRepy) AS ?isMainRep)
                                                                         } ORDER BY ?imgURL '
+
+                                                                        no-image-template = '{{> noImage}}'
                                                                     
                                         >
+
+                                        <template id='noImage'>
+                                            <div class="object-representations__image--focused">
+                                                <span class="rs-icon {{getValueByKey typeToImage allTypes 'rs-icon-entity_no-image'}} {{getValueByKey entityIconColor allTypes 'rs-icon-entity_no-image'}}"></span>
+                                            </div>
+                                        </template>>
                                             
                                         </rs-object-representations>
                                         [[/block]]
@@ -250,7 +257,7 @@
                 <bs-tab-container id="tab-container" class="rs-tabs"
                     default-active-key="[[#if withSummary]]summary[[else]]raw-data[[/if]]">
                     <div>
-                        <bs-nav bs-style="tabs" class="{{getValueByKey entityBgColor allTypes 'rs-entity_bg-purple'}}">
+                        <bs-nav bs-style="tabs" class="{{getValueByKey entityBgColor allTypes 'rs-entity-bg-thing'}}">
                             [[#if withSummary]]
                             <bs-nav-item event-key="summary">Summary</bs-nav-item>
                             [[/if]]
@@ -259,7 +266,7 @@
                             <bs-nav-item event-key="places">Related Places</bs-nav-item>
                             [[/if]]
                             [[#if (hasPermission "forms:ldp:*")]]
-                            <bs-nav-item event-key="media" disabled=false>Media</bs-nav-item>
+                            <bs-nav-item event-key="media" disabled=true>Media</bs-nav-item>
                             [[/if]]
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-nav-item event-key="annotations" disabled=true>Annotations
@@ -298,7 +305,7 @@
                                 <div class="container-fluid rs-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line" />
+                                            <hr class="rs-header-line">
 
                                             [[#block "instituteHeader"]]
                                             <span class="rs-h1 rs-section-header">Dataset</span>
@@ -339,7 +346,7 @@
                                 <div class="container-fluid rs-summary-section rs-background-p10">
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Public Discussion</span>
                                             <span class="rs-body-xs-I rs-section-header">Documents the ongoing discussion
                                                 about findings.
@@ -416,7 +423,7 @@
                                 <div class="container-fluid rs-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Related Resources</span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
@@ -433,7 +440,7 @@
                                 <div class="container-fluid rs-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
 
                                             [[#block "instituteHeader"]]
                                             <span class="rs-h1 rs-section-header">Dataset</span>
@@ -472,7 +479,7 @@
                                 <div class="container-fluid rs-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
 
                                             <span class="rs-h1 rs-section-header">Images</span>
                                             <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
@@ -480,7 +487,7 @@
                                         </bs-col>
 
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
 
                                             <span class="rs-h1 rs-section-header">Videos</span>
                                             <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
@@ -488,7 +495,7 @@
                                         </bs-col>
 
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
 
                                             <span class="rs-h1 rs-section-header">3D Models</span>
                                             <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
@@ -516,14 +523,13 @@
                                 <div class="container-fluid rs-summary-section">
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Annotations made</span>
                                             <span style="position: absolute; top: -1px; margin-left: 12px;">
                                                 <button type="button"
-                                                    class="rs-button rs-icon-button-S rs-icon-button-S--dark"
+                                                    class="rs-button rs-button-icon-S rs-button-icon-S--dark"
                                                     title="Add annotation">
-                                                    <img class="rs-button-S-img"
-                                                        src="/assets/images/icons/Actions/Add_white.svg"></button>
+                                                    <i class="rs-icon rs-icon-add"></i>
                                             </span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
@@ -579,14 +585,13 @@
                                 <div class="container-fluid rs-summary-section">
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Assertions made</span>
                                             <span style="position: absolute; top: -1px; margin-left: 12px;">
                                                 <button type="button"
-                                                    class="rs-button rs-icon-button-S rs-icon-button-S--dark"
+                                                    class="rs-button rs-button-icon-S rs-button-icon-S--dark"
                                                     title="Add assertion">
-                                                    <img class="rs-button-S-img"
-                                                        src="/assets/images/icons/Actions/Add_white.svg"></button>
+                                                    <i class="rs-icon rs-icon-add"></i>
                                             </span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
@@ -618,7 +623,7 @@
 
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Resources</span>
                                         </bs-col>
                                         <bs-col xs=3 md=3 lg=2>
@@ -636,8 +641,8 @@
 
 
                                     [[!-- <div class="rs-section-showall">
-                                        <button type="button" class="rs-button rs-icon-button-M--dark">
-                                            <img class="rs-button-M-img" src="/assets/images/icons/Actions/Arrow_white.svg">
+                                        <button type="button" class="rs-button rs-button-icon-M--dark">
+                                            <i class="rs-icon rs-icon-chevron_down"></i>
                                         </button>
                                         <span class="rs-body-xs-I" style="margin-left:8px;">Show all fields</span>
                                     </div> --]]
@@ -647,7 +652,7 @@
                                 <div class="container-fluid rs-summary-section rs-background-p10">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Pages</span>
                                         </bs-col>
 
@@ -688,8 +693,8 @@
                                     </bs-row> <!--  close row -->
 
                                     <div class="rs-section-showall">
-                                        <button type="button" class="rs-button rs-icon-button-M--dark">
-                                            <img class="rs-button-M-img" src="/assets/images/icons/Actions/Arrow_white.svg">
+                                        <button type="button" class="rs-button rs-button-icon-M--dark">
+                                            <i class="rs-icon rs-icon-chevron_down"></i>
                                         </button>
                                         <span class="rs-body-xs-I" style="margin-left:8px;">Show all fields</span>
                                     </div>
@@ -699,7 +704,7 @@
                                 <div class="container-fluid rs-page-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Assertions</span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
@@ -716,7 +721,7 @@
                                 <div class="container-fluid rs-summary-section rs-background-p10">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <img src="/assets/images/icons/line.svg" class="rs-header-line">
+                                            <hr class="rs-header-line">
                                             <span class="rs-h1 rs-section-header">Wikidata</span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->

@@ -29,7 +29,7 @@ import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
 import { Component } from 'platform/api/components';
-import { SparqlClient } from 'platform/api/sparql';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import TemplateItem from 'platform/components/ui/template/TemplateItem';
 import { Spinner } from 'platform/components/ui/spinner';
@@ -56,6 +56,8 @@ interface ObjectRepsWidgetProps {
    * optional property to set maximum width of modal full-size representation
    */
   maxModalWidth?: number;
+
+  noImageTemplate?: string;
 }
 
 interface Rep {
@@ -115,6 +117,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
     template: '<img class="object-representations__image--rep" src="{{imgURL.value}}"/>',
     context: {},
     maxModalWidth: 1200,
+    noImageTemplate: '<div>no image</div>',
   };
 
   constructor(props: ObjectRepsWidgetProps, context) {
@@ -148,6 +151,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
     let otherPreviewReps: Array<Rep> = [];
 
     SparqlClient.select(props.query).onValue((res) => {
+      if (!SparqlUtil.isSelectResultEmpty (res)) {
       _.forEach(res.results.bindings, (binding) => {
         if (mainPreviewRep.isNothing && binding[IS_MAIN_REP].value === 'true') {
           mainPreviewRep = maybe.Just({ imgURL: binding[IMG_URL].value, loaded: false });
@@ -161,6 +165,8 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
           this.entityLabel = binding[LABEL].value;
         }
       });
+    }
+
       if (mainPreviewRep.isNothing && otherPreviewReps.length) {
         mainPreviewRep = maybe.Just(otherPreviewReps.shift());
         focusedPreviewRep = mainPreviewRep;
@@ -206,7 +212,13 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
         this.state.imagesAreLoading ? createElement(Spinner) : null,
       ];
     } else {
-      return [];
+      return [ createElement(TemplateItem, {
+        template: {
+          source: this.props.noImageTemplate,
+        }
+        
+        })
+      ]
     }
   }
 

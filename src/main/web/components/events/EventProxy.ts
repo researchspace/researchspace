@@ -40,6 +40,11 @@ export interface EventProxyConfig {
   onEventSource?: string;
 
   /**
+   * Listen only to events sent to the given target.
+   */
+  onEventTarget?: string;
+
+  /**
    * Type of the event that this component triggers when
    * receives event.
    */
@@ -78,6 +83,7 @@ export class EventProxy extends Component<EventProxyProps, void> {
         listen({
           eventType: this.props.onEventType,
           source: this.props.onEventSource,
+          target: this.props.onEventTarget,
         })
       )
       .onValue(this.onEvent);

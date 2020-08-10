@@ -27,12 +27,18 @@ export interface DropzoneProps extends DropzoneOptions {
 }
 
 const DEFAULT_STYLE: React.CSSProperties = {
-  width: 200,
+  width: '100%',
   height: 200,
-  borderWidth: 2,
-  borderColor: 'rgb(102, 102, 102)',
+  borderWidth: 1,
   borderStyle: 'dashed',
   borderRadius: 5,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  outline: 'none',
+  fontSize: 17,
+  letterSpacing: 0.2,
 };
 
 export class Dropzone extends React.Component<DropzoneProps, {}> {

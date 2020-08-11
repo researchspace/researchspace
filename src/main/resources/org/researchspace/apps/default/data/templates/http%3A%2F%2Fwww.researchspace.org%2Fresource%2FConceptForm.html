@@ -1,3 +1,15 @@
+{{#if new}}
+  {{#if broader}}
+      <h1 style="margin-bottom: 1em;">Adding: <strong>new term narrower to <mp-label iri='{{broader}}'></mp-label></strong></h1>
+  {{else}}
+      <h1 style="margin-bottom: 1em;">Adding: <strong>new term</strong></h1>
+  {{/if}}
+{{/if}}
+
+{{#if edit}}<h1>Editing term: <strong><mp-label iri='{{node}}'></mp-label></strong></h1>
+  <div style="margin-bottom: 1.2em;">Term IRI: {{node}}</div>
+{{/if}}
+
 <semantic-form id='vocab-form' 
                persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
                new-subject-template='{{#if new}}http://www.researchspace.org/entity/E55_Type/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
@@ -17,16 +29,7 @@
                ]]'
 >
   <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
-  {{#if new}}
-    {{#if broader}}
-      <h1 style="margin-bottom: 1.8em;">Adding new term narrower to <mp-label iri='{{broader}}'></mp-label></h1>
-    {{else}}
-      <h1 style="margin-bottom: 1.8em;">Adding new term</h1>
-    {{/if}}
-  {{/if}}
-  {{#if edit}}<h1>Editing term: <strong>label</strong></h1>
-  <div style="margin-bottom: 2.8em;">Term IRI: {{node}}</div>
-  {{/if}}
+  
   <semantic-form-text-input for="prefLabel"> </semantic-form-text-input>
   {{#if broader}}
     <semantic-form-autocomplete-input for="broader" placeholder="drag from tree" default-values='["{{broader}}"]'></semantic-form-autocomplete-input>

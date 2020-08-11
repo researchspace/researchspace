@@ -97,7 +97,7 @@ const OVERSCAN_ITEM_COUNT = 10;
  * request additional items at the anchor location.
  */
 const OVERSCAN_LOAD_ANCHOR = 20;
-const MIN_ITEM_HEIGHT = 25;
+const MIN_ITEM_HEIGHT = 30;
 const PADDING_PER_DEPTH_LEVEL = 20;
 
 // workaround for older React typings

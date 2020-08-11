@@ -54,10 +54,16 @@ export interface EventProxyConfig {
    * Ids of targets for triggered event.
    */
   proxyTargets?: string[];
+
   /**
    * Data that will be sent to all targets instead of the original event's data
    */
   data?: object;
+
+  /**
+   * Data that will be merged with proxied event data.
+   */
+  additionalData?: object;
 }
 export type EventProxyProps = EventProxyConfig;
 
@@ -94,11 +100,13 @@ export class EventProxy extends Component<EventProxyProps, void> {
   }
 
   private onEvent = (event: Event<any>) => {
+    let data = this.props.data || event.data;
+    data = {...data, ...this.props.additionalData};
     trigger({
       eventType: this.props.proxyEventType,
       source: this.props.id,
       targets: this.props.proxyTargets,
-      data: this.props.data || event.data,
+      data,
     });
   };
 

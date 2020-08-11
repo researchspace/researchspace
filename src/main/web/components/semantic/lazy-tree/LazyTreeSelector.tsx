@@ -55,6 +55,7 @@ export interface LazyTreeSelectorProps<T extends Traversable<T> = Traversable<an
   expandedByDefault?: boolean;
   isExpanded: (item: T) => boolean | undefined;
   onExpandedOrCollapsed: (item: T, expanded: boolean) => void;
+  onItemClick?: (item: T) => void;
 }
 
 type TreeNode = Traversable<any>;
@@ -246,7 +247,14 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
         <span
           className={styles.expandToggle}
           style={{ visibility: isLeaf ? 'collapse' : undefined }}
-          onClick={() => this.toggleExpanded(item, expanded)}
+          onClick={
+            () => {
+              this.toggleExpanded(item, expanded);
+              if (this.props.onItemClick) {
+                this.props.onItemClick(item);
+              }
+            }
+          }
         ></span>
         {this.props.hideCheckboxes ? null : (
           <input

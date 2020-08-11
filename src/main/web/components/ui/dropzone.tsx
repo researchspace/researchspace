@@ -17,13 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
+import { isFunction } from 'lodash';
 
-import ReactDropzone, { DropzoneOptions } from 'react-dropzone';
+import ReactDropzone, { DropzoneOptions, DropzoneState } from 'react-dropzone';
 
+type ChildrenFunction = (state: DropzoneState) => JSX.Element;
 export interface DropzoneProps extends DropzoneOptions {
   className?: string;
   style?: React.CSSProperties;
-  children?: JSX.Element | ReadonlyArray<JSX.Element>;
+  children?: JSX.Element | ReadonlyArray<JSX.Element> | ChildrenFunction;
 }
 
 const DEFAULT_STYLE: React.CSSProperties = {
@@ -47,10 +49,10 @@ export class Dropzone extends React.Component<DropzoneProps, {}> {
     const style = Object.assign({}, DEFAULT_STYLE, this.props.style);
     return (
       <ReactDropzone {...otherProps}>
-        {({ getRootProps, getInputProps }) => (
-          <div {...getRootProps()} className={className} style={style}>
-            {children}
-            <input {...getInputProps()} />
+        {(state) => (
+          <div {...state.getRootProps()} className={className} style={style}>
+            {isFunction(children) ? children(state) : children}
+            <input {...state.getInputProps()} />
           </div>
         )}
       </ReactDropzone>

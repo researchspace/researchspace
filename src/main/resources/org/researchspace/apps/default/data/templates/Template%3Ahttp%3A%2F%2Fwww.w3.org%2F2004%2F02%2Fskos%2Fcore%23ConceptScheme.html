@@ -1,0 +1,71 @@
+<mp-event-proxy id='tree-refresh' on-event-source='vocab-form' proxy-event-type='Component.Refresh' proxy-targets='["mytree"]'></mp-event-proxy>
+
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link iri='[[resolvePrefix "rsp:VocabularyManager"]]'>Vocabulary Manager</semantic-link>
+    </li>
+  <li class="active">
+    Scheme: <mp-label iri='[[this]]'></mp-label> 
+  </li>
+</ol>
+
+<div class="page">
+[[#>rsp:ClipboardSidebar]]
+[[#>rsp:DetailsSidebar]]
+
+  <div class="rs-vocabulary-terms-container">
+
+      <div class="schema-area-bg"></div>
+
+      <h1 class="rs-vocabulary-terms-title">Scheme: <strong><mp-label iri='[[this]]'></mp-label></strong> </h1>
+
+      <div class="rs-vocabulary-terms-area" style='height: 600px;'>
+        <h1>Terms</h1>
+        <mp-event-target-refresh id='mytree'>
+          <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple' config='{"scheme": "[[this]]"}'>
+            <template id='template'>
+              <span>
+                <mp-event-trigger id='form-edit-trigger' type='Component.TemplateUpdate'
+                                  data='{"scheme": "[[this]]", "node":"{{iri}}",  "edit": true }' targets='["term-forms"]'>
+                  <span style='margin-left: 10px;'><i class='fa fa-pencil'></i></span>
+                </mp-event-trigger>
+                <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "[[this]]", "broader": "{{iri}}", "new": true }' targets='["term-forms"]'>
+                  <span style='margin-left: 10px;'><i class='fa fa-plus'></i></span>
+                </mp-event-trigger>
+              </span>
+            </template>
+          </semantic-lazy-tree>
+        </mp-event-target-refresh>
+      </div>
+
+      <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "[[this]]", "new": true }' targets='["term-forms"]'>
+        <button class="btn btn-primary btn-newTerm">
+          <i class='fa fa-plus'></i>
+          <span>new Term</span>
+        </button>
+      </mp-event-trigger>
+      
+      <div class="rs-vocabulary-terms-form-area">
+        <mp-event-target-template-render id='term-forms' template='{{> template}}'>
+          <template id='template'>
+            {{#if edit}}
+              {{> rsp:ConceptForm edit=true}}
+            {{else if new}}
+              {{> rsp:ConceptForm new=true}}
+            {{else}}
+              <div></div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
+      </div>
+      
+  </div>
+
+
+[[/rsp:DetailsSidebar]]
+[[/rsp:ClipboardSidebar]]
+
+</div>

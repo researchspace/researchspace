@@ -1,0 +1,217 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li class="active">
+    Vocabulary Manager 
+  </li>
+</ol>
+
+<div class="page">
+[[#>rsp:ClipboardSidebar]]
+[[#>rsp:DetailsSidebar]]
+
+  <div class="page-grid-container">
+    
+    <div class="page-content-container rs-vocabulary-scheme-content">
+
+      <div class="rs-vocabulary-title-row">
+        <h1 class="rs-vocabulary-title">Vocabulary Manager</h1>
+        <div class="rs-vocabulary-icon-container">
+          <mp-overlay-dialog title="Add scheme" type="modal" bs-size="large">
+            <mp-overlay-dialog-trigger>
+              <span class="fa fa-plus-circle" title="Add scheme"></span>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content style="padding: 20px 40px 40px;">
+              <semantic-search id="scheme-iri-selector">
+                <semantic-search-form-query 
+                                            query-template='{
+                                              "queryString": "SELECT $schemeLabel { BIND($label as ?schemeLabel).}",
+                                              "arguments": {
+                                                "label": {"type": "xsd:string"}
+                                              }
+                                            }'
+
+                                            fields='[{"id": "label", "label": "scheme label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"}]'>
+                  <semantic-form-text-input for="label" placeholder="enter new scheme label"></semantic-form-text-input>
+                    <button type='button' name='submit' className='btn btn-primary' style="margin-top: 0;">Create Scheme</button>
+                
+                </semantic-search-form-query>
+                <semantic-search-result-holder>
+                  <semantic-search-result>
+                    <semantic-query id='new-scheme-form' query='
+                                      SELECT ?schemeLabel ?scheme ?exists WHERE {
+                                        BIND(IRI(CONCAT(STR(Default:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?schemeLabel), "\\s", "_")))) AS ?scheme) .
+                                        OPTIONAL {
+                                          ?scheme a skos:ConceptScheme .
+                                          BIND(true as ?exists) .
+                                        }
+                                      }
+                                    '
+                                    template='{{> template}}'
+                                    >
+                      <template id='template'>
+                        <div class="confirm-message">
+                          {{#if bindings.0.exists}}
+                            <div>Scheme with label &nbsp;<b>{{bindings.0.schemeLabel.value}}</b>&nbsp; and IRI &nbsp;<b>{{bindings.0.scheme.value}}</b> <br> already exists!</div> 
+                          {{else}}
+                            <div>Are you sure you want to create new scheme with IRI: <b>{{bindings.0.scheme.value}}</b> ?</div>                       
+                            <semantic-form id='new-scheme-form' 
+                                          persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.scheme.value}}"}'
+                                          new-subject-template='{{bindings.0.scheme.value}}'
+                                          post-action="redirect"
+                                          fields='[[
+                                            fieldDefinitions
+                                              prefLabel="http://www.w3.org/2004/02/skos/core#prefLabel"
+                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                          ]]'
+                            >
+                              <semantic-form-hidden-input for="prefLabel" default-value='{{bindings.0.schemeLabel.value}}'></semantic-form-hidden-input>
+                              <semantic-form-hidden-input for="classtype" default-values='["http://www.w3.org/2004/02/skos/core#ConceptScheme","http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object"]'></semantic-form-hidden-input>
+
+
+                              <semantic-form-errors></semantic-form-errors>
+                              <!-- save and reset button for form -->
+                              <button name="submit" class="btn btn-success" style="margin-right: 5px;">Confirm</button>
+                              <button name="cancel" class="btn btn-danger">Cancel</button>
+                            </semantic-form>
+                          {{/if}}
+                        </div>
+                        
+                      </template>
+                    </semantic-query>
+                  </semantic-search-result>
+                </semantic-search-result-holder>
+              </semantic-search>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+          <mp-overlay-dialog title="Add scheme" type="modal" bs-size="large">
+            <mp-overlay-dialog-trigger>
+            	<span class="fa fa-download" title="Import scheme"></span>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <mp-rdf-upload accept='[".trig", ".nq"]' keep-source-graphs='true' allow-load-by-url='false' show-advanced-options='false' drop-area-template='{{> template}}'>
+                <template id='template'>
+                  <div class='RdfUpload__rdf-dropzone-content' style='text-align: center;'>
+                    {{#if isDragAccept}}
+                    	Uploading files. Please wait ...
+                    {{else}}
+                      {{#if isDragReject}}
+                    		Only *.trig or *.nq files are accepted.
+                      {{else}}
+                         <p>Please drag&amp;drop your *.trig or *.nq RDF file(s) with SKOS vocabularies here.</p>
+                         <p><i>skos:ConceptScheme</i> and all corresponding <i>skos:Concept</i> should be defined in one named graph that equals to the scheme IRI!</p>
+                      {{/if}}
+                    {{/if}}
+                  </div>
+                </template>
+              </mp-rdf-upload>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>          
+        </div>
+      </div>
+      
+      <semantic-query 
+                      query='
+                        SELECT ?scheme ?schemeGraph WHERE { 
+                          GRAPH ?schemeGraph {
+                            ?scheme a skos:ConceptScheme .
+                          }
+                          FILTER(?schemeGraph != ?scheme) .
+                        }
+                        ' 
+                      template='{{> template}}'
+                      >
+        <template id='template'>
+          <div class='well'>
+            <div class='bg-warning'>
+              <p><b>Warning!</b> There are vocabularies in the system that can't be edited with Vocabulary Manager!</p>
+              <p><i>skos:ConceptScheme</i> and all corresponding <i>skos:Concept</i> should be defined in one named graph that equals to the scheme IRI!</p>
+            </div>
+            <ul>
+              {{#each bindings}}<li><semantic-link iri='{{scheme.value}}'></semantic-link> - IRI: {{scheme.value}} , in the graph: {{schemeGraph.value}}</li>{{/each}}
+            </ul>
+          </div>
+        </template>
+      </semantic-query>
+
+      <semantic-search>
+        <div class="rs-vocabulary-scheme-row">
+          <h1 class="rs-vocabulary-scheme-title">Scheme</h1>
+          <div>
+            <semantic-search-query-keyword query='
+                                             PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                                             SELECT ?scheme ?schemeLabel WHERE {
+                                               GRAPH ?scheme {
+                                                 ?scheme a skos:ConceptScheme ;
+                                                         skos:prefLabel ?schemeLabel .
+                                                 ?schemeLabel bds:search ?__token__ .
+                                               }
+                                             }
+                                           '
+                                           default-query='
+                                             SELECT ?scheme ?schemeLabel WHERE { 
+                                               GRAPH ?scheme {
+                                                 ?scheme a skos:ConceptScheme ;
+                                                          skos:prefLabel ?schemeLabel .
+                                               }
+                                             }
+                                           '
+            ></semantic-search-query-keyword>
+          </div>
+        </div>
+
+        <semantic-search-result-holder>
+          <semantic-search-result>
+            <semantic-table id='scheme-table'
+                            query='SELECT ?scheme ?schemeLabel WHERE {} ORDER BY ASC(STR(LCASE(?schemeLabel)))'
+                            number-of-displayed-rows=15
+                            options='{"showTableHeading": false, "showFilter": false}'
+                            no-result-template='{{> noScheme}}'
+                            column-configuration='[
+                              { "variableName": "scheme", "cellTemplate": "{{> schemeRow}}" }
+                            ]'>
+              <template id="noScheme">
+                <div style="padding: 12px 8px">
+                  No scheme available
+                </div>
+              </template>
+
+              <template id='schemeRow'>
+                <div class="scheme-table-row">
+                  <semantic-link iri="{{scheme.value}}" class="schema-label">{{schemeLabel.value}}</semantic-link>
+                  <div class="btn-table-container">
+                    <semantic-link-container uri="{{scheme.value}}" class="schema-label">
+                      <button class="btn-table">Show Terms</button>
+                    </semantic-link-container>
+                    <mp-overlay-dialog title="Edit scheme" type="modal" bs-size="large">
+                      <mp-overlay-dialog-trigger>
+                        <button class="btn-table">Edit</button>
+                      </mp-overlay-dialog-trigger>
+                      <mp-overlay-dialog-content>
+                        [[> rsp:ConceptSchemeForm]]
+                      </mp-overlay-dialog-content>
+                    </mp-overlay-dialog>
+                    <button class="btn-table">
+                      <mp-graph-store-action title="Export" action="GET" graphuri="{{scheme.value}}" file-ending="trig">Export</mp-graph-store-action>
+                    </button>
+                    <button class="btn-table btn-table-delete">
+                       <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{scheme.value}}">Delete</mp-graph-store-action>
+                    </button>
+                  </div>
+                </div>
+              </template>
+
+            </semantic-table>
+          </semantic-search-result>
+        </semantic-search-result-holder>
+      </semantic-search>
+
+    </div>
+    
+  </div>
+
+[[/rsp:DetailsSidebar]]
+[[/rsp:ClipboardSidebar]]
+
+</div>

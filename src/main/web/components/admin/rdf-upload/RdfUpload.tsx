@@ -124,7 +124,6 @@ export class RdfUpload extends Component<Props, State> {
       progressText: maybe.Nothing<string>(),
       targetGraph: maybe.Nothing<string>(),
       keepSourceGraphs: props.keepSourceGraphs,
-      showOptions: props.showAdvancedOptions,
     };
   }
 
@@ -259,7 +258,7 @@ export class RdfUpload extends Component<Props, State> {
         {this.props.showAdvancedOptions ?
          <React.Fragment>
            <a onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
-           this.renderAdvancedOptions()
+           { this.renderAdvancedOptions() }
          </React.Fragment> : null
         }
         {showLoadByUrlTab ?

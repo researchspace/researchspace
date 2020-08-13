@@ -70,7 +70,8 @@ module.exports = function() {
             "components/text-annotation",
             "components/timeline",
             "components/dashboard",
-            "components/text-editor"
+            "components/text-editor",
+            "components/forms/inputs/drop"
         ],
         jsonSchemTypes: [
             "TextAnnotationTemplateBindings",

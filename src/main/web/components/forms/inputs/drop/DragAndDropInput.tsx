@@ -27,11 +27,12 @@ import { DropArea } from 'platform/components/dnd/DropArea';
 import { Draggable } from 'platform/components/dnd';
 
 import { TemplateItem } from 'platform/components/ui/template';
-import { FieldValue } from '../../FieldValues';
+import { FieldValue, AtomicValue } from '../../FieldValues';
 import {
   MultipleValuesInput,
   MultipleValuesProps,
 } from '../MultipleValuesInput';
+import { NestedModalForm, tryExtractNestedForm } from '../NestedModalForm';
 
 import { RemoveItemEvent } from './DragAndDropInputEvents';
 import * as styles from './DragAndDropInput.scss';
@@ -40,6 +41,7 @@ import * as styles from './DragAndDropInput.scss';
 export interface DragAndDropInputProps extends MultipleValuesProps {
   id: string
   dropAreaTemplate?: string;
+  placeholderItemTemplate?: string;
   itemTemplate?: string
 }
 
@@ -48,6 +50,8 @@ interface State {
    * We track if item that is already inside droppable area is dragged to disable the area.
    */
   draggingItem: boolean;
+
+  nestedFormOpen: boolean;
 }
 
 export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps, State> {
@@ -55,6 +59,14 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
 
   static defaultProps: Partial<DragAndDropInputProps> = {
     dropAreaTemplate: '<span>Drop items here to add it</span>',
+    placeholderItemTemplate: `
+      <div class='card rs-object-card rs-default-card' style='width: 135px; height: 175px; margin: 4px;'>
+        Drop item here
+        {{#if canCreateNew}}
+          or click to create a new item
+        {{/if}}
+      </div>
+    `,
     itemTemplate: `
       {{#bind iri=iri.value}}
         {{#> rsp:itemCardTemplate width=135 height=175 cardMargin=4 footer-paddingY=7 footer-paddingX=8}}
@@ -76,33 +88,46 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     super(props, context);
     this.state = {
       draggingItem: false,
+      nestedFormOpen: false,
     };
   }
 
   componentDidMount() {
     this.cancelation
-        .map(
-          listen({
-            eventType: RemoveItemEvent,
-            target: this.props.id,
-          })
-        )
-        .onValue((event) => this.onRemoveItem(event.data.iri));
+      .map(
+        listen({
+          eventType: RemoveItemEvent,
+          target: this.props.id,
+        })
+      )
+      .onValue((event) => this.onRemoveItem(event.data.iri));
   }
 
   render() {
-    const isEmpty = this.isEmpty();
+    const nestedForm = tryExtractNestedForm(this.props.children);
+    const canCreateNew = Boolean(nestedForm);
     return (
-      <DropArea
-        className={isEmpty ? '' : styles.holder}
-        shouldReactToDrag={() => !this.state.draggingItem}
-        alwaysVisible={isEmpty}
-        query='ASK {}'
-        onDrop={this.onDrop}
-        dropMessage={this.dropMessage()}
-      >
-        {this.renderItems()}
-      </DropArea>
+      <div className={styles.holder}>
+        <DropArea
+          shouldReactToDrag={() => !this.state.draggingItem}
+          query='ASK {}'
+          onDrop={this.onDrop}
+          dropMessage={this.dropMessage()}
+        >
+          {this.renderItems(canCreateNew)}
+        </DropArea>
+        {
+          this.state.nestedFormOpen ? (
+            <NestedModalForm
+              definition={this.props.definition}
+              onSubmit={this.onNestedFormSubmit}
+              onCancel={() => this.setState({ nestedFormOpen: false })}
+            >
+              {nestedForm}
+            </NestedModalForm>
+          ): null
+        }
+      </div>
     );
   }
 
@@ -110,43 +135,80 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     return this.props.values.isEmpty() || this.props.values.every(FieldValue.isEmpty);
   }
 
-  private dropMessage = () => <TemplateItem template={{source: this.props.dropAreaTemplate}} />;
+  private dropMessage = () => <TemplateItem template={{ source: this.props.dropAreaTemplate }} />;
 
-  private renderItems() {
+  private renderPlaceholderCard = (canCreateNew: boolean) => {
+    const componentProps =
+      canCreateNew ? { onClick: this.onCreateNew } : {};
+    return (
+      <TemplateItem
+        template={{
+          source: this.props.placeholderItemTemplate,
+          options: {
+            canCreateNew
+          }
+        }}
+        componentProps={componentProps}
+      />
+    );
+  }
+
+  private renderItems(canCreateNew: boolean) {
     return (
       <div className={styles.itemArea}>
-      {
-        this.props.values.map(v => {
-          if (FieldValue.isAtomic(v) && v.value.isIri) {
-            return (
-              <Draggable iri={v.value.value}
-                key={v.value.value}
-                onDragStart={this.onItemDragStart}
-                onDragEnd={this.onItemDragEnd}
-              >
-                <div>
-                  <TemplateItem
-                    template={{
-                      source: this.props.itemTemplate,
-                      options: {iri: v.value, inputId: this.props.id}
-                    }}
-                  />
-                </div>
-              </Draggable>
-            );
-          } else if (FieldValue.isEmpty(v)) {
-            return null;
-          } else {
-            throw new Error('Only atomic IRI values are supported by DragAndDropInput');
-          }
-        })
-      }
+        {
+          this.props.values.map(v => {
+            if (FieldValue.isAtomic(v) && v.value.isIri) {
+              return (
+                <Draggable iri={v.value.value}
+                  key={v.value.value}
+                  onDragStart={this.onItemDragStart}
+                  onDragEnd={this.onItemDragEnd}
+                >
+                  <div>
+                    <TemplateItem
+                      template={{
+                        source: this.props.itemTemplate,
+                        options: { iri: v.value, inputId: this.props.id }
+                      }}
+                    />
+                  </div>
+                </Draggable>
+              );
+            } else if (FieldValue.isEmpty(v)) {
+              return null;
+            } else {
+              throw new Error('Only atomic IRI values are supported by DragAndDropInput');
+            }
+          })
+        }
+        {this.renderPlaceholderCard(canCreateNew)}
       </div>
     );
   }
 
+  private onCreateNew = () => {
+    this.setState((state) => ({ nestedFormOpen: !state.nestedFormOpen }));
+  }
+
+  private onNestedFormSubmit = (value: AtomicValue) => {
+    this.setState({ nestedFormOpen: false });
+    this.addAndValidate(value);
+  };
+
+
   private onDrop = (iri: Rdf.Iri) => {
-    const value = FieldValue.fromLabeled({value: iri});
+    const exists =
+      this.props.values.findIndex(
+        v => FieldValue.isAtomic(v) && v.value.isIri() && v.value.equals(iri)
+      ) >= 0;
+    if (!exists) {
+      const value = FieldValue.fromLabeled({ value: iri });
+      this.addAndValidate(value);
+    }
+  }
+
+  private addAndValidate = (value: AtomicValue) => {
     const values = this.isEmpty() ? Immutable.List<FieldValue>([value]) : this.props.values.push(value);
     const { updateValues, handler } = this.props;
     updateValues(({ errors }) => handler.validate({ values, errors }));

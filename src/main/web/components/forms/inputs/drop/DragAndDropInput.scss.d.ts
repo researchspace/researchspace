@@ -2,6 +2,7 @@ declare namespace DragAndDropInputScssNamespace {
   export interface IDragAndDropInputScss {
     holder: string;
     itemArea: string;
+    placeholderCard: string;
   }
 }
 

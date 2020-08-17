@@ -58,9 +58,9 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   private cancelation = new Cancellation();
 
   static defaultProps: Partial<DragAndDropInputProps> = {
-    dropAreaTemplate: '<span>Drop items here to add it</span>',
+    dropAreaTemplate: '<span>Drop item here to add it</span>',
     placeholderItemTemplate: `
-      <div class='card rs-object-card rs-default-card' style='width: 135px; height: 175px; margin: 4px;'>
+      <div class='placeholderContainer'>
         Drop item here
         {{#if canCreateNew}}
           or click to create a new item
@@ -69,7 +69,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     `,
     itemTemplate: `
       {{#bind iri=iri.value}}
-        {{#> rsp:itemCardTemplate width=135 height=175 cardMargin=4 footer-paddingY=7 footer-paddingX=8}}
+        {{#> rsp:itemCardTemplate width=135 height=175 cardMargin=8 footer-paddingY=7 footer-paddingX=8}}
           {{#*inline "additionalActions"}}
             <div class="rs-default-card__hover-icon">
               <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>

@@ -385,10 +385,12 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
               <div className={styles.titleHolder}>
                 {this.state.documentIri ? (
                 <Draggable iri={this.state.documentIri}>
-                  <span className={styles.draggableGripper}></span>
+                  <span className={styles.draggableGripper} title='drag narrative'>
+                    <i className='rs-icon rs-icon-drag_points'></i>
+                  </span>
                 </Draggable>
               ) : null}
-              <FormGroup bsClass={`form-group ${styles.titleInput}`}>
+              <FormGroup bsClass={`${styles.titleInput}`}>
                 <FormControl
                   value={this.state.title} type='text' readOnly={this.props.readonly}
                   onChange={event => this.setState({title: (event.target as any).value})}

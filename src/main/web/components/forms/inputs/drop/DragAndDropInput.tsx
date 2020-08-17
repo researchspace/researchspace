@@ -60,7 +60,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   static defaultProps: Partial<DragAndDropInputProps> = {
     dropAreaTemplate: '<span>Drop item here to add it</span>',
     placeholderItemTemplate: `
-      <div class='placeholderContainer'>
+      <div class='DragAndDropInput--placeholderContainer'>
         Drop item here
         {{#if canCreateNew}}
           or click to create a new item

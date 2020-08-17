@@ -3,6 +3,7 @@ declare namespace DragAndDropInputScssNamespace {
     holder: string;
     itemArea: string;
     placeholderCard: string;
+    placeholderContainer: string;
   }
 }
 

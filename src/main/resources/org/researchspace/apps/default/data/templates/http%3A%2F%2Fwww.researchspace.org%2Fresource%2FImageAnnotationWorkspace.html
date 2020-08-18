@@ -2,79 +2,88 @@
                    proxy-event-type='Component.TemplateUpdate' proxy-targets='["image-with-regions"]'
 ></mp-event-proxy>
 
-
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li class="active">
-    Project Dashboard
-  </li>
-</ol>
-
-
 <div class='page'>
   [[#> rsp:ClipboardSidebar]]
   [[#> rsp:DetailsSidebar]]
-  <div class="page__body--borderless">
-    <bs-row>
-      <bs-col xs=6>
-        <div style='height: 800px'>
-        <rs-iiif-viewer-panel id='image-editor' debug=true
-                              [[> rsp:IIIFConfig]]
-                              iris='["http://www.latehokusai.org/id/person/BIOG1820", "http://www.researchspace.org/entity/E53_Place/f9a2e3f9-8d4d-4388-8267-feff79f070b5"]'
-                              query='SELECT DISTINCT ?image WHERE { ?subject crm:P138i_has_representation ?image . }'>
-        </rs-iiif-viewer-panel>
-        </div>
-      </bs-col>
-      <bs-col xs=6>
-  <mp-event-target-template-render id='image-with-regions' template='{{> template}}'>
-     <template id='template'>
-         <div>
-           {{#if images}}
-           <ul>
-             {{#each images}}
-             <li>
-               Representation of the <semantic-link iri='{{objectIri}}'></semantic-link>, Image: <semantic-link iri='{{imageIri}}'></semantic-link> 
-                 {{#if regions}}
-                   with regions:
-               <ul>
-                 {{#each regions}}
-                 <li>
-                   <semantic-link iri='{{regionIri}}'></semantic-link>
-                   <mp-event-trigger id='event-trigger' type='Component.TemplateUpdate' targets='["region-form"]'
-                                     data='{"region": "{{regionIri}}"}'>
-                     <button>Annotate</button>
-                   </mp-event-trigger>
-                   <button>Focus</button>
-                 </li>
-                 {{/each}}
-               </ul>
-                 {{/if}}
-             </li>
-             {{/each}}
-           </ul>
-           {{else}}
-           <p>no selected images in the image  viewer</p>
-           {{/if}}
-         </div>
-      </template>
-  </mp-event-target-template-render>
-        
-        <mp-event-target-template-render id='region-form' template='{{> template}}'>
-          <template id='template'>
-            <div>
-              {{#if region}}
-                [[> rsp:ImageAnnotationForm]]
-              {{else}}
-              <p>No region selected</p>
-              {{/if}}
-            </div>
-          </template>
-        </mp-event-target-template-render>
+  <div class="frame-imageAnnotationWorkspace__container">
 
-      </bs-col>
-    </bs-row>
+      <div class="frame-imageAnnotationWorkspace__viewer">
+        <rs-iiif-viewer-panel id='image-editor' 
+                              debug=true
+                              [[> rsp:IIIFConfig]]
+                              iris='["https://reconnecting-australian-collections.researchspace.org/resource/E22_Man-Made_Object/09f0dba5-351c-4a29-9d91-b6f35e53c468"]'
+                              query='SELECT DISTINCT ?image WHERE { ?subject crm:P138i_has_representation|rso:PX_has_main_representation ?image . }'>
+        </rs-iiif-viewer-panel>
+      </div>
+
+      <div class="frame-imageAnnotationWorkspace__formArea_bg"></div>
+
+      <div class="frame-imageAnnotationWorkspace__formArea">
+
+        <div class="frame-imageAnnotationWorkspace__formArea_content">
+
+          <mp-event-target-template-render id='image-with-regions' template='{{> template}}'>
+            <template id='template'>
+                <div class="frame-imageAnnotationWorkspace__annotations">
+                  {{#if images}}
+
+                  <div>
+                    {{#each images}}
+                      <h1>Object: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
+                      <h2 style="margin-left: 15px;"><i class="rs-icon rs-icon-image"></i><span>Image: &nbsp;<strong><semantic-link iri='{{imageIri}}'></semantic-link></strong></span></h2>
+                        
+                      {{#if regions}}
+                      <div class="frame-imageAnnotationWorkspace__regionsArea">
+                        <h2><i class="rs-icon rs-icon-area_annotation"></i><span>Image Regions</span></h2>
+                        <div class="frame-imageAnnotationWorkspace__regions_container">
+                          {{#each regions}}
+                          <div class="frame-imageAnnotationWorkspace__region">
+                            <semantic-link iri='{{regionIri}}' class="region-label text-truncate"></semantic-link>
+                            <div>
+                              <mp-event-trigger id='event-trigger' type='Component.TemplateUpdate' targets='["region-form"]'
+                                              data='{"region": "{{regionIri}}"}'>
+                                <button style="margin-right: 5px;">Edit</button>
+                              </mp-event-trigger>
+                              <button>Focus</button>
+                            </div>
+                          </div>
+                          {{/each}}
+                        </div>
+                      </div>
+                          
+                      {{/if}}
+                    
+                    {{/each}}
+                  </div>
+
+                  {{else}}
+                  
+                    <p>No selected images in the Image Viewer</p>
+
+                  {{/if}}
+                </div>
+              </template>
+          </mp-event-target-template-render>
+          
+          <mp-event-target-template-render id='region-form' template='{{> template}}'>
+            <template id='template'>
+              <div>
+                {{#if region}}
+                  <div class="frame-imageAnnotationWorkspace__form-container">{{log 'region' this}}
+                    <h1>Editing image region: &nbsp;<strong><semantic-link iri='{{region}}'></semantic-link></strong></h1>
+                    [[> rsp:ImageAnnotationForm]]
+                  </div>
+                {{else}}
+                  <p></p>
+                {{/if}}
+              </div>
+            </template>
+          </mp-event-target-template-render>
+
+        </div>
+
+      </div>
+
   </div>
   [[/rsp:DetailsSidebar]]
   [[/rsp:ClipboardSidebar]]

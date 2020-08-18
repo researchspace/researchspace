@@ -19,7 +19,7 @@
 import * as React from 'react';
 import * as D from 'react-dom-factories';
 import * as PropTypes from 'prop-types';
-import { isEqual, values, toPairs, throttle, uniqBy, isEmpty, some } from 'lodash';
+import { isEqual, values, toPairs, throttle, uniqBy, isEmpty, some, findKey, includes } from 'lodash';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 
@@ -129,18 +129,25 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         return
       }
 
+
+      const allImages = this.getImages();
       let images: IiifViewerWindow[] =
         mirador.viewer.workspace.slots.map(
           slot => {
-            let regions = slot.window.annotationsList.map(a => a['@id']);
+            const imageIri = slot.window.canvasID;
+            // got object from which we queried the image
+            const objectIri =
+              findKey<Array<string>, {[iri: string]: Array<string>}>(
+                allImages, is => includes(is, imageIri)
+              );
+            let regions = slot.window.annotationsList.map(a => ({regionIri: a['@id']}));
             regions = isEmpty(regions) ? null : regions;
             return {
-              iri: slot.window.canvasID,
-              regions
+              imageIri, objectIri, regions
             };
           }
         );
-      images = uniqBy(images, w => w.iri);
+      images = uniqBy(images, i => i.imageIri);
       images = isEmpty(images) ? null : images;
 
       trigger({

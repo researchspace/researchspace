@@ -186,6 +186,7 @@ declare global {
     /* implementation details */
     interface Workspace {
       windows: Window[];
+      slots: Slot[]
       calculateLayout(): void;
     }
 
@@ -197,7 +198,12 @@ declare global {
         ImageView: ImageViewModule;
       };
       canvasID: string;
+      annotationsList: {'@id': string}[]
       destroy: () => void
+    }
+
+    interface Slot {
+      window: Window
     }
 
     /* implementation details */

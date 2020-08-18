@@ -19,10 +19,11 @@
 import * as React from 'react';
 import * as D from 'react-dom-factories';
 import * as PropTypes from 'prop-types';
-import { isEqual, values, toPairs } from 'lodash';
+import { isEqual, values, toPairs, throttle, uniqBy, isEmpty, some } from 'lodash';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
 
+import { listen, trigger, BuiltInEvents } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
 import { addNotification, ErrorNotification } from 'platform/components/ui/notification';
@@ -33,6 +34,7 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
+import { UpdatedEvent, IiifViewerWindow } from './ImageRegionEditorEvents';
 
 import { chooseMiradorLayout } from './SideBySideComparison';
 
@@ -99,6 +101,55 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   componentDidMount() {
     this.queryImagesInfo();
   }
+
+  private unsubscribeFromMiradorEvents(mirador: Mirador.Instance) {
+    if (mirador) {
+      mirador.eventEmitter.unsubscribe('slotRemoved');
+    }
+  }
+
+  private subscribeOnMiradorEvents(mirador: Mirador.Instance) {
+    mirador.eventEmitter.subscribe('windowUpdated', this.windowUpdateHandler);
+    mirador.eventEmitter.subscribe('windowAdded', this.windowUpdateHandler);
+    mirador.eventEmitter.subscribe('slotRemoved', this.windowUpdateHandler);
+    mirador.eventEmitter.subscribe('ANNOTATIONS_LIST_UPDATED', this.windowUpdateHandler);
+  }
+
+  private windowUpdateHandler = (event, data) => {
+    if (event.type === 'windowUpdated' && !data.canvasID) {
+      return
+    }
+
+    this.triggerViewUpdatedEvent(this.miradorInstance);
+  };
+
+  private triggerViewUpdatedEvent = throttle(
+    (mirador: Mirador.Instance) => {
+      if (some(mirador.viewer.workspace.slots, s => !s?.window?.canvasID)) {
+        return
+      }
+
+      let images: IiifViewerWindow[] =
+        mirador.viewer.workspace.slots.map(
+          slot => {
+            let regions = slot.window.annotationsList.map(a => a['@id']);
+            regions = isEmpty(regions) ? null : regions;
+            return {
+              iri: slot.window.canvasID,
+              regions
+            };
+          }
+        );
+      images = uniqBy(images, w => w.iri);
+      images = isEmpty(images) ? null : images;
+
+      trigger({
+        eventType: UpdatedEvent,
+        source: this.props.id,
+        data: {images}
+      })
+    }, 200
+  )
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
     return nextState.loading !== this.state.loading || !isEqual(nextProps, this.props);
@@ -200,6 +251,9 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
             }
             return undefined;
           });
+          this.unsubscribeFromMiradorEvents(mirador);
+          this.subscribeOnMiradorEvents(mirador);
+          this.triggerViewUpdatedEvent(mirador);
           if (this.props.onMiradorInitialized) {
             this.props.onMiradorInitialized(mirador);
           }
@@ -300,6 +354,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
+    this.unsubscribeFromMiradorEvents(this.miradorInstance);
     removeMirador(this.miradorInstance, this.miradorElement);
   }
 

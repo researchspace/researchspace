@@ -19,11 +19,12 @@
 import { EventMaker } from 'platform/api/events';
 
 export interface IiifViewerWindow {
-  iri: string;
-  regions: string[]
+  imageIri: string;
+  objectIri?: string;
+  regions?: {regionIri: string}[];
 }
 export interface ImageRegionEditorEventData {
-  'IIIFViewer.Updated': {images: IiifViewerWindow[]}
+  'IIIFViewer.Updated': {images?: IiifViewerWindow[]}
 }
 
 const event: EventMaker<ImageRegionEditorEventData> = EventMaker;

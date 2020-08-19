@@ -2,6 +2,10 @@
                 proxy-event-type='Component.TemplateUpdate' proxy-targets='["image-with-regions"]'
 ></mp-event-proxy>
 
+<mp-event-proxy id='reset-form-on-image-update' on-event-source='image-editor' on-event-type='IIIFViewer.Updated'
+                proxy-event-type='Component.TemplateUpdate' proxy-targets='["region-form"]'
+></mp-event-proxy>
+
 <mp-event-proxy id='add-new-manifest' on-event-source='set-action__km-add-frame' on-event-type='Dashboard.AddFrame'
                 proxy-event-type='IIIFViewer.AddImagesForObject' proxy-targets='["image-editor"]'
 ></mp-event-proxy>
@@ -24,8 +28,9 @@
 
                   <div>
                     {{#each images}}
-                      <h1>Object: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
-                      <h2 style="margin-left: 15px;"><i class="rs-icon rs-icon-image"></i><span>Image: &nbsp;<strong><semantic-link iri='{{imageIri}}'></semantic-link></strong></span></h2>
+                      <h1><i class="rs-icon rs-icon-image"></i><span>Image: &nbsp;<strong><semantic-link iri='{{imageIri}}'></semantic-link></strong></span></h1>
+
+                      <h2 style="margin-left: 15px;">Represents: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h2>
                         
                       {{#if regions}}
                       <div class="frame-imageAnnotationWorkspace__regionsArea">

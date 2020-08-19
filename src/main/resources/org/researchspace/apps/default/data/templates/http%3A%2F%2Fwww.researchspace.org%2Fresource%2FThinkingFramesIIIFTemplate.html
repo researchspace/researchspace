@@ -35,6 +35,12 @@
     .miradord-without-authoring {
       height: 100%;
     }
+    .miradord-without-authoring .mirador-osd-annotation-controls {
+      display: none;
+    }
+    .miradord-without-authoring .mirador-manipulation-controls {
+      top: 0;
+    }
   </style>
   <semantic-switch query='PREFIX ontodia: <http://ontodia.org/schema/v1#>
     SELECT ?type {
@@ -47,11 +53,10 @@
           <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o
         }'
         template='{{> template}}'>
-       <template id='template'>
-         {{#> rsp:ImageAnnotationWorkspace }}
+        <template id='template'>
             <rs-iiif-viewer-panel
               [[> rsp:IIIFConfig]]
-              id='image-editor'
+              id='{{miradorVariable}}-mirador'
               iris='{{bindings.0.items.value}}'
               query="SELECT DISTINCT ?image WHERE {
                 {
@@ -65,15 +70,13 @@
                 }
               }">
             </rs-iiif-viewer-panel>
-         {{/rsp:ImageAnnotationWorkspace }}
         </template>
       </semantic-query>
     </template>
     <template id='http://www.researchspace.org/resource/system/Set'>
-       {{#> rsp:ImageAnnotationWorkspace }}
           <rs-iiif-viewer-panel
               [[> rsp:IIIFConfig]]
-              id='image-editor'
+              id='{{miradorVariable}}-mirador'
               iris='["{{iri}}"]'
               query="
               PREFIX ldp: <http://www.w3.org/ns/ldp#>
@@ -90,13 +93,11 @@
                 }
               }">
           </rs-iiif-viewer-panel>
-       {{/ rsp:ImageAnnotationWorkspace }}
     </template>
     <template id='default'>
-         {{#> rsp:ImageAnnotationWorkspace }}
             <rs-iiif-viewer-panel
               [[> rsp:IIIFConfig]]
-              id='image-editor'
+              id='{{miradorVariable}}-mirador'
               iris='[ "{{iri}}" ]'
               use-details-sidebar=true
               query="SELECT DISTINCT ?image WHERE {
@@ -111,7 +112,6 @@
                 }
               }">
             </rs-iiif-viewer-panel>
-         {{/ rsp:ImageAnnotationWorkspace }}
     </template>
   </semantic-switch>
 </div>

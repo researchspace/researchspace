@@ -1,0 +1,37 @@
+<div style='height: 100%;'>
+      <semantic-query query='
+        PREFIX ontodia: <http://ontodia.org/schema/v1#>
+        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+
+        SELECT (CONCAT("[", GROUP_CONCAT(CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
+          {
+            <{{iri}}> a ontodia:Diagram .
+            <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o .
+            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+          } UNION {
+            <{{iri}}> a Platform:Set .
+            <{{iri}}> ldp:contains / Platform:setItem ?o .
+            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+          } UNION {
+            <{{iri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+            BIND(<{{iri}}> as ?o) .
+          }
+        }'
+        template='{{> template}}'>
+       <template id='template'>
+         {{#> rsp:ImageAnnotationWorkspace }}
+            <rs-iiif-viewer-panel
+              [[> rsp:IIIFConfig]]
+              id='image-editor'
+              iris='{{bindings.0.items.value}}'
+              query='
+                SELECT DISTINCT ?image WHERE {
+                  ?subject (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
+                  ?image a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+              }'>
+            </rs-iiif-viewer-panel>
+         {{/rsp:ImageAnnotationWorkspace }}
+        </template>
+      </semantic-query>
+</div>

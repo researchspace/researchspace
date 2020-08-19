@@ -325,10 +325,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               .onValue((manifestJson) => {
                 const manifest = new Mirador.Manifest(manifestJson['@id'], 'British Museum', manifestJson);
                 this.miradorInstance.eventEmitter.publish('manifestReceived', manifest, 'Test');
-                this.miradorInstance.eventEmitter.publish(
-                  'ADD_MANIFEST_FROM_URL', [manifestJson['@id'], 'Test']
-                );
-
                 addNotification({
                   level: 'info',
                   children: React.createElement(

@@ -168,7 +168,7 @@
                   [[!-- is shown only when we are in the frames view, hidden by css --]]
                   <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
                     <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
-                                      data='{"resourceIri": "{{iri}}", "viewId": "iiif", "objectIri": "{{iri}}"}'
+                                      data='{"resourceIri": "{{iri}}", "viewId": "iiif"}'
                                       targets='["thinking-frames"]'>
                       <button type="button" class="rs-button" title="Explore Images in high resolution Viewer">
                         <i class="rs-icon rs-icon-image"></i>
@@ -177,10 +177,14 @@
                   </div>
 
                   [[#if (hasPermission "forms:ldp:*")]]
+                    {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+                    {{else if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image")}}
+                    {{else}}
+
                   [[!-- is shown only when we are not in the frames view, hidden by css --]]
                   <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
                     <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                            urlqueryparam-view='image-graph-authoring' 
+                                            urlqueryparam-view='objectImageObservation' 
                                             urlqueryparam-resource='{{iri}}'>
                       <button type="button" class="rs-button" title="Annotate Images">
                         <i class="rs-icon rs-icon-area_annotation"></i>
@@ -191,13 +195,14 @@
                   <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
                     <mp-event-trigger id='set-action__km-add-frame' 
                                       type='Dashboard.AddFrame' 
-                                      data='{"resourceIri": "{{iri}}", "viewId": "image-graph-authoring"}' 
+                                      data='{"resourceIri": "{{iri}}", "viewId": "objectImageObservation", "objectIri": "{{iri}}"}' 
                                       targets='["thinking-frames"]'>
                       <button type="button" class="rs-button" title="Annotate Images">
                         <i class="rs-icon rs-icon-area_annotation"></i>
                       </button>
                     </mp-event-trigger>
                   </div>
+                    {{/if}}
                   [[/if]]
               
     </div>

@@ -24,9 +24,19 @@ export interface IiifViewerWindow {
   regions?: {regionIri: string}[];
 }
 export interface ImageRegionEditorEventData {
+  // trigger
   'IIIFViewer.Updated': {images?: IiifViewerWindow[]}
+
+  // listen
+  'IIIFViewer.ZoomToRegion': {imageIri: string, regionIri: string}
+  'IIIFViewer.AddObjectImages': {objectIri: string, imageIris: string[]}
+
+  'IIIFViewer.AddImagesForObject': {objectIri: string}
 }
 
 const event: EventMaker<ImageRegionEditorEventData> = EventMaker;
 
 export const UpdatedEvent = event('IIIFViewer.Updated');
+export const ZoomToRegionEvent = event('IIIFViewer.ZoomToRegion');
+export const AddObjectImagesEvent = event('IIIFViewer.AddObjectImages');
+export const AddImagesForObjectEvent = event('IIIFViewer.AddImagesForObject');

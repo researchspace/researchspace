@@ -1,19 +1,14 @@
 <mp-event-proxy id='refresh-image-list' on-event-source='image-editor' on-event-type='IIIFViewer.Updated'
-                   proxy-event-type='Component.TemplateUpdate' proxy-targets='["image-with-regions"]'
+                proxy-event-type='Component.TemplateUpdate' proxy-targets='["image-with-regions"]'
 ></mp-event-proxy>
 
-<div class='page'>
-  [[#> rsp:ClipboardSidebar]]
-  [[#> rsp:DetailsSidebar]]
-  <div class="frame-imageAnnotationWorkspace__container">
+<mp-event-proxy id='add-new-manifest' on-event-source='set-action__km-add-frame' on-event-type='Dashboard.AddFrame'
+                proxy-event-type='IIIFViewer.AddImagesForObject' proxy-targets='["image-editor"]'
+></mp-event-proxy>
 
+<div class="frame-imageAnnotationWorkspace__container">
       <div class="frame-imageAnnotationWorkspace__viewer">
-        <rs-iiif-viewer-panel id='image-editor' 
-                              debug=true
-                              [[> rsp:IIIFConfig]]
-                              iris='["https://reconnecting-australian-collections.researchspace.org/resource/E22_Man-Made_Object/09f0dba5-351c-4a29-9d91-b6f35e53c468"]'
-                              query='SELECT DISTINCT ?image WHERE { ?subject crm:P138i_has_representation|rso:PX_has_main_representation ?image . }'>
-        </rs-iiif-viewer-panel>
+        {{> @partial-block }}
       </div>
 
       <div class="frame-imageAnnotationWorkspace__formArea_bg"></div>
@@ -40,11 +35,14 @@
                           <div class="frame-imageAnnotationWorkspace__region">
                             <semantic-link iri='{{regionIri}}' class="region-label text-truncate"></semantic-link>
                             <div>
-                              <mp-event-trigger id='event-trigger' type='Component.TemplateUpdate' targets='["region-form"]'
+                              <mp-event-trigger id='form-event-trigger' type='Component.TemplateUpdate' targets='["region-form"]'
                                               data='{"region": "{{regionIri}}"}'>
                                 <button style="margin-right: 5px;">Edit</button>
                               </mp-event-trigger>
-                              <button>Focus</button>
+                              <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
+                                              data='{"imageIri": "{{../imageIri}}","regionIri": "{{regionIri}}"}'>
+                                <button style="margin-right: 5px;">Zoom</button>
+                              </mp-event-trigger>
                             </div>
                           </div>
                           {{/each}}
@@ -85,6 +83,3 @@
       </div>
 
   </div>
-  [[/rsp:DetailsSidebar]]
-  [[/rsp:ClipboardSidebar]]
-</div>

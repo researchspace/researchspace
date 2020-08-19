@@ -4,6 +4,8 @@ declare global {
   namespace Mirador {
     var OpenSeadragon: (options: OpenSeadragon.ViewerOptions) => OpenSeadragon.Viewer;
 
+    const Manifest: any;
+
     const Handlebars: any;
     const DEFAULT_SETTINGS: {
       windowSettings?: WindowSettings;
@@ -198,8 +200,20 @@ declare global {
         ImageView: ImageViewModule;
       };
       canvasID: string;
-      annotationsList: {'@id': string}[]
+      canvases: {[canvasId: string]: Canvas};
+      annotationsList: {'@id': string, on: any}[]
       destroy: () => void
+    }
+
+    interface Canvas {
+      bounds: Bonunds
+    }
+
+    interface Bounds {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
     }
 
     interface Slot {

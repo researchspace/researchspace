@@ -20,7 +20,7 @@ import * as React from 'react';
 import * as D from 'react-dom-factories';
 import * as PropTypes from 'prop-types';
 import {
-  isEqual, values, toPairs, throttle, uniqBy,
+  isEqual, map, throttle, uniqBy, toPairs,
   isEmpty, some, findKey, includes, find
 } from 'lodash';
 import * as Maybe from 'data.maybe';
@@ -37,7 +37,7 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo, parseImageSubarea } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
-import { UpdatedEvent, ZoomToRegionEvent, IiifViewerWindow, AddObjectImagesEvent } from './ImageRegionEditorEvents';
+import { UpdatedEvent, ZoomToRegionEvent, IiifManifestObjects, AddObjectImagesEvent } from './ImageRegionEditorEvents';
 
 import { chooseMiradorLayout } from './SideBySideComparison';
 
@@ -46,7 +46,7 @@ import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
 
 export interface ImageRegionEditorConfig {
   id?: string;
-  imageOrRegion: string | { [iri: string]: Array<string> };
+  imageOrRegion: string | { [iri: string]: Array<string> } | IiifManifestObjects[];
   imageIdPattern: string;
   iiifServerUrl: string;
   repositories?: Array<string>;
@@ -63,12 +63,12 @@ export interface ImageRegionEditorProps extends ImageRegionEditorConfig {
 }
 
 interface ImageRegionEditorState {
-  readonly loading?: boolean;
-  readonly info?: ReadonlyMap<string, ImageOrRegionInfo>;
-  readonly iiifImageId?: ReadonlyMap<string, string>;
-  readonly errorMessage?: string;
+  loading?: boolean;
+  info?: Map<string, ImageOrRegionInfo>;
+  iiifImageId?: Map<string, string>;
+  errorMessage?: string;
 
-  additionalImages: {[iri: string]: string[]};
+  allImages: IiifManifestObjects[];
 }
 
 /**
@@ -101,7 +101,22 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   constructor(props: ImageRegionEditorProps, context: any) {
     super(props, context);
-    this.state = { loading: true, additionalImages: {} };
+    this.state = {
+      loading: true,
+      allImages: this.normalizeImageProps(props),
+    };
+  }
+
+  private normalizeImageProps({imageOrRegion}: ImageRegionEditorProps) {
+    if (typeof imageOrRegion === 'string') {
+      return [
+        { objectIri: imageOrRegion, images: [imageOrRegion] },
+      ];
+    } else if ( Array.isArray(imageOrRegion) ) {
+      return imageOrRegion;
+    } else {
+      return toPairs(imageOrRegion).map(([objectIri, images]) => ({images, objectIri}));
+    }
   }
 
   componentDidMount() {
@@ -115,68 +130,29 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   }
 
   private subscribeOnMiradorEvents(mirador: Mirador.Instance) {
-    mirador.eventEmitter.subscribe('windowUpdated', this.windowUpdateHandler);
-    mirador.eventEmitter.subscribe('windowAdded', this.windowUpdateHandler);
-    mirador.eventEmitter.subscribe('slotRemoved', this.windowUpdateHandler);
-    mirador.eventEmitter.subscribe('ANNOTATIONS_LIST_UPDATED', this.windowUpdateHandler);
+    // mirador.eventEmitter.subscribe('windowUpdated', this.windowUpdateHandler);
+    // mirador.eventEmitter.subscribe('windowAdded', this.windowUpdateHandler);
+    // mirador.eventEmitter.subscribe('slotRemoved', this.windowUpdateHandler);
+    // mirador.eventEmitter.subscribe('ANNOTATIONS_LIST_UPDATED', this.windowUpdateHandler);
   }
-
-  private windowUpdateHandler = (event, data) => {
-    if (event.type === 'windowUpdated' && !data.canvasID) {
-      return
-    }
-
-    this.triggerViewUpdatedEvent(this.miradorInstance);
-  };
 
   /**
    * throttle event trigger because windowUpdated event in mirador is called too often
    */
-  private triggerViewUpdatedEvent = throttle(
-    (mirador: Mirador.Instance) => {
-      if (some(mirador.viewer.workspace.slots, s => !s?.window?.canvasID)) {
-        return
-      }
-
-      const allImages = this.getImages();
-      let images: IiifViewerWindow[] =
-        mirador.viewer.workspace.slots.map(
-          slot => {
-            const imageIri = slot.window.canvasID; // that is image IRI
-            // got object from which we queried the image
-            const objectIri =
-              findKey<Array<string>, {[iri: string]: Array<string>}>(
-                allImages, is => includes(is, imageIri)
-              );
-            let regions = slot.window.annotationsList.map(a => ({regionIri: a['@id']}));
-            regions = isEmpty(regions) ? null : regions;
-            return {
-              imageIri, objectIri, regions
-            };
-          }
-        );
-      // we can have multiple slots with the same image, so need to make sure that in the
-      // event we don't have duplicates
-      images = uniqBy(images, i => i.imageIri);
-
-      // to make sure that we can check for no images in the handlebars template we propagate null instead of empty array
-      images = isEmpty(images) ? null : images;
-
+  private triggerManifestUpdateEvent(objects: IiifManifestObjects[]) {
       trigger({
         eventType: UpdatedEvent,
         source: this.props.id,
-        data: {images}
-      })
-    }, 200
-  )
+        data: {objects}
+      });
+  }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
     return nextState.loading !== this.state.loading || !isEqual(nextProps, this.props);
   }
 
   private queryAllImagesInfo() {
-    const allImages = this.getImages();
-    this.queryImagesInfo(allImages).observe({
+    this.queryImagesInfo(this.state.allImages).observe({
       value: ({info, iiifImageId}) => {
         this.setState({ loading: false, iiifImageId, info });
       },
@@ -184,10 +160,10 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     });
   }
 
-  private queryImagesInfo(allImages: {[objectIri: string]: string[]}) {
+  private queryImagesInfo(allImages: IiifManifestObjects[]) {
     const { imageIdPattern } = this.props;
 
-    const querying = values(allImages).map((images) => {
+    const querying = allImages.map(({images}) => {
       if (!images.length) {
         return Kefir.constant([]);
       }
@@ -228,14 +204,13 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
     removeMirador(this.miradorInstance, element);
 
-    const allImages = this.getImages();
     const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
 
-    const manifestQuerying = toPairs(allImages).map(([iri, images]) =>
+    const manifestQuerying = this.state.allImages.map(({objectIri, images}) =>
       this.queryManifestParameters({
         infos: this.state.info,
         iiifImageIds: this.state.iiifImageId,
-        iri, images, iiifServerUrl
+        iri: objectIri, images, iiifServerUrl
       }).flatMap((allParams) => {
         const params = allParams.filter((param) => param !== undefined);
         if (params.length === 0) {
@@ -245,7 +220,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               'p',
               {},
               'Images of the entity ',
-              React.createElement(ResourceLinkComponent, { iri }),
+              React.createElement(ResourceLinkComponent, { iri: objectIri }),
               ' not found'
             ),
           });
@@ -258,7 +233,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               'p',
               {},
               'Some images of the entity ',
-              React.createElement(ResourceLinkComponent, { iri }),
+              React.createElement(ResourceLinkComponent, { iri: objectIri }),
               ' not found'
             ),
           });
@@ -291,7 +266,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.unsubscribeFromMiradorEvents(mirador);
     this.subscribeOnMiradorEvents(mirador);
     this.listenToEvents();
-    this.triggerViewUpdatedEvent(mirador);
+    this.triggerManifestUpdateEvent(this.state.allImages);
     if (this.props.onMiradorInitialized) {
       this.props.onMiradorInitialized(mirador);
     }
@@ -307,12 +282,14 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       )
       .observe({
         value: (event) => {
-          if (!this.getImages()[event.data.objectIri]) {
-            const images = {[event.data.objectIri]: event.data.imageIris};
-            this.setState({additionalImages: {...this.state.additionalImages, ...images}})
+          const { allImages } =  this.state;
+          if (!some(allImages, im => im.objectIri === event.data.objectIri)) {
+            const newImage = { objectIri: event.data.objectIri, images: event.data.imageIris };
+            allImages.unshift(newImage);
+            this.setState({allImages: this.state.allImages})
 
             const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
-            this.queryImagesInfo(images)
+            this.queryImagesInfo([newImage])
               .flatMap(
                 ({info, iiifImageId}) => {
                   return this.queryManifestParameters({
@@ -325,6 +302,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               .onValue((manifestJson) => {
                 const manifest = new Mirador.Manifest(manifestJson['@id'], 'British Museum', manifestJson);
                 this.miradorInstance.eventEmitter.publish('manifestReceived', manifest, 'Test');
+                this.triggerManifestUpdateEvent(allImages);
                 addNotification({
                   level: 'info',
                   children: React.createElement(
@@ -401,14 +379,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         .flatMapErrors(() => Kefir.constant(undefined));
     });
     return Kefir.zip(queryingImagesInfo).toProperty();
-  }
-
-  private getImages() {
-    const { imageOrRegion } = this.props;
-    if (typeof imageOrRegion === 'string') {
-      return { [imageOrRegion]: [imageOrRegion] };
-    }
-    return {...imageOrRegion, ...this.state.additionalImages};
   }
 
   private getRepositories = () =>

@@ -3,7 +3,7 @@
         PREFIX ontodia: <http://ontodia.org/schema/v1#>
         PREFIX ldp: <http://www.w3.org/ns/ldp#>
 
-        SELECT (CONCAT("[", GROUP_CONCAT(CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
+        SELECT (CONCAT("[", GROUP_CONCAT(DISTINCT CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
           {
             <{{iri}}> a ontodia:Diagram .
             <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o .

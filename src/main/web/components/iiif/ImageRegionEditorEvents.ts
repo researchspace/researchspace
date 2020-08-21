@@ -18,14 +18,13 @@
 
 import { EventMaker } from 'platform/api/events';
 
-export interface IiifViewerWindow {
-  imageIri: string;
-  objectIri?: string;
-  regions?: {regionIri: string}[];
+export interface IiifManifestObjects {
+  objectIri: string;
+  images?: string[];
 }
 export interface ImageRegionEditorEventData {
   // trigger
-  'IIIFViewer.Updated': {images?: IiifViewerWindow[]}
+  'IIIFViewer.Updated': {objects?: IiifManifestObjects[]}
 
   // listen
   'IIIFViewer.ZoomToRegion': {imageIri: string, regionIri: string}

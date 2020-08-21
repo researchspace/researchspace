@@ -24,46 +24,86 @@
           <mp-event-target-template-render id='image-with-regions' template='{{> template}}'>
             <template id='template'>
                 <div class="frame-imageAnnotationWorkspace__annotations">
-                  {{#if images}}
-
                   <div>
-                    {{#each images}}
-                      <h1><i class="rs-icon rs-icon-image"></i><span>Image: &nbsp;<strong><semantic-link iri='{{imageIri}}'></semantic-link></strong></span></h1>
+                    {{#each objects}}
+                      <h1 style="margin-left: 15px;">Observed on object &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong>
 
-                      <h2 style="margin-left: 15px;">Represents: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h2>
-                        
-                      {{#if regions}}
-                      <div class="frame-imageAnnotationWorkspace__regionsArea">
-                        <h2><i class="rs-icon rs-icon-area_annotation"></i><span>Physical features on object (referenced through image)</span></h2>
-                        <div class="frame-imageAnnotationWorkspace__regions_container">
-                          {{#each regions}}
-                          <div class="frame-imageAnnotationWorkspace__region">
-                            <semantic-link iri='{{regionIri}}' class="region-label text-truncate"></semantic-link>
-                            <div>
                               <mp-event-trigger id='form-event-trigger' type='Component.TemplateUpdate' targets='["region-form"]'
-                                              data='{"region": "{{regionIri}}"}'>
-                                <button style="margin-right: 5px;">Edit</button>
+                                              data='{"objectIri": "{{objectIri}}"}'>
+                                <button style="margin-right: 5px;">new feature</button>
                               </mp-event-trigger>
-                              <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
-                                              data='{"imageIri": "{{../imageIri}}","regionIri": "{{regionIri}}"}'>
-                                <button style="margin-right: 5px;">Zoom</button>
+                      </h1>
+
+                      <semantic-query
+                          query='
+                            SELECT DISTINCT ?region ?objectIri {
+                              <{{objectIri}}> crm:P138i_has_representation ?image .
+                              ?region crmdig:L49_is_primary_area_of ?image .
+
+                              FILTER NOT EXISTS {
+                                ?feature crm:P138i_has_representation ?region .
+                              }
+                              BIND(<{{objectIri}}> as ?objectIri) .
+                            }
+                          '
+                          template='{{> regionsWithoutFeature}}'
+                      >
+                        <template id='regionsWithoutFeature'>
+                          <div>
+                            <p>Regions without features<p/>
+                            <ul>
+                            {{#each bindings}}
+                              <li>
+                                <semantic-link iri='{{region.value}}'></semantic-link>
+                              <mp-event-trigger id='form-event-trigger' type='Component.TemplateUpdate' targets='["region-form"]'
+                                              data='{"region": "{{region.value}}", "objectIri": "{{objectIri.value}}"}'>
+                                <button style="margin-right: 5px;">create associated feature</button>
                               </mp-event-trigger>
-                            </div>
+
+                              <button>Delete</button>
+                              </li>
+                            {{/each}}
+                            </ul>
                           </div>
-                          {{/each}}
-                        </div>
-                      </div>
-                          
-                      {{/if}}
-                    
+                        </template>
+                      </semantic-query>
+
+
+                      <semantic-query
+                          query='
+                            SELECT DISTINCT ?feature (SAMPLE(?r) AS ?region) (COUNT(?r) AS ?numberOfRegions) (<{{objectIri}}> as ?objectIri) {
+                              ?feature crm:P56i_is_found_on <{{objectIri}}> .
+                              OPTIONAL {
+                                ?feature crm:P138i_has_representation ?r .
+                              }
+                            } 
+                            GROUP BY ?feature
+                          '
+                          template='{{> features}}'
+                      >
+                        <template id='features'>
+                          <div>
+                            <p>Object features<p/>
+                            <ul>
+                            {{#each bindings}}
+                              <li>
+                                <semantic-link iri='{{feature.value}}'></semantic-link> <button>explore details</button>
+
+                              <mp-event-trigger id='form-event-trigger' type='Component.TemplateUpdate' targets='["region-form"]'
+                                              data='{"feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"}'>
+                                <button style="margin-right: 5px;">edit</button>
+                              </mp-event-trigger>
+
+                              <button>Focus</button>
+                              </li>
+                            {{/each}}
+                            </ul>
+                          </div>
+                        </template>
+                      </semantic-query>
+
                     {{/each}}
                   </div>
-
-                  {{else}}
-                  
-                    <p>No selected images in the Image Viewer</p>
-
-                  {{/if}}
                 </div>
               </template>
           </mp-event-target-template-render>
@@ -71,14 +111,25 @@
           <mp-event-target-template-render id='region-form' template='{{> template}}'>
             <template id='template'>
               <div>
-                {{#if region}}
+                {{#if feature}}
                   <div class="frame-imageAnnotationWorkspace__form-container">
-                    <h1>Editing feature: &nbsp;<strong><semantic-link iri='{{region}}'></semantic-link></strong></h1>
-                    <div class="text-truncate region-section">Feature captured in image region: {{region}}</div>
-                    [[> rsp:ImageAnnotationForm]]
+                    <h1>Editing feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong></h1>
+                    {{> rsp:ImageAnnotationForm edit=true}}
                   </div>
                 {{else}}
-                  <p></p>
+                  {{#if region}}
+                    <div class="frame-imageAnnotationWorkspace__form-container">
+                      <h1>Creating feature represented by the region: &nbsp;<strong><semantic-link iri='{{region}}'></semantic-link></strong></h1>
+                      {{> rsp:ImageAnnotationForm createFromRegion=true}}
+                    </div>
+                  {{else}}
+                    {{#if objectIri}}
+                      <div class="frame-imageAnnotationWorkspace__form-container">
+                        <h1>Creating new feature for object: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
+                        {{> rsp:ImageAnnotationForm createWithoutRegion=true}}
+                      </div>
+                    {{/if}}
+                  {{/if}}
                 {{/if}}
               </div>
             </template>

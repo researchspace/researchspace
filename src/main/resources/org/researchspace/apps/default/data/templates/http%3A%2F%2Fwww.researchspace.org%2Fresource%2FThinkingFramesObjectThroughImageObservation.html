@@ -34,30 +34,43 @@
               annotation-view-tooltip-template='
                 {{{{raw}}}}                                
                 <div class="all-annotations" id="annotation-viewer-{{windowId}}">
+                  <div class="text-viewer">Image Region(s)</div>
                   {{#each annotations}}
                     <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
                       <div class="button-container">
                         {{#if id}}
                           <mp-template-item>
-                            <semantic-link iri="{{id}}">{{{annoText}}}</semantic-link>
+                            <div class="annotation-label" 
+                            style="max-width: 150px;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            padding-right: 6px;">
+                              <semantic-link iri="{{id}}">{{{annoText}}}</semantic-link>
+                            </div>
                           </mp-template-item>
                         {{/if}}
-                        {{#if showUpdate}}
+                        <div>
+                          {{#if showUpdate}}
                           <a href="#edit" class="edit">
-                            <i class="fa fa-pencil-square-o fa-fw"></i>{{t "edit"}}
+                            <i class="rs-icon rs-icon-annotation"></i>
+                            <!-- {{t "edit"}} -->
                           </a>
                         {{/if}}
                         {{#if showDelete}}
                           <a href="#delete" class="delete">
-                            <i class="fa fa-trash-o fa-fw"></i>{{t "delete"}}
+                            <i class="iconmoon iconmoon-bin"></i>
+                            <!-- {{t "delete"}} -->
                           </a>
                         {{/if}}
-                      </div>
-                      <div class="text-viewer">
-                        <p>{{{annoText}}}</p>
+                          <a class="focus">
+                            <i class="rs-icon rs-icon-image"></i>
+                          </a>
+                        </div>
+                        
                       </div>
                       <div>
-                        <mp-template-item>                    
+                        <mp-template-item>
                           <semantic-query
                             query="
                               SELECT DISTINCT ?feature ?objectIri {
@@ -68,18 +81,24 @@
                           >
                             {{{{raw}}}}
                             <template id="template">
-                              <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
-                                <h2>Features</h2>
-                                <div class="frame-imageAnnotationWorkspace__item_container">
+                              <div>
+                                <div>Associated Features</div>
+                                <div>
                                 {{#each bindings}}
-                                  <div class="frame-imageAnnotationWorkspace__item">
-                                    <semantic-link iri="{{feature.value}}" class="text-truncate feature-label"></semantic-link> 
-                                    <div style="display: flex; align-items: center;">
+                                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <semantic-link iri="{{feature.value}}" 
+                                                  style="max-width: 150px;
+                                                  white-space: nowrap;
+                                                  overflow: hidden;
+                                                  text-overflow: ellipsis;
+                                                  padding-right: 6px;">
+                                    </semantic-link> 
+                                    <div>
                                       <mp-event-trigger id="form-event-trigger" type="TwoSidePanel.Toggle" targets=&#39;["objects-panel"]&#39;
                                                       data=&#39;{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }&#39;>
-                                        <button>Edit</button>
+                                         <i class="rs-icon rs-icon-annotation">edit</i>
                                       </mp-event-trigger>
-                                      <button class="btn-icon">Explore Feature details<i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i></button>
+                                        <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details">details</i>
                                     </div>
                                   </div>
                                 {{/each}}

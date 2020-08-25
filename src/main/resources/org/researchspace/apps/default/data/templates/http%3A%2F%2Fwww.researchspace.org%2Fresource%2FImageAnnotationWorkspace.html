@@ -23,125 +23,125 @@
             <template id='template'>
               <two-side-panel id='objects-panel'>
                 <template id='front'>
-              <div class="frame-imageAnnotationWorkspace__observationArea_content">
-                  <div class="rs-title-row">
-                    <h1 class="rs-main-title">Observations</h1>
-                    <mp-overlay-dialog title="Object Observations" type="modal" class="modal-xlSize">
-                      <mp-overlay-dialog-trigger>
-                        <i class="iconmoon iconmoon-info"></i>
-                      </mp-overlay-dialog-trigger>
-                      <mp-overlay-dialog-content>
-                       <div>documentation</div>
-                      </mp-overlay-dialog-content>
-                    </mp-overlay-dialog>
-                  </div>
-                  <div>
-                    {{#each objects}}
-                      <div class="frame-imageAnnotationWorkspace__observationArea_resourceTitleRow">
-                        <h1 class="text-truncate">Observed on <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
-                        <div style="display: flex; align-items: flex-start;">
-                          <button class="btn btn-primary btn-icon">
-                            <i class="rs-icon rs-icon-image" title="Focus on resource images"></i>
-                          </button>
-                          <mp-event-trigger id='form-event-trigger' 
-                                            type='TwoSidePanel.Toggle' 
-                                            targets='["objects-panel"]'
-                                            data='{"backVariables": { "objectIri": "{{objectIri}}"} }'>
-                            <button class="btn btn-primary">new feature</button>
-                          </mp-event-trigger>
-                        </div>
+                  <div class="frame-imageAnnotationWorkspace__observationArea_content">
+                      <div class="rs-title-row">
+                        <h1 class="rs-main-title">Observations</h1>
+                        <mp-overlay-dialog title="Object Observations" type="modal" class="modal-xlSize">
+                          <mp-overlay-dialog-trigger>
+                            <i class="iconmoon iconmoon-info"></i>
+                          </mp-overlay-dialog-trigger>
+                          <mp-overlay-dialog-content>
+                          <div>documentation</div>
+                          </mp-overlay-dialog-content>
+                        </mp-overlay-dialog>
                       </div>
-                        
-                      <semantic-query
-                          query='
-                            SELECT DISTINCT ?region ?objectIri ?image {
-                              <{{objectIri}}> crm:P138i_has_representation ?image .
-                              ?region crmdig:L49_is_primary_area_of ?image .
-
-                              FILTER NOT EXISTS {
-                                ?feature crm:P138i_has_representation ?region .
-                              }
-                              BIND(<{{objectIri}}> as ?objectIri) .
-                            }
-                          '
-                          template='{{> regionsWithoutFeature}}'
-                      >
-                        <template id='regionsWithoutFeature'>
-                          <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
-                            <h2>Image Regions</h2>
-                            <div class="frame-imageAnnotationWorkspace__item_container">
-                            {{#each bindings}}
-                              <div class="frame-imageAnnotationWorkspace__item">
-                                <semantic-link iri='{{region.value}}' class="text-truncate region-label"></semantic-link>
-                                <div style="display: flex; align-items: center;">
-                                  <mp-event-trigger id='form-event-trigger' 
-                                  type='TwoSidePanel.Toggle' 
-                                  targets='["objects-panel"]'
-                                  data='{"backVariables": { "region": "{{region.value}}", "objectIri": "{{objectIri.value}}"} }'>
-                                    <button>Create associated feature</button>
-                                  </mp-event-trigger>
-                                  <button class="btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete image"></i></button>
-                                  <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
-                                                    data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                    <button class="btn-icon"><i class="rs-icon rs-icon-image" title="Focus on image"></i></button>
-                                  </mp-event-trigger>
-                                </div>
-                              </div>
-                            {{/each}}
+                      <div>
+                        {{#each objects}}
+                          <div class="frame-imageAnnotationWorkspace__observationArea_resourceTitleRow">
+                            <h1 class="text-truncate">Observed on <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
+                            <div style="display: flex; align-items: flex-start;">
+                              <button class="btn btn-primary btn-icon">
+                                <i class="rs-icon rs-icon-image" title="Focus on resource images"></i>
+                              </button>
+                              <mp-event-trigger id='form-event-trigger' 
+                                                type='TwoSidePanel.Toggle' 
+                                                targets='["objects-panel"]'
+                                                data='{"backVariables": { "objectIri": "{{objectIri}}"} }'>
+                                <button class="btn btn-primary">new feature</button>
+                              </mp-event-trigger>
                             </div>
                           </div>
-                        </template>
-                      </semantic-query>
+                            
+                          <semantic-query
+                              query='
+                                SELECT DISTINCT ?region ?objectIri ?image {
+                                  <{{objectIri}}> crm:P138i_has_representation ?image .
+                                  ?region crmdig:L49_is_primary_area_of ?image .
 
-                      <semantic-query
-                          query='
-                            SELECT DISTINCT ?feature (SAMPLE(?i) AS ?image) (SAMPLE(?r) AS ?region) (COUNT(?r) AS ?numberOfRegions) (<{{objectIri}}> as ?objectIri) {
-                              ?feature crm:P56i_is_found_on <{{objectIri}}> .
-                              OPTIONAL {
-                                ?feature crm:P138i_has_representation ?r .
-                                ?r crmdig:L49_is_primary_area_of ?i .
-                              }
-                            } 
-                            GROUP BY ?feature
-                          '
-                          template='{{> features}}'
-                      >
-                        <template id='features'>
-                          <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
-                            <h2>Features</h2>
-                            <div class="frame-imageAnnotationWorkspace__item_container">
-                            {{#each bindings}}
-                              <div class="frame-imageAnnotationWorkspace__item">
-                                <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link> 
-                                <div style="display: flex; align-items: center;">
-                                  <mp-event-trigger id='form-event-trigger' type='TwoSidePanel.Toggle' targets='["objects-panel"]'
-                                                  data='{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }'>
-                                    <button>Edit</button>
-                                  </mp-event-trigger>
-                                  <button class="btn-icon"><i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i></button>
-                                    {{#if region}}
+                                  FILTER NOT EXISTS {
+                                    ?feature crm:P138i_has_representation ?region .
+                                  }
+                                  BIND(<{{objectIri}}> as ?objectIri) .
+                                }
+                              '
+                              template='{{> regionsWithoutFeature}}'
+                          >
+                            <template id='regionsWithoutFeature'>
+                              <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
+                                <h2>Image Regions</h2>
+                                <div class="frame-imageAnnotationWorkspace__item_container">
+                                {{#each bindings}}
+                                  <div class="frame-imageAnnotationWorkspace__item">
+                                    <semantic-link iri='{{region.value}}' class="text-truncate region-label"></semantic-link>
+                                    <div style="display: flex; align-items: center;">
+                                      <mp-event-trigger id='form-event-trigger' 
+                                      type='TwoSidePanel.Toggle' 
+                                      targets='["objects-panel"]'
+                                      data='{"backVariables": { "region": "{{region.value}}", "objectIri": "{{objectIri.value}}"} }'>
+                                        <button>Create associated feature</button>
+                                      </mp-event-trigger>
+                                      <button class="btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete image"></i></button>
                                       <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
                                                         data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                          <button class="btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
+                                        <button class="btn-icon"><i class="rs-icon rs-icon-image" title="Focus on image"></i></button>
                                       </mp-event-trigger>
-                                    {{else}}
-                                    <div style="position: relative;">
-                                      <button disabled class="btn-icon">
-                                        <i class="rs-icon rs-icon-image" title="The feature has no image associated"></i>
-                                      </button>
-                                      <i class="fa fa-exclamation-circle" title="The feature has no image associated"></i>
                                     </div>
-                                    {{/if}}
+                                  </div>
+                                {{/each}}
                                 </div>
                               </div>
-                            {{/each}}
-                            </div>
-                          </div>
-                        </template>
-                      </semantic-query>
-                    {{/each}}
+                            </template>
+                          </semantic-query>
+
+                          <semantic-query
+                              query='
+                                SELECT DISTINCT ?feature (SAMPLE(?i) AS ?image) (SAMPLE(?r) AS ?region) (COUNT(?r) AS ?numberOfRegions) (<{{objectIri}}> as ?objectIri) {
+                                  ?feature crm:P56i_is_found_on <{{objectIri}}> .
+                                  OPTIONAL {
+                                    ?feature crm:P138i_has_representation ?r .
+                                    ?r crmdig:L49_is_primary_area_of ?i .
+                                  }
+                                } 
+                                GROUP BY ?feature
+                              '
+                              template='{{> features}}'
+                          >
+                            <template id='features'>
+                              <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
+                                <h2>Features</h2>
+                                <div class="frame-imageAnnotationWorkspace__item_container">
+                                {{#each bindings}}
+                                  <div class="frame-imageAnnotationWorkspace__item">
+                                    <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link> 
+                                    <div style="display: flex; align-items: center;">
+                                      <mp-event-trigger id='form-event-trigger' type='TwoSidePanel.Toggle' targets='["objects-panel"]'
+                                                      data='{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }'>
+                                        <button>Edit</button>
+                                      </mp-event-trigger>
+                                      <button class="btn-icon"><i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i></button>
+                                        {{#if region}}
+                                          <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
+                                                            data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                              <button class="btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
+                                          </mp-event-trigger>
+                                        {{else}}
+                                        <div style="position: relative;">
+                                          <button disabled class="btn-icon">
+                                            <i class="rs-icon rs-icon-image" title="The feature has no image associated"></i>
+                                          </button>
+                                          <i class="fa fa-exclamation-circle" title="The feature has no image associated"></i>
+                                        </div>
+                                        {{/if}}
+                                    </div>
+                                  </div>
+                                {{/each}}
+                                </div>
+                              </div>
+                            </template>
+                          </semantic-query>
+                        {{/each}}
+                      </div>
                   </div>
-              </div>
                 </template>
                 
                 <template id='back'>
@@ -179,7 +179,7 @@
                         {{/if}}
                       {{/if}}
                     {{/if}}
-                  </div>                
+                  </div>
                 </template>
               </two-side-panel>
             </template>

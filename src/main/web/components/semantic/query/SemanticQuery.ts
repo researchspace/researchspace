@@ -22,13 +22,13 @@ import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
-import { Component, ComponentContext } from 'platform/api/components';
+import { Component, ComponentProps, ComponentContext } from 'platform/api/components';
 import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
 
-export interface SemanticQueryConfig {
+export interface SemanticQueryConfig extends ComponentProps {
   /**
    * SPARQL SELECT query string.
    */
@@ -40,7 +40,7 @@ export interface SemanticQueryConfig {
    * **Example:** `My Result: {{#each bindings}}{{bindingName.value}}{{/each}}` .
    * **Default:** If no template is provided, all tuples for the first projection variable will we rendered as a comma-separated list.
    */
-  template: string;
+  template?: string;
 
   /**
    * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
@@ -175,6 +175,14 @@ export class SemanticQuery extends Component<SemanticQueryProps, SemanticQuerySt
     if (template) {
       return template;
     }
+
+    // try to get default "<template>" element with id template from the local scope
+    const localScope = this.props.markupTemplateScope;
+    const partial = localScope ? localScope.getPartial('template') : undefined;
+    if (partial) {
+      return partial.source;
+    }
+
     return (
       '<div>{{#each bindings}}' +
       '{{#if (isIri ' +

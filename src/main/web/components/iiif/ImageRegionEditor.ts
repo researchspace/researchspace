@@ -21,7 +21,7 @@ import * as D from 'react-dom-factories';
 import * as PropTypes from 'prop-types';
 import {
   isEqual, map, throttle, uniqBy, toPairs,
-  isEmpty, some, findKey, includes, find
+  isEmpty, some, findKey, includes, find, last
 } from 'lodash';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
@@ -41,7 +41,7 @@ import { UpdatedEvent, ZoomToRegionEvent, IiifManifestObjects, AddObjectImagesEv
 
 import { chooseMiradorLayout } from './SideBySideComparison';
 
-import { renderMirador, removeMirador, scrollToRegions } from './mirador/Mirador';
+import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
 
 export interface ImageRegionEditorConfig {
@@ -55,6 +55,12 @@ export interface ImageRegionEditorConfig {
    * Use details sidebar instead of built-in mirador details view
    */
   useDetailsSidebar?: boolean;
+
+  /**
+   * These are special handlebars template passed to mirador, they don't work in the same
+   * way as platform templates and can't be used with <template> tag
+   */
+  annotationViewTooltipTemplate?: string;
 }
 
 export interface ImageRegionEditorProps extends ImageRegionEditorConfig {
@@ -107,15 +113,15 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     };
   }
 
-  private normalizeImageProps({imageOrRegion}: ImageRegionEditorProps) {
+  private normalizeImageProps({ imageOrRegion }: ImageRegionEditorProps) {
     if (typeof imageOrRegion === 'string') {
       return [
         { objectIri: imageOrRegion, images: [imageOrRegion] },
       ];
-    } else if ( Array.isArray(imageOrRegion) ) {
+    } else if (Array.isArray(imageOrRegion)) {
       return imageOrRegion;
     } else {
-      return toPairs(imageOrRegion).map(([objectIri, images]) => ({images, objectIri}));
+      return toPairs(imageOrRegion).map(([objectIri, images]) => ({ images, objectIri }));
     }
   }
 
@@ -140,11 +146,11 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
    * throttle event trigger because windowUpdated event in mirador is called too often
    */
   private triggerManifestUpdateEvent(objects: IiifManifestObjects[]) {
-      trigger({
-        eventType: UpdatedEvent,
-        source: this.props.id,
-        data: {objects}
-      });
+    trigger({
+      eventType: UpdatedEvent,
+      source: this.props.id,
+      data: { objects }
+    });
   }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
@@ -153,7 +159,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   private queryAllImagesInfo() {
     this.queryImagesInfo(this.state.allImages).observe({
-      value: ({info, iiifImageId}) => {
+      value: ({ info, iiifImageId }) => {
         this.setState({ loading: false, iiifImageId, info });
       },
       error: (error) => this.setState({ loading: false, errorMessage: error }),
@@ -163,7 +169,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   private queryImagesInfo(allImages: IiifManifestObjects[]) {
     const { imageIdPattern } = this.props;
 
-    const querying = allImages.map(({images}) => {
+    const querying = allImages.map(({ images }) => {
       if (!images.length) {
         return Kefir.constant([]);
       }
@@ -190,8 +196,8 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
             info.set(imageInfo.iri.value, imageInfo);
             iiifImageId.set(imageInfo.iri.value, imageInfo.imageId);
           })
-                      );
-        return {info, iiifImageId};
+        );
+        return { info, iiifImageId };
       }
     );
   }
@@ -206,7 +212,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
     const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
 
-    const manifestQuerying = this.state.allImages.map(({objectIri, images}) =>
+    const manifestQuerying = this.state.allImages.map(({ objectIri, images }) =>
       this.queryManifestParameters({
         infos: this.state.info,
         iiifImageIds: this.state.iiifImageId,
@@ -282,16 +288,16 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       )
       .observe({
         value: (event) => {
-          const { allImages } =  this.state;
+          const { allImages } = this.state;
           if (!some(allImages, im => im.objectIri === event.data.objectIri)) {
             const newImage = { objectIri: event.data.objectIri, images: event.data.imageIris };
             allImages.unshift(newImage);
-            this.setState({allImages: this.state.allImages})
+            this.setState({ allImages: this.state.allImages })
 
             const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
             this.queryImagesInfo([newImage])
               .flatMap(
-                ({info, iiifImageId}) => {
+                ({ info, iiifImageId }) => {
                   return this.queryManifestParameters({
                     infos: info, iiifImageIds: iiifImageId,
                     iri: event.data.objectIri, images: event.data.imageIris, iiifServerUrl
@@ -303,14 +309,21 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
                 const manifest = new Mirador.Manifest(manifestJson['@id'], 'British Museum', manifestJson);
                 this.miradorInstance.eventEmitter.publish('manifestReceived', manifest, 'Test');
                 this.triggerManifestUpdateEvent(allImages);
-                addNotification({
-                  level: 'info',
-                  children: React.createElement(
-                    'p',
-                    {},
-                    'Images for object were successfully added to the image viewer.'
-                  ),
-                });
+
+                // add new window with new manifest, see handling of the ZoomToRegionEvent for the explanation of the logic behind this code
+                const onSlotAdded = (e, { slots }: { slots: Mirador.Slot[] }) => {
+                  this.miradorInstance.eventEmitter.publish(
+                    'ADD_WINDOW', {
+                      manifest,
+                      slotAddress: last(slots).layoutAddress
+                    }
+                  );
+                };
+                this.miradorInstance.eventEmitter.one('slotsUpdated', onSlotAdded)
+                this.miradorInstance.eventEmitter.publish(
+                  'SPLIT_RIGHT_FROM_WINDOW',
+                  this.miradorInstance.viewer.workspace.windows[0].id
+                );
               });
           }
         }
@@ -326,20 +339,41 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       )
       .observe({
         value: (event) => {
-          scrollToRegions(this.miradorInstance, ({ index, canvasId }) => {
-            if (canvasId === event.data.imageIri)  {
-              const activeWindow = this.miradorInstance.viewer.workspace.slots[index].window;
-              const annotations = activeWindow.annotationsList;
-              const annotation = find(annotations, a => a['@id'] === event.data.regionIri);
-              const viewport = activeWindow.canvases[canvasId].bounds;
-              const boundingBox =
-                parseImageSubarea(annotation.on[0].selector.default.value).get();
-              return computeDisplayedRegionWithMargin(
-                boundingBox, viewport, 0.05
+          const windows = this.miradorInstance.viewer.workspace.windows;
+          const windowForImage = windows.find(w => w.canvasID === event.data.imageIri);
+
+          if (windowForImage) {
+            this.scrollToImageRegion(event.data.imageIri, event.data.regionIri)
+          } else {
+            // Mirador handles events asynchronously, so here:
+            //  1. we trigger "SPLIT_RIGHT_FROM_WINDOW" event to add new mirador window
+            //  2. then when it is ready Mirador triggers "slotsUpdated" event
+            //  3. and we load needed image into the new window
+            //  4. when image with annotations is loaded Mirador triggers "ANNOTATIONS_LIST_UPDATED" event
+            //  5. and then we scroll to the region
+
+            const onSlotAdded = (e, { slots }: { slots: Mirador.Slot[] }) => {
+              const onAnnotationsReady = () => {
+                this.scrollToImageRegion(event.data.imageIri, event.data.regionIri)
+              };
+              this.miradorInstance.eventEmitter.one('ANNOTATIONS_LIST_UPDATED', onAnnotationsReady);
+
+              const manifest =
+                this.miradorInstance.viewer.manifestsPanel.manifestListItems.find(
+                  ({ manifest }) => some(manifest.jsonLd.sequences[0].canvases, c => c['@id'] === event.data.imageIri)
+                ).manifest;
+              this.miradorInstance.eventEmitter.publish(
+                'ADD_WINDOW', {
+                manifest,
+                canvasID: event.data.imageIri,
+                slotAddress: last(slots).layoutAddress
+              }
               );
-            }
-            return undefined;
-          })
+            };
+
+            this.miradorInstance.eventEmitter.one('slotsUpdated', onSlotAdded)
+            this.miradorInstance.eventEmitter.publish('SPLIT_RIGHT_FROM_WINDOW', windows[0].id)
+          }
         }
       })
   }
@@ -387,11 +421,17 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       .getOrElse(['default']);
 
   private miradorConfigFromManifest(manifests: Array<Manifest>): Mirador.Options {
-    const { id, annotationEndpoint, useDetailsSidebar } = this.props;
+    const {
+      id, annotationEndpoint, useDetailsSidebar,
+      annotationViewTooltipTemplate,
+    } = this.props;
     const imagesInfo = this.state.info as ImagesInfoByIri;
     return {
       id: id, // The CSS ID selector for the containing element.
-      useDetailsSidebar: this.props.useDetailsSidebar,
+      useDetailsSidebar, annotationViewTooltipTemplate,
+      windowSettings: {
+        sidePanel: !useDetailsSidebar
+      },
       layout: chooseMiradorLayout(manifests.length),
       saveSession: false,
       data: manifests.map((manifest) => ({
@@ -446,14 +486,32 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       errorMessage
         ? React.createElement(ErrorNotification, { errorMessage })
         : D.div({
-            ref: (element) => {
-              this.miradorElement = element;
-              this.renderMirador(element);
-            },
-            id: this.props.id,
-            style: { width: '100%', height: '100%', position: 'relative' },
-          })
+          ref: (element) => {
+            this.miradorElement = element;
+            this.renderMirador(element);
+          },
+          id: this.props.id,
+          style: { width: '100%', height: '100%', position: 'relative' },
+        })
     );
+  }
+
+  private scrollToImageRegion = (imageIri: string, regionIri: string) => {
+    const windows = this.miradorInstance.viewer.workspace.windows;
+    const windowForImage = windows.find(w => w.canvasID === imageIri);
+    scrollToRegion(windowForImage, view => {
+      const annotations = windowForImage.annotationsList;
+      const annotation = find(annotations, a => a['@id'] === regionIri);
+      const viewport = windowForImage.canvases[imageIri].bounds;
+      const boundingBox =
+        parseImageSubarea(annotation.on[0].selector.default.value).get();
+
+      return computeDisplayedRegionWithMargin(
+        boundingBox, viewport, 0.05
+      );
+    }).onEnd(() => {
+      // make observable active (hot)
+    });
   }
 }
 

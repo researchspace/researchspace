@@ -23,13 +23,79 @@
             <rs-iiif-viewer-panel
               [[> rsp:IIIFConfig]]
               id='image-editor'
+              use-details-sidebar=true
               iris='{{bindings.0.items.value}}'
               query='
                 SELECT DISTINCT ?image WHERE {
                   ?subject (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
                   ?image a ?type .
                   FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
-              }'>
+              }'
+              annotation-view-tooltip-template='
+                {{{{raw}}}}                                
+                <div class="all-annotations" id="annotation-viewer-{{windowId}}">
+                  {{#each annotations}}
+                    <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
+                      <div class="button-container">
+                        {{#if id}}
+                          <mp-template-item>
+                            <semantic-link iri="{{id}}">{{{annoText}}}</semantic-link>
+                          </mp-template-item>
+                        {{/if}}
+                        {{#if showUpdate}}
+                          <a href="#edit" class="edit">
+                            <i class="fa fa-pencil-square-o fa-fw"></i>{{t "edit"}}
+                          </a>
+                        {{/if}}
+                        {{#if showDelete}}
+                          <a href="#delete" class="delete">
+                            <i class="fa fa-trash-o fa-fw"></i>{{t "delete"}}
+                          </a>
+                        {{/if}}
+                      </div>
+                      <div class="text-viewer">
+                        <p>{{{annoText}}}</p>
+                      </div>
+                      <div>
+                        <mp-template-item>                    
+                          <semantic-query
+                            query="
+                              SELECT DISTINCT ?feature ?objectIri {
+                                ?feature crm:P56i_is_found_on ?objectIri .
+                                ?feature crm:P138i_has_representation <{{id}}> .
+                              } 
+                            "
+                          >
+                            {{{{raw}}}}
+                            <template id="template">
+                              <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
+                                <h2>Features</h2>
+                                <div class="frame-imageAnnotationWorkspace__item_container">
+                                {{#each bindings}}
+                                  <div class="frame-imageAnnotationWorkspace__item">
+                                    <semantic-link iri="{{feature.value}}" class="text-truncate feature-label"></semantic-link> 
+                                    <div style="display: flex; align-items: center;">
+                                      <mp-event-trigger id="form-event-trigger" type="TwoSidePanel.Toggle" targets=&#39;["objects-panel"]&#39;
+                                                      data=&#39;{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }&#39;>
+                                        <button>Edit</button>
+                                      </mp-event-trigger>
+                                      <button class="btn-icon">Explore Feature details<i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i></button>
+                                    </div>
+                                  </div>
+                                {{/each}}
+                                </div>
+                              </div>
+                            </template>
+                            {{{{/raw}}}}
+                          </semantic-query>
+                        </mp-template-item>  
+                      </div>
+                    </div>
+                  {{/each}}
+                </div>
+                {{{{/raw}}}}
+              '
+            >
             </rs-iiif-viewer-panel>
          {{/rsp:ImageAnnotationWorkspace }}
         </template>

@@ -41,14 +41,9 @@
                     <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
                       <div class="button-container">
                         {{#if id}}
-                          <mp-template-item>
-                            <div class="annotation-label" 
-                            style="max-width: 150px;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            padding-right: 6px;">
-                              <semantic-link iri="{{id}}">{{{annoText}}}</semantic-link>
+                          <mp-template-item style="max-width: calc(100% - 80px);">
+                            <div>
+                              <semantic-link iri="{{id}}" style="display: block; width: 100%;">{{{annoText}}}</semantic-link>
                             </div>
                           </mp-template-item>
                         {{/if}}
@@ -73,6 +68,7 @@
                       </div>
                       <div>
                         <mp-template-item>
+
                           <semantic-query
                             query="
                               SELECT DISTINCT ?feature ?objectIri {
@@ -84,7 +80,7 @@
                             {{{{raw}}}}
                             <template id="template">
                               <div>
-                                <div>Associated Features</div>
+                                <div style="padding: 7px 0;">Associated Features</div>
                                 <div>
                                 {{#each bindings}}
                                   <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -96,11 +92,13 @@
                                                   padding-right: 6px;">
                                     </semantic-link> 
                                     <div>
-                                      <mp-event-trigger id="form-event-trigger" type="TwoSidePanel.ShowBack" targets=&#39;["objects-panel"]&#39;
-                                                      data=&#39;{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }&#39;>
-                                         <i class="rs-icon rs-icon-annotation">edit</i>
+                                      <mp-event-trigger id="form-event-trigger" 
+                                                        type="TwoSidePanel.ShowBack" 
+                                                        targets=&#39;["objects-panel"]&#39;
+                                                        data=&#39;{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }&#39;>
+                                         <span class="rs-icon rs-icon-annotation" style="cursor:pointer;">Edit</span>
                                       </mp-event-trigger>
-                                        <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details">details</i>
+                                        <span class="rs-icon rs-icon-sidebar_right" title="Explore Feature details" style="padding-left: 8px; cursor:pointer;">Details</span>
                                     </div>
                                   </div>
                                 {{/each}}
@@ -109,7 +107,7 @@
                             </template>
                             {{{{/raw}}}}
                           </semantic-query>
-                        </mp-template-item>  
+                        </mp-template-item>
                       </div>
                     </div>
                   {{/each}}

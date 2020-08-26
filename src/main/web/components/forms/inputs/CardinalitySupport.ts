@@ -149,7 +149,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
 
     // if we don't want to render header and cardinality is 1 then there there is no reason to show the group borders and other styles
     const canCollapseGroup =
-      !this.props.renderHeader &&
+      this.props.renderHeader === false &&
       this.props.definition.minOccurs === 1 &&
       this.props.definition.maxOccurs === 1;
 

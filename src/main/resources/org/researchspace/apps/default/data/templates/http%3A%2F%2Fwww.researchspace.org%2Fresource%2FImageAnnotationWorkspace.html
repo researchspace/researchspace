@@ -10,6 +10,11 @@
                 proxy-event-type='IIIFViewer.AddImagesForObject' proxy-targets='["image-editor"]'
 ></mp-event-proxy>
 
+
+<mp-event-proxy id='go-back-to-list-on-form-save' on-event-source='feature-creation-form'
+                proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]'
+></mp-event-proxy>
+
 <div class="frame-imageAnnotationWorkspace__container">
       <div class="frame-imageAnnotationWorkspace__viewer">
         {{> @partial-block }}
@@ -40,11 +45,16 @@
                           <div class="frame-imageAnnotationWorkspace__observationArea_resourceTitleRow">
                             <h1 class="text-truncate">Observed on <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
                             <div style="display: flex; align-items: flex-start;">
-                              <button class="btn btn-primary btn-icon">
-                                <i class="rs-icon rs-icon-image" title="Focus on resource images"></i>
-                              </button>
+                              <mp-event-trigger id='image-view-trigger' 
+                                            type='IIIFViewer.AddImagesForObject' 
+                                            targets='["image-editor"]'
+                                            data='{ "objectIri": "{{objectIri}}" }'>
+                                <button class="btn btn-primary btn-icon">
+                                  <i class="rs-icon rs-icon-image" title="View resource images"></i>
+                                </button>                          
+                              </mp-event-trigger>
                               <mp-event-trigger id='form-event-trigger' 
-                                                type='TwoSidePanel.Toggle' 
+                                                type='TwoSidePanel.ShowBack' 
                                                 targets='["objects-panel"]'
                                                 data='{"backVariables": { "objectIri": "{{objectIri}}"} }'>
                                 <button class="btn btn-primary">new feature</button>
@@ -54,13 +64,14 @@
                             
                           <semantic-query
                               query='
-                                SELECT DISTINCT ?region ?objectIri ?image {
+                                SELECT DISTINCT ?region ?regionLabel ?objectIri ?image {
                                   <{{objectIri}}> crm:P138i_has_representation ?image .
                                   ?region crmdig:L49_is_primary_area_of ?image .
 
                                   FILTER NOT EXISTS {
                                     ?feature crm:P138i_has_representation ?region .
                                   }
+                                  ?region rso:displayLabel ?regionLabel .
                                   BIND(<{{objectIri}}> as ?objectIri) .
                                 }
                               '
@@ -75,9 +86,9 @@
                                     <semantic-link iri='{{region.value}}' class="text-truncate region-label"></semantic-link>
                                     <div style="display: flex; align-items: center;">
                                       <mp-event-trigger id='form-event-trigger' 
-                                      type='TwoSidePanel.Toggle' 
-                                      targets='["objects-panel"]'
-                                      data='{"backVariables": { "region": "{{region.value}}", "objectIri": "{{objectIri.value}}"} }'>
+                                                        type='TwoSidePanel.ShowBack' 
+                                                        targets='["objects-panel"]'
+                                                        data='{"backVariables": { "region": "{{region.value}}", "regionLabel": "{{regionLabel.value}}", "objectIri": "{{objectIri.value}}"} }'>
                                         <button>Create associated feature</button>
                                       </mp-event-trigger>
                                       <button class="btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete image"></i></button>
@@ -95,14 +106,13 @@
 
                           <semantic-query
                               query='
-                                SELECT DISTINCT ?feature (SAMPLE(?i) AS ?image) (SAMPLE(?r) AS ?region) (COUNT(?r) AS ?numberOfRegions) (<{{objectIri}}> as ?objectIri) {
-                                  ?feature crm:P56i_is_found_on <{{objectIri}}> .
-                                  OPTIONAL {
-                                    ?feature crm:P138i_has_representation ?r .
-                                    ?r crmdig:L49_is_primary_area_of ?i .
-                                  }
-                                } 
-                                GROUP BY ?feature
+                                SELECT DISTINCT ?feature (SAMPLE(?i) AS ?image) (SAMPLE(?r) AS ?region) (IF(COUNT(?r) > 1, true, false) AS ?moreThanOneRegion) {
+                                   ?feature crm:P56i_is_found_on <{{objectIri}}> .
+                                   OPTIONAL {
+                                     ?feature crm:P138i_has_representation ?r .
+                                     ?r crmdig:L49_is_primary_area_of ?i .
+                                   }
+                                } GROUP BY ?feature
                               '
                               template='{{> features}}'
                           >
@@ -114,11 +124,19 @@
                                   <div class="frame-imageAnnotationWorkspace__item">
                                     <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link> 
                                     <div style="display: flex; align-items: center;">
-                                      <mp-event-trigger id='form-event-trigger' type='TwoSidePanel.Toggle' targets='["objects-panel"]'
-                                                      data='{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }'>
+                                      <mp-event-trigger id='form-event-trigger'
+                                                        type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
+                                                        data='{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }'>
                                         <button>Edit</button>
                                       </mp-event-trigger>
-                                      <button class="btn-icon"><i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i></button>
+                                      <mp-event-trigger id='details-view-trigger'
+                                                        type='Component.TemplateUpdate'
+                                                        data='{"iri": "{{feature.value}}"}' targets='["details-view", "open-details-sidebar"]'
+                                      >
+                                        <button class="btn-icon">
+                                          <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i>
+                                        </button>
+                                      </mp-event-trigger>
                                         {{#if region}}
                                           <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
                                                             data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
@@ -147,7 +165,7 @@
                 <template id='back'>
                   <div class="frame-imageAnnotationWorkspace__formArea_container">
                     <mp-event-trigger id='form-panel-back' 
-                                      type='TwoSidePanel.Toggle' 
+                                      type='TwoSidePanel.ShowFront' 
                                       targets='["objects-panel"]'
                     >
                       <div class="back-container">

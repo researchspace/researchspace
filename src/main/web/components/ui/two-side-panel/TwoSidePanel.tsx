@@ -25,12 +25,14 @@ import { TemplateItem } from 'platform/components/ui/template';
 import { Cancellation } from 'platform/api/async';
 
 export interface TwoSidePanelEvents {
-  'TwoSidePanel.Toggle': {
+  'TwoSidePanel.ShowBack': {
     backVariables?: Record<string, any>
-  }
+  },
+  'TwoSidePanel.ShowFront': {}
 }
 const event: EventMaker<TwoSidePanelEvents> = EventMaker;
-export const ToggleEvent = event('TwoSidePanel.Toggle');
+export const ShowBackEvent = event('TwoSidePanel.ShowBack');
+export const ShowFrontEvent = event('TwoSidePanel.ShowFront');
 
 export interface TwoSidePanelProps extends ComponentProps {
   id: string;
@@ -74,15 +76,31 @@ export class TwoSidePanel extends Component<TwoSidePanelProps, State> {
     this.cancellation
         .map(
           listen({
-            eventType: ToggleEvent,
+            eventType: ShowBackEvent,
             target: this.props.id,
           })
         )
         .observe({
           value: ({ data }) => {
             this.setState({
-              showBack: !this.state.showBack,
+              showBack: true,
               backVariables: data?.backVariables || {}
+            })
+          }
+        });
+
+    this.cancellation
+        .map(
+          listen({
+            eventType: ShowFrontEvent,
+            target: this.props.id,
+          })
+        )
+        .observe({
+          value: () => {
+            this.setState({
+              showBack: false,
+              backVariables: {}
             })
           }
         });

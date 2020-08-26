@@ -27,7 +27,7 @@ import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import { ImageRegionEditorComponentMirador, ImageRegionEditorConfig } from 'platform/components/iiif/ImageRegionEditor';
-import { AddImagesForObjectEvent, AddObjectImagesEvent, IiifManifestObjects } from '../iiif/ImageRegionEditorEvents';
+import { AddImagesForObjectEvent, AddObjectImagesEvent, IiifManifestObject } from '../iiif/ImageRegionEditorEvents';
 
 
 const BINDING_VARIABLE = 'subject';
@@ -46,7 +46,7 @@ export interface IIIFViewerPanelProps extends ImageRegionEditorConfig {
 }
 
 export interface State {
-  imageOrRegion?:  IiifManifestObjects[];
+  imageOrRegion?:  IiifManifestObject[];
 }
 
 /**
@@ -130,7 +130,7 @@ export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
     });
     this.queryingCancellation = this.cancellation.deriveAndCancel(this.queryingCancellation);
     this.queryingCancellation.map(Kefir.combine(querying)).onValue((result) => {
-      const imageOrRegion: IiifManifestObjects[] = [];
+      const imageOrRegion: IiifManifestObject[] = [];
       flatten(result).forEach(({ iri, images }) => {
         imageOrRegion.push({ objectIri: iri, images});
       });

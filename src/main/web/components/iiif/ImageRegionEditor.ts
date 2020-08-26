@@ -37,7 +37,7 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo, parseImageSubarea } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
-import { UpdatedEvent, ZoomToRegionEvent, IiifManifestObjects, AddObjectImagesEvent } from './ImageRegionEditorEvents';
+import { UpdatedEvent, ZoomToRegionEvent, IiifManifestObject, AddObjectImagesEvent } from './ImageRegionEditorEvents';
 
 import { chooseMiradorLayout } from './SideBySideComparison';
 
@@ -46,7 +46,7 @@ import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
 
 export interface ImageRegionEditorConfig {
   id?: string;
-  imageOrRegion: string | { [iri: string]: Array<string> } | IiifManifestObjects[];
+  imageOrRegion: string | { [iri: string]: Array<string> } | IiifManifestObject[];
   imageIdPattern: string;
   iiifServerUrl: string;
   repositories?: Array<string>;
@@ -74,7 +74,7 @@ interface ImageRegionEditorState {
   iiifImageId?: Map<string, string>;
   errorMessage?: string;
 
-  allImages: IiifManifestObjects[];
+  allImages: IiifManifestObject[];
 }
 
 /**
@@ -145,7 +145,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   /**
    * throttle event trigger because windowUpdated event in mirador is called too often
    */
-  private triggerManifestUpdateEvent(objects: IiifManifestObjects[]) {
+  private triggerManifestUpdateEvent(objects: IiifManifestObject[]) {
     trigger({
       eventType: UpdatedEvent,
       source: this.props.id,
@@ -166,7 +166,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     });
   }
 
-  private queryImagesInfo(allImages: IiifManifestObjects[]) {
+  private queryImagesInfo(allImages: IiifManifestObject[]) {
     const { imageIdPattern } = this.props;
 
     const querying = allImages.map(({ images }) => {
@@ -290,6 +290,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         value: (event) => {
           const { allImages } = this.state;
           if (!some(allImages, im => im.objectIri === event.data.objectIri)) {
+            // if we don't have object images loaded, then we need to fetch the manifest
             const newImage = { objectIri: event.data.objectIri, images: event.data.imageIris };
             allImages.unshift(newImage);
             this.setState({ allImages: this.state.allImages })
@@ -325,6 +326,29 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
                   this.miradorInstance.viewer.workspace.windows[0].id
                 );
               });
+          } else {
+            // if object images are already loaded then just add new slot with the object
+            const onSlotAdded = (e, { slots }: { slots: Mirador.Slot[] }) => {
+              const objectImages = allImages.find(os => os.objectIri === event.data.objectIri);
+              const manifest =
+                this.miradorInstance.viewer.manifestsPanel.manifestListItems.find(
+                  ({ manifest }) =>
+                    manifest.jsonLd.sequences[0].canvases.some(
+                      c => objectImages.images.includes(c['@id'])
+                    )
+                ).manifest;
+              this.miradorInstance.eventEmitter.publish(
+                'ADD_WINDOW', {
+                  manifest,
+                  slotAddress: last(slots).layoutAddress
+                }
+              );
+            };
+            this.miradorInstance.eventEmitter.one('slotsUpdated', onSlotAdded)
+            this.miradorInstance.eventEmitter.publish(
+              'SPLIT_RIGHT_FROM_WINDOW',
+              this.miradorInstance.viewer.workspace.windows[0].id
+            );
           }
         }
       });

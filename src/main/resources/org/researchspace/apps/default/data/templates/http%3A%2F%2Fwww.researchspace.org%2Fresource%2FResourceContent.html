@@ -170,58 +170,81 @@
                                             </semantic-link-container>
 
                                             [[#if (hasPermission "forms:ldp:*")]]
+                                              {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing")}}
                                             <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                 urlqueryparam-view='image-graph-authoring' urlqueryparam-resource='[[this]]'>
+                                                 urlqueryparam-view='objectImageObservation' urlqueryparam-resource='[[this]]'>
                                                 <button type="button" class="rs-resource-img__btn" title="Annotate Images">
                                                     <i class="rs-icon rs-icon-area_annotation"></i>
                                                 </button>
                                             </semantic-link-container>
+                                              {{/if}}
                                             [[/if]]
 
                                         </div>
 
                                         [[#block "imageContent"]]
                                         <rs-object-representations query='SELECT DISTINCT ?imgURL ?isMainRep
-                                                                        WHERE {
-                                                                        OPTIONAL {
+                                                                          WHERE {
+                                                                          OPTIONAL {
                                                                             {
-                                                                            <[[this]]> a ?type ;
-                                                                            FILTER(?type != rso:EX_Digital_Image) .
-                                                                            ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
-                                                                            <[[this]]> ?representationProp ?representation .
+                                                                              <[[this]]> a ?type ;
+                                                                              FILTER(?type != rso:EX_Digital_Image) .
+                                                                              ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
+                                                                              <[[this]]> ?representationProp ?representation .
 
-                                                                            OPTIONAL {
+                                                                              OPTIONAL {
                                                                                 <[[this]]> ?representationProp ?representation .
                                                                                 ?representation a rso:EX_Digital_Image ;
                                                                                                 crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
                                                                                 BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
-                                                                            }
+                                                                              }
 
-                                                                            OPTIONAL {
+                                                                              OPTIONAL {
                                                                                 <[[this]]> ?representationProp ?representation .
                                                                                 ?representation a rso:EX_Digital_Image .
                                                                                 BIND(REPLACE(STR(?representation), "^.*/(.*)$", "$1") as ?imageID) .
                                                                                 BIND(?imageID as ?imgIiifId)
                                                                                 BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
-                                                                            }
+                                                                              }
 
-                                                                            BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?representation) AS ?imgURLx)
-                                                                            BIND(IF(EXISTS { <[[this]]> rso:PX_has_main_representation ?representation }, true, false) AS ?isMainRepx)
+                                                                              OPTIONAL {
+                                                                                <[[this]]> crm:P138i_has_representation ?representation .
+                                                                                ?representation a rso:EX_Digital_Image_Region .
+                                                                                ?representation crmdig:L49_is_primary_area_of ?image .
+                                                                                ?image crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
+                                                                                ?representation rso:boundingBox ?bb.
+                                                                                BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
+                                                                                BIND(CONCAT("/proxy/IIIF/", ?fileName, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?uploadIiifRegionUrl)
+                                                                              }
+
+                                                                              OPTIONAL {
+                                                                                <[[this]]> crm:P138i_has_representation ?representation .
+                                                                                ?representation a rso:EX_Digital_Image_Region .
+                                                                                ?representation crmdig:L49_is_primary_area_of ?image .
+                                                                                ?representation rso:boundingBox ?bb.
+                                                                                BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
+                                                                                BIND(REPLACE(STR(?image), "^.*/(.*)$", "$1") as ?imageID) .
+                                                                                BIND(CONCAT("/proxy/IIIF/", ?imageID, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?iiifRegionUrl)
+                                                                              }
+
+
+                                                                              BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?uploadIiifRegionUrl, ?iiifRegionUrl, ?representation) AS ?imgURLx)
+                                                                              BIND(IF(EXISTS { <[[this]]> rso:PX_has_main_representation ?representation }, true, false) AS ?isMainRepx)
                                                                             } UNION {
-                                                                            <[[this]]> a rso:EX_Digital_Image ;
-                                                                            OPTIONAL {
+                                                                              <[[this]]> a rso:EX_Digital_Image ;
+                                                                              OPTIONAL {
                                                                                 <[[this]]> a rso:EX_Digital_Image ;
                                                                                 crm:P1_is_identified_by/rso:PX_has_file_name ?fileName. 
                                                                                 BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
-                                                                            }
+                                                                              }
 
-                                                                            OPTIONAL {
+                                                                              OPTIONAL {
                                                                                 <[[this]]> a rso:EX_Digital_Image ;
                                                                                 BIND(REPLACE(STR(<[[this]]>), "^.*/(.*)$", "$1") as ?imageID) .
                                                                                 BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
-                                                                            }
-                                                                            BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURLx)
-                                                                            BIND(true AS ?isMainRepy)
+                                                                              }
+                                                                              BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURLx)
+                                                                              BIND(true AS ?isMainRepy)
                                                                             }  
                                                                         }
                                                                         BIND(?imgURLx AS ?imgURL)

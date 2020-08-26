@@ -106,8 +106,27 @@
 
                           <semantic-query
                               query='
-                                SELECT DISTINCT ?feature (SAMPLE(?i) AS ?image) (SAMPLE(?r) AS ?region) (IF(COUNT(?r) > 1, true, false) AS ?moreThanOneRegion) {
+                                SELECT DISTINCT ?feature (SAMPLE(?featureType) AS ?featureType) (SAMPLE(?i) AS ?image) (SAMPLE(?r) AS ?region) (IF(COUNT(?r) > 1, true, false) AS ?moreThanOneRegion) {
                                    ?feature crm:P56i_is_found_on <{{objectIri}}> .
+                                  
+                                   OPTIONAL {
+                                     ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark .
+                                     BIND ("Mark" as ?isMark) .
+                                   }
+                                   OPTIONAL {
+                                     ?feature crm:P65_shows_visual_item/rdf:type crm:E34_Inscription .
+                                     BIND ("Inscription" as ?isInscription) .
+                                   }
+                                   OPTIONAL {
+                                     ?feature crm:P128_carries/crm:P129_is_about ?about .
+                                     BIND ("Subject" as ?isSubject) .
+                                   }
+                                   OPTIONAL {
+                                     ?feature crm:P128_carries/crm:P67_refers_to ?reference .
+                                     BIND ("Reference" as ?isReference) .
+                                   }
+                                   BIND(COALESCE(?isMark, ?isInscription, ?isSubject, ?isReference) AS ?featureType)
+                                  
                                    OPTIONAL {
                                      ?feature crm:P138i_has_representation ?r .
                                      ?r crmdig:L49_is_primary_area_of ?i .
@@ -126,7 +145,7 @@
                                     <div style="display: flex; align-items: center;">
                                       <mp-event-trigger id='form-event-trigger'
                                                         type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
-                                                        data='{"backVariables": { "feature": "{{feature.value}}", "objectIri": "{{objectIri.value}}"} }'>
+                                                        data='{"backVariables": { "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{objectIri.value}}"} }'>
                                         <button>Edit</button>
                                       </mp-event-trigger>
                                       <mp-event-trigger id='details-view-trigger'
@@ -162,7 +181,7 @@
                   </div>
                 </template>
                 
-                <template id='back'>
+                <template id='back'>                  
                   <div class="frame-imageAnnotationWorkspace__formArea_container">
                     <mp-event-trigger id='form-panel-back' 
                                       type='TwoSidePanel.ShowFront' 
@@ -186,13 +205,57 @@
                       {{#if region}}
                         <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
                           <h2>Creating new Feature represented by the region: &nbsp;<strong><semantic-link iri='{{region}}'></semantic-link></strong></h2>
-                          {{> rsp:ImageAnnotationForm createFromRegion=true}}
+                          <p>What kind of feature do you want to create?</p>
+                          <mp-event-target-template-render id='feature-form-area' template='{{> form}}'>
+                            <template id='form'>
+                              [[!-- see the same area copy/pasted bellow --]]
+                              <div>
+                                <mp-event-trigger id='create-mark' type='Component.TemplateUpdate' data='{"featureType": "Mark"}' targets='["feature-form-area"]'>
+                                  <button class='btn btn-default {{#ifCond featureType "==" "Mark"}}btn-primary{{/ifCond}}'>Mark</button>
+                                </mp-event-trigger>
+                                <mp-event-trigger id='create-inscription' type='Component.TemplateUpdate' data='{"featureType": "Inscription"}' targets='["feature-form-area"]'>
+                                  <button class='btn btn-default {{#ifCond featureType "==" "Inscription"}}btn-primary{{/ifCond}}'>Inscription</button>
+                                </mp-event-trigger> 
+                                <mp-event-trigger id='create-subject' type='Component.TemplateUpdate' data='{"featureType": "Subject"}' targets='["feature-form-area"]'>
+                                  <button class='btn btn-default {{#ifCond featureType "==" "Subject"}}btn-primary{{/ifCond}}'>Subject</button>
+                                </mp-event-trigger> 
+                                <mp-event-trigger id='create-reference' type='Component.TemplateUpdate' data='{"featureType": "Reference"}' targets='["feature-form-area"]'>
+                                  <button class='btn btn-default {{#ifCond featureType "==" "Reference"}}btn-primary{{/ifCond}}'>Reference</button>
+                                </mp-event-trigger>  
+                              </div>                   
+                              {{#if featureType}}
+                                {{> rsp:ImageAnnotationForm createFromRegion=true}}
+                              {{/if}}
+                            </template>
+                          </mp-event-target-template-render>
                         </div>
                       {{else}}
                         {{#if objectIri}}
                           <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
                             <h2>Creating new Feature for: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h2>
-                            {{> rsp:ImageAnnotationForm createWithoutRegion=true}}
+                            <mp-event-target-template-render id='feature-form-area' template='{{> form}}'>
+                              <template id='form'>
+                                [[!-- see the same area copy/pasted above --]]
+                                <div>
+                                  <mp-event-trigger id='create-mark' type='Component.TemplateUpdate' data='{"featureType": "Mark"}' targets='["feature-form-area"]'>
+                                    <button class='btn btn-default {{#ifCond featureType "==" "Mark"}}btn-primary{{/ifCond}}'>Mark</button>
+                                  </mp-event-trigger>
+                                  <mp-event-trigger id='create-inscription' type='Component.TemplateUpdate' data='{"featureType": "Inscription"}' targets='["feature-form-area"]'>
+                                    <button class='btn btn-default {{#ifCond featureType "==" "Inscription"}}btn-primary{{/ifCond}}'>Inscription</button>
+                                  </mp-event-trigger> 
+                                  <mp-event-trigger id='create-subject' type='Component.TemplateUpdate' data='{"featureType": "Subject"}' targets='["feature-form-area"]'>
+                                    <button class='btn btn-default {{#ifCond featureType "==" "Subject"}}btn-primary{{/ifCond}}'>Subject</button>
+                                  </mp-event-trigger> 
+                                  <mp-event-trigger id='create-reference' type='Component.TemplateUpdate' data='{"featureType": "Reference"}' targets='["feature-form-area"]'>
+                                    <button class='btn btn-default {{#ifCond featureType "==" "Subject"}}btn-primary{{/ifCond}}'>Reference</button>
+                                  </mp-event-trigger>  
+                                </div>                   
+
+                                {{#if featureType}}
+                                  {{> rsp:ImageAnnotationForm createWithoutRegion=true}}
+                                {{/if}}
+                              </template>
+                            </mp-event-target-template-render>
                           </div>
                         {{/if}}
                       {{/if}}

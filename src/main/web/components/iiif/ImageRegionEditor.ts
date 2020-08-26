@@ -43,6 +43,7 @@ import { chooseMiradorLayout } from './SideBySideComparison';
 
 import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
+import { OARegionAnnotation } from 'platform/data/iiif/LDPImageRegionService';
 
 export interface ImageRegionEditorConfig {
   id?: string;
@@ -131,15 +132,10 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   private unsubscribeFromMiradorEvents(mirador: Mirador.Instance) {
     if (mirador) {
-      mirador.eventEmitter.unsubscribe('slotRemoved');
     }
   }
 
   private subscribeOnMiradorEvents(mirador: Mirador.Instance) {
-    // mirador.eventEmitter.subscribe('windowUpdated', this.windowUpdateHandler);
-    // mirador.eventEmitter.subscribe('windowAdded', this.windowUpdateHandler);
-    // mirador.eventEmitter.subscribe('slotRemoved', this.windowUpdateHandler);
-    // mirador.eventEmitter.subscribe('ANNOTATIONS_LIST_UPDATED', this.windowUpdateHandler);
   }
 
   /**
@@ -151,6 +147,10 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       source: this.props.id,
       data: { objects }
     });
+  }
+
+  private triggerManifestUpdateFromState = () => {
+    this.triggerManifestUpdateEvent(this.state.allImages);
   }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
@@ -272,7 +272,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.unsubscribeFromMiradorEvents(mirador);
     this.subscribeOnMiradorEvents(mirador);
     this.listenToEvents();
-    this.triggerManifestUpdateEvent(this.state.allImages);
+    this.triggerManifestUpdateFromState();
     if (this.props.onMiradorInitialized) {
       this.props.onMiradorInitialized(mirador);
     }
@@ -467,7 +467,12 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         name: 'ResearchSpace annotation endpoint',
         module: 'AdapterAnnotationEndpoint',
         options: {
-          endpoint: annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo }),
+          endpoint: new AnnotationEndpointProxy(
+            annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo }),
+            this.triggerManifestUpdateFromState,
+            this.triggerManifestUpdateFromState,
+            this.triggerManifestUpdateFromState
+          )
         },
       },
       availableAnnotationDrawingTools: ['Rectangle', 'Ellipse', 'Freehand', 'Polygon', 'Pin'],
@@ -537,6 +542,39 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       // make observable active (hot)
     });
   }
+}
+
+class AnnotationEndpointProxy implements AnnotationEndpoint {
+  constructor(
+    private endpoint: AnnotationEndpoint,
+    private onCreate: () => void,
+    private onRemove: () => void,
+    private onUpdate: () => void
+  ) {}
+
+  init = this.endpoint.init ? () =>  {
+    this.endpoint.init();
+  } : undefined;
+
+  search(canvasIri: Rdf.Iri) {
+    return this.endpoint.search(canvasIri);
+  }
+
+  create(annotation: OARegionAnnotation) {
+    return this.endpoint.create(annotation).onValue(this.onCreate);
+  }
+
+  update(annotation: OARegionAnnotation) {
+    return this.endpoint.update(annotation).onValue(this.onUpdate);
+  }
+
+  remove(annotationIri: Rdf.Iri) {
+    return this.endpoint.remove(annotationIri).onValue(this.onRemove);
+  }
+
+  userAuthorize = this.endpoint.userAuthorize ? (action: any, annotation: OARegionAnnotation) => {
+    return this.endpoint.userAuthorize(action, annotation);
+  } : undefined;
 }
 
 export type c = ImageRegionEditorComponentMirador;

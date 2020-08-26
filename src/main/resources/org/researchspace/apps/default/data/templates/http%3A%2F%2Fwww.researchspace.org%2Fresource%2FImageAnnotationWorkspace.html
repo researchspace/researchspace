@@ -89,12 +89,12 @@
                                                         type='TwoSidePanel.ShowBack' 
                                                         targets='["objects-panel"]'
                                                         data='{"backVariables": { "region": "{{region.value}}", "regionLabel": "{{regionLabel.value}}", "objectIri": "{{objectIri.value}}"} }'>
-                                        <button>Create associated feature</button>
+                                        <button class="btn-grey">Create associated feature</button>
                                       </mp-event-trigger>
-                                      <button class="btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete image"></i></button>
+                                      <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete image"></i></button>
                                       <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
                                                         data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                        <button class="btn-icon"><i class="rs-icon rs-icon-image" title="Focus on image"></i></button>
+                                        <button class="btn-grey btn-icon"><i class="rs-icon rs-icon-image" title="Focus on image"></i></button>
                                       </mp-event-trigger>
                                     </div>
                                   </div>
@@ -146,24 +146,24 @@
                                       <mp-event-trigger id='form-event-trigger'
                                                         type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
                                                         data='{"backVariables": { "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{objectIri.value}}"} }'>
-                                        <button>Edit</button>
+                                        <button class="btn-grey">Edit</button>
                                       </mp-event-trigger>
                                       <mp-event-trigger id='details-view-trigger'
                                                         type='Component.TemplateUpdate'
                                                         data='{"iri": "{{feature.value}}"}' targets='["details-view", "open-details-sidebar"]'
                                       >
-                                        <button class="btn-icon">
+                                        <button class="btn-grey btn-icon">
                                           <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i>
                                         </button>
                                       </mp-event-trigger>
                                         {{#if region}}
                                           <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
                                                             data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                              <button class="btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
+                                              <button class="btn-grey btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
                                           </mp-event-trigger>
                                         {{else}}
                                         <div style="position: relative;">
-                                          <button disabled class="btn-icon">
+                                          <button disabled class="btn-grey btn-icon">
                                             <i class="rs-icon rs-icon-image" title="The feature has no image associated"></i>
                                           </button>
                                           <i class="fa fa-exclamation-circle" title="The feature has no image associated"></i>
@@ -181,7 +181,7 @@
                   </div>
                 </template>
                 
-                <template id='back'>                  
+                <template id='back'>
                   <div class="frame-imageAnnotationWorkspace__formArea_container">
                     <mp-event-trigger id='form-panel-back' 
                                       type='TwoSidePanel.ShowFront' 
@@ -197,32 +197,39 @@
                       <button class="btn btn-primary btn-icon"><i class="rs-icon rs-icon-image" title="Focus on resource images"></i></button>
                     </div>
                     {{#if feature}}
-                      <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
+                      <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container frame-imageAnnotationWorkspace__form-edit">
                         <h2>Editing feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong></h2>
+                        <div style="margin: 30px 0px 15px 0px">
+                          <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Feature Type:</span>
+                          <span class='btn-grey btn-selected'>{{featureType}}</span>
+                        </div>
                         {{> rsp:ImageAnnotationForm edit=true}}
                       </div>
                     {{else}}
                       {{#if region}}
                         <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
                           <h2>Creating new Feature represented by the region: &nbsp;<strong><semantic-link iri='{{region}}'></semantic-link></strong></h2>
-                          <p>What kind of feature do you want to create?</p>
+                          
                           <mp-event-target-template-render id='feature-form-area' template='{{> form}}'>
                             <template id='form'>
                               [[!-- see the same area copy/pasted bellow --]]
-                              <div>
-                                <mp-event-trigger id='create-mark' type='Component.TemplateUpdate' data='{"featureType": "Mark"}' targets='["feature-form-area"]'>
-                                  <button class='btn btn-default {{#ifCond featureType "==" "Mark"}}btn-primary{{/ifCond}}'>Mark</button>
-                                </mp-event-trigger>
-                                <mp-event-trigger id='create-inscription' type='Component.TemplateUpdate' data='{"featureType": "Inscription"}' targets='["feature-form-area"]'>
-                                  <button class='btn btn-default {{#ifCond featureType "==" "Inscription"}}btn-primary{{/ifCond}}'>Inscription</button>
-                                </mp-event-trigger> 
-                                <mp-event-trigger id='create-subject' type='Component.TemplateUpdate' data='{"featureType": "Subject"}' targets='["feature-form-area"]'>
-                                  <button class='btn btn-default {{#ifCond featureType "==" "Subject"}}btn-primary{{/ifCond}}'>Subject</button>
-                                </mp-event-trigger> 
-                                <mp-event-trigger id='create-reference' type='Component.TemplateUpdate' data='{"featureType": "Reference"}' targets='["feature-form-area"]'>
-                                  <button class='btn btn-default {{#ifCond featureType "==" "Reference"}}btn-primary{{/ifCond}}'>Reference</button>
-                                </mp-event-trigger>  
-                              </div>                   
+                              <div class="feature-form-type-selection-container">
+                                <p>What kind of feature do you want to create?</p>
+                                <div class="feature-form-type-selection">
+                                  <mp-event-trigger id='create-mark' type='Component.TemplateUpdate' data='{"featureType": "Mark"}' targets='["feature-form-area"]'>
+                                    <button class='btn-grey {{#ifCond featureType "==" "Mark"}}btn-selected{{/ifCond}}'>Mark</button>
+                                  </mp-event-trigger>
+                                  <mp-event-trigger id='create-inscription' type='Component.TemplateUpdate' data='{"featureType": "Inscription"}' targets='["feature-form-area"]'>
+                                    <button class='btn-grey {{#ifCond featureType "==" "Inscription"}}btn-selected{{/ifCond}}'>Inscription</button>
+                                  </mp-event-trigger> 
+                                  <mp-event-trigger id='create-subject' type='Component.TemplateUpdate' data='{"featureType": "Subject"}' targets='["feature-form-area"]'>
+                                    <button class='btn-grey {{#ifCond featureType "==" "Subject"}}btn-selected{{/ifCond}}'>Subject</button>
+                                  </mp-event-trigger> 
+                                  <mp-event-trigger id='create-reference' type='Component.TemplateUpdate' data='{"featureType": "Reference"}' targets='["feature-form-area"]'>
+                                    <button class='btn-grey {{#ifCond featureType "==" "Reference"}}btn-selected{{/ifCond}}'>Reference</button>
+                                  </mp-event-trigger>  
+                                </div> 
+                              </div>
                               {{#if featureType}}
                                 {{> rsp:ImageAnnotationForm createFromRegion=true}}
                               {{/if}}
@@ -236,21 +243,23 @@
                             <mp-event-target-template-render id='feature-form-area' template='{{> form}}'>
                               <template id='form'>
                                 [[!-- see the same area copy/pasted above --]]
-                                <div>
-                                  <mp-event-trigger id='create-mark' type='Component.TemplateUpdate' data='{"featureType": "Mark"}' targets='["feature-form-area"]'>
-                                    <button class='btn btn-default {{#ifCond featureType "==" "Mark"}}btn-primary{{/ifCond}}'>Mark</button>
-                                  </mp-event-trigger>
-                                  <mp-event-trigger id='create-inscription' type='Component.TemplateUpdate' data='{"featureType": "Inscription"}' targets='["feature-form-area"]'>
-                                    <button class='btn btn-default {{#ifCond featureType "==" "Inscription"}}btn-primary{{/ifCond}}'>Inscription</button>
-                                  </mp-event-trigger> 
-                                  <mp-event-trigger id='create-subject' type='Component.TemplateUpdate' data='{"featureType": "Subject"}' targets='["feature-form-area"]'>
-                                    <button class='btn btn-default {{#ifCond featureType "==" "Subject"}}btn-primary{{/ifCond}}'>Subject</button>
-                                  </mp-event-trigger> 
-                                  <mp-event-trigger id='create-reference' type='Component.TemplateUpdate' data='{"featureType": "Reference"}' targets='["feature-form-area"]'>
-                                    <button class='btn btn-default {{#ifCond featureType "==" "Subject"}}btn-primary{{/ifCond}}'>Reference</button>
-                                  </mp-event-trigger>  
-                                </div>                   
-
+                                <div class="feature-form-type-selection-container">
+                                  <p>What kind of feature do you want to create?</p>
+                                  <div class="feature-form-type-selection">
+                                    <mp-event-trigger id='create-mark' type='Component.TemplateUpdate' data='{"featureType": "Mark"}' targets='["feature-form-area"]'>
+                                      <button class='btn-grey {{#ifCond featureType "==" "Mark"}}btn-selected{{/ifCond}}'>Mark</button>
+                                    </mp-event-trigger>
+                                    <mp-event-trigger id='create-inscription' type='Component.TemplateUpdate' data='{"featureType": "Inscription"}' targets='["feature-form-area"]'>
+                                      <button class='btn-grey {{#ifCond featureType "==" "Inscription"}}btn-selected{{/ifCond}}'>Inscription</button>
+                                    </mp-event-trigger> 
+                                    <mp-event-trigger id='create-subject' type='Component.TemplateUpdate' data='{"featureType": "Subject"}' targets='["feature-form-area"]'>
+                                      <button class='btn-grey {{#ifCond featureType "==" "Subject"}}btn-selected{{/ifCond}}'>Subject</button>
+                                    </mp-event-trigger> 
+                                    <mp-event-trigger id='create-reference' type='Component.TemplateUpdate' data='{"featureType": "Reference"}' targets='["feature-form-area"]'>
+                                      <button class='btn-grey {{#ifCond featureType "==" "Reference"}}btn-selected{{/ifCond}}'>Reference</button>
+                                    </mp-event-trigger>  
+                                  </div>                   
+                                </div>
                                 {{#if featureType}}
                                   {{> rsp:ImageAnnotationForm createWithoutRegion=true}}
                                 {{/if}}

@@ -11,7 +11,7 @@
                fieldDefinitions
                  label="http://www.w3.org/2000/01/rdf-schema#label"
                  P67i_is_referred_to_by_latehokusai_annotation="http://www.researchspace.org/pattern/P67i_is_referred_to_by_latehokusai_annotation"
-                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                 classtype="http://www.researchspace.org/pattern/latehokusai_feature_type"
                  P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"
                  P65_shows_visual_item_latehokusai_annotation_inscription="http://www.researchspace.org/pattern/P65_shows_visual_item_latehokusai_annotation_inscription"
                  P128_carries_latehokusai_annotation_information="http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_information"
@@ -28,9 +28,10 @@
 
 
   <div class="form-scrollable-area">
-    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E25_Man-Made_Feature'> </semantic-form-hidden-input>
     <semantic-form-hidden-input for="P56i_is_found_on_late_hokusai_feature" default-value='{{objectIri}}'> </semantic-form-hidden-input>
 
+    <semantic-form-select-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E25_Man-Made_Feature'> </semantic-form-select-input>
+    
     {{#if createFromRegion}}
     <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{region}}'></semantic-form-drag-and-drop-input>
     <semantic-form-hidden-input for="label" default-value='{{featureType}}: {{regionLabel}}'> </semantic-form-hidden-input>
@@ -40,9 +41,6 @@
     {{/if}}
 
     <semantic-form-checklist-input for='O8i_was_observed_by_latehokusai' type='checkbox'></semantic-form-checklist-input>
-    <semantic-form-text-input for="P67i_is_referred_to_by_latehokusai_annotation" multiline='true'> </semantic-form-text-input>
-    <semantic-form-drag-and-drop-input for="P130_shows_features_of_latehokusai_annotation"></semantic-form-drag-and-drop-input>
-    
     
     {{#switch featureType}}
       {{#case "Inscription" break=true}}
@@ -82,7 +80,8 @@
       {{/case}}
     
       {{#case "Subject" break=true}}
-    <semantic-form-composite-input for="P128_carries_latehokusai_annotation_information" 
+    <semantic-form-composite-input render-header=false
+                                   for="P128_carries_latehokusai_annotation_information" 
                                    new-subject-template="/E73_Information_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                    fields='[[
                                      fieldDefinitions
@@ -116,6 +115,10 @@
     </semantic-form-composite-input>
       {{/case}}    
     {{/switch}}
+    
+    <semantic-form-text-input for="P67i_is_referred_to_by_latehokusai_annotation" multiline='true'> </semantic-form-text-input>
+    <semantic-form-drag-and-drop-input for="P130_shows_features_of_latehokusai_annotation"></semantic-form-drag-and-drop-input>
+
 
   </div>
 

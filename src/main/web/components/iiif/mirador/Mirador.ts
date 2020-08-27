@@ -221,10 +221,10 @@ function applyRedrawHack(mirador: Mirador.Instance, onInitialized: (mirador: Mir
   }
   mirador.hackTimer = window.setInterval(() => {
     if (!_.isEmpty($(`#${mirador.viewer.id} .mirador-viewer:visible`))) {
-      mirador.viewer.workspace.calculateLayout();
-      onInitialized(mirador);
       window.clearInterval(mirador.hackTimer);
       mirador.hackTimer = null;
+      mirador.viewer.workspace.calculateLayout();
+      onInitialized(mirador);
     }
   }, 500);
 }

@@ -1,11 +1,3 @@
-<mp-event-proxy id='refresh-image-list' on-event-source='image-editor' on-event-type='IIIFViewer.Updated'
-                proxy-event-type='Component.TemplateUpdate' proxy-targets='["image-with-regions"]'
-></mp-event-proxy>
-
-<mp-event-proxy id='reset-form-on-image-update' on-event-source='image-editor' on-event-type='IIIFViewer.Updated'
-                proxy-event-type='Component.TemplateUpdate' proxy-targets='["region-form"]'
-></mp-event-proxy>
-
 <mp-event-proxy id='add-new-manifest' on-event-source='set-action__km-add-frame' on-event-type='Dashboard.AddFrame'
                 proxy-event-type='IIIFViewer.AddImagesForObject' proxy-targets='["image-editor"]'
 ></mp-event-proxy>
@@ -22,8 +14,12 @@
           <mp-event-target-template-render id='image-with-regions' template='{{> template}}'>
             <template id='template'>
               <two-side-panel id='objects-panel'>
-                <template id='front'>
+                <template id='front'>                  
                   <div class="frame-imageAnnotationWorkspace__observationArea_content">
+                    <mp-event-proxy id='refresh-image-list' on-event-source='image-editor' on-event-type='IIIFViewer.Updated'
+                                    proxy-event-type='Component.TemplateUpdate' proxy-targets='["image-with-regions"]'
+                                    ></mp-event-proxy>
+
                       <div class="rs-title-row">
                         <h1 class="rs-main-title">Observations</h1>
                         <mp-overlay-dialog title="Object Observations" type="modal" class="modal-xlSize">

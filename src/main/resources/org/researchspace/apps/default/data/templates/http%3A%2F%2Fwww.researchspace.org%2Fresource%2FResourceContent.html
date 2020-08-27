@@ -150,6 +150,9 @@
 
                                         <div class="rs-resource-img__btngroup">
 
+                                            {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+                                            [[!-- don't show resource media icon for image regions --]]
+                                            {{else}}
                                             <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
                                                 <mp-overlay-dialog-trigger>
                                                     <button type="button" class="rs-resource-img__btn" title="Explore Media">
@@ -168,15 +171,20 @@
                                                     <i class="rs-icon rs-icon-image"></i>
                                                 </button>
                                             </semantic-link-container>
+                                            {{/if}}
 
                                             [[#if (hasPermission "forms:ldp:*")]]
                                               {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing")}}
+                                                {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+                                                [[!-- don't show annotation icon for image regions --]]
+                                                {{else}}
                                             <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
                                                  urlqueryparam-view='objectImageObservation' urlqueryparam-resource='[[this]]'>
                                                 <button type="button" class="rs-resource-img__btn" title="Annotate Images">
                                                     <i class="rs-icon rs-icon-area_annotation"></i>
                                                 </button>
                                             </semantic-link-container>
+                                                {{/if}}
                                               {{/if}}
                                             [[/if]]
 

@@ -141,6 +141,9 @@
             </mp-event-trigger>
         </div>
 
+        {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+          [[!-- don't show resource media icon for image regions --]]
+        {{else}}
         <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
             <mp-overlay-dialog-trigger>
                 <div class="rs-default-card__hover-icon">
@@ -154,6 +157,7 @@
               </mp-page-loader>
             </mp-overlay-dialog-content>
         </mp-overlay-dialog>
+        {{/if}}
 
         [[!-- is shown only when we are not in the frames view, hidden by css --]]
         <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
@@ -178,6 +182,11 @@
 
         [[#if (hasPermission "forms:ldp:*")]]
           {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing")}}
+
+            {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+              [[!-- don't show annotation icon for image regions --]]
+            {{else}}
+
             [[!-- is shown only when we are not in the frames view, hidden by css --]]
             <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
               <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
@@ -200,6 +209,7 @@
                 </button>
               </mp-event-trigger>
             </div>
+            {{/if}}
           {{/if}}
         [[/if]]
 

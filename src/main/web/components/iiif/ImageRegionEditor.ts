@@ -264,7 +264,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     scrollToRegions(mirador, ({ canvasId }) => {
       for (const [iri, image] of Array.from(this.state.info)) {
         if (canvasId === image.imageIRI.value) {
-          return image.viewport;
+          return image.boundingBox;
         }
       }
       return undefined;

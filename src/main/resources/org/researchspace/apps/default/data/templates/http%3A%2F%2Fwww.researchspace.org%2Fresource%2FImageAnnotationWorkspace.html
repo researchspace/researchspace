@@ -10,11 +10,6 @@
                 proxy-event-type='IIIFViewer.AddImagesForObject' proxy-targets='["image-editor"]'
 ></mp-event-proxy>
 
-
-<mp-event-proxy id='go-back-to-list-on-form-save' on-event-source='feature-creation-form'
-                proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]'
-></mp-event-proxy>
-
 <div class="frame-imageAnnotationWorkspace__container">
       <div class="frame-imageAnnotationWorkspace__viewer">
         {{> @partial-block }}
@@ -65,7 +60,7 @@
                           <semantic-query
                               query='
                                 SELECT DISTINCT ?region ?regionLabel ?objectIri ?image {
-                                  <{{objectIri}}> crm:P138i_has_representation ?image .
+                                  <{{objectIri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
                                   ?region crmdig:L49_is_primary_area_of ?image .
 
                                   FILTER NOT EXISTS {
@@ -196,7 +191,8 @@
                       <h1 class="text-truncate">Observation on <strong><semantic-link iri='{{iri}}'></semantic-link></strong></h1>
                       <button class="btn btn-primary btn-icon"><i class="rs-icon rs-icon-image" title="Focus on resource images"></i></button>
                     </div>
-                    {{#if feature}}
+                                        
+                    {{#if feature}}                    
                       <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container frame-imageAnnotationWorkspace__form-edit">
                         <h2>Editing feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong></h2>
                         <div class="frame-imageAnnotationWorkspace__form-edit-featureType">
@@ -269,6 +265,21 @@
                         {{/if}}
                       {{/if}}
                     {{/if}}
+
+                    <mp-event-proxy id='refresh-the-form' on-event-source='feature-creation-form'
+                                    proxy-event-type='Component.TemplateUpdate' proxy-targets='["save-state"]'
+                                    data='{"saved": true}'
+                                    ></mp-event-proxy>
+
+                    <mp-event-target-template-render id='save-state' template='{{> template}}'>
+                      <template id='template'>
+                        {{#if saved}}
+                        <div style='position: absolute; background-color: green;'>
+                          The feature has been saved successfully!
+                        </div>
+                        {{/if}}
+                      </template>
+                    </mp-event-target-template-render>
                   </div>
                 </template>
               </two-side-panel>

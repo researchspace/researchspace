@@ -126,8 +126,9 @@ export class AdapterAnnotationEndpoint implements MiradorAnnotationEndpoint {
   }
 
   deleteAnnotation(annotationId: string, onSuccess: () => void, onError: () => void) {
+    const annotation = this.annotationsList.find(a => a['@id'] === annotationId);
     const task = this.endpoint.remove
-      ? this.endpoint.remove(Rdf.iri(annotationId))
+      ? this.endpoint.remove(annotation)
       : Kefir.constantError<any>(new Error('AnnotationEndpoint.delete is not implemented'));
 
     task.onValue(onSuccess).onError(onError);

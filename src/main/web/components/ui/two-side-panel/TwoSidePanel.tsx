@@ -25,10 +25,8 @@ import { TemplateItem } from 'platform/components/ui/template';
 import { Cancellation } from 'platform/api/async';
 
 export interface TwoSidePanelEvents {
-  'TwoSidePanel.ShowBack': {
-    backVariables?: Record<string, any>
-  },
-  'TwoSidePanel.ShowFront': {}
+  'TwoSidePanel.ShowBack': Record<string, any>;
+  'TwoSidePanel.ShowFront': Record<string, any>;
 }
 const event: EventMaker<TwoSidePanelEvents> = EventMaker;
 export const ShowBackEvent = event('TwoSidePanel.ShowBack');
@@ -40,8 +38,8 @@ export interface TwoSidePanelProps extends ComponentProps {
   front?: string;
   back?: string;
 
-  frontVariables?: Record<string, any>;
-  backVariables?: Record<string, any>;
+  frontVariables: Record<string, any>;
+  backVariables: Record<string, any>;
 
   /**
    * @default true
@@ -51,14 +49,15 @@ export interface TwoSidePanelProps extends ComponentProps {
 
 interface State {
   showBack: boolean;
+  frontVariables: Record<string, any>;
   backVariables: Record<string, any>;
 }
 
 
 export class TwoSidePanel extends Component<TwoSidePanelProps, State> {
   static defaultProps = {
-    frontVariables: {},
-    backVariables: {},
+    variables: {},
+    refreshOnChange: true,
   };
 
   private readonly cancellation = new Cancellation();
@@ -68,6 +67,7 @@ export class TwoSidePanel extends Component<TwoSidePanelProps, State> {
 
     this.state = {
       showBack: false,
+      frontVariables: {},
       backVariables: {},
     };
   }
@@ -82,10 +82,14 @@ export class TwoSidePanel extends Component<TwoSidePanelProps, State> {
         )
         .observe({
           value: ({ data }) => {
-            this.setState({
-              showBack: true,
-              backVariables: data?.backVariables || {}
-            })
+            if (data.dontRefresh && this.state.showBack) {
+              // if event has don't refresh flag and we are already showing back panel then do nothing
+            } else {
+              this.setState({
+                showBack: true,
+                backVariables: data || {}
+              })
+            }
           }
         });
 
@@ -97,34 +101,68 @@ export class TwoSidePanel extends Component<TwoSidePanelProps, State> {
           })
         )
         .observe({
-          value: () => {
+          value: ({data}) => {
             this.setState({
               showBack: false,
-              backVariables: {}
+              frontVariables: data || {}
             })
           }
         });
   }
 
   render() {
-    if (this.state.showBack) {
-      return (
-        <TemplateItem template={{
-          source: this.getTemplate('back'),
-          options: {
-            ... this.props.backVariables,
-            ... this.state.backVariables
-          }
-        }} />
-      );
+    if (this.props.refreshOnChange) {
+      if (this.state.showBack) {
+        return (
+          <TemplateItem template={{
+            source: this.getTemplate('back'),
+            options: {
+              ... this.props.backVariables,
+              ... this.state.backVariables
+            }
+          }} />
+        );
+      } else {
+        return (
+          <TemplateItem template={{
+            source: this.getTemplate('front'),
+            options: {
+              ... this.props.frontVariables,
+              ... this.state.frontVariables
+            }
+          }} />
+        );
+      }
     } else {
+      const backPanel =
+        this.state.showBack ?
+        (
+          <TemplateItem template={{
+            source: this.getTemplate('back'),
+            options: {
+              ... this.props.backVariables,
+              ... this.state.backVariables
+            }
+          }} />
+        ) : null;
       return (
-        <TemplateItem template={{
-          source: this.getTemplate('front'),
-          options: {
-            ... this.props.frontVariables
-          }
-        }} />
+        <React.Fragment>
+          <TemplateItem
+            componentProps={{
+              style: {
+                display: this.state.showBack ? 'none' : 'block',
+              },
+            }}
+            template={{
+              source: this.getTemplate('front'),
+              options: {
+                ... this.props.frontVariables,
+                ... this.state.frontVariables
+              }
+            }}
+          />
+          {backPanel}
+        </React.Fragment>
       );
     }
   }

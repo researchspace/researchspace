@@ -44,7 +44,14 @@ export interface TemplateScopeProps {
   partials?: { readonly [id: string]: string };
 }
 
+export interface TemplateScopeTrace {
+  componentTag?: string;
+  componentId?: string;
+  templateId?: string;
+}
+
 export interface TemplateScopeOptions extends TemplateScopeProps {
+  scopeTrace?: TemplateScopeTrace
   helpers?: { readonly [id: string]: Function };
 }
 
@@ -87,6 +94,7 @@ export class TemplateScope {
 
   private constructor(
     private readonly helpers: { readonly [id: string]: Function },
+    private readonly scopeTrace?: TemplateScopeTrace,
     partials?: ReadonlyMap<string, ParsedTemplate>
   ) {
     for (const helperId in helpers) {
@@ -112,7 +120,9 @@ export class TemplateScope {
 
   static builder(options: TemplateScopeOptions = {}): TemplateScopeBuilder {
     const helpers = { ...DefaultHelpers, ...options.helpers };
-    return new TemplateScopeBuilder(options, (partials) => new TemplateScope(helpers, partials));
+    return new TemplateScopeBuilder(
+      options, (partials) => new TemplateScope(helpers, options.scopeTrace, partials)
+    );
   }
 
   static create(options: TemplateScopeOptions = {}) {

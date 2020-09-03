@@ -29,7 +29,13 @@ export interface IiifManifestObject {
 
 export interface ImageRegionEditorEventData {
   // trigger
-  'IIIFViewer.Updated': {objects?: IiifManifestObject[]}
+  'IIIFViewer.ManifestUpdated': {objects?: IiifManifestObject[]}
+
+  'IIIFViewer.RegionCreated': {objectIri: string, imageIri: string, regionIri: string, regionLabel: string}
+
+  'IIIFViewer.RegionRemoved': {objectIri: string, imageIri: string, regionIri: string, regionLabel: string}
+
+  'IIIFViewer.RegionUpdated': {objectIri: string, imageIri: string, regionIri: string, regionLabel: string}
 
   // listen
   'IIIFViewer.ZoomToRegion': {imageIri: string, regionIri: string}
@@ -40,7 +46,11 @@ export interface ImageRegionEditorEventData {
 
 const event: EventMaker<ImageRegionEditorEventData> = EventMaker;
 
-export const UpdatedEvent = event('IIIFViewer.Updated');
+export const ManifestUpdatedEvent = event('IIIFViewer.ManifestUpdated');
+export const RegionCreatedEvent = event('IIIFViewer.RegionCreated');
+export const RegionUpdatedEvent = event('IIIFViewer.RegionUpdated');
+export const RegionRemovedEvent = event('IIIFViewer.RegionRemoved');
+
 export const ZoomToRegionEvent = event('IIIFViewer.ZoomToRegion');
 export const AddObjectImagesEvent = event('IIIFViewer.AddObjectImages');
 export const AddImagesForObjectEvent = event('IIIFViewer.AddImagesForObject');

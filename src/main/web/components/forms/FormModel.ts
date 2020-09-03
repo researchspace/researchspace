@@ -21,7 +21,7 @@ import * as uuid from 'uuid';
 import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
 import * as URI from 'urijs';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp, isEmpty } from 'lodash';
 
 import { Rdf, XsdDataTypeValidation, vocabularies } from 'platform/api/rdf';
 import { SparqlUtil } from 'platform/api/sparql';
@@ -214,6 +214,15 @@ function loadInitialOrDefaultValues(
 
   const loadingValues = shouldLoadInitials
     ? fetchInitialValues(def, subject, mapping)
+      .flatMap(
+        initialValues  => {
+          if(isEmpty(initialValues)) {
+            return lookForDefaultValues(def, mapping)
+          } else {
+            return Kefir.constant(initialValues)
+          }
+        }
+      ).toProperty()
     : shouldLoadDefaults
     ? lookForDefaultValues(def, mapping)
     : Kefir.constant([]);

@@ -37,13 +37,13 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo, parseImageSubarea } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
-import { UpdatedEvent, ZoomToRegionEvent, IiifManifestObject, AddObjectImagesEvent } from './ImageRegionEditorEvents';
+import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestObject, AddObjectImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent } from './ImageRegionEditorEvents';
 
 import { chooseMiradorLayout } from './SideBySideComparison';
 
 import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
-import { OARegionAnnotation } from 'platform/data/iiif/LDPImageRegionService';
+import { OARegionAnnotation, getAnnotationTextResource } from 'platform/data/iiif/LDPImageRegionService';
 
 export interface ImageRegionEditorConfig {
   id?: string;
@@ -138,19 +138,31 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   private subscribeOnMiradorEvents(mirador: Mirador.Instance) {
   }
 
-  /**
-   * throttle event trigger because windowUpdated event in mirador is called too often
-   */
-  private triggerManifestUpdateEvent(objects: IiifManifestObject[]) {
+  private triggerManifestUpdatedEvent = (objects: IiifManifestObject[]) => {
     trigger({
-      eventType: UpdatedEvent,
+      eventType: ManifestUpdatedEvent,
       source: this.props.id,
       data: { objects }
     });
   }
 
-  private triggerManifestUpdateFromState = () => {
-    this.triggerManifestUpdateEvent(this.state.allImages);
+  private triggerRegionUpdatedEvent =
+    (eventType: typeof RegionCreatedEvent | typeof RegionUpdatedEvent | typeof RegionRemovedEvent) =>
+    (regionIri: Rdf.Iri, oa: OARegionAnnotation) => {
+      const imageIri = oa.on[0].full;
+      const objectIri = this.state.allImages.find(i => i.images.includes(imageIri)).objectIri;
+      const regionLabel = getAnnotationTextResource(oa).chars;
+      trigger({
+        eventType,
+        source: this.props.id,
+        data: {
+          objectIri, imageIri, regionIri: regionIri.value, regionLabel
+        }
+      });
+    }
+
+  private triggerRegionRemovedEvent = (regionIri: Rdf.Iri) => {
+    
   }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
@@ -272,7 +284,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.unsubscribeFromMiradorEvents(mirador);
     this.subscribeOnMiradorEvents(mirador);
     this.listenToEvents();
-    this.triggerManifestUpdateFromState();
+    this.triggerManifestUpdatedEvent(this.state.allImages);
     if (this.props.onMiradorInitialized) {
       this.props.onMiradorInitialized(mirador);
     }
@@ -309,7 +321,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               .onValue((manifestJson) => {
                 const manifest = new Mirador.Manifest(manifestJson['@id'], 'British Museum', manifestJson);
                 this.miradorInstance.eventEmitter.publish('manifestReceived', manifest, 'Test');
-                this.triggerManifestUpdateEvent(allImages);
+                this.triggerManifestUpdatedEvent(allImages);
 
                 // add new window with new manifest, see handling of the ZoomToRegionEvent for the explanation of the logic behind this code
                 const onSlotAdded = (e, { slots }: { slots: Mirador.Slot[] }) => {
@@ -469,9 +481,9 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         options: {
           endpoint: new AnnotationEndpointProxy(
             annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo }),
-            this.triggerManifestUpdateFromState,
-            this.triggerManifestUpdateFromState,
-            this.triggerManifestUpdateFromState
+            this.triggerRegionUpdatedEvent(RegionCreatedEvent),
+            this.triggerRegionUpdatedEvent(RegionUpdatedEvent),
+            this.triggerRegionUpdatedEvent(RegionRemovedEvent),
           )
         },
       },
@@ -547,9 +559,9 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 class AnnotationEndpointProxy implements AnnotationEndpoint {
   constructor(
     private endpoint: AnnotationEndpoint,
-    private onCreate: () => void,
-    private onRemove: () => void,
-    private onUpdate: () => void
+    private onCreated: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
+    private onUpdated: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
+    private onRemoved: (regionIri: Rdf.Iri, oa: OARegionAnnotation) => void,
   ) {}
 
   init = this.endpoint.init ? () =>  {
@@ -561,15 +573,18 @@ class AnnotationEndpointProxy implements AnnotationEndpoint {
   }
 
   create(annotation: OARegionAnnotation) {
-    return this.endpoint.create(annotation).onValue(this.onCreate);
+    return this.endpoint.create(annotation)
+      .onValue(regionIri => this.onCreated(regionIri, annotation));
   }
 
   update(annotation: OARegionAnnotation) {
-    return this.endpoint.update(annotation).onValue(this.onUpdate);
+    return this.endpoint.update(annotation)
+      .onValue(regionIri => this.onUpdated(regionIri, annotation));
   }
 
-  remove(annotationIri: Rdf.Iri) {
-    return this.endpoint.remove(annotationIri).onValue(this.onRemove);
+  remove(annotation: OARegionAnnotation) {
+    return this.endpoint.remove(annotation)
+      .onValue(() => this.onRemoved(Rdf.iri(annotation['@id']), annotation));
   }
 
   userAuthorize = this.endpoint.userAuthorize ? (action: any, annotation: OARegionAnnotation) => {

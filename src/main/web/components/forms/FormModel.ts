@@ -212,11 +212,12 @@ function loadInitialOrDefaultValues(
   const shouldLoadInitials = !isPlaceholderSubject && def.selectPattern;
   const shouldLoadDefaults = isPlaceholderSubject && mapping;
 
+  // TODO load default values for existing subject only if forceDefaults is true
   const loadingValues = shouldLoadInitials
     ? fetchInitialValues(def, subject, mapping)
       .flatMap(
         initialValues  => {
-          if(isEmpty(initialValues)) {
+          if(isEmpty(initialValues) && mapping.element.props.forceDefaults) {
             return lookForDefaultValues(def, mapping)
           } else {
             return Kefir.constant(initialValues)
@@ -263,35 +264,37 @@ function setSizeAndFill<T>(list: ReadonlyArray<T>, newSize: number, fillValue: T
 }
 
 function lookForDefaultValues(def: FieldDefinition, mapping: InputMapping): Kefir.Property<FieldValue[]> {
-  const { defaultValue, defaultValues } = mapping.element.props;
+  const { defaultValue, defaultValues, forceDefaults } = mapping.element.props;
   if (defaultValue || defaultValues) {
     const values = defaultValue ? [defaultValue] : defaultValues;
-    const fieldValues = values.map((value) => parseDefaultValue(value, def));
+    const fieldValues = values.map((value) => parseDefaultValue(value, def, forceDefaults));
     if (fieldValues.length > 0) {
       return Kefir.zip(fieldValues).toProperty();
     }
   } else if (def.defaultValues.length > 0) {
-    const fieldValues = def.defaultValues.map((value) => parseDefaultValue(value, def));
+    const fieldValues = def.defaultValues.map((value) => parseDefaultValue(value, def, forceDefaults));
     return Kefir.zip(fieldValues).toProperty();
   }
   return Kefir.constant([]);
 }
 
-function parseDefaultValue(value: string, def: FieldDefinition) {
-  const atomic = createDefaultValue(value, def);
+function parseDefaultValue(value: string, def: FieldDefinition, isForcedDefault: boolean) {
+  const atomic = createDefaultValue(value, def, isForcedDefault);
   return restoreLabel(atomic);
 }
 
-function createDefaultValue(value: string, def: FieldDefinition): AtomicValue {
+function createDefaultValue(
+  value: string, def: FieldDefinition, isForcedDefault: boolean
+): AtomicValue {
   if (!def.xsdDatatype) {
-    return FieldValue.fromLabeled({ value: Rdf.literal(value) });
+    return FieldValue.fromLabeled({ value: Rdf.literal(value), isForcedDefault });
   } else if (XsdDataTypeValidation.sameXsdDatatype(def.xsdDatatype, vocabularies.xsd.anyURI)) {
-    return FieldValue.fromLabeled({ value: Rdf.iri(value) });
+    return FieldValue.fromLabeled({ value: Rdf.iri(value), isForcedDefault });
   }
   const literal = Rdf.literal(value, def.xsdDatatype);
   const { success, message } = XsdDataTypeValidation.validate(literal);
   if (success) {
-    return FieldValue.fromLabeled({ value: literal });
+    return FieldValue.fromLabeled({ value: literal, isForcedDefault });
   } else {
     return AtomicValue.set(FieldValue.fromLabeled({ value: literal }), {
       errors: FieldError.noErrors.push({

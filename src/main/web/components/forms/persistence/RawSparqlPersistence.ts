@@ -24,7 +24,7 @@ import * as SparqlJs from 'sparqljs';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
-import { CompositeValue, EmptyValue } from '../FieldValues';
+import { CompositeValue, EmptyValue, FieldValue } from '../FieldValues';
 import { parseQueryStringAsUpdateOperation, withNamedGraph } from './PersistenceUtils';
 import { TriplestorePersistence, computeModelDiff } from './TriplestorePersistence';
 
@@ -59,6 +59,10 @@ export class RawSparqlPersistence implements TriplestorePersistence {
         /* void */
       })
       .toProperty();
+  }
+
+  remove(model: CompositeValue): Kefir.Property<void> {
+    return this.persist(model, FieldValue.empty);
   }
 
   static createFormUpdateQueries(

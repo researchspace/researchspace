@@ -17,18 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Props as ReactProps, Component, ReactElement, createFactory, Children, cloneElement, SFC } from 'react';
+import { Props as ReactProps, ReactElement, createFactory, Children, cloneElement, SFC } from 'react';
 import * as ReactBootstrap from 'react-bootstrap';
 import * as assign from 'object-assign';
 import * as _ from 'lodash';
 import * as block from 'bem-cn';
 import * as classNames from 'classnames';
 
+import { listen } from 'platform/api/events';
+
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { componentHasType } from 'platform/components/utils';
+import { Component } from 'platform/api/components';
+
 
 import OverlayDialogTrigger from './OverlayDialogTrigger';
 import OverlayDialogContent from './OverlayDialogContent';
+import { CloseEvent } from './OverlayDialogEvents';
 
 const Modal = createFactory(ReactBootstrap.Modal);
 const ModalHeader = createFactory(ReactBootstrap.Modal.Header);
@@ -54,6 +59,7 @@ export const OverlayDialog: SFC<OverlayDialogProps> = (props: OverlayDialogProps
   const className = props.className ? props.className : type === 'lightbox' ? 'overlay-lightbox' : 'overlay-modal';
 
   const b = block(className);
+
 
   return Modal(
     assign(
@@ -81,6 +87,18 @@ export const OverlayDialog: SFC<OverlayDialogProps> = (props: OverlayDialogProps
 };
 
 export interface OverlayComponentProps extends ReactProps<OverlayComponent> {
+  /**
+   * Dialog id, needs to be defined when components should listen to events.
+   */
+  id?: string;
+
+  /**
+   * Show dialog on mount.
+   *
+   * @default false
+   */
+  show?: boolean;
+
   // title to render
   title: string;
   // type could be 'dialog' or 'lightbox', lightbox will span over all space, dialog will be small
@@ -109,34 +127,79 @@ export interface OverlayComponentProps extends ReactProps<OverlayComponent> {
  * </overlay-content>
  * </overlay-dialog>
  */
-export class OverlayComponent extends Component<OverlayComponentProps, {}> {
+export class OverlayComponent extends Component<OverlayComponentProps> {
+  constructor(props: OverlayComponentProps, context: any) {
+    super(props, context);
+  }
+
+  componentDidMount() {
+    if (this.props.show) {
+      // show dialog immediately when component is mounted
+      this.showDialog();
+    }
+
+    // if 'id' is defined then we should listen to events that can be send to the dialog component
+    if (this.props.id) {
+      /*
+       * Hide the dialog on CloseEvent.
+       */
+      this.cancel.map(
+        listen({
+          target: this.props.id,
+          eventType: CloseEvent,
+        })
+      ).observe({
+        value: () => {
+          this.onHide();
+        }
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    this.onHide();
+  }
+
   render() {
     // 1. find anchor child and body child
-    let children = Children.toArray(this.props.children);
+    const children = Children.toArray(this.props.children);
     const anchorComponent = _.find(children, (child) => componentHasType(child, OverlayDialogTrigger));
-    const bodyComponent = _.find(children, (child) => componentHasType(child, OverlayDialogContent));
 
-    const anchorChild = (Children.only(anchorComponent) as ReactElement<any>).props.children;
+    if (anchorComponent) {
+      const anchorChild = (Children.only(anchorComponent) as ReactElement<any>).props.children;
+      const props = {
+        onClick: (event: React.SyntheticEvent<any>) => {
+          event.preventDefault();
+          this.showDialog();
+        },
+      };
+      return cloneElement(anchorChild, props);
+    } else {
+      return null;
+    }
+  }
+
+  private showDialog = () => {
+    const children = Children.toArray(this.props.children);
+    const bodyComponent = _.find(children, (child) => componentHasType(child, OverlayDialogContent));
     const bodyChild = (Children.only(bodyComponent) as ReactElement<any>).props.children;
-    // use childs to create anchor and body
-    const props = {
-      onClick: (event: React.SyntheticEvent<any>) => {
-        event.preventDefault();
-        getOverlaySystem().show(
-          this.props.title,
-          OverlayDialog({
-            show: true,
-            title: this.props.title,
-            type: this.props.type,
-            className: this.props.className,
-            onHide: () => getOverlaySystem().hide(this.props.title),
-            children: bodyChild,
-            bsSize: this.props.bsSize,
-          })
-        );
-      },
-    };
-    return cloneElement(anchorChild, props);
+    getOverlaySystem().show(
+      this.props.title,
+      OverlayDialog({
+        show: true,
+        title: this.props.title,
+        type: this.props.type,
+        className: this.props.className,
+        onHide: this.onHide,
+        children: bodyChild,
+        bsSize: this.props.bsSize,
+      })
+    );
+  }
+
+  private onHide = () => {
+    getOverlaySystem().hide(this.props.title);
   }
 }
 export default OverlayComponent;

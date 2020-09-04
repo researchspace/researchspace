@@ -108,24 +108,31 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     const canCreateNew = Boolean(nestedForm);
     return (
       <div className={styles.holder}>
-        <DropArea
-          shouldReactToDrag={() => !this.state.draggingItem}
-          query='ASK {}'
-          onDrop={this.onDrop}
-          dropMessage={this.dropMessage()}
-        >
-          {this.renderItems(canCreateNew)}
-        </DropArea>
         {
-          this.state.nestedFormOpen ? (
-            <NestedModalForm
-              definition={this.props.definition}
-              onSubmit={this.onNestedFormSubmit}
-              onCancel={() => this.setState({ nestedFormOpen: false })}
-            >
-              {nestedForm}
-            </NestedModalForm>
-          ): null
+          this.props.readonly ? this.renderItems(false) :
+          (
+            <React.Fragment>
+              <DropArea
+                shouldReactToDrag={() => !this.state.draggingItem}
+                query='ASK {}'
+                onDrop={this.onDrop}
+                dropMessage={this.dropMessage()}
+              >
+                {this.renderItems(canCreateNew)}
+              </DropArea>
+              {
+                this.state.nestedFormOpen ? (
+                  <NestedModalForm
+                    definition={this.props.definition}
+                    onSubmit={this.onNestedFormSubmit}
+                    onCancel={() => this.setState({ nestedFormOpen: false })}
+                  >
+                    {nestedForm}
+                  </NestedModalForm>
+                ): null
+              }
+            </React.Fragment>
+          )
         }
       </div>
     );
@@ -182,7 +189,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
             }
           })
         }
-        {this.renderPlaceholderCard(canCreateNew)}
+        {this.props.readonly ? null : this.renderPlaceholderCard(canCreateNew)}
       </div>
     );
   }

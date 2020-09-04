@@ -84,6 +84,7 @@ Mirador.EventEmitter.prototype.publish = function (this: EmitterMixin, name) {
     }
     // console.trace();
   }
+  console.log(arguments)
   this.eventStackDepth++;
   const result = this.bus.trigger.apply(this.bus, arguments);
   this.eventStackDepth--;
@@ -211,7 +212,7 @@ function rectangleToFragmentString({ x, y, width, height }: OpenSeadragon.Rect) 
 
 const overlayInit = Mirador.Overlay.prototype.init;
 Mirador.Overlay.prototype.init = function (this: Mirador.Overlay) {
-  this.hitOptions.tolerance = 50;
+  this.hitOptions.tolerance = 10;
   overlayInit.apply(this, arguments);
 };
 
@@ -274,7 +275,7 @@ export function scrollToRegion(
             region.width,
             region.height
           );
-          imageView.osd.viewport.fitBounds(viewportRect, true);
+          imageView.osd.viewport.fitBounds(viewportRect);
           imageView.osd.forceRedraw();
         }
         emitter.emit(true);

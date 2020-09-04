@@ -20,8 +20,7 @@ import * as React from 'react';
 import * as D from 'react-dom-factories';
 import * as PropTypes from 'prop-types';
 import {
-  isEqual, map, throttle, uniqBy, toPairs,
-  isEmpty, some, findKey, includes, find, last
+  isEqual, toPairs, some, find, last, size,
 } from 'lodash';
 import * as Maybe from 'data.maybe';
 import * as Kefir from 'kefir';
@@ -37,9 +36,7 @@ import * as ImageApi from '../../data/iiif/ImageAPI';
 import { queryIIIFImageOrRegion, ImageOrRegionInfo, parseImageSubarea } from '../../data/iiif/ImageAnnotationService';
 import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
-import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestObject, AddObjectImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent } from './ImageRegionEditorEvents';
-
-import { chooseMiradorLayout } from './SideBySideComparison';
+import { ManifestUpdatedEvent, ZoomToRegionEvent, IiifManifestObject, AddObjectImagesEvent, RegionCreatedEvent, RegionUpdatedEvent, RegionRemovedEvent, HighlightRegion, RemoveRegion } from './ImageRegionEditorEvents';
 
 import { renderMirador, removeMirador, scrollToRegions, scrollToRegion } from './mirador/Mirador';
 import { computeDisplayedRegionWithMargin } from './ImageThumbnail';
@@ -94,6 +91,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   };
 
   private readonly cancellation = new Cancellation();
+  private annotationEndpoint: AnnotationEndpoint;
   private infoQueryingCancellation = this.cancellation.derive();
   private manifestQueryingCancellation = this.cancellation.derive();
 
@@ -130,14 +128,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     this.queryAllImagesInfo();
   }
 
-  private unsubscribeFromMiradorEvents(mirador: Mirador.Instance) {
-    if (mirador) {
-    }
-  }
-
-  private subscribeOnMiradorEvents(mirador: Mirador.Instance) {
-  }
-
   private triggerManifestUpdatedEvent = (objects: IiifManifestObject[]) => {
     trigger({
       eventType: ManifestUpdatedEvent,
@@ -160,10 +150,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         }
       });
     }
-
-  private triggerRegionRemovedEvent = (regionIri: Rdf.Iri) => {
-    
-  }
 
   public shouldComponentUpdate(nextProps: ImageRegionEditorProps, nextState: ImageRegionEditorState) {
     return nextState.loading !== this.state.loading || !isEqual(nextProps, this.props);
@@ -281,10 +267,21 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       }
       return undefined;
     });
-    this.unsubscribeFromMiradorEvents(mirador);
-    this.subscribeOnMiradorEvents(mirador);
     this.listenToEvents();
     this.triggerManifestUpdatedEvent(this.state.allImages);
+
+    /**
+     * If we have one than one object or one than one image for the object then show
+     * image selection view in the mirador
+     */
+    const { allImages } = this.state;
+    if (
+      allImages.length > 1 || (allImages.length == 1 && size(allImages[0].images) > 1)
+    ) {
+      mirador.eventEmitter.publish('TOGGLE_LOAD_WINDOW');
+    }
+
+
     if (this.props.onMiradorInitialized) {
       this.props.onMiradorInitialized(mirador);
     }
@@ -362,6 +359,60 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               this.miradorInstance.viewer.workspace.windows[0].id
             );
           }
+        }
+      });
+
+
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: RemoveRegion,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          const windows = this.miradorInstance.viewer.workspace.windows;
+          const windowForImage = windows.find(w => w.canvasID === event.data.imageIri);
+
+          if (windowForImage) {
+            const annotation = windowForImage.annotationsList.find(a => a['@id'] === event.data.regionIri) as OARegionAnnotation;
+            this.cancellation.map(
+              this.annotationEndpoint.remove(annotation)
+            ).observe({
+              value: (event) => {
+                this.miradorInstance.eventEmitter.publish('updateAnnotationList.'+windowForImage.id);
+              }
+            })
+          } else {
+            this.cancellation.map(
+              this.annotationEndpoint
+                .search(Rdf.iri(event.data.imageIri))
+                .flatMap(
+                  regions => {
+                    const regionToRemove =
+                      regions.find(region => region['@id'] === event.data.regionIri);
+                    return this.annotationEndpoint.remove(regionToRemove);
+                  }
+                )
+            ).observe({
+              value: () => {/**/}
+            })
+          }
+        }
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: HighlightRegion,
+          target: this.props.id
+        })
+      )
+      .observe({
+        value: (event) => {
+          this.miradorInstance.eventEmitter.publish('highlightAnnotation', event.data.regionIri)
         }
       });
 
@@ -462,13 +513,20 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       annotationViewTooltipTemplate,
     } = this.props;
     const imagesInfo = this.state.info as ImagesInfoByIri;
+
+    this.annotationEndpoint = new AnnotationEndpointProxy(
+      annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo }),
+      this.triggerRegionUpdatedEvent(RegionCreatedEvent),
+      this.triggerRegionUpdatedEvent(RegionUpdatedEvent),
+      this.triggerRegionUpdatedEvent(RegionRemovedEvent),
+    );
+
     return {
       id: id, // The CSS ID selector for the containing element.
       useDetailsSidebar, annotationViewTooltipTemplate,
       windowSettings: {
         sidePanel: !useDetailsSidebar
       },
-      layout: chooseMiradorLayout(manifests.length),
       saveSession: false,
       data: manifests.map((manifest) => ({
         manifestUri: manifest['@id'],
@@ -479,12 +537,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         name: 'ResearchSpace annotation endpoint',
         module: 'AdapterAnnotationEndpoint',
         options: {
-          endpoint: new AnnotationEndpointProxy(
-            annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo }),
-            this.triggerRegionUpdatedEvent(RegionCreatedEvent),
-            this.triggerRegionUpdatedEvent(RegionUpdatedEvent),
-            this.triggerRegionUpdatedEvent(RegionRemovedEvent),
-          )
+          endpoint: this.annotationEndpoint,
         },
       },
       availableAnnotationDrawingTools: ['Rectangle', 'Ellipse', 'Freehand', 'Polygon', 'Pin'],
@@ -513,7 +566,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
-    this.unsubscribeFromMiradorEvents(this.miradorInstance);
     removeMirador(this.miradorInstance, this.miradorElement);
   }
 

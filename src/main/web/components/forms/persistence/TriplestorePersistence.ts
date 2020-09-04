@@ -27,6 +27,8 @@ import { FieldValue, CompositeValue, EmptyValue } from '../FieldValues';
 
 export interface TriplestorePersistence {
   persist(initialModel: CompositeValue | EmptyValue, currentModel: CompositeValue | EmptyValue): Kefir.Property<void>;
+
+  remove(model: CompositeValue): Kefir.Property<void>;
 }
 
 export function isTriplestorePersistence(obj: any): obj is TriplestorePersistence {
@@ -64,6 +66,8 @@ function collectCompositeDiff(
   changed: CompositeValue | EmptyValue,
   result: ModelDiffEntry[]
 ) {
+  
+
   if (FieldValue.isComposite(base)) {
     if (CompositeValue.isPlaceholder(base.subject)) {
       throw new Error('Cannot compute diff with placeholder base composite');
@@ -104,6 +108,7 @@ function collectFieldDiff(
   result: ModelDiffEntry[]
 ) {
   const baseSet = base
+    .filterNot(field => FieldValue.isAtomic(field) && field.isForcedDefault)
     .map(FieldValue.asRdfNode)
     .filter((node) => node !== undefined)
     .toSet();

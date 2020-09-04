@@ -39,8 +39,12 @@ export interface ImageRegionEditorEventData {
 
   // listen
   'IIIFViewer.ZoomToRegion': {imageIri: string, regionIri: string}
-  'IIIFViewer.AddObjectImages': {objectIri: string, imageIris: string[]}
+  'IIIFViewer.HighlightRegion': {regionIri: string}
 
+  // TODO, implement RemoveRegion
+  'IIIFViewer.RemoveRegion': { objectIri: string, imageIri: string, regionIri: string }
+
+  'IIIFViewer.AddObjectImages': {objectIri: string, imageIris: string[]}
   'IIIFViewer.AddImagesForObject': {objectIri: string}
 }
 
@@ -52,5 +56,7 @@ export const RegionUpdatedEvent = event('IIIFViewer.RegionUpdated');
 export const RegionRemovedEvent = event('IIIFViewer.RegionRemoved');
 
 export const ZoomToRegionEvent = event('IIIFViewer.ZoomToRegion');
+export const HighlightRegion = event('IIIFViewer.HighlightRegion');
+export const RemoveRegion = event('IIIFViewer.RemoveRegion');
 export const AddObjectImagesEvent = event('IIIFViewer.AddObjectImages');
 export const AddImagesForObjectEvent = event('IIIFViewer.AddImagesForObject');

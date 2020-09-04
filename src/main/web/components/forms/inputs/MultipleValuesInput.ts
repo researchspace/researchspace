@@ -34,6 +34,11 @@ export interface MultipleValuesProps {
   dataState?: DataState;
   defaultValue?: string;
   defaultValues?: string[];
+
+  /**
+   * If true then default values should be always added to the object and can't be removed.
+   */
+  forceDefaults?: boolean;
   values?: Immutable.List<FieldValue>;
   errors?: Immutable.List<FieldError>;
   updateValues?: (reducer: (previous: ValuesWithErrors) => ValuesWithErrors) => void;
@@ -47,6 +52,13 @@ export interface MultipleValuesProps {
    * might be used.
    */
   renderHeader?: boolean;
+
+  /**
+   * Can set input component into readonly mode.
+   *
+   * @default false
+   */
+  readonly?: boolean;
 }
 
 export interface MultipleValuesHandler {

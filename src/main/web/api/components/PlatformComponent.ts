@@ -21,6 +21,7 @@ import { Component, ValidationMap } from 'react';
 import * as PropTypes from 'prop-types';
 
 import * as TemplateService from 'platform/api/services/template';
+import { Cancellation } from 'platform/api/async';
 
 import { SemanticContext, SemanticContextTypes } from './SemanticContext';
 import { TemplateContext, TemplateContextTypes } from './TemplateContext';
@@ -53,13 +54,15 @@ const ComponentPropTypes: { [K in keyof ComponentProps]?: any } = {
 /**
  * @author Alexey Morozov
  */
-export abstract class PlatformComponent<P, S> extends Component<P, S> {
+export abstract class PlatformComponent<P, S = {}> extends Component<P, S> {
   static propTypes: any = ComponentPropTypes;
 
   static childContextTypes: any = TemplateContextTypes;
 
   static readonly contextTypes: any = ContextTypes;
   readonly context: ComponentContext;
+
+  readonly cancel = new Cancellation();
 
   get appliedTemplateScope(): TemplateService.TemplateScope {
     const { markupTemplateScope } = this.props as ComponentProps;
@@ -72,6 +75,10 @@ export abstract class PlatformComponent<P, S> extends Component<P, S> {
 
   constructor(props: P, context: any) {
     super(props, context);
+  }
+
+  componentWillUnmount() {
+    this.cancel.cancelAll();
   }
 
   getChildContext(): ComponentChildContext {

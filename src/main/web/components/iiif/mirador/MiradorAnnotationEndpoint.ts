@@ -108,6 +108,7 @@ export class AdapterAnnotationEndpoint implements MiradorAnnotationEndpoint {
     task
       .onValue((iri) => {
         oaAnnotation['@id'] = iri.value;
+        this.annotationsList.push(oaAnnotation);
         onSuccess(oaAnnotation);
       })
       .onError(onError);
@@ -126,11 +127,13 @@ export class AdapterAnnotationEndpoint implements MiradorAnnotationEndpoint {
   }
 
   deleteAnnotation(annotationId: string, onSuccess: () => void, onError: () => void) {
-    const annotation = this.annotationsList.find(a => a['@id'] === annotationId);
+    const annotationIndex = this.annotationsList.findIndex(a => a['@id'] === annotationId);
+    const annotation = this.annotationsList[annotationIndex];
     const task = this.endpoint.remove
       ? this.endpoint.remove(annotation)
       : Kefir.constantError<any>(new Error('AnnotationEndpoint.delete is not implemented'));
 
+    this.annotationsList.splice(annotationIndex, 1);
     task.onValue(onSuccess).onError(onError);
   }
 }

@@ -68,6 +68,204 @@
 
 
 [[!-- INCLUDES --]]
+[[#*inline "featureForm"]]
+<!-- [[!--Please don't edit region's label or rdf:type through this form!!!!! --]]-->
+  <semantic-form 
+                 id='feature-creation-form'
+                 post-action='event'
+                 subject='{{#if edit}}{{feature}}{{/if}}'
+                 new-subject-template='{{objectIri}}/E25_Man-Made_Feature/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                 persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/ns/data-updates-graph-test"}'
+
+                fields='[[
+                 fieldDefinitions
+                   label="http://www.w3.org/2000/01/rdf-schema#label"
+                   P67i_is_referred_to_by_latehokusai_annotation="http://www.researchspace.org/pattern/P67i_is_referred_to_by_latehokusai_annotation"
+                   classtype="http://www.researchspace.org/pattern/latehokusai_feature_type"
+                   P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"
+                   P65_shows_visual_item_latehokusai_annotation_inscription="http://www.researchspace.org/pattern/P65_shows_visual_item_latehokusai_annotation_inscription"
+                   P128_carries_latehokusai_annotation_information="http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_information"
+                   P65_shows_visual_item_latehokusai_annotation_mark="http://www.researchspace.oeg/pattern/P65_shows_visual_item_latehokusai_annotation_mark"
+                   P130_shows_features_of_latehokusai_annotation="http://www.researchspace.org/pattern/P130_shows_features_of_latehokusai_annotation"
+                   P128_carries_latehokusai_annotation_entity="http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_entity"
+                   O8i_was_observed_by_latehokusai="http://www.researchspace.org/pattern/O8i_was_observed_by_latehokusai"
+                   P56i_is_found_on_late_hokusai_feature="http://www.researchspace.org/pattern/P56i_is_found_on_late_hokusai_feature"
+                   P129_is_about_latehokusai_annotation_subject="http://www.researchspace.org/pattern/P129_is_about_latehokusai_annotation_subject"
+                   P67_refers_to_latehokusai_annotation_place="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place"
+                   P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"  
+                ]]'
+  >
+
+
+    <div class="form-scrollable-area">
+      <semantic-form-hidden-input for="P56i_is_found_on_late_hokusai_feature" default-value='{{objectIri}}'> </semantic-form-hidden-input>
+
+      <semantic-form-select-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E25_Man-Made_Feature'> </semantic-form-select-input>
+
+      {{#if regionIri}}
+        <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{regionIri}}'></semantic-form-drag-and-drop-input>
+      {{else}}
+        <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation"></semantic-form-drag-and-drop-input>
+      {{/if}}
+
+      {{#if createFromRegion}}
+      <semantic-form-hidden-input for="label" default-value='{{featureType}}: {{regionLabel}}'> </semantic-form-hidden-input>
+      {{else}}
+      <semantic-form-text-input for="label"> </semantic-form-text-input>
+      {{/if}}
+
+      <semantic-form-checklist-input for='O8i_was_observed_by_latehokusai' type='checkbox'></semantic-form-checklist-input>
+
+      {{#switch featureType}}
+        {{#case "Inscription" break=true}}
+      <semantic-form-composite-input
+                                     for="P65_shows_visual_item_latehokusai_annotation_inscription" 
+                                     new-subject-template="/E34_Inscription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                     fields='[[fieldDefinitions
+                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                        P190_has_symbolic_object_late_hokusai_annotation_symbolic="http://www.researchspace.org/pattern/P190_has_symbolic_object_late_hokusai_annotation_symbolic"
+                                        P72_has_language_latehokusai_annotation_language="http://www.researchspace.org/pattern/P72_has_language_latehokusai_annotation_language"
+                                        P2_has_type_latehokusai_annotation_inscription_type="http://www.researchspace.org/pattern/P2_has_type_latehokusai_annotation_inscription_type"
+                                        P73_has_translation_hokusai_annotation="http://www.researchspace.org/pattern/P73_has_translation_hokusai_annotation"
+                                        PX_has_transliteration="http://www.researchspace.org/pattern/PX_has_transliteration"
+                                      ]]'
+      >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E34_Inscription'> </semantic-form-hidden-input>
+
+        <semantic-form-text-input for='P190_has_symbolic_object_late_hokusai_annotation_symbolic'></semantic-form-text-input>
+        <semantic-form-text-input for='P73_has_translation_hokusai_annotation'></semantic-form-text-input>
+        <semantic-form-tree-picker-input for="P72_has_language_latehokusai_annotation_language"  default-value="http://collection.britishmuseum.org/id/thesauri/THES223120"></semantic-form-tree-picker-input>
+        <semantic-form-tree-picker-input for="P2_has_type_latehokusai_annotation_inscription_type" default-value="http://collection.britishmuseum.org/id/thesauri/THES122853"></semantic-form-tree-picker-input>
+        <semantic-form-text-input for='PX_has_transliteration'></semantic-form-text-input>
+      </semantic-form-composite-input>
+        {{/case}}
+
+        {{#case "Mark" break=true}}
+      <semantic-form-composite-input render-header=false
+                                     for="P65_shows_visual_item_latehokusai_annotation_mark" 
+                                     new-subject-template="/E37_Mark/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                     fields='[[fieldDefinitions
+                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                          P2_has_type_latehokusai_annotation_mark_type="http://www.researchspace.org/pattern/P2_has_type_latehokusai_annotation_mark_type"
+                                        ]]'
+       >
+        <semantic-form-tree-picker-input for="P2_has_type_latehokusai_annotation_mark_type"></semantic-form-tree-picker-input>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E37_Mark'> </semantic-form-hidden-input>
+      </semantic-form-composite-input>
+        {{/case}}
+
+        {{#case "Subject" break=true}}
+      <semantic-form-composite-input render-header=false
+                                     for="P128_carries_latehokusai_annotation_information" 
+                                     new-subject-template="/E73_Information_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                     fields='[[
+                                       fieldDefinitions
+                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                         P129_is_about_latehokusai_annotation_subject="http://www.researchspace.org/pattern/P129_is_about_latehokusai_annotation_subject"
+                                     ]]'>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object'> </semantic-form-hidden-input>
+        <semantic-form-tree-picker-input for="P129_is_about_latehokusai_annotation_subject"></semantic-form-tree-picker-input>
+      </semantic-form-composite-input>    
+        {{/case}}
+
+        {{#case "Reference" break=true}}
+      <semantic-form-composite-input for="P128_carries_latehokusai_annotation_entity" 
+                                     new-subject-template="/E73_Information_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                     fields='[[
+                                      fieldDefinitions
+                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                        P67_refers_to_latehokusai_annotation_place="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place"
+                                        P67_refers_to_latehokusai_annotation_period="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_period"
+                                        P67_refers_to_latehokusai_annotation_person="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_person"
+                                        P67_refers_to_latehokusai_annotation_object="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_object"
+                                        P67_refers_to_latehokusai_annotation_thing="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_thing"
+                                      ]]'>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object'> </semantic-form-hidden-input>
+
+        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_person"></semantic-form-autocomplete-input>
+        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_place"></semantic-form-autocomplete-input>
+        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_period"></semantic-form-autocomplete-input>
+        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_thing"></semantic-form-autocomplete-input>
+        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_object"></semantic-form-autocomplete-input>
+      </semantic-form-composite-input>
+        {{/case}}    
+      {{/switch}}
+
+      <semantic-form-text-input for="P67i_is_referred_to_by_latehokusai_annotation" multiline='true'> </semantic-form-text-input>
+      <semantic-form-drag-and-drop-input for="P130_shows_features_of_latehokusai_annotation"></semantic-form-drag-and-drop-input>
+
+
+    </div>
+
+    <div class="form-btn-group">
+      <div style="display: flex; justify-content: flex-end; width: 100%;">
+        <mp-event-target-template-render id='save-state' template='{{> template}}'>
+          <template id='template'>
+            {{#if saved}}
+            <div class='save-message fade-out_disappear'>
+              The feature has been saved successfully!
+            </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
+        <button name="reset" class="btn btn-default">Reset</button>
+
+        {{#if edit}}
+          <mp-overlay-dialog id='feature-remove-confirmation-dialog' title="Are you sure you want to remove the feature?" type="modal" bs-size="large">
+            <mp-overlay-dialog-trigger>
+              <button class="btn btn-grey btn-danger">Delete</button>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <div>
+                <div>
+                  <p>Are you sure you want to remove <strong><mp-label iri='{{feature}}'></mp-label></strong>?</p>
+                  <semantic-query 
+                                  query='
+                                    SELECT ?resource WHERE {
+                                      ?resource ?p <{{feature}}> .
+                                    }
+                                  '
+                                  template='{{> referredByTemplate}}'
+                  >
+                    <template id='referredByTemplate'>
+                      Some entities in the system link to the feature:
+                      <ul>
+                        {{#each bindings}}
+                          <li>
+                            <semantic-link iri='{{resource.value}}'></semantic-link>
+                          </li>
+                        {{/each}}
+                      </ul>
+                    </template>
+                  </semantic-query>
+                </div>
+                <div class="form-btn-group">
+                  <div style="display: flex; justify-content: flex-end; width: 100%;">
+                    <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["feature-remove-confirmation-dialog"]'>
+                      <button class="btn btn-default">Cancel</button>
+                    </mp-event-trigger>
+                    <mp-event-trigger id='confirm-feature-removal' type='Form.RemoveResource' data='{"iri": "{{feature}}"}' targets='["feature-creation-form"]'>
+                      <button class="btn btn-grey btn-danger">Delete Feature</button>
+                    </mp-event-trigger>  
+
+
+                    <mp-event-proxy id='close-form-removal-dialog' on-event-source='feature-creation-form' on-event-type='Form.ResourceRemoved'
+                                    proxy-event-type='TwoSidePanel.ShowFront' data='{}' proxy-targets='["objects-panel"]'
+                    ></mp-event-proxy>
+                  </div>
+                </div>
+              </div>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+        {{/if}}
+
+
+        <button name="submit" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </semantic-form>
+[[/inline]]
+
 [[#*inline "newFeatureForm"]]
   [[#if createFromRegion]]
     <h2>Creating new Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}'></semantic-link></strong></h2>
@@ -96,7 +294,7 @@
         </div> 
       </div>
       {{#if featureType}}
-        {{> rsp:ImageAnnotationForm [[#if createFromRegion]]createFromRegion=true [[else]] createWithoutRegion=true [[/if]]}}
+        {{> rsp:ImageAnnotationForm create=true [[#if createFromRegion]]createFromRegion=true [[else]] createWithoutRegion=true [[/if]]}}
       {{/if}}
     </template>
   </mp-event-target-template-render>
@@ -164,6 +362,20 @@
 --]]
                     <mp-event-target-template-render id='image-with-regions' template='{{> observations}}'>
                       <template id='observations'>
+                        <mp-event-target-template-render id='remove-feature-dialog' template='{{> removeFeatureDialog}}'>
+                          <template id='removeFeatureDialog'>
+                            {{#if feature}}
+                            <mp-event-proxy id='close-form-removal-dialog' on-event-source='feature-creation-form' on-event-type='Form.ResourceRemoved'
+                                            proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["remove-feature-dialog"]'
+                            ></mp-event-proxy>
+                              <div style='display: none;'>
+                                {{> rsp:ImageAnnotationForm edit=true delete=true}}
+                              </div>
+                            {{/if}}
+                          </template>
+                        </mp-event-target-template-render>
+
+                        
                         <div class="rs-title-row">
                           <h1 class="rs-main-title">Observations</h1>
                           <mp-overlay-dialog title="Object Observations" type="modal" class="modal-xlSize">
@@ -192,7 +404,12 @@
                                           on-event-data='{"objectIri": "{{objectIri}}"}'
                                           proxy-event-type='Component.TemplateUpdate' proxy-targets='["object-template-{{objectIri}}"]'
                           ></mp-event-proxy>
-
+                          
+                          <mp-event-proxy id='refresh-object-on-form-action-{{objectIri}}' on-event-source='feature-creation-form'
+                                          proxy-event-type='Component.TemplateUpdate' proxy-targets='["object-template-{{objectIri}}"]'
+                                          data='{"objectIri": "{{objectIri}}"}'
+                          ></mp-event-proxy>
+                          
                           <mp-event-target-template-render id='object-template-{{objectIri}}' template='{{> objectTemplate}}'>
                             <template id='objectTemplate'>
                               <div class="frame-imageAnnotationWorkspace__observationArea_resourceTitleRow">
@@ -242,13 +459,16 @@
                               >
                                 <template id='regionsWithoutFeature'>
                                   <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
-                                    <h2>Image Regions</h2>
+                                    <h2>Image Regions without Associated Features</h2>
                                     <div class="frame-imageAnnotationWorkspace__item_container">
                                       
 [[!--
  Iterate over all query result bindings that represent image regions.
 --]]
                                     {{#each bindings}}
+                                      <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.HighlightRegion' targets='["image-editor"]'
+                                                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' on='["hover"]'
+                                      >
                                       <div class="frame-imageAnnotationWorkspace__item">
                                         <semantic-link iri='{{region.value}}' class="text-truncate region-label"></semantic-link>
                                         <div style="display: flex; align-items: center;">
@@ -262,7 +482,34 @@
                                                             data='{ "regionIri": "{{region.value}}", "regionLabel": "{{regionLabel.value}}", "objectIri": "{{../objectIri}}" }'>
                                             <button class="btn-grey">Create associated feature</button>
                                           </mp-event-trigger>
-                                          <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete image"></i></button>
+                                          
+                                          <mp-overlay-dialog id='region-remove-confirmation-dialog--{{region.value}}' title="Are you sure you want to remove the region?" type="modal" bs-size="large">
+                                            <mp-overlay-dialog-trigger>
+                                              <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete region"></i></button>
+                                            </mp-overlay-dialog-trigger>
+                                            <mp-overlay-dialog-content>
+                                              <div>
+                                                <div>
+                                                  <p>Are you sure you want to remove <strong><mp-label iri='{{region.value}}'></mp-label></strong>?</p>
+                                                </div>
+                                                <div class="form-btn-group">
+                                                  <div style="display: flex; justify-content: flex-end; width: 100%;">
+                                                    <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'>
+                                                      <button class="btn btn-default">Cancel</button>
+                                                    </mp-event-trigger>
+                                                    <mp-event-trigger id='remove-region-event-trigger--{{region.value}}' type='IIIFViewer.RemoveRegion' targets='["image-editor"]'
+                                                                      data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                      <button class="btn btn-grey btn-danger">Delete Region</button>
+                                                    </mp-event-trigger>
+
+                                                    <mp-event-proxy id='close-region-removal-dialog--{{feature.value}}' on-event-source='remove-region-event-trigger--{{region.value}}'
+                                                                    proxy-event-type='OverlayDialog.Close' targets='["region-remove-confirmation-dialog--{{region.value}}"]'
+                                                    ></mp-event-proxy>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </mp-overlay-dialog-content>
+                                          </mp-overlay-dialog>
                                           
 [[!--
  Zoom to the current image region in the IIIF Viewer, creates new slot if the viewer doesn't have active slot with the corresponding image.
@@ -273,6 +520,7 @@
                                           </mp-event-trigger>
                                         </div>
                                       </div>
+                                      </mp-event-trigger>
                                     {{/each}}
                                     </div>
                                   </div>
@@ -297,6 +545,10 @@
                                     <h2>Features</h2>
                                     <div class="frame-imageAnnotationWorkspace__item_container">
                                     {{#each bindings}}
+                                      <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.HighlightRegion' targets='["image-editor"]'
+                                                        data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' on='["hover"]'
+                                      >
+
                                       <div class="frame-imageAnnotationWorkspace__item">
                                         <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link> 
                                         <div style="display: flex; align-items: center;">
@@ -326,8 +578,18 @@
                                               <i class="fa fa-exclamation-circle" title="The feature has no image associated"></i>
                                             </div>
                                             {{/if}}
+
+                                          <mp-event-trigger id='remove-feature-trigger--{{feature.value}}'
+                                                            type='Component.TemplateUpdate'
+                                                            data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'
+ 																														targets='["remove-feature-dialog"]'
+                                                            >
+                                            <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete feature"></i></button>
+
+                                          </mp-event-trigger>
                                         </div>
                                       </div>
+                                      </mp-event-trigger>
                                     {{/each}}
                                     </div>
                                   </div>
@@ -354,7 +616,7 @@
                     </mp-event-trigger>
 
                     <div class="frame-imageAnnotationWorkspace__form-titleRow">
-                      <h1 class="text-truncate">Observation on <strong><semantic-link iri='{{iri}}'></semantic-link></strong></h1>
+                      <h1 class="text-truncate">Observation on <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
                       <button class="btn btn-primary btn-icon"><i class="rs-icon rs-icon-image" title="Focus on resource images"></i></button>
                     </div>
                                   
@@ -398,13 +660,16 @@
                                             <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
                                               <h2>Select existing feature:</h2>
                                               <div class="frame-imageAnnotationWorkspace__item_container">
+                                                {{#each bindings}}
                                                 <div class="frame-imageAnnotationWorkspace__item">
                                                   <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link> 
                                                   <div style="display: flex; align-items: center;">
-                                                    <mp-event-trigger id='form-event-trigger'
-                                                                      type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
-                                                                      data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}", "regionIri": "{{../regionIri}}" }'>
-                                                      <button class="btn-grey">Select</button>
+                                                    <mp-event-trigger id='use-existing-feature'
+                                                                      type='Component.TemplateUpdate' 
+                                                                      data='{"confirmExisting": true, "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}", "regionIri": "{{../regionIri}}"}' 
+                                                                      targets='["new-region-wizard-area"]'
+                                                    >
+                                                      <button class='btn-grey'>Select</button>
                                                     </mp-event-trigger>
                                                   </div>
                                                 </div>
@@ -415,6 +680,49 @@
                                           </template>
                                     
                                         </semantic-query>
+                                    {{else if confirmExisting}}
+                                      <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
+                                        <h2>
+                                          Associating image region with the feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong> of the &nbsp; object: <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong>
+                                        </h2>
+                                        <div class="frame-imageAnnotationWorkspace__form-edit-featureType">
+                                          <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Kind:</span>
+                                          <span class='btn-grey btn-selected'>{{featureType}}</span>
+                                        </div>
+                                        <semantic-form 
+                                           id='feature-creation-form'
+                                           post-action='event'
+                                           subject='{{feature}}'
+                                           persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/ns/data-updates-graph-test"}'
+
+                                          fields='[[
+                                           fieldDefinitions
+                                             P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"
+                                          ]]'
+                                        >
+                                          <div class="form-scrollable-area">
+                                            <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{regionIri}}' force-defaults=true readonly=true></semantic-form-drag-and-drop-input>
+                                          </div>
+                                          <div class="form-btn-group">
+                                            <div style="display: flex; justify-content: flex-end; width: 100%;">
+                                              <mp-event-target-template-render id='save-state' template='{{> template}}'>
+                                                <template id='template'>
+                                                  {{#if saved}}
+                                                  <div class='save-message fade-out_disappear'>
+                                                    The region has been updated successfully!
+                                                  </div>
+                                                  {{/if}}
+                                                </template>
+                                              </mp-event-target-template-render>
+                                              <mp-event-trigger id='cancel-region-association' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
+                                                <button class='btn btn-grey btn-danger'>Cancel</button>
+                                              </mp-event-trigger> 
+
+                                              <button name="submit" class="btn btn-primary">Confirm</button>
+                                            </div>
+                                          </div>
+                                        </semantic-form>
+                                      </div>
                                     {{else if createNew}}
                                       [[> newFeatureForm createFromRegion=true]]
                                     {{else}}
@@ -438,15 +746,12 @@
                         </div>
                       {{else}}
                         {{#if objectIri}}
- 												  [[> newFeatureForm createFromRegion=false]]
+                          <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
+ 												    [[> newFeatureForm createFromRegion=false]]
+                          </div>
                         {{/if}}
                       {{/if}}
                     {{/if}}
-
-                    <mp-event-proxy id='refresh-the-form' on-event-source='feature-creation-form'
-                                    proxy-event-type='Component.TemplateUpdate' proxy-targets='["save-state"]'
-                                    data='{"saved": true}'
-                                    ></mp-event-proxy>
 
                   </div>
                 </template>

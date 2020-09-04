@@ -686,6 +686,11 @@ export class AssertionComponent extends Component<Props, State> {
     );
   }
 
+  remove(currentModel: CompositeValue) {
+    // TODO implement remove assertion
+    return undefined;
+  }
+
   persist(initialModel: CompositeValue, currentModel: CompositeValue): Kefir.Property<void> {
     const { target, field } = this.state;
     return this.persistCompositeValue(initialModel, currentModel).map((values) =>

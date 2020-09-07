@@ -84,7 +84,6 @@ Mirador.EventEmitter.prototype.publish = function (this: EmitterMixin, name) {
     }
     // console.trace();
   }
-  console.log(arguments)
   this.eventStackDepth++;
   const result = this.bus.trigger.apply(this.bus, arguments);
   this.eventStackDepth--;

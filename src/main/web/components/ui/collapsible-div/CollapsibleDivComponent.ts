@@ -81,7 +81,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
         },
         cloneElement(triggerChildren, {})
       ),
-      createElement(CollapsibleDivContentComponent, { expanded: expanded }, cloneElement(contentChildren, {}))
+      createElement(CollapsibleDivContentComponent, { expanded: expanded }, contentChildren)
     );
   }
 }

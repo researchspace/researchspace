@@ -534,8 +534,16 @@
 --]]
                               <semantic-query
                                   query='
-                                    SELECT DISTINCT ?feature (SAMPLE(?featureType) AS ?featureType) (SAMPLE(?image) AS ?image) (SAMPLE(?region) AS ?region) (IF(COUNT(?r) > 1, true, false) AS ?moreThanOneRegion) {
+                                    SELECT DISTINCT ?feature (SAMPLE(?featureType) AS ?featureType) (SAMPLE(?image) AS ?image) (SAMPLE(?region) AS ?region) (IF(COUNT(?r) > 1, true, false) AS ?moreThanOneRegion) (SAMPLE(?user) AS ?user) (SAMPLE(?date) AS ?date) {
                                        [[> featureTypesQueryPattern]]
+                                      
+                                      
+                                      OPTIONAL {
+                                        ?feature <http://www.cidoc-crm/cidoc-crm/CRMsci/O8i_was_observed_by> ?observation .
+                                        ?observation crm:P2_has_type <http://www.researchspace.org/entity/E55_Type/bdac6431-7d0a-4fa2-b547-6759a071bd1e> .
+                                        ?observation crm:P14_carried_out_by ?user .
+                                        ?observation crm:P82_at_some_time_within ?date . 
+                                      }
                                     } GROUP BY ?feature
                                   '
                                   template='{{> features}}'
@@ -549,46 +557,47 @@
                                                         data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' on='["hover"]'
                                       >
 
-                                      <div class="frame-imageAnnotationWorkspace__item">
-                                        <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link> 
-                                        <div style="display: flex; align-items: center;">
-                                          <mp-event-trigger id='form-event-trigger'
-                                                            type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
-                                                            data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'>
-                                            <button class="btn-grey">Edit</button>
-                                          </mp-event-trigger>
-                                          <mp-event-trigger id='details-view-trigger'
-                                                            type='Component.TemplateUpdate'
-                                                            data='{"iri": "{{feature.value}}"}' targets='["details-view", "open-details-sidebar"]'
-                                          >
-                                            <button class="btn-grey btn-icon">
-                                              <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i>
-                                            </button>
-                                          </mp-event-trigger>
-                                            {{#if region}}
-                                              <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
-                                                                data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                  <button class="btn-grey btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
-                                              </mp-event-trigger>
-                                            {{else}}
-                                            <div style="position: relative;">
-                                              <button disabled class="btn-grey btn-icon">
-                                                <i class="rs-icon rs-icon-image" title="The feature has no image associated"></i>
+                                        <div class="frame-imageAnnotationWorkspace__item">
+                                          <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link>
+                                          <i>by <semantic-link iri='{{user.value}}'></semantic-link> on {{dateTimeFormat date.value}}</i>
+                                          <div style="display: flex; align-items: center;">
+                                            <mp-event-trigger id='form-event-trigger'
+                                                              type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
+                                                              data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'>
+                                              <button class="btn-grey">Edit</button>
+                                            </mp-event-trigger>
+                                            <mp-event-trigger id='details-view-trigger'
+                                                              type='Component.TemplateUpdate'
+                                                              data='{"iri": "{{feature.value}}"}' targets='["details-view", "open-details-sidebar"]'
+                                            >
+                                              <button class="btn-grey btn-icon">
+                                                <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i>
                                               </button>
-                                              <i class="fa fa-exclamation-circle" title="The feature has no image associated"></i>
-                                            </div>
-                                            {{/if}}
+                                            </mp-event-trigger>
+                                              {{#if region}}
+                                                <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.ZoomToRegion' targets='["image-editor"]'
+                                                                  data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
+                                                    <button class="btn-grey btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
+                                                </mp-event-trigger>
+                                              {{else}}
+                                              <div style="position: relative;">
+                                                <button disabled class="btn-grey btn-icon">
+                                                  <i class="rs-icon rs-icon-image" title="The feature has no image associated"></i>
+                                                </button>
+                                                <i class="fa fa-exclamation-circle" title="The feature has no image associated"></i>
+                                              </div>
+                                              {{/if}}
 
-                                          <mp-event-trigger id='remove-feature-trigger--{{feature.value}}'
-                                                            type='Component.TemplateUpdate'
-                                                            data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'
- 																														targets='["remove-feature-dialog"]'
-                                                            >
-                                            <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete feature"></i></button>
+                                            <mp-event-trigger id='remove-feature-trigger--{{feature.value}}'
+                                                              type='Component.TemplateUpdate'
+                                                              data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../objectIri}}" }'
+                                                              targets='["remove-feature-dialog"]'
+                                                              >
+                                              <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete feature"></i></button>
 
-                                          </mp-event-trigger>
+                                            </mp-event-trigger>
+                                          </div>
                                         </div>
-                                      </div>
                                       </mp-event-trigger>
                                     {{/each}}
                                     </div>

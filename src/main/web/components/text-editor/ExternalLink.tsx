@@ -27,16 +27,15 @@ import { Inline } from './EditorSchema';
 import * as styles from './TextEditor.scss';
 
 export interface ExternalLinkProps extends RenderNodeProps {
-  editor: Slate.Editor
+  editor: Slate.Editor;
 }
 
 interface ExternalLinkState {
-  href: string
-  edit: boolean
+  href: string;
+  edit: boolean;
 }
 
 export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLinkState> {
-
   private aRef: React.RefObject<HTMLAnchorElement>;
   private inputRef: React.RefObject<FormControl>;
   private popoverRef: React.RefObject<HTMLDivElement>;
@@ -50,7 +49,7 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
     const href = props.node.data.get('attributes', {}).href || '';
     this.state = {
       href: href,
-      edit: href === '' ? true : false
+      edit: href === '' ? true : false,
     };
   }
 
@@ -61,32 +60,24 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
   onHrefSaved = (event: React.MouseEvent<Button>) => {
     event.preventDefault();
 
-    const node =
-      this.props.node.setIn(
-        ['data', 'attributes'], { href: this.state.href }
-      ) as Slate.Inline;
-    this.props.editor
-      .moveToStartOfNode(node)
-      .setInlines(node);
+    const node = this.props.node.setIn(['data', 'attributes'], { href: this.state.href }) as Slate.Inline;
+    this.props.editor.moveToStartOfNode(node).setInlines(node);
     this.setState({ edit: false });
-  }
+  };
 
   onUnlink = (event: React.MouseEvent<Button>) => {
     event.preventDefault();
 
     const { editor, node } = this.props;
-    editor
-      .moveToRangeOfNode(node)
-      .focus()
-      .unwrapInline(Inline.externalLink);
-  }
+    editor.moveToRangeOfNode(node).focus().unwrapInline(Inline.externalLink);
+  };
 
   onOverlayShown = () => {
     if (this.state.edit) {
       const input = findDOMNode(this.inputRef.current) as HTMLInputElement;
       input.focus();
     }
-  }
+  };
 
   onEdit = () => this.setState({ edit: true });
 
@@ -95,9 +86,7 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
   render() {
     const { attributes, children, editor, node } = this.props;
 
-    const isLinkSelected =
-      editor.value.selection.isCollapsed &&
-      editor.value.inlines.contains(node as Slate.Inline);
+    const isLinkSelected = editor.value.selection.isCollapsed && editor.value.inlines.contains(node as Slate.Inline);
 
     const dataAttributes = node.data.get('attributes', {});
     const isNoHref = !dataAttributes.href;
@@ -105,48 +94,46 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
 
     return (
       <span style={{ position: 'relative' }}>
-        <Overlay container={document.body} target={this.getPopoverTarget}
-          placement='top' show={isShowPopover} onEntered={this.onOverlayShown}
+        <Overlay
+          container={document.body}
+          target={this.getPopoverTarget}
+          placement="top"
+          show={isShowPopover}
+          onEntered={this.onOverlayShown}
         >
-          <Popover id='external-link-popover' placement='top' contentEditable={false}>
+          <Popover id="external-link-popover" placement="top" contentEditable={false}>
             <div className={styles.linkPopover} ref={this.popoverRef}>
-              {
-                this.state.edit
-                  ?
-                  <FormControl type='text' value={this.state.href}
-                    ref={this.inputRef}
-                    placeholder='enter link'
-                    onChange={e => this.setState({ href: (e.target as any).value })}
-                  />
-                  :
-                  <div className={styles.externalLinkHolder}>
-                    <a {...dataAttributes}>
-                      {node.text}
-                    </a>
-                  </div>
-              }
+              {this.state.edit ? (
+                <FormControl
+                  type="text"
+                  value={this.state.href}
+                  ref={this.inputRef}
+                  placeholder="enter link"
+                  onChange={(e) => this.setState({ href: (e.target as any).value })}
+                />
+              ) : (
+                <div className={styles.externalLinkHolder}>
+                  <a {...dataAttributes}>{node.text}</a>
+                </div>
+              )}
               <ButtonGroup>
-                {
-                  this.state.edit
-                    ?
-                    <Button onMouseDown={this.onHrefSaved} disabled={this.state.href === ''}>
-                      <i className='fa fa-floppy-o' aria-hidden='true'></i>
-                    </Button>
-                    :
-                    <Button onMouseDown={this.onEdit}>
-                      <i className='fa fa-pencil' aria-hidden='true'></i>
-                    </Button>
-                }
+                {this.state.edit ? (
+                  <Button onMouseDown={this.onHrefSaved} disabled={this.state.href === ''}>
+                    <i className="fa fa-floppy-o" aria-hidden="true"></i>
+                  </Button>
+                ) : (
+                  <Button onMouseDown={this.onEdit}>
+                    <i className="fa fa-pencil" aria-hidden="true"></i>
+                  </Button>
+                )}
                 <Button onMouseDown={this.onUnlink}>
-                  <i className='fa fa-chain-broken' aria-hidden='true'></i>
+                  <i className="fa fa-chain-broken" aria-hidden="true"></i>
                 </Button>
               </ButtonGroup>
             </div>
           </Popover>
         </Overlay>
-        <a {...attributes} {...dataAttributes}
-          className={styles.externalLink} ref={this.aRef} onClick={this.onClick}
-        >
+        <a {...attributes} {...dataAttributes} className={styles.externalLink} ref={this.aRef} onClick={this.onClick}>
           {children}
         </a>
       </span>

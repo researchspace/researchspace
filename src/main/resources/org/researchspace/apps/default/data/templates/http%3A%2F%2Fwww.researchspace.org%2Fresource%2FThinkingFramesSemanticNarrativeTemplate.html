@@ -1,10 +1,16 @@
-<rs-text-editor
+<rs-text-annotation-workspace
+    document-iri='{{iri}}'
+    storage="runtime"
+    annotation-subject-template="http://www.researchspace.org/annotation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+    fallback-template="{{> fallback-template}}"
+    annotation-tooltip="{{> annotation-tooltip}}"
+    mode='edit'                    
+
                 [[#if (hasPermission "forms:ldp:*")]]
                 readonly='false'
                 [[else]]
                 readonly='true'
                 [[/if]]
-  document-iri='{{iri}}'
   resource-templates='[
   {
     "id": "image",
@@ -150,4 +156,147 @@
       </semantic-table>
     </div>
   </template>
-</rs-text-editor>
+
+ 
+          <template id="fallback-template">
+            <semantic-link iri="{{ iri.value }}"></semantic-link>
+          </template>
+
+          <template id="annotation-tooltip">
+            <div class='annotationTooltip'>
+              {{#if allowEdit}}
+              <button
+                name="edit"
+                class="btn btn-xs btn-default"
+                data-annotation="{{ iri.value }}"
+                title="Edit annotation"
+              >
+                <span class="fa fa-pencil" style="pointer-events: none;"></span>
+              </button>
+              {{else}}
+              <button
+                name="edit"
+                class="btn btn-xs btn-default"
+                disabled
+                title="Edit annotation"
+              >
+                <span class="fa fa-pencil" style="pointer-events: none;"></span>
+              </button>
+              {{/if}}
+              {{#if allowDelete}}
+              <button
+                name="delete"
+                class="btn btn-xs btn-default"
+                data-annotation="{{ iri.value }}"
+                title="Delete annotation"
+              >
+                <span class="fa fa-trash" style="pointer-events: none;"></span>
+              </button>
+              {{else}}
+              <button
+                name="delete"
+                class="btn btn-xs btn-default"
+                disabled
+                title="Delete annotation"
+              >
+                <span class="fa fa-trash" style="pointer-events: none;"></span>
+              </button>
+              {{/if}}
+            </div>
+          </template>
+  
+
+  <rs-text-annotation-type label="Note"
+                        rdf-type='http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object'
+                           icon-url='/assets/images/icons/rs-icons/narrative_edit.svg'
+                        color='#d8be58'
+  >
+    <template id='annotation'>
+      {{#> rsp:AnnotationTemplate}}
+        <semantic-query 
+            query='
+                  PREFIX oa: <http://www.w3.org/ns/oa#>
+                  SELECT ?iri ?note WHERE {
+                    BIND({{iri}} as ?iri)
+                    ?iri oa:hasBody/crm:P190_has_symbolic_content ?note .
+                  } LIMIT 1
+            ' 
+            template='{{> show}}'>
+          <template id='show'>
+            <div class="text-annotation-content">
+              <pre title='{{bindings.0.note.value}}'>
+                <mp-text-truncate lines='2' truncate=' ...'>{{bindings.0.note.value}}</mp-text-truncate>
+              </pre>
+            </div>
+          </template>
+        </semantic-query>
+      {{/ rsp:AnnotationTemplate}}
+    </template>
+    
+    <semantic-form-composite-input
+            for='oaHasBody'
+            new-subject-template='body'
+            fields='[[fieldDefinitions 
+                        type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        P190_has_symbolic_content="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
+                        P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"]]'
+    >
+      <semantic-form-hidden-input for='type'
+                                  default-value='http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object'>
+      </semantic-form-hidden-input>
+      <semantic-form-hidden-input for='P2_has_type'
+                                  default-value='http://www.researchspace.org/vocabulary/Note'>
+      </semantic-form-hidden-input>
+      <semantic-form-text-input for='P190_has_symbolic_content' multiline='true' placeholder='Enter Note ...'>
+      </semantic-form-text-input>
+      <semantic-form-errors></semantic-form-errors>
+    </semantic-form-composite-input>
+  </rs-text-annotation-type>
+  
+  <rs-text-annotation-type label="Citation"
+                        rdf-type='http://iflastandards.info/ns/fr/frbr/frbroo/F24_Publication_Expression'
+                        icon-url='/assets/images/icons/rs-icons/page.svg'
+                        color='#6fa8dc'
+  >
+    <template id='annotation'>
+      {{#> rsp:AnnotationTemplate}}
+        <semantic-query 
+            query='
+                  PREFIX oa: <http://www.w3.org/ns/oa#>
+                  SELECT ?iri ?label WHERE {
+                    BIND({{iri}} as ?iri)
+                    ?iri oa:hasBody/rdfs:label ?label .
+                  } LIMIT 1
+            ' 
+            template='{{> show}}'>
+          <template id='show'>
+            <div class="text-annotation-content">
+              <pre title='{{bindings.0.label.value}}'>
+                <mp-text-truncate lines='2' truncate=' ...'>{{bindings.0.label.value}}</mp-text-truncate>
+              </pre>
+            </div>
+          </template>
+        </semantic-query>
+      {{/ rsp:AnnotationTemplate}}
+    </template>
+    
+    <semantic-form-composite-input
+            for='oaHasBody'
+            new-subject-template='body'
+            fields='[[fieldDefinitions 
+                        type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        label="http://www.w3.org/2000/01/rdf-schema#label"
+                        P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"]]'
+    >
+      <semantic-form-hidden-input for='type'
+                                  default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F24_Publication_Expression'>
+      </semantic-form-hidden-input>
+      <semantic-form-hidden-input for='P2_has_type'
+                                  default-value='http://www.researchspace.org/vocabulary/Publication'>
+      </semantic-form-hidden-input>
+      <semantic-form-text-input for='label' multiline='true' placeholder='Enter Citation ...'>
+      </semantic-form-text-input>
+      <semantic-form-errors></semantic-form-errors>
+    </semantic-form-composite-input>
+  </rs-text-annotation-type>
+</rs-text-annotation-workspace>

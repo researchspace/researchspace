@@ -27,9 +27,9 @@ import { Block } from './EditorSchema';
 import * as styles from './TextEditor.scss';
 
 export interface SidebarProps {
-  value: Slate.Value
+  value: Slate.Value;
   editor: React.RefObject<Editor>;
-  anchorBlock: Slate.Block
+  anchorBlock: Slate.Block;
 }
 
 export class Sidebar extends React.Component<SidebarProps, any> {
@@ -37,14 +37,12 @@ export class Sidebar extends React.Component<SidebarProps, any> {
     const iconClassName = `fa ${BLOCK_TO_ICON[blockType]}`;
 
     // for heading blocks we add heading number to the default icon
-    const prefix =
-      blockType === Block.h1 ? '1' :
-      blockType === Block.h2 ? '2' :
-      blockType === Block.h3 ? '3' : '';
+    const prefix = blockType === Block.h1 ? '1' : blockType === Block.h2 ? '2' : blockType === Block.h3 ? '3' : '';
 
     return (
       <span className={styles.dropdownMenuItemIcon}>
-        <i className={iconClassName} aria-hidden='true'></i>{prefix}
+        <i className={iconClassName} aria-hidden="true"></i>
+        {prefix}
       </span>
     );
   }
@@ -59,7 +57,7 @@ export class Sidebar extends React.Component<SidebarProps, any> {
         height: node.offsetHeight,
         transform: `translateY(${node.offsetTop}px)`,
       };
-      const block = anchorBlock ? anchorBlock.type as Block : Block.empty;
+      const block = anchorBlock ? (anchorBlock.type as Block) : Block.empty;
 
       return (
         <div className={styles.sidebar} style={sidebarStyle}>

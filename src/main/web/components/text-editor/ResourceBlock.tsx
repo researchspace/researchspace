@@ -30,24 +30,20 @@ import { ResourceTemplateConfig } from './Config';
 
 import * as styles from './TextEditor.scss';
 
-
 export interface ResourceBlockProps extends RenderNodeProps {
-  resourceTemplates: Array<ResourceTemplateConfig>
+  resourceTemplates: Array<ResourceTemplateConfig>;
 }
 
 export class ResourceBlock extends React.Component<ResourceBlockProps> {
-
   private resizeObserver: MutationObserver;
 
   private getProps = () => {
     return this.props;
-  }
+  };
 
   private getTemplateConfig = (templateId: string) => {
-    return _.find(
-      this.props.resourceTemplates, t => t.id === templateId
-    );
-  }
+    return _.find(this.props.resourceTemplates, (t) => t.id === templateId);
+  };
 
   private onTemplateRendered = (ref: HTMLElement) => {
     const template = this.props.node.data.get('attributes')?.template;
@@ -58,31 +54,24 @@ export class ResourceBlock extends React.Component<ResourceBlockProps> {
         this.resizeObserver.disconnect();
       }
 
-      this.resizeObserver = new MutationObserver(
-        (_mutationsList, _observer) => {
-          const { node, editor } = this.getProps();
-          const attributes = node.data.get('attributes', {});
-          const style = attributes.style || {};
-          if (style.height !== ref.offsetHeight || style.width !== ref.offsetWidth) {
-            attributes.style = attributes.style || {};
-            attributes.style.height = ref.offsetHeight;
-            attributes.style.width = ref.offsetWidth;
-            editor
-              .moveToRangeOfNode(node)
-              .setBlocks(node);
-          }
+      this.resizeObserver = new MutationObserver((_mutationsList, _observer) => {
+        const { node, editor } = this.getProps();
+        const attributes = node.data.get('attributes', {});
+        const style = attributes.style || {};
+        if (style.height !== ref.offsetHeight || style.width !== ref.offsetWidth) {
+          attributes.style = attributes.style || {};
+          attributes.style.height = ref.offsetHeight;
+          attributes.style.width = ref.offsetWidth;
+          editor.moveToRangeOfNode(node).setBlocks(node);
         }
-      );
+      });
 
-      this.resizeObserver.observe(
-        ref,
-        {
-          attributes: true,
-          attributeFilter: ['style']
-        }
-      );
+      this.resizeObserver.observe(ref, {
+        attributes: true,
+        attributeFilter: ['style'],
+      });
     }
-  }
+  };
 
   componentWillUnmount() {
     if (this.resizeObserver) {
@@ -110,8 +99,7 @@ export class ResourceBlock extends React.Component<ResourceBlockProps> {
       }
 
       if (config.resizable) {
-        style.resize = 'both',
-        style.overflow = 'auto';
+        (style.resize = 'both'), (style.overflow = 'auto');
       } else {
         style.flex = 1;
       }
@@ -119,10 +107,9 @@ export class ResourceBlock extends React.Component<ResourceBlockProps> {
       const isSelected = editor.value.selection.isCollapsed && editor.value.endBlock === node;
 
       return (
-        <div {...this.props.attributes}
-        className={
-          classNames(styles.resourceBlock, {[styles.resourceBlockActive]: isSelected})
-        }
+        <div
+          {...this.props.attributes}
+          className={classNames(styles.resourceBlock, { [styles.resourceBlockActive]: isSelected })}
         >
           <div
             style={{
@@ -136,19 +123,22 @@ export class ResourceBlock extends React.Component<ResourceBlockProps> {
                 style: {
                   height: '100%',
                   width: '100%',
-                }
+                },
               }}
               template={{
                 source: config.template,
-                options: { iri: Rdf.iri(attributes.src) }
+                options: { iri: Rdf.iri(attributes.src) },
               }}
             />
           </div>
         </div>
       );
     } else {
-      return <Well><Spinner /></Well>;
+      return (
+        <Well>
+          <Spinner />
+        </Well>
+      );
     }
-
   }
 }

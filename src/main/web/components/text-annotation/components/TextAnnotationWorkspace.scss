@@ -17,16 +17,41 @@
  */
 
 .component {
-  display: flex;
+  background-color: #f8f9fa;
+  flex: 1;
 }
 
 .editorPanel {
-  flex: auto;
-  overflow-y: scroll;
+  flex: 1 1 0px;
+  height: 100%;
+  overflow-y: hidden;
 }
 
 .annotationsPanel {
-  flex: 0 0 400px;
-  width: 400px;
-  margin-left: 15px;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0px;
+  overflow: hidden;
+  height: 100%;
+  margin: 10px;
+}
+
+:global(.TextAnnotationWorkspace--component button.btn.TextAnnotationEditor--addAnnotationButton), :global(.TextAnnotationWorkspace--component .text-annotation-header button.btn) {
+  background-color: transparent;
+}
+
+:global {
+  div[data-annotation-type='http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object'],  div[data-annotation-type='http://iflastandards.info/ns/fr/frbr/frbroo/F24_Publication_Expression'] {
+    .AnnotationEditForm--formContent {
+      min-height: initial;
+    }
+
+    .cardinality-support__group-instance {
+      border: none;
+      padding-right: 0;
+    }
+    .semantic-form-input-decorator__header, .cardinality-support__add-value, .cardinality-support__remove-value {
+      display: none;
+    }
+  }
 }

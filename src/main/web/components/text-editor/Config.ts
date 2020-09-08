@@ -17,16 +17,16 @@
  */
 
 export interface ResourceTemplateConfig {
-  id: string
+  id: string;
   // URI of type template could be applied to
-  type: string
+  type: string;
   // Human-readable description of template
-  label: string
-  template: string
+  label: string;
+  template: string;
 
-  resizable?: boolean
+  resizable?: boolean;
   defaults?: {
-    height?: string
-    width?: string
-  }
+    height?: string;
+    width?: string;
+  };
 }

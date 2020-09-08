@@ -23,7 +23,14 @@ import { Editor } from 'slate-react';
 import { List } from 'immutable';
 
 import {
-  Block, MARK, Mark, DEFAULT_BLOCK, TextAlignment, isTextBlock, Inline, RESOURCE_MIME_TYPE
+  Block,
+  MARK,
+  Mark,
+  DEFAULT_BLOCK,
+  TextAlignment,
+  isTextBlock,
+  Inline,
+  RESOURCE_MIME_TYPE,
 } from './EditorSchema';
 import { ResourceTemplateConfig } from './Config';
 import * as styles from './TextEditor.scss';
@@ -37,7 +44,7 @@ export const BLOCK_TO_ICON: { [block in Block]: string } = {
   [Block.h3]: 'fa-header',
   [Block.ol]: 'fa-list-ol',
   [Block.ul]: 'fa-list-ul',
-  [Block.li]: 'fa-list'
+  [Block.li]: 'fa-list',
 };
 
 const BLOCK_TO_LABEL: { [block in Block]: string } = {
@@ -49,7 +56,7 @@ const BLOCK_TO_LABEL: { [block in Block]: string } = {
   [Block.h3]: 'Heading 3',
   [Block.ol]: 'Numbered List',
   [Block.ul]: 'Bulleted List',
-  [Block.li]: 'List Item'
+  [Block.li]: 'List Item',
 };
 
 const TEXT_ALIGNMENT_TO_ICON: { [alignment in TextAlignment]: string } = {
@@ -63,57 +70,64 @@ const MARK_TO_ICON: { [mark in Mark]: string } = {
   [MARK.s]: 'fa-strikethrough',
   [MARK.u]: 'fa-underline',
   [MARK.em]: 'fa-italic',
-  [MARK.strong]: 'fa-bold'
+  [MARK.strong]: 'fa-bold',
 };
 
 export interface ToolbarProps {
   value: Slate.Value;
   editor: React.RefObject<Editor>;
-  anchorBlock: Slate.Block
-  options?: { [objectIri: string]: ResourceTemplateConfig[] }
+  anchorBlock: Slate.Block;
+  options?: { [objectIri: string]: ResourceTemplateConfig[] };
   onDocumentSave: () => void;
   saving?: boolean;
 }
 
 export class Toolbar extends React.Component<ToolbarProps> {
-
-  isTextSelectionActionDisabled = () =>
-    !isTextBlock(this.props.anchorBlock) || this.props.value.selection.isCollapsed
+  isTextSelectionActionDisabled = () => !isTextBlock(this.props.anchorBlock) || this.props.value.selection.isCollapsed;
 
   onMarkClick = (event: React.MouseEvent<Button>, markType: Mark) => {
     event.preventDefault();
     this.props.editor.current.toggleMark(markType);
-  }
+  };
 
   markButton = (markType: Mark) => {
     const isActive = this.hasMark(markType);
     const className = `fa ${MARK_TO_ICON[markType]}`;
-    return <Button active={isActive} disabled={this.isTextSelectionActionDisabled()}
-      onMouseDown={event => this.onMarkClick(event, markType)}>
-      <i className={className} aria-hidden={true}></i>
-    </Button>;
-  }
+    return (
+      <Button
+        active={isActive}
+        disabled={this.isTextSelectionActionDisabled()}
+        onMouseDown={(event) => this.onMarkClick(event, markType)}
+      >
+        <i className={className} aria-hidden={true}></i>
+      </Button>
+    );
+  };
 
   hasMark = (markType: Mark): boolean => {
     const { value } = this.props;
-    return value.activeMarks.some(mark => mark.type === markType);
-  }
+    return value.activeMarks.some((mark) => mark.type === markType);
+  };
 
   alignTextButton = (alignment: TextAlignment) => {
     const isActive = this.hasAlignment(alignment);
     const className = `fa ${TEXT_ALIGNMENT_TO_ICON[alignment]}`;
-    return <Button active={isActive} disabled={!isTextBlock(this.props.anchorBlock)}
-      onMouseDown={event => this.onAlignClick(event, alignment)}>
-      <i className={className} aria-hidden={true}></i>
-    </Button>;
-  }
+    return (
+      <Button
+        active={isActive}
+        disabled={!isTextBlock(this.props.anchorBlock)}
+        onMouseDown={(event) => this.onAlignClick(event, alignment)}
+      >
+        <i className={className} aria-hidden={true}></i>
+      </Button>
+    );
+  };
 
   onAlignClick = (event: React.MouseEvent<Button>, alignment: TextAlignment) => {
     event.preventDefault();
     const { editor, anchorBlock } = this.props;
 
-    const currentAlignment =
-      anchorBlock.data.get('attributes', {})?.style?.textAlign;
+    const currentAlignment = anchorBlock.data.get('attributes', {})?.style?.textAlign;
 
     let data = {};
     if (alignment !== currentAlignment) {
@@ -124,12 +138,12 @@ export class Toolbar extends React.Component<ToolbarProps> {
           // we need to have this for "text-align: justify" to work in all browsers.
           // see https://github.com/ianstormtaylor/slate/issues/2359
           whiteSpace: alignment === TextAlignment.justify ? 'pre-line' : undefined,
-        }
+        },
       };
     }
     const modifiedBlock = anchorBlock.setIn(['data', 'attributes'], data) as Slate.Block;
     editor.current.setBlocks(modifiedBlock);
-  }
+  };
 
   hasAlignment = (alignment: TextAlignment): boolean => {
     const { anchorBlock } = this.props;
@@ -138,18 +152,16 @@ export class Toolbar extends React.Component<ToolbarProps> {
     } else {
       return false;
     }
-  }
+  };
 
   // link
   externalLinkButton = () => {
     return (
-      <Button onMouseDown={this.onExternalLinkClick}
-        disabled={this.isTextSelectionActionDisabled()}
-      >
-        <i className='fa fa-external-link' aria-hidden={true}></i>
+      <Button onMouseDown={this.onExternalLinkClick} disabled={this.isTextSelectionActionDisabled()}>
+        <i className="fa fa-external-link" aria-hidden={true}></i>
       </Button>
     );
-  }
+  };
 
   onExternalLinkClick = (event: React.MouseEvent<Button>) => {
     event.preventDefault();
@@ -157,27 +169,24 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
     if (value.selection.isCollapsed) {
       const linkText = Slate.Text.create({ text: 'link' });
-      editor.current
-        .insertInline({
-          type: Inline.externalLink,
-          nodes: List.of(linkText),
-        });
+      editor.current.insertInline({
+        type: Inline.externalLink,
+        nodes: List.of(linkText),
+      });
     } else {
       editor.current.wrapInline({
         type: Inline.externalLink,
       });
     }
-  }
+  };
 
   internalLinkButton = () => {
     return (
-      <Button onMouseDown={this.onInternalLinkClick}
-        disabled={this.isTextSelectionActionDisabled()}
-      >
-        <i className='fa fa-chain' aria-hidden={true}></i>
+      <Button onMouseDown={this.onInternalLinkClick} disabled={this.isTextSelectionActionDisabled()}>
+        <i className="fa fa-chain" aria-hidden={true}></i>
       </Button>
     );
-  }
+  };
 
   onInternalLinkClick = (event: React.MouseEvent<Button>) => {
     event.preventDefault();
@@ -185,17 +194,16 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
     if (value.selection.isCollapsed) {
       const linkText = Slate.Text.create({ text: 'link' });
-      editor.current
-        .insertInline({
-          type: Inline.internalLink,
-          nodes: List.of(linkText),
-        });
+      editor.current.insertInline({
+        type: Inline.internalLink,
+        nodes: List.of(linkText),
+      });
     } else {
       editor.current.wrapInline({
         type: Inline.internalLink,
       });
     }
-  }
+  };
 
   onResourceTemplateSelected = (templateId: string) => {
     const attributes = this.props.anchorBlock.data.get('attributes');
@@ -205,35 +213,33 @@ export class Toolbar extends React.Component<ToolbarProps> {
         attributes: {
           ...attributes,
           template: templateId,
-          style: {}
-        }
-      }
+          style: {},
+        },
+      },
     });
-  }
+  };
 
   render() {
     const { saving } = this.props;
     return (
       <ButtonToolbar className={styles.toolbar}>
         <ButtonGroup>
-          <Button bsStyle='primary' onClick={this.props.onDocumentSave} disabled={saving}>
-            <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : 'fa fa-floppy-o' }
-              aria-hidden='true'></i>
+          <Button bsStyle="primary" onClick={this.props.onDocumentSave} disabled={saving}>
+            <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : 'fa fa-floppy-o'} aria-hidden="true"></i>
             &nbsp; Save
           </Button>
         </ButtonGroup>
 
         <ButtonGroup>
-          {
-            this.props.anchorBlock?.type === Block.embed ?
-              <ResourceDropdown
-                options={this.props.options[this.props.anchorBlock.data.get('attributes').src]}
-                anchorBlock={this.props.anchorBlock}
-                onSelect={this.onResourceTemplateSelected}
-              />
-              :
-              <BlockDropdown {...this.props} sidebar={false} />
-          }
+          {this.props.anchorBlock?.type === Block.embed ? (
+            <ResourceDropdown
+              options={this.props.options[this.props.anchorBlock.data.get('attributes').src]}
+              anchorBlock={this.props.anchorBlock}
+              onSelect={this.onResourceTemplateSelected}
+            />
+          ) : (
+            <BlockDropdown {...this.props} sidebar={false} />
+          )}
         </ButtonGroup>
 
         <ButtonGroup>
@@ -259,35 +265,33 @@ export class Toolbar extends React.Component<ToolbarProps> {
   }
 }
 
-
 interface ResourceDropdownProps {
-  options: ResourceSelection[]
-  anchorBlock: Slate.Block
-  onSelect: (templateId: string) => void
+  options: ResourceSelection[];
+  anchorBlock: Slate.Block;
+  onSelect: (templateId: string) => void;
 }
 
 interface ResourceSelection {
-  id: string
-  label: string
+  id: string;
+  label: string;
 }
 
 class ResourceDropdown extends React.Component<ResourceDropdownProps> {
   actionButton = (selectedTemplate: ResourceSelection) => (selection: ResourceSelection) => {
     const isActive = selectedTemplate.id === selection.id;
     return (
-      <MenuItem key={selection.id} eventKey={selection.id} active={isActive}
-        onSelect={this.onSelect as any}>
+      <MenuItem key={selection.id} eventKey={selection.id} active={isActive} onSelect={this.onSelect as any}>
         <span className={styles.dropdownMenuItem}>
           <span>{selection.label}</span>
         </span>
       </MenuItem>
     );
-  }
+  };
 
   onSelect = (templateId: string, event: any) => {
     event.preventDefault();
     this.props.onSelect(templateId);
-  }
+  };
 
   render() {
     const { options, anchorBlock } = this.props;
@@ -295,19 +299,15 @@ class ResourceDropdown extends React.Component<ResourceDropdownProps> {
     // options can be undefined if templates are still loading
     if (options) {
       const selectedTemplateId = anchorBlock.data.get('attributes').template;
-      const selectedTemplate = options.find(o => o.id === selectedTemplateId);
+      const selectedTemplate = options.find((o) => o.id === selectedTemplateId);
 
       if (selectedTemplate) {
         return (
-          <Dropdown id='blocks' pullRight={true}>
+          <Dropdown id="blocks" pullRight={true}>
             <Dropdown.Toggle>
-              <span className={styles.dropdownMenuItem}>
-                {selectedTemplate.label}
-              </span>
+              <span className={styles.dropdownMenuItem}>{selectedTemplate.label}</span>
             </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {options.map(this.actionButton(selectedTemplate))}
-            </Dropdown.Menu>
+            <Dropdown.Menu>{options.map(this.actionButton(selectedTemplate))}</Dropdown.Menu>
           </Dropdown>
         );
       } else {
@@ -319,8 +319,6 @@ class ResourceDropdown extends React.Component<ResourceDropdownProps> {
   }
 }
 
-
-
 export interface BlockDropdownProps {
   value: Slate.Value;
   editor: React.RefObject<Editor>;
@@ -329,10 +327,9 @@ export interface BlockDropdownProps {
 }
 
 export class BlockDropdown extends React.Component<BlockDropdownProps> {
-
   hasBlock = (type: Block) => {
-    return this.props.value.blocks.some(node => node.type === type);
-  }
+    return this.props.value.blocks.some((node) => node.type === type);
+  };
 
   onBlockButtonClick = (blockType: Block, event: any) => {
     event.preventDefault();
@@ -347,25 +344,14 @@ export class BlockDropdown extends React.Component<BlockDropdownProps> {
       if (isList && isTheSameType) {
         // if current block is list and button of the same time is clicked,
         // we change type of the current block to default one
-        editor.current
-          .moveToRangeOfNode(anchorBlock)
-          .unwrapBlock(blockType)
-          .setBlocks(DEFAULT_BLOCK);
+        editor.current.moveToRangeOfNode(anchorBlock).unwrapBlock(blockType).setBlocks(DEFAULT_BLOCK);
       } else if (isList) {
         // if current block is list, but was click button with different kind of list,
         // we change to that list
-        editor.current
-          .moveToRangeOfNode(anchorBlock)
-          .unwrapBlock(anchorBlock.type)
-          .wrapBlock(blockType);
-
+        editor.current.moveToRangeOfNode(anchorBlock).unwrapBlock(anchorBlock.type).wrapBlock(blockType);
       } else {
         // or we just set current block to list
-        editor.current
-          .setBlocks(Block.li)
-          .wrapBlock(blockType)
-          .moveToEndOfText()
-          .focus();
+        editor.current.setBlocks(Block.li).wrapBlock(blockType).moveToEndOfText().focus();
       }
     } else {
       const isList = this.hasBlock(Block.li);
@@ -388,18 +374,16 @@ export class BlockDropdown extends React.Component<BlockDropdownProps> {
     }
 
     // editor.current.select(value.selection).focus();
-  }
+  };
 
   actionButton = (blockType: Block) => {
     const isActive = this.props.anchorBlock?.type === blockType;
     return (
-      <MenuItem eventKey={blockType} active={isActive}
-        onSelect={this.onBlockButtonClick as any}>
-
+      <MenuItem eventKey={blockType} active={isActive} onSelect={this.onBlockButtonClick as any}>
         {this.actionDescription(blockType)}
       </MenuItem>
     );
-  }
+  };
 
   actionDescription = (blockType: Block) => {
     return (
@@ -408,33 +392,29 @@ export class BlockDropdown extends React.Component<BlockDropdownProps> {
         <span>{BLOCK_TO_LABEL[blockType]}</span>
       </span>
     );
-  }
+  };
 
   actionIcon(blockType: Block) {
     const iconClassName = `fa ${BLOCK_TO_ICON[blockType]}`;
 
     // for heading blocks we add heading number to the default icon
-    const prefix =
-      blockType === Block.h1 ? '1' :
-        blockType === Block.h2 ? '2' :
-          blockType === Block.h3 ? '3' : '';
+    const prefix = blockType === Block.h1 ? '1' : blockType === Block.h2 ? '2' : blockType === Block.h3 ? '3' : '';
 
     return (
       <span className={styles.dropdownMenuItemIcon}>
-        <i className={iconClassName} aria-hidden='true'></i>{prefix}
+        <i className={iconClassName} aria-hidden="true"></i>
+        {prefix}
       </span>
     );
   }
 
   render() {
     const { sidebar, anchorBlock } = this.props;
-    const block = anchorBlock ? anchorBlock.type as Block : Block.empty;
+    const block = anchorBlock ? (anchorBlock.type as Block) : Block.empty;
 
     return (
-      <Dropdown id='blocks' pullRight={true}>
-        <Dropdown.Toggle bsSize={sidebar ? 'xsmall' : null}
-          className={sidebar ? styles.sidebarDropdown : ''}
-        >
+      <Dropdown id="blocks" pullRight={true}>
+        <Dropdown.Toggle bsSize={sidebar ? 'xsmall' : null} className={sidebar ? styles.sidebarDropdown : ''}>
           {sidebar ? this.actionIcon(block) : this.actionDescription(block)}
         </Dropdown.Toggle>
         <Dropdown.Menu>
@@ -453,19 +433,20 @@ export class BlockDropdown extends React.Component<BlockDropdownProps> {
 }
 
 export interface ResourceTemplateDropdownProps {
-  options: any
+  options: any;
 }
 
-
 export type ActionDropdownProps =
-  { type: 'block', props: BlockDropdownProps } |
-  { type: 'resource', props: ResourceTemplateDropdownProps };
+  | { type: 'block'; props: BlockDropdownProps }
+  | { type: 'resource'; props: ResourceTemplateDropdownProps };
 
 export class ActionDropdown extends React.PureComponent<ActionDropdownProps> {
   render() {
     switch (this.props.type) {
-      case 'block': return <BlockDropdown {...this.props.props} />;
-      case 'resource': return null;
+      case 'block':
+        return <BlockDropdown {...this.props.props} />;
+      case 'resource':
+        return null;
     }
   }
 }

@@ -31,14 +31,12 @@ import { Inline, RESOURCE_MIME_TYPE } from './EditorSchema';
 import * as styles from './TextEditor.scss';
 
 export interface InternalLinkProps extends RenderNodeProps {
-  editor: Slate.Editor
+  editor: Slate.Editor;
 }
 
-interface InternalLinkState {
-}
+interface InternalLinkState {}
 
 export class InternalLink extends React.Component<InternalLinkProps, InternalLinkState> {
-
   private aRef: React.RefObject<any>;
 
   constructor(props: InternalLinkProps) {
@@ -54,33 +52,23 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
     event.preventDefault();
 
     const { editor, node } = this.props;
-    editor
-      .moveToRangeOfNode(node)
-      .focus()
-      .unwrapInline(Inline.internalLink);
-  }
+    editor.moveToRangeOfNode(node).focus().unwrapInline(Inline.internalLink);
+  };
 
   onResourceDrop = (drop: Rdf.Iri) => {
-    const node =
-      this.props.node.setIn(
-        ['data', 'attributes'], {
-        href: drop.value,
-        type: RESOURCE_MIME_TYPE,
-      }
-      ) as Slate.Inline;
-    this.props.editor
-        .moveToStartOfNode(node)
-        .setInlines(node);
-  }
+    const node = this.props.node.setIn(['data', 'attributes'], {
+      href: drop.value,
+      type: RESOURCE_MIME_TYPE,
+    }) as Slate.Inline;
+    this.props.editor.moveToStartOfNode(node).setInlines(node);
+  };
 
   getPopoverTarget = () => findDOMNode(this.aRef.current);
 
   render() {
     const { attributes, children, editor, node } = this.props;
 
-    const isLinkSelected =
-      editor.value.selection.isCollapsed &&
-      editor.value.inlines.contains(node as Slate.Inline);
+    const isLinkSelected = editor.value.selection.isCollapsed && editor.value.inlines.contains(node as Slate.Inline);
 
     const dataAttributes = node.data.get('attributes', {});
     const isNoHref = !dataAttributes.href;
@@ -88,25 +76,22 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
 
     return (
       <span {...attributes} className={styles.internalLink}>
-        <Overlay container={document.body} target={this.getPopoverTarget}
-          placement='top' show={isShowPopover}
-        >
-          <Popover id='internal-link-popover' placement='top' contentEditable={false}>
+        <Overlay container={document.body} target={this.getPopoverTarget} placement="top" show={isShowPopover}>
+          <Popover id="internal-link-popover" placement="top" contentEditable={false}>
             <div className={styles.linkPopover}>
               <DropArea
                 onDrop={this.onResourceDrop}
-                dropMessage='Drop here resource from Clipboard to make a link.'
+                dropMessage="Drop here resource from Clipboard to make a link."
                 alwaysVisible={isNoHref}
               >
-                {
-                  isNoHref ? null :
+                {isNoHref ? null : (
                   // because ResourceLinkComponent is not update when iri changes
                   // we need to use react key to recreate it on change
                   <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href} />
-                }
+                )}
               </DropArea>
               <Button onMouseDown={this.onUnlink}>
-                <i className='fa fa-chain-broken' aria-hidden='true'></i>
+                <i className="fa fa-chain-broken" aria-hidden="true"></i>
               </Button>
             </div>
           </Popover>

@@ -27,11 +27,15 @@ import { Block, MARK, Inline, RESOURCE_MIME_TYPE } from './EditorSchema';
 export const SLATE_RULES: Rule[] = [
   {
     deserialize(el, next) {
+      if (el.nodeType === Node.TEXT_NODE && el.textContent.match(/^\s*$/)) {
+        return null;
+      }
+
       if (el.nodeType === Node.ELEMENT_NODE) {
         const tagName = el.tagName.toLowerCase();
 
         if (tagName === 'a') {
-          const data: {attributes?: {}} = {};
+          const data: { attributes?: {} } = {};
           const attributes = getAttributesAsReactProps(el);
           if (!_.isEmpty(attributes)) {
             // we can't attach empty attribute because then slate has problem with equality
@@ -55,14 +59,14 @@ export const SLATE_RULES: Rule[] = [
           return React.createElement('a', obj.data.get('attributes', {}), children);
         }
       }
-    }
+    },
   },
   {
     deserialize(el, next) {
       if (el.nodeType === Node.ELEMENT_NODE) {
         const tagName = el.tagName.toLowerCase();
         if (Block[tagName] || MARK[tagName]) {
-          const data: {attributes?: {}} = {};
+          const data: { attributes?: {} } = {};
           const attributes = getAttributesAsReactProps(el);
           if (!_.isEmpty(attributes)) {
             // we can't attach empty attribute because then slate has problem with equality
@@ -79,36 +83,30 @@ export const SLATE_RULES: Rule[] = [
       }
     },
     serialize(obj, children) {
-      if (
-        (obj.object === 'block' && Block[obj.type]) ||
-          (obj.object === 'mark' && MARK[obj.type])
-      ) {
+      if ((obj.object === 'block' && Block[obj.type]) || (obj.object === 'mark' && MARK[obj.type])) {
         if (obj.type === Block.embed) {
-          return React.createElement(
-            obj.type,
-            obj.data.get('attributes', {})
-          );
+          return React.createElement(obj.type, obj.data.get('attributes', {}));
         } else {
-          return React.createElement(
-            obj.type,
-            obj.data.get('attributes', {}),
-            children
-          );
+          return React.createElement(obj.type, obj.data.get('attributes', {}), children);
         }
       }
     },
   },
+  {
+    serialize(obj, children) {
+      if ((obj.object === 'mark' && obj.type === 'rs-annotation-range') || obj.type === 'rs-annotation-point') {
+        return React.createElement(React.Fragment, {}, children);
+      }
+    },
+  },
 ];
-
 
 // from text-annotation TextSerialization, TODO
 function getAttributesAsReactProps(el: Element): { [key: string]: any } {
   const data: { [key: string]: any } = {};
   for (let i = 0; i < el.attributes.length; i++) {
     const attr = el.attributes.item(i);
-    const parsedPropValue = attr.name === 'style'
-      ? ModuleRegistry.parseReactStyleFromCss(attr.value)
-      : attr.value;
+    const parsedPropValue = attr.name === 'style' ? ModuleRegistry.parseReactStyleFromCss(attr.value) : attr.value;
     data[attr.name] = parsedPropValue;
   }
   return data;

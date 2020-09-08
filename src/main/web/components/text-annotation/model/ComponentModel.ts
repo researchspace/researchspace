@@ -25,15 +25,19 @@ import { Rdf } from 'platform/api/rdf';
 import * as TemplateService from 'platform/api/services/template';
 import * as Forms from 'platform/components/forms';
 
+import { ResourceTemplateConfig } from '../../text-editor/Config';
+
 import * as Schema from './AnnotationSchema';
 
 export interface TextEditorStateProps {
   readonly value: Slate.Value;
   readonly annotations: ReadonlyArray<Schema.Annotation>;
+  readonly availableTemplates?: { [objectIri: string]: ResourceTemplateConfig[] };
 }
 
 export interface TextEditorState extends TextEditorStateProps {
   set(props: Partial<TextEditorStateProps>): TextEditorState;
+  reCalculateXpath(): TextEditorState;
   addAnnotation(annotationIri: Rdf.Iri): TextEditorState;
   updateAnnotation(target: Rdf.Iri, change: (anno: Schema.Annotation) => Schema.Annotation): TextEditorState;
   deleteAnnotation(annotationIri: Rdf.Iri): TextEditorState;
@@ -60,6 +64,9 @@ export interface WorkspaceHandlers {
     modelWithOnlyBody: Forms.CompositeValue
   ) => Kefir.Property<void>;
   deleteAnnotation: (iri: Rdf.Iri) => Kefir.Property<void>;
+
+  changeTitle: (title: string) => void;
+  saveDocument: () => void;
 }
 
 export interface AnnotationBodyType {

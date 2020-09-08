@@ -23,10 +23,13 @@ import { Button } from 'react-bootstrap';
 import * as Immutable from 'immutable';
 import * as Slate from 'slate';
 import { Editor, RenderNodeProps, RenderMarkProps, RenderAttributes, findDOMRange } from 'slate-react';
+import Html from 'slate-html-serializer';
+import * as _ from 'lodash';
 
 import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
+import { SparqlClient } from 'platform/api/sparql';
 
 import { TemplateItem } from 'platform/components/ui/template';
 import { TargetedPopover } from 'platform/components/ui/TargetedPopover';
@@ -44,6 +47,11 @@ import { AnnotationData, NodeData, ANNOTATION_POINT_TYPE, ANNOTATION_RANGE_TYPE 
 import * as EditorModel from '../model/EditorModel';
 import { BLOCK_TAGS, INLINE_TAGS, MARK_TAGS, SLATE_HTML } from '../model/TextSerialization';
 
+import { TextEditor } from '../../text-editor/TextEditor';
+import { Block } from '../../text-editor/EditorSchema';
+import { ResourceTemplateConfig } from '../../text-editor/Config';
+import { SLATE_RULES } from '../../text-editor/Serializer';
+
 import * as styles from './TextAnnotationEditor.scss';
 
 export interface TextAnnotationEditorProps {
@@ -54,6 +62,12 @@ export interface TextAnnotationEditorProps {
   tooltipTemplate?: string;
   permissions: WorkspacePermissions;
   handlers: WorkspaceHandlers;
+
+  saving?: boolean;
+  documentIri?: string;
+  title?: string;
+  mode?: string;
+  resourceTemplates: any;
 }
 
 interface State {
@@ -63,19 +77,12 @@ interface State {
 const EMPTY_SET = new Set<string>();
 
 export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, State> {
-  editor: Editor;
-
   private debounceTooltip: Cancellation = new Cancellation();
   private sideline: HTMLElement | null | undefined;
 
   constructor(props: TextAnnotationEditorProps, context: any) {
     super(props, context);
     this.state = {};
-  }
-
-  componentDidMount() {
-    const { editorState, onEditorStateChange } = this.props;
-    onEditorStateChange(EditorState.set(editorState, { owner: this }));
   }
 
   onChange = (change: { operations: Immutable.List<Slate.Operation>; value: Slate.Value }) => {
@@ -85,25 +92,41 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
   };
 
   render() {
-    const { className, editorState, permissions } = this.props;
+    const { className, editorState, permissions, mode, resourceTemplates, title, documentIri, saving } = this.props;
     const { selectionTopOffset } = this.state;
     return (
       <div className={classnames(styles.component, className)}>
         <div className={styles.textEditor}>
-          <Editor
-            ref={this.onEditorMount}
-            spellCheck={false}
-            value={editorState.value}
-            onChange={this.onChange}
-            onKeyDown={this.onKeyDown}
-            onClick={this.onTextClick}
-            onDragStart={this.ignoreIfReadonly}
-            onCut={this.ignoreIfReadonly}
-            onPaste={this.ignoreIfReadonly}
-            onSelect={this.onSelect}
-            renderNode={this.renderNode}
-            renderMark={this.renderMark}
-          />
+          {mode === 'edit' ? (
+            <TextEditor
+              title={title}
+              documentIri={documentIri}
+              resourceTemplates={resourceTemplates}
+              availableTemplates={editorState.availableTemplates}
+              value={editorState.value}
+              onSave={this.props.handlers.saveDocument}
+              onChange={this.onChange}
+              onSelect={this.onSelect}
+              renderMark={this.renderMark}
+              renderNode={this.renderNode}
+              onChangeTitle={this.props.handlers.changeTitle}
+              saving={saving}
+            />
+          ) : (
+            <Editor
+              spellCheck={false}
+              value={editorState.value}
+              onChange={this.onChange}
+              onKeyDown={this.onKeyDown}
+              onClick={this.onTextClick}
+              onDragStart={this.ignoreIfReadonly}
+              onCut={this.ignoreIfReadonly}
+              onPaste={this.ignoreIfReadonly}
+              onSelect={this.onSelect}
+              renderNode={this.renderNode}
+              renderMark={this.renderMark}
+            />
+          )}
           <div className={styles.addAnnotationSideline} ref={this.onSidelineMount}>
             {permissions.create && selectionTopOffset > 0 ? (
               <Button
@@ -178,10 +201,6 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
     // ignore event
     event.preventDefault();
     return true;
-  };
-
-  private onEditorMount = (editor: Editor) => {
-    this.editor = editor;
   };
 
   private renderNode = (props: RenderNodeProps, editor: Slate.Editor, next: () => any) => {
@@ -333,7 +352,6 @@ export class TextAnnotationEditor extends Component<TextAnnotationEditorProps, S
 }
 
 interface AdditionalEditorState {
-  readonly owner: TextAnnotationEditor | undefined;
   readonly markedSelection: Slate.Selection | undefined;
   readonly tooltip: TooltipState | undefined;
 }
@@ -352,14 +370,12 @@ interface TooltipState extends HoverState {
 class EditorState implements TextEditorState, AdditionalEditorState {
   readonly value: Slate.Value;
   readonly annotations: ReadonlyArray<Schema.Annotation>;
-  readonly owner: TextAnnotationEditor | undefined;
   readonly markedSelection: Slate.Selection | undefined;
   readonly tooltip: TooltipState | undefined;
 
   private constructor(props: TextEditorStateProps & Partial<AdditionalEditorState>) {
     this.value = props.value;
     this.annotations = props.annotations;
-    this.owner = props.owner;
     this.markedSelection = props.markedSelection;
     this.tooltip = props.tooltip;
   }
@@ -375,7 +391,6 @@ class EditorState implements TextEditorState, AdditionalEditorState {
     const baseProps: TextEditorStateProps & Partial<AdditionalEditorState> = {
       value: base.value,
       annotations: base.annotations,
-      owner: base.owner,
       markedSelection: base.markedSelection,
       tooltip: base.tooltip,
     };
@@ -386,6 +401,12 @@ class EditorState implements TextEditorState, AdditionalEditorState {
     return EditorState.set(this, props);
   }
 
+  reCalculateXpath(): EditorState {
+    let { document, selection } = this.value;
+    document = EditorModel.assignXPaths(document);
+    return EditorState.set(this, { value: Slate.Value.create({ document, selection }) });
+  }
+
   addAnnotation(annotationIri: Rdf.Iri): EditorState {
     const { document, selection } = this.value;
     const { start, end } = selection;
@@ -393,6 +414,10 @@ class EditorState implements TextEditorState, AdditionalEditorState {
     let nextDocument: Slate.Document;
     let selector: Schema.AnnotationSelector;
     let selectedText: string | undefined;
+
+    //    console.log(this.value.toJS( {preserveKeys: true} ))
+
+    console.log(selection.toJS());
 
     if (selection.isExpanded) {
       const nodeKeyToPath = document.getKeysToPathsTable() as { [key: string]: Slate.Path };
@@ -491,20 +516,89 @@ function findXPathAt(document: Slate.Document, path: Slate.Path) {
 }
 
 export function makeIntitialEditorState(params: {
+  mode: 'annotation' | 'edit';
   sourceHtml: string;
   annotations: ReadonlyArray<Schema.Annotation>;
-}): TextEditorState {
-  const rawValue = SLATE_HTML.deserialize(params.sourceHtml);
+  resourceTemplates: Array<ResourceTemplateConfig>;
+}): Kefir.Property<TextEditorState> {
+  let slateHtml = SLATE_HTML;
+
+  if (params.mode === 'edit') {
+    slateHtml = new Html({
+      rules: SLATE_RULES,
+      defaultBlock: Block.p as any,
+    });
+  }
+
+  console.log('source');
+  console.log(params.sourceHtml);
+
+  const rawValue = slateHtml.deserialize(params.sourceHtml);
   let { document } = rawValue;
+  console.log(document.toJS());
   document = EditorModel.assignXPaths(document);
   document = EditorModel.mergeInAnnotations(document, params.annotations);
   document = EditorModel.updateAnnotationLevels(document);
-
+  console.log(document.toJS());
   const annotations = EditorModel.sortAnnotationsByFirstOccurence(document, params.annotations);
 
+  // for narratives
+
+  const getTypes = (iri: Rdf.Iri) => {
+    return SparqlClient.select(`SELECT DISTINCT ?type WHERE { <${iri.value}> a ?type}`).map((res) =>
+      res.results.bindings.map((b) => b['type'])
+    );
+  };
+
+  const findTemplatesForResource = (iri: Rdf.Iri) => {
+    return getTypes(iri).map((types) =>
+      params.resourceTemplates.filter((c) => c.type === 'any' || _.find(types, (t) => t.value === c.type))
+    );
+  };
+
+  const rawJsonValue = SLATE_HTML.deserialize(params.sourceHtml, { toJSON: true });
+  // load templates for embeds
+  const embeds = rawJsonValue.document.nodes
+    .filter((n) => n.object === 'block' && n.type === Block.embed)
+    .reduce((obj, n: Slate.BlockJSON) => {
+      const iri = n.data.attributes.src;
+      obj[iri] = findTemplatesForResource(Rdf.iri(iri));
+      return obj;
+    }, {}) as { string: Kefir.Property<any> };
+
+  if (_.isEmpty(embeds)) {
+    return Kefir.constant(
+      EditorState.create({
+        value: Slate.Value.create({ document }),
+        annotations,
+      })
+    );
+  } else {
+    return Kefir.combine(embeds)
+      .map((availableTemplates) =>
+        EditorState.create({
+          value: Slate.Value.create({ document }),
+          annotations,
+          availableTemplates,
+        })
+      )
+      .toProperty();
+  }
+}
+
+export function makeEmptyEditorState(): TextEditorState {
   return EditorState.create({
-    value: Slate.Value.create({ document }),
-    annotations,
+    value: Slate.Value.fromJS({
+      document: {
+        nodes: [
+          {
+            object: 'block' as const,
+            type: Block.empty,
+          },
+        ],
+      },
+    }),
+    annotations: [],
   });
 }
 

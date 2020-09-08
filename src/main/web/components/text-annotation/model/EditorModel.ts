@@ -229,27 +229,28 @@ export function addMarksAtRange(
   markType: string,
   markData: object
 ): Slate.Document {
-  return doc.getTextsAtRange(range).reduce((acc: Slate.Document, text) => {
-    const path = nodeKeyToPath[text.key];
-    if (range.start.isInNode(text) || range.end.isInNode(text)) {
-      const startOffset = range.start.isInNode(text) ? range.start.offset : 0;
-      const endOffset = range.end.isInNode(text) ? range.end.offset : text.text.length;
-      return acc.addMark(
-        path,
-        startOffset,
-        endOffset - startOffset,
-        Slate.Mark.create({ type: markType, data: markData })
-      ) as Slate.Document;
-    } else {
-      const start = Slate.Point.create({ path, offset: 0 });
-      return acc.addMark(
-        path,
-        start.offset,
-        start.moveToEndOfNode(text).offset - start.offset,
-        Slate.Mark.create({ type: markType, data: markData })
-      ) as Slate.Document;
+  let document: any = doc;
+  const text = document.getTextsAtRange(range).get(0);
+  let path = nodeKeyToPath[text.key];
+  if (range.start.isAtStartOfNode(text) && range.end.isAtEndOfNode(text)) {
+    return document.setMark(path, Slate.Mark.create({type: markType, data: markData}));
+  } else {
+
+    // If it ends before the end of the node, we'll need to split to create a new
+    // text with different marks.
+    if (!range.end.isAtEndOfNode(text)) {
+      document = document.splitNode(path, range.end.offset);
     }
-  }, doc);
+
+    if (!range.start.isAtStartOfNode(text)) {
+      document = document.splitNode(path, range.start.offset);
+      path = Slate.PathUtils.increment(Immutable.List(path));
+    }
+    return document.addMark(
+      path,
+        Slate.Mark.create({ type: markType, data: markData })
+      ) as Slate.Document;
+  }
 }
 
 export function insertInlineAtPoint(
@@ -354,8 +355,24 @@ function mapAnnotations(doc: Slate.Document, mapper: (data: AnnotationData) => A
 
   function mapNode(node: Slate.Node): Slate.Node | null {
     if (node.object === 'text') {
-      const mappedLeaves = node.getLeaves().map(mapLeaf);
-      return node.setLeaves(mappedLeaves);
+      let updated = node;
+      (node as any).marks.forEach((mark) => {
+        if (mark.type === ANNOTATION_RANGE_TYPE) {
+          const mappedData = mapper(mark.data);
+          if (mappedData === null) {
+            updated = (updated as any).removeMark(mark);
+          } else if (mappedData !== mark.data) {
+            updated = (updated as any).removeMark(mark),
+            updated = (updated as any).addMark(
+              Slate.Mark.create({
+                type: ANNOTATION_RANGE_TYPE,
+                data: mappedData,
+              })
+            );
+          }
+        }
+      });
+      return updated;
     } else if (node.object === 'inline' && node.type === ANNOTATION_POINT_TYPE) {
       const mappedData = mapper(node.data);
       if (mappedData === null) {
@@ -370,54 +387,7 @@ function mapAnnotations(doc: Slate.Document, mapper: (data: AnnotationData) => A
     return node;
   }
 
-  function mapLeaf(leaf: Slate.Leaf) {
-    let updated = leaf;
-    leaf.marks.forEach((mark) => {
-      if (mark.type === ANNOTATION_RANGE_TYPE) {
-        const mappedData = mapper(mark.data);
-        if (mappedData === null) {
-          updated = updated.removeMark(mark);
-        } else if (mappedData !== mark.data) {
-          updated = updated.updateMark(
-            mark,
-            Slate.Mark.create({
-              type: ANNOTATION_RANGE_TYPE,
-              data: mappedData,
-            })
-          );
-        }
-      }
-    });
-    return updated;
-  }
-
   return mapNode(doc) as Slate.Document;
-}
-
-export function createDecorationsForRange(
-  doc: Slate.Document,
-  range: Slate.Range,
-  markType: string
-): Immutable.List<Slate.Decoration> {
-  // split range into separate decoration fro each text to avoid
-  // marking the whole block when selection crosses block boundaries
-  return doc.getTextsAtRange(range).map((text) => {
-    if (range.start.isInNode(text) || range.end.isInNode(text)) {
-      return Slate.Decoration.create({
-        anchor: range.start.isInNode(text) ? range.start : range.start.moveToStartOfNode(text).normalize(doc),
-        focus: range.end.isInNode(text) ? range.end : range.end.moveToEndOfNode(text).normalize(doc),
-        mark: Slate.Mark.create({ type: markType }),
-      });
-    } else {
-      const path = doc.getPath(text.key);
-      const start = Slate.Point.create({ key: text.key, path, offset: 0 });
-      return Slate.Decoration.create({
-        anchor: start,
-        focus: start.moveToEndOfNode(text).normalize(doc),
-        mark: Slate.Mark.create({ type: markType }),
-      });
-    }
-  });
 }
 
 export function setValueProps(

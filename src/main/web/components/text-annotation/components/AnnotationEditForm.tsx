@@ -74,51 +74,50 @@ export class AnnotationEditForm extends Component<AnnotationEditFormProps, State
     const { formKey, selectedBodyType } = this.state;
     const metadata = selectedBodyType ? annotationTypes.get(selectedBodyType.value) : undefined;
     return (
-      <Forms.ResourceEditorForm
-        key={formKey}
-        fields={AnnotationEditForm.FIELDS}
-        subject={subject}
-        newSubjectTemplate={subjectTemplate}
-        postAction="none"
-        persistence={{
-          persist: (intialModel, currentModel) => {
-            if (!selectedBodyType) {
-              return Kefir.constantError<any>(new Error('Missing annotation type'));
-            }
-            if (Forms.FieldValue.isEmpty(currentModel)) {
-              return Kefir.constant(undefined);
-            }
-            return handlers.persistAnnotation(subject, selectedBodyType, currentModel);
-          },
-          remove: (currentModel) => {
-            // TODO implement remove annotation
-            return undefined;
-          }
-        }}
-      >
-        <div className={styles.formContent}>
-          {this.props.selectedText ? (
-            <div className={styles.selectedFragment}>
-              Selected fragment:
-              <div className={styles.selectedFragmentText}>{this.props.selectedText}</div>
+      <div data-annotation-type={selectedBodyType?.value}>
+        <Forms.ResourceEditorForm
+          key={formKey}
+          fields={AnnotationEditForm.FIELDS}
+          subject={subject}
+          newSubjectTemplate={subjectTemplate}
+          postAction="none"
+          persistence={{
+            remove: (currentModel) => {/** TODO **/ return undefined;},
+            persist: (intialModel, currentModel) => {
+              if (!selectedBodyType) {
+                return Kefir.constantError<any>(new Error('Missing annotation type'));
+              }
+              if (Forms.FieldValue.isEmpty(currentModel)) {
+                return Kefir.constant(undefined);
+              }
+              return handlers.persistAnnotation(subject, selectedBodyType, currentModel);
+            },
+          }}
+        >
+          <div className={styles.formContent}>
+            {this.props.selectedText ? (
+              <div className={styles.selectedFragment}>
+                Selected fragment:
+                <div className={styles.selectedFragmentText}>{this.props.selectedText}</div>
+              </div>
+            ) : null}
+            {this.renderBodyTypeSelector()}
+            <Forms.HiddenInput
+              for={Schema.RdfType.id}
+              defaultValues={[oa.Annotation.value, crmdig.D29_Annotation_Object.value]}
+            />
+            <div className={styles.bodyInput}>
+              {metadata ? React.cloneElement(metadata.input as any, { renderHeader: false }) : null}
             </div>
-          ) : null}
-          {this.renderBodyTypeSelector()}
-          <Forms.HiddenInput
-            for={Schema.RdfType.id}
-            defaultValues={[oa.Annotation.value, crmdig.D29_Annotation_Object.value]}
-          />
-          <div className={styles.bodyInput}>
-            {metadata ? React.cloneElement(metadata.input as any, { renderHeader: false }) : null}
           </div>
-        </div>
-        <button name="submit" className="btn btn-primary">
-          {Schema.sameIri(subject, Schema.PLACEHOLDER_ANNOTATION) ? 'Create annotation' : 'Update annotation'}
-        </button>
-        <button className={`btn btn-default ${styles.cancelButton}`} onClick={handlers.cancelEditingAnnotation}>
-          Cancel
-        </button>
-      </Forms.ResourceEditorForm>
+          <button name="submit" className="btn btn-primary">
+            {Schema.sameIri(subject, Schema.PLACEHOLDER_ANNOTATION) ? 'Create annotation' : 'Update annotation'}
+          </button>
+          <button className={`btn btn-default ${styles.cancelButton}`} onClick={handlers.cancelEditingAnnotation}>
+            Cancel
+          </button>
+        </Forms.ResourceEditorForm>
+      </div>
     );
   }
 

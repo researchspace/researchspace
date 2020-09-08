@@ -211,14 +211,14 @@
         <button name="reset" class="btn btn-default">Reset</button>
 
         {{#if edit}}
-          <mp-overlay-dialog id='feature-remove-confirmation-dialog' title="Are you sure you want to remove the feature?" type="modal" bs-size="large">
+          <mp-overlay-dialog id='feature-remove-confirmation-dialog' title="Remove feature" type="modal">
             <mp-overlay-dialog-trigger>
-              <button class="btn btn-grey btn-danger">Delete</button>
+              <button class="btn btn-danger">Delete</button>
             </mp-overlay-dialog-trigger>
             <mp-overlay-dialog-content>
               <div>
                 <div>
-                  <p>Are you sure you want to remove <strong><mp-label iri='{{feature}}'></mp-label></strong>?</p>
+                  <p>Are you sure you want to remove the feature '<strong><mp-label iri='{{feature}}'></mp-label></strong>' ?</p>
                   <semantic-query 
                                   query='
                                     SELECT ?resource WHERE {
@@ -228,7 +228,7 @@
                                   template='{{> referredByTemplate}}'
                   >
                     <template id='referredByTemplate'>
-                      Some entities in the system link to the feature:
+                      The following entities in the system link to the feature you want to delete:
                       <ul>
                         {{#each bindings}}
                           <li>
@@ -245,7 +245,7 @@
                       <button class="btn btn-default">Cancel</button>
                     </mp-event-trigger>
                     <mp-event-trigger id='confirm-feature-removal' type='Form.RemoveResource' data='{"iri": "{{feature}}"}' targets='["feature-creation-form"]'>
-                      <button class="btn btn-grey btn-danger">Delete Feature</button>
+                      <button class="btn btn-danger">Delete Feature</button>
                     </mp-event-trigger>  
 
 
@@ -268,9 +268,9 @@
 
 [[#*inline "newFeatureForm"]]
   [[#if createFromRegion]]
-    <h2>Creating new Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}'></semantic-link></strong></h2>
+    <h2>Creating New Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}'></semantic-link></strong></h2>
   [[else]]
-    <h2>Creating new Feature for: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h2>
+    <h2>Creating New Feature for: &nbsp;<strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h2>
   [[/if]]
 
   <mp-event-target-template-render id='feature-form-area' template='{{> form}}'>
@@ -425,9 +425,12 @@
                                                           type='IIIFViewer.AddImagesForObject' 
                                                           targets='["image-editor"]'
                                                           data='{ "objectIri": "{{objectIri}}" }'>
-                                              <button class="btn btn-primary btn-icon">
+                                              [[!-- <button class="btn btn-primary btn-icon">
                                                 <i class="rs-icon rs-icon-image" title="View resource images"></i>
-                                              </button>
+                                              </button> --]]
+                                              <button class="btn btn-primary btn-icon image-active">
+                                                <i class="iconmoon iconmoon-eye" title="Resource images displayed in the viewer"></i>
+                                              </button> 
                                             </mp-event-trigger>
                                             
                                             [[!--
@@ -498,14 +501,14 @@
                                                   [[!--
                                                     Delete image region
                                                     --]]
-                                                  <mp-overlay-dialog id='region-remove-confirmation-dialog--{{region.value}}' title="Are you sure you want to remove the region?" type="modal" bs-size="large">
+                                                  <mp-overlay-dialog id='region-remove-confirmation-dialog--{{region.value}}' title="Remove image region" type="modal">
                                                     <mp-overlay-dialog-trigger>
                                                       <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete region"></i></button>
                                                     </mp-overlay-dialog-trigger>
                                                     <mp-overlay-dialog-content>
                                                       <div>
                                                         <div>
-                                                          <p>Are you sure you want to remove <strong><mp-label iri='{{region.value}}'></mp-label></strong>?</p>
+                                                          <p>Are you sure you want to remove the image region '<strong><mp-label iri='{{region.value}}'></mp-label></strong>' ?</p>
                                                         </div>
                                                         <div class="form-btn-group">
                                                           <div style="display: flex; justify-content: flex-end; width: 100%;">
@@ -514,7 +517,7 @@
                                                             </mp-event-trigger>
                                                             <mp-event-trigger id='remove-region-event-trigger--{{region.value}}' type='IIIFViewer.RemoveRegion' targets='["image-editor"]'
                                                                               data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}'>
-                                                              <button class="btn btn-grey btn-danger">Delete Region</button>
+                                                              <button class="btn btn-danger">Delete Region</button>
                                                             </mp-event-trigger>
 
                                                             <mp-event-proxy id='close-region-removal-dialog--{{feature.value}}' on-event-source='remove-region-event-trigger--{{region.value}}'
@@ -568,7 +571,13 @@
                                                 <div class="frame-imageAnnotationWorkspace__item">
                                                   <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link>
                                                   {{#if user}}
-                                                  <div class="user-info">by <span class="user-info-name"><semantic-link iri='{{user.value}}'></semantic-link></span> on {{dateTimeFormat date.value "DD/MM/YYYY, h:mm a"}}</div>
+                                                  <div class="user-info">
+                                                    <div class="text-truncate">
+                                                      by 
+                                                      <span class="user-info-name text-truncate"><semantic-link iri='{{user.value}}'></semantic-link></span>
+                                                    </div>
+                                                    <div>{{dateTimeFormat date.value "DD/MM/YYYY, h:mm a"}}</div> 
+                                                  </div>
                                                   {{/if}}
                                                   <div style="display: flex; align-items: center;">
                                                     <mp-event-trigger id='form-event-trigger'
@@ -738,7 +747,7 @@
                                                 </template>
                                               </mp-event-target-template-render>
                                               <mp-event-trigger id='cancel-region-association' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
-                                                <button class='btn btn-grey btn-danger'>Cancel</button>
+                                                <button name="cancel" class='btn btn-default'>Cancel</button>
                                               </mp-event-trigger> 
 
                                               <button name="submit" class="btn btn-primary">Confirm</button>

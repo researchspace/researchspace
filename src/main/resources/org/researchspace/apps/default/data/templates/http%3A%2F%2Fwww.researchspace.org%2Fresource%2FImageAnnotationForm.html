@@ -162,14 +162,14 @@
       {{#if edit}}
         <button name="reset" class="btn btn-default">Reset</button>
 
-        <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='feature-remove-confirmation-dialog' title="Are you sure you want to remove the feature?" type="modal" bs-size="large">
+        <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='feature-remove-confirmation-dialog' title="Remove feature" type="modal" bs-size="large">
           <mp-overlay-dialog-trigger>
-            <button class="btn btn-grey btn-danger">Delete</button>
+            <button name="delete" class="btn btn-danger">Delete</button>
           </mp-overlay-dialog-trigger>
           <mp-overlay-dialog-content>
             <div>
               <div>
-                <p>Are you sure you want to remove <strong><mp-label iri='{{feature}}'></mp-label></strong>?</p>
+                <p>Are you sure you want to remove the feature '<strong><mp-label iri='{{feature}}'></mp-label></strong>' ?</p>
                 <semantic-query 
                                 query='
                                   SELECT ?resource WHERE {
@@ -193,10 +193,10 @@
               <div class="form-btn-group">
                 <div style="display: flex; justify-content: flex-end; width: 100%;">
                   <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["feature-remove-confirmation-dialog"]'>
-                    <button class="btn btn-default">Cancel</button>
+                    <button name="cancel" class="btn btn-default">Cancel</button>
                   </mp-event-trigger>
                   <mp-event-trigger id='confirm-feature-removal' type='Form.RemoveResource' data='{"iri": "{{feature}}"}' targets='["feature-creation-form"]'>
-                    <button class="btn btn-grey btn-danger">Delete Feature</button>
+                    <button name="delete" class="btn btn-danger">Delete Feature</button>
                   </mp-event-trigger>  
                   
                   

@@ -521,6 +521,19 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       this.triggerRegionUpdatedEvent(RegionRemovedEvent),
     );
 
+    const windowObjects: Mirador.WindowObject[] =
+      manifests.length > 1 ? [] : [{
+        loadedManifest: manifests[0]['@id'] as string,
+        viewType: 'ImageView',
+        sidePanel: false,
+        canvasControls: {
+          annotations: {
+            annotationState: 'on',
+            annotationRefresh: true,
+          },
+        },
+      }];
+
     return {
       id: id, // The CSS ID selector for the containing element.
       useDetailsSidebar, annotationViewTooltipTemplate,
@@ -541,17 +554,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         },
       },
       availableAnnotationDrawingTools: ['Rectangle', 'Ellipse', 'Freehand', 'Polygon', 'Pin'],
-      windowObjects: manifests.map<Mirador.WindowObject>((manifest) => ({
-        loadedManifest: manifest['@id'],
-        viewType: 'ImageView',
-        sidePanel: false,
-        canvasControls: {
-          annotations: {
-            annotationState: 'on',
-            annotationRefresh: true,
-          },
-        },
-      })),
+      windowObjects,
       annotationBodyEditor: {
         module: 'researchspaceAnnotationBodyEditor',
         options: {},

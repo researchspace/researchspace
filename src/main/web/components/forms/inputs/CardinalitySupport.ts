@@ -119,7 +119,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
     const canEdit = dataState === DataState.Ready || dataState === DataState.Verifying;
     const canAddValue = canEdit && size < definition.maxOccurs;
     const canRemoveValue = canEdit && size > definition.minOccurs && size > 0;
-    const fieldLabel = (getPreferredLabel(definition.label) || 'value').toLowerCase();
+    const fieldLabel = (this.props.label || getPreferredLabel(definition.label) || 'value').toLowerCase();
 
     return D.div(
       { className: COMPONENT_NAME },

@@ -54,6 +54,11 @@ export interface MultipleValuesProps {
   renderHeader?: boolean;
 
   /**
+   * Overrides label from the Field Definition.
+   */
+  label?: string;
+
+  /**
    * Can set input component into readonly mode.
    *
    * @default false

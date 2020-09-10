@@ -5,7 +5,7 @@
   * we are dealing with objects that are instances of `crm:E18_Physical_Thing` (or any subclass of it) 
   * every object has at least one image representation (crm:P138i_has_representation)
   * images (rso:EX_Digital_Image) are serverd from IIIF server
-  * object's features are connected to the object with `crm:P56i_is_found_on` property (currently we are not checking for crm:P56_bears_feature !!!)
+  * object's features are connected to the object with `crm:P56i_is_found_on` or `crm:P56_bears_feature` property
   * object feature can have image region (rso:EX_Digital_Image_Region) as a representation (crm:P138i_has_representation)
   * object feature can be:
       "Mark" - ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark
@@ -28,6 +28,70 @@
 
  Left panel with IIIF Viewer and 
  Right panel that shows all objects from the manifest loaded in the IIIF Viewer together with corresponding features. 
+ 
+ List of fields that are used in the default observation templates:
+   http://www.w3.org/2000/01/rdf-schema#label
+   http://www.cidoc-crm.org/cidoc-crm/P2_has_type
+   http://www.cidoc-crm.org/cidoc-crm/P3_has_note
+   http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span
+   http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by
+   http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by
+   http://www.cidoc-crm.org/cidoc-crm/P72_has_language
+   http://www.cidoc-crm.org/cidoc-crm/P73_has_translation
+   http://www.cidoc-crm.org/cidoc-crm/P82_at_some_time_within
+   http://www.cidoc-crm.org/cidoc-crm/P129_is_about
+   http://www.cidoc-crm.org/cidoc-crm/P130_shows_features_of
+   http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation
+   http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content
+   http://www.ics.forth.gr/isl/CRMsci/O8_observed
+   http://www.ics.forth.gr/isl/CRMsci/O9_observed_property_type
+
+   
+     
+   http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place
+   http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_period
+   http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_person
+   http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_object
+   http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_thing
+   
+   
+   
+new:
+   http://www.researchspace.org/pattern/image_observation/rdf:type
+   http://www.researchspace.org/pattern/image_observation/P4_has_time-span
+   http://www.researchspace.org/pattern/image_observation/crm:P56i_is_found_on
+   http://www.researchspace.org/pattern/image_observation/crm:P65_shows_visual_item
+   http://www.researchspace.org/pattern/image_observation/crm:P128_carries
+   http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-physical
+   http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-digital
+   http://www.researchspace.org/pattern/image_observation/PX_has_transliteration
+   
+migrated:
+   http://www.researchspace.org/pattern/latehokusai_feature_type -> http://www.researchspace.org/pattern/image_observation/rdf:type
+   http://www.researchspace.org/pattern/P56i_is_found_on_late_hokusai_feature -> http://www.researchspace.org/pattern/image_observation/crm:P56i_is_found_on
+   http://www.researchspace.org/pattern/P65_shows_visual_item_latehokusai_annotation_inscription -> http://www.researchspace.org/pattern/image_observation/crm:P65_shows_visual_item
+   http://www.researchspace.oeg/pattern/P65_shows_visual_item_latehokusai_annotation_mark -> http://www.researchspace.org/pattern/image_observation/crm:P65_shows_visual_item
+   http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_information -> http://www.researchspace.org/pattern/image_observation/crm:P128_carries
+   http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_entity -> http://www.researchspace.org/pattern/image_observation/crm:P128_carries
+   http://www.researchspace.org/pattern/P129_is_about_latehokusai_annotation_subject -> http://www.cidoc-crm.org/cidoc-crm/P129_is_about
+   http://www.researchspace.org/pattern/P130_shows_features_of_latehokusai_annotation -> http://www.cidoc-crm.org/cidoc-crm/P130_shows_features_of
+   http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation -> http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation
+   http://www.researchspace.org/pattern/P190_has_symbolic_object_late_hokusai_annotation_symbolic -> http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content
+   http://www.researchspace.org/pattern/P72_has_language_latehokusai_annotation_language -> http://www.cidoc-crm.org/cidoc-crm/P72_has_language
+   http://www.researchspace.org/pattern/P73_has_translation_hokusai_annotation -> http://www.cidoc-crm.org/cidoc-crm/P73_has_translation
+   http://www.researchspace.org/pattern/P67i_is_referred_to_by_latehokusai_annotation -> http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by
+   http://www.researchspace.org/pattern/was_observed_by_latehokusai -> http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-physical
+      http://www.researchspace.org/pattern/was_digitally_observed_by_latehokusai
+ -> http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-digital
+ http://www.researchspace.org/pattern/PX_has_transliteration -> http://www.researchspace.org/pattern/image_observation/PX_has_transliteration
+ http://www.researchspace.org/pattern/P4_has_time-span_digital_observation
+
+   
+not used:
+   http://www.researchspace.org/pattern/P2_has_type_physical_observation
+   http://www.researchspace.org/pattern/P2_has_type_latehokusai_annotation_mark_type
+   http://www.researchspace.org/pattern/P14_carried_out_by_physical_observation
+   
 --]]
 
 
@@ -68,204 +132,6 @@
 
 
 [[!-- INCLUDES --]]
-[[#*inline "featureForm"]]
-<!-- [[!--Please don't edit region's label or rdf:type through this form!!!!! --]]-->
-  <semantic-form 
-                 id='feature-creation-form'
-                 post-action='event'
-                 subject='{{#if edit}}{{feature}}{{/if}}'
-                 new-subject-template='{{objectIri}}/E25_Man-Made_Feature/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-                 persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/ns/data-updates-graph-test"}'
-
-                fields='[[
-                 fieldDefinitions
-                   label="http://www.w3.org/2000/01/rdf-schema#label"
-                   P67i_is_referred_to_by_latehokusai_annotation="http://www.researchspace.org/pattern/P67i_is_referred_to_by_latehokusai_annotation"
-                   classtype="http://www.researchspace.org/pattern/latehokusai_feature_type"
-                   P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"
-                   P65_shows_visual_item_latehokusai_annotation_inscription="http://www.researchspace.org/pattern/P65_shows_visual_item_latehokusai_annotation_inscription"
-                   P128_carries_latehokusai_annotation_information="http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_information"
-                   P65_shows_visual_item_latehokusai_annotation_mark="http://www.researchspace.oeg/pattern/P65_shows_visual_item_latehokusai_annotation_mark"
-                   P130_shows_features_of_latehokusai_annotation="http://www.researchspace.org/pattern/P130_shows_features_of_latehokusai_annotation"
-                   P128_carries_latehokusai_annotation_entity="http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_entity"
-                   O8i_was_observed_by_latehokusai="http://www.researchspace.org/pattern/O8i_was_observed_by_latehokusai"
-                   P56i_is_found_on_late_hokusai_feature="http://www.researchspace.org/pattern/P56i_is_found_on_late_hokusai_feature"
-                   P129_is_about_latehokusai_annotation_subject="http://www.researchspace.org/pattern/P129_is_about_latehokusai_annotation_subject"
-                   P67_refers_to_latehokusai_annotation_place="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place"
-                   P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"  
-                ]]'
-  >
-
-
-    <div class="form-scrollable-area">
-      <semantic-form-hidden-input for="P56i_is_found_on_late_hokusai_feature" default-value='{{objectIri}}'> </semantic-form-hidden-input>
-
-      <semantic-form-select-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E25_Man-Made_Feature'> </semantic-form-select-input>
-
-      {{#if regionIri}}
-        <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{regionIri}}'></semantic-form-drag-and-drop-input>
-      {{else}}
-        <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation"></semantic-form-drag-and-drop-input>
-      {{/if}}
-
-      {{#if createFromRegion}}
-      <semantic-form-hidden-input for="label" default-value='{{featureType}}: {{regionLabel}}'> </semantic-form-hidden-input>
-      {{else}}
-      <semantic-form-text-input for="label"> </semantic-form-text-input>
-      {{/if}}
-
-      <semantic-form-checklist-input for='O8i_was_observed_by_latehokusai' type='checkbox'></semantic-form-checklist-input>
-
-      {{#switch featureType}}
-        {{#case "Inscription" break=true}}
-      <semantic-form-composite-input
-                                     for="P65_shows_visual_item_latehokusai_annotation_inscription" 
-                                     new-subject-template="/E34_Inscription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                     fields='[[fieldDefinitions
-                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                        P190_has_symbolic_object_late_hokusai_annotation_symbolic="http://www.researchspace.org/pattern/P190_has_symbolic_object_late_hokusai_annotation_symbolic"
-                                        P72_has_language_latehokusai_annotation_language="http://www.researchspace.org/pattern/P72_has_language_latehokusai_annotation_language"
-                                        P2_has_type_latehokusai_annotation_inscription_type="http://www.researchspace.org/pattern/P2_has_type_latehokusai_annotation_inscription_type"
-                                        P73_has_translation_hokusai_annotation="http://www.researchspace.org/pattern/P73_has_translation_hokusai_annotation"
-                                        PX_has_transliteration="http://www.researchspace.org/pattern/PX_has_transliteration"
-                                      ]]'
-      >
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E34_Inscription'> </semantic-form-hidden-input>
-
-        <semantic-form-text-input for='P190_has_symbolic_object_late_hokusai_annotation_symbolic'></semantic-form-text-input>
-        <semantic-form-text-input for='P73_has_translation_hokusai_annotation'></semantic-form-text-input>
-        <semantic-form-tree-picker-input for="P72_has_language_latehokusai_annotation_language"  default-value="http://collection.britishmuseum.org/id/thesauri/THES223120"></semantic-form-tree-picker-input>
-        <semantic-form-tree-picker-input for="P2_has_type_latehokusai_annotation_inscription_type" default-value="http://collection.britishmuseum.org/id/thesauri/THES122853"></semantic-form-tree-picker-input>
-        <semantic-form-text-input for='PX_has_transliteration'></semantic-form-text-input>
-      </semantic-form-composite-input>
-        {{/case}}
-
-        {{#case "Mark" break=true}}
-      <semantic-form-composite-input render-header=false
-                                     for="P65_shows_visual_item_latehokusai_annotation_mark" 
-                                     new-subject-template="/E37_Mark/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                     fields='[[fieldDefinitions
-                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                          P2_has_type_latehokusai_annotation_mark_type="http://www.researchspace.org/pattern/P2_has_type_latehokusai_annotation_mark_type"
-                                        ]]'
-       >
-        <semantic-form-tree-picker-input for="P2_has_type_latehokusai_annotation_mark_type"></semantic-form-tree-picker-input>
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E37_Mark'> </semantic-form-hidden-input>
-      </semantic-form-composite-input>
-        {{/case}}
-
-        {{#case "Subject" break=true}}
-      <semantic-form-composite-input render-header=false
-                                     for="P128_carries_latehokusai_annotation_information" 
-                                     new-subject-template="/E73_Information_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                     fields='[[
-                                       fieldDefinitions
-                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                         P129_is_about_latehokusai_annotation_subject="http://www.researchspace.org/pattern/P129_is_about_latehokusai_annotation_subject"
-                                     ]]'>
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object'> </semantic-form-hidden-input>
-        <semantic-form-tree-picker-input for="P129_is_about_latehokusai_annotation_subject"></semantic-form-tree-picker-input>
-      </semantic-form-composite-input>    
-        {{/case}}
-
-        {{#case "Reference" break=true}}
-      <semantic-form-composite-input for="P128_carries_latehokusai_annotation_entity" 
-                                     new-subject-template="/E73_Information_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
-                                     fields='[[
-                                      fieldDefinitions
-                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                        P67_refers_to_latehokusai_annotation_place="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place"
-                                        P67_refers_to_latehokusai_annotation_period="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_period"
-                                        P67_refers_to_latehokusai_annotation_person="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_person"
-                                        P67_refers_to_latehokusai_annotation_object="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_object"
-                                        P67_refers_to_latehokusai_annotation_thing="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_thing"
-                                      ]]'>
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object'> </semantic-form-hidden-input>
-
-        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_person"></semantic-form-autocomplete-input>
-        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_place"></semantic-form-autocomplete-input>
-        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_period"></semantic-form-autocomplete-input>
-        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_thing"></semantic-form-autocomplete-input>
-        <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_object"></semantic-form-autocomplete-input>
-      </semantic-form-composite-input>
-        {{/case}}    
-      {{/switch}}
-
-      <semantic-form-text-input for="P67i_is_referred_to_by_latehokusai_annotation" multiline='true'> </semantic-form-text-input>
-      <semantic-form-drag-and-drop-input for="P130_shows_features_of_latehokusai_annotation"></semantic-form-drag-and-drop-input>
-
-
-    </div>
-
-    <div class="form-btn-group">
-      <div style="display: flex; justify-content: flex-end; width: 100%;">
-        <mp-event-target-template-render id='save-state' template='{{> template}}'>
-          <template id='template'>
-            {{#if saved}}
-            <div class='save-message fade-out_disappear'>
-              The feature has been saved successfully!
-            </div>
-            {{/if}}
-          </template>
-        </mp-event-target-template-render>
-        <button name="reset" class="btn btn-default">Reset</button>
-
-        {{#if edit}}
-          <mp-overlay-dialog id='feature-remove-confirmation-dialog' title="Remove feature" type="modal">
-            <mp-overlay-dialog-trigger>
-              <button class="btn btn-danger">Delete</button>
-            </mp-overlay-dialog-trigger>
-            <mp-overlay-dialog-content>
-              <div>
-                <div>
-                  <p>Are you sure you want to remove the feature '<strong><mp-label iri='{{feature}}'></mp-label></strong>' ?</p>
-                  <semantic-query 
-                                  query='
-                                    SELECT ?resource WHERE {
-                                      ?resource ?p <{{feature}}> .
-                                    }
-                                  '
-                                  template='{{> referredByTemplate}}'
-                  >
-                    <template id='referredByTemplate'>
-                      The following entities in the system link to the feature you want to delete:
-                      <ul>
-                        {{#each bindings}}
-                          <li>
-                            <semantic-link iri='{{resource.value}}'></semantic-link>
-                          </li>
-                        {{/each}}
-                      </ul>
-                    </template>
-                  </semantic-query>
-                </div>
-                <div class="form-btn-group">
-                  <div style="display: flex; justify-content: flex-end; width: 100%;">
-                    <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["feature-remove-confirmation-dialog"]'>
-                      <button class="btn btn-default">Cancel</button>
-                    </mp-event-trigger>
-                    <mp-event-trigger id='confirm-feature-removal' type='Form.RemoveResource' data='{"iri": "{{feature}}"}' targets='["feature-creation-form"]'>
-                      <button class="btn btn-danger">Delete Feature</button>
-                    </mp-event-trigger>  
-
-
-                    <mp-event-proxy id='close-form-removal-dialog' on-event-source='feature-creation-form' on-event-type='Form.ResourceRemoved'
-                                    proxy-event-type='TwoSidePanel.ShowFront' data='{}' proxy-targets='["objects-panel"]'
-                    ></mp-event-proxy>
-                  </div>
-                </div>
-              </div>
-            </mp-overlay-dialog-content>
-          </mp-overlay-dialog>
-        {{/if}}
-
-
-        <button name="submit" class="btn btn-primary">Save</button>
-      </div>
-    </div>
-  </semantic-form>
-[[/inline]]
-
 [[#*inline "newFeatureForm"]]
   [[#if createFromRegion]]
     <h2>Creating New Feature represented by the region: &nbsp;<strong><semantic-link iri='{{regionIri}}'></semantic-link></strong></h2>
@@ -301,8 +167,11 @@
 [[/inline]]
 
 [[#*inline "featureTypesQueryPattern"]]
-  ?feature crm:P56i_is_found_on <{{objectIri}}> .
-    
+  {
+    ?feature crm:P56i_is_found_on <{{objectIri}}> .
+  } UNION {
+    <{{objectIri}}> crm:P56_bears_feature ?feature . 
+  }  
   OPTIONAL {
     ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark .
     BIND ("Mark" as ?isMark) .
@@ -377,7 +246,7 @@
 
                         
                         <div class="rs-title-row">
-                          <h1 class="rs-main-title">Observations</h1>
+                          <h1 class="rs-main-title">Observations on</h1>
                           <mp-overlay-dialog title="Object Observations" type="modal" class="modal-xlSize">
                             <mp-overlay-dialog-trigger>
                               <i class="iconmoon iconmoon-info"></i>
@@ -415,7 +284,7 @@
                                  <mp-collapsible-div expanded='true'>
                                     <mp-collapsible-div-trigger>
                                         <div class="frame-imageAnnotationWorkspace__observationArea_resourceTitleRow">
-                                          <h1 class="text-truncate">Observed on <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
+                                          <h1 class="text-truncate"><strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
                                           <div style="display: flex; align-items: flex-start;">
                                             
                                             [[!-- 
@@ -666,7 +535,11 @@
                         <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
                           <semantic-if query='
                                         ASK { 
-                                          ?feature crm:P56i_is_found_on <{{objectIri}}>. 
+                                          {
+                                            ?feature crm:P56i_is_found_on <{{objectIri}}>.
+                                          } UNION {
+                                            <{{objectIri}}> crm:P56_bears_feature ?feature .
+                                          }
                                           OPTIONAL {
                                             ?feature crm:P138i_has_representation ?region .
                                             ?region crmdig:L49_is_primary_area_of ?image .
@@ -733,6 +606,8 @@
                                           ]]'
                                         >
                                           <div class="form-scrollable-area">
+                                            {{> rsp:ImageAnnotationObservationInput }}
+                                            
                                             <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{regionIri}}' force-defaults=true readonly=true></semantic-form-drag-and-drop-input>
                                           </div>
                                           <div class="form-btn-group">
@@ -749,8 +624,12 @@
                                               <mp-event-trigger id='cancel-region-association' type='Component.TemplateUpdate' data='{"useExisting": true}' targets='["new-region-wizard-area"]'>
                                                 <button name="cancel" class='btn btn-default'>Cancel</button>
                                               </mp-event-trigger> 
+                                              
+                                             <button name="submit" class="btn btn-primary">Confirm</button>
 
-                                              <button name="submit" class="btn btn-primary">Confirm</button>
+                                              <mp-event-proxy id='finish-confirmation-dialog' on-event-source='feature-creation-form'
+                                                              proxy-event-type='TwoSidePanel.ShowFront' proxy-targets='["objects-panel"]' data='{}'
+                                              ></mp-event-proxy>                                              
                                             </div>
                                           </div>
                                         </semantic-form>

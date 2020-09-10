@@ -7,23 +7,19 @@
                new-subject-template='{{objectIri}}/E25_Man-Made_Feature/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/ns/data-updates-graph-test"}'
                
-  						fields='[[
-               fieldDefinitions
-                 label="http://www.w3.org/2000/01/rdf-schema#label"
-                 P67i_is_referred_to_by_latehokusai_annotation="http://www.researchspace.org/pattern/P67i_is_referred_to_by_latehokusai_annotation"
-                 classtype="http://www.researchspace.org/pattern/latehokusai_feature_type"
-                 P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"
-                 P65_shows_visual_item_latehokusai_annotation_inscription="http://www.researchspace.org/pattern/P65_shows_visual_item_latehokusai_annotation_inscription"
-                 P128_carries_latehokusai_annotation_information="http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_information"
-                 P65_shows_visual_item_latehokusai_annotation_mark="http://www.researchspace.oeg/pattern/P65_shows_visual_item_latehokusai_annotation_mark"
-                 P130_shows_features_of_latehokusai_annotation="http://www.researchspace.org/pattern/P130_shows_features_of_latehokusai_annotation"
-                 P128_carries_latehokusai_annotation_entity="http://www.researchspace.org/pattern/P128_carries_latehokusai_annotation_entity"
-                 was_observed_by_latehokusai="http://www.researchspace.org/pattern/was_observed_by_latehokusai"
-                 was_digitally_observed_by_latehokusai="http://www.researchspace.org/pattern/was_digitally_observed_by_latehokusai"
-                 P56i_is_found_on_late_hokusai_feature="http://www.researchspace.org/pattern/P56i_is_found_on_late_hokusai_feature"
-                 P129_is_about_latehokusai_annotation_subject="http://www.researchspace.org/pattern/P129_is_about_latehokusai_annotation_subject"
-                 P67_refers_to_latehokusai_annotation_place="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place"
-                 P138i_has_representation_latehokusai_representation="http://www.researchspace.org/pattern/P138i_has_representation_latehokusai_representation"  
+  						 fields='[[
+                 fieldDefinitions
+                   label="http://www.w3.org/2000/01/rdf-schema#label"
+                   classtype="http://www.researchspace.org/pattern/image_observation/rdf:type"
+                   P56i_is_found_on="http://www.researchspace.org/pattern/image_observation/crm:P56i_is_found_on"
+                   P65_shows_visual_item="http://www.researchspace.org/pattern/image_observation/crm:P65_shows_visual_item"
+                   P67i_is_referred_to_by="http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by"
+                   P128_carries="http://www.researchspace.org/pattern/image_observation/crm:P128_carries"
+                   P130_shows_features_of="http://www.cidoc-crm.org/cidoc-crm/P130_shows_features_of"
+                   P138i_has_representation="http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation" 
+                   O16i_value_was_observed_by-physical="http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-physical"
+                   O16i_value_was_observed_by-digital="http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-digital"
+
 							]]'
 >
   <mp-event-proxy id='refresh-the-form' on-event-source='feature-creation-form' on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
@@ -33,14 +29,17 @@
 
 
   <div class="form-scrollable-area">
-    <semantic-form-hidden-input for="P56i_is_found_on_late_hokusai_feature" default-value='{{objectIri}}'> </semantic-form-hidden-input>
+    <semantic-form-hidden-input for="P56i_is_found_on" default-value='{{objectIri}}'> </semantic-form-hidden-input>
 
+    {{> rsp:ImageAnnotationObservationInput }}
+    
+    
     <semantic-form-select-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E25_Man-Made_Feature'> </semantic-form-select-input>
     
     {{#if regionIri}}
-      <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation" default-value='{{regionIri}}'></semantic-form-drag-and-drop-input>
+      <semantic-form-drag-and-drop-input  for="P138i_has_representation" label="Image Region" default-value='{{regionIri}}'></semantic-form-drag-and-drop-input>
     {{else}}
-      <semantic-form-drag-and-drop-input  for="P138i_has_representation_latehokusai_representation"></semantic-form-drag-and-drop-input>
+      <semantic-form-drag-and-drop-input  for="P138i_has_representation" label="Image Region"></semantic-form-drag-and-drop-input>
     {{/if}}
 
     {{#if createFromRegion}}
@@ -49,78 +48,123 @@
     <semantic-form-text-input for="label"> </semantic-form-text-input>
     {{/if}}
 
-    <semantic-form-hidden-input for="was_digitally_observed_by_latehokusai" default-value='http://www.researchspace.org/entity/E55_Type/bdac6431-7d0a-4fa2-b547-6759a071bd1e'></semantic-form-hidden-input>
-
-    <semantic-form-composite-input for='was_observed_by_latehokusai'
-
-                                   new-subject-template="/S4_Observation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+    <semantic-form-composite-input for='O16i_value_was_observed_by-physical'
+                                   new-subject-template="/S4_Observation/Physical_Observation" 
                                    fields='[[
-                     fieldDefinitions
-                                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                   P2_has_type_observation="http://www.researchspace.org/pattern/P2_has_type_physical_observation"
-
-                                                                          ]]'>
+                                     fieldDefinitions
+                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                       P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+                                       O8_observed="http://www.ics.forth.gr/isl/CRMsci/O8_observed"
+                                       O9_observed_property_type="http://www.ics.forth.gr/isl/CRMsci/O9_observed_property_type"
+                                       P4_has_time-span="http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span"
+                                       P14_carried_out_by="http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by"
+                                   ]]'>
       <semantic-form-hidden-input for="classtype" default-value='http://www.ics.forth.gr/isl/CRMsci/S4_Observation'></semantic-form-hidden-input>
+      <semantic-form-hidden-input for='P2_has_type' default-value='http://www.researchspace.org/entity/E55_Type/16198db2-d520-4fa5-9c89-8317090df20c'></semantic-form-hidden-input>
+      <semantic-form-hidden-input for="O8_observed" default-value='{{objectIri}}'> </semantic-form-hidden-input>
+      <semantic-form-hidden-input for="O9_observed_property_type" default-value='http://www.cidoc-crm.org/cidoc-crm/P56_bears_feature'> </semantic-form-hidden-input>
 
-      <semantic-form-select-input for='P2_has_type_observation'></semantic-form-select-input>
-
+      <semantic-form-select-input for="P14_carried_out_by" default-value='[[userUri]]'> </semantic-form-select-input>
+      
+      <semantic-form-composite-input for="P4_has_time-span"
+                                     new-subject-template="/E52_Time-Span" 
+                                     fields='[[
+                                       fieldDefinitions
+                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                         P82_at_some_time_within="http://www.cidoc-crm.org/cidoc-crm/P82_at_some_time_within"
+                                     ]]'
+                                     >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+        <semantic-form-datetime-input for="P82_at_some_time_within" mode="dateTime"></semantic-form-datetime-input>
+      </semantic-form-composite-input>
     </semantic-form-composite-input>   
     
     {{#switch featureType}}
       {{#case "Inscription" break=true}}
     <semantic-form-composite-input
-                                   for="P65_shows_visual_item_latehokusai_annotation_inscription" 
-                                   new-subject-template="/E34_Inscription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                   for="P65_shows_visual_item"
+                                   label="Shows Inscription"
+                                   new-subject-template="/E34_Inscription" 
                                    fields='[[fieldDefinitions
                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                      P190_has_symbolic_object_late_hokusai_annotation_symbolic="http://www.researchspace.org/pattern/P190_has_symbolic_object_late_hokusai_annotation_symbolic"
-                                      P72_has_language_latehokusai_annotation_language="http://www.researchspace.org/pattern/P72_has_language_latehokusai_annotation_language"
-                                      P2_has_type_latehokusai_annotation_inscription_type="http://www.researchspace.org/pattern/P2_has_type_latehokusai_annotation_inscription_type"
-                                      P73_has_translation_hokusai_annotation="http://www.researchspace.org/pattern/P73_has_translation_hokusai_annotation"
-                                      PX_has_transliteration="http://www.researchspace.org/pattern/PX_has_transliteration"
+                                      P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+                                      P72_has_language="http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
+                                      P73_has_translation="http://www.cidoc-crm.org/cidoc-crm/P73_has_translation"
+                                      P190_has_symbolic_object="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
+                                      PX_has_transliteration="http://www.researchspace.org/pattern/image_observation/PX_has_transliteration"
                                     ]]'
     >
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E34_Inscription'> </semantic-form-hidden-input>
+      <semantic-form-hidden-input for="P2_has_type" default-value="http://collection.britishmuseum.org/id/thesauri/THES122853"></semantic-form-hidden-input>
 
-      <semantic-form-text-input for='P190_has_symbolic_object_late_hokusai_annotation_symbolic'></semantic-form-text-input>
-      <semantic-form-text-input for='P73_has_translation_hokusai_annotation'></semantic-form-text-input>
-      <semantic-form-tree-picker-input for="P72_has_language_latehokusai_annotation_language"  default-value="http://collection.britishmuseum.org/id/thesauri/THES223120"></semantic-form-tree-picker-input>
-      <semantic-form-tree-picker-input for="P2_has_type_latehokusai_annotation_inscription_type" default-value="http://collection.britishmuseum.org/id/thesauri/THES122853"></semantic-form-tree-picker-input>
+      <semantic-form-text-input for='P190_has_symbolic_object' label="Inscription text"></semantic-form-text-input>
+      
+      <semantic-form-tree-picker-input for="P72_has_language" 
+                                       label='Language' 
+                                       default-value="http://collection.britishmuseum.org/id/thesauri/THES223120"
+                                       scheme="http://collection.britishmuseum.org/id/thesauri/inscriptionlanguage"
+      ></semantic-form-tree-picker-input>
+      
+      <semantic-form-composite-input for='P73_has_translation'
+                                label='Translation'
+                                new-subject-template="/E33_Linguistic_Object/Translation" 
+                                fields='[[fieldDefinitions
+                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                        P72_has_language="http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
+                                        P190_has_symbolic_content="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
+                                ]]'
+                                >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object'> </semantic-form-hidden-input>
+        <semantic-form-text-input for='P190_has_symbolic_content' label='Translation text'></semantic-form-text-input>
+      	<semantic-form-tree-picker-input for="P72_has_language" 
+                                         label='Language'  
+                                         default-value="http://collection.britishmuseum.org/id/thesauri/THES223053"
+                                         scheme="http://collection.britishmuseum.org/id/thesauri/inscriptionlanguage"
+        ></semantic-form-tree-picker-input>
+      </semantic-form-composite-input>
+      
       <semantic-form-text-input for='PX_has_transliteration'></semantic-form-text-input>
     </semantic-form-composite-input>
       {{/case}}
     
       {{#case "Mark" break=true}}
     <semantic-form-composite-input render-header=false
-                                   for="P65_shows_visual_item_latehokusai_annotation_mark" 
-                                   new-subject-template="/E37_Mark/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                   for="P65_shows_visual_item" 
+                                   label="Shows Mark"
+                                   new-subject-template="/E37_Mark" 
                                    fields='[[fieldDefinitions
                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                        P2_has_type_latehokusai_annotation_mark_type="http://www.researchspace.org/pattern/P2_has_type_latehokusai_annotation_mark_type"
+                                        P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
                                       ]]'
      >
-      <semantic-form-tree-picker-input for="P2_has_type_latehokusai_annotation_mark_type"></semantic-form-tree-picker-input>
+      <semantic-form-tree-picker-input for="P2_has_type" 
+                                       label="Mark Type" 
+                                       scheme="http://collection.britishmuseum.org/id/thesauri/inscriptiontype"
+                                       default-value="http://collection.britishmuseum.org/id/thesauri/THES122877"
+      ></semantic-form-tree-picker-input>
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E37_Mark'> </semantic-form-hidden-input>
     </semantic-form-composite-input>
       {{/case}}
     
       {{#case "Subject" break=true}}
     <semantic-form-composite-input render-header=false
-                                   for="P128_carries_latehokusai_annotation_information" 
-                                   new-subject-template="/E73_Information_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                   for="P128_carries"
+                                   label="Is about"
+                                   new-subject-template="/E73_Information_Object" 
                                    fields='[[
                                      fieldDefinitions
                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                       P129_is_about_latehokusai_annotation_subject="http://www.researchspace.org/pattern/P129_is_about_latehokusai_annotation_subject"
+                                       P129_is_about="http://www.cidoc-crm.org/cidoc-crm/P129_is_about"
                                    ]]'>
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object'> </semantic-form-hidden-input>
-      <semantic-form-tree-picker-input for="P129_is_about_latehokusai_annotation_subject"></semantic-form-tree-picker-input>
+      <semantic-form-tree-picker-input for="P129_is_about" label="Subject" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
     </semantic-form-composite-input>    
       {{/case}}
     
       {{#case "Reference" break=true}}
-    <semantic-form-composite-input for="P128_carries_latehokusai_annotation_entity" 
-                                   new-subject-template="/E73_Information_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+    <semantic-form-composite-input for="P128_carries" 
+                                   label="Refers to"
+                                   new-subject-template="/E73_Information_Object"  
                                    fields='[[
                                     fieldDefinitions
                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -141,8 +185,20 @@
       {{/case}}    
     {{/switch}}
     
-    <semantic-form-text-input for="P67i_is_referred_to_by_latehokusai_annotation" multiline='true'> </semantic-form-text-input>
-    <semantic-form-drag-and-drop-input for="P130_shows_features_of_latehokusai_annotation"></semantic-form-drag-and-drop-input>
+    <semantic-form-composite-input for="P67i_is_referred_to_by" 
+                                   label="General note about feature"
+                                   new-subject-template="/E73_Information_Object"  
+                                   fields='[[
+                                     fieldDefinitions
+                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                       P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                                   ]]'
+    >
+      <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object'> </semantic-form-hidden-input>
+      <semantic-form-text-input for="P3_has_note" label="Note" multiline='true'> </semantic-form-text-input>
+    </semantic-form-composite-input>
+    
+    <semantic-form-drag-and-drop-input for="P130_shows_features_of" label="Similar Features to"></semantic-form-drag-and-drop-input>
 
 
   </div>
@@ -193,10 +249,10 @@
               <div class="form-btn-group">
                 <div style="display: flex; justify-content: flex-end; width: 100%;">
                   <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["feature-remove-confirmation-dialog"]'>
-                    <button name="cancel" class="btn btn-default">Cancel</button>
+                    <button class="btn btn-default">Cancel</button>
                   </mp-event-trigger>
                   <mp-event-trigger id='confirm-feature-removal' type='Form.RemoveResource' data='{"iri": "{{feature}}"}' targets='["feature-creation-form"]'>
-                    <button name="delete" class="btn btn-danger">Delete Feature</button>
+                    <button class="btn btn-danger">Delete Feature</button>
                   </mp-event-trigger>  
                   
                   

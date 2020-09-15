@@ -22,26 +22,44 @@ package org.researchspace.rest.endpoint;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.eclipse.rdf4j.model.*;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.security.WildcardPermission;
 import org.researchspace.security.Permissions.*;
+import org.researchspace.services.files.FileExtractor;
+import org.researchspace.services.files.FileExtractorOptions;
 import org.researchspace.services.files.FileManager;
 import org.researchspace.services.files.ManagedFileName;
 import org.researchspace.services.storage.api.*;
 import org.researchspace.services.storage.utils.ExactSizeInputStream;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileNotFoundException;
+
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+
+import com.google.inject.Injector;
+
 import java.io.InputStream;
 
 @Path("")
@@ -51,13 +69,15 @@ public class FileStorageEndpoint {
     private final PlatformStorage platformStorage;
     private final RepositoryManager repositoryManager;
     private final FileManager fileManager;
+    private final Injector injector;
 
     @Inject
     public FileStorageEndpoint(PlatformStorage platformStorage, RepositoryManager repositoryManager,
-            FileManager fileManager) {
+                               FileManager fileManager, Injector injector) {
         this.platformStorage = platformStorage;
         this.repositoryManager = repositoryManager;
         this.fileManager = fileManager;
+        this.injector = injector;
     }
 
     @POST
@@ -126,14 +146,19 @@ public class FileStorageEndpoint {
     @POST
     @RequiresAuthentication
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadFileAsResource(@FormDataParam("storage") String storageId,
-            @FormDataParam("repository") String repositoryId,
-            @FormDataParam("generateIriQuery") String generateIriQuery,
-            @FormDataParam("createResourceQuery") String createResourceQuery,
-            @FormDataParam("contextUri") String contextUri,
-            @FormDataParam("fileNameHack") String fileNameHack,
-            @FormDataParam("file") FormDataContentDisposition fileDisposition, @FormDataParam("file") InputStream in,
-            @FormDataParam("fileSize") long fileSize) {
+    public Response uploadFileAsResource(
+                                         @FormDataParam("storage") String storageId,
+                                         @FormDataParam("repository") String repositoryId,
+                                         @FormDataParam("generateIriQuery") String generateIriQuery,
+                                         @FormDataParam("createResourceQuery") String createResourceQuery,
+                                         @FormDataParam("contextUri") String contextUri,
+                                         @FormDataParam("fileNameHack") String fileNameHack,
+                                         @FormDataParam("file") FormDataContentDisposition fileDisposition,
+                                         @FormDataParam("file") InputStream in,
+                                         @FormDataParam("fileSize") long fileSize,
+                                         @FormDataParam("fileHandlerClass") String fileHandlerClass,
+                                         @FormDataParam("fileHandlerOptions") FormDataBodyPart fileHandlerOptions
+                                         ) {
         if (logger.isTraceEnabled()) {
             logger.trace("Request to store a file as LDP resource to the storage");
         }
@@ -155,7 +180,6 @@ public class FileStorageEndpoint {
             ObjectStorage storage = platformStorage.getStorage(storageId);
             fileManager.storeFile(storage, managedName, platformStorage.getDefaultMetadata(),
                     new SizedStream(new ExactSizeInputStream(in, fileSize), fileSize));
-
             IRI resourceIri;
             try {
                 resourceIri = fileManager.createLdpResource(managedName,
@@ -165,6 +189,12 @@ public class FileStorageEndpoint {
                 // try to clean up uploaded file if LDP update failed
                 fileManager.deleteFile(storage, managedName, platformStorage.getDefaultMetadata());
                 throw e;
+            }
+
+            if (fileHandlerClass != null && !fileHandlerClass.isEmpty()) {
+                try (InputStream fileStream = storage.getObject(managedName.toObjectId(), null).get().getLocation().readContent()) {
+                    this.executeFileHandler(fileHandlerClass, fileHandlerOptions, resourceIri, managedName.getName(), fileStream);
+                }
             }
 
             return Response.created(new java.net.URI(resourceIri.toString())).build();
@@ -321,5 +351,15 @@ public class FileStorageEndpoint {
             }
             output.flush();
         };
+    }
+
+    private void executeFileHandler(
+                                    String fileHandlerClass, FormDataBodyPart fileHandlerOptions, IRI fileIri, String fileName, InputStream fileData
+) throws ClassNotFoundException {
+        FileExtractor fileHandler = (FileExtractor) this.injector.getInstance(Class.forName(fileHandlerClass));
+        fileHandlerOptions.setMediaType(MediaType.APPLICATION_JSON_TYPE);
+        FileExtractorOptions options = (FileExtractorOptions) fileHandlerOptions
+                .getValueAs(fileHandler.getOptionsClass());
+        fileHandler.handleFile(options, fileIri, fileName, fileData);
     }
 }

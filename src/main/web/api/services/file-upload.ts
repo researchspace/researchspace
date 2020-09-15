@@ -33,6 +33,8 @@ class FileUpload {
     contextUri: string;
     file: File;
     contentType: string;
+    fileHandlerClass?: string;
+    fileHandlerOptions?: Record<string, any>;
     onProgress: (percent: number) => void;
   }): Kefir.Property<Rdf.Iri> {
     const req = request

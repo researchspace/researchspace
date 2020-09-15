@@ -82,6 +82,9 @@ interface FileUploaderProps {
    * ID of the storage to upload the file to.
    */
   storage: string;
+
+  fileHandlerClass?: string;
+  fileHandlerOptions?: Record<string, any>;
 }
 
 /**
@@ -142,6 +145,8 @@ export class FileUploader extends Component<FileUploaderProps, FileUploaderState
           generateIriQuery: this.props.generateIriQuery,
           resourceQuery: this.props.resourceQuery,
           contextUri: this.props.contextUri,
+          fileHandlerClass: this.props.fileHandlerClass,
+          fileHandlerOptions: this.props.fileHandlerOptions,
           onProgress: (percent) =>
             this.setState({
               progress: percent,

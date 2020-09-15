@@ -127,6 +127,11 @@ gretty {
             "-Dconfig.storage.images.mutable=true",
             "-Dconfig.storage.images.root=${project.properties['imageStorageRoot']}",
 
+            // delopment storages for pdf upload functionality
+            "-Dconfig.storage.pdfs.type=nonVersionedFile",
+            "-Dconfig.storage.pdfs.mutable=true",
+            "-Dconfig.storage.pdfs.root=${project.properties['pdfStorageRoot']}",
+
             // tmp storage is needed for image upload functionality
             "-Dconfig.storage.tmp.type=nonVersionedFile",
             "-Dconfig.storage.tmp.mutable=true",
@@ -186,7 +191,7 @@ task startWebpack(type: com.github.psxpaul.task.ExecFork) {
     timeout = 1200
 
     // wait for message produces by webpack in minimal log mode
-    waitForOutput = 'modules'
+    waitForOutput = 'Starting type checking service'
 }
 tasks.startWebpack.dependsOn npmInstall
 
@@ -371,6 +376,9 @@ dependencies {
 
         "com.twelvemonkeys.imageio:imageio-tiff:${IMAGEIO_VERSION}",
         "com.twelvemonkeys.imageio:imageio-core:${IMAGEIO_VERSION}",
+
+        'org.apache.pdfbox:pdfbox:2.0.21',
+        'org.apache.pdfbox:pdfbox-tools:2.0.21'
     )
 
     testImplementation (

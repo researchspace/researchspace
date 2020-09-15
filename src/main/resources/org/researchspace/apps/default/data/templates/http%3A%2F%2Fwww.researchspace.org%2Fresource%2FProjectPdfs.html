@@ -1,0 +1,103 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link iri='http://www.researchspace.org/resource/ProjectDashboard'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li class="active">Project - PDFs</li>
+</ol>
+
+<div class="page rs-project-images">
+
+[[#>rsp:ClipboardSidebar]]
+[[#> rsp:DetailsSidebar]]
+
+  <div class='page__body--borderless' style="padding: 0;">
+
+  <div class="container-fluid rs-page-header">
+    <bs-row class="row-center">
+      <bs-col xs=12 sm=11 md=11 lg=11 class="rs-col-xl-10 page_header--col">
+        <div class="page__header">
+          <div class='page__header-thumbnail'>
+            <h2><i class="rs-icon rs-icon-images"></i></h2>
+          </div>
+          <div class='page__header-body'>
+            <h2>Project - PDFs 
+              
+              [[#if (hasPermission "forms:ldp:*")]]
+              <mp-overlay-dialog title="PDF Upload" type="modal" bs-size="large">
+                <mp-overlay-dialog-trigger>
+                  <button class="btn btn-header-right pull-right">
+                   <i class="fa fa-upload"></i>
+                   <div>Upload PDF</div>
+                 </button>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                  <div style="padding: 0px 30px 15px;">
+                    <semantic-context repository='assets'>
+                      <mp-file-uploader
+                        placeholder="Please drag&drop your pdf file here"
+                        accept-pattern='application/pdf'
+                        generate-iri-query='
+                          SELECT ?resourceIri WHERE {
+                            BIND(URI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) as ?resourceIri)
+                          }
+                        '
+                        context-uri='[[this]]'
+                        storage='pdfs'
+                        file-handler-class='org.researchspace.services.files.extractors.PdfFileExtractor'
+                        file-handler-options='{
+                          "namedGraph": "http://example.com/pdf-data", 
+                          "rdfTemplate": "
+                                            @prefix frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/> .
+                                            @prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+                                              
+                                            <{{{fileIri}}}/expression> a frbroo:F22_Self-Contained_Expression ;
+                                               crm:P128i_is_carried_by <{{{fileIri}}}> .
+                                              
+                                            {{#each pages}}
+                                              <{{{../fileIri}}}/expression> frbroo:R5_has_component <{{{../fileIri}}}/expression/page/{{@index}}> .
+                                              <{{{../fileIri}}}/expression/page/{{@index}}> a frbroo:F23_Expression_Fragment ;
+                                                crm:P138i_has_representation <{{{representationFileIri}}}/image> .
+                                            {{/each}}
+                                         ",
+                          "createResourceQuery": "
+                                                     PREFIX rso: <http://www.researchspace.org/ontology/>
+                                                     CONSTRUCT {
+                                                       ?imageIri a rso:EX_Digital_Image .
+                                                       ?imageIri <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> ?__resourceIri__ .
+                                                       ?__resourceIri__ a rso:EX_File.
+                                                       ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
+                                                       ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                                     } WHERE {
+                                                       BIND(IRI(CONCAT(STR(?__resourceIri__), \"/image\")) AS ?imageIri) .
+                                                     }          
+                          "
+                        }'
+                      ></mp-file-uploader>
+                    </semantic-context>
+                  </div>
+                </mp-overlay-dialog-content>
+             </mp-overlay-dialog>
+             [[/if]]
+             <div class='clearfix'></div>
+
+            </h2>
+          </div>
+        </div>
+      </bs-col>
+    </bs-row> <!--  close row -->
+  </div>
+    
+  <div>
+    <semantic-table  query='SELECT ?pdf WHERE {  ?pdf a frbroo:F22_Self-Contained_Expression . }'></semantic-table>  
+  </div>
+
+  </div>
+  
+[[/rsp:DetailsSidebar]]
+[[/rsp:ClipboardSidebar]]
+</div>

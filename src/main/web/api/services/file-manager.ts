@@ -71,9 +71,21 @@ export class FileManager {
     resourceQuery?: string;
     onProgress?: (percent: number) => void;
     fileNameHack?: boolean;
+    fileHandlerClass?: string;
+    fileHandlerOptions?: Record<string, any>;
   }): Kefir.Property<Rdf.Iri> {
     if (!options.storage) {
       return Kefir.constantError<any>(new Error('Storage is undefined!'));
+    }
+
+    if (options.fileHandlerClass) {
+      if (!options.fileHandlerOptions['createResourceQuery']) {
+        options.fileHandlerOptions['createResourceQuery'] = options.resourceQuery || RESOURCE_QUERY;
+      }
+
+      if (!options.fileHandlerOptions['generateIriQuery']) {
+        options.fileHandlerOptions['generateIriQuery'] = options.generateIriQuery || '';
+      }
     }
 
     const request = post(FILE_UPLOAD_SERVICE_URL + FILE_URL)
@@ -85,6 +97,8 @@ export class FileManager {
       .field('generateIriQuery', options.generateIriQuery || '')
       .field('contextUri', options.contextUri || '')
       .field('fileNameHack', options.fileNameHack ? 'true' : '')
+      .field('fileHandlerClass', options?.fileHandlerClass || '')
+      .field('fileHandlerOptions', JSON.stringify(options?.fileHandlerOptions || '{}'))
       .on('progress', (e) => {
         if (options.onProgress) {
           options.onProgress(e.percent as number);
@@ -171,6 +185,8 @@ export class FileManager {
     mediaType: string;
     generateIriQuery?: string;
     resourceQuery?: string;
+    fileHandlerClass?: string;
+    fileHandlerOptions?: Record<string, any>;
     onProgress?: (percent: number) => void;
   }): Kefir.Property<Rdf.Iri> {
     const request = post(FILE_UPLOAD_SERVICE_URL + MOVE_URL)
@@ -182,6 +198,8 @@ export class FileManager {
       .field('mediaType', options.mediaType)
       .field('generateIriQuery', options.generateIriQuery || '')
       .field('contextUri', options.contextUri || '')
+      .field('fileHandlerClass', options?.fileHandlerClass || '')
+      .field('fileHandlerOptions', JSON.stringify(options?.fileHandlerOptions || '{}'))
       .on('progress', (e) => {
         if (options.onProgress) {
           options.onProgress(<number>e.percent);

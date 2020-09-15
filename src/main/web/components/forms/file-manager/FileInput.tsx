@@ -98,6 +98,9 @@ interface FileInputConfig {
    * @default false
    */
   fromUrlOrDrop?: boolean;
+
+  fileHandlerClass?: string;
+  fileHandlerOptions?: Record<string, any>;
 }
 
 export interface FileInputProps extends AtomicValueInputProps, FileInputConfig {}
@@ -407,16 +410,20 @@ class FileHandler extends AtomicValueHandler {
     if (!FileManager.isTemporaryResource(resourceIri)) {
       return Kefir.constant(value);
     } else if (this.fileManager) {
+      const {
+        storage, tempStorage, generateIriQuery, resourceQuery,
+        fileHandlerClass, fileHandlerOptions
+      } = this.baseInputProps;
       return this.fileManager
         .getFileResource(resourceIri)
         .flatMap((resource) => {
           return this.fileManager
             .createResourceFromTemporaryFile({
               fileName: resource.fileName,
-              storage: this.baseInputProps.storage,
-              temporaryStorage: this.baseInputProps.tempStorage,
-              generateIriQuery: this.baseInputProps.generateIriQuery,
-              resourceQuery: this.baseInputProps.resourceQuery,
+              storage,
+              temporaryStorage: tempStorage,
+              generateIriQuery,
+              resourceQuery, fileHandlerClass, fileHandlerOptions,
               mediaType: resource.mediaType,
             })
             .map((createdResourceIri) => {

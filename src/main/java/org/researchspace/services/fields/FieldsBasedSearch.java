@@ -43,11 +43,13 @@ import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.UnaryTupleOperator;
 import org.eclipse.rdf4j.query.algebra.ValueExpr;
 import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
 import org.eclipse.rdf4j.rio.ntriples.NTriplesUtil;
 import org.researchspace.cache.LabelCache;
 import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.repository.RepositoryManager;
+import org.researchspace.sparql.SparqlAlgebraUtils;
 import org.researchspace.sparql.renderer.MpSparqlQueryRenderer;
 import org.researchspace.sparql.visitors.VarRenameVisitor;
 import org.researchspace.templates.TemplateContext;
@@ -179,9 +181,8 @@ public class FieldsBasedSearch {
 
     private String transformFieldSelectQueryToRelationPattern(RelationKind kind, String selectQuery) {
         String query = namespaceRegistry.prependSparqlPrefixes(selectQuery);
-        UnaryTupleOperator select = ((UnaryTupleOperator) QueryParserUtil
-                .parseTupleQuery(QueryLanguage.SPARQL, query, null).getTupleExpr());
-        TupleExpr where = select.getArg();
+        ParsedQuery parsedQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, null);
+        TupleExpr where = SparqlAlgebraUtils.getWhereClause(parsedQuery);
         TupleExpr mapped = mapRelationPattern(kind, where.clone());
         return renderTupleExpression(mapped);
     }

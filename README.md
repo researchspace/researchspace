@@ -7,7 +7,7 @@
 - - -
 
 <p align="center">
-  <a href="https://gitter.im/researchspace/community"><img src="https://badges.gitter.im/Join Chat.svg" alt="Gitter"></a>
+  <a href="https://gitter.im/researchspace/community"><img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
 - - -

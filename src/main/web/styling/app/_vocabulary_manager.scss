@@ -167,7 +167,7 @@
 .rs-vocabulary-terms-container {
 
     width: 100%;
-    height: calc(100vh - 58px - 34.6px);
+    height: calc(100vh - #{$nav-height}  - #{$breadcrumb-height});
     overflow: hidden;
 
     display: grid;
@@ -198,7 +198,12 @@
     .rs-vocabulary-terms-area {
 
         padding-top: 1em;
-        height: 100%;
+        height: calc(100% - 49px);
+
+        .LazyTree--component {
+
+            height: calc(100% - 45px);
+        }
 
         .SemanticTreeInput--inputAndButtons {
 
@@ -230,7 +235,6 @@
 
         .LazyTree--alignmentTreeContainer {
 
-            max-height: 55vh;
             margin-top: 30px;
             background-color: $color-white;
             border-radius: 2px;
@@ -325,12 +329,16 @@
         grid-area: editArea;
         display: flex;
         flex-direction: column;
+
+        height: calc(100vh - #{$nav-height}  - #{$breadcrumb-height} - 6em);
+
     }
 
     .btn-newTerm {
        
         padding: 0 15px;
         height: 40px;
+        min-height: 40px;
         width: fit-content;
         font-size: 15px;
         border-radius: 8px;
@@ -363,7 +371,15 @@
 
     .rs-vocabulary-terms-form-area {
 
-        margin-top: 14px;
+        padding-top: 14px;
+
+        height: 100%;
+        overflow: hidden;
+
+        h1 {
+
+            margin-bottom: 20px;
+        }
 
         .semantic-form-input-decorator__label {
 
@@ -372,25 +388,20 @@
 
         .semantic-form {
 
+            height: calc(100% - 58px);
+
+            .composite-input {
+
+                height: 100%;
+            }
+
             .form-scroll-area {
 
                 overflow-y: auto;
                 overflow-x: hidden;
-                height: 100%;
-                max-height: 65vh;
+                height: calc(100% - 63px);
                 padding-right: 20px;
 
-                @media only screen and (max-width: 768px) {
-                    max-height: 45vh;
-                }
-    
-                @media (min-width: 768px) and (max-width: 1200px) {
-                    max-height: 50vh;
-                }
-    
-                @media (min-width: 1200px) and (max-width: 1500px) {
-                    max-height: 55vh;
-                }
             }
 
             .form-control {
@@ -487,7 +498,6 @@
         .btn-group {
 
             margin-top: 25px;
-            margin-bottom: 15px;
             display: flex;
             align-items: center;
             justify-content: space-between;

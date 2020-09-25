@@ -488,6 +488,7 @@ export class DashboardComponent extends Component<Props, State> {
           id={item.id}
           views={allViews}
           viewId={item.viewId}
+          gridView
           resourceIri={item.resourceIri}
           data={item.data}
           linkedFrames={linkedFrames}

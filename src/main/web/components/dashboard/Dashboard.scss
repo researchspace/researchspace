@@ -15,12 +15,37 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+ @import '../../styling/app/variables';
+
 
 .defaultDashboard {
   display: flex;
   align-items: center;
   flex: 1;
+  
+  &.container-fluid {
+
+    padding: 0 70px;
+  }
 }
+
+.gridViewDashboard {
+
+  height: 100%;
+  margin: 4em;
+
+  display: grid;
+  grid-template-columns:repeat(auto-fit, minmax(300px , 1fr));
+
+  grid-gap: 2rem;
+
+  grid-auto-rows: 100px;
+  grid-auto-flow: row;
+
+  align-content: center;
+
+}
+
 
 .defaultColumnItem {
   margin-bottom: 20px;
@@ -67,6 +92,7 @@
 
 .iconComponent {
   margin-right: 20px;
+  font-size: 4em;
 }
 
 .emptyPageDropArea {
@@ -117,9 +143,10 @@
 :global(.mp-droppable-enabled) > .dropAreaChildren.notOpacity {
   opacity: 1;
 }
+
 .viewContainer {
   flex: 1 1 0px;
-  overflow: hidden;
+  overflow: auto;
   display: flex;
   flex-direction: column;
 }
@@ -135,18 +162,20 @@
 
 .itemLabelContainer {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .itemLabel {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   flex: 1;
   opacity: 0.5;
 }
 
 .itemLabelActive {
   opacity: 1;
+  color: $color-dark;
+  font-weight: 600;
 }
 
 .itemIcon {
@@ -159,7 +188,24 @@
 }
 
 .addItemButton {
-  margin: 0 10px;
+  background: $color-dark;
+  color: $color-white;
+  padding: 5px;
+  border-radius: 3px;
+  align-items: center;
+  display: flex;
+
+  i {
+    margin-right: 7px;
+  }
+
+  &:hover,
+  &:focus {
+
+    background: $color-dark;
+    color: $color-white;
+  }
+
 }
 
 .deleteItemButton {

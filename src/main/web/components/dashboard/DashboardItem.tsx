@@ -132,6 +132,11 @@ export interface DashboardItemProps {
    * Callback which using for indicate users that a current dashboard isFocused.
    */
   onFocus?(isFocus: boolean): void;
+
+   /**
+   * Render dashboard layout using css grid, instead of bootstrap row and columns.
+   */
+  gridView?: boolean;
 }
 
 export interface State {
@@ -185,6 +190,11 @@ export interface State {
 export class DashboardItem extends Component<DashboardItemProps, State> {
   private cancellation = new Cancellation();
 
+  adjustDashboardItemHeight = () => {
+    const el: HTMLElement = document.querySelector('.Dashboard--gridViewDashboard');
+    el.style.height = el.clientWidth < 617 ? 'auto' : '100%';
+  }
+
   constructor(props: DashboardItemProps, context: any) {
     super(props, context);
     this.state = {};
@@ -192,6 +202,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
+    window.removeEventListener('resize', this.adjustDashboardItemHeight);
   }
 
   componentDidMount() {
@@ -225,6 +236,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         },
       });
     this.onFocus();
+
+    window.addEventListener('resize', this.adjustDashboardItemHeight)
   }
 
   private onFocus = () => {
@@ -295,6 +308,27 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
             );
           })}
         </Row>
+      </div>
+    );
+  };
+
+  private renderGridViewDashboard = () => {
+    const { views } = this.props;
+    return (
+      <div className={styles.gridViewDashboard} onClick={this.onFocus}>
+          {views.map((view) => {
+            let image: React.ReactNode | undefined;
+            if (view.image) {
+              image = <img src={view.image} className={`media-object ${styles.image}`} alt={view.label} />;
+            } else if (view.iconClass) {
+              image = <span className={`${view.iconClass} ${styles.icon}`} />;
+            }
+            return (
+              <div key={view.id}>
+                <div>{this.renderDefaultDropArea(view, image)}</div>
+              </div>
+            );
+          })}
       </div>
     );
   };
@@ -372,7 +406,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   };
 
   render() {
-    const { views, viewId } = this.props;
+    const { views, viewId, gridView } = this.props;
     const { selectedView } = this.state;
     if (views.length === 0) {
       return null;
@@ -382,6 +416,9 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     }
     if (selectedView) {
       return this.renderEmptySelectedComponent();
+    }
+    if (gridView) {
+      return this.renderGridViewDashboard();
     }
     return this.renderDefaultDashboard();
   }

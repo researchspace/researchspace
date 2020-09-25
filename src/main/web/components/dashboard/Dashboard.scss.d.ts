@@ -1,6 +1,7 @@
 declare namespace DashboardScssNamespace {
   export interface IDashboardScss {
     addItemButton: string;
+    containerFluid: string;
     defaultColumnItem: string;
     defaultComponent: string;
     defaultDashboard: string;
@@ -12,6 +13,7 @@ declare namespace DashboardScssNamespace {
     emptyPageLabel: string;
     emptyPageTitle: string;
     expandItemButton: string;
+    gridViewDashboard: string;
     icon: string;
     iconComponent: string;
     image: string;

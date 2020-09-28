@@ -80,8 +80,9 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
           disabled={!canPersistChanges}
         >
           <Button disabled={!canPersistChanges}
-            bsStyle="success"
-            onClick={onPersistChanges} className={styles.saveButton}
+                  bsStyle="success"
+                  onClick={onPersistChanges} 
+                  className={styles.saveButton}
           >
             <span className="fa fa-floppy-o" aria-hidden="true" />
             &nbsp;
@@ -99,7 +100,9 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     if (onSaveDiagram && canSaveDiagram) {
       return (
         <Dropdown id="save-diagram-button" className="btn-group-sm">
-          <Button bsStyle="primary" onClick={onSaveDiagram} className={styles.saveButton}>
+          <Button bsStyle="primary" 
+                  onClick={onSaveDiagram} 
+                  className={styles.saveButton}>
             <span className="fa fa-floppy-o" aria-hidden="true" />
             &nbsp;
             {saveDiagramLabel}

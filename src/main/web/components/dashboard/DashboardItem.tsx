@@ -263,17 +263,17 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
         dropMessageStyle={{ display: 'none' }}
         dropStyles={{
-          enabledHover: { backgroundColor: 'lightgrey' },
-          enabled: { outline: '3px dashed blue' },
-          disabled: { backgroundColor: '#ff000054' },
+          enabledHover: { backgroundColor: '#f6f6f6', outline: '3px dashed #1d0a6e' },
+          enabled: { outline: '1px solid #ddd' },
+          disabled: { opacity: '.2' },
         }}
       >
         <div className={styles.defaultComponent} onClick={() => this.onDefaultDropAreaClick(view)}>
           <div className={'media'}>
             <div className={'media-left media-middle'}>{image}</div>
-            <div className={'media-body'} style={{ height: '64px' }}>
+            <div className={'media-body'}>
               <strong className={'media-heading'}>{view.label}</strong>
-              <div>{view.description}</div>
+              <div className={'media-description'}>{view.description}</div>
             </div>
           </div>
         </div>
@@ -351,8 +351,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           style={{ display: 'flex', flex: 1, width: '100%' }}
           dropMessageStyle={{ display: 'none' }}
           dropStyles={{
-            enabledHover: { backgroundColor: 'lightgrey' },
-            enabled: { outline: '5px dashed blue' },
+            enabledHover: { backgroundColor: '#f6f6f6' },
+            enabled: { outline: '3px dashed #1d0a6e' },
             disabled: { backgroundColor: '#ff000054' },
           }}
         >

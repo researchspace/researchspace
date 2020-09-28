@@ -1,6 +1,7 @@
 declare namespace DashboardScssNamespace {
   export interface IDashboardScss {
     addItemButton: string;
+    'container-fluid': string;
     containerFluid: string;
     defaultColumnItem: string;
     defaultComponent: string;

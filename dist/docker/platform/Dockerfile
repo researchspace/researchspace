@@ -89,7 +89,7 @@ USER jetty
 RUN java -jar "$JETTY_HOME/start.jar" --add-to-start="logging-jetty"
 
 ENV PLATFORM_OPTS=
-ENV RUNTIME_OPTS "-DruntimeDirectory=/runtime-data -Dorg.researchspace.config.baselocation=/runtime-data/config -DappsDirectory=/apps -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini -Dlog4j.configurationFile=file:///var/lib/jetty/webapps/etc/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
+ENV RUNTIME_OPTS "-DruntimeDirectory=/runtime-data -Dorg.researchspace.config.baselocation=/runtime-data/config -DappsDirectory=/apps -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini -Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
 
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -19,7 +19,6 @@
 
 package org.researchspace.repository.sparql;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
@@ -91,8 +90,8 @@ public class MpSPARQLProtocolSession extends SPARQLProtocolSession {
         authCache.put(httpHost, digestAuth);
 
         // Add AuthCache to the execution context
-        getHttpContext().setCredentialsProvider(credsProvider);
-        getHttpContext().setAuthCache(authCache);
+        ((HttpClientContext) getHttpContext()).setCredentialsProvider(credsProvider);
+        ((HttpClientContext) getHttpContext()).setAuthCache(authCache);
     }
 
     /**
@@ -118,34 +117,6 @@ public class MpSPARQLProtocolSession extends SPARQLProtocolSession {
      */
     public void setRequestModifier(Function<HttpUriRequest, HttpUriRequest> requestModifier) {
         this.httpRequestModifyFunction = requestModifier;
-    }
-
-    /**
-     * TODO FIXME
-     * 
-     * Accessing the http context object via reflection i.e. current RDF4J API makes
-     * it impossible to access it
-     * 
-     * @return
-     */
-    private HttpClientContext getHttpContext() {
-        try {
-            Field field = SPARQLProtocolSession.class.getDeclaredField("httpContext");
-            field.setAccessible(true);
-            Object value = field.get(this);
-            field.setAccessible(false);
-
-            if (value == null) {
-                throw new IllegalStateException("HttpClientContext not initalized.");
-            } else if (HttpClientContext.class.isAssignableFrom(value.getClass())) {
-                return (HttpClientContext) value;
-            }
-            throw new RuntimeException("Not able to access HttpClientContext from SPARQLProtocolSession.");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override

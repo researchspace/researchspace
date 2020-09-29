@@ -499,6 +499,15 @@ export class DashboardComponent extends Component<Props, State> {
           onResourceChange={(resourceIri, data) => this.onResourceChange(item.id, resourceIri, data)}
           onFocus={() => this.setState({ focus: item.id })}
         />
+
+       {/*  <div className={styles.dropResourceContainer}>
+          <div>
+            <div className={styles.dropResourceIcon}>
+              <img src={'/assets/images/icons/drop_resource.svg'} />
+            </div>
+            <div className={styles.dropResourceText}>drop resource here</div>
+          </div>
+        </div> */}
       </div>
     );
   }

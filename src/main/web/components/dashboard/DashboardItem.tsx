@@ -85,6 +85,13 @@ export interface DashboardViewConfig {
    * @default false
    */
   unique?: boolean;
+
+  /**
+   * Define the view type that will be use to display it in the specific area of the dashboard layout (search, view, authoring areas)
+   * * @default 'authoring'
+   * */
+  type?: string;
+
 }
 
 export interface DashboardItemProps {
@@ -190,9 +197,12 @@ export interface State {
 export class DashboardItem extends Component<DashboardItemProps, State> {
   private cancellation = new Cancellation();
 
-  adjustDashboardItemHeight = () => {
-    const el: HTMLElement = document.querySelector('.Dashboard--gridViewDashboard');
-    el.style.height = el.clientWidth < 617 ? 'auto' : '100%';
+  adjustDashboardItemView = () => {
+/*     const el: HTMLElement = document.querySelector('.Dashboard--gridViewDashboard');
+    el.style.height = el.offsetWidth < 720 ? 'auto' : '100%'; */
+
+    const drop: HTMLElement = document.querySelector('.Dashboard--dropResourceContainer');
+    drop.style.visibility = drop.clientWidth < 1090 ? 'hidden' : 'visible';
   }
 
   constructor(props: DashboardItemProps, context: any) {
@@ -202,7 +212,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
-    window.removeEventListener('resize', this.adjustDashboardItemHeight);
+    window.removeEventListener('resize', this.adjustDashboardItemView);
   }
 
   componentDidMount() {
@@ -237,7 +247,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       });
     this.onFocus();
 
-    window.addEventListener('resize', this.adjustDashboardItemHeight)
+    window.addEventListener('resize', this.adjustDashboardItemView)
   }
 
   private onFocus = () => {
@@ -312,23 +322,47 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     );
   };
 
+  private renderItemCard = (view: DashboardViewConfig) => {
+    let image: React.ReactNode | undefined;
+    if (view.image) {
+      image = <img src={view.image} className={`media-object ${styles.image}`} alt={view.label} />;
+    } else if (view.iconClass) {
+      image = <span className={`${view.iconClass} ${styles.icon}`} />;
+    }
+    return (
+      <div key={view.id}>
+        <div>{this.renderDefaultDropArea(view, image)}</div>
+      </div>
+    );
+  }
+
   private renderGridViewDashboard = () => {
     const { views } = this.props;
+    const authItems = views.filter((item) => item.type === 'authoring' || !item.type);
+    const searchViewItems = views.filter((item) => item.type === 'search' || item.type === 'view');
+
     return (
       <div className={styles.gridViewDashboard} onClick={this.onFocus}>
-          {views.map((view) => {
-            let image: React.ReactNode | undefined;
-            if (view.image) {
-              image = <img src={view.image} className={`media-object ${styles.image}`} alt={view.label} />;
-            } else if (view.iconClass) {
-              image = <span className={`${view.iconClass} ${styles.icon}`} />;
-            }
-            return (
-              <div key={view.id}>
-                <div>{this.renderDefaultDropArea(view, image)}</div>
-              </div>
-            );
-          })}
+        
+        <div className={styles.help}>
+          <i className={'fa fa-question'}></i>
+          <div className={styles.helpText}>What is the Thinking Frames?</div>
+        </div>
+        <div className={styles.gridViewTitle}>Search and View</div>
+        <div className={styles.gridViewItemsView}>{searchViewItems.map(this.renderItemCard)}</div>
+      
+        <div className={styles.gridViewTitle}>Authoring</div>
+        <div className={styles.gridViewItemsAuth}>{authItems.map(this.renderItemCard)}</div>
+        
+        <div className={styles.dropResourceContainer}>
+          <div>
+            <div className={styles.dropResourceIcon}>
+              <img src={'/assets/images/icons/drop_resource.svg'} />
+            </div>
+            <div className={styles.dropResourceText}>drop resource here</div>
+          </div>
+        </div>
+
       </div>
     );
   };
@@ -364,7 +398,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
             </div>
           </div>
           <div className={styles.emptyPageDrop}>
-            Drop resource here
+            <div><img src={'/assets/images/icons/drop_resource.svg'} /></div>
+            <div className={styles.emptyPageDroptext}>drop resource here</div>
             {view.resourceNotRequired ? (
               <div>
                 or

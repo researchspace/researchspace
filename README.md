@@ -267,10 +267,8 @@ To build the image first we need to copy artefacts produced by the platform buil
 ```
 export DOCKER_FOLDER="$(pwd)/dist/docker"
 cp build/libs/ROOT-*.war $DOCKER_FOLDER/platform/ROOT.war
-mkdir $DOCKER_FOLDER/platform/etc
-cp src/main/webapp/etc/* $DOCKER_FOLDER/platform/etc
 mkdir $DOCKER_FOLDER/platform/config
-cp -r src/main/resources/org/researchspace/apps/assets/config/* $DOCKER_FOLDER/platform/config
+cp src/main/resources/org/researchspace/apps/default/config/shiro.ini $DOCKER_FOLDER/platform/config/
 
 ```
 

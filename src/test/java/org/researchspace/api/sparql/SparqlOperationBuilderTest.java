@@ -205,7 +205,7 @@ public class SparqlOperationBuilderTest {
     public void testValidate() throws Exception {
 
         String[] validQueries = new String[] { "SELECT * WHERE { ?s ?p ?o } LIMIT 10",
-                "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }", "ASK { ?s ?p ?o }", "INSERT DATA { :s :p :o }",
+                "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }", "ASK { ?s ?p ?o }", "PREFIX test: <http://example.org/test/> INSERT DATA { test:s test:p test:o }",
                 "PREFIX test: <http://example.org/test/> SELECT * WHERE { test:s a ?type }",
                 "SELECT * WHERE { ?x rdfs:label ?label }" };
 

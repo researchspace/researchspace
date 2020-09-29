@@ -20,8 +20,11 @@ plugins {
     // Apply the war plugin to add support for Java webpapp build
     id 'war'
 
+    // Apply java-library plugin to be able to use the whole researchspace as SDK
+    id 'java-library'
+
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.3'
+    id 'org.gretty' version '3.0.4.v20200928'
 
     // To run webpack-dev-server in the background
     id 'com.github.psxpaul.execfork' version '0.1.13'
@@ -87,8 +90,40 @@ farms {
 }
 
 products {
-    product 'researchspace', {}
+    product 'researchspace', {
+        additionalFiles = [
+            "./bundle-config/RWStore.properties": "./bundle-config/RWStore.properties",
+            "./bundle-config/digilib-config.xml": "./bundle-config/digilib-config.xml",
+            "./bundle-config/digilib-log4j-config.xml": "./bundle-config/digilib-log4j-config.xml",
+            "./bundle-config/ZipReadme.txt": "./README.txt",
+            "./LICENSE": "./LICENSE.txt",
+            "./COPYING": "./COPYING",
+            "./COPYING": "./COPYING.GPLv3",
+            "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps/default/config/shiro.ini": "./runtime-data/config/shiro.ini"
+        ]
+    }
 }
+
+def defaultJvmArgs = [
+    // blazegraph options, for runAll
+    "-Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=./bundle-config/RWStore.properties",
+
+    // for properties that get value from project.properties see gradle.properties file for more details
+    "-Dconfig.environment.sparqlEndpoint=${project.properties['sparqlEndpoint']}",
+    "-Dconfig.proxy.IIIF.targetUri=${project.properties['iiifScaler']}",
+
+    // delopment storages for image upload functionality
+    "-Dconfig.storage.images.type=nonVersionedFile",
+    "-Dconfig.storage.images.mutable=true",
+
+    // tmp storage is needed for image upload functionality
+    "-Dconfig.storage.tmp.type=nonVersionedFile",
+    "-Dconfig.storage.tmp.mutable=true",
+
+
+    // Increase size limit for file upload
+    "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
+]
 
 // configuration for local jetty container
 gretty {
@@ -102,8 +137,6 @@ gretty {
     // see https://akhikhl.github.io/gretty-doc/Fast-reload.html
     inplaceMode = 'hard'
 
-    loggingLevel='DEBUG'
-
     // don't restart jetty when templates in the resource folder are changed
     fastReload = "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps".toString()
 
@@ -113,23 +146,19 @@ gretty {
     // use custom jetty-env.xml to disable websocket support
     contextConfigFile = "${projectDir}/jetty-env.xml"
 
-    if (!project.gradle.startParameter.taskNames.contains('buildZip')) {
-        jvmArgs = [
-            // blazegraph options, for runAll
-            "-Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=${projectDir}/bundle-config/RWStore.properties",
+    if (project.gradle.startParameter.taskNames.contains('buildZip')) {
+        jvmArgs = defaultJvmArgs + [
+            "-DruntimeDirectory=./runtime-data",
+            "-Dorg.researchspace.config.baselocation=./runtime-data/config",
 
-            // for properties that get value from project.properties see gradle.properties file for more details
-            "-Dconfig.environment.sparqlEndpoint=${project.properties['sparqlEndpoint']}",
-            "-Dconfig.proxy.IIIF.targetUri=${project.properties['iiifScaler']}",
+            "-Dconfig.storage.images.root=./runtime-data/images",
+            "-Dconfig.storage.tmp.root=./runtime-data/tmp",
 
-            // delopment storages for image upload functionality
-            "-Dconfig.storage.images.type=nonVersionedFile",
-            "-Dconfig.storage.images.mutable=true",
+            "-Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml",
+        ]
+    } else {
+        jvmArgs = defaultJvmArgs + [
             "-Dconfig.storage.images.root=${project.properties['imageStorageRoot']}",
-
-            // tmp storage is needed for image upload functionality
-            "-Dconfig.storage.tmp.type=nonVersionedFile",
-            "-Dconfig.storage.tmp.mutable=true",
             "-Dconfig.storage.tmp.root=${java.nio.file.Files.createTempDirectory('images-tmp')}",
 
             // set development mode to true to make sure that assets are always up to date
@@ -139,21 +168,19 @@ gretty {
             "-DruntimeDirectory=${projectDir.getAbsolutePath()}/runtime-data",
 
             // sets the location to the config folder to a temporary location for development
-            "-Dcom.metaphacts.config.baselocation=${projectDir.getAbsolutePath()}/runtime-data/config",
+            "-Dorg.researchspace.config.baselocation=${projectDir.getAbsolutePath()}/runtime-data/config",
+
 
             // make apps writable in local development mode
             '-Dconfig.mutablePluginApps=true',
 
             // You may change the log4j settings by switching to one of the predefined log4j2 config files,
-            // see /src/main/webapp/etc for options (descriptions of log behavior is given in the files).
+            // see /src/main/resources/org/researchspace/logging for options (descriptions of log behavior is given in the files).
             // - Development log files: log4j2-debug.xml, log4j2-trace.xml, log4j2-trace2.xml
             // - Production log files: log4j2.xml, log4j2-debug.xml
-            "-Dlog4j.configurationFile=file://${projectDir.getAbsolutePath()}/src/main/webapp/etc/${findProperty('logLevel')}.xml",
+            "-Dlog4j.configurationFile=classpath:org/researchspace/logging/${findProperty('logLevel')}.xml",
 
-            "-Dconfig.environment.shiroConfig=${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps/default/config/shiro.ini",
-
-            // Increase size limit for file upload
-            "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
+            "-Dconfig.environment.shiroConfig=${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps/default/config/shiro.ini"
         ]
     }
 }
@@ -238,37 +265,57 @@ repositories {
     maven {
         url 'https://dl.bintray.com/researchspace/public'
     }
+
+    maven {
+        url 'file:/home/artem/work/sources/github/gretty/build/privateRepo'
+    }
 }
 
 ext {
-    RDF4J_VERSION = '3.2.0'
+    RDF4J_VERSION = '3.4.2'
     LOG4J_VERSION = '2.13.1'
     JERSEY_VERSION = '2.30.1'
     JACKSON_VERSION = '2.10.3'
     GUICE_VERSION = '4.2.3'
-    SHIRO_VERSION = '1.5.2'
+    SHIRO_VERSION = '1.6.0'
     IMAGEIO_VERSION = '3.5'
 }
 
 dependencies {
     compileOnly (
         "javax.servlet:javax.servlet-api:3.1.0",
-        "javax.ws.rs:javax.ws.rs-api:2.0.1",
 
         // add jetty as compile dependency so we get sources and javadocs and can debug it locally
         "org.eclipse.jetty:jetty-server:${jetty94_version}",
         "org.eclipse.jetty:jetty-servlet:${jetty94_version}"
     )
-    implementation (
-        // RDF4J dependencies
+
+    api (
+        //security
+        // shiro-jaxrs includes shiro-core and shiro-web
+        //
+        // All shiro 1.x versions have bug with duplicated classes in the classpath, see https://issues.apache.org/jira/browse/SHIRO-632 . It will be solved in shiro 2.0
+        "org.apache.shiro:shiro-jaxrs:${SHIRO_VERSION}",
+    ) {
+        // excludes old-style ws.rs-api used in shiro-jaxrs, we have jakarta ws.rs-api in the classpath coming from jersey
+        exclude group: 'javax.ws.rs', module: 'javax.ws.rs-api'
+    }
+
+    api (
         "org.eclipse.rdf4j:rdf4j-repository-manager:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-repository-sail:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-repository-sparql:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-repository-http:${RDF4J_VERSION}",
+    ) { dep ->
+        // excludes xml.bind-api from javax we already have jakarta one in the classpath
+        dep.exclude group: 'javax.xml.bind', module: 'jaxb-api'
+
+        // we use httpclient instead of httpclient-osgi used in RDF4J
+        dep.exclude group: 'org.apache.httpcomponents', module: 'httpclient-osgi'
+    }
+
+    api (
+        // RDF4J dependencies
         "org.eclipse.rdf4j:rdf4j-sail-nativerdf:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-sail-memory:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-sail-federation:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-rio-api:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-binary:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-jsonld:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-n3:${RDF4J_VERSION}",
@@ -279,14 +326,9 @@ dependencies {
         "org.eclipse.rdf4j:rdf4j-rio-trig:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-trix:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-turtle:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-model:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-query:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-queryalgebra-model:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-util:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-queryrender:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-queryresultio-sparqljson:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-queryresultio-text:${RDF4J_VERSION}",
-        "com.github.jsonld-java:jsonld-java:0.12.0",
 
         // logging related dependencies
         "org.apache.logging.log4j:log4j-api:${LOG4J_VERSION}",
@@ -337,10 +379,7 @@ dependencies {
 
 
         //security
-        "org.apache.shiro:shiro-core:${SHIRO_VERSION}",
-        "org.apache.shiro:shiro-web:${SHIRO_VERSION}",
         "org.apache.shiro:shiro-guice:${SHIRO_VERSION}",
-        "org.apache.shiro:shiro-jaxrs:${SHIRO_VERSION}",
 
         //templates
         "com.github.jknack:handlebars:4.2.0",
@@ -351,9 +390,8 @@ dependencies {
         // java classes and resources reflection, i.e. annotation scanning on classpath
         "io.github.classgraph:classgraph:4.8.68",
 
-        //http core and client, successor of and replacement for Commons HttpClient 3.x
+        // http client
         "org.apache.httpcomponents:httpclient:4.5.12",
-        "org.apache.httpcomponents:httpcore:4.4.13",
 
         // extracting the prefered mime type, for example, sparql servlet
         "org.commonjava.mimeparse:mimeparse:0.1.3.3",
@@ -372,7 +410,6 @@ dependencies {
         "com.twelvemonkeys.imageio:imageio-tiff:${IMAGEIO_VERSION}",
         "com.twelvemonkeys.imageio:imageio-core:${IMAGEIO_VERSION}",
     )
-
     testImplementation (
         "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:${JERSEY_VERSION}",
         "org.hamcrest:hamcrest-library:1.3",

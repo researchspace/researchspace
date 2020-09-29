@@ -64,7 +64,6 @@ RUN echo "setting up platform, apps, and runtime folders" \
 	&& chmod -R g+ws "/var/lib/jetty/logs"
 
 COPY --chown=100:0 jetty-logging.properties /var/lib/jetty/resources/jetty-logging.properties
-COPY --chown=100:0 etc/ /var/lib/jetty/webapps/etc
 
 COPY --chown=100:0 shiro-tools-hasher-1.3.2-cli.jar /firstStart/
 COPY --chown=100:0 first-passwd-init.sh /firstStart/
@@ -89,7 +88,7 @@ USER jetty
 RUN java -jar "$JETTY_HOME/start.jar" --add-to-start="logging-jetty"
 
 ENV PLATFORM_OPTS=
-ENV RUNTIME_OPTS "-DruntimeDirectory=/runtime-data -Dorg.researchspace.config.baselocation=/runtime-data/config -DappsDirectory=/apps -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini -Dlog4j.configurationFile=file:///var/lib/jetty/webapps/etc/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
+ENV RUNTIME_OPTS "-DruntimeDirectory=/runtime-data -Dorg.researchspace.config.baselocation=/runtime-data/config -DappsDirectory=/apps -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini -Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
 
 
 ENTRYPOINT ["/entrypoint.sh"]

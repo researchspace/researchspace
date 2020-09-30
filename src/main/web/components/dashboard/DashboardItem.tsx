@@ -198,11 +198,11 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   private cancellation = new Cancellation();
 
   adjustDashboardItemView = () => {
-/*     const el: HTMLElement = document.querySelector('.Dashboard--gridViewDashboard');
-    el.style.height = el.offsetWidth < 720 ? 'auto' : '100%'; */
+    const el: HTMLElement = document.querySelector('.Dashboard--gridViewDashboard');
+    el.style.height = el.offsetWidth < 1099 ? 'auto' : '100%';
 
     const drop: HTMLElement = document.querySelector('.Dashboard--dropResourceContainer');
-    drop.style.visibility = drop.clientWidth < 1090 ? 'hidden' : 'visible';
+    drop.style.visibility = drop.clientWidth < 1099 ? 'hidden' : 'visible';
   }
 
   constructor(props: DashboardItemProps, context: any) {

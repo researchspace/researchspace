@@ -114,7 +114,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       </div>
     `,
     itemTemplate: `
-        {{#> rsp:itemCardTemplate width=135 height=175 cardMargin=8 footer-paddingY=7 footer-paddingX=8}}
+        {{#> rsp:itemCardTemplate width=105 height=125 cardMargin=4 footer-paddingY=7 footer-paddingX=8}}
           {{#*inline "additionalActions"}}
             <div class="rs-default-card__hover-icon">
               <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>

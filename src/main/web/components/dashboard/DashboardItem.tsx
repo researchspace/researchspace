@@ -271,7 +271,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         query={view.checkQuery}
         onDrop={(iri) => this.onDrop(iri, view.id)}
         childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
-        dropMessageStyle={{ display: 'none' }}
+        dropMessageWrapperStyle={{ display: 'none' }}
         dropStyles={{
           enabledHover: { backgroundColor: '#f6f6f6', outline: '3px dashed #1d0a6e' },
           enabled: { outline: '1px solid #ddd' },
@@ -383,7 +383,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           query={view.checkQuery}
           childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
           style={{ display: 'flex', flex: 1, width: '100%' }}
-          dropMessageStyle={{ display: 'none' }}
+          dropMessageWrapperStyle={{ display: 'none' }}
           dropStyles={{
             enabledHover: { backgroundColor: '#f6f6f6' },
             enabled: { outline: '3px dashed #1d0a6e' },

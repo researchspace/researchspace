@@ -27,6 +27,7 @@ import * as styles from './DropArea.scss';
 export interface DropAreaProps extends DroppableProps {
   dropMessage?: ReactNode;
   dropMessageStyle?: CSSProperties;
+  dropMessageWrapperStyle?: CSSProperties;
   childrenClassName?: string;
   className?: string;
   style?: CSSProperties;
@@ -37,6 +38,7 @@ export class DropArea extends Component<DropAreaProps, {}> {
   render() {
     const {
       children,
+      dropMessageWrapperStyle,
       dropMessage,
       dropMessageStyle,
       childrenClassName,
@@ -49,7 +51,7 @@ export class DropArea extends Component<DropAreaProps, {}> {
     return (
       <Droppable {...otherProps}>
         <div className={`${classes}`} style={style}>
-          <div className={styles.messageWrapper}>
+          <div className={styles.messageWrapper} style={dropMessageWrapperStyle}>
             <div className={styles.dropMessage} style={dropMessageStyle}>
               {dropMessage}
             </div>

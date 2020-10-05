@@ -18,6 +18,7 @@
 
 import * as React from 'react';
 import * as Immutable from 'immutable';
+import * as uuid from 'uuid';
 
 import { Rdf } from 'platform/api/rdf';
 import { listen } from 'platform/api/events';
@@ -39,7 +40,7 @@ import * as styles from './DragAndDropInput.scss';
 
 
 export interface DragAndDropInputProps extends MultipleValuesProps {
-  id: string
+  id?: string
   dropAreaTemplate?: string;
   placeholderItemTemplate?: string;
   itemTemplate?: string
@@ -52,6 +53,11 @@ interface State {
   draggingItem: boolean;
 
   nestedFormOpen: boolean;
+
+  /**
+   * Component id, automatically generated if not propagated from props.
+   */
+  id: string;
 }
 
 export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps, State> {
@@ -89,6 +95,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     this.state = {
       draggingItem: false,
       nestedFormOpen: false,
+      id: this.props.id || uuid.v4(),
     };
   }
 
@@ -97,7 +104,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
       .map(
         listen({
           eventType: RemoveItemEvent,
-          target: this.props.id,
+          target: this.state.id,
         })
       )
       .onValue((event) => this.onRemoveItem(event.data.iri));
@@ -176,7 +183,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                     <TemplateItem
                       template={{
                         source: this.props.itemTemplate,
-                        options: { iri: v.value, inputId: this.props.id }
+                        options: { iri: v.value, inputId: this.state.id }
                       }}
                     />
                   </div>

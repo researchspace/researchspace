@@ -92,6 +92,12 @@
                                       P73_has_translation="http://www.cidoc-crm.org/cidoc-crm/P73_has_translation"
                                       P190_has_symbolic_object="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
                                       PX_has_transliteration="http://www.researchspace.org/pattern/image_observation/PX_has_transliteration"
+
+                                      P67_refers_to_latehokusai_annotation_place="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place"
+                                      P67_refers_to_latehokusai_annotation_period="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_period"
+                                      P67_refers_to_latehokusai_annotation_person="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_person"
+                                      P67_refers_to_latehokusai_annotation_object="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_object"
+                                      P67_refers_to_latehokusai_annotation_thing="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_thing"
                                     ]]'
     >
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E34_Inscription'> </semantic-form-hidden-input>
@@ -124,6 +130,23 @@
       </semantic-form-composite-input>
       
       <semantic-form-text-input for='PX_has_transliteration'></semantic-form-text-input>
+
+      <div class='semantic-form-input-decorator semantic-form-input-decorator--with-header'>
+        <div class="semantic-form-input-decorator__header">
+          <span class="semantic-form-input-decorator__label">Refers to</span>
+        </div>
+        <div class="cardinality-support">
+          <div class="cardinality-support__group-instance">
+            <div class="composite-input">
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_person"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_place"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_period"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_thing"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_object"></semantic-form-autocomplete-input>
+            </div>
+          </div>
+        </div>
+      </div>
     </semantic-form-composite-input>
       {{/case}}
     
@@ -135,6 +158,15 @@
                                    fields='[[fieldDefinitions
                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                         P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+                                        P72_has_language="http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
+                                        P73_has_translation="http://www.cidoc-crm.org/cidoc-crm/P73_has_translation"
+                                        P190_has_symbolic_object="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
+                                        PX_has_transliteration="http://www.researchspace.org/pattern/image_observation/PX_has_transliteration"
+                                        P67_refers_to_latehokusai_annotation_place="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_place"
+                                        P67_refers_to_latehokusai_annotation_period="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_period"
+                                        P67_refers_to_latehokusai_annotation_person="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_person"
+                                        P67_refers_to_latehokusai_annotation_object="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_object"
+                                        P67_refers_to_latehokusai_annotation_thing="http://www.researchspace.org/pattern/P67_refers_to_latehokusai_annotation_thing"
                                       ]]'
      >
       <semantic-form-tree-picker-input for="P2_has_type" 
@@ -143,6 +175,50 @@
                                        default-value="http://collection.britishmuseum.org/id/thesauri/THES122877"
       ></semantic-form-tree-picker-input>
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E37_Mark'> </semantic-form-hidden-input>
+
+      <semantic-form-text-input for='P190_has_symbolic_object' label="Mark text"></semantic-form-text-input>
+      
+      <semantic-form-tree-picker-input for="P72_has_language" 
+                                       label='Language' 
+                                       default-value="http://collection.britishmuseum.org/id/thesauri/THES223120"
+                                       scheme="http://collection.britishmuseum.org/id/thesauri/inscriptionlanguage"
+      ></semantic-form-tree-picker-input>
+      
+      <semantic-form-composite-input for='P73_has_translation'
+                                label='Translation'
+                                new-subject-template="/E33_Linguistic_Object/Translation" 
+                                fields='[[fieldDefinitions
+                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                        P72_has_language="http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
+                                        P190_has_symbolic_content="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
+                                ]]'
+                                >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object'> </semantic-form-hidden-input>
+        <semantic-form-text-input for='P190_has_symbolic_content' label='Translation text'></semantic-form-text-input>
+      	<semantic-form-tree-picker-input for="P72_has_language" 
+                                         label='Language'  
+                                         default-value="http://collection.britishmuseum.org/id/thesauri/THES223053"
+                                         scheme="http://collection.britishmuseum.org/id/thesauri/inscriptionlanguage"
+        ></semantic-form-tree-picker-input>
+      </semantic-form-composite-input> 
+      <semantic-form-text-input for='PX_has_transliteration'></semantic-form-text-input>
+
+      <div class='semantic-form-input-decorator semantic-form-input-decorator--with-header'>
+        <div class="semantic-form-input-decorator__header">
+          <span class="semantic-form-input-decorator__label">Refers to</span>
+        </div>
+        <div class="cardinality-support">
+          <div class="cardinality-support__group-instance">
+            <div class="composite-input">
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_person"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_place"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_period"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_thing"></semantic-form-autocomplete-input>
+              <semantic-form-autocomplete-input for="P67_refers_to_latehokusai_annotation_object"></semantic-form-autocomplete-input>
+            </div>
+          </div>
+        </div>
+      </div>
     </semantic-form-composite-input>
       {{/case}}
     
@@ -184,7 +260,7 @@
     </semantic-form-composite-input>
       {{/case}}    
     {{/switch}}
-    
+
     <semantic-form-composite-input for="P67i_is_referred_to_by" 
                                    label="General note about feature"
                                    new-subject-template="/E73_Information_Object"  
@@ -197,10 +273,8 @@
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object'> </semantic-form-hidden-input>
       <semantic-form-text-input for="P3_has_note" label="Note" multiline='true'> </semantic-form-text-input>
     </semantic-form-composite-input>
-    
+
     <semantic-form-drag-and-drop-input for="P130_shows_features_of" label="Similar Features to"></semantic-form-drag-and-drop-input>
-
-
   </div>
 
   <div class="form-btn-group">

@@ -42,11 +42,14 @@
       <semantic-form-drag-and-drop-input  for="P138i_has_representation" label="Image Region"></semantic-form-drag-and-drop-input>
     {{/if}}
 
-    {{#if createFromRegion}}
-    <semantic-form-hidden-input for="label" default-value='{{featureType}}: {{regionLabel}}'> </semantic-form-hidden-input>
+    {{#ifCond featureType "===" "Inscription"}}
     {{else}}
-    <semantic-form-text-input for="label"> </semantic-form-text-input>
-    {{/if}}
+      {{#if createFromRegion}}
+        <semantic-form-hidden-input for="label" default-value='{{featureType}}: {{regionLabel}}'> </semantic-form-hidden-input>
+      {{else}}
+        <semantic-form-text-input for="label"> </semantic-form-text-input>
+      {{/if}}
+    {{/ifCond}}
 
     <semantic-form-composite-input for='O16i_value_was_observed_by-physical'
                                    new-subject-template="/S4_Observation/Physical_Observation" 

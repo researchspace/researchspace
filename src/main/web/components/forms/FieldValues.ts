@@ -27,6 +27,7 @@ import { FieldDefinition } from './FieldDefinition';
 export interface LabeledValue {
   readonly value: Rdf.Node;
   readonly label?: string;
+  readonly isForcedDefault?: boolean;
 }
 export namespace LabeledValue {
   export function set(source: LabeledValue, props: Partial<LabeledValue>): LabeledValue {
@@ -207,11 +208,11 @@ export namespace FieldValue {
     return value.type === CompositeValue.type;
   }
 
-  export function fromLabeled({ value, label }: LabeledValue, errors = FieldError.noErrors): AtomicValue {
+  export function fromLabeled({ value, label, isForcedDefault }: LabeledValue, errors = FieldError.noErrors): AtomicValue {
     if (!value) {
       throw new Error('LabeledValue.value cannot be null or undefined');
     }
-    return { type: AtomicValue.type, value, label, errors };
+    return { type: AtomicValue.type, value, label, isForcedDefault, errors };
   }
 
   export function asRdfNode(value: FieldValue): Rdf.Node | undefined {

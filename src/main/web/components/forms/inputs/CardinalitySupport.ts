@@ -119,7 +119,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
     const canEdit = dataState === DataState.Ready || dataState === DataState.Verifying;
     const canAddValue = canEdit && size < definition.maxOccurs;
     const canRemoveValue = canEdit && size > definition.minOccurs && size > 0;
-    const fieldLabel = (getPreferredLabel(definition.label) || 'value').toLowerCase();
+    const fieldLabel = (this.props.label || getPreferredLabel(definition.label) || 'value').toLowerCase();
 
     return D.div(
       { className: COMPONENT_NAME },
@@ -146,7 +146,14 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
     this.ensureValueKeys(this.props.values.size);
 
     const childIsInputGroup = isInputGroup(this.props.children);
-    const className = childIsInputGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
+
+    // if we don't want to render header and cardinality is 1 then there there is no reason to show the group borders and other styles
+    const canCollapseGroup =
+      this.props.renderHeader === false &&
+      this.props.definition.minOccurs === 1 &&
+      this.props.definition.maxOccurs === 1;
+
+    const className = childIsInputGroup && !canCollapseGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
 
     return this.props.values.map((value, index) =>
       D.div(

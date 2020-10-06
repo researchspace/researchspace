@@ -310,6 +310,12 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
     this.toggleAddNewValue();
   };
 
+
+  remove(currentModel) {
+    // TODO implement remove assertion
+    return undefined;
+  }
+
   persist(initialModel: CompositeValue, currentModel: CompositeValue): Kefir.Property<void> {
     return this.persistCompositeValue(initialModel, currentModel).map((values) => {
       // for quick assertions workflow we automatically agree with all new values

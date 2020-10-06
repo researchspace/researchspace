@@ -258,6 +258,35 @@
       To instantiate a certain field through an input element, one can choose from a set of dedicated form input elements, whereas each input <strong>MUST</strong> reference a field definition via the <code>for='{field-id}'</code> attribute.
     </p>
 
+    <h3>Input Components</h3>
+    
+    <p>Some input elemnts have specific HTML attributes that can be used to modify input behaviour, but all inputs share these properties:</p>
+    
+    <dl>
+      <dt><code>label: string</code></dt>
+      <dd>
+        <p>Overrides default label from the Knowledge Pattern.</p>
+      </dd>
+      <dt><code>render-header: boolean</code></dt>
+      <dd>
+        <p>If true label from the Knowledge Pattern will be shown together with the input.</p>
+      </dd>
+      <dt><code>readonly: boolean</code></dt>
+      <dd>
+        <p>Switches current input into readonly mode.</p>
+      </dd>
+      <dt><code>default-value: string</code> or <code>default-values</code>: array of strings</dt>
+      <dd>
+        <p>Default value that should be used for the input. Can be IRI string or literal, depending on the type of the corresponding Knowledge Pattern.</p>
+      </dd>
+      <dt><code>force-defaults: boolean</code></dt>
+      <dd>
+        <p>
+          By default <code>default-value</code> and <code>default-values</code> are applied only to new entities.  <code>force-defaults='true'</code> option can be applied on any input field to make sure that default values are added to existing entity, even if it has some values for existing input.
+        </p>
+      </dd>
+    </dl>
+        
     <style>
       .inputs-table td:nth-child(1) {
         font-weight: bold;
@@ -270,6 +299,7 @@
         width: 40%;
       }
     </style>
+    <p></p>
     <table class="table table-striped table-bordered inputs-table">
       <tbody>
         <tr>
@@ -360,6 +390,9 @@
           <td>
             <p>Represents field value as a sub-form which should be saved in the same container as the parent form.</p>
             <p>E.g. suppose a field for a <strong>TimeSpan</strong> value with <strong>begin</strong> and <strong>end</strong> values. In this case <strong>TimeSpan</strong> is tightly coupled to the record, so it should be saved, edited and removed together with the record.</p>
+            <p>
+              If `render-header='true'` and cardinality is 1 then we don't show the group borders and other styles, so the composite-input is kind of inlined into the main form.
+            </p>
           </td>
         </tr>
         <tr>
@@ -378,6 +411,9 @@
           </td>
           <td>
             <p>Represents a hidden field, which will not be visible to the user and which will be automatically saved as soon as the form is saved. Values to be saved can be provided through the <code>default-value</code> or <code>default-values</code> attributes.</p>
+            <p>
+              By default <code>default-value</code> and <code>default-values</code> are applied only to new entities.  <code>force-defaults='true'</code> option can be applied on any input field to make sure that default values are added to existing entity, even if it has some values for existing input.
+            </p>
           </td>
         </tr>
         <tr>
@@ -515,6 +551,9 @@
       
       <dt><code><button name='load-state'>Import</button></code></dt>
       <dd><p>Loads previously exported form state.</p></dd>
+      
+      <dt><code><button name='delete'>Delete</button></code></dt>
+      <dd><p>Remove the subject entity using the active persistence method.</p></dd>
     </dl>
     <p>See also <semantic-link iri="http://help.researchspace.org/resource/SemanticFormAdvancedInputs">Advanced Inputs</semantic-link> for more specialized form inputs.</p>
 
@@ -1456,3 +1495,4 @@
 </mp-code-example>
   </div>
 </div>
+t

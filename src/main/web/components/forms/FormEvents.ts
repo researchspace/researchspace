@@ -20,6 +20,7 @@
 import { EventMaker } from 'platform/api/events';
 
 export interface FormEventData {
+  // triggers
   /**
    * If the post-action='event' for SemanticFormComponent, Component fires this event after a
    * new form is submitted
@@ -30,8 +31,22 @@ export interface FormEventData {
    * Component fires this event on each update of the form including creation
    */
   'Form.ResourceUpdated': { iri: string };
+
+  /**
+   * semantic-form fires this event when resource is removed
+   */
+  'Form.ResourceRemoved': { iri: string };
+
+  // listens
+  /**
+   * Triggers remove resource action, iri needs to match current subject.
+   */
+  'Form.RemoveResource': { iri: string };
 }
 const event: EventMaker<FormEventData> = EventMaker;
 
 export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
+export const FormResourceRemoved = event('Form.ResourceRemoved');
+
+export const FormRemoveResource = event('Form.RemoveResource');

@@ -90,6 +90,10 @@ export class AnnotationEditForm extends Component<AnnotationEditFormProps, State
             }
             return handlers.persistAnnotation(subject, selectedBodyType, currentModel);
           },
+          remove: (currentModel) => {
+            // TODO implement remove annotation
+            return undefined;
+          }
         }}
       >
         <div className={styles.formContent}>

@@ -31,7 +31,7 @@ import { addNotification } from 'platform/components/ui/notification';
 import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { BrowserPersistence, isValidChild, componentHasType, universalChildren } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
-import { trigger } from 'platform/api/events';
+import { trigger, listen } from 'platform/api/events';
 
 import { FieldDefinitionProp } from './FieldDefinition';
 import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
@@ -198,6 +198,21 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     if (this.persistence instanceof SparqlPersistenceClass) {
       this.validateFields();
     }
+
+    if (this.props.id) {
+      this.cancellation.map(
+        listen({
+          target: this.props.id,
+          eventType: FormEvents.FormRemoveResource,
+        })
+      ).observe({
+        value: (event) => {
+          if (event.data.iri === this.props.subject) {
+            this.onRemove();
+          }
+        }
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -315,6 +330,11 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               disabled: !this.canSubmit(),
               onClick: this.onSubmit,
             });
+          case 'delete':
+            return cloneElement(element, {
+              disabled: !this.canSubmit(),
+              onClick: this.onRemove,
+            });
           case 'load-state': {
             let input: HTMLInputElement;
             const setInput = (value: HTMLInputElement) => (input = value);
@@ -425,6 +445,24 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     }
   };
 
+  private onRemove = () => {
+    const itemToRemove = this.initialState.model.subject;
+    this.persistence
+      .remove(this.initialState.model)
+      .observe({
+        value: () => {
+          performFormPostAction({
+            postAction: this.props.postAction,
+            subject: itemToRemove,
+            eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
+            queryParams: getPostActionUrlQueryParams(this.props),
+          });
+        },
+        error: () => {}
+      })
+    ;
+  }
+
   private onSaveData = () => {
     const valuePatch: ValuePatch = computeValuePatch(FieldValue.empty, this.state.model);
     const formId = this.props.formId;
@@ -515,7 +553,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
 export function performFormPostAction(parameters: {
   postAction: PostAction;
   subject: Rdf.Iri;
-  eventProps: { isNewSubject: boolean; sourceId: string };
+  eventProps: { isNewSubject: boolean; isRemovedSubject?: boolean; sourceId: string };
   queryParams?: { [paramKey: string]: string };
 }) {
   const { postAction = 'reload', subject, eventProps, queryParams } = parameters;
@@ -534,6 +572,12 @@ export function performFormPostAction(parameters: {
     if (eventProps.isNewSubject) {
       trigger({
         eventType: FormEvents.FormResourceCreated,
+        source: eventProps.sourceId,
+        data: { iri: subject.value },
+      });
+    } else if (eventProps.isRemovedSubject) {
+      trigger({
+        eventType: FormEvents.FormResourceRemoved,
         source: eventProps.sourceId,
         data: { iri: subject.value },
       });

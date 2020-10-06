@@ -10,8 +10,7 @@
   * object feature can be:
       "Mark" - ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark
       "Inscription" - ?feature crm:P65_shows_visual_item/rdf:type crm:E34_Inscription 
-      "Subject" - ?feature crm:P128_carries/crm:P129_is_about ?about
-      "Reference" - ?feature crm:P128_carries/crm:P67_refers_to ?reference 
+      "Subject" - ?feature crm:P128_carries ?about
 
  The UI consists of two main areas:
      +-------------------------------------------+
@@ -153,10 +152,7 @@ not used:
           </mp-event-trigger> 
           <mp-event-trigger id='create-subject' type='Component.TemplateUpdate' data='{"featureType": "Subject"}' targets='["feature-form-area"]'>
             <button class='btn-grey {{#ifCond featureType "==" "Subject"}}btn-selected{{/ifCond}}'>Subject</button>
-          </mp-event-trigger> 
-          <mp-event-trigger id='create-reference' type='Component.TemplateUpdate' data='{"featureType": "Reference"}' targets='["feature-form-area"]'>
-            <button class='btn-grey {{#ifCond featureType "==" "Reference"}}btn-selected{{/ifCond}}'>Reference</button>
-          </mp-event-trigger>  
+          </mp-event-trigger>
         </div> 
       </div>
       {{#if featureType}}
@@ -181,14 +177,10 @@ not used:
     BIND ("Inscription" as ?isInscription) .
   }
   OPTIONAL {
-    ?feature crm:P128_carries/crm:P129_is_about ?about .
+    ?feature crm:P128_carries ?about .
     BIND ("Subject" as ?isSubject) .
   }
-  OPTIONAL {
-    ?feature crm:P128_carries/crm:P67_refers_to ?reference .
-    BIND ("Reference" as ?isReference) .
-  }
-  BIND(COALESCE(?isMark, ?isInscription, ?isSubject, ?isReference) AS ?featureType)
+  BIND(COALESCE(?isMark, ?isInscription, ?isSubject) AS ?featureType)
 
   OPTIONAL {
     ?feature crm:P138i_has_representation ?region .

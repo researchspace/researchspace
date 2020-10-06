@@ -68,6 +68,9 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         {this.state.nestedFormOpen ? (
           <NestedModalForm
+            subject={
+              FieldValue.isEmpty(this.props.value) ? null : this.props.value.value as Rdf.Iri
+            }
             definition={this.props.definition}
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}
@@ -129,10 +132,10 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           }}
           minimumInput={MINIMUM_LIMIT}
         />
-        {showCreateNewButton && value === undefined ? (
+        {showCreateNewButton ? (
           <Button className={`${CLASS_NAME}__create-button`} bsStyle="default" onClick={this.toggleNestedForm}>
-            <span className="fa fa-plus" />
-            {' Create new'}
+            {value === undefined ? <span className="fa fa-plus" /> : null}
+            {value === undefined ? ' Create new' : 'Edit'}
           </Button>
         ) : null}
       </div>

@@ -1,0 +1,302 @@
+//Mixin
+@mixin font-common($color, $size, $line) {
+    font-family: $font-family-base;
+    color: $color;
+    font-size: $size;
+    line-height: $line;
+}
+
+@mixin uppercase {
+    text-transform: uppercase;
+}
+
+@mixin underline {
+    text-decoration: underline;
+}
+
+@mixin character($char) {
+    letter-spacing: $char;
+}
+
+//$merriweather: "Merriweather Sans", sans-serif;
+$sourceSans: "Source Sans Pro", sans-serif;
+$nunito: "Nunito", sans-serif;
+
+////////////////////Exported Code////////////////////////////////////////////
+
+.#{$prefix}header-logo {
+
+    font-family: $nunito;
+    color: $color-white;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 26px;
+    @include character(0.34px);
+
+}
+
+/* Headings */
+$h-line: 1.2;
+
+.#{$prefix}h1, h1, .h1 {
+    @include font-common($color-dark, 20px, $h-line);
+}
+
+h1.rs-main-title {
+
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.#{$prefix}h2, h2, .h2 {
+    @include font-common($color-dark, 16px, $h-line);
+    font-weight: 600;
+}
+
+.#{$prefix}h3, h3, .h3 {
+    @include font-common($color-dark, 15px, $h-line);
+    font-weight: 600;
+    @include uppercase;
+}
+
+.#{$prefix}h4, h4, .h4 {
+    @include font-common($color-dark, 12px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+.#{$prefix}h5, h5, .h5 {
+    @include font-common($color-primary-100, 10px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+h6, .h6 {
+    @include font-common($color-primary-100, 8px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+// override default header margins
+h1,.h1,
+h2,.h2,
+h3,.h3 {
+  margin-top: $line-height-computed / 2;
+  margin-bottom: $line-height-computed / 2;
+}
+
+/* Display */
+$d-line: 1.1;
+
+/* Display1 needs font */
+
+.#{$prefix}display1 {
+    font-family: $nunito;
+    color: $color-dark;
+    font-size: 46px;
+    font-weight: 800;
+    line-height: $d-line;
+
+    @include character(1px);
+}
+
+.#{$prefix}display2 {
+    @include font-common($color-dark, 32px, $d-line);
+    @include character(0.7px);
+}
+
+.#{$prefix}display3 {
+    @include font-common($color-dark, 20px, $d-line);
+    @include character(0.2px);
+}
+
+.#{$prefix}display4 {
+    @include font-common($color-dark, 26px, $d-line);
+    @include character(0.2px);
+    @include underline;
+}
+
+/* Boby fonts */
+$b-line: 1.2;
+$b-name: body;
+
+.#{$prefix}#{$b-name}-xs-I {
+    @include font-common($color-dark, 10px, $b-line);
+
+    font-style: italic;
+}
+
+.#{$prefix}#{$b-name}-xs-U {
+    @include font-common($color-dark, 10px, $b-line);
+    @include underline;
+
+    font-style: italic;
+}
+
+.#{$prefix}#{$b-name}-s-M {
+    @include font-common($color-dark, 12px, $b-line);
+}
+
+.#{$prefix}#{$b-name}-s-U {
+    @include font-common($color-dark, 12px, $b-line);
+    @include underline;
+}
+
+.#{$prefix}#{$b-name}-s-B {
+    @include font-common($color-dark, 12px, $b-line);
+
+    font-weight: 600;
+}
+
+.#{$prefix}#{$b-name}-s-I {
+    @include font-common($color-dark, 12px, $b-line);
+    font-style: italic;
+}
+
+.#{$prefix}#{$b-name}-m-M {
+    @include font-common($color-dark, 13.5px, $b-line);
+}
+
+.#{$prefix}#{$b-name}-m-U {
+    @include font-common($color-dark, 13px, $b-line);
+    @include underline;
+}
+
+.#{$prefix}#{$b-name}-m-B {
+    @include font-common($color-dark, 13px, $b-line);
+
+    font-weight: 600;
+}
+
+a {
+    color: $color-dark;
+    cursor: pointer;
+    text-decoration: none;
+    user-select: text;
+
+    &:hover {
+        color: $color-dark;
+        text-decoration: none;
+    }
+
+    &:focus, 
+    &:focus-within {
+        color: $color-primary-100;
+        text-decoration: none;
+    }
+
+    &.text-muted {
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+}
+ 
+a.active.focus,
+a.active:focus,
+a:active,
+a.active,
+a:active.focus,
+a:active:focus,
+a.focus,
+a:focus,
+a:focus-within,
+.btn.active.focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn:active:focus,
+.btn:focus {
+outline: none !important;
+}
+
+.page-editor a, 
+.page-editor a:hover,
+.page-editor a:active,
+.page-editor a:focus {
+    text-decoration: underline;
+}
+
+.#{$prefix}U-none {
+    text-decoration: none !important;
+}
+
+.text-white {
+    color: $color-white;
+}
+
+.text-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+////Icons
+.fa-exclamation-triangle {
+    color: $color-danger;
+}
+
+.has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label,
+.has-value.Select--single > .Select-control .Select-value .Select-value-label {
+    color: $color-dark !important;
+}
+
+.#{$prefix}no-access-message {
+
+    color: $color-dark;
+    font-size: 15px !important;
+    line-height: 1.2;
+    margin: 30px 20px;
+}
+
+.#{$prefix}copy-IRI {
+    text-decoration:underline; 
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.alert-info {
+    color: $color-info-text;
+    background-color: $color-info-light;
+    border-color: #bce8f1;
+}
+  
+.alert-warning {
+    color: $color-warning-text;
+    background-color: $color-warning-light;
+    border-color: #faebcc;
+}
+
+// scrollbars
+//not working for Firefox
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.089);
+    
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+    background-color: rgba(125, 125, 125, 0.5);
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.043); 
+    
+}
+  
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}

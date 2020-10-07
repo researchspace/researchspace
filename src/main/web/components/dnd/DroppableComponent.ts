@@ -25,7 +25,7 @@ import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
-import { SparqlClient } from 'platform/api/sparql';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 import {
   DroppableContextTypes,
   DroppableContext,
@@ -175,8 +175,12 @@ export class Droppable extends Component<DroppableProps, State> {
 
     this.setState({ isSourceDragged: true });
     if (this.props.query) {
-      SparqlClient.prepareQuery(this.props.query, [{ value: dragged }])
-        .flatMap((query) => SparqlClient.ask(query, { context: { repository: this.props.repository } }))
+      const query =
+        SparqlClient.setBindings(
+          SparqlUtil.parseQuery(this.props.query),
+          {value: dragged},
+        );
+      SparqlClient.ask(query, { context: { repository: this.props.repository } })
         .onValue((res) => {
           this.setState({ isDropEnabledKnown: true, isDropEnabled: res });
         });

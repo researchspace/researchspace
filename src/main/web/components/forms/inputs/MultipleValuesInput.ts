@@ -25,6 +25,7 @@ import { Rdf } from 'platform/api/rdf';
 
 import { FieldDefinition } from '../FieldDefinition';
 import { FieldValue, EmptyValue, CompositeValue, DataState, FieldError, ErrorKind } from '../FieldValues';
+import { InputKind } from './InputCommpons';
 
 export interface MultipleValuesProps {
   /** Key to associate with FieldDefinition by name */
@@ -89,6 +90,9 @@ export type ValuesWithErrors = {
 };
 
 export abstract class MultipleValuesInput<P extends MultipleValuesProps, S> extends Component<P, S> {
+
+  public static readonly inputKind = InputKind.MultiValuesInput;
+
   dataState(): DataState {
     return DataState.Ready;
   }

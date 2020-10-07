@@ -28,8 +28,6 @@ import { Button } from 'react-bootstrap';
 
 import {
   isValidChild,
-  componentHasType,
-  hasBaseDerivedRelationship,
   universalChildren,
 } from 'platform/components/utils';
 
@@ -53,8 +51,7 @@ import {
   ValuesWithErrors,
   checkCardinalityAndDuplicates,
 } from './MultipleValuesInput';
-import { CompositeInput } from './CompositeInput';
-import { FormSwitch } from './FormSwitch';
+import { InputKind, InputReactElement, elementHasInputType, elementIsSingleValueInput } from './InputCommpons';
 
 export interface CardinalitySupportProps extends MultipleValuesProps {
   children?: ReactNode;
@@ -249,8 +246,8 @@ function renderChildInputs(
     return universalChildren(
       Children.map(children, (child) => {
         if (isValidChild(child)) {
-          const element = child as ReactElement<any>;
-          if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
+          const element = child as InputReactElement;
+          if (elementIsSingleValueInput(element)) {
             const inputIndex = nextIndex;
             nextIndex++;
 
@@ -362,8 +359,8 @@ function findInputs(inputChildren: ReactNode): ReactElement<SingleValueInputProp
   function collectInputs(children: ReactNode) {
     Children.forEach(children, (child) => {
       if (isValidChild(child)) {
-        const element = child as ReactElement<any>;
-        if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
+        const element = child as InputReactElement;
+        if (elementIsSingleValueInput(element)) {
           foundInputs.push(element);
         } else if (element.props.children) {
           collectInputs(element.props.children);
@@ -381,14 +378,14 @@ function isInputGroup(children: ReactNode) {
   if (childCount !== 1) {
     return childCount > 1;
   }
-  const child = Children.toArray(children)[0];
+  const child = Children.toArray(children)[0] as InputReactElement;
   if (!isValidChild(child)) {
     return true;
   }
   return (
-    componentHasType(child, CompositeInput) ||
-    componentHasType(child, FormSwitch) ||
-    !componentHasType(child, SingleValueInput as any)
+    elementHasInputType(child, InputKind.CompositeInput) ||
+      elementHasInputType(child, InputKind.FormSwitch) ||
+      !elementIsSingleValueInput(child)
   );
 }
 

@@ -22,6 +22,7 @@ export * from './FieldMapping';
 export * from './FieldValues';
 export { readyToSubmit, fieldInitialState, generateSubjectByTemplate, wasIriGeneratedByTemplate } from './FormModel';
 export * from './ResourceEditorForm';
+export * from './ResourceEditorFormConfig';
 export * from './SemanticForm';
 export { queryValues } from './QueryValues';
 export { ValuePatch, applyValuePatch, computeValuePatch } from './Serialization';

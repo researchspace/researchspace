@@ -25,17 +25,15 @@ import { SparqlUtil, SparqlTypeGuards } from 'platform/api/sparql';
 import {
   isValidChild,
   componentDisplayName,
-  hasBaseDerivedRelationship,
   universalChildren,
 } from 'platform/components/utils';
 
 import { FieldDefinition, FieldDefinitionProp } from './FieldDefinition';
 import { CompositeValue, FieldError, ErrorKind, DataState, FieldState } from './FieldValues';
-import { StaticComponent, StaticFieldProps } from './static';
+import { StaticFieldProps } from './static';
 
 // explicitely import base input classes from their respective modules instead of
 // importing from './input' to prevent cyclic dependencies when importing from CompositeInput
-import { SingleValueInput } from './inputs/SingleValueInput';
 import {
   MultipleValuesInput,
   MultipleValuesProps,
@@ -43,7 +41,7 @@ import {
   ValuesWithErrors,
 } from './inputs/MultipleValuesInput';
 import { CardinalitySupport } from './inputs/CardinalitySupport';
-import { CompositeInput } from './inputs/CompositeInput';
+import { InputKind, InputReactElement, elementHasInputType, componentHasInputType, elementIsSingleValueInput } from './inputs/InputCommpons';
 import { InputDecorator } from './inputs/Decorations';
 
 export type FieldMapping = InputMapping | StaticMapping | OtherElementMapping;
@@ -54,9 +52,7 @@ export namespace FieldMapping {
 
   export function isComposite(mapping: FieldMapping): mapping is InputMapping {
     return (
-      isInput(mapping) &&
-      mapping.singleValueInputType &&
-      hasBaseDerivedRelationship(CompositeInput, mapping.singleValueInputType)
+      isInput(mapping) && componentHasInputType(mapping.singleValueInputType, InputKind.CompositeInput)
     );
   }
 
@@ -74,10 +70,12 @@ export namespace FieldMapping {
   }
 }
 
+type InputComponentClass = React.ComponentClass<any> & { inputKind: InputKind } ;
+
 export interface InputMapping {
   for: string | undefined;
   inputType: React.ComponentClass<any>;
-  singleValueInputType?: React.ComponentClass<any>;
+  singleValueInputType?: InputComponentClass;
   element: React.ReactElement<MultipleValuesProps>;
 }
 
@@ -102,10 +100,10 @@ export function mapChildToComponent(child: React.ReactNode): FieldMapping | unde
     return undefined;
   }
 
-  const element = child as React.ReactElement<any>;
+  const element = child as InputReactElement;
 
-  if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
-    const singleValueInputType = element.type as React.ComponentClass<any>;
+  if (elementIsSingleValueInput(element)) {
+    const singleValueInputType = element.type as InputComponentClass;
     return {
       for: element.props.for,
       inputType: CardinalitySupport,
@@ -115,10 +113,10 @@ export function mapChildToComponent(child: React.ReactNode): FieldMapping | unde
         children: element,
       }),
     };
-  } else if (hasBaseDerivedRelationship(MultipleValuesInput, element.type)) {
+  } else if (elementHasInputType(element, InputKind.MultiValuesInput)) {
     const inputType = element.type as React.ComponentClass<any>;
     return { for: element.props.for, inputType, element };
-  } else if (hasBaseDerivedRelationship(StaticComponent, element.type)) {
+  } else if (elementHasInputType(element, InputKind.StaticInput)) {
     const staticType = element.type as React.ComponentClass<any>;
     return { for: element.props.for, staticType, element };
   } else if (element.props.children) {

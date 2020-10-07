@@ -24,18 +24,15 @@ import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
 import { getLabel } from 'platform/api/services/resource-label';
 
-import { componentHasType } from 'platform/components/utils';
-
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue } from '../FieldValues';
+
 import {
-  ResourceEditorForm,
   ResourceEditorFormProps,
   performFormPostAction,
   getPostActionUrlQueryParams,
-} from '../ResourceEditorForm';
-import { trigger } from 'platform/api/events';
-import * as FormEvents from 'platform/components/forms/FormEvents';
+} from '../ResourceEditorFormConfig';
+import { elementHasInputType, InputKind } from './InputCommpons';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
@@ -93,5 +90,5 @@ export function tryExtractNestedForm(children: ReactNode): ReactElement<Resource
     return undefined;
   }
   const child = Children.only(children);
-  return componentHasType(child, ResourceEditorForm) ? child : undefined;
+  return elementHasInputType(child, InputKind.SemanticForm) ? child as ReactElement<ResourceEditorFormProps> : undefined;
 }

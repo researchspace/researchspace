@@ -32,7 +32,7 @@ import { Cancellation } from 'platform/api/async';
 import { Action } from 'platform/components/utils';
 import { ResourceViewer } from './ResourceViewer';
 
-import '../../scss/page-editor.scss';
+import '../../styling/components/page-editor.scss';
 
 const ButtonGroup = createFactory(ReactBootstrap.ButtonGroup);
 const ButtonToolbar = createFactory(ReactBootstrap.ButtonToolbar);

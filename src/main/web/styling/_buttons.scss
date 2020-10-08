@@ -1,3 +1,21 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 //Buttons mixins
 @mixin button {
     display: inline-block;
@@ -83,20 +101,21 @@
 
 /* Buttons */
 .btn {
+    border-width: 1px;
+    font-size: 14px;
+    border-radius: 0;
     line-height: 1.2;
-}
+
+    @media screen and (max-width: 767px) {
+        font-size: 12px !important;
+    }   
+
+  }
 
 button:disabled {
 
     cursor: not-allowed;
     opacity: 0.6;
-}
-
-.dropdown-menu > .disabled > a, 
-.dropdown-menu > .disabled > a:hover, 
-.dropdown-menu > .disabled > a:focus {
-
-    color: $color-dark--op50;
 }
 
 .btn:active, .btn.active {
@@ -160,30 +179,24 @@ fieldset[disabled] .btn-default.focus {
     &:hover,
     &:active,
     &.active,
-    .open > &.dropdown-toggle,
     &:focus,
-    &.focus {
+    &.focus,
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus, 
+    .open > &.dropdown-toggle,
+    .open > &.dropdown-toggle:hover, 
+    .open > &.dropdown-toggle:focus, 
+    .open > &.dropdown-toggle.focus {
         color: $color-white;
-        background-color: $color-dark;
-        border-color: $color-dark;
+        background-color: $color-dark-darker;
+        border-color: $color-dark-darker;
     }
 }
 
-.btn-primary:active:hover, 
-.btn-primary:active:focus, 
-.btn-primary:active.focus, 
-.btn-primary.active:hover, 
-.btn-primary.active:focus, 
-.btn-primary.active.focus, 
-.open > .btn-primary.dropdown-toggle,
-.open > .btn-primary.dropdown-toggle:hover, 
-.open > .btn-primary.dropdown-toggle:focus, 
-.open > .btn-primary.dropdown-toggle.focus {
-
-    color: $color-white;
-    background-color: $color-dark;
-    border-color: $color-dark;
-}
 
 .btn-grey {
 
@@ -299,35 +312,37 @@ fieldset[disabled] .btn-default.focus {
 
     color: $color-white;
     background-color: $color-danger;
-    font-weight: 600;
-    text-shadow: 0px 0px 1px #00000085;
+    font-weight: bold;
+    text-shadow: 0px 0px 1px #4c040485;
     padding: 5px 8px;
     border-radius: 2px;
     font-size: 12px;
     margin-bottom: 3px;
     margin: 2px 0px 2px 0px;
 
-    &:hover {
+    &:hover,
+    &:focus,
+    &:focus-within {
 
         box-shadow: 0px 0px 2px 1px #bbb;
+        color: $color-white;
     }
 }
-
 
 .btn-success {
     background-color: $color-success;
     border-color: $color-success;
     text-shadow: 0px 0px 1px #00000061;
-    font-weight: bold;
+    font-weight: 600;
 
-    &:hover
+    &:hover,
     &:active,
     &.active,
     .open > &.dropdown-toggle,
     &:focus,
     &.focus {
-        background-color: $color-success;
-        border-color: $color-success;
+        background-color: $color-success-darker;
+        border-color: $color-success-darker;
     }
 }
 
@@ -338,6 +353,16 @@ fieldset[disabled] .btn-default.focus {
     border-color: $color-danger;
     font-weight: 600;
     text-shadow: 0px 0px 1px #670a15c4;
+
+    &:hover,
+    &:active,
+    &.active,
+    .open > &.dropdown-toggle,
+    &:focus,
+    &.focus {
+        background-color: $color-danger-darker;
+        border-color: $color-danger-darker;
+    }
 }
 
 .btn-icon {
@@ -473,11 +498,6 @@ fieldset[disabled] .btn-default.focus {
         color: $color-white;
         font-size: 10px;
     }
-}
-
-
-.info {
-    background-color: $color-info;
 }
 
 .#{$prefix}button-icon-S {
@@ -667,10 +687,23 @@ fieldset[disabled] .btn-default.focus {
 
 }
 
+/* .badge {
+    background-color: $rs-color-lightgrey;
+    margin-top: -2px;
+  }
+  
+  li.active .badge {
+    background-color: #2c3e50;
+  } */
+
 .badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
+    @media screen and (max-width: 767px) {
+        font-size: 12px;
+    }
 }
 
 .#{$prefix}badge {
@@ -875,16 +908,5 @@ fieldset[disabled] .btn-default.focus {
 
     & .radio label {
         padding-left: 25px;
-    }
-}
-
-
-@media screen and (max-width: 767px) {
-    .btn {
-        font-size: 12px !important;
-    }
-
-    .badge {
-        font-size: 12px;
     }
 }

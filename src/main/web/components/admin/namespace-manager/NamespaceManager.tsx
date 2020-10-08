@@ -159,7 +159,7 @@ export class NamespaceManager extends Component<{}, State> {
     }
     return (
       <div className={classnames(styles.updatePanel, 'row')}>
-        <div className="col-xs-2">
+        <div className="col-xs-1">
           <FormControl
             type="text"
             placeholder="Prefix"
@@ -167,7 +167,7 @@ export class NamespaceManager extends Component<{}, State> {
             onChange={this.onPrefixInput}
           />
         </div>
-        <div className="col-xs-6">
+        <div className="col-xs-5">
           <FormControl
             type="text"
             placeholder="Namespace"
@@ -175,15 +175,13 @@ export class NamespaceManager extends Component<{}, State> {
             onChange={this.onNamespaceInput}
           />
         </div>
-        <div className="col-xs-3">
+        <div className={classnames(styles.updatePanel_submit, 'col-xs-6')}>
           <StorageSelector
             allApps={this.state.appStatus}
             sourceApps={[]}
             targetApp={this.state.selectedAppId}
             onChange={this.onSelectedAppChange}
           />
-        </div>
-        <div className="col-xs-1">
           <ButtonToolbar>
             <Button
               type="submit"
@@ -277,7 +275,7 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
         );
       } else {
         return (
-          <Button bsSize="xs" onClick={this.onDeleteClick}>
+          <Button bsSize="xs" bsStyle="delete" onClick={this.onDeleteClick}>
             <span className="fa fa-trash-o" />
             &nbsp;Delete
           </Button>

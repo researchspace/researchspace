@@ -20,22 +20,20 @@
  * @author Mike Kelly <mkelly@britishmuseum.org>
  */
 
-$page-breadcrumb-border-color: #ddd;
-
 .base-breadcrumb {
   position: fixed;
   width: 100%;
   z-index: $zindex-breadcrumb;
   margin-bottom: 0;
-  background-color: #fff;
-  border-bottom: 2px solid $page-breadcrumb-border-color;
+  background-color: $color-breadcrumb-bg;
   border-radius: 0;
   box-shadow: 0 0 6px #ccc;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 400;
+  line-height: 1.2;
   text-transform: none;
   list-style: none;
-  height: $breadcrumb-bar-height;
+  height: $breadcrumb-height;
 }
 
 // Example
@@ -52,11 +50,12 @@ ol.page-breadcrumb {
 
   > li {
     display: inline-block;
+    font-weight: 800;
 
     + li:before {
       content: '#{$breadcrumb-separator}'; // Unicode space added since inline-block means non-collapsing white-space
       padding: 0 5px;
-      color: $breadcrumb-color;
+      color: $color-dark;
     }
   }
 
@@ -66,11 +65,8 @@ ol.page-breadcrumb {
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 500px;
-    color: $breadcrumb-active-color;
-  }
-
-  & > .active {
-    color: $text-color;
+    color: $color-dark;
+    font-weight: normal;
   }
 
   li div {
@@ -103,136 +99,20 @@ div.page-breadcrumb {
     + li:before {
       content: '#{$breadcrumb-separator}'; // Unicode space added since inline-block means non-collapsing white-space
       padding: 0 5px;
-      color: $breadcrumb-color;
+      color: $color-dark;
     }
   }
 
   > ol > .active {
-    color: $breadcrumb-active-color;
+    color: $color-dark;
   }
 
   & ol > .active {
-    color: $text-color;
+    color: $color-dark;
   }
 
   ol li div {
     display: inline-block;
   }
-}
-
-/* Breadcrumb */
-.base-breadcrumb,
-div.page-breadcrumb,
-ol.page-breadcrumb {
-    font-size: 12px;
-    height: $breadcrumb-height;
-    border-bottom: none;
-}
-
-ol.page-breadcrumb > li+li::before {
-    color: $color-dark;
-}
-
-ol.page-breadcrumb > li.pull-right::before {
-    content: none !important;
-}
-
-/* Breadcrumb right side */
-// component-page-toolbar
-.component-page-toolbar {
-  z-index: $zindex-toolbar;
-  position: fixed;
-  right: 18px;
-  height: $breadcrumb-height;
-
-  & .btn {
-    line-height: 1.2;
-  }
-
-  & .btn-group {
-
-    height: 100%;
-    display: flex;
-    align-items: center;
-  }
-
-  &__btn_show_source.btn,
-  &__btn_show_graph.btn,
-  &__btn_show_diagram.btn,
-  &__btn_copy_iri.btn {
-
-      background-color: transparent;
-      border: none;
-      font-size: 12px;
-      text-decoration: underline;
-      padding: 0px 10px;
-
-      &::before {
-      
-        font-size: 11px;
-      }
-  }
-
-  &__btn_edit.btn {
-    background-color: transparent;
-    font-size: 12px;
-    border: none;
-    padding: 0 20px;
-    @include icon(pencil);
-
-    &.active {
-      pointer-events: none;
-      cursor: default;
-    }
-
-    & > span {
-      font-family: $font-family-base;
-      padding-left: 3px;
-      font-size: 12px;
-    }
-  }
-
-  &__btn_copy_iri {
-    
-    &::before {
-      content: "Copy resource IRI";
-    }
-  }
-
-  &__btn_show_source {
-    margin-left: 25px;
-
-    &::before {
-      content: "Statements";
-    }
-  }
-
-  &__btn_show_graph {
-
-    &::before {
-      content: "Graph";
-    }
-  }
-
-  &__btn_show_diagram {
-    
-    display: none;
-  }
-
-  &__repository_indicator {
-    float: left;
-    margin-right: 10px;
-    padding: 4px 10px;
-  }
-}
-
-
-ol.page-breadcrumb > li:not(.active) {
-    @include font-common($color-dark, 12px, 1.2);
-    font-weight: 800;
-}
-
-ol.page-breadcrumb > li.active {
-    @include font-common($color-dark, 12px, 1.2);
 }
 

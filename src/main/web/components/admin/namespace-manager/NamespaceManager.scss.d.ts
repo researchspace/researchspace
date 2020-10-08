@@ -3,6 +3,8 @@ declare namespace NamespaceManagerScssNamespace {
     component: string;
     'update-panel': string;
     updatePanel: string;
+    updatePanelSubmit: string;
+    updatePanel_submit: string;
   }
 }
 

@@ -1,4 +1,4 @@
-#Geospatial Development branch
+# Geospatial Development branch
 
 <p align='center'>ResearchSpace is licensed under the GNU Affero General Public License, version 3 or later (AGPL v3 or later). see LICENSE file </p>
 

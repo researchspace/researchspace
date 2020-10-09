@@ -18,7 +18,7 @@
  */
 
 import '../scss/main.scss';
-import '../scss/help.scss';
+import '../styling/components/help.scss';
 
 import { initModuleRegistry } from './bootstrap';
 initModuleRegistry();

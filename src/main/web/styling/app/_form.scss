@@ -11,25 +11,25 @@
   line-height: 1.2;
   background-color: transparent;
 
+  -webkit-box-shadow: none;
+  box-shadow: none;
+
   &::placeholder {
     color: $color-form-placeholder;
+    font-weight: normal;
   }
 
   &:focus {
     outline: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
 
     &::placeholder {
       /* Chrome, Firefox, Opera, Safari 10.1+ */
-
+      font-weight: normal;
       opacity: 0.7; /* Firefox */
     }
   }
-}
-
-.form-control,
-.form-control:focus {
-  -webkit-box-shadow: none;
-  box-shadow: none;
 }
 
 .Select:focus {
@@ -75,7 +75,7 @@
 }
 
 .is-open > .Select-control {
-  background-color: $color-grey;
+  background-color: $color-off-white;
 
   & .Select-arrow {
     border-color: transparent transparent $color-dark;
@@ -83,6 +83,7 @@
 
   .Select-placeholder {
     opacity: 0.7;
+    font-weight: normal;
   }
 }
 
@@ -101,6 +102,7 @@
 
 .Select-placeholder {
   color: $color-form-placeholder;
+  font-weight: normal;
 }
 
 .Select-menu-outer {
@@ -223,8 +225,7 @@
   }
 
   .clearable-input {
-    border-radius: 0px;
-    background-color: transparent;
+
     border: 1px solid $color-primary-50;
   }
 }
@@ -282,9 +283,7 @@
 
   .clearable-input {
     height: 35px;
-    background-color: transparent;
     border: 1px solid $color-primary-50;
-    border-radius: 0px;
   }
 
   .SemanticTreeInput--browseButton.btn.btn-default {
@@ -309,10 +308,12 @@
   .plain-text-field textarea.plain-text-field__text {
     font-size: 13px;
     border-color: $color-primary-50;
+    min-height: 38px;
     padding: 9px 12px;
 
     &::placeholder {
       color: $color-form-placeholder;
+      font-weight: normal;
     }
 
     &:focus {
@@ -334,10 +335,6 @@
     &.btn {
       font-size: 12px;
     }
-  }
-
-  .semantic-form-tree-picker-input {
-    margin-bottom: 42px;
   }
 
   .autocomplete-text-field__create-button {
@@ -364,13 +361,29 @@
 
   button[name='submit'],
   button[name='reset'],
-  button[name='delete'] {
+  button[name='delete'],
+  button[name='cancel'] {
     height: 38px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-color: $color-primary-50;
+    letter-spacing: 0.4px;
+  //  border-color: $color-primary-50;
+    border-radius: 1px;
     font-weight: 600;
+    padding: 0 12px;
+    margin-left: 2px;
+
   }
+
+  button[name='reset'],
+  button[name='delete'],
+  button[name='cancel'] {
+
+    &:hover,
+    &:focus {
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 5px 0 rgba(0, 0, 0, 0.1);
+    }
+  }
+
 
   .semantic-form-errors__error,
   .semantic-form-validation-messages__error,
@@ -384,7 +397,7 @@
     padding: 0 22px;
     border: 1px solid $color-primary-50;
 
-    > button {
+    & > button {
       color: #aaa;
       height: 25px;
       border: none;

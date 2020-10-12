@@ -96,7 +96,7 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
     this.state = {
       targetTop: 0,
       targetLeft: 0,
-      enablePopover: true,
+      enablePopover: false,
     };
     this.id = Math.random().toString(36).slice(2);
   }
@@ -146,7 +146,7 @@ export class SparqlEditor extends Component<SparqlEditorProps, State> {
     if (this.props.size) {
       this.yasqe.setSize(this.props.size.w, this.props.size.h);
     } else {
-      this.yasqe.setSize(null, 400);
+   //   this.yasqe.setSize(null, 400);
     }
 
     this.setBackdrop(this.props.backdrop);

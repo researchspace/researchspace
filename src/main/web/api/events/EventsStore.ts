@@ -50,7 +50,9 @@ export function listen<Data>(eventFilter: EventFilter<Data>): Kefir.Stream<Event
       emitter.emit(currentValue);
     }
 
-    return () => delete _subscribers[key];
+    return () => {
+      delete _subscribers[key]
+    };
   });
 }
 
@@ -58,13 +60,18 @@ export function listen<Data>(eventFilter: EventFilter<Data>): Kefir.Stream<Event
  * Trigger event.
  */
 export function trigger<Data>(event: Event<Data>) {
-  _.forEach(_subscribers, ({ eventFilter, emitter }) => {
-    if (
-      (eventFilter.eventType ? eventFilter.eventType === event.eventType : true) &&
-      (eventFilter.source ? eventFilter.source === event.source : true) &&
-      (eventFilter.target ? _.includes(event.targets || [], eventFilter.target) : true)
-    ) {
-      emitter.emit(event);
+  _.forEach(_subscribers, subscriber => {
+    // in some browsers subscriber can be undefined because
+    // `delete _subscriber[key]` keeps the key and makes value undefined
+    if (subscriber) {
+      const { eventFilter, emitter } = subscriber;
+      if (
+        (eventFilter.eventType ? eventFilter.eventType === event.eventType : true) &&
+          (eventFilter.source ? eventFilter.source === event.source : true) &&
+          (eventFilter.target ? _.includes(event.targets || [], eventFilter.target) : true)
+      ) {
+        emitter.emit(event);
+      }
     }
   });
   EventSourceStore.updateCurrentValue(event);

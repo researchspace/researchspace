@@ -22,7 +22,7 @@ import * as _ from 'lodash';
 import * as SparqlJs from 'sparqljs';
 
 import { Rdf } from 'platform/api/rdf';
-import { getCurrentResource } from 'platform/api/navigation';
+import { getCurrentResource } from '../navigation/CurrentResource';
 
 import { isQuery, isTerm, isIri } from './TypeGuards';
 

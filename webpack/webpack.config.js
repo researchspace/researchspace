@@ -20,6 +20,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const AssetsPlugin = require('assets-webpack-plugin');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaults = require('./defaults')();
 
@@ -271,6 +272,18 @@ module.exports = function(isProd) {
             'react/lib/ReactContext': true
         },
         plugins: [
+            new CircularDependencyPlugin({
+                // exclude detection of files based on a RegExp
+                exclude: /src\/main\/web\/ontodia|node_modules/,
+                // add errors to webpack instead of warnings
+                failOnError: true,
+                // allow import cycles that include an asyncronous import,
+                // e.g. via import(/* webpackMode: "weak" */ './file.js')
+                allowAsyncCycles: false,
+                // set the current working directory for displaying module paths
+                cwd: process.cwd(),
+            }),
+
             //cytoscape.js expects jquery in scope
             new webpack.ProvidePlugin({
                 'cytoscape': 'cytoscape',

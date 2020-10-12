@@ -156,13 +156,14 @@ export function isWebComponent(componentTag: string) {
  */
 export function renderWebComponent(
   componentTag: string,
-  props: Object,
+  props: Record<string, any>,
   children?: ReactNode[],
   templateScope?: TemplateScope
 ): Promise<ReactElement<any>> {
   // check if user is permitted to use the component
   // if not it will not be rendered at all
-  templateScope = templateScope || TemplateScope.create();
+  templateScope = templateScope ||
+    TemplateScope.create({scopeTrace: {componentTag, componentId: props.id}});
   return isComponentPermited(componentTag)
     .toPromise()
     .then<ReactElement<any>>((result) => {

@@ -24,20 +24,12 @@ import { Rdf } from 'platform/api/rdf';
 import { SparqlUtil } from 'platform/api/sparql';
 
 import { escapeRemoteTemplateHtml } from './TemplateParser';
+import { ParsedTemplate } from './TemplateCommons';
+import { remoteTemplateCache } from './TemplateCache';
 
 import { PageService } from '../page';
 
-const remoteTemplateCache = new Map<string, Promise<ParsedTemplate>>();
 
-export function purgeRemoteTemplateCache() {
-  remoteTemplateCache.clear();
-}
-
-export interface ParsedTemplate {
-  readonly source: string;
-  readonly ast: hbs.AST.Program;
-  readonly references: ReadonlyArray<string>;
-}
 
 export function fetchRemoteTemplate(iri: Rdf.Iri): Promise<ParsedTemplate> {
   if (remoteTemplateCache.has(iri.value)) {

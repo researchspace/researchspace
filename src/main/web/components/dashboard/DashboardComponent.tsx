@@ -223,20 +223,25 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItem = (item: Item = emptyItem()) => {
-    this.setState(
-      (prevState): State => {
-        const newItems = [...prevState.items];
-        newItems.push(item);
-        return { items: newItems };
-      },
-      () => {
-        this.onSelectView({
-          itemId: item.id,
-          viewId: item.viewId,
-          resourceIri: item.resourceIri,
-        });
-      }
-    );
+    const viewConfig = this.props.views.find(({id}) => id === item.viewId);
+    if (viewConfig?.unique && this.state.items.find(i => i.viewId === item.viewId)) {
+      return;
+    } else {
+      this.setState(
+        (prevState): State => {
+          const newItems = [...prevState.items];
+          newItems.push(item);
+          return { items: newItems };
+        },
+        () => {
+          this.onSelectView({
+            itemId: item.id,
+            viewId: item.viewId,
+            resourceIri: item.resourceIri,
+          });
+        }
+      );
+    }
   };
 
   onExpandItem(itemId: string) {

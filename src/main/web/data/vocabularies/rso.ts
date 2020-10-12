@@ -48,6 +48,7 @@ module rso {
   export const EX_Digital_Image = iri('EX_Digital_Image');
   export const EX_Digital_Image_Region = iri('EX_Digital_Image_Region');
   export const viewport = iri('viewport');
+  export const boundingBox = iri('boundingBox');
 
   export const AlignmentContainer = iri('Alignment.Container');
   export const AnnotationsContainer = iri('Annotations.Container');

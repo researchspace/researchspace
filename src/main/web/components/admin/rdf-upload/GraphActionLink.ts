@@ -90,7 +90,7 @@ export class GraphActionLink extends Component<Props, State> {
         createElement(OverlayDialog, {
           show: true,
           title: 'Delete graph',
-          bsSize: 'sm',
+          bsSize: 'lg',
           onHide,
           children: D.div(
             { style: { textAlign: 'center' } },

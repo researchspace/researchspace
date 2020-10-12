@@ -17,22 +17,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
+import { isFunction } from 'lodash';
 
-import ReactDropzone, { DropzoneOptions } from 'react-dropzone';
+import ReactDropzone, { DropzoneOptions, DropzoneState } from 'react-dropzone';
 
+type ChildrenFunction = (state: DropzoneState) => JSX.Element;
 export interface DropzoneProps extends DropzoneOptions {
   className?: string;
   style?: React.CSSProperties;
-  children?: JSX.Element | ReadonlyArray<JSX.Element>;
+  children?: JSX.Element | ReadonlyArray<JSX.Element> | ChildrenFunction;
 }
 
 const DEFAULT_STYLE: React.CSSProperties = {
-  width: 200,
+  width: '100%',
   height: 200,
-  borderWidth: 2,
-  borderColor: 'rgb(102, 102, 102)',
+  borderWidth: 1,
   borderStyle: 'dashed',
   borderRadius: 5,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  outline: 'none',
+  fontSize: 17,
+  letterSpacing: 0.2,
 };
 
 export class Dropzone extends React.Component<DropzoneProps, {}> {
@@ -41,10 +49,10 @@ export class Dropzone extends React.Component<DropzoneProps, {}> {
     const style = Object.assign({}, DEFAULT_STYLE, this.props.style);
     return (
       <ReactDropzone {...otherProps}>
-        {({ getRootProps, getInputProps }) => (
-          <div {...getRootProps()} className={className} style={style}>
-            {children}
-            <input {...getInputProps()} />
+        {(state) => (
+          <div {...state.getRootProps()} className={className} style={style}>
+            {isFunction(children) ? children(state) : children}
+            <input {...state.getInputProps()} />
           </div>
         )}
       </ReactDropzone>

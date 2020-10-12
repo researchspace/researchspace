@@ -46,7 +46,6 @@ $header-border-color: #ddd;
 
 @mixin header() {
   display: flex;
-  background-color: $color-base;
   padding: $padding-base-vertical * 2 $padding-base-horizontal;
 
   @media (max-width: $screen-md-min) {
@@ -75,7 +74,6 @@ $header-border-color: #ddd;
 
   &__header {
     @include header();
-    border-bottom: 1px solid $header-border-color;
 
     &.page__header--no-image {
       padding: $padding-base-vertical * 2 $padding-base-horizontal * 2;
@@ -101,9 +99,22 @@ $header-border-color: #ddd;
       align-items: center;
       justify-content: center;
 
+      width: auto;
+      margin-right: 15px;
+
       // set colour of font awesome icons used as thumbnails
       a > .fa {
-        color: #aaa;
+        color: $color-dark;
+      }
+
+      & .fa-lg,
+      & .rs-icon {
+        font-size: 2.3em;
+
+        @media (min-width: 2000px) {
+
+          font-size: 2.8em;
+        }
       }
 
       img {
@@ -320,16 +331,14 @@ $header-border-color: #ddd;
   position: relative;
   // sets search dropdowns to overlap footer
   z-index: $zindex-page-holder;
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 #application > div {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-}
-
-.page-holder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
 }

@@ -19,7 +19,7 @@
 
 /* react-select variables override */
 // control options
-$select-input-bg:                   #fff;
+$select-input-bg:                   #fff; //can't be css a variable
 $select-input-bg-disabled:          #f9f9f9 !default;
 $select-input-border-radius:        $border-radius-base;
 $select-input-border-color:         #ddd;
@@ -67,6 +67,8 @@ $select-item-disabled-border-color: $color-primary-50;
 
 @import '~react-select/scss/default.scss';
 
+// Variables set as css variables
+$select-input-bg: $color-formInputs-bg;
 
 .Select-control {
   // need to prevent border collapse when nested in table
@@ -78,16 +80,17 @@ $select-item-disabled-border-color: $color-primary-50;
   border-radius: 0px;
   font-family: $font-family-base;
   font-size: $font-size-base;
-  background-color: transparent;
+
+  background-color: $select-input-bg; //css variable
 
   &:hover {
     box-shadow: none;
   }
 
   &:focus {
-    outline: none;
+
     border-bottom: 1px solid $color-dark;
-    background-color: $color-body-bg;
+    background-color: $select-input-bg;
     opacity: .7;
   }
 
@@ -103,12 +106,17 @@ $select-item-disabled-border-color: $color-primary-50;
 
 .Select-placeholder {
   font-weight: normal;
+  color: $color-form-placeholder;
+}
+
+.Select--single > .Select-control .Select-value {
+
+  font-weight: 600;
 }
 
 .Select-placeholder,
 .Select--single > .Select-control .Select-value {
 
-  font-weight: 600;
   line-height: unset;
   display: flex;
   align-items: center;
@@ -116,6 +124,8 @@ $select-item-disabled-border-color: $color-primary-50;
 }
 
 .is-open > .Select-control {
+
+  background: $select-input-bg; //css variable
 
   .Select-placeholder {
     opacity: 0.7;
@@ -138,6 +148,8 @@ $select-item-disabled-border-color: $color-primary-50;
 
 
 .Select-menu-outer {
+
+  background-color: $select-input-bg; //css variable
 
   margin-top: 0;
   border: 1px solid $select-input-border-color;

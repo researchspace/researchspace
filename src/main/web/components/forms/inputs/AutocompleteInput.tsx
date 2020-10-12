@@ -117,10 +117,10 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             query: createDropAskQueryForField(definition),
             styles: {
               enabled: {
-                outline: '3px dashed #1D0A6E'
+                outline: '2px dashed #1D0A6E'
               },
               enabledHover: {
-                outline: '5px dashed #1D0A6E'
+                outline: '4px dashed #1D0A6E'
               },
               disabled: {}
             }
@@ -137,7 +137,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         {showCreateNewButton ? (
           <Button className={`${CLASS_NAME}__create-button`} bsStyle="default" onClick={this.toggleNestedForm}>
             {value === undefined ? <span className="fa fa-plus" /> : null}
-            {value === undefined ? ' Create new' : 'Edit'}
+            {value === undefined ? <span> Create new</span> : <span>Edit</span>}
           </Button>
         ) : null}
       </div>

@@ -41,7 +41,7 @@ import { ReactElement, Component, createFactory, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import { RadioGroup, Radio } from 'react-radio-group';
 import * as ReactBootstrap from 'react-bootstrap';
-import { Controlled as CodeMirror } from 'react-codemirror2';
+import { UnControlled as CodeMirror } from 'react-codemirror2';
 import * as codemirror from 'codemirror';
 
 import { navigateToResource, navigationConfirmation, navigateToUrl } from 'platform/api/navigation';
@@ -154,25 +154,6 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
     this.loadPageSource(props.iri.value);
   }
 
-  /**
-   * We want to trigger react reconciliation only when we load new page to view or
-   * switching between highlight modes.
-   */
-  public shouldComponentUpdate(nextProps: PageEditorProps, nextState: PageEditorState) {
-    if (!_.isEqual(this.props, nextProps)) {
-      return true;
-    } else {
-      return !(
-        nextState.pageSource === this.state.pageSource &&
-        nextState.storageStatus === this.state.storageStatus &&
-        nextState.saving === this.state.saving &&
-        nextState.activeSyntax === this.state.activeSyntax &&
-        nextState.loading === this.state.loading &&
-        nextState.targetApp === this.state.targetApp
-      );
-    }
-  }
-
   public render() {
     const codeMirrorAddonOptions = {
       foldGutter: this.state.activeSyntax !== Syntax.NONE,
@@ -226,7 +207,7 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
             className: 'template-editor',
             editorDidMount: this.onEditorDidMount,
             value: this.state.pageSource.source,
-            onBeforeChange: this.onPageContentChange,
+            onChange: this.onPageContentChange,
             options: {
               ...codeMirrorAddonOptions,
               mode: this.getSyntaxMode(this.state.activeSyntax),
@@ -419,9 +400,6 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
     if (!this.navigationListenerUnsubscribe) {
       this.navigationListenerUnsubscribe = navigationConfirmation('Changes you made to the page will not be saved.');
     }
-    this.setState((state) => {
-      return { pageSource: { ...state.pageSource, source: value }, saving: false };
-    });
   };
 
   private onSave = (queryParams = {}) => {
@@ -437,7 +415,7 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
       targetAppId: targetApp,
       sourceAppId: typeof pageSource.appId === 'string' ? pageSource.appId : undefined,
       sourceRevision: typeof pageSource.revision === 'string' ? pageSource.revision : undefined,
-      rawContent: pageSource.source,
+      rawContent: this.editor.getValue(),
     })
       .onValue((v) => {
         this.setState({ saving: false });

@@ -119,8 +119,53 @@
       "iconClass": "rs-icon rs-icon-images",
       "template": "{{> iiifTemplate}}",
       "frameVariable": "miradorVariable"
+    },
+    {
+    	"id": "objectImageObservation",
+      "label": "Object Observations through Images",
+      "description": "",
+      "iconClass": "rs-icon rs-icon-images",
+      "template": "{{> objectImageObservationTemplate}}",
+      "checkQuery": "
+        PREFIX ontodia: <http://ontodia.org/schema/v1#>
+        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+
+        ASK {
+          {
+            ?value a ontodia:Diagram .
+            ?value ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o .
+            ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
+            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+          } UNION {
+            ?value a Platform:Set .
+            ?value ldp:contains / Platform:setItem ?o .
+            ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
+            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+          } UNION {
+            ?value a/rdfs:subClassOf* crm:E18_Physical_Thing .
+            ?value crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+          }
+      }",
+      "unique": true
+    },
+    {
+    	"id": "featureSimilarityKm",
+      "label": "Exploring and Comparing (Visual) Features",
+      "description": "",
+      "iconClass": "rs-icon rs-icon-diagram",
+      "template": "{{> featureSimilarityKm }}",
+      "itemBodyTemplate": "{{> itemBodyTemplate}}",
+      "frameVariable": "ontodiaVariable",
+      "checkQuery": "
+        PREFIX ontodia: <http://ontodia.org/schema/v1#>
+        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+        ASK {
+            ?value a Platform:Set .
+            ?value ldp:contains / Platform:setItem ?o .
+            ?o crm:P65_shows_visual_item ?vi .
+            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+      }"
     }
-    
     ]'
 
     [[#if (hasPermission "forms:ldp:*")]]       
@@ -156,6 +201,12 @@
     </template>
     <template id='iiifTemplate'>
       [[> rsp:ThinkingFramesIIIFTemplate]]
+    </template>
+    <template id='objectImageObservationTemplate'>
+      [[> rsp:ThinkingFramesObjectThroughImageObservation ]]
+    </template>
+    <template id='featureSimilarityKm'>
+      [[> rsp:ThinkingFramesFeatureSimilarityKm ]]
     </template>
     <template id='semanticNarrativeTemplate'>
       [[> rsp:ThinkingFramesSemanticNarrativeTemplate]]

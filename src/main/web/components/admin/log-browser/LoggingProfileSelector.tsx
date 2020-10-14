@@ -96,7 +96,7 @@ export class LoggingProfileSelector extends React.Component<void, LoggingProfile
             <ErrorPresenter error={profileError} />
           </Alert>
         ) : null}
-        <div>
+        <div className='d-flex'>
           <select className={styles.adminProfileSelector} value={loggingProfile} onChange={this.onChangeProfile}>
             <option value="log4j2">Default</option>
             <option value="log4j2-debug">Debug</option>
@@ -106,6 +106,7 @@ export class LoggingProfileSelector extends React.Component<void, LoggingProfile
             disabled={isSubmitted && !submitting}
             title={isSubmitted ? 'Profile is already submitted' : 'Submit  profile'}
             onClick={this.onSubmit}
+            className='btn btn-primary'
           >
             Submit
           </button>

@@ -159,7 +159,7 @@ export class NamespaceManager extends Component<{}, State> {
     }
     return (
       <div className={classnames(styles.updatePanel, 'row')}>
-        <div className="col-xs-1">
+        <div className="col-xs-1 px-0">
           <FormControl
             type="text"
             placeholder="Prefix"
@@ -264,10 +264,10 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
           <div>
             Delete prefix "{record.prefix}"?
             <div>
-              <Button bsSize="xs" bsStyle="danger" onClick={this.onConfirm}>
+              <Button className="btn-grey btn-danger" onClick={this.onConfirm}>
                 Delete
               </Button>
-              <Button bsSize="xs" onClick={this.onCancel}>
+              <Button className="btn-grey" onClick={this.onCancel}>
                 Cancel
               </Button>
             </div>
@@ -275,7 +275,7 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
         );
       } else {
         return (
-          <Button bsSize="xs" bsStyle="delete" onClick={this.onDeleteClick}>
+          <Button className="btn-grey btn-danger" onClick={this.onDeleteClick}>
             <span className="fa fa-trash-o" />
             &nbsp;Delete
           </Button>

@@ -210,9 +210,27 @@ export class PageManager extends Component<{}, PageAdminState> {
       value: this.state.filter,
     };
     const rowStyle: CSSProperties = {
-      display: 'flex',
+
+      display: 'grid',
+      gridTemplateColumns: '1fr 1.5fr fit-content(100px)',
       alignItems: 'center',
       marginTop: '10px',
+      width: '100%',
+    };
+    const colStyle: CSSProperties = {
+      display: 'flex',
+      alignItems: 'center',
+      paddingRight: '20px',
+    };
+    const selectContainer: CSSProperties = {
+      flexGrow: 1,
+    };
+    const title: CSSProperties = {
+      paddingRight: '20px',
+    };
+    const toolbarStyle: CSSProperties = {
+      display: 'flex',
+      paddingLeft: '20px',
     };
 
     return D.div(
@@ -226,23 +244,20 @@ export class PageManager extends Component<{}, PageAdminState> {
         layout: maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() }),
       }),
       D.div(
-        { className: 'row', style: rowStyle, key: 'selected-pages' },
-        D.div({ className: 'col-xs-2' }, 'Selected pages: '),
-        D.div({ className: 'col-xs-4' }, D.b({}, this.state.selectedPages.length))
-      ),
-      D.div(
-        { className: 'row', style: rowStyle },
-        D.div({ className: 'col-xs-2', key: '1' }, 'Select pages: '),
-        D.div({ className: 'col-xs-4', key: '2' }, ReactSelect(selectOptions))
-      ),
-      createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
-      D.div(
-        { className: 'row', style: rowStyle, key: 'actions' },
-        D.div({ className: 'col-xs-2' }),
+        { style: rowStyle, key: 'selected-pages' },
+        D.div({ style: colStyle }, 
+          D.div({style: title}, 'Selected pages:'),
+          D.b({}, this.state.selectedPages.length)
+        ),
+        D.div({}, 
+          D.div({style: colStyle, key: '1'}, 'Select pages: ',
+            D.div( {style: selectContainer, key: '2'}, ReactSelect(selectOptions))
+          ),
+        ),
         D.div(
-          { className: 'col-xs-4' },
+          {},
           ButtonToolbar(
-            {},
+            {style: toolbarStyle},
             Button(
               {
                 type: 'submit',
@@ -256,15 +271,16 @@ export class PageManager extends Component<{}, PageAdminState> {
               {
                 type: 'submit',
                 bsSize: 'small',
-                bsStyle: 'primary',
+                bsStyle: 'danger',
                 onClick: this.onClickDeleteSelected,
                 disabled: this.state.selectedPages.length === this.state.data.length,
               },
               'Delete Selected'
             )
-          )
-        )
-      )
+          ),
+      ),
+      createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
+      ) 
     );
   };
 

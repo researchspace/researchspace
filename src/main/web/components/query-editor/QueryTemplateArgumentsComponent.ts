@@ -173,7 +173,7 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
               })
             )
           : null,
-        Button({ bsSize: 'small', onClick: this.handleAddNewArgument }, 'Add New Argument')
+        Button({ bsSize: 'small', bsStyle: 'primary', onClick: this.handleAddNewArgument }, 'Add New Argument')
       )
     );
   }

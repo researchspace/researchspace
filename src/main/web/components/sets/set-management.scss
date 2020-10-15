@@ -20,8 +20,7 @@
 
 $light-border: 1px solid #dddddd;
 $dark-border: 1px solid #a2a2a2;
-$background-color-set-management: #f5f5f5;
-$background-color-set-management-sets: #e5e5e5;
+$background-color-set-management: $color-sidebar-bg;
 
 .set-management {
   display: flex;
@@ -65,7 +64,18 @@ $background-color-set-management-sets: #e5e5e5;
 
   &__search {
     display: flex;
-    padding: 10px;
+
+    //Search input specific for the Clipboard
+    .clearable-input {
+      padding: 0px;
+      border-radius: 20px;
+      background-color: $color-primary-50;
+    }
+    
+    .clearable-input__input.form-control {
+      padding: 4px 8px 4px 15px;
+      width: 100%;
+    }
   }
 
   &__search-input {
@@ -114,7 +124,7 @@ $background-color-set-management-sets: #e5e5e5;
     flex: auto;
     overflow-y: auto;
     height: 0;
-    background: $background-color-set-management-sets;
+    background: $background-color-set-management;
     z-index: 10;
   }
 
@@ -203,8 +213,7 @@ $background-color-set-management-sets: #e5e5e5;
 
   &__set-items {
     display: flex;
-    border-top: $dark-border;
-    background: $background-color-set-management-sets;
+    background: $background-color-set-management;
   }
   &--list-view &__set-items {
     flex-direction: column;
@@ -434,14 +443,21 @@ $background-color-set-management-sets: #e5e5e5;
 
 .set-management.set-management--list-view,
 .set-management.set-management--grid-view {
+
   .set-management__search-and-filters {
-    box-shadow: 0 0 6px 1px #ccc;
+      border-bottom: 1px solid $color-primary-100;
+      padding-left: 24px;
+      padding-right: 24px;
+      padding-bottom: 16px;
+
+      .Select-control {
+        border: none;
+        border-bottom: 1px solid $color-dark;
+        background-color: transparent;
+      }
   }
 
   .set-management__single-set-header-top {
-    .set-management__search-and-filters {
-      box-shadow: none;
-    }
 
     .set-management__filter {
       border-top: none;

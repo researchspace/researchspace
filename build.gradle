@@ -24,7 +24,7 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.4.v20200928'
+    id 'org.gretty' version '3.0.4.v20201014'
 
     // To run webpack-dev-server in the background
     id 'com.github.psxpaul.execfork' version '0.1.13'
@@ -74,9 +74,6 @@ war {
 
 farms {
     farm 'researchspace', {
-        webapp project,
-            contextPath: '/'
-
         // setup blazegraph for local development
         webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6-researchspace',
             contextPath: '/blazegraph'
@@ -86,6 +83,8 @@ farms {
             contextPath: '/digilib',
             initParameters: ["config-file": "./bundle-config/digilib-config.xml"]
 
+        webapp project,
+            contextPath: '/'
     }
 }
 
@@ -136,6 +135,8 @@ gretty {
     // see https://akhikhl.github.io/gretty-doc/Gretty-configuration.html#_inplacemode
     // see https://akhikhl.github.io/gretty-doc/Fast-reload.html
     inplaceMode = 'hard'
+
+    redeployMode = 'redeploy'
 
     // don't restart jetty when templates in the resource folder are changed
     fastReload = "${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps".toString()

@@ -160,8 +160,6 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
     const errors = FieldValue.getErrors(value);
     if (errors.size > 0) {
       return errors.some(FieldError.isPreventSubmit) ? 'error' : 'warning';
-    } else if (!FieldValue.isEmpty(value)) {
-      return 'success';
     } else {
       return undefined;
     }
@@ -254,8 +252,6 @@ function getLanguageFromNode(node: Rdf.Node): string | undefined {
 
 function getTextAreaStyle(style: ValidationStyle): CSSProperties {
   switch (style) {
-    case 'success':
-      return { borderColor: '#43ac6a' };
     case 'warning':
       return { borderColor: '#e99002' };
     case 'error':

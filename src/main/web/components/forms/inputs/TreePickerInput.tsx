@@ -43,6 +43,24 @@ import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
 
 export interface TreePickerInputProps extends MultipleValuesProps {
   placeholder?: string;
+
+  /**
+   * Automatically open/close dropdown in full mode when input focused/blurred.
+   * @default true
+   */
+  openDropdownOnFocus?: boolean;
+
+  /**
+   * Closes the dropdown when some value is selected.
+   *
+   * @default true
+   */
+  closeDropdownOnSelection?: boolean;
+
+  /**
+   * Scheme IRI that that to use in Tree Patterns from the Field Definition.
+   */
+  scheme?: string;
 }
 
 interface State {
@@ -62,9 +80,14 @@ const CLASS_NAME = 'semantic-form-tree-picker-input';
  * <semantic-form-tree-picker-input for='place'></semantic-form-tree-picker-input>
  */
 export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, State> {
+  static defaultProps: Partial<TreePickerInputProps> = {
+    openDropdownOnFocus: true,
+    closeDropdownOnSelection: true,
+  };
+
   constructor(props: TreePickerInputProps, context: any) {
     super(props, context);
-    const config = this.props.definition.treePatterns || { type: 'simple' };
+    const config = this.props.definition.treePatterns || { type: 'simple', scheme: props.scheme };
     const treeQueries: ComplexTreePatterns = config.type === 'full' ? config : createDefaultTreeQueries(config);
     this.state = { treeVersionKey: 0, treeQueries };
   }
@@ -121,6 +144,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   };
 
   private renderTreePicker() {
+    const { openDropdownOnFocus, closeDropdownOnSelection } = this.props;
     const { treeVersionKey, treeQueries, treeSelection } = this.state;
     const { rootsQuery, childrenQuery, parentsQuery, searchQuery } = treeQueries;
 
@@ -140,6 +164,8 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
         searchQuery={searchQuery}
         initialSelection={treeSelection}
         multipleSelection={true}
+        openDropdownOnFocus={openDropdownOnFocus}
+        closeDropdownOnSelection={closeDropdownOnSelection}
         onSelectionChanged={(selection) => {
           const selectionLeafs = TreeSelection.leafs(selection);
           const selectionSet = selectionLeafs.map((leaf) => leaf.iri).toSet();

@@ -25,7 +25,7 @@ import { requestAsProperty } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
 
 import { getPreferredUserLanguage } from './language';
-import { purgeTemplateCache } from './template';
+import { purgeTemplateCache } from './template/TemplateCache';
 
 export interface TemplateContent {
   appId: string | null;

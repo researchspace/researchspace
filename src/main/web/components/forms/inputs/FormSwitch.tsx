@@ -36,6 +36,7 @@ import HiddenInput, { HiddenInputProps } from '../inputs/HiddenInput';
 import { queryValues } from '../QueryValues';
 import { Rdf } from 'platform/api/rdf';
 import { Spinner } from 'platform/components/ui/spinner';
+import { InputKind } from './InputCommpons';
 
 export interface FormSwitchProps extends SingleValueInputProps {
   switchOnField: string;
@@ -87,6 +88,8 @@ const CLASS_NAME = 'form-switch';
  *  </semantic-form-switch>
  */
 export class FormSwitch extends SingleValueInput<FormSwitchProps, {}> {
+  public static readonly inputKind = InputKind.FormSwitch;
+
   private readonly cancellation = new Cancellation();
 
   private switchOperations = this.cancellation.derive();

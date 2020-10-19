@@ -17,32 +17,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from 'react';
-import { ReactElement } from 'react';
-
-import { SemanticContext } from 'platform/api/components';
-
-import { OverlaySystem as OverlaySystemComponent } from './OverlaySystem';
-
-const OVERLAY_SYSTEM_REF = 'overlaySystem';
-let _system: OverlaySystemComponent;
-
-export interface OverlaySystem {
-  show(key: string, dialog: ReactElement<any>, context?: SemanticContext): void;
-  hide(key: string): void;
-  hideAll(): void;
-}
-
-export function renderOverlaySystem() {
-  return React.createElement(OverlaySystemComponent, { key: OVERLAY_SYSTEM_REF, ref: OVERLAY_SYSTEM_REF });
-}
-
-export function registerOverlaySystem(_this: React.Component<any, any>) {
-  _system = _this.refs[OVERLAY_SYSTEM_REF] as OverlaySystemComponent;
-}
-
-export function getOverlaySystem(): OverlaySystem {
-  return _system;
-}
-
+export { OverlaySystem, renderOverlaySystem, registerOverlaySystem, getOverlaySystem } from './OverlaySystem';
 export * from './OverlayDialog';

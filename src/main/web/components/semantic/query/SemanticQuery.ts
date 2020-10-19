@@ -17,12 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReactElement, CSSProperties, Props, createElement } from 'react';
+import { ReactElement, Props, createElement } from 'react';
 import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
-import { Component, ComponentContext } from 'platform/api/components';
+import { Component, ComponentProps, ComponentContext } from 'platform/api/components';
 import { ErrorNotification } from 'platform/components/ui/notification';
 
 import { Spinner } from 'platform/components/ui/spinner';
@@ -40,7 +40,7 @@ export interface SemanticQueryConfig {
    * **Example:** `My Result: {{#each bindings}}{{bindingName.value}}{{/each}}` .
    * **Default:** If no template is provided, all tuples for the first projection variable will we rendered as a comma-separated list.
    */
-  template: string;
+  template?: string;
 
   /**
    * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied when query returns no results.
@@ -58,7 +58,7 @@ export interface SemanticQueryConfig {
   style?: string;
 }
 
-export type SemanticQueryProps = SemanticQueryConfig & Props<SemanticQuery>;
+export type SemanticQueryProps = SemanticQueryConfig & Props<SemanticQuery> & ComponentProps;
 
 interface SemanticQueryState {
   result?: Data.Maybe<SparqlClient.SparqlSelectResult>;
@@ -147,7 +147,7 @@ export class SemanticQuery extends Component<SemanticQueryProps, SemanticQuerySt
    */
   private renderResult = (templateString?: string) => (res: SparqlClient.SparqlSelectResult): ReactElement<any> => {
     if (SparqlUtil.isSelectResultEmpty(res)) {
-      return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
+      return createElement(TemplateItem, { template: { source: this.getNoResultTemplateString() } });
     }
 
     const firstBindingVar = res.head.vars[0];
@@ -175,6 +175,14 @@ export class SemanticQuery extends Component<SemanticQueryProps, SemanticQuerySt
     if (template) {
       return template;
     }
+
+    // try to get default "<template>" element with id template from the local scope
+    const localScope = this.props.markupTemplateScope;
+    const partial = localScope ? localScope.getPartial('template') : undefined;
+    if (partial) {
+      return partial.source;
+    }
+
     return (
       '<div>{{#each bindings}}' +
       '{{#if (isIri ' +
@@ -192,6 +200,21 @@ export class SemanticQuery extends Component<SemanticQueryProps, SemanticQuerySt
       '{{/each}}</div>'
     );
   };
+
+  private getNoResultTemplateString = (): string => {
+    if (this.props.noResultTemplate) {
+      return this.props.noResultTemplate;
+    }
+
+    // try to get default noResultTemplate "<template>" element with id template from the local scope
+    const localScope = this.props.markupTemplateScope;
+    const partial = localScope ? localScope.getPartial('noResultTemplate') : undefined;
+    if (partial) {
+      return partial.source;
+    } else {
+      return '';
+    }
+  }
 
   /**
    * Executes the SPARQL Select query and pushes results to state on value.

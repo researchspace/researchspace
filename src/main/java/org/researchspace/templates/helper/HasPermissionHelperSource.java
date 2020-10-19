@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
+import org.researchspace.templates.TemplateContext;
 
 import com.github.jknack.handlebars.Options;
 
@@ -45,5 +46,10 @@ public class HasPermissionHelperSource {
         logger.trace("Checking permission in {} template helper. Permission?: {}", options.helperName, permitted);
         // see https://github.com/jknack/handlebars.java/issues/483
         return permitted ? "true" : "";
+    }
+
+    public String userUri(Options options) {
+        TemplateContext context = (TemplateContext) options.context.model();
+        return context.getNamespaceRegistry().get().getUserIRI().stringValue();
     }
 }

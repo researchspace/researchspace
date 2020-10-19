@@ -41,7 +41,7 @@ interface State {
  *
  * Multiple overlays can be displayed at the same time.
  */
-export class OverlaySystem extends Component<Props, State> {
+class OverlaySystemComponent extends Component<Props, State> {
   constructor(props: Props, context) {
     super(props, context);
 
@@ -84,4 +84,23 @@ export class OverlaySystem extends Component<Props, State> {
   };
 }
 
-export default OverlaySystem;
+const OVERLAY_SYSTEM_REF = 'overlaySystem';
+let _system: OverlaySystemComponent;
+
+export interface OverlaySystem {
+  show(key: string, dialog: ReactElement<any>, context?: SemanticContext): void;
+  hide(key: string): void;
+  hideAll(): void;
+}
+
+export function renderOverlaySystem() {
+  return createElement(OverlaySystemComponent, { key: OVERLAY_SYSTEM_REF, ref: OVERLAY_SYSTEM_REF });
+}
+
+export function registerOverlaySystem(_this: React.Component<any, any>) {
+  _system = _this.refs[OVERLAY_SYSTEM_REF] as OverlaySystemComponent;
+}
+
+export function getOverlaySystem(): OverlaySystem {
+  return _system;
+}

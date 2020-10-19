@@ -19,8 +19,7 @@
 
 import * as request from 'platform/api/http';
 
-import { purgeRemoteTemplateCache, parseTemplate } from './RemoteTemplateFetcher';
-import { TemplateScope } from './TemplateScope';
+import { parseTemplate } from './RemoteTemplateFetcher';
 
 const TEMPLATE_SERVICE_URL = '/rest/template/';
 
@@ -49,11 +48,6 @@ export function getNoPermissionsPage(cb: (html: string) => void): void {
     .end((err, res) => {
       cb(res.text);
     });
-}
-
-export function purgeTemplateCache() {
-  TemplateScope.default.clearCache();
-  purgeRemoteTemplateCache();
 }
 
 export { ContextCapturer, CapturedContext } from './functions';

@@ -34,6 +34,8 @@ import {
   ErrorKind,
 } from '../FieldValues';
 
+import { InputKind } from './InputCommpons';
+
 export interface SingleValueInputProps {
   /** Key to associate with FieldDefinition by name */
   for?: string;
@@ -62,6 +64,8 @@ interface SingleValueInputStatic {
 }
 
 export abstract class SingleValueInput<P extends SingleValueInputProps, S> extends Component<P, S> {
+  public static readonly inputKind: InputKind = InputKind.SingleValueInput;
+
   constructor(props: P, context: any) {
     super(props, context);
   }

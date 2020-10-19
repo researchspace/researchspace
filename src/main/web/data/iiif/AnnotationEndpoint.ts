@@ -29,7 +29,7 @@ export interface AnnotationEndpoint {
   search?: (canvasIri: Rdf.Iri) => Kefir.Property<OARegionAnnotation[]>;
   create?: (annotation: OARegionAnnotation) => Kefir.Property<Rdf.Iri>;
   update?: (annotation: OARegionAnnotation) => Kefir.Property<Rdf.Iri>;
-  remove?: (annotationIri: Rdf.Iri) => Kefir.Property<void>;
+  remove?: (annotationIri: OARegionAnnotation) => Kefir.Property<void>;
   userAuthorize?: (action: any, annotation: OARegionAnnotation) => boolean;
 }
 
@@ -65,7 +65,7 @@ export class LdpAnnotationEndpoint implements AnnotationEndpoint {
     return LdpRegionService.updateRegion(id, { annotation });
   }
 
-  remove(annotationIri: Rdf.Iri) {
-    return LdpRegionService.deleteRegion(annotationIri) as Kefir.Property<any>;
+  remove(annotation: OARegionAnnotation) {
+    return LdpRegionService.deleteRegion(Rdf.iri(annotation['@id'])) as Kefir.Property<any>;
   }
 }

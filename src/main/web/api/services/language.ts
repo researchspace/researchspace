@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BrowserPersistence } from 'platform/api/persistence';
+import { BrowserPersistence } from '../persistence/BrowserPersistence';
 import { Rdf } from 'platform/api/rdf';
 
 import { ConfigHolder } from 'platform/api/services/config-holder';

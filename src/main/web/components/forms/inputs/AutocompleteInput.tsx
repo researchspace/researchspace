@@ -25,7 +25,10 @@ import { AutoCompletionInput } from 'platform/components/ui/inputs';
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, EmptyValue } from '../FieldValues';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
-import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
+import {
+  SingleValueInput, AtomicValueInput, AtomicValueInputProps,
+} from './SingleValueInput';
+import { createDropAskQueryForField } from '../ValidationHelpers';
 import { ValidationMessages } from './Decorations';
 
 export interface AutocompleteInputProps extends AtomicValueInputProps {
@@ -111,8 +114,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           placeholder={placeholder}
           droppable={{
             // enable droppable for autocomplete input
-            // TODO think about the way to restrict things that can be dropped based on field range
-            query: 'ASK {}',
+            query: createDropAskQueryForField(definition),
             styles: {
               enabled: {
                 outline: '3px dashed #1D0A6E'

@@ -282,7 +282,7 @@ class ImageThumbnailComponent extends Component<Props, State> {
   }
 }
 
-function computeDisplayedRegionWithMargin(
+export function computeDisplayedRegionWithMargin(
   regionBounds: Rectangle,
   imageSize: ImageApi.ImageBounds,
   marginPercent: number

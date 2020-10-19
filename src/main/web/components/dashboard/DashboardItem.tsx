@@ -78,6 +78,13 @@ export interface DashboardViewConfig {
    * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the body of a frame item. If it is specified, it will applied to the contents of the frame item displayed as dropdown of the frame controller. Expects <code>{{iri}}</code> and <code>{{dashboardId}}</code> (or a variable specified in <code>frameVariable</code>) as context variables.
    */
   itemBodyTemplate?: string;
+
+  /**
+   * True if only one dashboard item of this kind can exist in the thinking frames.
+   *
+   * @default false
+   */
+  unique?: boolean;
 }
 
 export interface DashboardItemProps {

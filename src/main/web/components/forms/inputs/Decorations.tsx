@@ -74,14 +74,14 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
   }
 
   private renderHeader() {
-    const { definition, dataState } = this.props;
+    const { definition, dataState, label } = this.props;
     const isRequired = definition.minOccurs !== 0;
     const isReady = dataState === DataState.Ready;
     return (
       <div className={`${DECORATOR_CLASS}__header`}>
-        {definition.label && definition.label.length ? (
+        {(definition.label && definition.label.length) || label ? (
           <span className={`${DECORATOR_CLASS}__label`}>
-            {getPreferredLabel(definition.label)}
+            {label ? label : getPreferredLabel(definition.label)}
             {isRequired ? <span className={`${DECORATOR_CLASS}__label-required`} title="Required field" /> : null}
           </span>
         ) : null}

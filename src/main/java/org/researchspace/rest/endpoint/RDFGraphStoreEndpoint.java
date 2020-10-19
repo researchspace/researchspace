@@ -238,12 +238,12 @@ public class RDFGraphStoreEndpoint {
                         try (RepositoryResult<Statement> repositoryResult = con.getStatements(null, null, null, false,
                                 uri)) {
                             RDFWriter writer = factory.getWriter(os);
+                            writer.startRDF();
                             for (Map.Entry<String, String> entry : ns.getPrefixMap().entrySet()) {
                                 String prefix = entry.getKey();
                                 String namespace = entry.getValue();
                                 writer.handleNamespace(prefix, namespace);
                             }
-                            writer.startRDF();
                             if (useQuads) {
                                 while (repositoryResult.hasNext()) {
                                     Statement st = repositoryResult.next();

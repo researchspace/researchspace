@@ -24,7 +24,7 @@ import { HaloLink } from '../widgets/haloLink';
 import { LinkStateWidget } from './linkStateWidget';
 import { ElementDecorator } from './elementDecorator';
 
-import { placeElementsAround, forceLayout, applyLayout } from '../viewUtils/layout';
+import { placeElementsAround, forceLayout, applyLayout, removeOverlaps } from '../viewUtils/layout';
 import { Spinner, SpinnerProps } from '../viewUtils/spinner';
 
 import { AsyncModel, requestElementData, restoreLinksBetweenElements } from './asyncModel';
@@ -743,12 +743,21 @@ export class EditorController {
     });
   }
 
-  createNewEntity({ elementModel, temporary }: { elementModel: ElementModel; temporary?: boolean }): Element {
+  createNewEntity({
+    elementModel, temporary
+  }: { elementModel: ElementModel; position?: Vector, temporary?: boolean }): Element {
     const batch = this.model.history.startBatch('Create new entity');
 
+    // when creating new element we want to put it in the center of the diagram
+    // but avoid overlap with other existing elements
+    // to do this we need to remember elements before addition an then
+    // call removeOverlaps with fixed old elements
+    const fixedElements = new Set(this.model.elements);
     const element = this.model.createElement(elementModel);
+    // set initial position slightly off from the center to avoid webcola bug
+    // see https://github.com/tgdwyer/WebCola/issues/279
+    element.setPosition({x: Math.random(), y: Math.random()});
     element.setExpanded(true);
-
     if (temporary) {
       this.setTemporaryState(TemporaryState.addElement(this.temporaryState, element.data));
       batch.discard();
@@ -756,6 +765,12 @@ export class EditorController {
       this.setAuthoringState(AuthoringState.addElement(this._authoringState, element.data));
       batch.store();
     }
+
+    this.view.performSyncUpdate();
+    applyLayout(
+      this.model,
+      removeOverlaps({model: this.model, fixedElements, padding: { x: 15, y: 15 }})
+    );
     return element;
   }
 

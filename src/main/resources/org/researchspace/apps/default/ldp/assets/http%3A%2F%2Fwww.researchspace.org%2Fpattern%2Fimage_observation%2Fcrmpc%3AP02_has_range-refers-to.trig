@@ -1,0 +1,72 @@
+
+<http://www.researchspace.org/pattern/image_observation/crmpc:P02_has_range-refers-to/context> {
+  <http://www.researchspace.org/pattern/image_observation/crmpc:P02_has_range-refers-to>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>,
+      <http://www.cidoc-crm.org/cidoc-crm/E4_Period>, <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>,
+      <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-18cbcf6ed3cf4a56b083f40725a71709-fw9spe;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/entity/E55_Type/d2149fcd-563d-45bb-a65c-e3da7ad9fc47>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.w3.org/2000/01/rdf-schema#label> "P02_has_range refers to";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-18cbcf6ed3cf4a56b083f40725a71709-x7d9an;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-18cbcf6ed3cf4a56b083f40725a71709-pvn69r;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-18cbcf6ed3cf4a56b083f40725a71709-6lcono;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2020-10-20T15:22:39.464+03:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-18cbcf6ed3cf4a56b083f40725a71709-6lcono a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P02_has_range ?value.
+}""" .
+  
+  _:genid-18cbcf6ed3cf4a56b083f40725a71709-x7d9an a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P02_has_range $value .
+  ?entity crm:P67_refers_to $value .
+} WHERE {
+  BIND(IRI(STRBEFORE(STR($subject), \"/PC67_refers_to/\")) AS ?entity).
+  $subject crm:P02_has_range $value .
+}""" .
+  
+  _:genid-18cbcf6ed3cf4a56b083f40725a71709-fw9spe a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  {
+    ?value a/rdfs:subClassOf* crm:E18_Physical_Thing. 
+    FILTER NOT EXISTS { ?value a/rdfs:subClassOf* crm:E21_Person.  }
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Physical Thing]\") AS ?label)
+  } UNION {
+    ?value a/rdfs:subClassOf* crm:E21_Person. 
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Person]\") AS ?label)
+  } UNION {
+    ?value a/rdfs:subClassOf* crm:E53_Place. 
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Place]\") AS ?label)
+  } UNION {
+    ?value a/rdfs:subClassOf* crm:E4_Period. 
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Period]\") AS ?label)
+  }
+} LIMIT 20""" .
+  
+  _:genid-18cbcf6ed3cf4a56b083f40725a71709-pvn69r a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P02_has_range $value .
+  ?entity crm:P67_refers_to $value .
+} WHERE {
+  BIND(IRI(STRBEFORE(STR($subject), \"/PC67_refers_to/\")) AS ?entity).
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/image_observation/crmpc:P02_has_range-refers-to> .
+}

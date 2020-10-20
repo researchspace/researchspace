@@ -13,11 +13,11 @@
                    P65_shows_visual_item="http://www.researchspace.org/pattern/image_observation/crm:P65_shows_visual_item"
                    P67i_is_referred_to_by="http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by"
                    P128_carries="http://www.researchspace.org/pattern/image_observation/crm:P128_carries"
-                   P138i_has_representation="http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation" 
+                   P138i_has_representation="http://www.researchspace.org/pattern/image_observation/crm:P138i_has_representation" 
                    O16i_value_was_observed_by-physical="http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-physical"
                    O16i_value_was_observed_by-digital="http://www.researchspace.org/pattern/image_observation/crmsci:O16i_value_was_observed_by-digital"
 
-                   P01i_is_domain_of-feature-similarity="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-feature-similarity"
+                   P01i_is_domain_of-feature-similarity="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-feature-similarity"                   
 							]]'
 >
   <mp-event-proxy id='refresh-the-form' on-event-source='feature-creation-form' on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
@@ -54,6 +54,7 @@
     <semantic-form-composite-input
                                    for="P65_shows_visual_item"
                                    label="Shows Inscription"
+                                   render-header=false
                                    new-subject-template="/E34_Inscription" 
                                    fields='[[fieldDefinitions
                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -67,6 +68,8 @@
                                       
                                       P01i_is_domain_of-refers-to-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-refers-to-feature"
                                       P01i_is_domain_of-refers-to="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-refers-to"
+                                      P02i_is_range_of-referred-to-by-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P02i_is_range_of-referred-to-by-feature"
+
                                     ]]'
     >
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E34_Inscription'> </semantic-form-hidden-input>
@@ -86,7 +89,7 @@
         <semantic-form-drag-and-drop-input for="P02_has_range-refers-to-feature" render-header=false></semantic-form-drag-and-drop-input>
         <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-feature-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
         <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
-      </semantic-form-composite-input>
+      </semantic-form-composite-input>      
             
       <semantic-form-text-input for='P190_has_symbolic_content' label='Inscription Text' multiline=true></semantic-form-text-input>
 
@@ -134,6 +137,22 @@
         <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
         <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
       </semantic-form-composite-input>
+      
+      <semantic-form-composite-input for="P02i_is_range_of-referred-to-by-feature" 
+                                     new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                     fields='[[
+                                       fieldDefinitions
+                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                         P01_has_domain-referred-to-by-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P01_has_domain-referred-to-by-feature"
+                                         P67_1_has_type-kind-of-feature-reference="http://www.researchspace.org/pattern/image_observation/crmpc:P67.1_has_type-kind-of-feature-reference"
+                                         P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                                     ]]'
+    >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+        <semantic-form-drag-and-drop-input for="P01_has_domain-referred-to-by-feature" render-header=false></semantic-form-drag-and-drop-input>
+        <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-feature-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
+        <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
+      </semantic-form-composite-input>  
 
       <semantic-form-text-input for="P3_has_note" label="Note about the Inscription" multiline='true'> </semantic-form-text-input>
     </semantic-form-composite-input>
@@ -143,6 +162,7 @@
     <semantic-form-composite-input render-header=false
                                    for="P65_shows_visual_item" 
                                    label="Shows Mark"
+                                   render-header=false
                                    new-subject-template="/E37_Mark" 
                                    fields='[[fieldDefinitions
                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -154,7 +174,11 @@
                                         P138_represents-visual-item="http://www.researchspace.org/pattern/image_observation/crm:P138_represents-visual-item"
                                         P190_has_symbolic_object="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
                                         PX_has_transliteration="http://www.researchspace.org/pattern/image_observation/PX_has_transliteration"
+                                        
+                                        P01i_is_domain_of-refers-to-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-refers-to-feature"
                                         P01i_is_domain_of-refers-to="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-refers-to"
+                                        P02i_is_range_of-referred-to-by-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P02i_is_range_of-referred-to-by-feature"
+
                                       ]]'
      >
       <semantic-form-tree-picker-input for="P2_has_type" 
@@ -163,7 +187,7 @@
                                        default-value="http://collection.britishmuseum.org/id/thesauri/THES122877"
       ></semantic-form-tree-picker-input>
       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E37_Mark'> </semantic-form-hidden-input>
-
+    
       <semantic-form-text-input for='P190_has_symbolic_object' label="Mark text"></semantic-form-text-input>
       
       <semantic-form-tree-picker-input for="P72_has_language" 
@@ -178,6 +202,7 @@
                                 new-subject-template="/E33_Linguistic_Object/Translation" 
                                 fields='[[fieldDefinitions
                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                        P72_has_language="http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
                                         P190_has_symbolic_content="http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content"
                                 ]]'
                                 >
@@ -193,6 +218,22 @@
       
       <semantic-form-tree-picker-input for="P129_is_about" label="Subject" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
        
+      <semantic-form-composite-input for="P01i_is_domain_of-refers-to-feature" 
+                                     new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                     fields='[[
+                                       fieldDefinitions
+                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                         P02_has_range-refers-to-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P02_has_range-refers-to-feature"
+                                         P67_1_has_type-kind-of-feature-reference="http://www.researchspace.org/pattern/image_observation/crmpc:P67.1_has_type-kind-of-feature-reference"
+                                         P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                                     ]]'
+    >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+        <semantic-form-drag-and-drop-input for="P02_has_range-refers-to-feature" render-header=false></semantic-form-drag-and-drop-input>
+        <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-feature-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
+        <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
+      </semantic-form-composite-input>
+      
       <semantic-form-composite-input for="P01i_is_domain_of-refers-to" 
                                      new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
                                      fields='[[
@@ -210,6 +251,22 @@
         <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
       </semantic-form-composite-input>
       
+      <semantic-form-composite-input for="P02i_is_range_of-referred-to-by-feature" 
+                                     new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                     fields='[[
+                                       fieldDefinitions
+                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                         P01_has_domain-referred-to-by-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P01_has_domain-referred-to-by-feature"
+                                         P67_1_has_type-kind-of-feature-reference="http://www.researchspace.org/pattern/image_observation/crmpc:P67.1_has_type-kind-of-feature-reference"
+                                         P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                                     ]]'
+    >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+        <semantic-form-drag-and-drop-input for="P01_has_domain-referred-to-by-feature" render-header=false></semantic-form-drag-and-drop-input>
+        <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-feature-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
+        <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
+      </semantic-form-composite-input>  
+      
       <semantic-form-text-input for="P3_has_note" label="Note about the Mark" multiline='true'> </semantic-form-text-input>
     </semantic-form-composite-input>
       {{/case}}
@@ -217,6 +274,7 @@
       {{#case "Visual Item" break=true}}
       <semantic-form-composite-input for="P65_shows_visual_item"
                                      label="Shows Visual Item"
+                                     render-header=false
                                      new-subject-template="/visual_item" 
                                      fields='[[
                                        fieldDefinitions
@@ -224,11 +282,31 @@
                                          P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
                                          P129_is_about="http://www.cidoc-crm.org/cidoc-crm/P129_is_about"
                                          P138_represents-visual-item="http://www.researchspace.org/pattern/image_observation/crm:P138_represents-visual-item"
+                                         
+                                         P01i_is_domain_of-refers-to-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-refers-to-feature"
                                          P01i_is_domain_of-refers-to="http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-refers-to"
+                                         P02i_is_range_of-referred-to-by-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P02i_is_range_of-referred-to-by-feature"
+
                                      ]]'>
         <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item'> </semantic-form-hidden-input>
         <semantic-form-tree-picker-input for="P129_is_about" label="Subject" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
         <semantic-form-autocomplete-input for="P138_represents-visual-item"></semantic-form-autocomplete-input>
+        
+        <semantic-form-composite-input for="P01i_is_domain_of-refers-to-feature" 
+                                     new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                     fields='[[
+                                       fieldDefinitions
+                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                         P02_has_range-refers-to-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P02_has_range-refers-to-feature"
+                                         P67_1_has_type-kind-of-feature-reference="http://www.researchspace.org/pattern/image_observation/crmpc:P67.1_has_type-kind-of-feature-reference"
+                                         P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                                     ]]'
+    >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+        <semantic-form-drag-and-drop-input for="P02_has_range-refers-to-feature" render-header=false></semantic-form-drag-and-drop-input>
+        <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-feature-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
+        <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
+      </semantic-form-composite-input>
         
         <semantic-form-composite-input for="P01i_is_domain_of-refers-to" 
                                        new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
@@ -246,6 +324,22 @@
           <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
           <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
         </semantic-form-composite-input>
+        
+        <semantic-form-composite-input for="P02i_is_range_of-referred-to-by-feature" 
+                                     new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                     fields='[[
+                                       fieldDefinitions
+                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                         P01_has_domain-referred-to-by-feature="http://www.researchspace.org/pattern/image_observation/crmpc:P01_has_domain-referred-to-by-feature"
+                                         P67_1_has_type-kind-of-feature-reference="http://www.researchspace.org/pattern/image_observation/crmpc:P67.1_has_type-kind-of-feature-reference"
+                                         P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                                     ]]'
+    >
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+        <semantic-form-drag-and-drop-input for="P01_has_domain-referred-to-by-feature" render-header=false></semantic-form-drag-and-drop-input>
+        <semantic-form-tree-picker-input for="P67_1_has_type-kind-of-feature-reference" scheme="http://collection.britishmuseum.org/id/thesauri/subject"></semantic-form-tree-picker-input>
+        <semantic-form-text-input for="P3_has_note" label="Note about the Reference" multiline='true'> </semantic-form-text-input>
+      </semantic-form-composite-input>  
         
         <semantic-form-text-input for="P3_has_note" label="Note about the Visual Item" multiline='true'> </semantic-form-text-input>
       </semantic-form-composite-input>    
@@ -394,3 +488,4 @@
   </div>
   
 </semantic-form>
+ 

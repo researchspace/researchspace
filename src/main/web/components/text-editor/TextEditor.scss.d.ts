@@ -1,5 +1,6 @@
 declare namespace TextEditorScssNamespace {
   export interface ITextEditorScss {
+    active: string;
     draggableGripper: string;
     dropdownMenuItem: string;
     dropdownMenuItemIcon: string;

@@ -115,7 +115,7 @@ const plugins = [
     },
   },
   PlaceholderPlugin({
-    placeholder: 'Enter narrative',
+    placeholder: 'Write your narrative',
     when: 'isEmptyFirstParagraph',
   }),
 ];
@@ -162,7 +162,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
         ],
       }
     }),
-    title: 'New Narrative',
+    title: 'Narrative Title',
     anchorBlock: null as Slate.Block,
     availableTemplates: {},
     loading: true,

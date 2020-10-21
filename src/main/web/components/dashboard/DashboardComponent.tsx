@@ -262,7 +262,7 @@ export class DashboardComponent extends Component<Props, State> {
     const { focus } = this.state;
     const isFocused = focus === item.id;
     const focusedClassName = isFocused ? styles.itemLabelActive : '';
-    const dirtyClassName = item.isDirty ? 'text-danger' : '';
+
     const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
     if (view && item.resourceIri) {
       let icon = <span>[{view.label}]&nbsp;</span>;
@@ -274,7 +274,7 @@ export class DashboardComponent extends Component<Props, State> {
       return (
         <span className={`${styles.itemLabel} ${focusedClassName}`}>
           <span className={styles.itemIcon}>{icon}</span>
-          <span className={dirtyClassName}>
+           <span>
             <TemplateItem
               key={item.id}
               template={{
@@ -284,23 +284,23 @@ export class DashboardComponent extends Component<Props, State> {
             />
           </span>
           <button
-            className={`btn btn-link btn-xs pull-right ${styles.deleteItemButton}`}
+            className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
             onClick={() => this.onRemoveItem(item)}
           >
-            <i className="fa fa-times text-danger" />
+            <i className="fa fa-times" />
           </button>
         </span>
       );
     }
 
     return (
-      <span className={`${styles.itemLabel} ${focusedClassName} ${dirtyClassName}`}>
+      <span className={`${styles.itemLabel} ${focusedClassName}`}>
         Frame {item.index}
         <button
-          className={`btn btn-link btn-xs pull-right ${styles.deleteItemButton}`}
+          className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
           onClick={() => this.onRemoveItem(item)}
         >
-          <i className="fa fa-times text-danger" />
+          <i className="fa fa-times" />
         </button>
       </span>
     );

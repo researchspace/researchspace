@@ -24,10 +24,9 @@
 @import '../commons/variables.scss';
 
 $btn-default-bg: white;
-//@btn-default-border: #999;
 
 //search
-$rs-button-size: 40px;
+$rs-button-size: 38px;
 $rs-widest-button-size: 160px;
 
 //facets
@@ -39,33 +38,43 @@ $rs-widest-button-size: 160px;
 .semantic-facet-holder {
   display: flex;
   position: relative;
+
   .facet {
     flex: 1;
   }
 }
 
 .show-facet-button {
-  transform: rotate(90deg);
-  background-color: darken($btn-default-bg, 10%) !important;
-  background-color: #e6e6e6 !important;
+  transform: rotate(-90deg);
+  background-color: $color-primary-50;
   border: none;
   z-index: 10;
   outline: none;
-  width: 80px;
-  height: 30px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  
+  font-weight: 600;
+  color: $color-dark;
+  font-size: 15px;
+  line-height: 1.2;
+  white-space: nowrap;
+  min-width: 111px;
+  height: 35px;
+
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
 
   &__show {
     position: relative;
-    margin-left: -56px;
     left: 0;
-    top: 24px;
+    margin-left: -38px;
+    top: 37px;
   }
 
   &__hide {
-    margin-left: -25px;
-    margin-top: 24px;
+    position: relative;
+    margin-left: -33px;
+    top: 37px;
   }
 }
 
@@ -82,12 +91,13 @@ $rs-widest-button-size: 160px;
     // safari "webkit's version of the old ie haslayout bug"
     // http://stackoverflow.com/questions/10522054/weird-rendering-bug-in-desktop-webkit-safari-chrome-with-absolutely-positioned
     position: relative;
-    background-color: darken($btn-default-bg, 20%) !important;
+    background-color: $color-primary-10;
   }
 }
 
 .facet-relations {
-  margin: 10px 0;
+  margin: 5px 0;
+  width: 260px;
 }
 
 .facet {
@@ -114,7 +124,7 @@ $rs-widest-button-size: 160px;
       border: none;
 
       li {
-        border: 1px solid $rs-color-mediumgrey;
+        border: 1px solid $color-dark;
         border-right: none;
 
         &:last-child {
@@ -130,6 +140,7 @@ $rs-widest-button-size: 160px;
     .category-item {
       height: $rs-button-size;
 
+      color: $color-dark;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -158,10 +169,15 @@ $rs-widest-button-size: 160px;
 
   &__relations {
     margin: $padding-base-vertical 0;
+  
+  }
+
+  &-relation__content {
+    word-break: break-word;
   }
 
   &__relation {
-    margin-bottom: $padding-base-vertical;
+    margin-bottom: 7px;
     position: relative;
 
     .system-spinner {
@@ -169,6 +185,7 @@ $rs-widest-button-size: 160px;
     }
 
     &__content {
+
       &__category-image {
         width: 30px;
         position: absolute;
@@ -196,8 +213,8 @@ $rs-widest-button-size: 160px;
       &:hover,
       &:focus {
         text-decoration: none;
-        color: $list-group-link-hover-color;
-        background-color: $list-group-hover-bg;
+        background-color: $color-primary-50;
+        color: $color-dark;
       }
 
       &__icon {
@@ -218,19 +235,35 @@ $rs-widest-button-size: 160px;
     }
 
     &__values {
-      margin: $padding-base-vertical 0;
-
       margin-top: 10px;
       margin-bottom: 10px;
 
+      padding: 0 5px;
+
+      & > div:nth-child(2) {
+        height: auto !important; //overwrite inline style
+        max-height: 250px;
+        padding-left: 10px;
+        width: 240px;
+        overflow: hidden auto !important; //overwrite inline style
+      }
+
+      .form-control {
+        background-color: transparent;
+      }
+
       &__filter {
-        margin: 5px;
+        margin-bottom: 10px;
       }
 
       label {
         display: flex;
         align-items: center;
         width: 100%;
+
+        input[type='checkbox'] {
+          margin: 6px 0 0 -20px;
+        }
 
         .system-spinner {
           margin-left: $padding-base-horizontal;
@@ -239,20 +272,39 @@ $rs-widest-button-size: 160px;
         }
       }
 
+      em {
+        font-style: normal;
+        font-size: 13px;
+        font-weight: bold;
+        color: $color-warning-text;
+      }
+
       &__value {
         display: flex;
         cursor: pointer;
 
-        margin-top: 10px;
-        margin-bottom: 10px;
+        font-size: 13px;
+
+        margin-top: 8px;
+        margin-bottom: 8px;
+        padding: 3px;
+
+        width: 100%;
+        word-break: break-word;
 
         &:hover,
         &:focus {
           text-decoration: none;
-          color: $list-group-link-hover-color;
-          background-color: $list-group-hover-bg;
+          color: $color-dark;
+          background-color: $color-primary-50;
         }
       }
+    }
+
+    &__warning {
+      font-style: normal;
+      font-size: 12px;
+      color: $color-warning-darker;
     }
   }
 }

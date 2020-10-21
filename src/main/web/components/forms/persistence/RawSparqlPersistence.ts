@@ -25,7 +25,7 @@ import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import { CompositeValue, EmptyValue, FieldValue } from '../FieldValues';
-import { parseQueryStringAsUpdateOperation, withNamedGraph } from './PersistenceUtils';
+import { parseQueryStringAsUpdateOperation, withNamedGraph, addInsertIntoGraph } from './PersistenceUtils';
 import { TriplestorePersistence, computeModelDiff } from './TriplestorePersistence';
 
 export interface RawSparqlPersistenceConfig {
@@ -79,9 +79,12 @@ export class RawSparqlPersistence implements TriplestorePersistence {
           parseQueryStringAsUpdateOperation(definition.deletePattern), targetGraphIri
         );
         const insertQuery =
+          targetGraphIri ?
           withNamedGraph(
-            parseQueryStringAsUpdateOperation(definition.insertPattern),
-            targetGraphIri || targetInsertGraphIri
+            parseQueryStringAsUpdateOperation(definition.insertPattern), targetGraphIri
+          ) :
+          addInsertIntoGraph(
+            parseQueryStringAsUpdateOperation(definition.insertPattern), targetInsertGraphIri
           );
         return createFieldUpdateQueries(subject, deleteQuery, insertQuery, inserted, deleted);
       })

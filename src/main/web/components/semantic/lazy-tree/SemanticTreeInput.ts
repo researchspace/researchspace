@@ -400,6 +400,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
             RemovableBadge,
             {
               key: item.iri.value,
+              title: item.iri.value,
               onClick: onSelectionClick ? () => onSelectionClick(selection, item) : undefined,
               onRemove: () => {
                 const previous = this.state.confirmedSelection;

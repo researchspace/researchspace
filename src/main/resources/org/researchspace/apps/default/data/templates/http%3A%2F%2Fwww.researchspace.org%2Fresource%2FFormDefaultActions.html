@@ -1,0 +1,74 @@
+{{#if editable}}
+  <div class="btn-group">
+    <div>
+      {{#ifCond mode "===" "edit"}}
+        <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "{{collection}}", "broader": "{{node}}", "new": true, "edit": false}' targets='["term-forms"]'>
+          <button name="add" class="btn btn-grey">Add narrower {{itemLabel}}</button>
+        </mp-event-trigger>
+      {{/ifCond}}
+    </div>
+    <div> 
+      {{#ifCond mode "===" "edit"}}
+        <button name="reset" class="btn btn-default">Reset</button>
+        <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='item-remove-confirmation-dialog' title="Remove {{itemLabel}}" type="modal" bs-size="large">
+          <mp-overlay-dialog-trigger>
+            <button name="delete" class="btn btn-danger">Delete</button>
+          </mp-overlay-dialog-trigger>
+          <mp-overlay-dialog-content>
+            <div>
+              <div>
+                <p>Are you sure you want to remove the '<strong><mp-label iri='{{node}}'></mp-label></strong>' ?</p>
+                <semantic-query 
+                                query='
+                                  SELECT DISTINCT ?resource ?label  
+                                  WHERE {
+                                    ?resource ?p <{{node}}> .
+                                    OPTIONAL {<{{node}}> skos:prefLabel ?nodeLabel .}
+                                    OPTIONAL {<{{node}}> rdfs:label ?nodeLabel .}
+                    
+                                    OPTIONAL {
+                                      ?resource rdfs:label ?label .
+                                    }
+                                    OPTIONAL {
+                                      ?resource skos:prefLabel ?label .
+                                    }
+                                  }
+                                '
+                                template='{{> referredByTemplate node=node}}'
+                >
+                  <template id='referredByTemplate'>
+                    Some resources in the system link to the {{node}}:
+                    <ul>
+                      {{#each bindings}}
+                        <li>
+                          <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
+                        </li>
+                      {{/each}}
+                    </ul>
+                  </template>
+                </semantic-query>
+              </div>
+              <div class="form-btn-group">
+                <div style="display: flex; justify-content: flex-end; width: 100%;">
+                  <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["item-remove-confirmation-dialog"]'>
+                    <button class="btn btn-default">Cancel</button>
+                  </mp-event-trigger>
+                  <mp-event-trigger id='confirm-entity-removal' type='Form.RemoveResource' data='{"iri": "{{node}}"}' targets='["vocab-form"]'>
+                    <button class="btn btn-danger">Delete Entity</button>
+                  </mp-event-trigger>  
+                  <mp-event-proxy id='update-form' on-event-source='vocab-form' on-event-type='Form.ResourceRemoved'
+                                  proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["term-forms"]'
+                  ></mp-event-proxy>
+                  <mp-event-proxy id='close-form-removal-dialog' on-event-source='vocab-form' on-event-type='Form.ResourceRemoved'
+                                  proxy-event-type='OverlayDialog.Close' data='{}' proxy-targets='["item-remove-confirmation-dialog"]'
+                  ></mp-event-proxy>
+                </div>
+              </div>
+            </div>
+          </mp-overlay-dialog-content>
+        </mp-overlay-dialog>
+      {{/ifCond}}
+      <button name="submit" class="btn btn-primary">Save</button>
+    </div>
+  </div>
+{{/if}}

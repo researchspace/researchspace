@@ -1,0 +1,116 @@
+[[!-- 
+  This is Template that can be used to browse hierarchical resources or simple collection of resources
+  
+  variables:
+    collection - resource collection IRI (concept sheme, authority list, etc.);
+    itemLabel - label that describes collection item, like Term, Concept, Place, Actor, etc;
+    resourceForm - IRI of the form that should be used to edit the resource in the collection;
+    membershipProperty - property that connects resource to the collection, like  skos:inScheme, crm:P71i_is_listed_in, etc;
+    broaderProperty - (optional) if collection is hierarchical specifies property that is used to refer from item to it's broader resource, like skos:broader, crm:P127_has_broader_term, crm:P89_falls_within, etc;
+    orderByPattern - (optional) SPARQL pattern that can be used to get the order
+    editable - false if collection is readonly one, true otherwise
+--]]
+<mp-event-proxy id='tree-refresh' on-event-source='vocab-form' proxy-event-type='Component.Refresh' proxy-targets='["mytree"]'></mp-event-proxy>
+
+<div class="rs-vocabulary-terms-container">
+  <div class="schema-area-bg"></div>
+  <div class="rs-vocabulary-terms">
+    <h1 class="rs-vocabulary-terms-title"><strong><mp-label iri='{{collection}}'></mp-label></strong> </h1>
+    <div class="rs-vocabulary-terms-area">
+      <h1>{{itemLabel}}s</h1>
+      <mp-event-target-refresh id='mytree'>
+        <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple' 
+                            config='{"scheme": "{{collection}}", 
+                                    {{#if broaderProperty}}
+                                    "relationPattern": "?item <{{broaderProperty}}> ?parent",
+                                    {{/if}}
+                                    {{#if orderByPattern}}
+                                    "orderByPattern": "{{orderByPattern}}",
+                                    {{/if}}
+                                    "schemePattern": "?item <{{membershipProperty}}> ?__scheme__"
+                                    }'>
+          <template id='template'>
+            <span class="tree-item-actions-container">
+              {{#if editable}}
+                <mp-event-trigger id='form-edit-trigger' type='Component.TemplateUpdate'
+                                  data='{"node":"{{iri}}",  "mode": "edit" }' targets='["term-forms"]'>
+                  <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-pencil' title="Edit {{itemLabel}}"></i></span>
+                </mp-event-trigger>
+
+                {{#if broaderProperty}}
+                <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"broader": "{{iri}}", "mode": "new" }' targets='["term-forms"]'>
+                  <span class='tree-item-action'><i class='fa fa-plus' title="Add narrower {{itemLabel}}"></i></span>
+                </mp-event-trigger>
+                {{/if}}
+              {{else}}
+                <mp-event-trigger id='form-edit-trigger' type='Component.TemplateUpdate'
+                                  data='{"node":"{{iri}}",  "mode": "view" }' targets='["term-forms"]'>
+                  <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-eye' title="View {{itemLabel}}"></i></span>
+                </mp-event-trigger>
+              {{/if}}
+            </span>
+          </template>
+        </semantic-lazy-tree>    
+      </mp-event-target-refresh>
+    </div>
+  </div>
+
+  <div class="rs-vocabulary-terms-edit-area">
+    {{#if editable}}
+      <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["term-forms"]'>
+        <button class="btn btn-primary btn-newTerm">
+          <i class='fa fa-plus'></i>
+          <span>new {{itemLabel}}</span>
+        </button>
+      </mp-event-trigger>
+    {{/if}}
+
+    <div class="rs-vocabulary-terms-form-area">
+      <mp-event-target-template-render id='term-forms' template='{{> template}}'>
+        <template id='template'>
+          {{#switch mode}}
+            {{#case "new" break=true}}
+          [[!--
+              <mp-event-proxy id='tree-refresh' 
+                              on-event-source='vocab-form'
+                              on-event-type='Form.ResourceCreated'
+                              proxy-event-type='Component.TemplateUpdate' 
+                              proxy-targets='["term-forms"]'
+                              additional-data='{"node":"{{iri}}",  "mode": "edit" }'
+              ></mp-event-proxy>
+          --]]
+              {{#if broader}}
+                <h1 style="margin-bottom: 1em;">Adding: <strong>new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></strong></h1>
+              {{else}}
+                <h1 style="margin-bottom: 1em;">Adding: <strong>new {{itemLabel}}</strong></h1>
+              {{/if}}
+            {{/case}}
+            {{#case "edit" break=true}}
+              <h1>Editing {{itemLabel}}: <strong><mp-label iri='{{node}}'></mp-label></strong></h1>
+              <div style="margin-bottom: 1.2em;">{{itemLabel}} IRI: {{node}}</div>
+            {{/case}}
+            {{#case "view" break=true}}
+              <h1>Viewing {{itemLabel}}: <strong><mp-label iri='{{node}}'></mp-label></strong></h1>
+              <div style="margin-bottom: 1.2em;">{{itemLabel}} IRI: {{node}}</div>
+            {{/case}}
+          {{/switch}}
+
+          {{#if mode}}
+            <inline-template template-iri='{{resourceForm}}' 
+                             options='{
+                                        "scheme": "{{collection}}", 
+                                        {{#ifCond mode "!==" "new"}}"node": "{{node}}",{{/ifCond}}
+                                        {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                        "editable": {{editable}},
+                                        "mode": "{{mode}}",
+                                        "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
+                             }'>
+            </inline-template>
+          {{else}}
+            <div></div>
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
+    </div>
+  </div>    
+</div>

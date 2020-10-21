@@ -1,0 +1,68 @@
+[[!--
+uses inline templates and can be customised for hierarchical presentation and editing of vocabularies,
+projects;
+
+Current Template
+[[> rsp:HierarchyManagerTemplate]]
+
+Dependency (works together with)
+[[> rsp:HierarchyManagerSearchResults]]
+
+Incoming Parameters:
+  title -- can be set to "Vocabulary/Project/Bibliography/etc."
+--]]
+
+  <div class="page-grid-container">
+    
+    <div class="page-content-container rs-vocabulary-scheme-content">
+
+      <div class="rs-title-row">
+        <h1 class="rs-main-title">[[title]] Manager</h1>
+        <div class="rs-vocabulary-icon-container">
+          <mp-overlay-dialog title="Add [[title]]" type="modal" bs-size="large">
+            <mp-overlay-dialog-trigger>
+              <span class="fa fa-plus-circle" title="Add [[title]]"></span>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content style="padding: 20px 40px 40px;">
+              [[!-- The code for this inline template is defined in the application page using the rsp:HierarchyManagerTemplate --]]
+              [[#> addNewStructureForm]] [[/addNewStructureForm]]
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+          <mp-overlay-dialog title="Add [[title]]" type="modal" bs-size="large">
+            <mp-overlay-dialog-trigger>
+            	<span class="fa fa-download" title="Import [[title]]"></span>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <mp-rdf-upload accept='[".trig", ".nq"]' keep-source-graphs='true' allow-load-by-url='false' show-advanced-options='false' drop-area-template='{{> template}}'>
+                <template id='template'>
+                  <div class='RdfUpload__rdf-dropzone-content' style='text-align: center;'>
+                    {{#if isDragAccept}}
+                    	Uploading files. Please wait ...
+                    {{else}}
+                      {{#if isDragReject}}
+                    		Only *.trig or *.nq files are accepted.
+                      {{else}}
+                        [[#> customUploadNewStructureMessage]] [[/customUploadNewStructureMessage]]
+                      {{/if}}
+                    {{/if}}
+                  </div>
+                </template>
+              </mp-rdf-upload>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+          <mp-overlay-dialog title="[[title]] Manager" type="modal" class="modal-xlSize">
+            <mp-overlay-dialog-trigger>
+              <i class="iconmoon iconmoon-info"></i>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+             <div>documentation</div>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+        </div>
+      </div>
+      
+      [[#> exceptionsStructureList]] [[/exceptionsStructureList]]
+      
+      [[#> searchResults]][[/searchResults]]
+    </div>  
+  </div>

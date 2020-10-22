@@ -130,7 +130,10 @@ class PageEditorToolbarComponent extends Component<PageEditorToolbarProps, PageE
                 title: 'Edit Page',
                 action: ResourceLinkAction.edit,
               },
-              D.span({}, ' Edit Page')
+              D.div({}, 
+                D.i({className:'fa fa-pencil'}),
+                D.span({}, ' Edit Page')
+              )
             )
           : null,
         ...(this.state.showExploreActions ? this.renderExploreActions() : [null]),

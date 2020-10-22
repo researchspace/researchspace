@@ -29,7 +29,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { addNotification } from 'platform/components/ui/notification';
 import { AutoCompletionInput } from 'platform/components/ui/inputs';
 
-import '../../scss/share-component.scss';
+import './share-component.scss';
 
 const visibility = {
   public: vocabularies.VocabPlatform.publicVisibility.value,

@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import '../scss/main.scss';
-import '../styling/components/help.scss';
+import '../styling/main.scss';
 
 import { initModuleRegistry } from './bootstrap';
 initModuleRegistry();

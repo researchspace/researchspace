@@ -39,7 +39,7 @@ const ModalHeader = createFactory(ReactBootstrap.Modal.Header);
 const ModalTitle = createFactory(ReactBootstrap.Modal.Title);
 const ModalBody = createFactory(ReactBootstrap.Modal.Body);
 
-import '../styling/components/object-representations-widget.scss';
+import './object-representations-widget.scss';
 
 interface ObjectRepsWidgetProps {
   /**

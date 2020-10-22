@@ -19,9 +19,12 @@
 @import '~basic-styles.scss';
 
 .object-representations {
+
   &__images {
     display: flex;
     flex-wrap: wrap;
+
+    padding-top: 10px;
 
     &.fade-in-appear {
       opacity: 0.01;
@@ -34,32 +37,63 @@
   }
 
   &__image--rep {
-    max-width: 60px;
-    max-height: 60px;
+    max-width: 50px;
+    max-height: 45px;
     height: auto;
-    margin: $padding-base-vertical;
+    margin: 10px 8px;
     cursor: pointer;
     float: left;
     object-fit: contain;
   }
 
   &__image--active {
-    outline: $link-color solid;
+    outline: solid $color-primary-100;
+    padding: 1px;
   }
 
   &__image--focused {
     min-width: 100px;
     max-width: 100%;
+    width: 100%;
+    
+    background: $color-light-grey;
+    border-radius: 3px;
     background-size: contain;
     background-repeat: no-repeat;
     transition: background-image 0.5s ease-out;
-    margin-bottom: $padding-base-vertical * 3;
     cursor: pointer;
 
-    .image--focused,
+    //to decide
+    //height: 280px !important;
+
+    & div:first-of-type {
+
+      //min-height: 190px;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+
     .image--incoming {
       max-width: 300px;
       position: relative;
+    }
+
+    .image--focused {
+
+      position: relative;
+
+      min-height: 130px;
+      max-height: 280px;
+      max-width: 100%;
+      object-fit: contain;
+
+      .rs-icon {
+        font-size: 8em;
+      }
     }
 
     .cross-fade-exit {
@@ -88,23 +122,38 @@
   .modal-body {
     padding: 0;
     user-select: none;
+
+    height: 550px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    img {
+      height: 100% !important;
+      width: auto !important;
+      object-fit: contain;
+    }
   }
 
   &__body {
     position: absolute;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+
+    height: 100% !important;
+    width: 100% !important;
+    
   }
 
   &__nav {
-    padding: 10px;
-    font-size: 24px;
-    margin: 20px 0;
-    color: $rs-color-mediumgrey;
-    background-color: white;
-    opacity: 0.4;
+    padding: 0 25px;
+    font-size: 28px;
+    color: $color-white;
+    opacity: 0.8;
     cursor: pointer;
+
+    text-shadow: 0 0 5px black;
 
     &.fade-in-enter {
       opacity: 0.01;
@@ -138,15 +187,4 @@
       opacity: 1;
     }
   }
-}
-
-.modal-container {
-  .modal,
-  .modal-backdrop {
-    position: absolute;
-  }
-}
-
-.modal-backdrop.in {
-  opacity: 0.7;
 }

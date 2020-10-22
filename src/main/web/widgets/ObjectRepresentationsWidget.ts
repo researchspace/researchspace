@@ -39,7 +39,7 @@ const ModalHeader = createFactory(ReactBootstrap.Modal.Header);
 const ModalTitle = createFactory(ReactBootstrap.Modal.Title);
 const ModalBody = createFactory(ReactBootstrap.Modal.Body);
 
-import '../scss/object-representations-widget.scss';
+import '../styling/components/object-representations-widget.scss';
 
 interface ObjectRepsWidgetProps {
   /**
@@ -148,7 +148,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
     const LABEL = 'label';
     let mainPreviewRep = maybe.Nothing<Rep>();
     let focusedPreviewRep = maybe.Nothing<Rep>();
-    let otherPreviewReps: Array<Rep> = [];
+    const otherPreviewReps: Array<Rep> = [];
 
     SparqlClient.select(props.query).onValue((res) => {
       if (!SparqlUtil.isSelectResultEmpty (res)) {
@@ -226,8 +226,8 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
     // This is the large featured image
     // Set container div height to largest of all images,
     // so that thumbnails don't move about on image transitions
-    let focused = this.state.focusedPreviewRep.get().imgURL;
-    let style = {
+    const focused = this.state.focusedPreviewRep.get().imgURL;
+    const style = {
       height: this.largestPreviewRepHeight + 'px',
     };
 
@@ -332,8 +332,8 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
   }
 
   private createModal() {
-    let fullSizeImgURL = this.state.focusedModalRep.isJust ? this.state.focusedModalRep.get().imgURL : '';
-    let modalStyle = {
+    const fullSizeImgURL = this.state.focusedModalRep.isJust ? this.state.focusedModalRep.get().imgURL : '';
+    const modalStyle = {
       width: this.state.focusedModalRep.isJust ? this.state.focusedModalRep.get().width + 2 + 'px' : '0',
       overflow: 'hidden',
       margin: 'auto',
@@ -343,6 +343,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
     return Modal(
       {
         style: modalStyle as any,
+        className: 'object-representations-modal__container',
         dialogClassName: 'object-representations-modal',
         show: this.state.modalIsDisplayed,
         onHide: this.hideModal.bind(this),
@@ -371,7 +372,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
                     key: 'left',
                     classNames: 'fade-in',
                     appear: true,
-                    leave: true,
+                    leave: 'true',
                     timeout: {
                       appear: this.TRANSITION_TIME,
                       enter: this.TRANSITION_TIME,
@@ -389,7 +390,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
                     key: 'right',
                     classNames: 'fade-in',
                     appear: true,
-                    leave: true,
+                    leave: 'true',
                     timeout: {
                       appear: this.TRANSITION_TIME,
                       enter: this.TRANSITION_TIME,
@@ -415,7 +416,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
   }
 
   private updateFocusedImage(url) {
-    let newFocusedRep = _.find(this.allReps, (rep) => rep.imgURL === url);
+    const newFocusedRep = _.find(this.allReps, (rep) => rep.imgURL === url);
     this.setState({
       focusedPreviewRep: maybe.Just(newFocusedRep),
       focusedModalRep: maybe.Just(newFocusedRep),
@@ -423,7 +424,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
   }
 
   private handleImageChanges = (e) => {
-    let aspectRatio = e.target.offsetHeight / e.target.offsetWidth;
+    const aspectRatio = e.target.offsetHeight / e.target.offsetWidth;
     if (this.LARGEST_PREVIEW_REP_WIDTH * aspectRatio > this.largestPreviewRepHeight) {
       this.largestPreviewRepHeight = this.LARGEST_PREVIEW_REP_WIDTH * aspectRatio;
     }
@@ -446,7 +447,7 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
         }
 
         if (rep.imgURL === this.state.focusedPreviewRep.get().imgURL) {
-          let newFocusedRep = this.state.focusedPreviewRep.get();
+          const newFocusedRep = this.state.focusedPreviewRep.get();
           newFocusedRep.width = rep.width;
           newFocusedRep.height = rep.height;
           this.setState({ focusedPreviewRep: maybe.Just(newFocusedRep) });
@@ -492,9 +493,9 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
 
   private nextModalImage() {
     if (this.allReps.length > 1) {
-      let index = _.findIndex(this.allReps, { imgURL: this.state.focusedModalRep.get().imgURL });
+      const index = _.findIndex(this.allReps, { imgURL: this.state.focusedModalRep.get().imgURL });
       if (index !== -1) {
-        let nextIndex = index === this.allReps.length - 1 ? 0 : index + 1;
+        const nextIndex = index === this.allReps.length - 1 ? 0 : index + 1;
         this.setState({
           focusedModalRep: maybe.Just(this.allReps[nextIndex]),
         });
@@ -504,9 +505,9 @@ export class ObjectRepresentationsWidget extends Component<ObjectRepsWidgetProps
 
   private prevModalImage() {
     if (this.allReps.length > 1) {
-      let index = _.findIndex(this.allReps, { imgURL: this.state.focusedModalRep.get().imgURL });
+      const index = _.findIndex(this.allReps, { imgURL: this.state.focusedModalRep.get().imgURL });
       if (index !== -1) {
-        let prevIndex = index === 0 ? this.allReps.length - 1 : index - 1;
+        const prevIndex = index === 0 ? this.allReps.length - 1 : index - 1;
         this.setState({
           focusedModalRep: maybe.Just(this.allReps[prevIndex]),
         });

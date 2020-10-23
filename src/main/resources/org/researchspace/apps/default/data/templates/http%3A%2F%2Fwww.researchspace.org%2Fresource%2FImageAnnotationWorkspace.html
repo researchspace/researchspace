@@ -191,8 +191,8 @@ not used:
 [[!-- /INCLUDES --]]
 
 
-<div class="frame-imageAnnotationWorkspace__container">
-      <div class="frame-imageAnnotationWorkspace__viewer">
+<div class="imageAnnotationWorkspace__container">
+      <div class="imageAnnotationWorkspace__viewer">
 [[!-- 
  Here we assume that @partial-block is IIIF Viewer component.
  It is defined in the rsp:ThinkingFramesObjectThroughImageObservation template.
@@ -200,8 +200,8 @@ not used:
         {{> @partial-block }}
       </div>
 
-      <div class="frame-imageAnnotationWorkspace__observationArea_bg"></div>
-      <div class="frame-imageAnnotationWorkspace__observationArea_container">
+      <div class="imageAnnotationWorkspace__observationArea_bg"></div>
+      <div class="imageAnnotationWorkspace__observationArea_container">
         
 [[!-- 
  `two-side-panel` component functions as kind of a flip panel, with `front` and `back` templates. 
@@ -213,7 +213,7 @@ not used:
 --]]        
               <two-side-panel id='objects-panel' refresh-on-change='false'>
                 <template id='front'>
-                  <div class="frame-imageAnnotationWorkspace__observationArea_content">
+                  <div class="imageAnnotationWorkspace__observationArea_content">
                     
 [[!--
  List of all objects with features. Refreshed by `refresh-image-list` event-proxy at the top of the template.
@@ -237,7 +237,7 @@ not used:
                         </mp-event-target-template-render>
 
                         
-                        <div class="rs-title-row">
+                        <div class="page__main-title-row">
                           <h1 class="rs-main-title">Observations on</h1>
                           <mp-overlay-dialog title="Object Observations" type="modal" class="modal-documentation">
                             <mp-overlay-dialog-trigger>
@@ -248,7 +248,7 @@ not used:
                             </mp-overlay-dialog-content>
                           </mp-overlay-dialog>
                         </div>
-                        <div class="frame-imageAnnotationWorkspace__observationArea_items">
+                        <div class="imageAnnotationWorkspace__observationArea_items">
                           
 [[!-- 
  iterate over all objects available in the current IIIF Viewer 
@@ -275,7 +275,7 @@ not used:
                             <template id='objectTemplate'>
                                  <mp-collapsible-div expanded='true'>
                                     <mp-collapsible-div-trigger>
-                                        <div class="frame-imageAnnotationWorkspace__observationArea_resourceTitleRow">
+                                        <div class="imageAnnotationWorkspace__observationArea_resourceTitleRow">
                                           <h1 class="text-truncate"><strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
                                           <div style="display: flex; align-items: flex-start;">
                                             
@@ -326,9 +326,9 @@ not used:
                                           template='{{> regionsWithoutFeature}}'
                                       >
                                         <template id='regionsWithoutFeature'>
-                                          <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
+                                          <div class="imageAnnotationWorkspace__items page__whiteSection-container">
                                             <h2>Image Regions without Associated Features</h2>
-                                            <div class="frame-imageAnnotationWorkspace__item_container">
+                                            <div class="imageAnnotationWorkspace__item_container">
                                               
         [[!--
         Iterate over all query result bindings that represent image regions.
@@ -337,7 +337,7 @@ not used:
                                               <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.HighlightRegion' targets='["image-editor"]'
                                                                 data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' on='["hover"]'
                                               >
-                                              <div class="frame-imageAnnotationWorkspace__item">
+                                              <div class="imageAnnotationWorkspace__item">
                                                 <semantic-link iri='{{region.value}}' class="text-truncate region-label"></semantic-link>
                                                 <div style="display: flex; align-items: center;">
                                                   
@@ -421,15 +421,15 @@ not used:
                                           template='{{> features}}'
                                       >
                                         <template id='features'>
-                                          <div class="frame-imageAnnotationWorkspace__items page-whiteSection-container">
+                                          <div class="imageAnnotationWorkspace__items page__whiteSection-container">
                                             <h2>Features</h2>
-                                            <div class="frame-imageAnnotationWorkspace__item_container">
+                                            <div class="imageAnnotationWorkspace__item_container">
                                             {{#each bindings}}
                                               <mp-event-trigger id='focus-event-trigger' type='IIIFViewer.HighlightRegion' targets='["image-editor"]'
                                                                 data='{"imageIri": "{{image.value}}","regionIri": "{{region.value}}"}' on='["hover"]'
                                               >
 
-                                                <div class="frame-imageAnnotationWorkspace__item">
+                                                <div class="imageAnnotationWorkspace__item">
                                                   <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link>
                                                   {{#if user}}
                                                   <div class="user-info">
@@ -510,25 +510,25 @@ not used:
                 </template>
                 
                 <template id='back'>
-                  <div class="frame-imageAnnotationWorkspace__formArea_container">
+                  <div class="imageAnnotationWorkspace__formArea_container">
                     <mp-event-trigger id='form-panel-back' 
                                       type='TwoSidePanel.ShowFront' 
                                       targets='["objects-panel"]'
                     >
-                      <div class="back-container">
+                      <div class="page__back-container">
                         <i class="iconmoon iconmoon-arrow-left2"></i>
                       </div>
                     </mp-event-trigger>
 
-                    <div class="frame-imageAnnotationWorkspace__form-titleRow">
+                    <div class="imageAnnotationWorkspace__form-titleRow">
                       <h1 class="text-truncate">Observation on <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong></h1>
                       <button class="btn btn-primary btn-icon"><i class="rs-icon rs-icon-image" title="Focus on resource images"></i></button>
                     </div>
                                   
                     {{#if feature}}                    
-                      <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container frame-imageAnnotationWorkspace__form-edit">
+                      <div class="imageAnnotationWorkspace__form-container page__whiteSection-container imageAnnotationWorkspace__form-edit">
                         <h2>Editing feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong></h2>
-                        <div class="frame-imageAnnotationWorkspace__form-edit-featureType">
+                        <div class="imageAnnotationWorkspace__form-edit-featureType">
                           <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Kind:</span>
                           <span class='btn-grey btn-selected'>{{featureType}}</span>
                         </div>
@@ -536,7 +536,7 @@ not used:
                       </div>
                     {{else}}
                       {{#if regionIri}}
-                        <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
+                        <div class="imageAnnotationWorkspace__form-container page__whiteSection-container">
                           <semantic-if query='
                                         ASK { 
                                           {
@@ -594,7 +594,7 @@ not used:
                                         <h2>
                                           Associating image region with the feature: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong> of the &nbsp; object: <strong><semantic-link iri='{{objectIri}}'></semantic-link></strong>
                                         </h2>
-                                        <div class="frame-imageAnnotationWorkspace__form-edit-featureType">
+                                        <div class="imageAnnotationWorkspace__form-edit-featureType">
                                           <span class="semantic-form-input-decorator__label" style="margin-right: 10px;">Kind:</span>
                                           <span class='btn-grey btn-selected'>{{featureType}}</span>
                                         </div>
@@ -666,7 +666,7 @@ not used:
                         </div>
                       {{else}}
                         {{#if objectIri}}
-                          <div class="frame-imageAnnotationWorkspace__form-container page-whiteSection-container">
+                          <div class="imageAnnotationWorkspace__form-container page__whiteSection-container">
  												    [[> newFeatureForm createFromRegion=false]]
                           </div>
                         {{/if}}

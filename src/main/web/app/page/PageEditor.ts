@@ -55,7 +55,6 @@ import { BrowserPersistence } from 'platform/components/utils';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 import * as uri from 'urijs';
 
-import '../../styling/components/page-editor.scss';
 import { ErrorPresenter } from 'platform/components/ui/notification';
 
 const Button = createFactory(ReactBootstrap.Button);

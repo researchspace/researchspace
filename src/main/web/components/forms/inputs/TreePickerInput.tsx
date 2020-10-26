@@ -29,9 +29,10 @@ import {
   TreeSelection,
   ComplexTreePatterns,
   createDefaultTreeQueries,
+  LightwightTreePatterns,
 } from 'platform/components/semantic/lazy-tree';
 
-import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
+import { FieldDefinition, getPreferredLabel, TreeQueriesConfig, SimpleTreeConfig } from '../FieldDefinition';
 import { FieldValue, AtomicValue, ErrorKind } from '../FieldValues';
 import {
   MultipleValuesInput,
@@ -40,6 +41,7 @@ import {
   CardinalityCheckingHandler,
 } from './MultipleValuesInput';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
+import { createDropAskQueryForField } from '../ValidationHelpers';
 
 export interface TreePickerInputProps extends MultipleValuesProps {
   placeholder?: string;
@@ -58,7 +60,12 @@ export interface TreePickerInputProps extends MultipleValuesProps {
   closeDropdownOnSelection?: boolean;
 
   /**
-   * Scheme IRI that that to use in Tree Patterns from the Field Definition.
+   * Override Tree Patterns from the Field Definition.
+   */
+  treePatterns?: LightwightTreePatterns
+
+  /**
+   * Override scheme from Field Definitions. Overrides the scheme from tree-patterns.
    */
   scheme?: string;
 }
@@ -87,8 +94,19 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
 
   constructor(props: TreePickerInputProps, context: any) {
     super(props, context);
-    const config = this.props.definition.treePatterns || { type: 'simple', scheme: props.scheme };
-    const treeQueries: ComplexTreePatterns = config.type === 'full' ? config : createDefaultTreeQueries(config);
+    let config = props.definition.treePatterns;
+    if (props.treePatterns) {
+      config = Object.assign(
+        {},
+        props.definition.treePatterns || {},
+        {type: 'simple', ...props.treePatterns} as SimpleTreeConfig)
+    }
+    if (props.scheme && !config) {
+      config = {type: 'simple', scheme: props.scheme };
+    } else if (props.scheme && config.type === 'simple') {
+      config.scheme = props.scheme;
+    }
+    const treeQueries: ComplexTreePatterns = config?.type === 'full' ? config : createDefaultTreeQueries(config);
     this.state = { treeVersionKey: 0, treeQueries };
   }
 
@@ -144,18 +162,28 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   };
 
   private renderTreePicker() {
-    const { openDropdownOnFocus, closeDropdownOnSelection } = this.props;
+    const { openDropdownOnFocus, closeDropdownOnSelection, definition } = this.props;
     const { treeVersionKey, treeQueries, treeSelection } = this.state;
     const { rootsQuery, childrenQuery, parentsQuery, searchQuery } = treeQueries;
 
     const placeholder =
       typeof this.props.placeholder === 'string'
         ? this.props.placeholder
-        : createDefaultPlaceholder(this.props.definition);
+        : createDefaultPlaceholder(definition);
 
     return (
       <SemanticTreeInput
         key={treeVersionKey}
+        droppable={{
+          // enable droppable for autocomplete input
+          query: createDropAskQueryForField(definition),
+          styles: {
+            enabled: {
+              outline: '2px solid #1D0A6E'
+            },
+            disabled: {}
+          }
+        }}
         className={`${CLASS_NAME}__picker`}
         placeholder={placeholder}
         rootsQuery={rootsQuery}

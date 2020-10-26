@@ -36,7 +36,7 @@ ASK {
 `;
   } else {
     // for many ranges value should have type that is in the list
-    const ranges = field.range.map(r => r.value).join(', ');
+    const ranges = field.range.map(r => `<${r.value}>`).join(', ');
     return `
 ASK {
 ?value rdf:type/rdfs:subClassOf* ?range .

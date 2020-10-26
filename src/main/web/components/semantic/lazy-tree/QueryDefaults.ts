@@ -40,22 +40,31 @@ export interface LightwightTreePatterns {
    * Output bindings: `?item`, `?parent`
    */
   relationPattern?: string;
+
+  /**
+   * Input bindings: `?item`
+   * Output bindings: `?order`
+   */
+  orderByPattern?: string;
 }
 
 export const DefaultLightweightPatterns = {
   schemePattern: '?item <http://www.w3.org/2004/02/skos/core#inScheme> ?__scheme__',
   relationPattern: '?item <http://www.w3.org/2004/02/skos/core#broader> ?parent',
+  orderByPattern: 'BIND(?label as ?order) .'
 };
 
 export function createDefaultTreeQueries(params: LightwightTreePatterns = {}): ComplexTreePatterns {
   const {
     schemePattern = DefaultLightweightPatterns.schemePattern,
     relationPattern = DefaultLightweightPatterns.relationPattern,
+    orderByPattern = DefaultLightweightPatterns.orderByPattern
   } = params;
 
   const prefixes = SparqlUtil.parseQuery('SELECT * WHERE {}').prefixes;
   const relation =
     typeof relationPattern === 'string' ? SparqlUtil.parsePatterns(relationPattern, prefixes) : relationPattern;
+  const orderBy = SparqlUtil.parsePatterns(orderByPattern, prefixes);
 
   let scheme: ReadonlyArray<SparqlJs.Pattern> = [];
   if (params.scheme || params.schemePattern) {
@@ -67,7 +76,7 @@ export function createDefaultTreeQueries(params: LightwightTreePatterns = {}): C
     }
   }
 
-  const patterns = { relation, scheme };
+  const patterns = { relation, scheme, orderBy };
   return {
     rootsQuery: SparqlUtil.serializeQuery(createRootsQuery(patterns)),
     childrenQuery: SparqlUtil.serializeQuery(createChildrenQuery(patterns)),
@@ -81,9 +90,11 @@ interface TreePatterns {
   relation: ReadonlyArray<SparqlJs.Pattern>;
   /** Output bindings: `?item` */
   scheme: ReadonlyArray<SparqlJs.Pattern>;
+  /** Output bindings: `?order` */
+  orderBy: ReadonlyArray<SparqlJs.Pattern>;
 }
 
-function createRootsQuery({ relation, scheme }: TreePatterns) {
+function createRootsQuery({ relation, scheme, orderBy }: TreePatterns) {
   const { labelPropertyPattern } = ConfigHolder.getUIConfig();
   const query = SparqlUtil.parseQuery(`
     SELECT DISTINCT ?item ?label ?hasChildren WHERE {
@@ -92,16 +103,20 @@ function createRootsQuery({ relation, scheme }: TreePatterns) {
       ?item ${labelPropertyPattern} ?label .
       OPTIONAL { FILTER(?__childRelation__) }
       BIND(bound(?child) as ?hasChildren)
-    } ORDER BY ?label
+      OPTIONAL {
+        FILTER(?__orderBy__)
+      }
+    } ORDER BY ?order ?label
   `);
   const childRelation = bindTreePatterns(relation, { itemVar: 'child', parentVar: 'item' });
   new PatternBinder('__childRelation__', childRelation).sparqlQuery(query);
   new PatternBinder('__relation__', relation).sparqlQuery(query);
   new PatternBinder('__scheme__', scheme).sparqlQuery(query);
+  new PatternBinder('__orderBy__', orderBy).sparqlQuery(query);
   return query;
 }
 
-function createChildrenQuery({ relation, scheme }: TreePatterns) {
+function createChildrenQuery({ relation, scheme, orderBy }: TreePatterns) {
   const { labelPropertyPattern } = ConfigHolder.getUIConfig();
   const query = SparqlUtil.parseQuery(`
     SELECT DISTINCT ?item ?label ?hasChildren WHERE {
@@ -110,12 +125,16 @@ function createChildrenQuery({ relation, scheme }: TreePatterns) {
       ?item ${labelPropertyPattern} ?label .
       OPTIONAL { FILTER(?__childRelation__) }
       BIND(bound(?child) as ?hasChildren)
-    } ORDER BY ?label
+      OPTIONAL {
+        FILTER(?__orderBy__)
+      }
+    } ORDER BY ?order ?label
   `);
   const childRelation = bindTreePatterns(relation, { itemVar: 'child', parentVar: 'item' });
   new PatternBinder('__childRelation__', childRelation).sparqlQuery(query);
   new PatternBinder('__relation__', relation).sparqlQuery(query);
   new PatternBinder('__scheme__', scheme).sparqlQuery(query);
+  new PatternBinder('__orderBy__', orderBy).sparqlQuery(query);
   return query;
 }
 
@@ -135,7 +154,7 @@ function createParentsQuery({ relation, scheme }: TreePatterns) {
   return query;
 }
 
-function createSearchQuery({ relation, scheme }: TreePatterns) {
+function createSearchQuery({ relation, scheme, orderBy }: TreePatterns) {
   const { labelPropertyPattern } = ConfigHolder.getUIConfig();
   const query = SparqlUtil.parseQuery(`
     PREFIX bds: <http://www.bigdata.com/rdf/search#>
@@ -149,13 +168,17 @@ function createSearchQuery({ relation, scheme }: TreePatterns) {
             bds:matchAllTerms "true"  .
       OPTIONAL { FILTER(?__childRelation__) }
       BIND(BOUND(?child) AS ?hasChildren)
+      OPTIONAL {
+        FILTER(?__orderBy__)
+      }
     }
-    ORDER BY DESC(?score) ?label
+    ORDER BY DESC(?score) ?order ?label
     LIMIT 200
   `);
   const childRelation = bindTreePatterns(relation, { itemVar: 'child', parentVar: 'item' });
   new PatternBinder('__childRelation__', childRelation).sparqlQuery(query);
   new PatternBinder('__scheme__', scheme).sparqlQuery(query);
+  new PatternBinder('__orderBy__', orderBy).sparqlQuery(query);
   return query;
 }
 

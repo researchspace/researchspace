@@ -40,7 +40,7 @@ export function parseQueryStringAsUpdateOperation(queryString: string | undefine
 }
 
 /**
- * Add WITH clause to UPDATE query to execute it on specific named graph.
+ * Add WITH clause to UPDATE query to fully execute it on specific named graph.
  */
 export function withNamedGraph(
   query: SparqlJs.Update, targetGraphIri?: string
@@ -49,5 +49,25 @@ export function withNamedGraph(
     // graph property on update opertian is missing is SparqlJs d.ts file
     query.updates.forEach(u => u['graph'] = targetGraphIri);
   }
+  return query;
+}
+
+/**
+ * Add GRAPH clause to INSERT part of the UPDATE query to fully execute it on specific named graph.
+ */
+export function addInsertIntoGraph(
+  query: SparqlJs.Update, targetGraphIri?: string
+): SparqlJs.Update {
+  query.updates.forEach(u => {
+    const insertOrDelete = u as SparqlJs.InsertDeleteOperation;
+    if (insertOrDelete.updateType === 'insertdelete') {
+      insertOrDelete.insert =
+        [{
+          type: 'graph',
+          name: targetGraphIri as SparqlJs.Term,
+          triples: insertOrDelete.insert[0].triples,
+        }];
+    }
+  });
   return query;
 }

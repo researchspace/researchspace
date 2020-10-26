@@ -113,23 +113,37 @@ public class LDPAssetsLoader {
         return configuration.getGlobalConfig().getRepositoriesLDPLoad().contains(repositoryId);
     }
 
+    private boolean isForceLoadFromStorage(String storageId) {
+        return configuration.getGlobalConfig().getForceLDPLoadFromStorages().contains(storageId);
+    }
+
     public void load() throws StorageException, IOException {
         Map<StoragePath, FindResult> mapResults = platformStorage.findAll(ObjectKind.LDP);
-        Map<String, Map<StoragePath, FindResult>> mapResultsByRepositoryId = Maps.newHashMap();
+        Map<String, Map<String, Map<StoragePath, FindResult>>> mapResultsByRepositoryIdAndStorageId = Maps.newHashMap();
         logger.info("Loading LDP assets...");
-        // Distribute the results by target repository
+        // Distribute the results by target repository and source storage
         for (Entry<StoragePath, FindResult> entry : mapResults.entrySet()) {
             String repositoryId = getRepositoryIdFromObjectId(entry.getKey());
-            Map<StoragePath, FindResult> currentMap = mapResultsByRepositoryId.get(repositoryId);
-            if (currentMap == null) {
-                currentMap = Maps.newHashMap();
-                mapResultsByRepositoryId.put(repositoryId, currentMap);
+            Map<String, Map<StoragePath, FindResult>> currentRepositoryMap = mapResultsByRepositoryIdAndStorageId
+                    .get(repositoryId);
+            if (currentRepositoryMap == null) {
+                currentRepositoryMap = Maps.newHashMap();
+                mapResultsByRepositoryIdAndStorageId.put(repositoryId, currentRepositoryMap);
             }
-            currentMap.put(entry.getKey(), entry.getValue());
+
+            String storageId = entry.getValue().getAppId();
+            Map<StoragePath, FindResult> currentStorageMap = currentRepositoryMap.get(storageId);
+            if (currentStorageMap == null) {
+                currentStorageMap = Maps.newHashMap();
+                currentRepositoryMap.put(storageId, currentStorageMap);
+            }
+
+            currentStorageMap.put(entry.getKey(), entry.getValue());
         }
 
         // Load each batch separately into the corresponding repository
-        for (Entry<String, Map<StoragePath, FindResult>> entry : mapResultsByRepositoryId.entrySet()) {
+        for (Entry<String, Map<String, Map<StoragePath, FindResult>>> entry : mapResultsByRepositoryIdAndStorageId
+                .entrySet()) {
             if (isLoadableFromStorage(entry.getKey())) {
                 loadAllToRepository(entry.getKey(), entry.getValue());
             } else {
@@ -142,46 +156,60 @@ public class LDPAssetsLoader {
 
     }
 
-    private void loadAllToRepository(String repositoryId, Map<StoragePath, FindResult> mapResults) throws IOException {
-        logger.info("Loading " + mapResults.size() + " LDP assets into the \"" + repositoryId + "\" repository");
+    private void loadAllToRepository(String repositoryId, Map<String, Map<StoragePath, FindResult>> mapResults)
+            throws IOException {
         Repository repository = repositoryManager.getRepository(repositoryId);
-        LinkedHashModel loadedAssetsModel = new LinkedHashModel();
-        for (Entry<StoragePath, FindResult> entry : mapResults.entrySet()) {
-            StoragePath path = entry.getKey();
-            boolean hasKnownFormat = (path.hasExtension(".trig") || path.hasExtension(".nq")
-                    || path.hasExtension(".trix"));
-            if (!hasKnownFormat) {
-                continue;
-            }
-            Optional<RDFFormat> optFormat = Rio.getParserFormatForFileName(path.getLastComponent());
-            if (!optFormat.isPresent()) {
-                logger.error("Unknown assets format: " + path.getLastComponent());
-                continue;
-            }
-            RDFFormat format = optFormat.get();
-            if (!format.equals(RDFFormat.NQUADS) && !format.equals(RDFFormat.TRIG) && !format.equals(RDFFormat.TRIX)) {
-                logger.error("Unsupported assets format " + format.toString() + " for the object " + entry.getKey());
-            }
-            ObjectRecord record = entry.getValue().getRecord();
-            try (InputStream in = record.getLocation().readContent()) {
-                Model model = Rio.parse(in, "", format);
-                loadedAssetsModel.addAll(model);
-            } catch (IOException | RDFParseException e) {
-                logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());
-                throw e; // just propagate
-            }
-        }
-        logger.info("Read " + mapResults.size() + " assets. Loading into the repository...");
 
-        try (RepositoryConnection conn = repository.getConnection()) {
-            // We only load the contexts, which are not present in the assets repository
-            // If present with different content, an error is thrown.
-            List<Resource> toLoad = selectContentToLoad(repositoryId, loadedAssetsModel, conn);
-            ldpContainersConsistencyCheck(repositoryId, loadedAssetsModel, conn);
-            for (Resource ctx : toLoad) {
-                logger.trace("Loading LDP asset context: " + ctx.stringValue());
-                Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);
-                conn.add(currentAsset);
+        for (Entry<String, Map<StoragePath, FindResult>> storageEntry : mapResults.entrySet()) {
+            LinkedHashModel loadedAssetsModel = new LinkedHashModel();
+            logger.info("Loading " + storageEntry.getValue().size() + " LDP assets into the \"" + repositoryId + "\" repository");
+
+            for (Entry<StoragePath, FindResult> entry : storageEntry.getValue().entrySet()) {
+                StoragePath path = entry.getKey();
+                boolean hasKnownFormat = (path.hasExtension(".trig") || path.hasExtension(".nq")
+                        || path.hasExtension(".trix"));
+                if (!hasKnownFormat) {
+                    continue;
+                }
+                Optional<RDFFormat> optFormat = Rio.getParserFormatForFileName(path.getLastComponent());
+                if (!optFormat.isPresent()) {
+                    logger.error("Unknown assets format: " + path.getLastComponent());
+                    continue;
+                }
+                RDFFormat format = optFormat.get();
+                if (!format.equals(RDFFormat.NQUADS) && !format.equals(RDFFormat.TRIG)
+                        && !format.equals(RDFFormat.TRIX)) {
+                    logger.error(
+                            "Unsupported assets format " + format.toString() + " for the object " + entry.getKey());
+                }
+                ObjectRecord record = entry.getValue().getRecord();
+                try (InputStream in = record.getLocation().readContent()) {
+                    Model model = Rio.parse(in, "", format);
+                    loadedAssetsModel.addAll(model);
+                } catch (IOException | RDFParseException e) {
+                    logger.error("Failed to parse LDP asset: " + record.getLocation() + ". Details: " + e.getMessage());
+                    throw e; // just propagate
+                }
+            }
+            logger.info("Read " + mapResults.size() + " assets. Loading into the repository...");
+
+            try (RepositoryConnection conn = repository.getConnection()) {
+
+                if (this.isForceLoadFromStorage(storageEntry.getKey())) {
+                    Set<Resource> contextsToLoad = loadedAssetsModel.contexts();
+                    conn.clear(contextsToLoad.toArray(new Resource[contextsToLoad.size()]));
+                    conn.add(loadedAssetsModel);
+                } else {
+                    // We only load the contexts, which are not present in the assets repository
+                    // If present with different content, an error is thrown.
+                    List<Resource> toLoad = selectContentToLoad(repositoryId, loadedAssetsModel, conn);
+                    ldpContainersConsistencyCheck(repositoryId, loadedAssetsModel, conn);
+                    for (Resource ctx : toLoad) {
+                        logger.trace("Loading LDP asset context: " + ctx.stringValue());
+                        Model currentAsset = loadedAssetsModel.filter(null, null, null, ctx);
+                        conn.add(currentAsset);
+                    }
+                }
             }
         }
         logger.info("Loading finished.");

@@ -35,11 +35,11 @@ export class ConfirmationDialog extends React.Component<Props, {}> {
         </Modal.Body>
         <Modal.Footer>
           <ButtonGroup>
-            <Button bsStyle="primary" onClick={(e) => onConfirm(true)}>
-              Confirm
-            </Button>
             <Button bsStyle="danger" onClick={(e) => onConfirm(false)}>
               Cancel
+            </Button>
+            <Button bsStyle="success" onClick={(e) => onConfirm(true)}>
+              Confirm
             </Button>
           </ButtonGroup>
         </Modal.Footer>

@@ -1,0 +1,62 @@
+
+<http://www.researchspace.org/pattern/image_observation/crmpc:P01_has_domain-referred-to-by-feature/context> {
+  <http://www.researchspace.org/pattern/image_observation/crmpc:P01_has_domain-referred-to-by-feature>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/askPattern> _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-y6jnt;
+    <http://www.w3.org/2000/01/rdf-schema#label> "P01 has domain - is referred to by visual item";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/entity/E55_Type/d2149fcd-563d-45bb-a65c-e3da7ad9fc47>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-l3wpwg;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-n9oar;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-09pbzk;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E25_Man-Made_Feature>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2020-10-20T15:20:41.537+03:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-y6jnt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """ASK {
+  ?object crm:P56_bears_feature ?value .
+}""" .
+  
+  _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-n9oar a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P01_has_domain $visualItem .
+  $visualItem crm:P01i_is_domain_of $subject .
+
+  ?entity crm:P67i_is_referred_to_by $visualItem .
+  $visualItem crm:P67_refers_to ?entity .
+} WHERE {
+  BIND(IRI(STRBEFORE(STR($subject), \"/PC67_refers_to/\")) AS ?entity).
+  $subject crm:P01_has_domain $visualItem .
+  ?value crm:P65_shows_visual_item ?visualItem .
+}""" .
+  
+  _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-09pbzk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P01_has_domain $visualItem .
+  $visualItem crm:P01i_is_domain_of $subject .
+  ?entity crm:P67i_is_referred_to_by $visualItem .
+  $visualItem crm:P67_refers_to ?entity .
+} WHERE {
+  BIND(IRI(STRBEFORE(STR($subject), \"/PC67_refers_to/\")) AS ?entity).
+  ?value crm:P65_shows_visual_item ?visualItem .
+}""" .
+  
+  _:genid-2fa52bdedb8c4b7d85d090bc5012feb8-l3wpwg a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value WHERE {
+  {
+    $subject crm:P01_has_domain ?visualItem.
+    ?value crm:P65_shows_visual_item ?visualItem .
+  } UNION {
+    ?visualItem crm:P01i_is_domain_of $subject .
+    ?value crm:P65_shows_visual_item ?visualItem .
+  }
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/image_observation/crmpc:P01_has_domain-referred-to-by-feature> .
+}

@@ -15,6 +15,8 @@ declare namespace ConfigManagerScssNamespace {
     propertyValue: string;
     propertyValues: string;
     propertyValuesCell: string;
+    'values-editor': string;
+    valuesEditor: string;
   }
 }
 

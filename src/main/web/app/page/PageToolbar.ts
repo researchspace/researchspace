@@ -32,8 +32,6 @@ import { Cancellation } from 'platform/api/async';
 import { Action } from 'platform/components/utils';
 import { ResourceViewer } from './ResourceViewer';
 
-import '../../scss/page-editor.scss';
-
 const ButtonGroup = createFactory(ReactBootstrap.ButtonGroup);
 const ButtonToolbar = createFactory(ReactBootstrap.ButtonToolbar);
 
@@ -130,7 +128,10 @@ class PageEditorToolbarComponent extends Component<PageEditorToolbarProps, PageE
                 title: 'Edit Page',
                 action: ResourceLinkAction.edit,
               },
-              D.span({}, ' Edit Page')
+              D.div({}, 
+                D.i({className:'fa fa-pencil'}),
+                D.span({}, ' Edit Page')
+              )
             )
           : null,
         ...(this.state.showExploreActions ? this.renderExploreActions() : [null]),

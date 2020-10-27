@@ -28,7 +28,7 @@ $editorWidth: 794px;
 
 .narrativeHolder {
   height: 100%;
-  background-color: #f8f9fa;
+  background-color: $color-narrative-bg;
   padding-bottom: 50px;
 
   // DropArea styling
@@ -72,25 +72,72 @@ $editorWidth: 794px;
 .titleHolder {
   display: flex;
   align-items: center;
-  margin: 8px 0 12px 0;
+
+  margin-top: 3px;
+  margin-bottom: 12px;
+
+  background-color: $color-white;
+  border: 1px solid #ddddddd1;
+  border-radius: 3px;
 }
 
 .titleInput {
-  width: $editorWidth - 17px;
+  width: $editorWidth - 34px;
   margin-left: auto;
   margin-right: auto;
+
+  :global(.form-control) {
+
+    font-size: 19px;
+    letter-spacing: .3px;
+    font-weight: bold;
+    height: 48px;
+    padding: 6px 15px;
+    border: none;
+  }
+}
+
+.draggableGripper {
+
+  width: 25px;
+  display: flex;
+  justify-content: flex-end;
+
+  cursor: grab;
+  flex-shrink: 0;
+
+  :global(.rs-icon.rs-icon-drag_points) {
+
+    font-size: 20px;
+  }
 }
 
 .resourceBlock {
   display: flex;
   justify-content: center;
-  border: 2px dashed #ffffff;
+  border: 2px dashed $color-white;
   margin: 0 0 ($line-height-computed / 2);
   padding: 10px;
 
   // TODO
   & > div > :global(.card.rs-object-card.rs-search-card) {
     margin: 0;
+  }
+
+  :global(.mirador-osd-annotation-controls) {
+    display: none;
+  }
+
+  :global(.mirador .mirador-manipulation-controls) {
+      top: 0;
+  }
+
+  :global(.mirador a:hover) {
+    background-color: transparent;
+  }
+
+  :global(a.edit), :global(a.delete) {
+  //  display: none;
   }
 }
 
@@ -104,7 +151,7 @@ $editorWidth: 794px;
 */
 .sidebarAndEditorHolder {
   overflow: auto;
-  background-color: #f8f9fa;
+  background-color: $color-narrative-bg;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -123,7 +170,7 @@ $editorWidth: 794px;
   // for edit mode, later extract
 
   & > div {
-    padding: 20px 96px;
+    padding: 20px 70px;
   }
   & a {
     cursor: text;
@@ -150,7 +197,7 @@ $editorWidth: 794px;
     left: 141px;
 
     :global(.btn) {
-      background-color: #f8f9fa;
+      background-color: $color-narrative-bg;
     }
 }
 
@@ -159,16 +206,52 @@ $editorWidth: 794px;
 .toolbar {
   display: flex;
   justify-content: center;
-  padding: $padding-base-vertical 0;
+  padding: 20px 0;
+
+  :global(.btn-toolbar > .btn-group) {
+    margin-left: 8px;
+  }
+
+  :global(.btn) {
+      border-radius: 2px;
+      border: 1px solid #ddd;
+
+      &[disabled] {
+
+          &:hover {
+              box-shadow: none;
+              background-color: $color-white;
+              color: $color-btn-toolbar;
+          }
+      }
+
+      &.active {
+          box-shadow: inset 0px -3px 0px 0px $color-dark;
+      }
+  }
+
+  :global(.btn-success) {
+      height: 38px;
+      font-size: 13.5px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      padding: 0 15px;
+  }
+
+  :global(.btn-default) {
+      height: 38px;
+      font-size: 13.5px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: $color-btn-toolbar;
+      background-color: $color-white;
+      padding: 0 12px;
+
+      &:hover {
+          box-shadow: inset 0px -2px 0px 0px $color-btn-toolbar;
+      }
+  }
 }
-
-.draggableGripper {
-
-  margin-right: 12px;
-  cursor: grab;
-  flex-shrink: 0;
-}
-
 
 .dropdown {}
 
@@ -186,7 +269,6 @@ $editorWidth: 794px;
     width: 25px;
     display: inline-block;
 }
-
 
 .toolbar .dropdownMenuItemIcon {
     margin-right: 10px;
@@ -209,22 +291,34 @@ $editorWidth: 794px;
 .externalLinkHolder {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   flex-grow: 1;
 }
 
 .linkPopover {
   display: flex;
+
   width: 245px;
-  height: $input-height-base;
+  height: 100%;
+  padding: 3px;
 
   & :global(.DropArea--children) {
     align-items: center;
     justify-content: center;
   }
 
+  & :global(.DropArea--dropArea) {
+    padding-right: 7px;
+  }
+
   & :global(.DropArea--dropMessage) {
-    height: $input-height-base !important;
+    min-height: 70px;
+
+    font-size: 14px;
+    line-height: 1.3;
+    border: 1px dashed $color-light-grey2;
+    background-color: transparent;
+    color: $color-grey-dark;
   }
 
   & :global(.DropArea--dropArea.mp-droppable-hover .DropArea--dropMessage) {
@@ -233,14 +327,61 @@ $editorWidth: 794px;
 
   & a {
     text-decoration: underline;
+    color: $color-grey-dark;
+  }
+
+  :global(.form-control) {
+    background-color: transparent;
+    color: $color-grey-dark;
+    border-color: $color-light-grey2;
+
+    &::placeholder {
+      color: $color-light-grey2;
+    }
+
+    &:focus {
+      border-bottom: 1px solid $color-light-grey2;
+    }
+  }
+
+  :global(.btn-grey), :global(.btn-success) {
+  //  padding: 0 10px;
+    border-radius: 1px;
+    width: 34px;
+
+    :global(.fa) {
+      padding: 0;
+    }
+  }
+
+  :global(.btn-success) {
+    border: none;
+    margin-right: 1px;
   }
 }
 
 :global {
   // link editor
-  #external-link-popover .btn-group {
-    display: flex;
-    margin-left: -1px;
+  #external-link-popover,
+  #internal-link-popover {
+
+    background-color: $color-narrative-popover-bg;
+    border-color: #d6dbdf;
+    color: $color-dark;
+
+    &.popover.top > .arrow {
+      border-top-color: #d6dbdf;
+
+        &:after {
+        border-top-color: $color-narrative-popover-bg;
+        }
+    }
+
+    .btn-group {
+      display: flex;
+      margin-left: 8px;
+      height: 35px;
+    }
   }
 
   // see https://github.com/ianstormtaylor/slate/issues/2302

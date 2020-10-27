@@ -60,7 +60,8 @@
       "iconClass": "rs-icon rs-icon-semantic_search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> simpleSearchTemplate}}",
-      "resourceNotRequired": true
+      "resourceNotRequired": true,
+      "type": "search"
     },
 
     {
@@ -68,7 +69,29 @@
       "label": "Resource",
       "description": "View resource details",
       "iconClass": "rs-icon rs-icon-page",
-      "template": "{{> resourceTemplate}}"
+      "template": "{{> resourceTemplate}}",
+      "type": "view"
+    },
+
+    {
+    	"id": "iiif",
+      "label": "Image Viewer",
+      "description": "View and compare High-Resolution images",
+      "iconClass": "rs-icon rs-icon-images",
+      "template": "{{> iiifTemplate}}",
+      "frameVariable": "miradorVariable",
+      "type": "view"
+    },
+
+    {
+    	"id": "map",
+      "label": "Map",
+      "description": "Explore places geographic information",
+      "iconClass": "rs-icon rs-icon-map_location_grouped",
+      "checkQuery": "ASK { ?value a crm:E53_Place . }",
+      "template": "{{> mapTemplate}}",
+      "resourceNotRequired": true,
+      "type": "view"
     },
 
     {
@@ -76,7 +99,8 @@
       "label": "Entity Editor",
       "description": "Authoring a resource through the Entity Edit Form",
       "iconClass": "rs-icon rs-icon-form_edit",
-      "template": "{{> entityEditor}}"
+      "template": "{{> entityEditor}}",
+      "type": "authoring"
     },
 
     {
@@ -87,7 +111,8 @@
       "template": "{{> ontodiaTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
-      "frameVariable": "ontodiaVariable"
+      "frameVariable": "ontodiaVariable",
+      "type": "authoring"
     },
 
     {
@@ -99,32 +124,15 @@
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
       "frameVariable": "narrativeVariable",
-      "checkQuery": "ASK { ?value a rso:Semantic_Narrative . }"
+      "checkQuery": "ASK { ?value a rso:Semantic_Narrative . }",
+      "type": "authoring"
     },
 
-    {
-    	"id": "map",
-      "label": "Map",
-      "description": "Explore places geographic information",
-      "iconClass": "rs-icon rs-icon-map_location_grouped",
-      "checkQuery": "ASK { ?value a crm:E53_Place . }",
-      "template": "{{> mapTemplate}}",
-      "resourceNotRequired": true
-    },
-
-    {
-    	"id": "iiif",
-      "label": "Image Viewer",
-      "description": "View and compare High-Resolution images",
-      "iconClass": "rs-icon rs-icon-images",
-      "template": "{{> iiifTemplate}}",
-      "frameVariable": "miradorVariable"
-    },
     {
     	"id": "objectImageObservation",
       "label": "Object Observations through Images",
       "description": "",
-      "iconClass": "rs-icon rs-icon-images",
+      "iconClass": "rs-icon rs-icon-area_annotation",
       "template": "{{> objectImageObservationTemplate}}",
       "checkQuery": "
         PREFIX ontodia: <http://ontodia.org/schema/v1#>
@@ -146,7 +154,8 @@
             ?value crm:P138i_has_representation|rso:PX_has_main_representation ?image .
           }
       }",
-      "unique": true
+      "unique": true,
+      "type": "authoring"
     },
     {
     	"id": "featureSimilarityKm",
@@ -164,7 +173,8 @@
             ?value ldp:contains / Platform:setItem ?o .
             ?o crm:P65_shows_visual_item ?vi .
             ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
-      }"
+      }",
+      "type": "authoring"
     }
     ]'
 
@@ -175,7 +185,8 @@
       "description": "Knowledge Map + High-Resolution Image Viewer",
       "iconClass": "rs-icon rs-icon-image_annotation_grouped",
       "viewIds": ["knowledge-map", "iiif"],
-      "resourceNotRequired": true
+      "resourceNotRequired": true,
+      "type": "authoring"
     }
     ]'
     [[/if]]

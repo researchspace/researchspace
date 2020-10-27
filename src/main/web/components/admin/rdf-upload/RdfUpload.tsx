@@ -257,7 +257,7 @@ export class RdfUpload extends Component<Props, State> {
       <div className={classnames(CLASS_NAME, className)} style={style}>
         {this.props.showAdvancedOptions ?
          <React.Fragment>
-           <a onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
+           <a className={`${CLASS_NAME}__advance`} onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
            { this.renderAdvancedOptions() }
          </React.Fragment> : null
         }
@@ -301,7 +301,7 @@ export class RdfUpload extends Component<Props, State> {
 
   private renderAdvancedOptions() {
     return (
-      <Panel className="" collapsible expanded={this.state.showOptions}>
+      <Panel collapsible expanded={this.state.showOptions}>
         <FormControl
           type="text"
           label="Target NamedGraph"

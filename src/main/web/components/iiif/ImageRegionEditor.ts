@@ -587,6 +587,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
             this.renderMirador(element);
           },
           id: this.props.id,
+          className: 'researchspace-mirador',
           style: { width: '100%', height: '100%', position: 'relative' },
         })
     );

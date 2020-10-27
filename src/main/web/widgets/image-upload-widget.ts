@@ -48,7 +48,7 @@ import { FileUploadService } from 'platform/api/services/file-upload';
 
 const ProgressBar = React.createFactory(ReactBootstrap.ProgressBar);
 
-import '../scss/image-upload-widget.scss';
+import './image-upload-widget.scss';
 
 interface Props {
   config: {

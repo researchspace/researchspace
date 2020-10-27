@@ -24,7 +24,7 @@ import * as Immutable from 'immutable';
 import * as ImageApi from '../../data/iiif/ImageAPI';
 import { ImageOrRegionInfo } from '../../data/iiif/ImageAnnotationService';
 
-import '../../scss/image-overlay.scss';
+import './image-overlay.scss';
 import * as block from 'bem-cn';
 
 const b = block('open-seadragon-overlay');

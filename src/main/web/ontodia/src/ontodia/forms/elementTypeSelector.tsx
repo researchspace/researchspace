@@ -230,7 +230,7 @@ export class ElementTypeSelector extends React.Component<Props, State> {
         ) : (
           <div>
             <div className={`${CLASS_NAME}__separator`}>
-              <i className={`${CLASS_NAME}__separator-text`}>or create new entity</i>
+              <span className={`${CLASS_NAME}__separator-text`}>or create new entity</span>
             </div>
             {this.renderElementTypeSelector()}
           </div>

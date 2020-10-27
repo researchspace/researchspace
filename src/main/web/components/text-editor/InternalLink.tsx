@@ -105,7 +105,7 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
                   <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href} />
                 }
               </DropArea>
-              <Button onMouseDown={this.onUnlink}>
+              <Button bsClass='btn-grey' onMouseDown={this.onUnlink}>
                 <i className='fa fa-chain-broken' aria-hidden='true'></i>
               </Button>
             </div>

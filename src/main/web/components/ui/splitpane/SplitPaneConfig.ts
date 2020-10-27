@@ -87,7 +87,7 @@ export interface BaseSplitPaneConfig {
   primary?: 'first' | 'second';
 
   /**
-   * Render opned pane even when it is in closed state
+   * Render opened pane even when it is in closed state
    * @default false
    */
   alwaysRender?: boolean;

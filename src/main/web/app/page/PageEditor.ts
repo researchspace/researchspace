@@ -55,7 +55,6 @@ import { BrowserPersistence } from 'platform/components/utils';
 import { ConfirmationDialog } from 'platform/components/ui/confirmation-dialog';
 import * as uri from 'urijs';
 
-import '../../scss/page-editor.scss';
 import { ErrorPresenter } from 'platform/components/ui/notification';
 
 const Button = createFactory(ReactBootstrap.Button);
@@ -234,7 +233,6 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
               {
                 bsStyle: 'default',
                 disabled: this.state.saving,
-                style: { backgroundColor: 'lightGrey' },
                 onClick: this.onCancel,
               },
               'Cancel'
@@ -244,7 +242,6 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
                 bsStyle: 'danger',
                 disabled: this.isDeleteBtnDisabled(),
                 onClick: this.onClickDeleteBtn,
-                style: { marginLeft: '11px' },
               },
               'Delete Page'
             ),
@@ -255,15 +252,14 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
                 disabled: this.state.saving,
               },
               this.state.saving
-                ? D.span({}, 'Saving', D.i({ className: 'fa fa-cog fa-spin', style: { marginLeft: '5px' } }))
+                ? D.span({}, 'Saving', D.i({ className: 'fa fa-cog fa-spin' }))
                 : 'Save & View'
             ),
             Button(
               {
-                bsStyle: 'default',
+                bsStyle: 'success',
                 onClick: () => this.onSave({ action: ResourceLinkAction[ResourceLinkAction.edit] }),
                 disabled: this.state.saving,
-                style: { marginLeft: '11px' },
               },
               'Save'
             )

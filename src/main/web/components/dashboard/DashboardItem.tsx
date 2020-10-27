@@ -85,6 +85,13 @@ export interface DashboardViewConfig {
    * @default false
    */
   unique?: boolean;
+
+  /**
+   * Define the view type that will be use to display it in the specific area of the dashboard layout (search, view, authoring areas)
+   * * @default 'authoring'
+   * */
+  type?: string;
+
 }
 
 export interface DashboardItemProps {
@@ -132,6 +139,11 @@ export interface DashboardItemProps {
    * Callback which using for indicate users that a current dashboard isFocused.
    */
   onFocus?(isFocus: boolean): void;
+
+   /**
+   * Render dashboard layout using css grid, instead of bootstrap row and columns.
+   */
+  gridView?: boolean;
 }
 
 export interface State {
@@ -185,6 +197,14 @@ export interface State {
 export class DashboardItem extends Component<DashboardItemProps, State> {
   private cancellation = new Cancellation();
 
+  adjustDashboardItemView = () => {
+    const el: HTMLElement = document.querySelector('.Dashboard--gridViewDashboard');
+    el.style.height = el.offsetWidth < 1099 ? 'auto' : '100%';
+
+    const drop: HTMLElement = document.querySelector('.Dashboard--dropResourceContainer');
+    drop.style.visibility = drop.clientWidth < 1099 ? 'hidden' : 'visible';
+  }
+
   constructor(props: DashboardItemProps, context: any) {
     super(props, context);
     this.state = {};
@@ -192,6 +212,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
+    window.removeEventListener('resize', this.adjustDashboardItemView);
   }
 
   componentDidMount() {
@@ -225,6 +246,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         },
       });
     this.onFocus();
+
+    window.addEventListener('resize', this.adjustDashboardItemView)
   }
 
   private onFocus = () => {
@@ -248,19 +271,19 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         query={view.checkQuery}
         onDrop={(iri) => this.onDrop(iri, view.id)}
         childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
-        dropMessageStyle={{ display: 'none' }}
+        dropMessageWrapperStyle={{ display: 'none' }}
         dropStyles={{
-          enabledHover: { backgroundColor: 'lightgrey' },
-          enabled: { outline: '3px dashed blue' },
-          disabled: { backgroundColor: '#ff000054' },
+          enabledHover: { backgroundColor: '#f6f6f6', outline: '3px dashed #1d0a6e' },
+          enabled: { outline: '1px solid #ddd' },
+          disabled: { opacity: '.2' },
         }}
       >
         <div className={styles.defaultComponent} onClick={() => this.onDefaultDropAreaClick(view)}>
           <div className={'media'}>
             <div className={'media-left media-middle'}>{image}</div>
-            <div className={'media-body'} style={{ height: '64px' }}>
+            <div className={'media-body'}>
               <strong className={'media-heading'}>{view.label}</strong>
-              <div>{view.description}</div>
+              <div className={'media-description'}>{view.description}</div>
             </div>
           </div>
         </div>
@@ -299,6 +322,51 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     );
   };
 
+  private renderItemCard = (view: DashboardViewConfig) => {
+    let image: React.ReactNode | undefined;
+    if (view.image) {
+      image = <img src={view.image} className={`media-object ${styles.image}`} alt={view.label} />;
+    } else if (view.iconClass) {
+      image = <span className={`${view.iconClass} ${styles.icon}`} />;
+    }
+    return (
+      <div key={view.id}>
+        <div>{this.renderDefaultDropArea(view, image)}</div>
+      </div>
+    );
+  }
+
+  private renderGridViewDashboard = () => {
+    const { views } = this.props;
+    const authItems = views.filter((item) => item.type === 'authoring' || !item.type);
+    const searchViewItems = views.filter((item) => item.type === 'search' || item.type === 'view');
+
+    return (
+      <div className={styles.gridViewDashboard} onClick={this.onFocus}>
+        
+        <div className={styles.help}>
+          <i className={'fa fa-question'}></i>
+          <div className={styles.helpText}>What is the Thinking Frames?</div>
+        </div>
+        <div className={styles.gridViewTitle}>Search and View</div>
+        <div className={styles.gridViewItemsView}>{searchViewItems.map(this.renderItemCard)}</div>
+      
+        <div className={styles.gridViewTitle}>Authoring</div>
+        <div className={styles.gridViewItemsAuth}>{authItems.map(this.renderItemCard)}</div>
+        
+        <div className={styles.dropResourceContainer}>
+          <div>
+            <div className={styles.dropResourceIcon}>
+              <img src={'/assets/images/icons/drop_resource.svg'} />
+            </div>
+            <div className={styles.dropResourceText}>drop resource here</div>
+          </div>
+        </div>
+
+      </div>
+    );
+  };
+
   private renderEmptySelectedComponent = () => {
     const { views, onSelect } = this.props;
     const view = views.find((v) => v.id === this.state.selectedView);
@@ -315,10 +383,10 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           query={view.checkQuery}
           childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
           style={{ display: 'flex', flex: 1, width: '100%' }}
-          dropMessageStyle={{ display: 'none' }}
+          dropMessageWrapperStyle={{ display: 'none' }}
           dropStyles={{
-            enabledHover: { backgroundColor: 'lightgrey' },
-            enabled: { outline: '5px dashed blue' },
+            enabledHover: { backgroundColor: '#f6f6f6' },
+            enabled: { outline: '3px dashed #1d0a6e' },
             disabled: { backgroundColor: '#ff000054' },
           }}
         >
@@ -330,7 +398,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
             </div>
           </div>
           <div className={styles.emptyPageDrop}>
-            Drop resource here
+            <div><img src={'/assets/images/icons/drop_resource.svg'} /></div>
+            <div className={styles.emptyPageDroptext}>drop resource here</div>
             {view.resourceNotRequired ? (
               <div>
                 or
@@ -372,7 +441,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   };
 
   render() {
-    const { views, viewId } = this.props;
+    const { views, viewId, gridView } = this.props;
     const { selectedView } = this.state;
     if (views.length === 0) {
       return null;
@@ -382,6 +451,9 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     }
     if (selectedView) {
       return this.renderEmptySelectedComponent();
+    }
+    if (gridView) {
+      return this.renderGridViewDashboard();
     }
     return this.renderDefaultDashboard();
   }

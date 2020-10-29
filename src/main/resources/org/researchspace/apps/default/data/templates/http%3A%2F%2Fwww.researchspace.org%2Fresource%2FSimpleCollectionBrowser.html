@@ -15,7 +15,7 @@
 <div class="rs-vocabulary-terms-container">
   <div class="schema-area-bg"></div>
   <div class="rs-vocabulary-terms">
-    <h1 class="rs-vocabulary-terms-title"><strong><mp-label iri='{{collection}}'></mp-label></strong> </h1>
+    {{#if collection}}<h1 class="rs-vocabulary-terms-title"><strong><mp-label iri='{{collection}}'></mp-label></strong> </h1>{{/if}}
     <div class="rs-vocabulary-terms-area">
       <h1>{{itemLabel}}s</h1>
       <mp-event-target-refresh id='mytree'>
@@ -27,7 +27,12 @@
                                     {{#if orderByPattern}}
                                     "orderByPattern": "{{orderByPattern}}",
                                     {{/if}}
+                                    
+                                    {{#if membershipProperty}}
                                     "schemePattern": "?item <{{membershipProperty}}> ?__scheme__"
+                                    {{else}}
+                                    "schemePattern": "?item a <{{rdfType}}> . {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}}"
+                                    {{/if}}
                                     }'>
           <template id='template'>
             <span class="tree-item-actions-container">

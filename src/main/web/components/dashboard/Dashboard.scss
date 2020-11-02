@@ -31,33 +31,33 @@
 
 .gridViewDashboard {
 
-  height: 100%;
-  position: relative;
-  margin: 3.5em 4em 2em 4em;
+  flex: 1;
 
   display: grid;
-  grid-template-columns: 100%;
+  grid-template-columns: .2fr 3fr .2fr;
+  grid-template-rows: .3fr fit-content(30px) max-content fit-content(30px) max-content auto .3fr;
+
   grid-gap: 2rem;
 
-  grid-auto-rows: fit-content(30px) minmax(150px, auto);
-  grid-auto-flow: row;
-
-  align-content: start;
-
-  @media (min-width: 2560px) {
-    align-content: center;
-  }
-  
+  grid-template-areas: '. info .'
+                        '. title1 .'
+                        '. grid1 .'
+                        '.title2 .'
+                        '. grid2 .'
+                        '. drop .'
+                        '. . .';
 }
 
 .help {
 
+  grid-area: info;
+  justify-self: end;
+  align-self: center;
+
   display: flex;
   align-items: center;
 
-  position: absolute;
-  top: -14px;
-  right: 0;
+  padding-top: 30px;
 
   font-size: 15px;
   font-weight: 600;
@@ -73,9 +73,21 @@
   }
 }
 
-.gridViewTitle {
+.gridViewTitle1, 
+.gridViewTitle2 {
 
   font-size: 20px;
+  align-self: end;
+}
+
+.gridViewTitle1 {
+
+  grid-area: title1;
+}
+
+.gridViewTitle2 {
+
+  grid-area: title2;
 }
 
 .gridViewItemsView,
@@ -88,24 +100,34 @@
 }
 
 .gridViewItemsView {
+
+  grid-area: grid1;
   grid-template-columns:repeat(auto-fit, minmax(300px , 1fr));
+
+  padding-bottom: 2em;
 }
 
 .gridViewItemsAuth {
+
+  grid-area: grid2;
   grid-template-columns:repeat(auto-fit, minmax(350px , 1fr));
 }
 
 .dropResourceContainer {
 
-  position: absolute;
-  bottom: 0;
+//  position: absolute;
+//  bottom: 0;
+  grid-area: drop;
+  align-self: center;
+
+  margin-top: 2em;
   width: 100%;
   display: flex;
   justify-content: center;
 
-  @media (max-width: 1283px) {
+ /*  @media (max-width: 1283px) {
     display: none;
-  }
+  } */
 
 }
 

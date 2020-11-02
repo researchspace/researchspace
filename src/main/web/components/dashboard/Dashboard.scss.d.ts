@@ -37,6 +37,9 @@ declare namespace DashboardScssNamespace {
     itemsContainer: string;
     itemsList: string;
     notOpacity: string;
+    pulse: string;
+    'pulse-animation': string;
+    pulseAnimation: string;
     template: string;
     viewContainer: string;
   }

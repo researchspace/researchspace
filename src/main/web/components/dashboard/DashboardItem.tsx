@@ -347,7 +347,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         <div className={styles.dropResourceContainer}>
           <div>
             <div className={styles.dropResourceIcon}>
-              <img src={'/assets/images/icons/drop_resource.svg'} />
+              <i className={'rs-icon rs-icon-drop_resource'}></i>
             </div>
             <div className={styles.dropResourceText}>drop resource here</div>
           </div>

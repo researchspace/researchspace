@@ -21,6 +21,7 @@ package org.researchspace.servlet;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.URISyntaxException;
 import java.util.Base64;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,17 +39,19 @@ import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.mitre.dsmiley.httpproxy.ProxyServlet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.methods.HttpGet;
 import org.researchspace.security.Permissions;
 
 import com.google.inject.Inject;
 
 /**
- * 
+ *
  * A proxy servlet for accessing a remote URL <b>targetUri</b> requiring
  * separate authentication. Transforms a request of the form [platform
  * URL]/proxy/[proxy ID]/path/to/resource into [targetUri]/path/to/resource and
  * adds the authentication header.
- * 
+ *
  * The <b>targetUri</b> and the login credentials are passed via properties in
  * two ways:
  * <ul>
@@ -108,13 +111,14 @@ public class MProxyServlet extends ProxyServlet {
 
     @Override
     protected HttpResponse doExecute(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
-            HttpRequest proxyRequest) throws IOException {
+                                     HttpRequest proxyRequest) throws IOException {
 
         String loginName = getConfigParam("loginName");
         String loginPassword = getConfigParam("loginPassword");
         String loginBase64 = getConfigParam("loginBase64");
         String permission = Permissions.PROXY.PREFIX + key;
         String encodedAuth = null;
+        String accessToken = getConfigParam("access_token");
 
         if (!SecurityUtils.getSubject().isPermitted(new WildcardPermission(permission))) {
             return createHttpError("You do not have required permissions to access this resource",
@@ -129,8 +133,8 @@ public class MProxyServlet extends ProxyServlet {
 
         if (encodedAuth != null && encodedAuth != "") {
             proxyRequest.removeHeaders("Authorization"); // Sometimes this header is already set,
-                                                         // but with invalid
-                                                         // Authorizations. Remove just in case.
+            // but with invalid
+            // Authorizations. Remove just in case.
             proxyRequest.addHeader("Authorization", "Basic " + encodedAuth);
         }
 
@@ -139,8 +143,20 @@ public class MProxyServlet extends ProxyServlet {
                     + proxyRequest.getRequestLine().getUri());
         }
 
+        HttpGet httpget;
+
         try {
-            return getProxyClient().execute(getTargetHost(servletRequest), proxyRequest);
+            URIBuilder builder = new URIBuilder(proxyRequest.getRequestLine().getUri());
+            builder.setParameter("access_token", accessToken);
+            httpget = new HttpGet(builder.build());
+        } catch (URISyntaxException e) {
+            logger.debug("Connection to target system could not be established: ", e);
+            return createHttpError("Connection to target system could not be established: " + e.getMessage(),
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        }
+
+        try {
+            return getProxyClient().execute(getTargetHost(servletRequest), httpget);
         } catch (ConnectException e) {
             logger.debug("Connection to target system could not be established: ", e);
             return createHttpError("Connection to target system could not be established: " + e.getMessage(),

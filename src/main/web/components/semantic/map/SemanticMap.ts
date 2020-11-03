@@ -30,6 +30,7 @@ import VectorLayer from 'ol/layer/vector';
 import Vector from 'ol/source/vector';
 import Cluster from 'ol/source/cluster';
 import OSM from 'ol/source/osm';
+import XYZ from 'ol/source/xyz';
 import Style from 'ol/style/style';
 import Text from 'ol/style/text';
 import Fill from 'ol/style/fill';
@@ -62,10 +63,27 @@ import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
 
+enum Source {
+  OSM = 'osm',
+  MapBox = 'mapbox'
+}
+
+interface ProviderOptions {
+  endpoint: string;
+  crs: string;
+  style: string;
+}
+
+
 interface Marker {
   link?: string;
   description?: string;
 }
+
+const MIN_X = '?MinX'
+const MIN_Y = '?MinY'
+const MAX_X = '?MaxX'
+const MAX_Y = '?MaxY'
 
 export interface SemanticMapConfig {
   /**
@@ -98,10 +116,23 @@ export interface SemanticMapConfig {
    */
   fixZoomLevel?: number;
 
+  extent?: Array<number>;
+
   /**
    * ID for issuing component events.
    */
   id?: string;
+
+  /**
+   * Optional enum for calling the selected OpenLayer source
+   * ENUM { "mapbox", "osm"}
+   */
+  provider?: Source;
+
+  /**
+   * Optional JSON object containing various user provided options
+   */
+  providerOptions?: ProviderOptions;
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -127,6 +158,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
     };
+
+
+    console.log(this.props);
+  }
+
+  private getInputCrs() {
+    return this.props.providerOptions.crs === undefined ? 'EPSG:4832' : this.props.providerOptions.crs;
   }
 
   private static createPopupContent(props, tupleTemplate: Data.Maybe<HandlebarsTemplateDelegate>) {
@@ -229,13 +267,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private transformToMercator(lng: number, lat: number): [number, number] {
-    return proj.transform([lng, lat], 'EPSG:4326', 'EPSG:3857');
+    return proj.transform([lng, lat], this.getInputCrs(), 'EPSG:3857');
   }
 
   private readWKT(wkt: string) {
     const format = new WKT();
     return format.readGeometry(wkt, {
-      dataProjection: 'EPSG:4326',
+      dataProjection: this.getInputCrs(),
       featureProjection: 'EPSG:3857',
     });
   }
@@ -282,7 +320,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       style: (feature: Feature) => {
         const geometry = feature.getGeometry();
         const color = feature.get('color');
-        return getFeatureStyle(geometry, color ? color.value : undefined);
+        return getFeatureStyle(geometry, 'rgba(77, 175, 124, .2)');
       },
       zIndex: 0,
     });
@@ -293,23 +331,41 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
 
+      let newProvider = null;
+
+      switch (props.provider) {
+        case Source.MapBox: {
+          newProvider = new XYZ({
+            url: 'http://localhost:10214/proxy/mapbox/styles/v1/mapbox/' +
+              this.props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
+          });
+          break;
+        }
+        default: {
+          newProvider = new OSM({});
+          break;
+        }
+      }
+
       const map = new Map({
         controls: control.defaults({
           attributionOptions: {
             collapsible: false,
           },
         }),
-        interactions: interaction.defaults({ mouseWheelZoom: false }),
+        //interactions: interaction.defaults({ mouseWheelZoom: false }),
+        interactions: interaction.defaults({}),
         layers: [
           new TileLayer({
-            source: new OSM(),
+            source: newProvider,
           }),
           ..._.values(layers),
         ],
         target: node,
         view: new View({
           center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
-          zoom: 1,
+          zoom: 3,
+          extent:props.extent
         }),
       });
 
@@ -320,21 +376,43 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       this.addMarkersFromQuery(this.props, this.context);
 
       this.initializeMarkerPopup(map);
-      // map.getView().fit(markersSource.getExtent(), map.getSize());
+      map.getView().fit(props.extent);
 
       window.addEventListener('resize', () => {
         map.updateSize();
       });
+
+      this.map.on('moveend', () => {
+        this.addMarkersFromQuery(this.props, this.context)
+      })
+
+      this.map.on('singleclick', (e) =>{
+        //console.log(e.coordinate)
+      })
+
+      const view = this.map.getView();
+      const extent = this.calculateExtent();
+      view.fit(extent, { maxZoom: 10 });
+
     }, 1000);
   }
 
   addMarkersFromQuery = (props: SemanticMapProps, context: ComponentContext) => {
-    const { query, fixZoomLevel } = props;
+    let { query } = props;
+
+
+    const bbCoords = this.map.getView().calculateExtent(this.map.getSize())
+
+    query = query.replace(MIN_X, `"${bbCoords[0]}"`)
+    query = query.replace(MIN_Y, `"${bbCoords[1]}"`)
+    query = query.replace(MAX_X, `"${bbCoords[2]}"`)
+    query = query.replace(MAX_Y, `"${bbCoords[3]}"`)
 
     if (query) {
       const stream = SparqlClient.select(query, { context: context.semanticContext });
 
       stream.onValue((res) => {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         const m = _.map(res.results.bindings, (v) => <any>_.mapValues(v, (x) => x));
         if (SparqlUtil.isSelectResultEmpty(res)) {
           this.setState({
@@ -352,13 +430,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           const geometries = this.createGeometries(m);
           this.updateLayers(geometries);
 
-          const view = this.map.getView();
-          const extent = this.calculateExtent();
-          view.fit(extent, { maxZoom: 10 });
 
-          if (fixZoomLevel) {
-            view.setZoom(fixZoomLevel);
-          }
+
+
+
+//          if (fixZoomLevel) {
+//            view.setZoom(fixZoomLevel);
+//          }
         }
       });
 
@@ -541,7 +619,7 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
     geometry,
     fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
     stroke: new Stroke({
-      color: color || '#3399CC',
+      color: color || 'rgba(202, 105, 36, .3)',
       width: 1.25,
     }),
   });

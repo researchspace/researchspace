@@ -149,6 +149,7 @@ const MAP_REF = 'researchspace-map-widget';
 export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
+  private featuresList: Array<any>;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -160,7 +161,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     };
 
 
-    console.log(this.props);
+    this.featuresList = new Array<any>();
   }
 
   private getInputCrs() {
@@ -397,9 +398,21 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }, 1000);
   }
 
-  addMarkersFromQuery = (props: SemanticMapProps, context: ComponentContext) => {
+  filterList = (date?: number) => {
+
+    if (date)
+      return _.filter(this.featuresList, (v) => (typeof v.end_date == 'undefined' ? 
+      Date.parse(v.start_date.value) < date : 
+      Date.parse(v.start_date.value) < date && Date.parse(v.end_date.value) >= date) ); //&& !v.bw_id.value.startsWith('SS_IS')
+
+    else
+      return this.featuresList;
+  }
+
+  addMarkersFromQuery = (props: SemanticMapProps, context: ComponentContext, date?: number) => {
     let { query } = props;
 
+    if (!date) date = Date.parse('1850-01-01')
 
     const bbCoords = this.map.getView().calculateExtent(this.map.getSize())
 
@@ -412,8 +425,11 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       const stream = SparqlClient.select(query, { context: context.semanticContext });
 
       stream.onValue((res) => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const m = _.map(res.results.bindings, (v) => <any>_.mapValues(v, (x) => x));
+
+        this.featuresList = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
+
+        const filteredList = this.filterList(date);
+
         if (SparqlUtil.isSelectResultEmpty(res)) {
           this.setState({
             noResults: true,
@@ -427,16 +443,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             isLoading: false,
           });
 
-          const geometries = this.createGeometries(m);
+          const geometries = this.createGeometries(filteredList);
           this.updateLayers(geometries);
+        }
 
-
-
-
-
-//          if (fixZoomLevel) {
-//            view.setZoom(fixZoomLevel);
-//          }
+        if (this.props.id){
+          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: {results: filteredList}});
         }
       });
 
@@ -447,11 +459,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       );
 
+      /*
       stream.onEnd(() => {
         if (this.props.id) {
           trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
         }
       });
+      */
 
       if (this.props.id) {
         trigger({

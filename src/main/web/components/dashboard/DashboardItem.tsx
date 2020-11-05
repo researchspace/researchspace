@@ -388,7 +388,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
             </div>
           </div>
           <div className={styles.emptyPageDrop}>
-            <div><img src={'/assets/images/icons/drop_resource.svg'} /></div>
+            <div><i className={'rs-icon rs-icon-drop_resource'}></i></div>
             <div className={styles.emptyPageDroptext}>drop resource here</div>
             {view.resourceNotRequired ? (
               <div>

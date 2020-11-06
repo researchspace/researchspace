@@ -128,29 +128,33 @@ globalHandlebars.registerHelper(
 const defaultAnnotationViewerTemplate = globalHandlebars.compile(
   `
   <div class="all-annotations" id="annotation-viewer-{{windowId}}">
-    {{#each annotations}}
-      <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
-        <div class="button-container">
-          {{#if id}}
-            <mp-template-item><semantic-link guess-repository=true iri="{{id}}"></semantic-link></mp-template-item>
-          {{/if}}
-          <i class="fa fa fa-external-link fa-fw"></i>open</a>
-          {{#if showUpdate}}
-            <a href="#edit" class="edit">
-              <i class="fa fa-pencil-square-o fa-fw"></i>{{t "edit"}}
-            </a>
-          {{/if}}
-          {{#if showDelete}}
-            <a href="#delete" class="delete">
-              <i class="fa fa-trash-o fa-fw"></i>{{t "delete"}}
-            </a>
-          {{/if}}
+    <div class="text-viewer">Image Region(s)</div>
+      {{#each annotations}}
+        <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
+          <div class="button-container">
+            {{#if id}}
+              <mp-template-item style="max-width: calc(100% - 80px);">
+                <div>
+                  <semantic-link iri="{{id}}" style="display: block; width: 100%;">{{{annoText}}}</semantic-link>
+                </div>
+              </mp-template-item>
+            {{/if}}
+            <div>
+              {{#if showUpdate}}
+                <a href="#edit" class="edit">
+                  <i class="fa fa-pencil"></i>
+                </a>
+              {{/if}}
+              {{#if showDelete}}
+                <a href="#delete" class="delete">
+                  <i class="fa fa-trash-o"></i>
+                </a>
+              {{/if}}
+            </div>
+          </div>
         </div>
-        <div class="text-viewer">
-          <p>{{{annoText}}}</p>
-        </div>
-      </div>
-    {{/each}}
+      {{/each}}
+    </div>
   </div>
   `
  );
@@ -160,8 +164,8 @@ Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(
   <form id="annotation-editor-{{windowId}}" class="annotation-editor annotation-tooltip" {{#if id}}data-anno-id="{{id}}"{{/if}}>
     <div>
       <div class="button-container">
-        <a href="#cancel" class="cancel"><i class="fa fa-times-circle-o fa-fw"></i>{{t "cancel"}}</a>
-        <a href="#save" class="save"><i class="fa fa-database fa-fw"></i>{{t "save"}}</a>
+        <a href="#cancel" class="cancel"><i class="fa fa-times-circle-o"></i>{{t "cancel"}}</a>
+        <a href="#save" class="save"><i class="fa fa-floppy-o"></i>{{t "save"}}</a>
       </div>
     </div>
   </form>

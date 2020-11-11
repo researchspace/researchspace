@@ -197,14 +197,6 @@ export interface State {
 export class DashboardItem extends Component<DashboardItemProps, State> {
   private cancellation = new Cancellation();
 
-  adjustDashboardItemView = () => {
-    const el: HTMLElement = document.querySelector('.Dashboard--gridViewDashboard');
-    el.style.height = el.offsetWidth < 1099 ? 'auto' : '100%';
-
-    const drop: HTMLElement = document.querySelector('.Dashboard--dropResourceContainer');
-    drop.style.visibility = drop.clientWidth < 1099 ? 'hidden' : 'visible';
-  }
-
   constructor(props: DashboardItemProps, context: any) {
     super(props, context);
     this.state = {};
@@ -212,7 +204,6 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
-    window.removeEventListener('resize', this.adjustDashboardItemView);
   }
 
   componentDidMount() {
@@ -247,7 +238,6 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       });
     this.onFocus();
 
-    window.addEventListener('resize', this.adjustDashboardItemView)
   }
 
   private onFocus = () => {
@@ -348,16 +338,16 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           <i className={'fa fa-question'}></i>
           <div className={styles.helpText}>What is the Thinking Frames?</div>
         </div>
-        <div className={styles.gridViewTitle}>Search and View</div>
+        <div className={styles.gridViewTitle1}>Search and View</div>
         <div className={styles.gridViewItemsView}>{searchViewItems.map(this.renderItemCard)}</div>
       
-        <div className={styles.gridViewTitle}>Authoring</div>
+        <div className={styles.gridViewTitle2}>Authoring</div>
         <div className={styles.gridViewItemsAuth}>{authItems.map(this.renderItemCard)}</div>
         
         <div className={styles.dropResourceContainer}>
           <div>
             <div className={styles.dropResourceIcon}>
-              <img src={'/assets/images/icons/drop_resource.svg'} />
+              <i className={'rs-icon rs-icon-drop_resource'}></i>
             </div>
             <div className={styles.dropResourceText}>drop resource here</div>
           </div>
@@ -398,7 +388,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
             </div>
           </div>
           <div className={styles.emptyPageDrop}>
-            <div><img src={'/assets/images/icons/drop_resource.svg'} /></div>
+            <div><i className={'rs-icon rs-icon-drop_resource'}></i></div>
             <div className={styles.emptyPageDroptext}>drop resource here</div>
             {view.resourceNotRequired ? (
               <div>

@@ -21,7 +21,8 @@ declare namespace DashboardScssNamespace {
     gridViewDashboard: string;
     gridViewItemsAuth: string;
     gridViewItemsView: string;
-    gridViewTitle: string;
+    gridViewTitle1: string;
+    gridViewTitle2: string;
     help: string;
     helpText: string;
     icon: string;
@@ -36,6 +37,9 @@ declare namespace DashboardScssNamespace {
     itemsContainer: string;
     itemsList: string;
     notOpacity: string;
+    pulse: string;
+    'pulse-animation': string;
+    pulseAnimation: string;
     template: string;
     viewContainer: string;
   }

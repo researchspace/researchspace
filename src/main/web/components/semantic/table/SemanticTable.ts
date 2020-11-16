@@ -249,13 +249,13 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
     this.querying = this.cancellation.deriveAndCancel(this.querying);
     const loading = this.querying
       .map(SparqlClient.select(props.query, { context: context.semanticContext }))
-      .onValue((res) => this.setState({ data: res, isLoading: false }))
-      .onError((error) => this.setState({ isLoading: false, error }))
-      .onEnd(() => {
+      .onValue((res) => {
         if (this.props.id) {
-          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
+          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: {result: res} });
         }
-      });
+        this.setState({ data: res, isLoading: false })
+      })
+      .onError((error) => this.setState({ isLoading: false, error }));
     if (this.props.id) {
       trigger({
         eventType: BuiltInEvents.ComponentLoading,

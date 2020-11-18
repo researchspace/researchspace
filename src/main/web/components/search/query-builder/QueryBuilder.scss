@@ -45,8 +45,8 @@
   padding: 0;
 
   img {
-    height: 40px;
-    width: 40px;
+    height: 20px;
+    width: 30px;
   }
 
   :global .alert-warning {
@@ -80,7 +80,7 @@
 .searchSummaryHolder {
   display: flex;
   align-items: center;
-  margin-bottom: $padding-base-vertical * 2;
+  margin-bottom: 10px;
 }
 
 .searchExpand {
@@ -126,37 +126,43 @@
   align-items: flex-start;
   flex-direction: column;
   margin-bottom: $padding-base-vertical;
+
+  width: 100%;
 }
 
 .searchClauseArea {
   margin: 0;
+  width: 100%;
 }
 
 .searchClauseHolder {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .searchClause {
   margin: 10px 0;
+
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
-  width: auto;
-  border: $rs-lightgrey-border;
-  // buttons have box-model box sizing, add 2 pixels to fit them in
-  height: $rs-button-height + 2;
+  flex-wrap: wrap;
+
+  width: fit-content;
+  height: auto;
 
   //safari bug
   position: relative;
 
-  &:hover {
-    .addDisjunctButton,
-    .addConjunctButton {
-      cursor: pointer;
-      visibility: visible;
-    }
+  :global(.Select-control:focus) {
+    border: none;
   }
+
+  :global(.QueryBuilder--itemHolder:first-of-type) {
+    border-left: 1px solid $color-frame-borders;
+  }
+
 }
 
 @mixin categorySelector {
@@ -174,39 +180,31 @@
   padding-left: $padding-base-horizontal + $rs-button-arrow-border / 2;
   padding-right: $padding-base-horizontal;
   cursor: auto;
+  letter-spacing: .1px;
 
   height: $rs-button-height;
   border-width: 0;
 
   &::after {
     @include clauseItemAfter();
-    background-color: $rs-button-background-color;
-  }
-
-  &:hover {
-    background-color: $rs-button-background-color !important;
-    &::after {
-      background-color: $rs-button-background-color;
-    }
-    &::before {
-      background-color: $rs-button-background-color;
-    }
   }
 }
 
 .itemHolder {
-  height: $rs-button-height;
-
+ // height: $rs-button-height;
+//  min-width: $rs-widest-button-size;
   display: flex;
   justify-content: center;
   align-items: center;
 
+  flex-grow: 1;
+
   position: relative;
 
-  padding-left: $padding-base-horizontal;
-  padding-right: $padding-base-horizontal;
-
-  min-width: $rs-widest-button-size;
+  padding-left: 12px;
+  padding-right: 5px;
+  border-bottom: 1px solid $color-frame-borders;
+  border-top: 1px solid $color-frame-borders;
 
   &:hover {
     .editButton {
@@ -217,15 +215,10 @@
 }
 
 .actionableItem {
-  &:hover {
-    background-color: darken($rs-button-background-color, 10%) !important;
-    &::after {
-      background-color: darken($rs-button-background-color, 10%);
-    }
-    &::before {
-      background-color: $rs-button-background-color;
-    }
-  }
+
+   /*  
+  } */
+
 }
 
 .domainSelection {
@@ -239,25 +232,32 @@
 
 .rangeSelection {
   @include categorySelector();
-  margin: 10px 20px;
+  margin: 1px 20px;
 }
 
 .relationSelector {
-  margin: 10px 20px;
+  margin: 1px 20px;
 }
 
 .relationPlaceholder {
   @include itemHolder();
+  height: $rs-button-height + 2;
   composes: selectedItem;
+  color: $color-dark;
+  background-color: transparent;
+  border-bottom: 1px solid $color-frame-borders;
+  border-top: 1px solid $color-frame-borders;
 }
 
 .selectedDomain {
   composes: selectedItem;
-  padding-left: 0;
+  padding-left: 10px;
+  font-weight: bold;
 }
 
 .selectedRange {
   composes: selectedItem;
+  font-weight: bold;
 }
 
 .selectedRelation {
@@ -268,17 +268,47 @@
   composes: selectedItem;
 }
 
-.addConjunctButton {
-  visibility: hidden;
-  @include itemHolder();
+.addConjunctButton,
+.addDisjunctButton {
+  //visibility: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+
+  position: relative;
+  padding: 0 20px 0 40px;
+  height: $rs-button-height + 2;
+
+  border-bottom: 1px solid $color-frame-borders;
+  border-top: 1px solid $color-frame-borders;
+
+  color: $color-grey-dark;
+  text-transform: uppercase;
+  
   composes: selectedItem actionableItem;
+
+  :global(span) {
+    opacity: .4;
+  }
+
+  &::after {
+    content: none;
+  }
+
+  &:active, 
+  &:hover,
+  &:focus-within,
+  &:focus {
+    cursor: pointer;
+
+    :global(span) {
+      opacity: 1;
+    }
+  }
 }
 
-.addDisjunctButton {
-  visibility: hidden;
-  @include itemHolder();
-  composes: selectedItem actionableItem;
-}
 
 .mapSelectionButton {
   background-image: url(../images/MapSelection.svg);
@@ -290,22 +320,51 @@
 }
 
 .removeConjunctButton {
-  height: $rs-button-height;
-  border-width: 0;
-  margin-left: auto;
-  padding-left: 2 * $padding-base-horizontal;
 
-  &:hover {
+  height: $rs-button-height + 2;
+//  border-width: 0;
+//  margin-left: auto;
+
+  flex-grow: 1;
+  padding: 0 20px 0 55px;
+  color: $color-grey-dark;
+  text-transform: uppercase;
+  background-color: transparent;
+
+  border: none;
+  border-bottom: 1px solid $color-frame-borders;
+  border-top: 1px solid $color-frame-borders;
+  border-right: 1px solid $color-frame-borders;
+
+  :global(span) {
+    opacity: .5;
+  }
+
+  &:hover,
+  &:focus-within,
+  &:focus {
+    color: $color-grey-dark;
     text-decoration: none;
     cursor: pointer;
+    
+    :global(span) {
+      opacity: 1;
+    }
   }
 }
 
 .nestedSearchButton {
-  padding: 0;
-  height: $rs-button-height;
+  padding: 0 5px;
+  height: 38px;
+  width: 38px;
+
   position: relative;
-  border-radius: 0 3px 3px 0;
+  border: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
   img {
     height: 35px;
     width: 60px;
@@ -313,13 +372,17 @@
 }
 
 .magnifierIcon {
-  background-image: url(../images/magnifying_glass.svg);
-  background-repeat: no-repeat;
-  height: 40px;
-  width: 40px;
-  display: block;
-  position: absolute;
-  left: 10px;
+ // background-image: url(../images/magnifying_glass.svg);
+ // background-repeat: no-repeat; 
+ // position: absolute;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  :global(.rs-icon) {
+    font-size: 17px;
+  }
 }
 
 .nestedSearchHolder {
@@ -330,11 +393,11 @@
 }
 
 .activeTerm {
-  color: black;
+  color: $color-dark;
 }
 
 .searchBasedTermSelectorHolder {
-  margin-left: 300px;
+
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -345,11 +408,16 @@
   display: flex;
   align-items: center;
   align-content: center;
+  justify-content: center;
+    
+  width: 100%;
+  flex-wrap: wrap;
+
   button {
     border-radius: 0;
   }
   button.nestedSearchButton {
-    border-radius: 0 3px 3px 0;
+    border-radius: 2px;
   }
 }
 
@@ -358,7 +426,10 @@
 }
 
 .resourceSelector {
-  width: $rs-input-width;
+  
+  min-width: 150px;
+  max-width: 400px;
+  flex: 1;
   height: $rs-button-height;
   z-index: $zindex-input-element;
 
@@ -383,13 +454,17 @@
 .andSeparator {
   padding: $padding-base-vertical $padding-base-horizontal;
   font-weight: bold;
-  border: $rs-lightgrey-border;
+  border: $color-dark;
+  background-color: $color-dark;
+  color: $color-white;
 }
 
 .whereSeparator {
   padding: $padding-base-vertical $padding-base-horizontal;
   font-weight: bold;
-  border: $rs-lightgrey-border;
+  border: $color-dark;
+  background-color: $color-dark;
+  color: $color-white;
 }
 
 .editButton {

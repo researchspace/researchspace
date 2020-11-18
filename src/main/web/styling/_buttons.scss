@@ -103,14 +103,20 @@
 .btn {
     border-width: 1px;
     font-size: 14px;
-    border-radius: 0;
+    border-radius: 2px;
     line-height: 1.2;
 
     @media screen and (max-width: 767px) {
         font-size: 12px !important;
     }   
 
-  }
+}
+
+.btn:hover, 
+.btn:focus, 
+.btn.focus {
+    color: $color-dark;
+}
 
 button:disabled {
 
@@ -136,7 +142,7 @@ fieldset[disabled] .btn {
 .btn-default {
     color: $color-dark;
     background-color: transparent;
-    border-color: $color-primary-50;
+    border-color: $color-dark--op20;
 }
 
 .btn-default:hover,
@@ -155,7 +161,7 @@ fieldset[disabled] .btn {
 .open > .btn-default.dropdown-toggle:focus,
 .open > .btn-default.dropdown-toggle.focus {
     color: $color-dark;
-    background-color: transparent;
+    background-color: $color-primary-50--op50;
     border-color: $color-dark--op20;
 }
 
@@ -170,7 +176,7 @@ fieldset[disabled] .btn-default:focus,
 fieldset[disabled] .btn-default.focus {
     color: $color-dark;
     background-color: transparent;
-    border-color: $color-primary-50;
+    border-color: $color-dark--op20;
 }
 
 .btn-primary {
@@ -199,14 +205,44 @@ fieldset[disabled] .btn-default.focus {
     }
 }
 
+.btn-icon {
+
+    color: $color-dark;
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover,
+    &:focus,
+    &:focus-within,
+    &.focus,
+    .open > &.dropdown-toggle,
+    .open > &.dropdown-toggle:hover, 
+    .open > &.dropdown-toggle:focus, 
+    .open > &.dropdown-toggle.focus {
+        color: $color-dark;
+        background-color: transparent;
+        border-color: transparent;
+    }
+
+    &:active,
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active,
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus {
+
+        background-color: $color-primary-50--op50;
+    }
+}
 
 .btn-grey {
 
-    color: $color-grey-dark;
-    border: 1px solid $color-light-grey2;
+    color: $color-btn-grey;
+    border: 1px solid $color-btn-grey-border;
     box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.17);
-    background-color: $color-btn-bg-grey;
-    border-radius: 3px;
+    background-color: $color-btn-grey-bg;
     padding: 5px 7px;
     white-space: nowrap;
 
@@ -215,25 +251,38 @@ fieldset[disabled] .btn-default.focus {
     .fa,
     .rs-icon,
     .iconmoon {
-
         padding-right: 3px;
     }
 
     &:hover,
-    &:focus {
+    &:active,
+    &.active,
+    &:focus,
+    &.focus,
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus, 
+    .open > &.dropdown-toggle,
+    .open > &.dropdown-toggle:hover, 
+    .open > &.dropdown-toggle:focus, 
+    .open > &.dropdown-toggle.focus {
 
-        color: $color-grey-dark;
+        color: $color-btn-grey;
+        border: 1px solid $color-btn-grey-border;
         border-radius: 3px;
-        background-color: $color-btnHover-bg-grey;
+        background-color: $color-btn-grey-hover-bg;
         outline: none;
     }
 
-    &.btn-icon {
+    &.btn-grey-icon {
 
         .rs-icon,
         .iconmoon {
 
-            color: $color-grey-dark;
+            color: $color-btn-grey;
         }
     }
 
@@ -249,13 +298,15 @@ fieldset[disabled] .btn-default.focus {
         }
     }
 
-    &.btn-icon.delete {
+    &.btn-grey-icon.delete {
         
         &:hover,
-        &:focus {
+        &:focus,
+        &:focus-within {
 
             border: 1px solid $color-danger;
             background-color: $color-danger;
+            color: $color-white;
 
             .rs-icon,
             .iconmoon {
@@ -272,23 +323,30 @@ fieldset[disabled] .btn-default.focus {
         &:hover,
         &:focus {
 
-            background-color: $color-btn-bg-grey;
-            color: $color-grey-dark;
-            border: 1px solid $color-light-grey2;
+            background-color: $color-btn-grey-bg;
+            color: $color-btn-grey;
+            border: 1px solid $color-btn-grey-border;
 
             .rs-icon,
             .iconmoon {
 
-                color: $color-grey-dark;
+                color: $color-btn-grey;
             }
         }
     }
 }
 
+.btn-grey-icon {
+
+    display: flex;
+    align-items: center;
+}
+
+
 .btn-table {
 
     color: $color-btn-grey;
-    background-color: $color-btn-bg-grey;
+    background-color: $color-btn-grey-bg;
 
     font-size: 14.5px;
     letter-spacing: .1px;
@@ -301,8 +359,9 @@ fieldset[disabled] .btn-default.focus {
     &:focus,
     &:focus-within {
 
+        color: $color-btn-grey;
         outline: none;
-        background-color: $color-btnHover-bg-grey;
+        background-color: $color-btn-grey-hover-bg;
     }
 
     &.btn-table-delete {
@@ -328,7 +387,6 @@ fieldset[disabled] .btn-default.focus {
     background-color: $color-secondaryB-10;
     border: 1px solid $color-secondaryB-50;
     padding: 5px 8px;
-    border-radius: 2px;
     font-size: 12px;
 
     &:hover {
@@ -344,7 +402,6 @@ fieldset[disabled] .btn-default.focus {
     font-weight: bold;
     text-shadow: 0px 0px 1px #4c040485;
     padding: 5px 8px;
-    border-radius: 2px;
     font-size: 12px;
     margin-bottom: 3px;
     margin: 2px 0px 2px 0px;
@@ -361,6 +418,7 @@ fieldset[disabled] .btn-default.focus {
 .btn-success {
     background-color: $color-success;
     border-color: $color-success;
+    color: $color-white;
     text-shadow: 0px 0px 1px #00000061;
     font-weight: 600;
 
@@ -369,9 +427,11 @@ fieldset[disabled] .btn-default.focus {
     &.active,
     .open > &.dropdown-toggle,
     &:focus,
+    &:focus-within,
     &.focus {
         background-color: $color-success-darker;
         border-color: $color-success-darker;
+        color: $color-white;
     }
 }
 
@@ -385,6 +445,7 @@ fieldset[disabled] .btn-default.focus {
 .open > .btn-success.dropdown-toggle:focus, 
 .open > .btn-success.dropdown-toggle.focus {
 
+    color: $color-white;
     background-color: $color-success-darker;
     border-color: $color-success-darker;
 }
@@ -415,16 +476,13 @@ fieldset[disabled] .btn-default.focus {
     .open > &.dropdown-toggle,
     &:focus,
     &.focus {
+        color: $color-white;
         background-color: $color-danger-darker;
         border-color: $color-danger-darker;
     }
 }
 
-.btn-icon {
 
-    display: flex;
-    align-items: center;
-}
 
 .btn-back {
 
@@ -498,9 +556,15 @@ fieldset[disabled] .btn-default.focus {
     }
 }
 
-.btn-link:hover, 
-.btn-link:focus {
-    text-decoration: none;
+.btn-link {
+
+    color: $color-info;
+
+    &:hover, 
+    &:focus,
+    &:focus-within {
+        color: $color-info;
+    }
 }
 
 .rs-button {
@@ -521,7 +585,6 @@ fieldset[disabled] .btn-default.focus {
     right: 38px;
 
     padding: 7px 10px;
-    border-radius: 3px;
 
     .fa {
 
@@ -529,27 +592,6 @@ fieldset[disabled] .btn-default.focus {
     }
 }
 
-/* Search page buttons */
-.rs-button-M1--dark {
-    @include button-border(1px solid $color-dark, 20px);
-    @include button-font(14px, $color-white, 0.5px);
-    @include button-size(16px, 26px);
-
-    background-color: $color-dark;
-
-    &:focus {
-        box-shadow: 0px 0px 2px 2px #337ab7;
-        -webkit-box-shadow: 0px 0px 2px 2px #337ab7;
-        -moz-box-shadow: 0px 0px 2px 2px #337ab7;
-    }
-
-    &.rs-disabled {
-        background-color: $color-primary-100;
-        border-color: $color-primary-100;
-        cursor: not-allowed;
-        box-shadow: none;
-    }
-}
 
 /* Show all fields button */
 .rs-button-icon-M--dark {

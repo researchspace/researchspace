@@ -21,7 +21,7 @@ import * as classnames from 'classnames';
 
 import { ItemViewMode } from '../Configuration';
 
-export interface FooterProps extends ReorderingProps {
+export interface ToolbarProps extends ReorderingProps {
   baseClass: string;
   readonly: boolean;
   itemViewMode: ItemViewMode;
@@ -29,35 +29,34 @@ export interface FooterProps extends ReorderingProps {
   onPressCreateNewSet: () => void;
 }
 
-export class Footer extends React.Component<FooterProps, {}> {
+export class Toolbar extends React.Component<ToolbarProps, {}> {
   render() {
     const { baseClass, readonly, itemViewMode, onModeChanged, isReordering, canReorder } = this.props;
 
     return (
-      <div className={`${baseClass}__footer`}>
-        {isReordering && canReorder ? <ReorderConfirmation {...this.props} /> : null}
-        <div className={`${baseClass}__footer-buttons`} role="group">
+      <div className={`${baseClass}__toolbar`}>
+        <div className={`${baseClass}__toolbar-buttons`} role="group">
           <ItemViewModeSwitch baseClass={baseClass} mode={itemViewMode} onModeChanged={onModeChanged} />
           {!readonly && canReorder ? <ReorderItemsButton {...this.props} /> : null}
-          <div className={`${baseClass}__footer-spacer`}></div>
+          <div className={`${baseClass}__toolbar-spacer`}></div>
           {readonly ? null : this.renderAddNewSetButton()}
         </div>
+        {isReordering && canReorder ? <ReorderConfirmation {...this.props} /> : null}
       </div>
     );
   }
 
   private renderAddNewSetButton() {
     return (
-      <div className="btn-group btn-group-xs" role="group">
+      <div role="group">
         {!this.props.readonly && (
           <button
             type="button"
             title="Create new set"
-            className="btn btn-default"
+            className="btn btn-icon"
             onClick={this.props.onPressCreateNewSet}
           >
-            <i className="fa fa-plus"></i>&nbsp;
-            <i className="fa fa-folder fa-lg"></i>
+            <i className="iconmoon iconmoon-folder-plus"></i>
           </button>
         )}
       </div>
@@ -83,15 +82,15 @@ export class ReorderItemsButton extends React.Component<ReorderingProps, {}> {
   render() {
     const { baseClass, isReordering, onPressReorder } = this.props;
     return (
-      <div className={`btn-group btn-group-xs ${baseClass}__toggle-reorder-items`} role="group">
+      <div className={`${baseClass}__toggle-reorder-items`} role="group">
         <button
           type="button"
           title="Reorder items"
           aria-pressed={isReordering}
-          className={classnames({ 'btn btn-default': true, active: isReordering })}
+          className={classnames({ 'btn btn-icon': true, active: isReordering })}
           onClick={onPressReorder}
         >
-          <i className="fa fa-lg fa-random"></i>
+          <i className="fa fa-random"></i>
         </button>
       </div>
     );
@@ -102,13 +101,13 @@ export class ReorderConfirmation extends React.Component<ReorderingProps, {}> {
   render() {
     const { baseClass, onPressReorder, onPressReorderApply } = this.props;
     return (
-      <div className={`${baseClass}__footer-reorder-confirmation`}>
-        <div className={`${baseClass}__footer-reorder-message`}>Drag items to reorder</div>
-        <div className={`${baseClass}__footer-reorder-buttons`}>
+      <div className={`${baseClass}__toolbar-reorder-confirmation`}>
+        <div className={`${baseClass}__toolbar-reorder-message`}>Drag items to reorder</div>
+        <div className={`${baseClass}__toolbar-reorder-buttons`}>
           <button
             type="button"
             title="Cancel reordering items"
-            className={`btn btn-xs btn-danger ${baseClass}__footer-reorder-cancel`}
+            className={`btn btn-default ${baseClass}__toolbar-reorder-cancel`}
             onClick={onPressReorder}
           >
             Cancel
@@ -116,10 +115,10 @@ export class ReorderConfirmation extends React.Component<ReorderingProps, {}> {
           <button
             type="button"
             title="Save items order"
-            className="btn btn-xs btn-success"
+            className="btn btn-primary"
             onClick={onPressReorderApply}
           >
-            Save changes
+            Save
           </button>
         </div>
       </div>
@@ -137,11 +136,11 @@ export class ItemViewModeSwitch extends React.Component<
 > {
   render() {
     const { baseClass } = this.props;
-    const className = `${baseClass}__item-view-mode btn-group btn-group-xs`;
+    const className = `${baseClass}__item-view-mode`;
     return (
       <div className={className} role="group">
-        {this.renderModeButton('grid', 'Switch to grid view', <span className="fa fa-lg fa-th" />)}
-        {this.renderModeButton('list', 'Switch to list view', <span className="fa fa-lg fa-th-list" />)}
+        {this.renderModeButton('grid', 'Switch to grid view', <span className="fa fa-th" />)}
+        {this.renderModeButton('list', 'Switch to list view', <span className="fa fa-th-list" />)}
       </div>
     );
   }
@@ -153,7 +152,7 @@ export class ItemViewModeSwitch extends React.Component<
         key={mode}
         type="button"
         title={title}
-        className={classnames({ 'btn btn-default': true, active: isPressed })}
+        className={classnames({ 'btn btn-icon': true, active: isPressed })}
         aria-pressed={isPressed}
         onClick={isPressed ? undefined : () => this.props.onModeChanged(mode)}
       >

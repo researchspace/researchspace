@@ -6,10 +6,8 @@ import { highlightSubstring } from '../listElementView';
 
 import { TreeNode } from './treeModel';
 
-const EXPAND_ICON = require('../../../../images/tree/expand-toggle.svg').default;
-const COLLAPSE_ICON = require('../../../../images/tree/collapse-toggle.svg').default;
-const DEFAULT_LEAF_ICON = require('../../../../images/tree/leaf-default.svg').default;
-const DEFAULT_PARENT_ICON = require('../../../../images/tree/leaf-folder.svg').default;
+const EXPAND_ICON = 'fa fa-plus-circle';
+const COLLAPSE_ICON = 'fa fa-minus-circle';
 
 interface CommonProps {
   view: DiagramView;
@@ -49,17 +47,12 @@ export class Leaf extends React.Component<LeafProps, State> {
 
   render() {
     const { node, ...otherProps } = this.props;
-    const { view, selectedNode, searchText, creatableClasses } = otherProps;
+    const {  selectedNode, searchText, creatableClasses } = otherProps;
     const { expanded } = this.state;
 
     let toggleIcon: string | undefined;
     if (node.derived.length > 0) {
       toggleIcon = expanded ? COLLAPSE_ICON : EXPAND_ICON;
-    }
-
-    let { icon } = view.getTypeStyle([node.model.id]);
-    if (!icon) {
-      icon = node.derived.length === 0 ? DEFAULT_LEAF_ICON : DEFAULT_PARENT_ICON;
     }
 
     let bodyClass = `${LEAF_CLASS}__body`;
@@ -73,12 +66,9 @@ export class Leaf extends React.Component<LeafProps, State> {
       <div className={LEAF_CLASS} role="tree-item">
         <div className={`${LEAF_CLASS}__row`}>
           <div className={`${LEAF_CLASS}__toggle`} onClick={this.toggle} role="button">
-            {toggleIcon ? <img className={`${LEAF_CLASS}__toggle-icon`} src={toggleIcon} /> : null}
+            {toggleIcon ? <span className={`${LEAF_CLASS}__toggle-icon`}><i className={`${toggleIcon}`}></i></span> : null}
           </div>
           <a className={bodyClass} href={node.model.id} onClick={this.onClick}>
-            <div className={`${LEAF_CLASS}__icon-container`}>
-              <img className={`${LEAF_CLASS}__icon`} src={icon} />
-            </div>
             <span className={`${LEAF_CLASS}__label`}>{label}</span>
             {node.model.count ? <span className={`${LEAF_CLASS}__count ontodia-badge`}>{node.model.count}</span> : null}
           </a>
@@ -91,7 +81,7 @@ export class Leaf extends React.Component<LeafProps, State> {
                 onClick={this.onClickCreate}
                 onDragStart={this.onDragCreate}
               >
-                +
+                <i className='fa fa-plus' />
               </button>
             </div>
           ) : null}

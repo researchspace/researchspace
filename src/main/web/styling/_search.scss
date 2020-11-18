@@ -16,25 +16,223 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- 
 /* Searching page */
 .rs-search-page {
+  flex: 1 1 0px; 
+  overflow: hidden;
+  height: 100%;
 
-  .tab-content {
-    .tab-pane {
-      padding: 0px 20px;
+  #template-content {
+    display: flex;
+  }
+
+  #semantic-search-tabs {
+    display: flex;
+    flex: 1;
+    height: 100%;
+
+    & > .nav.nav-tabs {
+
+      border-bottom: none;
+      border-right: 1px solid $color-frame-borders;
+      padding: 1em;
+      width: 120px;
+      height: 100%;
+  
+      & > li {
+        padding: 1em;
+  
+        &.active,
+        &.active:hover {
+          box-shadow: inset 3px 0px 0px 0px $color-dark;
+        }
+  
+        &:hover {
+          box-shadow: inset 3px 0px 0px 0px $color-primary-50;
+        }
+      }
+    }
+
+    .tab-content {
+
+      height: 100%;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+
+      .tab-pane {
+        padding: 0;
+        flex: 1;
+        height: inherit;
+
+        & > div {
+          height: inherit;
+          display: flex;
+          flex-direction: column;
+        }
+      }
     }
   }
 
-  .form-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  #semantic-search-pane-text-search,
+  #semantic-search-pane-structured-search {
+    
+    display: grid;
+    grid-template-columns: minmax(2px, .1fr) 2fr minmax(2px, .1fr);
+    grid-template-rows: fit-content(50px) auto;
+    grid-template-areas: '. searchContent .';
 
-    margin: 25px 0;
+    padding-right: 15px;
+    
+      & > div {
+        grid-area: searchContent;
+      }
   }
 
-  #search-results {
+  #semantic-search-text-input {
+
+    background-image: url(/assets/images/icons/search.svg);
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+    background-position: right 8px center;
+  }
+
+  .rs-results-area {
+    display: grid;
+    grid-template-columns: min-content 3fr;
+    grid-template-rows: 100%;
+    grid-template-areas: 'facet results';
+    height: 100%;
+
+    flex: 1;
+
+    .semantic-facet-holder {
+      grid-area: facet;
+      height: 100%;
+
+      .facet {
+        height: inherit;
+        display: flex;
+        flex-direction: column;
+
+        .facet-relations {
+
+          height: inherit;
+          overflow-y: auto;
+          padding-right: 4px;
+        }
+      }
+    }
+
+    .semantic-search-results-container {
+      grid-area: results;
+
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .semantic-search-keywordAndActions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+
+      .form-group {
+        height: auto;
+        margin: 0;
+        flex: 1;
+        min-width: 150px;
+        margin-right: 10px;
+      }
+    }
+
+    .semantic-search-results-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+
+      padding: 0 15px;
+
+      button {
+        margin-left: 10px;
+        height: 33px;
+
+        margin-top: 5px;
+
+        padding: 0 10px;
+      }
+    }
+
+    #search-results {
+
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+
+      padding-top: 1.7em;
+
+      .semantic-search-results {
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+
+        padding: 0 10px;
+  
+        .nav.nav-tabs {
+          border: none;
+        }
+  
+        .nav.nav-tabs > li {
+          padding: 5px 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          border-radius: 2px;
+
+          & > a {
+            margin: 0;
+          }
+  
+          &.active {
+            box-shadow: none;
+            background-color: $color-primary-50--op50;
+          }
+  
+          &:hover {
+            box-shadow: none;
+          }
+        }
+      }
+
+      .tab-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1em 3em .5em 2em;
+
+        .tab-pane {
+          padding-top: 10px;
+        }
+      }
+    }
+
+    .num-results-color {
+      font-weight: 600;
+      font-size: 16px;
+      padding-left: 3px;
+      padding-right: 3px;
+      color: $color-info;
+    }
+  
+  }
+
+  /* #search-results {
     .search-tab-grid {
       .btn-default {
         border: none;
@@ -51,383 +249,14 @@
         padding-top: 10px;
       }
     }
-  }
-
-  .structuredSearch {
-    .QueryBuilder--searchAreaHolder {
-      margin-left: 8rem;
-
-      .QueryBuilder--searchSummaryHolder {
-        margin-bottom: 22px;
-        margin-top: 30px;
-        margin-left: 11px;
-      }
-    }
-  }
-
-  .SemanticSearchContextualizedResult--selectorGroup.form-group {
-    margin-top: 0;
-
-    label {
-      padding-right: 20px;
-    }
-  }
-
-  #semantic-search-text-input {
-    height: 44px;
-    border-color: $color-primary-50;
-    background-color: transparent;
-    border-radius: 3px;
-    padding: 4px 8px 4px 15px;
-    background-image: url(/assets/images/icons/search.svg);
-    background-repeat: no-repeat;
-    background-size: 18px 18px;
-    background-position: right 8px center;
-
-    font-size: 14px;
-
-    &::placeholder {
-      /* Chrome, Firefox, Opera, Safari 10.1+ */
-      color: $color-primary-100;
-      opacity: 1; /* Firefox */
-    }
-
-    &:focus {
-      outline: none;
-
-      &::placeholder {
-        /* Chrome, Firefox, Opera, Safari 10.1+ */
-        opacity: 0.7; /* Firefox */
-      }
-    }
-  }
-
-  .QueryBuilder--searchClause {
-    border: 1px solid #ddd;
-  }
-
-  .QueryBuilder--selectedItem::after {
-    border: 1px solid #ddd;
-    border-bottom: none;
-    border-left: none;
-  }
-
-  .QueryBuilder--domainSelection li {
-    border-top: 1px solid #ddd;
-  }
-
-  .QueryBuilder--addDisjunctButton.QueryBuilder--active,
-  .QueryBuilder--addDisjunctButton:active,
-  .QueryBuilder--addDisjunctButton:hover,
-  .QueryBuilder--open > .QueryBuilder--addDisjunctButton.QueryBuilder--dropdown-toggle,
-  .QueryBuilder--addConjunctButton.QueryBuilder--active,
-  .QueryBuilder--addConjunctButton:active,
-  .QueryBuilder--addConjunctButton:hover,
-  .QueryBuilder--open > .QueryBuilder--addConjunctButton.QueryBuilder--dropdown-toggle {
-    border-color: #ddd !important;
-  }
-
-  .QueryBuilder--domainSelection li:first-child {
-    border-top: none;
-  }
-
-  .QueryBuilder--relationPlaceholder,
-  .QueryBuilder--activeTerm {
-    color: $color-dark !important;
-  }
-
-  .QueryBuilder--itemHolder {
-    padding-left: 16px !important;
-    padding-right: 3px !important;
-    min-width: 120px !important;
-  }
-
-  //.QueryBuilder--selectedRelation.QueryBuilder--selectedItem,
-  //.QueryBuilder--relationPlaceholder,
-  //.QueryBuilder--itemHolder  {
-
-  //    color: $color-info !important;
-  //}
-
-  //.QueryBuilder--searchClause .QueryBuilder--relationPlaceholder,
-  //.QueryBuilder--searchClause .QueryBuilder--relationPlaceholder::after,
-  //.QueryBuilder--searchClause > div:nth-child(2) {
-
-  // background-color: $color-primary-10;
-  //}
-
-  .QueryBuilder--searchClause > div:first-child,
-  .QueryBuilder--searchClause > div:first-child .QueryBuilder--selectedDomain.QueryBuilder--selectedItem,
-  .QueryBuilder--selectedDomain.QueryBuilder--selectedItem::after,
-  .QueryBuilder--searchClause > div:nth-child(3),
-  .QueryBuilder--searchClause
-    > div:nth-child(3).QueryBuilder--itemHolder
-    .QueryBuilder--selectedTerm.QueryBuilder--selectedItem,
-  .QueryBuilder--searchClause
-    > div:nth-child(3).QueryBuilder--itemHolder
-    .QueryBuilder--selectedTerm.QueryBuilder--selectedItem:hover,
-  .QueryBuilder--searchClause
-    > div:nth-child(3).QueryBuilder--itemHolder
-    .QueryBuilder--selectedTerm.QueryBuilder--selectedItem::after,
-  .QueryBuilder--searchClause
-    > div:nth-child(3).QueryBuilder--itemHolder
-    .QueryBuilder--selectedRange.QueryBuilder--selectedItem:hover,
-  .QueryBuilder--selectedRange.QueryBuilder--selectedItem::after {
-    background-color: $color-primary-50 !important;
-  }
-
-  .QueryBuilder--addDisjunctButton,
-  .QueryBuilder--addConjunctButton {
-    visibility: visible !important;
-    color: $color-dark !important;
-    opacity: 0.2;
-    padding-right: 0px !important;
-    min-width: 90px !important;
-  }
-
-  .QueryBuilder--addDisjunctButton.QueryBuilder--active, 
-    .QueryBuilder--addDisjunctButton:active, 
-    //.QueryBuilder--addDisjunctButton:hover, 
-    .QueryBuilder--open>.QueryBuilder--addDisjunctButton.QueryBuilder--dropdown-toggle,
-    .QueryBuilder--actionableItem:hover ,
-    .QueryBuilder--actionableItem::after {
-    opacity: 1;
-    color: $color-dark !important;
-  }
-
-  .QueryBuilder--selectedTerm.QueryBuilder--selectedItem {
-    width: max-content;
-    font-family: $font-family-base;
-    font-weight: 600;
-    color: $color-dark;
-    font-size: 15px !important;
-    line-height: 1.2;
-    font-weight: normal !important;
-  }
-
-  .QueryBuilder--searchAreaHolder img {
-    height: 25px !important;
-    width: 25px !important;
-    margin-right: 5px;
-  }
-
-  .clearable-input__input.form-control {
-    height: auto;
-  }
-
-  .SemanticTreeInput--browseButton.btn.btn-default {
-    border: none;
-    margin-left: 10px;
-    margin-right: 4px;
-    padding: 14px 10px;
-  }
-
-  .btn.btn-default.QueryBuilder--nestedSearchButton {
-    border: none;
-    margin-left: 0px !important;
-  }
-
-  .SemanticTreeInput--browseButton.btn.btn-default:hover,
-  .SemanticTreeInput--browseButton.btn.btn-default:focus,
-  .SemanticTreeInput--browseButton.btn.btn-default:visited,
-  .btn.btn-default.QueryBuilder--nestedSearchButton:hover,
-  .btn.btn-default.QueryBuilder--nestedSearchButton:focus,
-  .btn.btn-default.QueryBuilder--nestedSearchButton:visited {
-    background-color: transparent;
-  }
-
-  .SemanticTreeInput--browseButton.btn.btn-default:hover,
-  .SemanticTreeInput--browseButton.btn.btn-default:focus,
-  .SemanticTreeInput--browseButton.btn.btn-default:focus-within,
-  .btn.btn-default.QueryBuilder--nestedSearchButton:hover,
-  .btn.btn-default.QueryBuilder--nestedSearchButton:focus,
-  .btn.btn-default.QueryBuilder--nestedSearchButton:focus-within {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 5px 0 rgba(0, 0, 0, 0.1);
-  }
-
-  .btn.btn-default.QueryBuilder--nestedSearchButton {
-    border: none;
-  }
-
-  .LazyTreeSelector--item {
-    padding-top: 15px;
-  }
-
-  .btn.btn-link.QueryBuilder--removeConjunctButton {
-    color: rgba(29, 10, 112, 0.8);
-    padding-left: 40px !important;
-  }
-
-  .QueryBuilder--selectedTerm.QueryBuilder--selectedItem {
-    font-weight: 700;
-  }
-
-  .ItemSelector--itemHolder.QueryBuilder--categorySelectionItem span {
-    font-family: $font-family-base;
-    font-size: 16px !important;
-    line-height: 1.2;
-    letter-spacing: 0.1px;
-  }
-
-  #semantic-search-result-count {
-    font-family: $font-family-base;
-    color: $color-dark;
-    font-size: 15px;
-    line-height: 1.2;
-  }
-
-  .num-results-color {
-    
-    font-weight: 600;
-    font-size: 16px;
-    padding-left: 3px;
-    padding-right: 3px;
-    color: $color-info;
-  }
-
-  .QueryBuilder--searchBasedTermSelectorHolder {
-    margin-top: 10px;
-  }
-
-  .QueryBuilder--searchBasedTermSelector .btn {
-    font-size: 13px;
-    line-height: 1;
-  }
-
-  .btn.btn-default.QueryBuilder--nestedSearchButton {
-    padding: 0px 5px;
-  }
-
-  .Select.DateFormatSelector--dateFormatSelect.Select--single.is-searchable .Select-control,
-  .Select.QueryBuilder--resourceSelector .Select-control {
-    height: 40px !important;
-  }
-
-  .Select.DateFormatSelector--dateFormatSelect.Select--single.is-searchable {
-    .Select-menu-outer {
-      max-height: 242px !important;
-
-      .Select-menu {
-        max-height: 250px !important;
-      }
-
-      .Select-option {
-        padding: 10px 14px !important;
-      }
-
-      .Select-option.is-selected,
-      .Select-option.is-focused {
-        background-color: $color-light-grey !important;
-        color: $color-dark !important;
-      }
-    }
-  }
-
-  .QueryBuilder--addDisjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem:hover,
-  .QueryBuilder--addDisjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem:hover::after,
-  .QueryBuilder--addConjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem:hover,
-  .QueryBuilder--addConjunctButton.QueryBuilder--selectedItem.QueryBuilder--actionableItem:hover::after {
-    background-color: $color-light-grey !important;
-  }
-
-  .QueryBuilder--andSeparator,
-  .QueryBuilder--whereSeparator {
-    background-color: $color-dark;
-    color: $color-white;
-    border: none !important;
-    font-family: $font-family-base;
-    font-weight: 600;
-    line-height: 1.2;
-    font-weight: normal !important;
-    margin-top: 4px;
-    margin-bottom: 4px;
-    font-size: 13px;
-    padding: 7px 8px !important;
-  }
-
-  .LazyTreeSelector--virtualizedList {
-    padding: 20px 20px 10px 10px;
-  }
-
-  .LazyTreeSelector--item {
-    display: flex;
-    align-items: center;
-  }
-
-  .LazyTreeSelector--itemCollapsed > input,
-  .LazyTreeSelector--itemExpanded > input {
-    margin: 2px 0 0;
-    zoom: 1.15;
-  }
-
-  .LazyTreeSelector--itemContent {
-    font-size: 14px;
-  }
-}
-
-.rs-search-page .rs-results-area {
-  margin-top: 30px;
-
-  & #search-results {
-    margin-top: -30px;
-
-    .tab-pane {
-      padding: 15px 10px 0px;
-    }
-  }
-
-  .Select-menu-outer .Select-option.is-focused {
-    background-color: transparent;
-  }
-
-  .Select-menu-outer .Select-option:hover {
-    background-color: $color-primary-10;
-  }
-
-  .semantic-search-results-actions .btn-default:hover,
-  .semantic-search-results-actions .btn-default:focus {
-    color: $color-white;
-    background-color: $color-dark;
-  }
-}
-
-#search-results .griddle-custom .griddle-footer {
-  padding: 20px 0px;
-}
-
-.QueryBuilder--magnifierIcon {
-  background-image: url(/assets/images/icons/search.svg) !important;
-}
-
-.search-tab-timeline,
-.search-tab-chart {
-
-  .btn-default {
-    color: $color-btn-toolbar;
-    background-color: $color-btn-toolbar-bg;
-    border: 1px solid $color-btn-toolbar-border;
-    padding: 8px 10px;
-    font-size: 12px;
-    letter-spacing: 0.1px;
-    text-transform: uppercase;
-
-    &:hover {
-
-      box-shadow: 0px -2.5px 0px 0px $color-dark inset;
-    }
-  }
-
-  .btn-default.active {
-    color: black;
-    background: #ddddddbd;
-  }
+  } */
 }
 
 /* Card in Searching results as Grid */
-#search-results .rs-grid-element {
-  font-family: $font-family-base;
-  color: $color-dark !important;
-  font-size: 14px !important;
+/* #search-results .rs-grid-element {
+
+  color: $color-dark;
+  font-size: 14px;
   line-height: 1.2;
 
   box-shadow: 0 2px 2px 0px rgba(0, 0, 0, 0.1), 0 2px 10px 0 rgba(0, 0, 0, 0.09);
@@ -436,16 +265,9 @@
     box-shadow: 1px 2px 8px 0px rgb(139, 132, 158), 1px 3px 12px 2px rgba(0, 0, 0, 0.07);
   }
 
-  a {
-    font-family: $font-family-base;
-    color: $color-dark !important;
-    font-size: 14px !important;
-    line-height: 1.2;
-  }
-
   &.panel {
     border-radius: 6px;
-    background-color: #fdfdfd;
+
     border: 0.5px solid $color-primary-50;
   }
 
@@ -531,100 +353,117 @@
       }
     }
   }
-}
+} */
 
 #search-results {
-  .card.rs-object-card.rs-default-card {
-    cursor: grab;
-  }
 
-  .rs-card-container {
-    margin: 10px;
-    border: 1px solid transparent;
-  }
-
+  //grid results card
   .rs-card-container:hover {
     border: 1px dashed $color-primary-100;
     border-radius: 5px;
     cursor: grab;
   }
+
+  .rs-default-card__footer {
+    .rs-body-s-M,
+    span.rs-body-s-B {
+      font-size: 12px;
+    }
+  }
 }
 
 /* Search table results */
-.search-tab-table {
-
-  .search-result-table__type {
-
-    display: flex;
-    align-items: center;
-
-    .rs-icon {
-      margin-right: 8px;
-      color: $color-primary-100;
-    }
-
-    .search-result-table__type-value {
-
-      color: $color-primary-100;
-      font-weight: 600;
-      line-height: 1.2;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-  }
+#search-results-pane-table {
 
   .table > tbody tr.standard-row:hover {
     outline: 1px dashed $color-primary-100;
-    outline-offset: -7px;
+    outline-offset: -4px;
   }
 
   .table > tbody > tr > td {
     cursor: grab;
-    padding: 16px 8px;
-  }
-
-  .table > tbody > tr.standard-row > td:first-of-type {
-    width: 30%;
   }
 }
 
-/* Chart results */
-#mp-semantic-chart-tooltip .popover-content {
-  & div:nth-child(3) {
+#search-results {
+
+  // for chart and timeline view
+  .ComponentToolbar--actions {
+
     display: flex;
-    flex-direction: row;
     align-items: center;
-  }
+    margin-bottom: 1em;
 
-  li {
-    font-family: $font-family-base;
-    font-weight: 600;
-    font-size: 14px !important;
+    & > .btn-default {
+
+      margin-left: 3px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
   }
 }
-/* Search inside a frame */
+/* Chart results */
+#search-results-pane-chart {
 
-.thinking-frames__frames .ontodia-accordion-item__body {
-  #search-results {
-    .rs-default-card__footer {
-      .rs-body-s-M,
-      span.rs-body-s-B {
-        font-size: 12px;
-      }
+  padding-top: 2em;
+
+  #mp-semantic-chart-tooltip .popover-content {
+    
+    .list-unstyled {
+      margin-bottom: 0;
     }
   }
 }
 
+/* Timeline results */
+#search-results-pane-timeline {
+
+  .ComponentToolbar--actions {
+    justify-content: flex-end;
+  }
+}
 
 .search-results__alert.alert-warning {
   background-color: transparent;
   border: none;
-  padding: 0 $padding-base-horizontal;
-  margin-top: $padding-base-vertical;
+  padding: 0;
   text-align: right;
-  font-size: 14px;
+  margin-bottom: 15px;
 }
 
 .search-results__actions button {
   margin-right: $padding-base-horizontal;
 }
+
+#semantic-search-tabs-pane-structured-search {
+
+  .QueryBuilder--searchAreaHolder {
+    padding: 1em 2em;
+  }
+
+  .ItemSelector--itemSelector {
+    background-color: $color-white;
+  }
+}
+
+.search-summary {
+  letter-spacing: .2px;
+  font-size: 15px;
+}
+
+/* .LazyTreeSelector--virtualizedList {
+  padding: 20px 20px 10px 10px;
+}
+
+.LazyTreeSelector--item {
+  display: flex;
+  align-items: center;
+  padding-top: 15px;
+}
+
+.LazyTreeSelector--itemCollapsed > input,
+.LazyTreeSelector--itemExpanded > input {
+  margin: 2px 0 0;
+  zoom: 1.15;
+}
+ */

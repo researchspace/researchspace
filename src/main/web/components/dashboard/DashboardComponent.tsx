@@ -149,19 +149,23 @@ export class DashboardComponent extends Component<Props, State> {
     this.state = {
       items: [],
       layout: FlexLayout.Model.fromJson({
-        global: {},
-        borders: [
+	      global: {},
+	      borders: [
           {
-            type: 'border',
-	          location: 'left',
-            children: []
-          },
-          
-          {
-	          "type": "border",
-	 	      "location": "right",
+		        "type": "border",
+		 	      "location": "left",
 			      "children": []
-		      }
+          },
+		      {
+		        "type": "border",
+		 	      "location": "right",
+			      "children": []
+          },
+          {
+            "type": "border",
+            "location":"bottom",
+            "children": []
+          }
         ],
 	      layout:{
 		      "type": "row",

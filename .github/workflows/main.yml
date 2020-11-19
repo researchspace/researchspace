@@ -30,7 +30,7 @@ jobs:
           node-version: 12.x
 
       # cache gradle wrapper files, reset cache if we update gradle-wrapper version in gradle-wrapper.properties file
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-gradle-wrapper-
 
       # cache dependencies resolved by gradle, reset cache when build.gradle is updated
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-caches-${{ hashFiles('build.gradle') }}
@@ -46,7 +46,7 @@ jobs:
             ${{ runner.os }}-gradle-caches-
 
       # cache dependencies resolved by npm, reset cache when package-lock.json us updated
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -63,7 +63,7 @@ jobs:
           arguments: test
 
       - name: Set current date as env variable
-        run: echo "::set-env name=DATE::$(date +'%Y-%m-%d')"
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       # build war only if build_image label is present and build_zip don't
       - name: war

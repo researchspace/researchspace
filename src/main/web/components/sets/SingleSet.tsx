@@ -45,7 +45,7 @@ import { ViewState, ViewModel, emptySet } from './ViewModel';
 
 import { SearchAndFilters } from './views/SearchAndFilters';
 import { ItemsView, EditableLabel } from './views/SetsAndItems';
-import { ReorderingProps, ReorderItemsButton, ReorderConfirmation, ItemViewModeSwitch } from './views/Footer';
+import { ReorderingProps, ReorderItemsButton, ReorderConfirmation, ItemViewModeSwitch } from './views/Toolbar';
 
 import { CLASS_NAME } from './SetManagement';
 

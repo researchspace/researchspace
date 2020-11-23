@@ -309,8 +309,9 @@ export class SetManagement extends Component<Props, ViewState> {
 
   private renderBackToContentsButton() {
     return (
-      <button
-        className={`${CLASS_NAME}__back-to-contents btn btn-success`}
+      <div
+        role="button"
+        className={`${CLASS_NAME}__back-to-contents`}
         onClick={() =>
           this.setViewState({
             openedSet: undefined,
@@ -319,8 +320,8 @@ export class SetManagement extends Component<Props, ViewState> {
           })
         }
       >
-        <span className="fa fa-chevron-left"></span> Back to contents
-      </button>
+        <span className="fa fa-angle-left"></span> Back to contents
+      </div>
     );
   }
 

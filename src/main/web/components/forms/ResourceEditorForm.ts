@@ -31,7 +31,7 @@ import { addNotification } from 'platform/components/ui/notification';
 import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { BrowserPersistence, isValidChild, componentHasType, universalChildren } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
-import { listen } from 'platform/api/events';
+import { listen, trigger } from 'platform/api/events';
 
 import { FieldDefinitionProp } from './FieldDefinition';
 import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
@@ -155,6 +155,28 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         value: (event) => {
           if (event.data.iri === this.props.subject) {
             this.onRemove();
+          }
+        }
+      });
+
+      this.cancellation.map(
+        listen({
+          target: this.props.id,
+          eventType: FormEvents.FormGetValue,
+        })
+      ).observe({
+        value: (event) => {
+          const formValueProperty = this.onGetValue();
+          if (formValueProperty) {
+            formValueProperty.onValue(
+              formValue =>
+                trigger({
+                  eventType: FormEvents.FormCurrentValue,
+                  source: this.props.id,
+                  targets: [event.source],
+                  data: { value: formValue},
+                })
+            );
           }
         }
       });
@@ -343,6 +365,15 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     this.setState(state);
   }
 
+  private onGetValue = (): Kefir.Property<CompositeValue> => {
+    const validatedModel = this.form.validate(this.state.model);
+    if (readyToSubmit(validatedModel, FieldError.isPreventSubmit)) {
+      return this.form.finalize(this.state.model);
+    } else {
+      return null;
+    }
+  }
+
   private onSubmit = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -488,7 +519,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
 }
 
 
-function normalizePersistenceMode(
+export function normalizePersistenceMode(
   persistenceProp:
     | TriplestorePersistenceConfig['type']
     | TriplestorePersistenceConfig

@@ -18,6 +18,7 @@
  */
 
 import { EventMaker } from 'platform/api/events';
+import { CompositeValue } from './FieldValues';
 
 export interface FormEventData {
   // triggers
@@ -37,16 +38,28 @@ export interface FormEventData {
    */
   'Form.ResourceRemoved': { iri: string };
 
+  /**
+   *
+   */
+  'Form.CurrentValue': { value: CompositeValue };
+
   // listens
   /**
    * Triggers remove resource action, iri needs to match current subject.
    */
   'Form.RemoveResource': { iri: string };
+
+  /**
+   *
+   */
+  'Form.GetValue': {};
 }
 const event: EventMaker<FormEventData> = EventMaker;
 
 export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
+export const FormCurrentValue = event('Form.CurrentValue');
 
 export const FormRemoveResource = event('Form.RemoveResource');
+export const FormGetValue = event('Form.GetValue');

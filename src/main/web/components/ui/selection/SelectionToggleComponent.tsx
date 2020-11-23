@@ -49,6 +49,8 @@ interface State {
 
 /**
  * Checkbox to mark rows as selected
+ *
+ * @deprecated
  */
 class SelectionToggleComponent extends Component<Props, State> {
   private cancellation = new Cancellation();

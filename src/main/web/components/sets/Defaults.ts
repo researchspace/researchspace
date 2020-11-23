@@ -76,8 +76,8 @@ export const ItemListTemplate = `
 `;
 
 export const KeywordSearch: KeywordFilter = {
-  placeholder: 'Search all...',
-  placeholderInSet: 'Search in the set...',
+  placeholder: 'Search',
+  placeholderInSet: 'Search in the set',
   queryPattern: `
     ?itemHolder ?__preferredLabel__ ?itemLabel .
     FILTER REGEX(STR(?itemLabel), "(.*?)?__token__", "i")`,

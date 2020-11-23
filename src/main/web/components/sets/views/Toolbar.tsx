@@ -35,20 +35,20 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
 
     return (
       <div className={`${baseClass}__toolbar`}>
-        {isReordering && canReorder ? <ReorderConfirmation {...this.props} /> : null}
         <div className={`${baseClass}__toolbar-buttons`} role="group">
           <ItemViewModeSwitch baseClass={baseClass} mode={itemViewMode} onModeChanged={onModeChanged} />
           {!readonly && canReorder ? <ReorderItemsButton {...this.props} /> : null}
           <div className={`${baseClass}__toolbar-spacer`}></div>
           {readonly ? null : this.renderAddNewSetButton()}
         </div>
+        {isReordering && canReorder ? <ReorderConfirmation {...this.props} /> : null}
       </div>
     );
   }
 
   private renderAddNewSetButton() {
     return (
-      <div className="btn-group btn-group-xs" role="group">
+      <div role="group">
         {!this.props.readonly && (
           <button
             type="button"
@@ -56,8 +56,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
             className="btn btn-default"
             onClick={this.props.onPressCreateNewSet}
           >
-            <i className="fa fa-plus"></i>&nbsp;
-            <i className="fa fa-folder"></i>
+            <i className="iconmoon iconmoon-folder-plus"></i>
           </button>
         )}
       </div>
@@ -83,7 +82,7 @@ export class ReorderItemsButton extends React.Component<ReorderingProps, {}> {
   render() {
     const { baseClass, isReordering, onPressReorder } = this.props;
     return (
-      <div className={`btn-group btn-group-xs ${baseClass}__toggle-reorder-items`} role="group">
+      <div className={`${baseClass}__toggle-reorder-items`} role="group">
         <button
           type="button"
           title="Reorder items"
@@ -108,7 +107,7 @@ export class ReorderConfirmation extends React.Component<ReorderingProps, {}> {
           <button
             type="button"
             title="Cancel reordering items"
-            className={`btn btn-xs btn-default ${baseClass}__toolbar-reorder-cancel`}
+            className={`btn btn-default ${baseClass}__toolbar-reorder-cancel`}
             onClick={onPressReorder}
           >
             Cancel
@@ -116,10 +115,10 @@ export class ReorderConfirmation extends React.Component<ReorderingProps, {}> {
           <button
             type="button"
             title="Save items order"
-            className="btn btn-xs btn-success"
+            className="btn btn-primary"
             onClick={onPressReorderApply}
           >
-            Save changes
+            Save
           </button>
         </div>
       </div>
@@ -137,7 +136,7 @@ export class ItemViewModeSwitch extends React.Component<
 > {
   render() {
     const { baseClass } = this.props;
-    const className = `${baseClass}__item-view-mode btn-group btn-group-xs`;
+    const className = `${baseClass}__item-view-mode`;
     return (
       <div className={className} role="group">
         {this.renderModeButton('grid', 'Switch to grid view', <span className="fa fa-th" />)}

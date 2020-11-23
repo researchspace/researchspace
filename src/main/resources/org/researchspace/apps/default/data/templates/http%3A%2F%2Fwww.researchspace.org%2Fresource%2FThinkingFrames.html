@@ -266,22 +266,27 @@
     left-panels='[{"label": "Clipboard", "template": "{{> clipboard}}"}]'
     right-panels='[{"label": "Details", "template": "{{> details}}"}]'
     >
+
     <template id='clipboard'>
-        [[> rsp:Clipboard id="clipboard" defaultViewMode="grid"]]
+      [[> rsp:Clipboard id="clipboard" defaultViewMode="grid"]]
     </template>
+
     <template id='details'>
-          <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
-              <template id='template'>
-                  {{#if iri}}
+        <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
+            <template id='template'>
+                {{#if iri}}
+                <div class="details-container">
                   <mp-event-target-refresh id='details-fields-view'>
-                      <mp-page-loader iri='{{iri}}' context='{{iri}}' urlqueryparam-frame="true" urlqueryparam-details="true"></mp-page-loader>
+                    <mp-page-loader iri='{{iri}}' context='{{iri}}' urlqueryparam-frame="true" urlqueryparam-details="true"></mp-page-loader>
                   </mp-event-target-refresh>
-                  {{else}}
-                  <div></div>
-                  {{/if}}
-              </template>
-          </mp-event-target-template-render>
+                </div>
+                {{else}}
+                <div class="details-container">No details available</div>
+                {{/if}}
+            </template>
+        </mp-event-target-template-render>
     </template>
+
     <template id='resourceTemplate'>
       <div style='flex: 1 1 0px; overflow: auto;'>
         <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>

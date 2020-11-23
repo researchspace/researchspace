@@ -153,7 +153,7 @@ export class DashboardComponent extends Component<Props, State> {
           close: () => <i className="iconmoon iconmoon-download2"></i>
         },
         global: { 
-          "borderBarSize": 40,
+          "borderBarSize": 43,
           "tabSetTabStripHeight": 44,
           "splitterSize": 6 ,
         },

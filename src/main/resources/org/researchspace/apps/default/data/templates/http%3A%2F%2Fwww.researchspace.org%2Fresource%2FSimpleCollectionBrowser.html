@@ -10,7 +10,7 @@
     orderByPattern - (optional) SPARQL pattern that can be used to get the order
     editable - false if collection is readonly one, true otherwise
 --]]
-<mp-event-proxy id='tree-refresh' on-event-source='vocab-form' proxy-event-type='Component.Refresh' proxy-targets='["mytree"]'></mp-event-proxy>
+<mp-event-proxy id='tree-refresh' on-event-source='vocab-form' proxy-event-type='Component.TemplateUpdate' proxy-targets='["mytree"]'></mp-event-proxy>
 
 <div class="rs-vocabulary-terms-container">
   <div class="schema-area-bg"></div>
@@ -18,45 +18,47 @@
     {{#if collection}}<h1 class="rs-vocabulary-terms-title"><strong><mp-label iri='{{collection}}'></mp-label></strong> </h1>{{/if}}
     <div class="rs-vocabulary-terms-area">
       <h1>{{itemLabel}}s</h1>
-      <mp-event-target-refresh id='mytree'>
-        <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple' 
-                            config='{"scheme": "{{collection}}", 
-                                    {{#if broaderProperty}}
-                                    "relationPattern": "?item <{{broaderProperty}}> ?parent",
-                                    {{/if}}
-                                    {{#if orderByPattern}}
-                                    "orderByPattern": "{{orderByPattern}}",
-                                    {{/if}}
-                                    
-                                    {{#if membershipProperty}}
-                                    "schemePattern": "?item <{{membershipProperty}}> ?__scheme__"
-                                    {{else}}
-                                    "schemePattern": "?item a <{{rdfType}}> . {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}}"
-                                    {{/if}}
-                                    }'>
-          <template id='template'>
-            <span class="tree-item-actions-container">
-              {{#if editable}}
-                <mp-event-trigger id='form-edit-trigger' type='Component.TemplateUpdate'
-                                  data='{"node":"{{iri}}",  "mode": "edit" }' targets='["term-forms"]'>
-                  <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-pencil' title="Edit {{itemLabel}}"></i></span>
-                </mp-event-trigger>
+      <mp-event-target-template-render id='mytree'  template='{{> treeTemplate}}'>
+        <template id='treeTemplate'>
+          <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple'  focused='{{iri}}'
+                              config='{"scheme": "{{collection}}", 
+                                      {{#if broaderProperty}}
+                                      "relationPattern": "?item <{{broaderProperty}}> ?parent",
+                                      {{/if}}
+                                      {{#if orderByPattern}}
+                                      "orderByPattern": "{{orderByPattern}}",
+                                      {{/if}}
 
-                {{#if broaderProperty}}
-                <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"broader": "{{iri}}", "mode": "new" }' targets='["term-forms"]'>
-                  <span class='tree-item-action'><i class='fa fa-plus' title="Add narrower {{itemLabel}}"></i></span>
-                </mp-event-trigger>
+                                      {{#if membershipProperty}}
+                                      "schemePattern": "?item <{{membershipProperty}}> ?__scheme__"
+                                      {{else}}
+                                      "schemePattern": "?item a <{{rdfType}}> . {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}}"
+                                      {{/if}}
+                                      }'>
+            <template id='template'>
+              <span class="tree-item-actions-container">
+                {{#if editable}}
+                  <mp-event-trigger id='form-edit-trigger--{{iri}}' type='Component.TemplateUpdate'
+                                    data='{"iri":"{{iri}}",  "mode": "edit" }' targets='["term-forms"]'>
+                    <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-pencil' title="Edit {{itemLabel}}"></i></span>
+                  </mp-event-trigger>
+                  <mp-event-proxy id='focus-tree-element' on-event-source='form-edit-trigger--{{iri}}' proxy-event-type='LazyTree.Focus' proxy-targets='["scheme-tree"]' data='{"iri":"{{iri}}"}'></mp-event-proxy>
+                  {{#if broaderProperty}}
+                  <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"broader": "{{iri}}", "mode": "new" }' targets='["term-forms"]'>
+                    <span class='tree-item-action'><i class='fa fa-plus' title="Add narrower {{itemLabel}}"></i></span>
+                  </mp-event-trigger>
+                  {{/if}}
+                {{else}}
+                  <mp-event-trigger id='form-edit-trigger' type='Component.TemplateUpdate'
+                                    data='{"iri":"{{iri}}",  "mode": "view" }' targets='["term-forms"]'>
+                    <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-eye' title="View {{itemLabel}}"></i></span>
+                  </mp-event-trigger>
                 {{/if}}
-              {{else}}
-                <mp-event-trigger id='form-edit-trigger' type='Component.TemplateUpdate'
-                                  data='{"node":"{{iri}}",  "mode": "view" }' targets='["term-forms"]'>
-                  <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-eye' title="View {{itemLabel}}"></i></span>
-                </mp-event-trigger>
-              {{/if}}
-            </span>
-          </template>
-        </semantic-lazy-tree>    
-      </mp-event-target-refresh>
+              </span>
+            </template>
+          </semantic-lazy-tree> 
+        </template>
+      </mp-event-target-template-render>
     </div>
   </div>
 
@@ -75,15 +77,13 @@
         <template id='template'>
           {{#switch mode}}
             {{#case "new" break=true}}
-          [[!--
-              <mp-event-proxy id='tree-refresh' 
+              <mp-event-proxy id='form-refresh-on-created' 
                               on-event-source='vocab-form'
                               on-event-type='Form.ResourceCreated'
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["term-forms"]'
-                              additional-data='{"node":"{{iri}}",  "mode": "edit" }'
+                              additional-data='{"mode": "edit"}'
               ></mp-event-proxy>
-          --]]
               {{#if broader}}
                 <h1>Adding: <strong>new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></strong></h1>
               {{else}}
@@ -91,12 +91,12 @@
               {{/if}}
             {{/case}}
             {{#case "edit" break=true}}
-              <h1>Editing {{itemLabel}}: <strong><mp-label iri='{{node}}'></mp-label></strong></h1>
-              <div style="margin-bottom: 1.2em;">{{itemLabel}} IRI: {{node}}</div>
+              <h1>Editing {{itemLabel}}: <strong><mp-label iri='{{iri}}'></mp-label></strong></h1>
+              <div style="margin-bottom: 1.2em;">{{itemLabel}} IRI: {{iri}}</div>
             {{/case}}
             {{#case "view" break=true}}
-              <h1>Viewing {{itemLabel}}: <strong><mp-label iri='{{node}}'></mp-label></strong></h1>
-              <div style="margin-bottom: 1.2em;">{{itemLabel}} IRI: {{node}}</div>
+              <h1>Viewing {{itemLabel}}: <strong><mp-label iri='{{iri}}'></mp-label></strong></h1>
+              <div style="margin-bottom: 1.2em;">{{itemLabel}} IRI: {{iri}}</div>
             {{/case}}
           {{/switch}}
 
@@ -104,7 +104,7 @@
             <inline-template template-iri='{{resourceForm}}' 
                              options='{
                                         "scheme": "{{collection}}", 
-                                        {{#ifCond mode "!==" "new"}}"node": "{{node}}",{{/ifCond}}
+                                        {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
                                         {{#if broader}}"broader": "{{broader}}",{{/if}}
                                         "editable": {{editable}},
                                         "mode": "{{mode}}",

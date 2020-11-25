@@ -283,7 +283,7 @@
                         <bs-nav-item event-key="places">Related Places</bs-nav-item>
                         [[/if]]
                         [[#if (hasPermission "forms:ldp:*")]]
-                        <bs-nav-item event-key="media" disabled=true>Media</bs-nav-item>
+                        <bs-nav-item event-key="media">Media</bs-nav-item>
                         [[/if]]
                         <!-- [[#if (hasPermission "forms:ldp:*")]]
                         <bs-nav-item event-key="annotations" disabled=true>Annotations
@@ -307,6 +307,7 @@
                         <bs-tab-pane event-key="summary">
                             <div class="rs-resource-tab-container">
                                 <div>
+                                    <hr class="rs-resource-section--headerLine">
                                     [[#block "instituteHeader"]]
                                     <span class="rs-h1 rs-resource-section--header">Dataset</span>
                                     [[/block]]
@@ -338,23 +339,23 @@
                             </div> 
 
                             [[#if (hasPermission "forms:ldp:*")]]
-                            <div class="rs-resource-tab-container rs-background-p10">
-                                <bs-row>
-                                    <bs-col xs=9 md=7 lg=8 style="padding: 0;">
+                            <div class="rs-resource-tab-container">
+                                <div style=" display:flex; justify-content:space-between;">
+                                    <div>
+                                        <hr class="rs-resource-section--headerLine">
                                         <span class="rs-h1 rs-resource-section--header">Public Discussion</span>
                                         <span class="rs-body-xs-I rs-resource-section--header">Documents the ongoing discussion
                                             about findings.
                                             <a style="padding-left:5px; text-decoration: underline;">Read more</a>
                                         </span>
-                                    </bs-col>
-                                    <bs-col xs=3 md=3 lg=2>
-                                        <input type="text" placeholder="Assert new value..."
-                                            class="rs-searchInput rs-body-s-M">
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                                    </div>
+                                    
+                                    <input type="text" placeholder="Assert new value..."
+                                        class="rs-body-s-M">
+                                    
+                                </div>
 
-                                <bs-row class="row-center">
-                                    <bs-col xs=11 sm=10 md=10 lg=8 class="rs-resource-data-table">
+                                    <div class="rs-resource-data-table">
                                         <div class="table-responsive rs-table">
                                             <table class="table table-hover">
                                                 <thead>
@@ -395,17 +396,8 @@
                                                 </tbody>
                                             </table>
                                         </div>
-
-                                    </bs-col>
-                                </bs-row>
-
+                                    </div>
                             </div>
-                            [[/if]]
-
-                            [[#if (hasPermission "forms:ldp:*")]]
-                            <div class="rs-resource-tab-container">
-                                <div class="rs-h1 rs-resource-section--header">Related Resources</div>
-                            </div> 
                             [[/if]]
 
                         </bs-tab-pane>
@@ -415,6 +407,7 @@
                             <div class="rs-resource-tab-container">
 
                                 <div>
+                                    <hr class="rs-resource-section--headerLine">
                                     [[#block "instituteHeader"]]
                                     <span class="rs-h1 rs-resource-section--header">Dataset</span>
                                     [[/block]]
@@ -445,42 +438,39 @@
 
                         [[#if (hasPermission "forms:ldp:*")]]
                         <bs-tab-pane event-key="media" mount-on-enter=true>
-                            <div class="container-fluid rs-resource-tab-container">
-                                <bs-row>
-                                    <bs-col xs=12 style="padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
+                            <div class="rs-resource-tab-container">
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
 
-                                        <span class="rs-h1 rs-resource-section--header">Images</span>
-                                        <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
-                                            [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                    </bs-col>
+                                    <span class="rs-h1 rs-resource-section--header">Images</span>
+                                    <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
+                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
+                                </div>
 
-                                    <bs-col xs=12 style="padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
 
-                                        <span class="rs-h1 rs-resource-section--header">Videos</span>
-                                        <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
-                                            [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                    </bs-col>
+                                    <span class="rs-h1 rs-resource-section--header">Videos</span>
+                                    <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
+                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
+                                    </div>
 
-                                    <bs-col xs=12 style="padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
 
-                                        <span class="rs-h1 rs-resource-section--header">3D Models</span>
-                                        <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
-                                            [[currentDateTime format="dd-MM-yyyy"]].</span>
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                                    <span class="rs-h1 rs-resource-section--header">3D Models</span>
+                                    <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
+                                        [[currentDateTime format="dd-MM-yyyy"]].</span>
+                                </div>
 
-                                [[!-- <bs-row class="row-center">
-                                    <bs-col xs=11 class="rs-resource-data-table">
+                                [[!-- 
+                                    <div class="rs-resource-data-table">
                                         <div class="rs-resource-mirador-container">
                                             <rs-iiif-side-by-side
                                                 selection='[[jsonArrayFromSelect "SELECT DISTINCT ?value WHERE {  <[[this]]> crm:P138i_has_representation ?value } LIMIT 2" ]]'
                                                 [[> rsp:IIIFConfig]]/>
                                         </div>
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                                    </div>
                                 --]]
 
                             </div>
@@ -489,98 +479,88 @@
 
                        <!--  [[#if (hasPermission "forms:ldp:*")]]
                         <bs-tab-pane event-key="annotations">
-                            <div class="container-fluid rs-resource-tab-container">
-                                <bs-row>
-                                    <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
-                                        <span class="rs-h1 rs-resource-section--header">Annotations made</span>
-                                        <span style="position: absolute; top: -1px; margin-left: 12px;">
-                                            <button type="button"
-                                                class="rs-button rs-button-icon-S rs-button-icon-S--dark"
-                                                title="Add annotation">
-                                                <i class="rs-icon rs-icon-add"></i>
-                                        </span>
-                                    </bs-col>
-                                </bs-row>
+                            <div class="rs-resource-tab-container">
+                     
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
+                                    <span class="rs-h1 rs-resource-section--header">Annotations made</span>
+                                    <span style="position: absolute; top: -1px; margin-left: 12px;">
+                                        <button type="button"
+                                            class="rs-button rs-button-icon-S rs-button-icon-S--dark"
+                                            title="Add annotation">
+                                            <i class="rs-icon rs-icon-add"></i>
+                                    </span>
+                                </div>
+                            
+                                <div class="rs-resource-data-table">
 
-                                <bs-row class="row-center">
-                                    <bs-col xs=11 sm=10 md=10 lg=8 class="rs-resource-data-table">
+                                    [[!-- <div class="table-responsive rs-table">
+                                        <semantic-table query="" number-of-displayed-rows=1
+                                            options='{"showFilter": true}' column-configuration='[
+                                                                {"displayName": "Field", "cellTemplate": "<semantic-link class=annotationWidth iri=\"{{o.value}}\">no data available</semantic-link>"},
+                                                                {"displayName": "Annotation Title" },
+                                                                {"displayName": "Author"},
+                                                                {"displayName": "Modified"},
+                                                                {"displayName": "Role"}
+                                                                ]'>
+                                        </semantic-table>
+                                    </div>
+                                    --]]
 
-                                        [[!-- <div class="table-responsive rs-table">
-                                            <semantic-table query="" number-of-displayed-rows=1
-                                                options='{"showFilter": true}' column-configuration='[
-                                                                    {"displayName": "Field", "cellTemplate": "<semantic-link class=annotationWidth iri=\"{{o.value}}\">no data available</semantic-link>"},
-                                                                    {"displayName": "Annotation Title" },
-                                                                    {"displayName": "Author"},
-                                                                    {"displayName": "Modified"},
-                                                                    {"displayName": "Role"}
-                                                                    ]'>
-                                            </semantic-table>
-                                        </div>
-                                        --]]
-
-                                        <div class="table-responsive rs-table">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Field</th>
-                                                        <th scope="col">Annotation Title</th>
-                                                        <th scope="col">Author</th>
-                                                        <th scope="col">Modified</th>
-                                                        <th scope="col">Role</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>No data available</td>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                    </bs-col>
-                                </bs-row>
-
+                                    <div class="table-responsive rs-table">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Field</th>
+                                                    <th scope="col">Annotation Title</th>
+                                                    <th scope="col">Author</th>
+                                                    <th scope="col">Modified</th>
+                                                    <th scope="col">Role</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>No data available</td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </bs-tab-pane>
                         [[/if]] -->
 
                         <!-- [[#if (hasPermission "forms:ldp:*")]]
                         <bs-tab-pane event-key="assertions">
-                            <div class="container-fluid rs-resource-tab-container">
-                                <bs-row>
-                                    <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
-                                        <span class="rs-h1 rs-resource-section--header">Assertions made</span>
-                                        <span style="position: absolute; top: -1px; margin-left: 12px;">
-                                            <button type="button"
-                                                class="rs-button rs-button-icon-S rs-button-icon-S--dark"
-                                                title="Add assertion">
-                                                <i class="rs-icon rs-icon-add"></i>
-                                        </span>
-                                    </bs-col>
-                                </bs-row> 
+                            <div class="rs-resource-tab-container">
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
+                                    <span class="rs-h1 rs-resource-section--header">Assertions made</span>
+                                    <span style="position: absolute; top: -1px; margin-left: 12px;">
+                                        <button type="button"
+                                            class="rs-button rs-button-icon-S rs-button-icon-S--dark"
+                                            title="Add assertion">
+                                            <i class="rs-icon rs-icon-add"></i>
+                                    </span>
+                                </div> 
 
-                                <bs-row class="row-center">
-                                    <bs-col xs=11 sm=10 md=10 lg=8 class="rs-resource-data-table">
-                                        <div class="table-responsive rs-table">
-                                            [[!-- <semantic-table query="" number-of-displayed-rows=1
-                                                options='{"showFilter": true}' column-configuration='[
-                                                                    {"displayName": "Field", "cellTemplate": "<semantic-link class=annotationWidth iri=\"{{o.value}}\">no data available</semantic-link>"},
-                                                                    {"displayName": "Annotation Title" },
-                                                                    {"displayName": "Author"},
-                                                                    {"displayName": "Modified"},
-                                                                    {"displayName": "Role"}
-                                                                    ]'>
-                                            </semantic-table> --]]
-                                        </div>
-
-                                    </bs-col>
-                                </bs-row>
+                                <div>
+                                    <div class="table-responsive rs-table">
+                                        [[!-- <semantic-table query="" number-of-displayed-rows=1
+                                            options='{"showFilter": true}' column-configuration='[
+                                                                {"displayName": "Field", "cellTemplate": "<semantic-link class=annotationWidth iri=\"{{o.value}}\">no data available</semantic-link>"},
+                                                                {"displayName": "Annotation Title" },
+                                                                {"displayName": "Author"},
+                                                                {"displayName": "Modified"},
+                                                                {"displayName": "Role"}
+                                                                ]'>
+                                        </semantic-table> --]]
+                                    </div>
+                                </div>
 
                             </div>
                         </bs-tab-pane>
@@ -588,26 +568,21 @@
 
                         [[#if (hasPermission "forms:ldp:*")]]
                         <bs-tab-pane event-key="related">
-                            <div class="container-fluid rs-resource-tab-container">
+                            <div class="rs-resource-tab-container">
 
-                                <bs-row>
-                                    <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
-                                        <span class="rs-h1 rs-resource-section--header">Resources</span>
-                                    </bs-col>
-                                    <bs-col xs=3 md=3 lg=2>
-                                        <input type="text" placeholder="Search in related data ..."
-                                            class="rs-searchInput rs-body-s-M">
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
+                                    <span class="rs-h1 rs-resource-section--header">Resources</span>
+                                </div>
+                                <div>
+                                    <input type="text" placeholder="Search in related data ..."
+                                        class="rs-searchInput rs-body-s-M">
+                                </div>
 
-                                <bs-row class="row-center">
-                                    <bs-col xs=11 sm=11 md=11 lg=10>
-                                        [[#block "relatedResources"]]
-                                        [[/block]]
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
-
+                                <div>
+                                    [[#block "relatedResources"]]
+                                    [[/block]]
+                                </div>
 
                                 [[!-- <div class="rs-resource-section-showall">
                                     <button type="button" class="rs-button rs-button-icon-M--dark">
@@ -616,50 +591,44 @@
                                     <span class="rs-body-xs-I" style="margin-left:8px;">Show all fields</span>
                                 </div> --]]
 
-                            </div> <!--  close container -->
+                            </div>
 
-                            <div class="container-fluid rs-resource-tab-container rs-background-p10">
-                                <bs-row>
-                                    <bs-col xs=12 style="padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
-                                        <span class="rs-h1 rs-resource-section--header">Pages</span>
-                                    </bs-col>
+                            <div class="rs-resource-tab-container">
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
+                                    <span class="rs-h1 rs-resource-section--header">Pages</span>
+                                </div> 
 
-                                </bs-row> <!--  close row -->
-
-                                <bs-row class="row-center">
-                                    <bs-col xs=11 sm=10 md=10 lg=8 class="rs-resource-data-table">
-                                        <div class="table-responsive rs-table">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Modified</th>
-                                                        <th scope="col">Page type</th>
-                                                        <th scope="col">Link</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>12.12.2018</td>
-                                                        <td>Narrative</td>
-                                                        <td><a>page link</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>12.12.2018</td>
-                                                        <td>Narrative</td>
-                                                        <td><a>page link</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>12.12.2018</td>
-                                                        <td>Narrative</td>
-                                                        <td><a>page link</a></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                                <div class="rs-resource-data-table">
+                                    <div class="table-responsive rs-table">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Modified</th>
+                                                    <th scope="col">Page type</th>
+                                                    <th scope="col">Link</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>12.12.2018</td>
+                                                    <td>Narrative</td>
+                                                    <td><a>page link</a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>12.12.2018</td>
+                                                    <td>Narrative</td>
+                                                    <td><a>page link</a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>12.12.2018</td>
+                                                    <td>Narrative</td>
+                                                    <td><a>page link</a></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
                                 <div class="rs-resource-section-showall">
                                     <button type="button" class="rs-button rs-button-icon-M--dark">
@@ -668,37 +637,33 @@
                                     <span class="rs-body-xs-I" style="margin-left:8px;">Show all fields</span>
                                 </div>
 
-                            </div> <!--  close container -->
+                            </div> 
 
-                            <div class="container-fluid rs-resource-page-section">
-                                <bs-row>
-                                    <bs-col xs=12 style="padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
-                                        <span class="rs-h1 rs-resource-section--header">Assertions</span>
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                            <div class="rs-resource-page-section">
+               
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
+                                    <span class="rs-h1 rs-resource-section--header">Assertions</span>
+                                </div>
 
-                                <bs-row style="margin: 0;">
-                                    <bs-col xs=12 class="rs-resource-section-cards">
-                                        [[#block "relatedAssertions"]]
-                                        [[/block]]
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                                <div class="rs-resource-section-cards">
+                                    [[#block "relatedAssertions"]]
+                                    [[/block]]
+                                </div>
 
-                            </div> <!--  close container -->
+                            </div> 
 
-                            <div class="container-fluid rs-resource-tab-container rs-background-p10">
-                                <bs-row>
-                                    <bs-col xs=12 style="padding: 0;">
-                                        <hr class="rs-resource-section--headerLine">
-                                        <span class="rs-h1 rs-resource-section--header">Wikidata</span>
-                                    </bs-col>
-                                </bs-row> <!--  close row -->
+                            <div class="rs-resource-tab-container">
+                              
+                                <div>
+                                    <hr class="rs-resource-section--headerLine">
+                                    <span class="rs-h1 rs-resource-section--header">Wikidata</span>
+                                </div>
 
                                 [[#block "relatedWikidata"]]
                                 [[/block]]
 
-                            </div> <!--  close container -->
+                            </div> 
                         </bs-tab-pane>
                         [[/if]]
 
@@ -718,6 +683,13 @@
     <div class="rs-display3 rs-resource-header--title" style="text-transform: capitalize;">
         <mp-label iri='[[this]]'></mp-label>
     </div>
+    <div style="display: flex ;">
+        <mp-copy-to-clipboard text='[[this]]'>
+            <div class="rs-copy-IRI">Copy resource IRI</div>
+        </mp-copy-to-clipboard>
+        <div class="statements">Statements</div>
+    </div>
+    
 </div>
 
 <semantic-query query='SELECT (<[[this]]> as ?iri)

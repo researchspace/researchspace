@@ -303,6 +303,11 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               disabled: !this.canSubmit(),
               onClick: this.onRemove,
             });
+          case 'dry-run':
+            return cloneElement(element, {
+              disabled: !this.canSubmit(),
+              onClick: this.onDryRun,
+            });
           case 'load-state': {
             let input: HTMLInputElement;
             const setInput = (value: HTMLInputElement) => (input = value);
@@ -438,6 +443,23 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         error: () => {}
       })
     ;
+  }
+
+  private onDryRun = () => {
+    const initialModel = this.initialState.model;
+    this.form
+      .finalize(this.state.model)
+      .flatMap(
+        (finalModel) => (this.persistence as SparqlPersistence).dryPersist(initialModel, finalModel)
+      ).onValue(
+        res => trigger({
+          source: this.props.id,
+          eventType: FormEvents.FormDryRunResults,
+          data: {
+            dryRunResults: res,
+          },
+        })
+      );
   }
 
   private onSaveData = () => {

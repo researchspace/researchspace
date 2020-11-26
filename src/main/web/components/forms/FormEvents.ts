@@ -43,6 +43,11 @@ export interface FormEventData {
    */
   'Form.CurrentValue': { value: CompositeValue };
 
+  /**
+   * Don't perform persistance, just run it without saving and send the output with event.
+   */
+  'Form.DryRunResults': Record<string, any>;
+
   // listens
   /**
    * Triggers remove resource action, iri needs to match current subject.
@@ -60,6 +65,7 @@ export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
 export const FormCurrentValue = event('Form.CurrentValue');
+export const FormDryRunResults = event('Form.DryRunResults');
 
 export const FormRemoveResource = event('Form.RemoveResource');
 export const FormGetValue = event('Form.GetValue');

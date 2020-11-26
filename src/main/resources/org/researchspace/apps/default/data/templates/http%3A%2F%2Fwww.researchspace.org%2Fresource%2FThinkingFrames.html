@@ -1,4 +1,4 @@
-<ol class="page-breadcrumb">
+<!-- <ol class="page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
@@ -10,7 +10,7 @@
   </li>
   [[/if]]
   <li class="active">Thinking Frames</li>
-</ol>
+</ol> -->
 
 <style>
   [[!-- 
@@ -42,8 +42,7 @@
 ></mp-event-proxy>
 
 
-<div class='page thinking-frames-page'>
-  [[#> rsp:DetailsSidebar]]
+<div class='thinking-frames-page'>
   <rs-dashboard
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", "resource": "[[urlParam "resource"]]"}'
@@ -165,15 +164,6 @@
       "template": "{{> featureSimilarityKm }}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "frameVariable": "ontodiaVariable",
-      "checkQuery": "
-        PREFIX ontodia: <http://ontodia.org/schema/v1#>
-        PREFIX ldp: <http://www.w3.org/ns/ldp#>
-        ASK {
-            ?value a Platform:Set .
-            ?value ldp:contains / Platform:setItem ?o .
-            ?o crm:P65_shows_visual_item ?vi .
-            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
-      }",
       "type": "authoring"
     }
     ]'
@@ -190,8 +180,107 @@
     }
     ]'
     [[/if]]
+
+    left-panels='[{"label": "Clipboard", "template": "{{> clipboard}}"}]'
+    right-panels='[{"label": "Details", "template": "{{> details}}"}, {"label": "Form", "template": "{{> forms editable=true}}"}]'
     >
-    [[> rsp:Clipboard id="clipboard" defaultViewMode="grid"]]
+
+    <template id='clipboard'>
+      [[> rsp:Clipboard id="clipboard" defaultViewMode="grid"]]
+    </template>
+
+    <template id='details'>
+        <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
+            <template id='template'>
+                {{#if iri}}
+                <div class="details-container">
+                  <mp-event-target-refresh id='details-fields-view'>
+                    <mp-page-loader iri='{{iri}}' context='{{iri}}' urlqueryparam-frame="true" urlqueryparam-details="true"></mp-page-loader>
+                  </mp-event-target-refresh>
+                </div>
+                {{else}}
+                <div class="details-container">No details available</div>
+                {{/if}}
+            </template>
+        </mp-event-target-template-render>
+    </template>
+
+    <template id='forms'>
+      <semantic-form id='vocab-form' 
+                    persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
+                    new-subject-template='{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                    subject='{{node}}'
+                    post-action="event"
+                    fields='[[
+                      fieldDefinitions
+                        inScheme="http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in"
+                        rdfsLabel="http://www.researchspace.org/pattern/general/rdfs:label"
+                        appelation="http://www.researchspace.org/pattern/vocabulary_manager/crm:P1_is_identified_by"
+                        gender="http://www.researchspace.org/ontology/PX_gender"
+                        profession="http://www.researchspace.org/ontology/PX_profession"
+                        nationality="http://www.researchspace.org/ontology/PX_nationality"
+                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        scopeNote="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                        borne="http://www.cidoc-crm.org/cidoc-crm/P98i_was_born"
+                        P138i_has_representation="http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation"
+                    ]]'
+      >
+
+        <div class="form-scroll-area">
+          <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E21_Person"]'></semantic-form-hidden-input>
+          <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+              
+          <semantic-form-composite-input for="appelation" 
+                                        label="Known As"
+                                        new-subject-template="/E41_Appelation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                        fields='[[
+                                          fieldDefinitions
+                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                            rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
+                                          ]]'>
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E41_Appelation'> </semantic-form-hidden-input>
+            <semantic-form-text-input render-header=false for="rdfsLabel"> </semantic-form-text-input>
+          </semantic-form-composite-input>
+
+          <semantic-form-text-input for="scopeNote" multiline=true> </semantic-form-text-input>
+
+          <semantic-form-autocomplete-input for="profession" label="Occupation"> </semantic-form-autocomplete-input>
+          <semantic-form-autocomplete-input for="nationality" label="Nationality"> </semantic-form-autocomplete-input>
+          <semantic-form-select-input for="gender" label="Gender"> </semantic-form-select-input>
+        
+          <semantic-form-composite-input for="borne" 
+                                        label="Birth Date"
+                                        new-subject-template="/E67_Birth"  
+                                        fields='[[
+                                          fieldDefinitions
+                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                            hasTimeSpan="http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span"
+                                          ]]'>
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E67_Birth'> </semantic-form-hidden-input>
+            <semantic-form-composite-input for="hasTimeSpan" 
+                                            label="Time Span"
+                                            new-subject-template="/E52_Time-Span"  
+                                            fields='[[
+                                              fieldDefinitions
+                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                beginOfTimeSpan="http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin"
+                                                endOfTimeSpan="http://www.cidoc-crm.org/cidoc-crm/P82b_end_of_the_end"
+                                              ]]'>
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'> </semantic-form-hidden-input>
+                <semantic-form-text-input for="beginOfTimeSpan"> </semantic-form-text-input>
+                <semantic-form-text-input for="endOfTimeSpan"> </semantic-form-text-input>
+              </semantic-form-composite-input>
+          </semantic-form-composite-input>
+        
+          <semantic-form-autocomplete-input for="P138i_has_representation"></semantic-form-autocomplete-input>
+        
+          <semantic-form-errors></semantic-form-errors>
+        </div>
+        
+        [[> rsp:FormDefaultActions]] 
+      </semantic-form>
+    </template>
+
     <template id='resourceTemplate'>
       <div style='flex: 1 1 0px; overflow: auto;'>
         <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
@@ -292,5 +381,4 @@
     	</div>
     </template>
   </rs-dashboard>
-  [[/rsp:DetailsSidebar]]
 </div>

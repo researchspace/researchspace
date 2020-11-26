@@ -69,7 +69,7 @@ $background-color-set-management: $color-sidebar-bg;
     display: flex;
 
     //Search input specific for the Clipboard
-    .clearable-input {
+   /*  .clearable-input {
       padding: 0px;
       height: 33px;
       border-radius: 15px;
@@ -79,19 +79,19 @@ $background-color-set-management: $color-sidebar-bg;
         background-color: $color-off-white;
       }
 
-    }
+    } */
     
     .clearable-input__input.form-control {
-      padding: 4px 8px 4px 15px;
-      width: 100%;
       background-color: transparent;
+      
+      /* padding: 4px 8px 4px 15px;
+      width: 100%;
       height: 33px;
-      border: none;
+      border: none; */
     }
 
     .clearable-input__clear {
-
-      border: none;
+    //  border: none;
     }
   }
 
@@ -100,9 +100,10 @@ $background-color-set-management: $color-sidebar-bg;
   }
 
   &__search-message {
-    padding: 7px 24px 0px 24px;
+    padding-top: 8px ;
     font-size: 12px;
     font-weight: 600;
+    color: $color-info;
   }
 
   &__show-filters.btn-default {
@@ -114,12 +115,17 @@ $background-color-set-management: $color-sidebar-bg;
   &__search-and-filters {
     background-color: $background-color-set-management;
     z-index: 20;
+    padding: 1em 1.8em;
+
+    .Select-control {
+      background-color: transparent;
+    }
   }
 
   &__filters {
     opacity: 1;
     transition: opacity 0.2s;
-    padding-top: 16px;
+    padding-top: 5px;
 
     &--hidden {
       height: 0;
@@ -148,19 +154,22 @@ $background-color-set-management: $color-sidebar-bg;
     height: 0;
     background: $background-color-set-management;
     z-index: 10;
-    padding: 16px 24px;
+    padding: 0 1.3em .5em 1.7em;
   }
 
   //sidebar set folder
   &__set {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     list-style-type: none;
     background-color: $color-primary-50;
 
-    padding: 4px 8px;
-    min-height: 28px;
+    padding: 0 8px;
+    height: 28px;
     margin-bottom: 5px;
+
+    border-radius: 2px;
 
     .dropdown-menu.dropdown-menu-right {
       right: -42px;
@@ -235,9 +244,8 @@ $background-color-set-management: $color-sidebar-bg;
     text-align: center;
 
     font-size: 15px;
-    font-style: italic;
     font-weight: 600;
-    letter-spacing: 0.3px;
+    color: $color-info;
   }
 
   &__search-results {
@@ -291,6 +299,7 @@ $background-color-set-management: $color-sidebar-bg;
     flex-wrap: wrap;
     align-items: flex-start;
     align-content: flex-start;
+    justify-content: center;
   }
 
   &__reordered-item {
@@ -443,22 +452,25 @@ $background-color-set-management: $color-sidebar-bg;
     width: 100%;
     font-weight: bold;
     z-index: 10;
+    font-size: 13px;
+    padding: 1.8em 1.8em 0 1.8em;
 
-    .btn.btn-success .fa-chevron-left {
+    .fa {
       margin-right: 5px;
-      font-size: 12px;
     }
   }
 
   &__open-set {
 
-    background-color: $background-color-set-management;
     display: flex;
     align-items: center;
 
-    height: 25px;
+    height: 28px;
     background-color: $color-primary-50;
-    padding: 4px 8px 4px 4px;
+    padding: 0 8px;
+
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
 
     &:hover {
 
@@ -471,77 +483,89 @@ $background-color-set-management: $color-sidebar-bg;
     }
   }
 
-  &__footer {
+   &__toolbar {  
+    padding: 0 1.8em .6em 1.8em;
+  } 
 
-    background-color: $color-sidebarFooter-bg;
-  }
-
-  &__footer-reorder-confirmation {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: flex-end;
-    padding: 10px 24px;
-
-    &:last-child {
-      border-top: $dark-border;
-    }
-    &:first-child {
-      border-bottom: 1px solid $color-primary-100;
-    }
-  }
-
-  &__footer-reorder-message {
-    flex: auto;
-    font-size: 13px;
-  }
-
-  &__footer-reorder-buttons {
-
-    display: flex;
-
-    .btn {
-      font-size: 12px;
-    }
-
-    .btn-xs {
-      padding: 7px 8px;
-    }
-  }
-
-  &__footer-reorder-cancel {
-    margin-right: 5px;
-  }
-
-  &__footer-buttons {
+  &__toolbar-buttons {
     display: flex;
     justify-content: space-between;
-    padding: 11px 24px;
-
-    & .btn-group-xs > .btn {
-      padding: 7px 5px 5px 5px;
-    }
 
     & .btn {
       border: none;
-      background: $color-primary-50;
+      border-radius: 3px;
+
+      display: flex;
+      align-items: center;
+
+      padding: 0 8px;
+
+      height: 28px;
+
+      .fa,
+      .iconmoon {
+        font-size: 1.25em;
+      }
+    }
+
+    & .btn-default {
+      color: $color-dark;
     }
   
     & .btn-default:hover,
     & .btn-default:focus,
     & .btn-default.active,
     & .btn-default.active:focus {
-      background-color: $color-white;
+     background-color: $color-primary-50--op50;
     }
   }
 
-  &__toggle-reorder-items {
-    margin-left: 5px;
+  &__item-view-mode {
+
+    display: flex;
+    align-items: center;
+
+    & .btn {
+
+      margin-right: 3px;
+    }
+  }
+
+  &__toolbar-spacer {
+    flex: auto;
+  }
+
+  &__toolbar-reorder-confirmation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 0px 5px 0;
+  }
+
+  &__toolbar-reorder-message {
+
+    font-size: 13px;
+    color: $color-info;
+    padding-right: 20px;
+  }
+
+  &__toolbar-reorder-buttons {
+
+    display: flex;
+
+    .btn {
+      font-size: 13px;
+      padding: 5px 8px;
+      border-radius: 3px;
+    }
+  }
+
+  &__toolbar-reorder-cancel {
     margin-right: 5px;
   }
 
-  &__footer-spacer {
-    flex: auto;
+  &__toggle-reorder-items {
+
   }
 
   &__item-actions {
@@ -593,7 +617,20 @@ $background-color-set-management: $color-sidebar-bg;
     display: flex;
     flex-direction: column;
 
-    padding: 16px 24px;
+    padding: 1em 1.3em 1em 1.7em;
+
+    & .set-management__items-view {
+
+      padding: 0;
+
+      & .set-management__set-items {
+
+        padding: 8px 0;
+        background-color: $color-primary-50;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+      }
+    }
   }
 
   &__single-set-header-top {
@@ -660,19 +697,6 @@ $background-color-set-management: $color-sidebar-bg;
 
 .set-management.set-management--list-view,
 .set-management.set-management--grid-view {
-
-  .set-management__search-and-filters {
-      border-bottom: 1px solid $color-primary-50;
-      padding-left: 24px;
-      padding-right: 24px;
-      padding-bottom: 16px;
-
-      .Select-control {
-        border: none;
-        border-bottom: 1px solid $color-form-border;
-        background-color: transparent;
-      }
-  }
 
   .set-management__single-set-header-top {
 

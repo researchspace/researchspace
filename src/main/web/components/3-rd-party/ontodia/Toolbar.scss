@@ -21,28 +21,38 @@
 
 .component {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 15px 20px 0 20px;
+  justify-content: stretch;
+
+ // display: grid;
+ // grid-template-columns: minmax(5px, 0.4fr) minmax(auto, .35fr) 1.5fr minmax(5px, 0.4fr);
+ // grid-template-areas: '. save buttons .';
 }
 
 .group {
-  margin-right: 10px;
+
+  :global(button) {
+
+    height: 34px;
+  }
 
   :global(.btn-group) {
 
     display: flex;
 
-    :global(#save-diagram-button) {
-      height: 33px;
-    }
-
-    :global(.dropdown-menu > li > a) {
-      font-size: 13.5px;
-      line-height: 1.2;
-      padding: 7px 18px !important; //overwrite bootstrap style
+    :global(.dropdown-menu) {
+      right: 0;
+      left: unset;
+      border-color: $color-btn-toolbar-border;
     } 
 
+    :global(.dropdown-menu > li > a) {
+
+      line-height: 1.2;
+      padding: 7px 18px;
+      color: $color-btn-toolbar;
+    } 
   }
 
   :global(.btn-default) {
@@ -50,16 +60,44 @@
     color: $color-btn-toolbar;
     background-color: $color-btn-toolbar-bg;
     border: 1px solid $color-btn-toolbar-border;
-    padding: 0 11px;
-    font-size: 13px;
-    height: 34px;
+    padding: 0 10px 0 12px;
+    font-size: 11px;
+    
     letter-spacing: 0.1px;
     text-transform: uppercase;
 
+    margin-bottom: 5px;
+
+    display: flex;
+    align-items: center;
+    justify-content: start;
+
+    border-radius: 2px !important;
+
     &:hover {
-      box-shadow: inset 0px -2px 0px 0px $color-btn-toolbar;
+      box-shadow: inset 4px 0px 0px 0px $color-btn-toolbar;
+    }
+
+    :global(.fa) {
+      padding-right: 6px;
+      font-size: 14px;
     }
   }
+}
+
+.groupSave {
+  margin-bottom: 10px;
+
+  :global(.btn-group-sm > .btn) {
+
+    border-radius: 2px;
+  }
+}
+
+.groupButtons {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .languageSelector {
@@ -78,7 +116,7 @@
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  padding: 0 16px;
+  padding: 0 5px 0 12px;
 
   :global(.fa.fa-floppy-o) {
     padding-right: 6px;

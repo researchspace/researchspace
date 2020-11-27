@@ -84,8 +84,6 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                   onClick={onPersistChanges} 
                   className={styles.saveButton}
           >
-            <span className="fa fa-floppy-o" aria-hidden="true" />
-            &nbsp;
             {persistChangesLabel}
           </Button>
           <Dropdown.Toggle bsStyle="success" />
@@ -103,8 +101,6 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
           <Button bsStyle="primary" 
                   onClick={onSaveDiagram} 
                   className={styles.saveButton}>
-            <span className="fa fa-floppy-o" aria-hidden="true" />
-            &nbsp;
             {saveDiagramLabel}
           </Button>
           <Dropdown.Toggle bsStyle="primary" />
@@ -127,7 +123,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         <HasPermission
           permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
         >
-          <ButtonGroup bsSize="small" className={styles.group}>
+          <ButtonGroup bsSize="small" className={classnames(styles.group, styles.groupSave)}>
             {this.renderSaveButton()}
           </ButtonGroup>
         </HasPermission>
@@ -151,9 +147,10 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
             </Button>
           </ButtonGroup>
         ) : null}
-        <ButtonGroup bsSize="small" className={styles.group}>
+        <ButtonGroup bsSize="small" className={classnames(styles.group, styles.groupButtons)}>
           <Button type="button" className="ontodia-btn ontodia-btn-default" onClick={this.props.onForceLayout}>
             <span title="Force layout" className="fa fa-snowflake-o" aria-hidden="true" />
+            &nbsp;Force Layout
           </Button>
           {this.props.onClearAll ? (
             <Button onClick={this.props.onClearAll}>
@@ -163,23 +160,27 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
           ) : null}
           <Button title="Zoom In" onClick={this.props.onZoomIn}>
             <span className="fa fa-search-plus" aria-hidden="true" />
+            &nbsp;Zoom in
           </Button>
           <Button title="Zoom Out" onClick={this.props.onZoomOut}>
             <span className="fa fa-search-minus" aria-hidden="true" />
+            &nbsp;Zoom out
           </Button>
           <Button title="Fit to Screen" onClick={this.props.onZoomToFit}>
             <span className="fa fa-arrows-alt" aria-hidden="true" />
+            &nbsp;Fit to screen
           </Button>
           <Button title="Export diagram as PNG" onClick={this.onExportPng}>
             <span className="fa fa-picture-o" aria-hidden="true" />
-            &nbsp;PNG
+            &nbsp;Export PNG
           </Button>
           <Button title="Export diagram as SVG" onClick={this.onExportSvg}>
             <span className="fa fa-picture-o" aria-hidden="true" />
-            &nbsp;SVG
+            &nbsp;Export SVG
           </Button>
           <Button title="Print diagram" onClick={this.props.onPrint}>
             <span className="fa fa-print" aria-hidden="true" />
+            &nbsp;Print
           </Button>
         </ButtonGroup>
         {this.renderLanguages()}

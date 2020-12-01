@@ -61,7 +61,7 @@ export class SetService extends LdpService {
     return Kefir.zip(
       holders
         .map(({ holder, item }, index) =>
-          createItemHolderGraph(holder, item, index).map((graph) => set.update(holder, graph))
+          createItemHolderGraph(holder, item, index).flatMap((graph) => set.update(holder, graph))
         )
         .toArray()
     )

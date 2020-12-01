@@ -20,10 +20,27 @@ import * as React from 'react';
 import * as SparqlJs from 'sparqljs';
 import * as maybe from 'data.maybe';
 
-import { SparqlUtil } from 'platform/api/sparql';
+import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 
 import { setSearchDomain } from '../commons/Utils';
 import { SemanticSearchContext, InitialQueryContext } from './SemanticSearchApi';
+import { Dictionary } from 'platform/api/sparql/SparqlClient';
+import { Cancellation } from 'platform/api/async';
+import { Rdf } from 'platform/api/rdf';
+import { listen, Event } from 'platform/api/events';
+
+
+export interface QueryConstantParameter {
+  /**
+   * 
+   */
+  dataType?: string;
+
+  /**
+   * 
+   */
+  value: string;
+}
 
 export interface SemanticSearchQueryConstantConfig {
   /**
@@ -32,6 +49,12 @@ export interface SemanticSearchQueryConstantConfig {
    * In favour of consistency, we recommend to use a variable named `?subject`.
    */
   query: string;
+
+
+  /**
+   * 
+   */
+  parameters?: Dictionary<QueryConstantParameter>;
 
   /**
    * Specify search domain category IRI (full IRI enclosed in <>).
@@ -57,9 +80,20 @@ interface InnerProps extends QueryConstantProps {
 }
 
 class QueryConstantInner extends React.Component<InnerProps, {}> {
+  private cancelation = new Cancellation();
+
   componentDidMount() {
-    const q = SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(this.props.query);
-    this.props.context.setBaseQuery(maybe.Just(q));
+    const { parameters } = this.props;
+
+    this.executeQuery(parameters);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticSearchQueryConstantSetParameters,
+        })
+      )
+      .onValue(this.setParameters);
   }
 
   componentWillReceiveProps(props: InnerProps) {
@@ -69,9 +103,39 @@ class QueryConstantInner extends React.Component<InnerProps, {}> {
     }
   }
 
+  private setParameters = (event: Event<any>) => {
+    this.executeQuery(event.data);
+  };
+
+  /**
+   * 
+   * @param query 
+   */
+  private executeQuery(parameters: Dictionary<QueryConstantParameter>) {
+    const { query } = this.props;
+
+    this.props.context.setBaseQuery(maybe.Just(this.injectParameters(SparqlUtil.parseQuerySync<SparqlJs.SelectQuery>(query), parameters)));
+  }
+
+  /**
+   * 
+   * @param query: SparsqlJs.SelectQuery
+   */
+  private injectParameters(query: SparqlJs.SelectQuery, parameters: any) {
+
+    const tmpParams: Dictionary<Rdf.Node> = {};
+
+    for (const key in parameters) {
+      tmpParams[key] = Rdf.literal(parameters[key].value);
+    }
+
+    return SparqlClient.setBindings(query, tmpParams);
+  }
+
   render() {
     return null;
   }
 }
 
 export default QueryConstant;
+export const SemanticSearchQueryConstantSetParameters = 'SemanticSearch.QueryConstant.SetParameters';

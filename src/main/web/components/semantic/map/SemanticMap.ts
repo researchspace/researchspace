@@ -62,6 +62,9 @@ import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
+import { SemanticMapBoundingBoxChanged } from './SemanticMapEvents';
+import { Dictionary } from 'platform/api/sparql/SparqlClient';
+import { QueryConstantParameter } from '../search/web-components/QueryConstant';
 
 enum Source {
   OSM = 'osm',
@@ -74,16 +77,26 @@ interface ProviderOptions {
   style: string;
 }
 
+interface MapOptions {
+
+  /**
+   * 
+   */
+  crs?: string;
+
+
+  /**
+   * 
+   */
+  extent?: Array<number>;
+  
+}
+
 
 interface Marker {
   link?: string;
   description?: string;
 }
-
-const MIN_X = '?MinX'
-const MIN_Y = '?MinY'
-const MAX_X = '?MaxX'
-const MAX_Y = '?MaxY'
 
 export interface SemanticMapConfig {
   /**
@@ -116,7 +129,10 @@ export interface SemanticMapConfig {
    */
   fixZoomLevel?: number;
 
-  extent?: Array<number>;
+  /**
+   * Map Options
+   */
+  mapOptions?: MapOptions;
 
   /**
    * ID for issuing component events.
@@ -149,7 +165,6 @@ const MAP_REF = 'researchspace-map-widget';
 export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
-  private featuresList: Array<any>;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -159,13 +174,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
     };
-
-
-    this.featuresList = new Array<any>();
   }
 
   private getInputCrs() {
-    return this.props.providerOptions.crs === undefined ? 'EPSG:4832' : this.props.providerOptions.crs;
+    return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined ? 'EPSG:3857' : this.props.mapOptions.crs;
   }
 
   private static createPopupContent(props, tupleTemplate: Data.Maybe<HandlebarsTemplateDelegate>) {
@@ -327,7 +339,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   };
 
-  private renderMap(node, props, center, markers) {
+  private renderMap(node, props, center, markers) { 
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
@@ -338,7 +350,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         case Source.MapBox: {
           newProvider = new XYZ({
             url: 'http://localhost:10214/proxy/mapbox/styles/v1/mapbox/' +
-              this.props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
+              props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
           });
           break;
         }
@@ -366,7 +378,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         view: new View({
           center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
           zoom: 3,
-          extent:props.extent
+          extent: props.mapOptions.extent
         }),
       });
 
@@ -377,18 +389,30 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       this.addMarkersFromQuery(this.props, this.context);
 
       this.initializeMarkerPopup(map);
-      map.getView().fit(props.extent);
+      map.getView().fit(props.mapOptions.extent);
 
       window.addEventListener('resize', () => {
         map.updateSize();
       });
 
       this.map.on('moveend', () => {
-        this.addMarkersFromQuery(this.props, this.context)
-      })
 
-      this.map.on('singleclick', (e) =>{
-        //console.log(e.coordinate)
+        // Pass the bounding box as data in the event called when bounding box is changed
+        const coordinates = this.map.getView().calculateExtent(this.map.getSize());
+        this.BoundingBoxChanged({
+          "southWestLat": {
+            "value": String(coordinates[0])
+          },
+          "southWestLon": {
+            "value": String(coordinates[1])
+          },
+          "northEstLat": {
+            "value": String(coordinates[2])
+          },
+          "northEstLon": {
+            "value": String(coordinates[3])
+          }
+        });
       })
 
       const view = this.map.getView();
@@ -398,37 +422,20 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }, 1000);
   }
 
-  filterList = (date?: number) => {
-
-    if (date)
-      return _.filter(this.featuresList, (v) => (typeof v.end_date == 'undefined' ? 
-      Date.parse(v.start_date.value) < date : 
-      Date.parse(v.start_date.value) < date && Date.parse(v.end_date.value) >= date) ); //&& !v.bw_id.value.startsWith('SS_IS')
-
-    else
-      return this.featuresList;
+  public BoundingBoxChanged(boundingBox: Dictionary<QueryConstantParameter>) {
+    trigger({ eventType: SemanticMapBoundingBoxChanged, source: this.props.id, data: boundingBox });
   }
 
-  addMarkersFromQuery = (props: SemanticMapProps, context: ComponentContext, date?: number) => {
-    let { query } = props;
-
-    if (!date) date = Date.parse('1850-01-01')
-
-    const bbCoords = this.map.getView().calculateExtent(this.map.getSize())
-
-    query = query.replace(MIN_X, `"${bbCoords[0]}"`)
-    query = query.replace(MIN_Y, `"${bbCoords[1]}"`)
-    query = query.replace(MAX_X, `"${bbCoords[2]}"`)
-    query = query.replace(MAX_Y, `"${bbCoords[3]}"`)
+  addMarkersFromQuery = (props: SemanticMapProps, context: ComponentContext) => {
+    const { query } = props;
 
     if (query) {
       const stream = SparqlClient.select(query, { context: context.semanticContext });
 
       stream.onValue((res) => {
 
-        this.featuresList = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
+        const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
 
-        const filteredList = this.filterList(date);
 
         if (SparqlUtil.isSelectResultEmpty(res)) {
           this.setState({
@@ -443,12 +450,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             isLoading: false,
           });
 
-          const geometries = this.createGeometries(filteredList);
+          const geometries = this.createGeometries(result);
           this.updateLayers(geometries);
         }
 
         if (this.props.id){
-          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: {results: filteredList}});
+          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: {results: result}});
         }
       });
 
@@ -458,14 +465,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           isLoading: false,
         })
       );
-
-      /*
-      stream.onEnd(() => {
-        if (this.props.id) {
-          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
-        }
-      });
-      */
 
       if (this.props.id) {
         trigger({

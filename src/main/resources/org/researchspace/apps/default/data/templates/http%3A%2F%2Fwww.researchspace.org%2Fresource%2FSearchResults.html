@@ -1,6 +1,5 @@
 <div class='rs-results-area'>
         
-
   <semantic-search-facet id='semantic-search-facet'
     value-categories='{
       "<http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>": {
@@ -44,19 +43,14 @@
       ></semantic-search-query-keyword>
       
       <div class="semantic-search-results-actions">
-        [[#if (hasPermission "forms:ldp:*")]]
-          <mp-selection-action-choice id='Action' title='With selected ..' selection='item-selection-aggregator'>
-            <mp-create-set-action></mp-create-set-action>
-          </mp-selection-action-choice>
-        [[/if]]
         <mp-anonymous-hidden>
           <semantic-search-action-save-set-result id='save-set-result-action'>
-              <button class="btn btn-default">Save As Set</button>
+              <button class="btn btn-grey">Save as Set</button>
           </semantic-search-action-save-set-result>
         </mp-anonymous-hidden>
         <mp-anonymous-hidden>
           <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
-              <button class="btn btn-default">Save As Search</button>
+              <button class="btn btn-grey">Save Search</button>
           </semantic-search-action-save-search-result>
         </mp-anonymous-hidden>
         <semantic-search-result>
@@ -64,7 +58,7 @@
                               header="text/csv"
                               filename="csv-result.csv"
           >
-              <button class="btn btn-default"> <i class='fa fa-download' aria-hidden='true'></i> CSV</button>
+              <button class="btn btn-grey"> <i class='fa fa-download' aria-hidden='true'></i> CSV</button>
           </mp-sparql-download>
         </semantic-search-result>
         <semantic-search-result>
@@ -72,9 +66,14 @@
                               header="application/sparql-results+json"
                               filename="json-result.json"
           >
-              <button class="btn btn-default"> <i class='fa fa-download' aria-hidden='true'></i> JSON</button>
+              <button class="btn btn-grey"> <i class='fa fa-download' aria-hidden='true'></i> JSON</button>
           </mp-sparql-download>
         </semantic-search-result>
+        [[#if (hasPermission "forms:ldp:*")]]
+          <mp-selection-action-choice id='Action' title='With selected ..' class-name="btn btn-grey" selection='item-selection-aggregator'>
+            <mp-create-set-action></mp-create-set-action>
+          </mp-selection-action-choice>
+        [[/if]]
       </div>
     </div>
     [[/if]]
@@ -159,7 +158,7 @@
 
                     <template id='type'>
                       <div class="search-result-table__type" style="display: flex; align-items: center;">
-                        <i class="rs-icon rs-icon-drag_points"></i>
+                        <i class="rs-icon rs-icon-drag_points" style="margin-right: 8px;"></i>
                         <mp-draggable iri='{{iri.value}}'>
                           <div class="search-result-table__type-value">{{typeLabel.value}}</div>
                         </mp-draggable>

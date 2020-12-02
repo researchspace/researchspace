@@ -82,12 +82,12 @@ export class FacetBreadcrumbsComponent extends Component<FacetBreadcrumbsProps, 
 
     return (
       <div className={styles.conjunct}>
-        <div className={classNames(styles.values, 'btn btn-default')} onClick={() => this.selectRelation(relation)}>
+        <div className={classNames(styles.values, 'btn')} onClick={() => this.selectRelation(relation)}>
           <span className={styles.relation}>{relation.label}</span>
           {disjuncts}
         </div>
         <button
-          className={classNames(styles.cancelButton, 'btn btn-default btn-xs')}
+          className={classNames(styles.cancelButton, 'btn btn-xs')}
           onClick={() => this.props.actions.removeConjunct(conjunct)}
         >
           <i />

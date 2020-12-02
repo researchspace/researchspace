@@ -53,7 +53,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
           <button
             type="button"
             title="Create new set"
-            className="btn btn-default"
+            className="btn btn-icon"
             onClick={this.props.onPressCreateNewSet}
           >
             <i className="iconmoon iconmoon-folder-plus"></i>
@@ -87,7 +87,7 @@ export class ReorderItemsButton extends React.Component<ReorderingProps, {}> {
           type="button"
           title="Reorder items"
           aria-pressed={isReordering}
-          className={classnames({ 'btn btn-default': true, active: isReordering })}
+          className={classnames({ 'btn btn-icon': true, active: isReordering })}
           onClick={onPressReorder}
         >
           <i className="fa fa-random"></i>
@@ -152,7 +152,7 @@ export class ItemViewModeSwitch extends React.Component<
         key={mode}
         type="button"
         title={title}
-        className={classnames({ 'btn btn-default': true, active: isPressed })}
+        className={classnames({ 'btn btn-icon': true, active: isPressed })}
         aria-pressed={isPressed}
         onClick={isPressed ? undefined : () => this.props.onModeChanged(mode)}
       >

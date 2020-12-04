@@ -1,19 +1,13 @@
 declare namespace QueryBuilderScssNamespace {
   export interface IQueryBuilderScss {
     actionableItem: string;
-    active: string;
     activeTerm: string;
     addConjunctButton: string;
     addDisjunctButton: string;
     andSeparator: string;
-    badge: string;
     categorySelectionItem: string;
-    disabled: string;
     domainSelection: string;
-    'dropdown-toggle': string;
-    dropdownToggle: string;
     editButton: string;
-    focus: string;
     guideHolder: string;
     guideLinks: string;
     guidePanel: string;
@@ -23,7 +17,6 @@ declare namespace QueryBuilderScssNamespace {
     mapSelectionButton: string;
     nestedSearchButton: string;
     nestedSearchHolder: string;
-    open: string;
     panelHeader: string;
     rangeSelection: string;
     relationPlaceholder: string;

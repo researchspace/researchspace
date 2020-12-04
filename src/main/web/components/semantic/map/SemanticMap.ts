@@ -18,6 +18,7 @@
  */
 
 import { Props, createElement } from 'react';
+import * as React from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as _ from 'lodash';
@@ -142,6 +143,7 @@ interface MapState {
   errorMessage: Data.Maybe<string>;
   noResults?: boolean;
   isLoading?: boolean;
+  providers?: [];
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -158,6 +160,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       noResults: false,
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
+      providers: [] as  any
     };
 
 
@@ -206,6 +209,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     } else if (this.state.noResults) {
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
+    const newchildrenlist = React.Children.map(this.props.children, (child) => this.prepareTileLayer(child));
     return D.div(
       { style: { height: '100%', width: '100%' } },
       D.div(
@@ -224,10 +228,31 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           ref: 'ref-map-widget-elements',
           onClick: this.getMarkerFromMapAsElements.bind(this),
           style: { display: 'none' },
-        })
+        }),
+        newchildrenlist
       ),
       this.state.isLoading ? createElement(Spinner) : null
     );
+  }
+
+  private prepareTileLayer(child){
+    const cloned = React.cloneElement(child, {
+      receiveProviderFromChild: (provider) => {
+        //type Provider = typeof provider;
+        const tilelayer = new TileLayer({
+            source: provider
+          });
+        this.setState((prevstate) => {
+          return {
+          providers: prevstate.providers.concat([tilelayer])
+          }
+        }, () => {
+          console.log("Providers updated in the state:");
+          console.log(this.state.providers);
+        });
+        }
+    });
+    return(cloned);
   }
 
   private initializeMarkerPopup(map) {
@@ -332,22 +357,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
 
-      let newProvider = null;
-
-      switch (props.provider) {
-        case Source.MapBox: {
-          newProvider = new XYZ({
-            url: 'http://localhost:10214/proxy/mapbox/styles/v1/mapbox/' +
-              this.props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
-          });
-          break;
-        }
-        default: {
-          newProvider = new OSM({});
-          break;
-        }
-      }
-
       const map = new Map({
         controls: control.defaults({
           attributionOptions: {
@@ -357,9 +366,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interaction.defaults({}),
         layers: [
-          new TileLayer({
-            source: newProvider,
-          }),
+          ..._.values(this.state.providers),
           ..._.values(layers),
         ],
         target: node,

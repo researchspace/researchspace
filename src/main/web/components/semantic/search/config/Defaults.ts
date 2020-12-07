@@ -42,7 +42,7 @@ export const DefaultSearchProfileCategoriesQuery = `
           BIND(ssp:TextCategory AS ?category) .
           BIND("text search" AS ?label) .
           BIND("text search" AS ?description) .
-          BIND("../images/fcs/keywords.svg" AS ?thumbnail) .
+          BIND("../assets/images/fcs/keywords.svg" AS ?thumbnail) .
           BIND(10 AS ?order) .
         }
       }
@@ -59,7 +59,7 @@ export const DefaultSearchProfileCategoriesQuery = `
       BIND(ssp:TextCategory as ?category) .
       BIND("text search" as ?label) .
       BIND("text search" as ?description) .
-      BIND("../images/fcs/keywords.svg" AS ?thumbnail) .
+      BIND("../assets/images/fcs/keywords.svg" AS ?thumbnail) .
       BIND(10 AS ?order) .
       BIND(ssp:default-profile AS ?profile) .
     }

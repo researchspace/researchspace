@@ -67,7 +67,13 @@ export class ReorderableList extends Component<Props, State> {
       [styles.dragWhole]: !dragByHandle,
     };
     return (
-      <div className={classnames(className, classes)} style={style}>
+      <div className={classnames(className, classes)}
+        style={style}
+        onDragOver={
+          // we need this to prevent ugly default animation on drop in FF
+          (e) => e.preventDefault()
+        }
+      >
         {positionToIndex.map((index, position) => this.renderItem(items[index], index))}
       </div>
     );

@@ -54,9 +54,9 @@ The ResearchSpace is distributed under AGPL-3.0 or later.
 
 # How to try it?
 
-> :warning: **WARNING**: Currently we are working on demo application .....
-
 The easiest way to try researchspace is to use a [setup with docker-compose](#setup-with-docker). 
+
+Or you can visit the demo application [Late Hokusai](https://latehokusai.researchspace.org/resource/rsp:Start).
 
 # Overview
 

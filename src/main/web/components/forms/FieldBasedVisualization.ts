@@ -38,6 +38,13 @@ export interface FieldBasedVisualizationConfig {
   subject?: string;
 
   /**
+   * Additional IRIs for the subject, useful when there are alignment with owl:sameAs or skos:exactMatch.
+   *
+   * If specified field values are fetched for the main subject as well as for additional.
+   */
+  additionalSubjects?: [string]
+
+  /**
    * Definition for fields that need to be visualized.
    *
    * See <semantic-link uri='http://help.researchspace.org/resource/Help:SemanticForm'></semantic-link> for more details about field definitions.
@@ -75,7 +82,8 @@ export class FieldBasedVisualization extends Component<FieldBasedVisualizationCo
   }
 
   static defaultProps = {
-    subject: getCurrentResource().value
+    subject: getCurrentResource().value,
+    additionalSubjects: []
   };
 
   public componentDidMount() {
@@ -92,6 +100,7 @@ export class FieldBasedVisualization extends Component<FieldBasedVisualizationCo
         source: this.props.template,
         options: {
           subject: this.props.subject,
+          additionalSubjects: this.props.additionalSubjects,
           fields: this.state.fieldsData,
           noData: this.state.noData,
         },
@@ -100,14 +109,15 @@ export class FieldBasedVisualization extends Component<FieldBasedVisualizationCo
   }
 
   private fetchFieldValues() {
-    const { fields, subject } = this.props;
+    const { fields, subject, additionalSubjects } = this.props;
     const subjectIri = Rdf.iri(subject);
+    const otherSubjects = additionalSubjects.map(s => Rdf.iri(s));
     Kefir.combine(
       fields.map(
         normalizeFieldDefinition
       ).map(
         field => queryValues(
-          field.selectPattern, subjectIri, { context: this.context.semanticContext }
+          field.selectPattern, subjectIri, { context: this.context.semanticContext }, otherSubjects
         ).map(
           values => {
             const f = _.cloneDeep(field as FieldDefinitionWithData);

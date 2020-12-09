@@ -19,62 +19,46 @@
 
     <div class="semantic-search-keywordAndActions">
       
-        <semantic-search-query-keyword 
-          domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
-          query='
-            SELECT ?subject WHERE { 
-              ?subject a ?type .
-              ?type rdfs:subClassOf* crm:E1_CRM_Entity .
-              ?subject rdfs:label ?label .
-              SERVICE <http://www.bigdata.com/rdf/search#search> {
-                ?label bds:search ?__token__ ;
-                          bds:minRelevance "0.3" ;
-                          bds:matchAllTerms "true"  .
-              }
-            }
-          '
-          default-query='
-              SELECT ?subject WHERE { 
-              ?subject a ?type .
-              ?type rdfs:subClassOf* crm:E1_CRM_Entity .
-              }         
-          '
-          debounce=500
-      ></semantic-search-query-keyword>
-      
-      <div class="semantic-search-results-actions">
-        <mp-anonymous-hidden>
-          <semantic-search-action-save-set-result id='save-set-result-action'>
-              <button class="btn btn-default">Save as Set</button>
-          </semantic-search-action-save-set-result>
-        </mp-anonymous-hidden>
-        <mp-anonymous-hidden>
-          <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
-              <button class="btn btn-default">Save Search</button>
-          </semantic-search-action-save-search-result>
-        </mp-anonymous-hidden>
-        <semantic-search-result>
-          <mp-sparql-download id='csv-result' query="SELECT ?subject WHERE { }"
-                              header="text/csv"
-                              filename="csv-result.csv"
-          >
-              <button class="btn btn-default"> <i class='fa fa-download' aria-hidden='true'></i> CSV</button>
-          </mp-sparql-download>
-        </semantic-search-result>
-        <semantic-search-result>
-          <mp-sparql-download id='json-result' query="SELECT ?subject WHERE { }"
-                              header="application/sparql-results+json"
-                              filename="json-result.json"
-          >
-              <button class="btn btn-default"> <i class='fa fa-download' aria-hidden='true'></i> JSON</button>
-          </mp-sparql-download>
-        </semantic-search-result>
-        [[#if (hasPermission "forms:ldp:*")]]
-          <mp-selection-action-choice id='Action' title='With selected ..' class-name="btn btn-default" selection='item-selection-aggregator'>
-            <mp-create-set-action></mp-create-set-action>
-          </mp-selection-action-choice>
-        [[/if]]
-      </div>
+      [[#block "searchQuery"]]
+       
+      [[/block]]
+
+      <semantic-search-result-holder>
+        <div class="semantic-search-results-actions">
+          <mp-anonymous-hidden>
+            <semantic-search-action-save-set-result id='save-set-result-action'>
+                <button class="btn btn-default">Save as Set</button>
+            </semantic-search-action-save-set-result>
+          </mp-anonymous-hidden>
+          <mp-anonymous-hidden>
+            <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
+                <button class="btn btn-default">Save Search</button>
+            </semantic-search-action-save-search-result>
+          </mp-anonymous-hidden>
+          <semantic-search-result>
+            <mp-sparql-download id='csv-result' query="SELECT ?subject WHERE { }"
+                                header="text/csv"
+                                filename="csv-result.csv"
+            >
+                <button class="btn btn-default"> <i class='fa fa-download' aria-hidden='true'></i> CSV</button>
+            </mp-sparql-download>
+          </semantic-search-result>
+          <semantic-search-result>
+            <mp-sparql-download id='json-result' query="SELECT ?subject WHERE { }"
+                                header="application/sparql-results+json"
+                                filename="json-result.json"
+            >
+                <button class="btn btn-default"> <i class='fa fa-download' aria-hidden='true'></i> JSON</button>
+            </mp-sparql-download>
+          </semantic-search-result>
+          [[#if (hasPermission "forms:ldp:*")]]
+            <mp-selection-action-choice id='Action' title='With selected ..' class-name="btn btn-default" selection='item-selection-aggregator'>
+              <mp-create-set-action></mp-create-set-action>
+            </mp-selection-action-choice>
+          [[/if]]
+        </div>
+      </semantic-search-result-holder>
+
     </div>
 
     <semantic-search-result-holder>

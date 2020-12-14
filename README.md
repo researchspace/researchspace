@@ -7,7 +7,12 @@
 - - -
 
 <p align="center">
-  <a href="https://gitter.im/researchspace/community"><img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
+  <a href="https://nightly.link/researchspace/researchspace/workflows/main/master/zip-bundle.zip">
+    <img src="https://img.shields.io/badge/download-zip-blue" height="30px"></a> 
+  <a href="https://hub.docker.com/repository/docker/researchspace/platform-ci/general">
+    <img src="https://img.shields.io/badge/docker-researchspace%2Fplatform--ci%3Alatest-blue" height="30px"></a>
+  <a href="https://gitter.im/researchspace/community">
+    <img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
 - - -

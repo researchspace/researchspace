@@ -30,8 +30,6 @@ import TileLayer from 'ol/layer/tile';
 import VectorLayer from 'ol/layer/vector';
 import Vector from 'ol/source/vector';
 import Cluster from 'ol/source/cluster';
-import OSM from 'ol/source/osm';
-import XYZ from 'ol/source/xyz';
 import Style from 'ol/style/style';
 import Text from 'ol/style/text';
 import Fill from 'ol/style/fill';

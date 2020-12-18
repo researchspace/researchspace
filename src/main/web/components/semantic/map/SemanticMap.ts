@@ -63,9 +63,11 @@ import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
-import { SemanticMapBoundingBoxChanged } from './SemanticMapEvents';
+import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import { QueryConstantParameter } from '../search/web-components/QueryConstant';
+import { Cancellation } from 'platform/api/async';
+import { listen, Event } from 'platform/api/events';
 
 enum Source {
   OSM = 'osm',
@@ -167,6 +169,7 @@ const MAP_REF = 'researchspace-map-widget';
 export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
+  private cancelation = new Cancellation();
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -177,6 +180,15 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       errorMessage: maybe.Nothing<string>(),
       providers: [] as  any
     };
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapUpdateFeatureColor,
+      })
+    )
+    .onValue(this.updateFeatureColor);
+    //Listen to event
   }
 
   private getInputCrs() {
@@ -303,6 +315,41 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       map.getTarget().style.cursor = hasFeatureAtPixel ? 'pointer' : '';
     });
   }
+
+  /**
+   * 
+   * @param event
+   * 
+   * The event data is structured as follows:
+   * {
+   *    "features": [
+   *      {
+   *        "id":"1", 
+  *         "color":"rgba(143, 29, 33, .4)"
+  *       }, ...
+   *    ]
+   * }
+   *  
+   */
+  private updateFeatureColor = (event: Event<any>) => {
+
+    // It updates only the last layer, assuming it contains the features
+    const layer = this.map.getLayers().getArray().slice(-1).pop();
+ 
+    event.data['features'].forEach(feature => {
+
+      console.log(feature.id)
+
+      layer.getSource().getFeatures()[feature.id].setStyle(new Style({
+        fill: new Fill({
+          color: feature.color
+        }),
+        stroke: new Stroke({
+          color: feature.color
+        })
+      }))
+    });
+  };
 
   private transformToMercator(lng: number, lat: number): [number, number] {
     return proj.transform([lng, lat], this.getInputCrs(), 'EPSG:3857');

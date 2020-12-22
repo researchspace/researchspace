@@ -30,6 +30,9 @@ export interface ProviderConfig {
    * Optional JSON object containing various user provided options
    */
   providerOptions?: ProviderOptions;
+
+
+  receiveProviderFromChild?: any; 
 }
 
 export type ProviderProps = ProviderConfig & Props<any>;

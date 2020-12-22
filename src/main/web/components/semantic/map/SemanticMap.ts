@@ -170,6 +170,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private map: Map;
   private cancelation = new Cancellation();
 
+  private providers: Array<TileLayer>;
+
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -260,11 +262,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private prepareTileLayer(child){
     const cloned = React.cloneElement(child, {
-      receiveProviderFromChild: (provider) => {
-        //type Provider = typeof provider;
-        const tilelayer = new TileLayer({
-            source: provider
-          });
+      
+      receiveProviderFromChild: (provider) => 
+        this.providers.push(new TileLayer({source: provider}))
+
+
+/**
         this.setState((prevstate) => {
           return {
           providers: prevstate.providers.concat([tilelayer])
@@ -273,7 +276,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           console.log("Providers updated in the state:");
           console.log(this.state.providers);
         });
-        }
+        } */
     });
     return(cloned);
   }
@@ -437,7 +440,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interaction.defaults({}),
         layers: [
-          ..._.values(this.state.providers),
+          ..._.values(this.providers),
           ..._.values(layers),
         ],
         target: node,

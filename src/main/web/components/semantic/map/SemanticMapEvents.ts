@@ -1,8 +1,9 @@
 import { EventMaker } from 'platform/api/events'
+import { Dictionary } from 'platform/api/sparql/SparqlClient';
 
 export interface SemanticMapEventData {
 
-    'SemanticMap.BoundingBoxChanged': string;
+    'SemanticMap.BoundingBoxChanged': Dictionary<any>;
     'SemanticMap.UpdateFeatureColor': string;
 }
 

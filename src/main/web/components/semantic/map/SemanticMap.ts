@@ -322,7 +322,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
    * {
    *    "features": [
    *      {
-   *        "id":"1", 
+   *        "subject":"SS_BLDG_052", 
   *         "color":"rgba(143, 29, 33, .4)"
   *       }, ...
    *    ]
@@ -333,21 +333,32 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     // It updates only the last layer, assuming it contains the features
     const layer = this.map.getLayers().getArray().slice(-1).pop();
- 
+
+
     event.data['features'].forEach(feature => {
 
-      console.log(feature.id)
+      const i = this.getIndexBySubject(feature.subject, layer.getSource().getFeatures())
 
-      layer.getSource().getFeatures()[feature.id].setStyle(new Style({
+      layer.getSource().getFeatures()[i].setStyle(new Style({
         fill: new Fill({
           color: feature.color
         }),
         stroke: new Stroke({
           color: feature.color
         })
-      }))
+      })) 
     });
   };
+
+  private getIndexBySubject(subject: string, features: any) {
+
+    let i = 1;
+    for(const feature of features) {
+      if(feature.values_.subject.value == subject)
+      i++;
+    }
+    return i;
+  }
 
   private transformToMercator(lng: number, lat: number): [number, number] {
     return proj.transform([lng, lat], this.getInputCrs(), 'EPSG:3857');

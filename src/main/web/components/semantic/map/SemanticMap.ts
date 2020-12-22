@@ -29,6 +29,7 @@ import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
 import VectorLayer from 'ol/layer/vector';
 import Vector from 'ol/source/vector';
+import Layer from 'ol/layer/Layer';
 import Cluster from 'ol/source/cluster';
 import Style from 'ol/style/style';
 import Text from 'ol/style/text';
@@ -179,14 +180,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       providers: [] as  any
     };
 
+    /**
     this.cancelation
     .map(
       listen({
         eventType: SemanticMapUpdateFeatureColor,
       })
     )
-    .onValue(this.updateFeatureColor);
-    //Listen to event
+    .onValue(this.updateFeatureColor); */
   }
 
   private getInputCrs() {
@@ -329,10 +330,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
    * }
    *  
    */
+  
+  /**
   private updateFeatureColor = (event: Event<any>) => {
 
     // It updates only the last layer, assuming it contains the features
-    const layer = this.map.getLayers().getArray().slice(-1).pop();
+    const layer: Layer = this.map.getLayers().getArray().slice(-1).pop();
 
 
     event.data['features'].forEach(feature => {
@@ -358,7 +361,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       i++;
     }
     return i;
-  }
+  } */
 
   private transformToMercator(lng: number, lat: number): [number, number] {
     return proj.transform([lng, lat], this.getInputCrs(), 'EPSG:3857');

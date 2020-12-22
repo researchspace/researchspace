@@ -45,7 +45,7 @@ export class TilesLayer extends Component<ProviderProps, any>{
     switch (this.props.provider) {
       case Source.MapBox: {
         newProvider = new XYZ({
-          url: 'http://localhost:10214/proxy/mapbox/styles/v1/mapbox/' +
+          url: 'http://localhost:10214/proxy/mapbox/styles/v1/' +
             this.props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
         });
         break;

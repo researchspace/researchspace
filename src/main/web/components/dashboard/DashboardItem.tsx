@@ -237,7 +237,6 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         },
       });
     this.onFocus();
-
   }
 
   private onFocus = () => {

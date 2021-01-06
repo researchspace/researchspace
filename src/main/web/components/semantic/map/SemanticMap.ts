@@ -182,14 +182,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       providers: [] as  any
     };
 
-    /**
     this.cancelation
     .map(
       listen({
         eventType: SemanticMapUpdateFeatureColor,
       })
     )
-    .onValue(this.updateFeatureColor); */
+    .onValue(this.updateFeatureColor);
   }
 
   private getInputCrs() {
@@ -334,7 +333,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
    *  
    */
   
-  /**
   private updateFeatureColor = (event: Event<any>) => {
 
     // It updates only the last layer, assuming it contains the features
@@ -354,17 +352,19 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       })) 
     });
-  };
+  }
 
   private getIndexBySubject(subject: string, features: any) {
 
-    let i = 1;
+    let i = 0;
     for(const feature of features) {
-      if(feature.values_.subject.value == subject)
+      if(feature.values_.subject.value == subject){
+        return i;
+      }
       i++;
     }
-    return i;
-  } */
+    return -1;
+  }
 
   private transformToMercator(lng: number, lat: number): [number, number] {
     return proj.transform([lng, lat], this.getInputCrs(), 'EPSG:3857');

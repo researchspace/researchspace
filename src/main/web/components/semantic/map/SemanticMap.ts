@@ -442,7 +442,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       style: (feature: Feature) => {
         const geometry = feature.getGeometry();
         const color = feature.get('color');
-        return getFeatureStyle(geometry, 'rgba(77, 175, 124, .2)');
+        return getFeatureStyle(geometry, 'rgba(108, 122, 137, .8)');
       },
       zIndex: 0,
     });

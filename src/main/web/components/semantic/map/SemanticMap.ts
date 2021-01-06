@@ -29,7 +29,6 @@ import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
 import VectorLayer from 'ol/layer/vector';
 import Vector from 'ol/source/vector';
-import Layer from 'ol/layer/Layer';
 import Cluster from 'ol/source/cluster';
 import Style from 'ol/style/style';
 import Text from 'ol/style/text';
@@ -82,16 +81,16 @@ interface ProviderOptions {
 interface MapOptions {
 
   /**
-   * 
+   *
    */
   crs?: string;
 
 
   /**
-   * 
+   *
    */
   extent?: Array<number>;
-  
+
 }
 
 
@@ -151,6 +150,8 @@ export interface SemanticMapConfig {
    * Optional JSON object containing various user provided options
    */
   providerOptions?: ProviderOptions;
+
+  providers?: any;
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -169,8 +170,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
   private cancelation = new Cancellation();
-
-  private providers: Array<TileLayer>;
+  private providers = [];
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -234,7 +234,19 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     } else if (this.state.noResults) {
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
-    const newchildrenlist = React.Children.map(this.props.children, (child) => this.prepareTileLayer(child));
+
+    let tileslayers = React.Children.map(this.props.children, (child) => this.prepareTileLayer(child));
+
+    console.log(tileslayers);
+
+    if(!tileslayers){ /*
+      const defaultTileLayer =
+        tileslayers = defaultTileLayer;
+        */
+    }
+
+    console.log("tileslayers");
+    console.log(tileslayers);
     return D.div(
       { style: { height: '100%', width: '100%' } },
       D.div(
@@ -254,31 +266,41 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           onClick: this.getMarkerFromMapAsElements.bind(this),
           style: { display: 'none' },
         }),
-        newchildrenlist
+        tileslayers
       ),
       this.state.isLoading ? createElement(Spinner) : null
     );
   }
 
   private prepareTileLayer(child){
-    const cloned = React.cloneElement(child, {
-      
-      receiveProviderFromChild: (provider) => 
-        this.providers.push(new TileLayer({source: provider}))
+    if(child.type.name === "TilesLayer"){
+      const cloned = React.cloneElement(child, {
+        receiveProviderFromChild: (provider) => {
+          //type Provider = typeof provider;
+          const tilelayer = new TileLayer({
+            source: provider
+          });
+
+          this.providers.push(tilelayer);
+
+          /*
+          this.setState((prevstate) => {
+            return {
+              providers: prevstate.providers.concat([tilelayer])
+            }
+          }, () => {
+            console.log("Providers updated in the state:");
+            console.log(this.state.providers);
+          });
+
+           */
 
 
-/**
-        this.setState((prevstate) => {
-          return {
-          providers: prevstate.providers.concat([tilelayer])
-          }
-        }, () => {
-          console.log("Providers updated in the state:");
-          console.log(this.state.providers);
-        });
-        } */
-    });
-    return(cloned);
+
+        }
+      });
+      return(cloned);
+    }
   }
 
   private initializeMarkerPopup(map) {
@@ -426,7 +448,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   };
 
-  private renderMap(node, props, center, markers) { 
+  private renderMap(node, props, center, markers) {
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);

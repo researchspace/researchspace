@@ -173,7 +173,11 @@ public class RepositoryManager implements RepositoryManagerInterface {
      */
     public void sentTestQueries() {
         for (Entry<String, Repository> entry : initializedRepositories.entrySet()) {
-            this.sendTestQuery(entry.getKey(), entry.getValue());
+            // The if condition is needed to prevent the test query with Ephedra repostories.
+            // Otherwise it will get an error when the test query is sent.
+            if(!(entry.getValue() instanceof SailRepository)) {
+                this.sendTestQuery(entry.getKey(), entry.getValue());
+            }
         }
     }
 

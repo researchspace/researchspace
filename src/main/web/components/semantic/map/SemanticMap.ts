@@ -28,7 +28,6 @@ import Map from 'ol/map';
 import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
 import VectorLayer from 'ol/layer/vector';
-import BaseLayer from 'ol/layer/Base';
 import Vector from 'ol/source/vector';
 import Cluster from 'ol/source/cluster';
 import Style from 'ol/style/style';

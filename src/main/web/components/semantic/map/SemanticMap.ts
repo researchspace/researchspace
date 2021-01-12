@@ -48,6 +48,7 @@ import proj from 'ol/proj';
 import control from 'ol/control';
 import interaction from 'ol/interaction';
 import extent from 'ol/extent';
+import OSM from 'ol/source/osm';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -442,7 +443,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       style: (feature: Feature) => {
         const geometry = feature.getGeometry();
         const color = feature.get('color');
-        return getFeatureStyle(geometry, 'rgba(108, 122, 137, .8)');
+        return getFeatureStyle(geometry, 'rgba(182,165,105,0.3)');
       },
       zIndex: 0,
     });
@@ -452,6 +453,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
+      let providers = this.providers;
+
+      if(!this.providers.length){
+          providers = [new TileLayer({
+            source: new OSM(),
+          })]
+      }
 
       const map = new Map({
         controls: control.defaults({
@@ -462,7 +470,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interaction.defaults({}),
         layers: [
-          ..._.values(this.providers),
+          ..._.values(providers),
           ..._.values(layers),
         ],
         target: node,

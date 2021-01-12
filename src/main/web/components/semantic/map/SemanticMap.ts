@@ -28,6 +28,7 @@ import Map from 'ol/map';
 import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
 import VectorLayer from 'ol/layer/vector';
+import BaseLayer from 'ol/layer/Base';
 import Vector from 'ol/source/vector';
 import Cluster from 'ol/source/cluster';
 import Style from 'ol/style/style';
@@ -358,8 +359,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private updateFeatureColor = (event: Event<any>) => {
 
     // It updates only the last layer, assuming it contains the features
-    const layer: Layer = this.map.getLayers().getArray().slice(-1).pop();
-
+    const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
 
     event.data['features'].forEach(feature => {
 

@@ -78,10 +78,13 @@ farms {
         webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6-researchspace',
             contextPath: '/blazegraph'
 
-        // setup digilib for local development
-        webapp 'digilib:digilib-webapp:2.9-20200421.092548-16',
-            contextPath: '/digilib',
-            initParameters: ["config-file": "./bundle-config/digilib-config.xml"]
+        // setup cantaloupe for local development
+        webapp 'edu.illinois.library.cantaloupe:cantaloupe:4.1.6',
+            contextPath: '/cantaloupe'
+           // initParameters: ["config-file": "./bundle-config/digilib-config.xml"]
+
+        webapp '/home/artem/tmp/fedora-6',
+            contextPath: '/fcrepo'
 
         webapp project,
             contextPath: '/'
@@ -109,7 +112,7 @@ def defaultJvmArgs = [
 
     // for properties that get value from project.properties see gradle.properties file for more details
     "-Dconfig.environment.sparqlEndpoint=${project.properties['sparqlEndpoint']}",
-    "-Dconfig.proxy.IIIF.targetUri=${project.properties['iiifScaler']}",
+    "-Dconfig.proxy.iiif.targetUri=${project.properties['iiifScaler']}",
 
     // delopment storages for image upload functionality
     "-Dconfig.storage.images.type=nonVersionedFile",
@@ -121,7 +124,11 @@ def defaultJvmArgs = [
 
 
     // Increase size limit for file upload
-    "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
+    "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600",
+
+    // cantaloupe options for runAll
+    "-Dcantaloupe.config=${projectDir}/bundle-config/cantaloupe.properties",
+
 ]
 
 // configuration for local jetty container
@@ -146,19 +153,22 @@ gretty {
 
     // use custom jetty-env.xml to disable websocket support
     contextConfigFile = "${projectDir}/jetty-env.xml"
+    serverConfigFile = "${projectDir}/jetty.xml"
 
     if (project.gradle.startParameter.taskNames.contains('buildZip')) {
         jvmArgs = defaultJvmArgs + [
             "-DruntimeDirectory=./runtime-data",
             "-Dorg.researchspace.config.baselocation=./runtime-data/config",
 
-            "-Dconfig.storage.images.root=./runtime-data/images",
-            "-Dconfig.storage.tmp.root=./runtime-data/tmp",
 
             "-Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml",
         ]
     } else {
         jvmArgs = defaultJvmArgs + [
+            "-Dconfig.storage.fedora.type=fedora",
+            "-Dconfig.storage.fedora.mutable=true",
+            "-Dconfig.storage.fedora.containerUri=http://localhost:10214/fcrepo/rest/",
+
             "-Dconfig.storage.images.root=${project.properties['imageStorageRoot']}",
             "-Dconfig.storage.tmp.root=${java.nio.file.Files.createTempDirectory('images-tmp')}",
 
@@ -181,7 +191,11 @@ gretty {
             // - Production log files: log4j2.xml, log4j2-debug.xml
             "-Dlog4j.configurationFile=classpath:org/researchspace/logging/${findProperty('logLevel')}.xml",
 
-            "-Dconfig.environment.shiroConfig=${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps/default/config/shiro.ini"
+            "-Dconfig.environment.shiroConfig=${projectDir.getAbsolutePath()}/src/main/resources/org/researchspace/apps/default/config/shiro.ini",
+
+            // fedora config
+            "-Dfcrepo.home=${projectDir.getAbsolutePath()}/runtime-data/fcrepo-data",
+            "-Dfcrepo.log=DEBUG"
         ]
     }
 }
@@ -263,12 +277,17 @@ repositories {
     maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }
 
     // temp, until new version of smiley-http-proxy-servlet is released
+    // also is used for cantaloupe war
     maven {
         url 'https://dl.bintray.com/researchspace/public'
     }
 
     maven {
         url 'file:/home/artem/work/sources/github/gretty/build/privateRepo'
+    }
+    // used by cantaloupe image server
+    maven {
+        url 'https://repo.osgeo.org/repository/release/'
     }
 }
 

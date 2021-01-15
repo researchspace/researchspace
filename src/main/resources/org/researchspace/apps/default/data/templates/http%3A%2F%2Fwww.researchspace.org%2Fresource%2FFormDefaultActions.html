@@ -55,9 +55,31 @@
                   <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["item-remove-confirmation-dialog"]'>
                     <button class="btn btn-default">Cancel</button>
                   </mp-event-trigger>
+                  [[#if assetForm]]
+                    <semantic-query query='SELECT ?node ?file WHERE { BIND(<{{node}}> AS ?node) . <{{node}}> crm:P1_is_identified_by ?file . } LIMIT 1' 
+                                    template='{{> deleteFileTemplate}}'>
+                      <template id='deleteFileTemplate'>
+                        {{log "delete" this}}
+                        <semantic-context repository='assets'>
+                          <rs-file-remove id='file-removal-{{bindings.0.node.value}}' 
+                                          iri='{{bindings.0.file.value}}' 
+                                          storage='[[assetStorage]]'
+                                          name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                          media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                          >
+                            <button class="btn btn-danger">Delete Entity</button>
+                          </rs-file-remove>
+                        </semantic-context>
+                        <mp-event-proxy id='entity-removal' on-event-source='file-removal-{{bindings.0.node.value}}' on-event-type='File.Removed'
+                                        proxy-event-type='Form.RemoveResource' data='{"iri": "{{bindings.0.node.value}}"}' proxy-targets='["vocab-form"]'
+                        ></mp-event-proxy>
+                      </template>
+                    </semantic-query>
+                  [[else]]
                   <mp-event-trigger id='confirm-entity-removal' type='Form.RemoveResource' data='{"iri": "{{node}}"}' targets='["vocab-form"]'>
                     <button class="btn btn-danger">Delete Entity</button>
-                  </mp-event-trigger>  
+                  </mp-event-trigger>
+                  [[/if]]
                   <mp-event-proxy id='update-form' on-event-source='vocab-form' on-event-type='Form.ResourceRemoved'
                                   proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["term-forms"]'
                   ></mp-event-proxy>

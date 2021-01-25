@@ -1,0 +1,33 @@
+{{#if updated}}
+<div style='background: #f5f5f5; flex: 1; padding: 10px 20px'>
+  <div>Entity Data Updated at: {{currentDateTime}}</div>
+</div>
+{{/if}}
+
+<h1>Editing:  
+  <mp-draggable iri='{{node}}'>
+    <span class="rs-draggable-container">
+      <strong><mp-label iri='{{node}}' class="detail-label"></mp-label></strong>
+    </span>
+  </mp-draggable>
+</h1>
+
+<mp-event-proxy id='edit-form-refresh-{{node}}' 
+                on-event-source='vocab-form' 
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["entity-editor-form-{{node}}"]'
+                ></mp-event-proxy>
+<mp-event-proxy id='saving-form-message-{{node}}' on-event-source='vocab-form' proxy-event-type='Component.TemplateUpdate' proxy-targets='["update-message-{{node}}"]' data='{ "id": "{{node}}" }'
+                ></mp-event-proxy>
+
+
+<div style="margin-bottom: 1.2em;">IRI: {{iri}}</div>
+<inline-template template-iri='{{formIRI}}' 
+                 options='{
+                          "node": "{{node}}",
+                          "editable": true,
+                          "membershipProperty": "{{membershipProperty}}",
+                          "collection": "{{collection}}",
+                          "mode": "edit"
+                          }'>
+</inline-template>

@@ -173,7 +173,12 @@ public class RepositoryManager implements RepositoryManagerInterface {
      */
     public void sentTestQueries() {
         for (Entry<String, Repository> entry : initializedRepositories.entrySet()) {
-            this.sendTestQuery(entry.getKey(), entry.getValue());
+
+            // @gspinaci Prevent default test query sending for SailRepositories 
+            // SailRepositories requires custom queries
+            if(!(entry.getValue() instanceof SailRepository)) {
+                this.sendTestQuery(entry.getKey(), entry.getValue());
+            }
         }
     }
 

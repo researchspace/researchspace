@@ -1,7 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (C) 2021, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.researchspace.sail.rest;
+package org.researchspace.sail.rest.openstreetmap;
 
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
+import org.researchspace.sail.rest.AbstractServiceWrappingSail;
 
-public class AbstractRESTWrappingSail extends AbstractServiceWrappingSail<AbstractRESTWrappingSailConfig> {
+/**
+ * 
+ * @author Janmaruko Hōrensō <@gspinaci>
+ *
+ */
+public class OpenstreetmapSail extends AbstractServiceWrappingSail<OpenstreetmapSailConfig> {
 
-    public AbstractRESTWrappingSail(AbstractRESTWrappingSailConfig config) {
+    public OpenstreetmapSail(OpenstreetmapSailConfig config) {
         super(config);
     }
 
     @Override
     protected SailConnection getConnectionInternal() throws SailException {
-        return null;
+        return new OpenstreetmapSailConnection(this);
     }
+
 }

@@ -21,10 +21,10 @@ package org.researchspace.sail.rest;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -34,8 +34,11 @@ import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
+import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.glassfish.jersey.client.ClientProperties;
+
+import com.google.common.collect.Maps;
 
 /**
  * Abstract superclass for {@link SailConnection}s that wrap around REST APIs.
@@ -43,9 +46,10 @@ import org.glassfish.jersey.client.ClientProperties;
  * @author Andriy Nikolov an@metaphacts.com
  *
  */
-public abstract class AbstractRESTWrappingSailConnection extends AbstractServiceWrappingSailConnection {
+public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTWrappingSailConfig>
+        extends AbstractServiceWrappingSailConnection<C> {
 
-    public AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail sailBase) {
+    public AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
         super(sailBase);
     }
 
@@ -62,13 +66,34 @@ public abstract class AbstractRESTWrappingSailConnection extends AbstractService
      */
     protected Response submit(RESTParametersHolder parametersHolder) {
         try {
-            Client client = ClientBuilder.newClient();
-            WebTarget targetResource = client.target(getSail().getUrl()).property(ClientProperties.FOLLOW_REDIRECTS,
-                    Boolean.TRUE);
+            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
             for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
                 targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
             }
             return targetResource.request(MediaType.TEXT_PLAIN).get();
+        } catch (Exception e) {
+            throw new SailException(e);
+        }
+    }
+
+    /**
+     * Default implementation calling the API using a HTTP POST method. Parameters
+     * are stored in JSON body.
+     * 
+     * @param parametersHolder
+     * @return
+     */
+    protected Response submitPost(RESTParametersHolder parametersHolder) {
+        try {
+
+            Map<String, String> body = Maps.newHashMap();
+            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
+            for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
+                body.put(entry.getKey(), entry.getValue());
+            }
+            return targetResource.request(MediaType.TEXT_PLAIN).post(Entity.json(body));
         } catch (Exception e) {
             throw new SailException(e);
         }

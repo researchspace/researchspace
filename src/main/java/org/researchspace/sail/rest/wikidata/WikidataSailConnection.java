@@ -38,6 +38,7 @@ import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.researchspace.sail.rest.AbstractRESTWrappingSailConnection;
 import org.researchspace.sail.rest.AbstractServiceWrappingSail;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
@@ -47,7 +48,7 @@ import com.google.common.collect.Lists;
  * @author Andriy Nikolov <an@metaphacts.com>
  *
  */
-public class WikidataSailConnection extends AbstractRESTWrappingSailConnection {
+public class WikidataSailConnection extends AbstractRESTWrappingSailConnection<WikidataSailConfig> {
 
     private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
@@ -57,7 +58,7 @@ public class WikidataSailConnection extends AbstractRESTWrappingSailConnection {
     public static final IRI SCHEMA_ORG_DESCRIPTION = VF.createIRI("http://schema.org/description");
     public static final IRI ORDER_NR = VF.createIRI("http://www.researchspace.org/resource/system/orderNr");
 
-    public WikidataSailConnection(AbstractServiceWrappingSail sailBase) {
+    public WikidataSailConnection(AbstractServiceWrappingSail<WikidataSailConfig> sailBase) {
         super(sailBase);
     }
 

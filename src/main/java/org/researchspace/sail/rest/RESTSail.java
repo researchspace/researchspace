@@ -1,7 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (C) 2021, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +21,23 @@ package org.researchspace.sail.rest;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 
-public class AbstractRESTWrappingSail extends AbstractServiceWrappingSail<AbstractRESTWrappingSailConfig> {
+/**
+ * 
+ * @author Janmaruko Hōrensō <@gspinaci>
+ *
+ */
+public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
 
-    public AbstractRESTWrappingSail(AbstractRESTWrappingSailConfig config) {
+    public RESTSail(RESTSailConfig config) {
         super(config);
     }
 
     @Override
     protected SailConnection getConnectionInternal() throws SailException {
-        return null;
+
+        // read input/output data from descriptor and save in the instance
+        initParameters();
+
+        return new RESTSailConnection(this);
     }
 }

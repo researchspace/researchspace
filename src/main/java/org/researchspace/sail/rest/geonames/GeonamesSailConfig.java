@@ -28,4 +28,8 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
  */
 
 public class GeonamesSailConfig extends AbstractServiceWrappingSailConfig{
+
+    public GeonamesSailConfig() {
+        super(GeonamesSailFactory.SAIL_TYPE);
+    }
 }

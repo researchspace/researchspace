@@ -33,7 +33,7 @@ import org.eclipse.rdf4j.sail.config.SailImplConfig;
 public class GeonamesSailFactory implements SailFactory {
 
     // The sail type to reference
-    private static final String SAIL_TYPE = "researchspace:GeonamesSail";
+    public static final String SAIL_TYPE = "researchspace:GeonamesSail";
 
     @Override
     public String getSailType() {
@@ -42,12 +42,20 @@ public class GeonamesSailFactory implements SailFactory {
 
     @Override
     public SailImplConfig getConfig() {
-        return null;
+        return new GeonamesSailConfig();
     }
 
     @Override
-    public Sail getSail(SailImplConfig config) throws SailConfigException {
-        return null;
+    public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
+        if (!(originalConfig instanceof GeonamesSailConfig)) {
+            throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
+        }
+
+        GeonamesSailConfig config = (GeonamesSailConfig) originalConfig;
+        
+        GeonamesSail sail = new GeonamesSail(config.getUrl());
+        sail.setServiceID(config.getServiceID());
+        return sail;
     }
     
 }

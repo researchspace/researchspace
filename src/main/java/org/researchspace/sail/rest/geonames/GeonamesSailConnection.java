@@ -49,7 +49,7 @@ public class GeonamesSailConnection extends AbstractRESTWrappingSailConnection {
 
     @Override
     protected RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
-        return null;
+        return new RESTParametersHolder();
     }
     
 }

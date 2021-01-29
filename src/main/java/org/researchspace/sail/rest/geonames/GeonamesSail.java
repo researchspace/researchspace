@@ -33,14 +33,14 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSail;
 public class GeonamesSail extends AbstractServiceWrappingSail {
 
 
-
+    
     public GeonamesSail(String url) {
         super(url);
     }
 
     @Override
     protected SailConnection getConnectionInternal() throws SailException {
-        return null;
+        return new GeonamesSailConnection(this);
     }
     
 }

@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[479],{1340:function(e,t,o){Object.defineProperty(t,"__esModule",{value:!0});var r=o(16),i=o(1602),a=o(1596),n=o(1821);t.CircleLayout=a.registerCytoscapeLayout("circle",i.identity,(function mapOptions(e,t){if(r.has(t,"sortBy")){var o=t.sortBy;t.sort=n.sort(o)}return t})),t.default=t.CircleLayout}}]);
+//# sourceMappingURL=semantic-graph-layout-circle-2a79aa85e82da4e7246d.js.map

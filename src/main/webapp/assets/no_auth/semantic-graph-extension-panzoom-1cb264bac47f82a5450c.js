@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[477],{1337:function(n,o,e){Object.defineProperty(o,"__esModule",{value:!0});var t=e(33),i=e(2923);e(1338);var a=e(1596);o.CytoscapePanZoom=a.registerCytoscapeExtension({name:"panzoom",type:"core",registrationFn:function registerPanZoomExtension(n){i(n.cytoscape,n.jQuery)},initializationFn:function initializePanZoomExtension(n){var o=n.cytoscapeApi,e=n.options;return t.Just(o.instance.panzoom(e))}}),o.default=o.CytoscapePanZoom}}]);
+//# sourceMappingURL=semantic-graph-extension-panzoom-1cb264bac47f82a5450c.js.map

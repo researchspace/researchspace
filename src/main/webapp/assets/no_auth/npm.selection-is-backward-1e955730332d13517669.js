@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[290],{3528:function(o,n){o.exports=function isBackward(o){var n=o.anchorNode,c=o.anchorOffset,e=o.focusNode,s=o.focusOffset,a=n.compareDocumentPosition(e);return!(4===a||0===a&&c<s)}}}]);
+//# sourceMappingURL=npm.selection-is-backward-1e955730332d13517669.js.map

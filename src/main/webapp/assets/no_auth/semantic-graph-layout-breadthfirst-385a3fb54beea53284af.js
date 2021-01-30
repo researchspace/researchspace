@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[478],{1339:function(e,t,a){Object.defineProperty(t,"__esModule",{value:!0});var o=a(1602),r=a(1596);t.BreadthFirstLayout=r.registerCytoscapeLayout("breadthfirst",o.identity),t.default=t.BreadthFirstLayout}}]);
+//# sourceMappingURL=semantic-graph-layout-breadthfirst-385a3fb54beea53284af.js.map

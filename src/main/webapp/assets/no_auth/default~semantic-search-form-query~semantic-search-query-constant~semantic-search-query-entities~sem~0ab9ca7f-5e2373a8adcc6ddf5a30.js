@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[154],{1823:function(e,n,o){Object.defineProperty(n,"__esModule",{value:!0});var r=o(33),a=o(23);n.setSearchDomain=function setSearchDomain(e,n){return n.searchProfileStore.chain((function(n){return r.fromNullable(e).map(a.Rdf.fullIri).chain((function(e){return r.fromNullable(n.categories.get(e))}))})).map(n.setDomain)}}}]);
+//# sourceMappingURL=default~semantic-search-form-query~semantic-search-query-constant~semantic-search-query-entities~sem~0ab9ca7f-5e2373a8adcc6ddf5a30.js.map

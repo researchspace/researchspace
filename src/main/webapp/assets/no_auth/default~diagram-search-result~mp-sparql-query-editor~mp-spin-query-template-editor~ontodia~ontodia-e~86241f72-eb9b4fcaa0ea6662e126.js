@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[26],{1739:function(t,n,o){Object.defineProperty(n,"__esModule",{value:!0});var e=o(11),i=o(56),p=o(1620),c=function(t){function StaticComponent(n,o){return t.call(this,n,o)||this}return e.__extends(StaticComponent,t),StaticComponent.inputKind=p.InputKind.StaticInput,StaticComponent}(i.Component);n.StaticComponent=c,n.default=c}}]);
+//# sourceMappingURL=default~diagram-search-result~mp-sparql-query-editor~mp-spin-query-template-editor~ontodia~ontodia-e~86241f72-eb9b4fcaa0ea6662e126.js.map

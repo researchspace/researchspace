@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[170],{1241:function(e,n,o){Object.defineProperty(n,"__esModule",{value:!0});var t=o(11),r=o(1),l=function(e){function PanelFooter(){return null!==e&&e.apply(this,arguments)||this}return t.__extends(PanelFooter,e),PanelFooter.prototype.render=function(){return r.Children.only(this.props.children)},PanelFooter}(r.Component);n.PanelFooter=l,n.default=l}}]);
+//# sourceMappingURL=mp-panel-footer-ec7d1fd583bdec565595.js.map

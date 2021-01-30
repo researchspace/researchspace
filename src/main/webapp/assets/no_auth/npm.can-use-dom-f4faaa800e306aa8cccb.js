@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[390],{2556:function(n,e){var o=!("undefined"==typeof window||!window.document||!window.document.createElement);n.exports=o}}]);
+//# sourceMappingURL=npm.can-use-dom-f4faaa800e306aa8cccb.js.map

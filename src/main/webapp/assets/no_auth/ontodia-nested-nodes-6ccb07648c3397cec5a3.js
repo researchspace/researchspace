@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[448],{1463:function(e,n,t){Object.defineProperty(n,"__esModule",{value:!0});var d=t(11),o=t(1),s=t(1579),i=function(e){function OntodiaNestedNodes(){return null!==e&&e.apply(this,arguments)||this}return d.__extends(OntodiaNestedNodes,e),OntodiaNestedNodes.prototype.render=function(){return o.createElement(s.EmbeddedLayer,null)},OntodiaNestedNodes}(o.Component);n.OntodiaNestedNodes=i,n.default=i}}]);
+//# sourceMappingURL=ontodia-nested-nodes-6ccb07648c3397cec5a3.js.map

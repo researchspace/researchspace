@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[243],{3516:function(n,t,o){var e=o(3517);n.exports=function getWindow(n){if(function isWindow(n){return n&&n.window===n}(n))return n;var t=e(n);if(i){t.parentWindow.execScript("document._parentWindow = window;","Javascript");var o=t._parentWindow;return t._parentWindow=null,o}return t.defaultView||t.parentWindow};var i=o(3518)},3518:function(n,t){n.exports=!!document.attachEvent&&window!==document.parentWindow}}]);
+//# sourceMappingURL=npm.get-window-4788321bfd7822ed07dc.js.map

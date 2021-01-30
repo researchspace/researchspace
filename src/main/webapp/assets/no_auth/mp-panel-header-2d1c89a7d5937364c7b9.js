@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[171],{1240:function(e,n,r){Object.defineProperty(n,"__esModule",{value:!0});var t=r(11),a=r(1),o=function(e){function PanelHeader(){return null!==e&&e.apply(this,arguments)||this}return t.__extends(PanelHeader,e),PanelHeader.prototype.render=function(){return a.Children.only(this.props.children)},PanelHeader}(a.Component);n.PanelHeader=o,n.default=o}}]);
+//# sourceMappingURL=mp-panel-header-2d1c89a7d5937364c7b9.js.map

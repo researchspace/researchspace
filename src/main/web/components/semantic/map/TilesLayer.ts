@@ -16,7 +16,8 @@ interface ProviderOptions {
 
 enum Source {
   OSM = 'osm',
-  MapBox = 'mapbox'
+  MapBox = 'mapbox',
+  ComuneDiVenezia = 'ComuneDiVenezia'
 }
 
 export interface ProviderConfig {
@@ -50,6 +51,12 @@ export class TilesLayer extends Component<ProviderProps, any>{
         newProvider = new XYZ({
           url: 'http://localhost:10214/proxy/mapbox/styles/v1/' +
             this.props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
+        });
+        break;
+      }
+      case Source.ComuneDiVenezia: {
+        newProvider = new XYZ({
+          url: 'http://geoportale.comune.venezia.it/Geocortex/Essentials/REST/local-proxy/GeoPortale/11/RasterDataset_2014_2/MapServer/tile/{z}/{y}/{x}'
         });
         break;
       }

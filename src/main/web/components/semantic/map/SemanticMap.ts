@@ -62,7 +62,7 @@ import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
-import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor } from './SemanticMapEvents';
+import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor, SemanticMapShowBasemap } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import { QueryConstantParameter } from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
@@ -70,7 +70,8 @@ import { listen, Event } from 'platform/api/events';
 
 enum Source {
   OSM = 'osm',
-  MapBox = 'mapbox'
+  MapBox = 'mapbox',
+  ComuneDiVenezia = 'ComuneDiVenezia'
 }
 
 interface ProviderOptions {
@@ -190,6 +191,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       })
     )
     .onValue(this.updateFeatureColor);
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapShowBasemap,
+      })
+    )
+    .onValue(this.showBasemap);
   }
 
   private getInputCrs() {
@@ -237,16 +246,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     let tileslayers = React.Children.map(this.props.children, (child) => this.prepareTileLayer(child));
 
-    console.log(tileslayers);
-
-    if(!tileslayers){ /*
-      const defaultTileLayer =
-        tileslayers = defaultTileLayer;
-        */
-    }
-
-    console.log("tileslayers");
-    console.log(tileslayers);
     return D.div(
       { style: { height: '100%', width: '100%' } },
       D.div(
@@ -280,23 +279,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           const tilelayer = new TileLayer({
             source: provider
           });
-
           this.providers.push(tilelayer);
-
-          /*
-          this.setState((prevstate) => {
-            return {
-              providers: prevstate.providers.concat([tilelayer])
-            }
-          }, () => {
-            console.log("Providers updated in the state:");
-            console.log(this.state.providers);
-          });
-
-           */
-
-
-
         }
       });
       return(cloned);
@@ -338,6 +321,11 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       const hasFeatureAtPixel = map.hasFeatureAtPixel(e.pixel);
       map.getTarget().style.cursor = hasFeatureAtPixel ? 'pointer' : '';
     });
+  }
+
+  private showBasemap = (event: Event<any>) => {
+    this.map.getLayers().removeAt(0);
+    this.map.getLayers().insertAt(0, this.providers[event.data.selectedProvider]);
   }
 
   /**
@@ -454,10 +442,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       const layers = _.mapValues(geometries, this.createLayer);
       let providers = this.providers;
 
-      if(!this.providers.length){
+      //Fallback to default provider if no tiles-layers are specified in template
+      if(!providers.length){
           providers = [new TileLayer({
             source: new OSM(),
           })]
+      } else {
+          providers = [providers[0]];
       }
 
       const map = new Map({

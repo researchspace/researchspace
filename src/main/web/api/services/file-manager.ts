@@ -194,8 +194,15 @@ export class FileManager {
     });
   }
 
-  deleteFileResource(resourceIri: Rdf.Iri, storage: string): Kefir.Property<Response> {
-    return this.getFileResource(resourceIri)
+  deleteFileResource(
+    resourceIri: Rdf.Iri,
+    storage: string,
+    options?: {
+      namePredicateIri?: string;
+      mediaTypePredicateIri?: string;
+    },
+  ): Kefir.Property<Response> {
+    return this.getFileResource(resourceIri, options)
       .flatMap((resource) => {
         const request = del(FILE_UPLOAD_SERVICE_URL + FILE_URL)
           .field('fileName', resource.fileName)

@@ -2,11 +2,21 @@
 uses client-side template:
 [[> rsp:HierarchyManagerTemplate]]
 --]]
-
 <ol class="page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
+  <li>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectDashboard"]]'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectConfiguration"]]'>
+      Configurations
+    </semantic-link>
+  </li>
+
   <li class="active">
     Authority Manager 
   </li>
@@ -124,6 +134,9 @@ uses client-side template:
                               ?scheme a crm:E32_Authority_Document .
                             }
                           }
+                          MINUS {
+                            ?scheme crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                          }
                           FILTER(?schemeGraph != ?scheme) .
                         }
                         ' 
@@ -168,6 +181,9 @@ uses client-side template:
                                 OPTIONAL {
                                   ?scheme crm:P67_refers_to ?managedConfig .
                                 }
+                                MINUS {
+                                  ?scheme crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                                }
                                 BIND(BOUND(?managedConfig) as ?isManaged) .
                               }
                           '
@@ -189,6 +205,9 @@ uses client-side template:
                                               BIND(crm:E32_Authority_Document AS ?schemeType)
                                           }
                                       }
+                                MINUS {
+                                  ?scheme crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                                }
                                 BIND(BOUND(?managedConfig) as ?isManaged) 
                               }
                           '

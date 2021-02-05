@@ -30,9 +30,9 @@ import {
 } from 'platform/components/forms';
 
 import { shallow } from 'platform-tests/configuredEnzyme';
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
-mockLanguagePreferences();
+mockConfig();
 
 interface AutocompleteProps extends HTMLAttributes<HTMLElement> {
   minimumInput: string;

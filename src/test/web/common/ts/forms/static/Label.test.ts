@@ -23,11 +23,11 @@ import { expect } from 'chai';
 import { Label, StaticFieldProps, normalizeFieldDefinition } from 'platform/components/forms';
 
 import { shallow } from 'platform-tests/configuredEnzyme';
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
 import { FIELD_DEFINITION } from '../fixturies/FieldDefinition';
 
-mockLanguagePreferences();
+mockConfig();
 
 const PROPS: StaticFieldProps = {
   for: 'test',

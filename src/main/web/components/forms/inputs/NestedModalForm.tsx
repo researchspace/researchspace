@@ -33,6 +33,8 @@ import {
   getPostActionUrlQueryParams,
 } from '../ResourceEditorFormConfig';
 import { elementHasInputType, InputKind } from './InputCommpons';
+import { ModuleRegistry } from 'platform/api/module-loader';
+import { TemplateScope } from 'platform/api/services/template';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
@@ -85,7 +87,21 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 }
 
-export function tryExtractNestedForm(children: ReactNode): ReactElement<ResourceEditorFormProps> | undefined {
+export async function tryExtractNestedForm(
+  children: ReactNode, templateScope: TemplateScope, nestedFormTemplate?: string
+): Promise<ReactElement<ResourceEditorFormProps> | undefined> {
+  if (React.Children.count(children) === 1) {
+    return Promise.resolve(getNestedForm(children));
+  } else if (nestedFormTemplate) {
+    const template = await templateScope.compile(nestedFormTemplate);
+    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template());
+    return getNestedForm(parsedTemplate);
+  } else {
+    return Promise.resolve(undefined);
+  }
+}
+
+function getNestedForm(children: ReactNode) {
   if (Children.count(children) !== 1) {
     return undefined;
   }

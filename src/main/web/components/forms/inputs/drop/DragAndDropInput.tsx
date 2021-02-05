@@ -19,6 +19,7 @@
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import * as uuid from 'uuid';
+import * as _ from 'lodash';
 
 import { Rdf } from 'platform/api/rdf';
 import { listen } from 'platform/api/events';
@@ -78,6 +79,8 @@ export interface DragAndDropInputProps extends MultipleValuesProps {
    *  * inputId - current input id, can be used to trigger events on the input
    */
   itemTemplate?: string
+
+  nestedFormTemplate?: string
 }
 
 interface State {
@@ -95,6 +98,8 @@ interface State {
    * Component id, automatically generated if not propagated from props.
    */
   id: string;
+
+  nestedForm?: React.ReactElement<any>;
 }
 
 /**
@@ -146,11 +151,17 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
         })
       )
       .onValue((event) => this.onRemoveItem(event.data.iri));
+
+    tryExtractNestedForm(this.props.children, this.appliedTemplateScope, this.props.nestedFormTemplate)
+        .then(nestedForm => {
+          if (nestedForm != undefined) {
+            this.setState({nestedForm});
+          }
+        });
   }
 
   render() {
-    const nestedForm = tryExtractNestedForm(this.props.children);
-    const canCreateNew = Boolean(nestedForm);
+    const canCreateNew = !_.isEmpty(this.state.nestedForm);
     return (
       <div className={styles.holder}>
         {
@@ -164,6 +175,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                 dropMessage={this.dropMessage()}
               >
                 {this.renderItems(canCreateNew)}
+                {canCreateNew ? <div style={{display: 'none'}}>{this.props.children}</div>  : null}
               </DropArea>
               {
                 this.state.nestedFormOpen ? (
@@ -172,7 +184,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                     onSubmit={this.onNestedFormSubmit}
                     onCancel={() => this.setState({ nestedFormOpen: false })}
                   >
-                    {nestedForm}
+                    {this.state.nestedForm}
                   </NestedModalForm>
                 ): null
               }

@@ -68,6 +68,11 @@ export interface TreePickerInputProps extends MultipleValuesProps {
    * Override scheme from Field Definitions. Overrides the scheme from tree-patterns.
    */
   scheme?: string;
+
+  /**
+   * Form template that can be used to create new instance or edit existing one.
+   */
+  nestedFormTemplate?: string;
 }
 
 interface State {
@@ -76,6 +81,7 @@ interface State {
   readonly treeSelection?: ReadonlyArray<Rdf.Iri>;
   readonly treeSelectionSet?: Immutable.Set<Rdf.Iri>;
   readonly nestedFormOpen?: boolean;
+  nestedForm?: React.ReactElement<any>;
 }
 
 const CLASS_NAME = 'semantic-form-tree-picker-input';
@@ -110,6 +116,15 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     this.state = { treeVersionKey: 0, treeQueries };
   }
 
+  componentDidMount() {
+    tryExtractNestedForm(this.props.children, this.appliedTemplateScope, this.props.nestedFormTemplate)
+      .then(nestedForm => {
+        if (nestedForm != undefined) {
+          this.setState({nestedForm});
+        }
+      });
+  }
+
   componentWillReceiveProps(nextProps: TreePickerInputProps) {
     const previousValues = this.state.treeSelectionSet;
     const nextValues = toSetOfIris(nextProps.values);
@@ -136,8 +151,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   render() {
     const { maxOccurs } = this.props.definition;
     const { treeSelection } = this.state;
-    const nestedForm = tryExtractNestedForm(this.props.children);
-    const showCreateNewButton = nestedForm && (!treeSelection || treeSelection.length < maxOccurs);
+    const showCreateNewButton = this.state.nestedForm && (!treeSelection || treeSelection.length < maxOccurs);
     return (
       <div className={CLASS_NAME}>
         {this.renderTreePicker()}
@@ -148,7 +162,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}
           >
-            {nestedForm}
+            {this.state.nestedForm}
           </NestedModalForm>
         ) : null}
       </div>

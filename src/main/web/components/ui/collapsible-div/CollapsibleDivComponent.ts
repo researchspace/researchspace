@@ -30,7 +30,14 @@ export interface Props {
   /**
    * Whether panel should be expanded by default.
    */
-  expanded: boolean;
+  expanded?: boolean;
+
+  /**
+   * True if hidden content should be rendered, with display: none, even when it is hidden.
+   * It is useful sometimes to render even hidden content when some component expects existence of the nested components, like in semantic-forms.
+   * @default false
+   */
+  renderHidden?: boolean;
 }
 
 interface State {
@@ -39,16 +46,17 @@ interface State {
 
 /**
  * @example
-   <mp-collapsible-panel expanded='true'>
-      <mp-collapsible-panel-trigger expanded-class="x" collapsed-class="y">
+   <mp-collapsible-div expanded='true'>
+      <mp-collapsible-div-trigger expanded-class="x" collapsed-class="y">
           <i class="fa fa-question-circle" aria-hidden="true"></i>
-      </mp-collapsible-panel-trigger>
-      <mp-collapsible-panel-content>Content</mp-collapsible-panel-content>
-  </mp-collapsible-panel >
+      </mp-collapsible-div-trigger>
+      <mp-collapsible-div-content>Content</mp-collapsible-div-content>
+  </mp-collapsible-div>
  */
 export class CollapsibleDivComponent extends Component<Props, State> {
   public static defaultProps: Props = {
     expanded: true,
+    renderHidden: false,
   };
 
   constructor(props: Props, context: any) {
@@ -59,6 +67,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
   }
 
   render() {
+    const { renderHidden } = this.props;
     const { expanded } = this.state;
 
     const children = Children.toArray(this.props.children);
@@ -81,7 +90,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
         },
         cloneElement(triggerChildren, {})
       ),
-      createElement(CollapsibleDivContentComponent, { expanded: expanded }, contentChildren)
+      createElement(CollapsibleDivContentComponent, { expanded: expanded, renderHidden }, contentChildren)
     );
   }
 }

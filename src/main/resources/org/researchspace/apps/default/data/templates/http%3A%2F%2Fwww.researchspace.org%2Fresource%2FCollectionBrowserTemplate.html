@@ -26,7 +26,7 @@
 [[#>rsp:DetailsSidebar]]
   <semantic-query 
                   query='
-                          SELECT ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged ?rdfType ?P2_has_type ?restrictionPattern WHERE {
+                          SELECT ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
                             OPTIONAL {
                               <[[this]]> crm:P67_refers_to ?managedConfig .
                             }
@@ -56,15 +56,18 @@
                             OPTIONAL {
                               ?config <http://www.researchspace.org/resource/system/authority_manager/order_by_pattern> ?orderByPattern .
                             }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern> ?labelSparqlPattern .
+                            }
                           } LIMIT 1
                         '
   >
     <template id='template'>
       {{#ifCond bindings.0.isManaged.value "===" "true"}}
-        {{> rsp:SimpleCollectionBrowser editable=true collection="[[this]]" rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value P2_has_type=bindings.0.P2_has_type.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value}}
+        {{> rsp:SimpleCollectionBrowser editable=true collection="[[this]]" rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value P2_has_type=bindings.0.P2_has_type.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value labelSparqlPattern=bindings.0.labelSparqlPattern.value}}
       {{else}}
         [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, so we can offer here for user to associate a config with it --]]
-        {{> rsp:SimpleCollectionBrowser editable=false collection="[[this]]" rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value}}
+        {{> rsp:SimpleCollectionBrowser editable=false collection="[[this]]" rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value labelSparqlPattern=bindings.0.labelSparqlPattern.value}}
       {{/ifCond}}
     </template>
     <template id='noResultTemplate'>

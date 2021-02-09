@@ -61,14 +61,17 @@
   </div>
 
   <div class="rs-vocabulary-terms-edit-area">
-    {{#if editable}}
-      <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["term-forms"]'>
-        <button class="btn btn-primary btn-newTerm">
-          <i class='fa fa-plus'></i>
-          <span>new {{itemLabel}}</span>
-        </button>
-      </mp-event-trigger>
-    {{/if}}
+    <div class='rs-vocabulary-buttons'> 
+      <semantic-link class='btn btn-primary btn-newTerm' iri='[[resolvePrefix "rsp:EntitySearch"]]' urlqueryparam-config='{{config}}'>Search</semantic-link>
+      {{#if editable}}
+        <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["term-forms"]'>
+          <button class="btn btn-primary btn-newTerm">
+            <i class='fa fa-plus'></i>
+            <span>new {{itemLabel}}</span>
+          </button>
+        </mp-event-trigger>
+      {{/if}}
+    </div>
 
     <div class="rs-vocabulary-terms-form-area">
       <mp-event-target-template-render id='term-forms' template='{{> template}}'>

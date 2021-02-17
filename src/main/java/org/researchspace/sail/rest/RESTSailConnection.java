@@ -21,10 +21,18 @@ package org.researchspace.sail.rest;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import org.eclipse.rdf4j.sail.SailException;
+import org.apache.commons.compress.utils.Lists;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
-import org.eclipse.rdf4j.sail.SailException;
+import org.eclipse.rdf4j.query.algebra.Var;
+
+import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 /**
  * 
  * @author Janmaruko Hōrensō <@gspinaci>
@@ -40,16 +48,36 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection {
     @Override
     protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
             RESTParametersHolder parametersHolder) throws SailException {
-        return null;
+        return Lists.newArrayList();
     }
 
     @Override
     protected RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
         RESTParametersHolder res = new RESTParametersHolder();
 
-        //TODO: read descriptor
-        //TODO: iterate over triples in descriptor and check with query
-        //TODO: Get values from query and create input parameter holder as a set of tuple IRI - value
+        // Iterate over input triples in descriptor
+        // Use the SPARQL query to get values and create input parameter holder as a set of tuple IRI, value
+        for(Map.Entry<IRI,Parameter> entry : getSail().getMapInputParametersByProperty().entrySet()) {
+
+            // Get subject and value
+            Optional<Var> subject = RESTWrappingSailUtils.getSubjectOutputVariable(stmtPatterns, null, entry.getKey());
+            Optional<Value> value = RESTWrappingSailUtils.getObjectInputParameter(stmtPatterns, subject.orElse(null), entry.getKey());
+            
+            // Add value from query or default value
+            value = value.isPresent() ? value : entry.getValue().getDefaultValue();
+            if(value.isPresent())
+                res.getInputParameters().put(entry.getValue().getParameterName(), value.get().stringValue());
+        }
+
+        for(Map.Entry<IRI, Parameter> entry : getSail().getMapOutputParametersByProperty().entrySet()) {
+
+            Optional<Var> subject = RESTWrappingSailUtils.getSubjectOutputVariable(stmtPatterns, null, entry.getKey());
+            Optional<Var> value = RESTWrappingSailUtils.getObjectOutputVariable(stmtPatterns, subject.orElse(null), entry.getKey());
+
+            if(value.isPresent())
+                res.getOutputVariables().put(entry.getKey(), value.get().getName());
+
+        }
 
         return res;
     }

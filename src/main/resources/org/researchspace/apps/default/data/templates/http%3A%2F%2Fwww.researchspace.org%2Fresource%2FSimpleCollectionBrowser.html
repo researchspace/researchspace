@@ -20,20 +20,18 @@
       <h1>{{itemLabel}}s</h1>
       <mp-event-target-template-render id='mytree'  template='{{> treeTemplate}}'>
         <template id='treeTemplate'>
-          <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple'  focused='{{iri}}'
+          <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple'  focused='{{iri}}' page-size='10000'
                               config='{"scheme": "{{collection}}", 
+                                      {{#if labelSparqlPattern}}
+                                      "labelPattern": "{{labelSparqlPattern}}",
+                                      {{/if}}
                                       {{#if broaderProperty}}
                                       "relationPattern": "?item <{{broaderProperty}}> ?parent",
                                       {{/if}}
                                       {{#if orderByPattern}}
                                       "orderByPattern": "{{orderByPattern}}",
                                       {{/if}}
-
-                                      {{#if membershipProperty}}
-                                      "schemePattern": "?item <{{membershipProperty}}> ?__scheme__"
-                                      {{else}}
-                                      "schemePattern": "?item a <{{rdfType}}> . {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}}"
-                                      {{/if}}
+                                      "schemePattern": "{{#if membershipProperty}} ?item <{{membershipProperty}}> ?__scheme__.{{/if}} {{#if rdfType}} ?item a/rdfs:subClassOf* <{{rdfType}}> .{{/if}} {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
                                       }'>
             <template id='template'>
               <span class="tree-item-actions-container">
@@ -63,27 +61,23 @@
   </div>
 
   <div class="rs-vocabulary-terms-edit-area">
-    {{#if editable}}
-      <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["term-forms"]'>
-        <button class="btn btn-primary btn-newTerm">
-          <i class='fa fa-plus'></i>
-          <span>new {{itemLabel}}</span>
-        </button>
-      </mp-event-trigger>
-    {{/if}}
+    <div class='rs-vocabulary-buttons'> 
+      <semantic-link class='btn btn-primary btn-newTerm' iri='[[resolvePrefix "rsp:EntitySearch"]]' urlqueryparam-config='{{config}}'>Search</semantic-link>
+      {{#if editable}}
+        <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["term-forms"]'>
+          <button class="btn btn-primary btn-newTerm">
+            <i class='fa fa-plus'></i>
+            <span>new {{itemLabel}}</span>
+          </button>
+        </mp-event-trigger>
+      {{/if}}
+    </div>
 
     <div class="rs-vocabulary-terms-form-area">
       <mp-event-target-template-render id='term-forms' template='{{> template}}'>
         <template id='template'>
           {{#switch mode}}
             {{#case "new" break=true}}
-              <mp-event-proxy id='form-refresh-on-created' 
-                              on-event-source='vocab-form'
-                              on-event-type='Form.ResourceCreated'
-                              proxy-event-type='Component.TemplateUpdate' 
-                              proxy-targets='["term-forms"]'
-                              additional-data='{"mode": "edit"}'
-              ></mp-event-proxy>
               {{#if broader}}
                 <h1>Adding: <strong>new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></strong></h1>
               {{else}}
@@ -101,6 +95,20 @@
           {{/switch}}
 
           {{#if mode}}
+                    <mp-event-proxy id='form-refresh-on-created' 
+                          on-event-source='vocab-form'
+                           on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["term-forms"]'
+                          additional-data='{"mode": "edit"}'
+             ></mp-event-proxy>
+                              <mp-event-proxy id='form-refresh-on-created' 
+                          on-event-source='vocab-form'
+                           on-event-types='["Form.ResourceRemoved"]'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["term-forms"]'
+                          data='{}'
+             ></mp-event-proxy>
             <inline-template template-iri='{{resourceForm}}' 
                              options='{
                                         "scheme": "{{collection}}", 

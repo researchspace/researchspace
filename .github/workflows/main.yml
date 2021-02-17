@@ -96,6 +96,17 @@ jobs:
           cd $DOCKER_FOLDER/platform
           docker build -t researchspace/platform-ci:${DATE}_${GITHUB_SHA} .
 
+      - name: get branch local name
+        id: get-branch
+        if: contains(github.ref, 'build-docker')
+        run: |
+          branch=$(echo ${{github.ref}} | cut -d "/" -f 4)
+          echo "::set-output name=branch-local-name::$branch"
+
+      - name: tag docker image for non-master branch
+        if: contains(github.ref, 'build-docker')
+        run: docker tag researchspace/platform-ci:${DATE}_${GITHUB_SHA} researchspace/platform-ci:${{steps.get-branch.outputs.branch-local-name}}
+
       - name: tag docker image for master branch
         if: github.ref == 'refs/heads/master'
         run: docker tag researchspace/platform-ci:${DATE}_${GITHUB_SHA} researchspace/platform-ci:latest
@@ -108,6 +119,15 @@ jobs:
         run: |
           echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
           docker push researchspace/platform-ci:${DATE}_${GITHUB_SHA}
+
+      - name: Push latest tag for non-master
+        if: contains(github.ref, 'build-docker')
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
+          docker push researchspace/platform-ci:${{steps.get-branch.outputs.branch-local-name}}
 
       - name: Push latest tag for master
         if: github.ref == 'refs/heads/master'

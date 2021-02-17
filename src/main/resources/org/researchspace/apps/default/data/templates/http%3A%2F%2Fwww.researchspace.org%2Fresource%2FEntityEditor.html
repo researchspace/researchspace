@@ -1,286 +1,125 @@
-<div id="entity-editor__container"">
+<div id="entity-editor__container">
 	<div class="entity-editor__content">
 		<h1 class="entity-editor__title">Universal Drag and Drop Entity Edit</h1>
-		<semantic-table id="table" 
-						options='{"showFilter": false, "showTableHeading": false}' 
-						query="PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-								PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-								PREFIX rs: <http://www.researchspace.org/ontology/>
-								SELECT DISTINCT ?subject ?formKind WHERE {
-								BIND(<{{iri}}> as ?subject)
-									{
-									?subject rdf:type crm:E22_Man-Made_Object .
-									?subject rso:PX_object_type <http://www.latehokusai.org/id/objecttype/impression>
-									BIND (<http://www.researchspace.org/forms/FormA> as ?formKind)
-									} UNION {
-								
-									?subject rdf:type rs:EX_Digital_Image .
-								
-									BIND (<http://www.researchspace.org/forms/FormB> as ?formKind)
-																			}
-								
-									UNION {
-								
-									?subject rdf:type crm:E22_Man-Made_Object .
-										?subject rso:PX_object_type <http://www.latehokusai.org/id/objecttype/painting>
-									BIND (<http://www.researchspace.org/forms/FormC> as ?formKind)
-																			}
-								
-									UNION {
-								
-									?subject rdf:type crm:E21_Person .
-									BIND (<http://www.researchspace.org/forms/Person> as ?formKind)
-																			}
-								
-									UNION {
-								
-									?subject rdf:type crm:E22_Man-Made_Object .
-									?subject crm:P2_has_type <http://www.researchspace.org/vocab/objecttype/amulet>
-									BIND (<http://www.researchspace.org/forms/amulet> as ?formKind)
-																			}
-								}
-								LIMIT 1" 
-						column-configuration='[
-												{
-												"variableName": "subject",
-												"displayName": "Edit Entity",
-												"cellTemplate": "{{> default instanceiri=subject.value formKind=formKind.value}}"
-												}
-											]'>
-		
-		
-					<template id='default'>
-		
-						{{#ifCond formKind "===" "http://www.researchspace.org/forms/FormA" }}
-						<!-- persistence='sparql' targetInsertGraphIri='http://www.researchspace.org/ns/data-updates-graph' -->
-							<semantic-form subject='{{instanceiri}}' 
-											fields='[[
-														fieldDefinitions
-														label = "http://www.w3.org/2000/01/rdf-schema#label"
-														type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
-														class="http://www.researchspace.org/fieldDefinition/class"
-														P2_has_type_authenticity="https://latehokusai.researchspace.org/container/fieldDefinitionContainer/authenticity"
-														P65_shows_visual_item_inscription="https://latehokusai.researchspace.org/container/fieldDefinitionContainer/P65_shows_visual_item_inscription"
-													]]'>
-			
-								<semantic-form-text-input for='label'></semantic-form-text-input>
-			
-								<semantic-form-select-input for="P2_has_type_authenticity" placeholder="Authenticity"></semantic-form-select-input>
-			
-								<semantic-form-composite-input for="P65_shows_visual_item_inscription" 
-																new-subject-template="https://latehokusai.researchspace.org/E34_Inscription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'" 
-																fields='[[
-																			fieldDefinitions
-																			classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																			inscriptionlabel = "https://latehokusai.researchspace.org/container/fieldDefinitionContainer/inscriptionlabel"
-																			P54_has_current_permanent_location_artwork="https://latehokusai.researchspace.org/container/fieldDefinitionContainer/P54_has_current_permanent_location_artwork"
-																			P73_has_translation_art="https://latehokusai.researchspace.org/container/fieldDefinitionContainer/P73_has_translation_art"
-																		]]'>
-				
-									<semantic-form-text-input for='inscriptionlabel' multiline='true'></semantic-form-text-input>
-									<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E34_Inscription'> </semantic-form-hidden-input>
-				
-									<semantic-form-composite-input for="P73_has_translation_art" 
-																	new-subject-template="https://latehokusai.researchspace.org/E34_Inscription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'" 
-																	fields='[[
-																				fieldDefinitions
-																				classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																				label_translation="https://latehokusai.researchspace.org/container/fieldDefinitionContainer/label_translation"
-												
-																			]]'>
-				
-										<semantic-form-text-input for='label_translation' multiline='true'></semantic-form-text-input>
-										<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object'> </semantic-form-hidden-input>
-					
-										<semantic-form-composite-input for="P54_has_current_permanent_location_artwork" 
-																		new-subject-template="https://latehokusai.researchspace.org/E53_Place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'"
-																		fields='[[
-																					fieldDefinitions
-																					classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																					label = "http://www.w3.org/2000/01/rdf-schema#label"
-																					P1_is_identified_by_inscription_location="https://latehokusai.researchspace.org/container/fieldDefinitionContainer/P1_is_identified_by_inscription_location"
-																				]]'>
-					
-											<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
-						
-											<semantic-form-composite-input for="P1_is_identified_by_inscription_location" 
-																			new-subject-template="https://latehokusai.researchspace.org/E41_Appellation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'" 
-																			fields='[[
-																						fieldDefinitions
-																						classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																						placelocationappellationlabel="https://latehokusai.researchspace.org/container/fieldDefinitionContainer/placelocationappellationlabel"
-																					]]'>
-						
-												<semantic-form-select-input for="placelocationappellationlabel"> </semantic-form-select-input>
-												<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
-						
-											</semantic-form-composite-input>
-					
-										</semantic-form-composite-input>
-									</semantic-form-composite-input>
-			
-								</semantic-form-composite-input>
-			
-			
-								<!-- save and reset button for form -->
-								<div class="entity-editor__content-btngroup">
-									<button name="submit" class="btn btn-default">Save</button>
-									<button name="reset" class="btn btn-default">Reset</button>
-									<button name="delete" class="btn btn-default">Delete</button>
-								</div>
-			
-							</semantic-form>
-						{{/ifCond}}
-		
-						{{#ifCond formKind "===" "http://www.researchspace.org/forms/Person" }}
-							[[!-- {{> rsp:Person }} --]]
-						{{/ifCond}}
-		
-						{{#ifCond formKind "===" "http://www.researchspace.org/forms/FormB" }}
-							<p>Digital Image</p>
-						{{/ifCond}}
-		
-						{{#ifCond formKind "===" "http://www.researchspace.org/forms/FormC" }}
-							<p>Painting</p>
-						{{/ifCond}}
-		
-						{{#ifCond formKind "===" "http://www.researchspace.org/forms/FormD" }}
-							<p>Book</p>
-						{{/ifCond}}
-		
-						{{#ifCond formKind "===" "http://www.researchspace.org/forms/amulet" }}
-							<div class="entity-editor__resource">
-								<div class="entity-editor__resourceTitle">Resource: &nbsp;</div>
-								<div class="entity-editor__resourceLabel">amulet ({{instanceiri}})</div>
-							</div>
-							<semantic-form subject='{{instanceiri}}' 
-											post-action="none" 
-											fields='[[
-														fieldDefinitions
-														P1_is_identified_by_amulet="http://www.researchspace.org/pattern/P1_is_identified_by_amulet"
-														P1_is_identified_by_registration="http://www.researchspace.org/pattern/P1_is_identified_by_registration"
-														PX_has_main_representation="http://www.researchspace.org/ontology/PX_has_main_representation"
-														P3_has_note_amulet="http://www.researchspace.org/P3_has_note_amulet"
-														P67_refers_to_culture="http://www.researchspace.org/pattern/P67_refers_to_culture"
-														P148i_is_component_of_culture="http://www.researchspace.org/pattern/P148i_is_component_of_culture"
-														rdf-schemalabel_amulet="http://www.w3.org/2000/01/rdf-schema#label"
-														P2_has_type_object="http://www.researchspace.org/pattern/P2_has_type_object"
-														P45_consists_of_amulet="http://www.researchspace.org/P45_consists_of_amulet"
-														P12i_was_present_at_amulet="http://www.researchspace.org/pattern/P12i_was_present_at_amulet"
-													]]' 
-											persistence='{
-															"type": "sparql",
-															"targetInsertGraphIri": "http://www.researchspace.org/ns/data-updates-graph"
-														}'>
-			
-								<semantic-form-text-input for="rdf-schemalabel_amulet"> </semantic-form-text-input>
-								<semantic-form-text-input for="P1_is_identified_by_registration"> </semantic-form-text-input>
-								<semantic-form-autocomplete-input for="P2_has_type_object"></semantic-form-autocomplete-input>
-								<semantic-form-autocomplete-input for="P45_consists_of_amulet"></semantic-form-autocomplete-input>
-								<semantic-form-text-input for="P3_has_note_amulet" multiline="true"> </semantic-form-text-input>
-			
-								<semantic-form-composite-input 	for="P1_is_identified_by_amulet" 
-																new-subject-template="http://www.researchspace.org/entity/E41_Appellation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-																fields='[[
-																			fieldDefinitions
-																			classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																			rdf-schemalabel_amulet="http://www.researchspace.org/pattern/rdf-schema#label_amulet"
-																		]]'>
-			
-									<semantic-form-text-input for='rdf-schemalabel_amulet'></semantic-form-text-input>
-									<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E41_Appellation'> </semantic-form-hidden-input>
-			
-								</semantic-form-composite-input>
-			
-								<semantic-form-composite-input 	for="P12i_was_present_at_amulet" 
-																new-subject-template="http://www.researchspace.org/entity/E5_Event/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-																fields='[[
-																			fieldDefinitions
-																			classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																			P2_has_type_amulet_event="http://www.researchspace.org/pattern/P2_has_type_amulet_event"
-																			P53_has_former_or_current_location_amulet="http://www.researchspace.org/pattern/P53_has_former_or_current_location_amulet"
-																		]]'>
-			
-									<semantic-form-autocomplete-input for="P2_has_type_amulet_event"></semantic-form-autocomplete-input>
-									<semantic-form-autocomplete-input for='P53_has_former_or_current_location_amulet'></semantic-form-autocomplete-input>
-									<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E5_Event'> </semantic-form-hidden-input>
-			
-								</semantic-form-composite-input>
-			
-								<semantic-form-composite-input 	for="P67_refers_to_culture" 
-																new-subject-template="http://www.researchspace.org/entity/E89_Propositional_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-																fields='[[
-																			fieldDefinitions
-																			classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																			P148_has_component_society_mental_conceptions="http://www.researchspace.org/pattern/P148_has_component_society_mental_conceptions"
-																			P148_has_component_society_religion="http://www.researchspace.org/pattern/P148_has_component_society_religion"
-																			P148_has_component_society_technology="http://www.researchspace.org/pattern/P148_has_component_society_technology"
-																]]'>
+    <semantic-query 
+                  query='
+                          SELECT DISTINCT ?config ?formIRI ?restrictionPattern ?membershipProperty WHERE {
+                            {
+                              <{{iri}}> rdf:type ?rdfType .
+                              ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+                                        <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI ;
+                                        <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
+                              
+                              FILTER NOT EXISTS {
+                                ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+                              }
+                              
+                              OPTIONAL {
+                                ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                              }
+                              OPTIONAL {
+                                ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                              }                              
+                            } UNION {
+                              <{{iri}}> rdf:type ?rdfType ;
+                                          crm:P2_has_type ?P2_has_type .
+                              
+                              ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+                                        <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI ;
+                                        <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType ;
+                                        <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+                            
+                              OPTIONAL {
+                                ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                              }                              
+                              OPTIONAL {
+                                ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                              }
+                            }
+                          }
+                        '
+    >
+      <template id='template'>
+        {{log "editor" this}}
+        {{#ifCond bindings.length "==" "0"}}
+          <p>There is no form configuration for the given entity. See "Entity Manager".</p>
+        {{/ifCond}}
+        
+        {{#ifCond bindings.length ">" "0"}}
+          <semantic-query 
+                          query='
+                            SELECT ?title ?formIRI ?membershipProperty ?collection WHERE {
+                              {{#each bindings}}
+                              { 
+                                BIND(<{{../iri}}> as ?item) .
+                                BIND(<{{config.value}}> as ?config) .
+                                {{#if restrictionPattern.value}}
+                                {{else}}
+                                  {{{restrictionPattern.value}}}
+                                {{/if}} 
+                                  
+                                {{#if membershipProperty.value}}
+                                  ?item <{{{membershipProperty.value}}}> ?collection .
+                                {{/if}}
+                                  
+                                  ?config <http://www.researchspace.org/resource/system/authority_manager/item_label> ?title ;
+                                          <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType ;
+                                          <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI .
 
-									<semantic-form-composite-input 	for="P148_has_component_society_religion" 
-																	new-subject-template="http://www.researchspace.org/entity/E89_Propositional_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-																	fields='[[
-																				fieldDefinitions
-																				classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																				label_proposition="http://www.researchspace.org/pattern/rdf-schema#label_proposition"
-																				P3_has_note_amulet="http://www.researchspace.org/P3_has_note_amulet"
-																				P2_has_type_religion="http://www.researchspace.org/pattern/P2_has_type_religion"
-																			]]'>
-				
-										<semantic-form-text-input for="label_proposition"></semantic-form-text-input>
-										<semantic-form-autocomplete-input for="P2_has_type_religion"></semantic-form-autocomplete-input>
-										<semantic-form-text-input for="P3_has_note_amulet" multiline="true"></semantic-form-text-input>
-										<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object'> </semantic-form-hidden-input>
-				
-									</semantic-form-composite-input>
-				
-									<semantic-form-composite-input 	for="P148_has_component_society_mental_conceptions" 
-																	new-subject-template="http://www.researchspace.org/entity/E89_Propositional_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-																	fields='[[
-																				fieldDefinitions
-																				classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																				label_proposition="http://www.researchspace.org/pattern/rdf-schema#label_proposition"
-																				P3_has_note_amulet="http://www.researchspace.org/P3_has_note_amulet"
-																			]]'>
-				
-										<semantic-form-text-input for="label_proposition"></semantic-form-text-input>
-										<semantic-form-text-input for="P3_has_note_amulet" multiline="true"></semantic-form-text-input>
-										<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object'> </semantic-form-hidden-input>
-				
-									</semantic-form-composite-input>
-				
-									<semantic-form-composite-input 	for="P148_has_component_society_technology" 
-																	new-subject-template="http://www.researchspace.org/entity/E89_Propositional_Object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-																	fields='[[
-																				fieldDefinitions
-																				classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-																				label_proposition="http://www.researchspace.org/pattern/rdf-schema#label_proposition"
-																				P3_has_note_amulet="http://www.researchspace.org/P3_has_note_amulet"
-																			]]'>
-				
-										<semantic-form-text-input for="label_proposition"></semantic-form-text-input>
-										<semantic-form-text-input for="P3_has_note_amulet" multiline="true"></semantic-form-text-input>
-										<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object'> </semantic-form-hidden-input>
-			
-									</semantic-form-composite-input>
-			
-									<semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/entity/E89_Propositional_Object'> </semantic-form-hidden-input>
-			
-								</semantic-form-composite-input>
-		
-								<semantic-form-errors></semantic-form-errors>
-
-								<!-- save and reset button for form -->
-								<div class="entity-editor__content-btngroup">
-									<button name="reset" class="btn btn-default">Reset</button>
-									<button name="delete" class="btn btn-default">Delete</button>
-									<button name="submit" class="btn btn-default">Save</button>
-								</div>
-								
-							</semantic-form>
-						{{/ifCond}}
-		
-					</template>
-		</semantic-table>
+                                  OPTIONAL {
+                                    ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                                  }
+                                  OPTIONAL {
+                                    ?config <http://www.researchspace.org/resource/system/authority_manager/broader_property> ?broaderPropertyIRI .
+                                  }                                  
+                              } {{#if @last}}{{else}}UNION{{/if}}  
+                              {{/each}}
+                            }
+                          '
+                          template='{{> nested}}'
+          >
+            <template id='nested'>
+              {{log "inside" this}}
+              {{#ifCond bindings.length "==" "0"}}
+                <p>There is no form configuration for the given entity. See "Entity Manager".</p>
+              {{/ifCond}}
+              
+              {{#ifCond bindings.length "==" "1"}}
+               {{> rsp:EntityEditorForm node=iri formIRI=bindings.0.formIRI.value membershipProperty=bindings.0.membershipProperty.value collection=bindings.0.collection.value }}
+              {{/ifCond}}
+              
+              {{#ifCond bindings.length ">" "1"}}
+                <two-side-panel id='entity-editor-config-list-{{iri}}'>
+                  <template id='front'>
+                    <p>There is more than one form that can be applicable to the given entity, please choose the one to use for editing:</p>
+                    <ul>
+                      {{#each bindings}}
+                      <li>
+                        {{title.value}} Form 
+                        <mp-event-trigger id='form-event-trigger--{{../iri}}' 
+                                          type='TwoSidePanel.ShowBack' 
+                                          targets='["entity-editor-config-list-{{../iri}}"]'
+                                          data='{ 
+                                                  "node":"{{../iri}}",
+                                                  "formIRI": "{{formIRI.value}}",
+                                                  "membershipProperty": "{{membershipProperty.value}}",
+                                                  "collection": "{{collection.value}}"
+                                                }'>
+                          <button class="btn btn-primary">Use</button>
+                        </mp-event-trigger>
+                      </li>
+                      {{/each}}
+                    </ul>
+                  </template>
+                  <template id='back'>
+                    {{> rsp:EntityEditorForm node=node formIRI=formIRI membershipProperty=membershipProperty collection=collection }}
+                  </template>
+                </two-side-panel>
+              {{/ifCond}}
+            </template>
+          </semantic-query>
+        {{/ifCond}}
+      </template>
+    </semantic-query>
 	</div>
 </div>

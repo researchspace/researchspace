@@ -20,6 +20,7 @@
 import * as Kefir from 'kefir';
 import * as SparqlJs from 'sparqljs';
 import * as Immutable from 'immutable';
+import { isEmpty } from 'lodash';
 
 import { Rdf, XsdDataTypeValidation } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil, SparqlTypeGuards } from 'platform/api/sparql';
@@ -77,13 +78,25 @@ export function validate(
 export function queryValues(
   pattern: string,
   subject?: Rdf.Iri,
-  options?: SparqlClient.SparqlOptions
+  options?: SparqlClient.SparqlOptions,
+
+  // used when we want to fetch field values for additional IRIs that represent the same subject.
+  // typically owl:sameAs or skos:exactMatch
+  additionalSubjects?: Rdf.Iri[]
 ): Kefir.Property<SparqlBindingValue[]> {
   if (!pattern) {
     return Kefir.constant([]);
   }
   return SparqlUtil.parseQueryAsync(pattern)
-    .map((query) => (subject ? SparqlClient.setBindings(query, { subject: subject }) : query))
+    .map((query) => {
+      if (additionalSubjects && !isEmpty(additionalSubjects)) {
+        const parameters  = additionalSubjects.map(s => ({'subject': s}));
+        parameters.push({'subject': subject});
+        return SparqlClient.prepareParsedQuery(parameters)(query as SparqlJs.SelectQuery);
+      } else {
+        return (subject ? SparqlClient.setBindings(query, { subject: subject }) : query)
+      }
+    })
     .flatMap<SparqlClient.SparqlSelectResult>((query) => SparqlClient.select(query, options))
     .map((result) =>
       result.results.bindings

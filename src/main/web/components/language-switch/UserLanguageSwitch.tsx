@@ -99,7 +99,7 @@ export class UserLanguageSwitch extends Component<UserLanguagePropsProps, State>
   private onLanguageChanged(language: string): void {
     setPreferredUserLanguage(language);
     this.setState({ language: language });
-    refresh();
+    window.location.reload();
   }
 }
 

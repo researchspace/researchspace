@@ -12,11 +12,13 @@ interface ProviderOptions {
   endpoint: string;
   crs: string;
   style: string;
+  tileset_id: string;
 }
 
 enum Source {
   OSM = 'osm',
   MapBox = 'mapbox',
+  MapBoxRasterTiles = 'mapboxRasterTiles',
   ComuneDiVenezia = 'ComuneDiVenezia'
 }
 
@@ -44,6 +46,10 @@ export class TilesLayer extends Component<ProviderProps, any>{
     super(props, context);
   }
 
+///v4/{tileset_id}/{zoom}/{x}/{y}{@2x}.{format}
+//gspinaci.1fedppsy
+//https://api.mapbox.com/v4/mapbox.satellite/1/0/0@2x.jpg90?access_token=pk.eyJ1IjoiZ3NwaW5hY2kiLCJhIjoiY2szOHRpYnpjMGM5ZzNjcWZwZDR0OGEzeCJ9.dBzGlRpELo0yLMaWD4h2KA
+
   public componentDidMount() {
     let newProvider;
     switch (this.props.provider) {
@@ -51,6 +57,13 @@ export class TilesLayer extends Component<ProviderProps, any>{
         newProvider = new XYZ({
           url: 'http://localhost:10214/proxy/mapbox/styles/v1/' +
             this.props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
+        });
+        break;
+      }
+      case Source.MapBoxRasterTiles: {
+        newProvider = new XYZ({
+          url: 'http://localhost:10214/proxy/mapbox/v4/' +
+            this.props.providerOptions.tileset_id + '/{z}/{x}/{y}@2x.png'
         });
         break;
       }

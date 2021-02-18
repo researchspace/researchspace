@@ -1,0 +1,113 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link iri='http://www.researchspace.org/resource/ProjectDashboard'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li class="active">Project - Forms Catalog</li>
+</ol>
+
+<div class="page rs-project-narrative">
+
+[[#>rsp:ClipboardSidebar]]
+[[#>rsp:DetailsSidebar]]
+
+  <div class='page__body--borderless' style="padding: 0;">
+  [[#> rsp:assetpageHeader title="Project - Forms Catalog" icon="rs-icon rs-icon-narrative_edit" action=true]]
+  [[#if (hasPermission "forms:ldp:*")]]
+    <mp-resource-link-container 
+                                uri="http://www.researchspace.org/resource/EntityForm"
+                                urlqueryparam-view='forms-catalog'
+                                urlqueryparam-previous-page='[[this]]'
+                                urlqueryparam-previous-page-title='Project - Forms Catalog'
+                                >
+
+      <button class="btn btn-header-right pull-right">
+        <i class="fa fa-plus"></i>
+        <div>Create Entity Form</div>
+      </button>
+    </mp-resource-link-container>
+    [[/if]]
+    <div class='clearfix'></div>
+     
+  [[/rsp:assetpageHeader]]
+  
+  <div class="container-fluid">
+        <bs-row class="row-center">
+           <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+  
+          		<semantic-context repository='assets'>
+                
+                <semantic-table config='{
+
+                "query": "SELECT * WHERE {
+                          ?page a crmdig:D1_Digital_Object ;
+                             rdfs:label ?label ;
+                             crm:P2_has_type <http://www.researchspace.org/resource/system/form> .
+                            
+                          } ",
+                          
+                "columnConfiguration": [{
+                                          "variableName": "page",
+                                          "displayName": "Form Template - title",
+                                          "cellTemplate": "{{> view}}"
+                                        },
+
+                                        {"displayName":"Actions", 
+                                         "cellTemplate":"{{> edit}}"} 
+                                        ], 
+                "no-result-template": "<div></div>"}'
+                >
+                  
+                  <template id='view'>
+                    <div style="display: flex; align-items: center;">
+                      <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+
+                      <semantic-link-container uri='[[resolvePrefix "rsp:EntityForm"]]' 
+                                      class='a-draggable'
+                                      urlqueryparam-form='{{page.value}}'
+                                      urlqueryparam-previous-page='[[this]]'
+                                      urlqueryparam-previous-page-title='Project - Forms Catalog'
+                                      >
+                        <div style="display: flex; align-items: center;">
+                          <span>{{label.value}}</span>
+                        </div>
+                      </semantic-link-container>
+
+                    </div>
+                    
+                  </template>
+                 
+                  <template id="edit">
+                    <div style="display:flex; justify-content:center;">
+                        <semantic-link-container uri="{{page.value}}"
+                                urlqueryparam-form="{{page.value}}"
+                                urlqueryparam-previous-page="[[this]]"
+                                urlqueryparam-previous-page-title="Project - Forms Catalog"
+                            >
+                                <i class="fa fa-pencil" style="cursor:pointer; padding-right:12px;" title="Edit" aria-hidden="true"></i>
+                        </semantic-link-container
+                    
+                        <mp-anonymous-hidden>
+                            <mp-ldp-remove-from-container-action data-iri="{{page.value}}" data-container="http://www.researchspace.org/ontology/UserDefinedPage">
+                    
+                                    <i class="fa fa-trash" style="cursor:pointer;" title="Delete" aria-hidden="true"></i>
+                            </mp-ldp-remove-from-container-action>
+                        </mp-anonymous-hidden>
+                    </div>
+                  </template>
+                
+               </semantic-table>
+            </semantic-context>
+             </bs-col>   
+        </bs-row> <!--  close row -->
+    </div>
+  </div>
+   
+
+  [[/rsp:DetailsSidebar]]
+  [[/rsp:ClipboardSidebar]]
+</div>

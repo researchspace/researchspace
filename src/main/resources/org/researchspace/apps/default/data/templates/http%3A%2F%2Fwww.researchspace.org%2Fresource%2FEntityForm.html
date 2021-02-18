@@ -1,0 +1,91 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link iri='http://www.researchspace.org/resource/ProjectDashboard'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li>
+    <semantic-link iri='http://www.researchspace.org/resource/FormsCatalog'>
+        Project - Forms Catalog
+    </semantic-link>
+  </li>
+  <li class="active">
+    <semantic-link iri='http://www.researchspace.org/resource/FormsCatalog'>
+        Entity Form Editor 
+    </semantic-link>
+  </li>
+</ol>
+
+<div class="page rs-project-narrative">
+
+[[#>rsp:ClipboardSidebar]]
+[[#>rsp:DetailsSidebar]]
+
+<div class='page__body--borderless' style="padding: 0;">
+    <div id="entity-editor__container"">
+        <div class="entity-editor__content">
+            <h1 class="entity-editor__title">Entity Form Editor</h1>
+
+            <semantic-form id='entity-form-meta'
+                persistence='{"type": "sparql", "targetGraphIri": "http://www.researchspace.org/ns/data-updates-graph"}'
+                new-subject-template='http://www.researchspace.org/{{label}}'
+                subject='[[#if (urlParam "form")]][[urlParam "form"]][[/if]]'
+                fields='[[
+                fieldDefinitions
+                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                    label="http://www.w3.org/2000/01/rdf-schema#label"
+                    template_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+                    createdBy="http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by"
+                    ]]'
+                post-action='event'
+                >
+                <mp-event-proxy id='refresh-the-form' on-event-source='entity-form-meta' on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                        proxy-event-type='Component.TemplateUpdate' proxy-targets='["save-state"]'
+                        data='{"saved": true}'>
+                </mp-event-proxy>
+
+                <mp-event-proxy id='form-resource-created' on-event-source='entity-form-meta' on-event-type='Form.ResourceCreated' proxy-event-type='RedirectAction.perform' 
+                                proxy-targets='["redirect-to-resource"]'></mp-event-proxy>
+  
+                <mp-event-target-redirect
+                    id='redirect-to-resource'
+                    action='redirect'
+                    query-params='{"action": "edit"}'
+                ></mp-event-target-redirect>
+                
+                <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object"> </semantic-form-hidden-input>     
+                <semantic-form-hidden-input for="template_has_type" default-value="http://www.researchspace.org/resource/system/form"> </semantic-form-hidden-input>     
+                <semantic-form-text-input for="label"></semantic-form-text-input>
+                
+                <div class="form-btn-group">
+                <div style="display: flex; justify-content: flex-end; width: 100%;">
+                    <mp-event-target-template-render id='save-state' template='{{> template}}'>
+                        <template id='template'>
+                        {{#if saved}}
+                        <div class='save-message fade-out_disappear'>
+                            The feature has been saved successfully!
+                        </div>
+                        {{/if}}
+                        </template>
+                    </mp-event-target-template-render>
+            
+                    <button name="reset" class="btn btn-default">Reset</button>
+
+                    <button name="delete" class="btn btn-danger">Delete</button>
+         
+                     
+                  <mp-event-proxy id='close-form-removal-dialog' on-event-source='vocab-form' on-event-type='Form.ResourceRemoved'
+                                  proxy-event-type='OverlayDialog.Close' data='{}' proxy-targets='["item-remove-confirmation-dialog"]'
+                  ></mp-event-proxy>
+                    <button name="submit" class="btn btn-default">Save</button>
+                </div>
+            </semantic-form>
+        </div>
+    </div>
+</div>
+  [[/rsp:DetailsSidebar]]
+  [[/rsp:ClipboardSidebar]]
+</div>

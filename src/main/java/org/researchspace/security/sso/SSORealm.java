@@ -16,9 +16,16 @@
  */
 package org.researchspace.security.sso;
 
+import org.researchspace.security.WildcardPermissionResolver;
+
 import io.buji.pac4j.realm.Pac4jRealm;
 
 public class SSORealm extends Pac4jRealm {
+
+    public SSORealm() {
+        super();
+        setPermissionResolver(new WildcardPermissionResolver());
+    }
 
     private SSOEnvironment ssoEnvironment;
 

@@ -18,15 +18,55 @@
 
 package org.researchspace.sail.rest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.sail.config.SailConfigException;
+import org.researchspace.repository.MpRepositoryVocabulary;
+
 /**
  * 
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
 
-public class RESTSailConfig extends AbstractServiceWrappingSailConfig{
-    
+public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
+
+    private String httpMethod;
+
     public RESTSailConfig() {
         super(RESTSailFactory.SAIL_TYPE);
     }
+
+    @Override
+    public void parse(Model model, Resource implNode) throws SailConfigException {
+        super.parse(model, implNode);
+
+        // Get the HTTP method from the model
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.HTTP_METHOD, null))
+                .ifPresent(lit -> setHttpMethod(lit.stringValue()));
+    }
+
+    @Override
+    public Resource export(Model model) {
+        Resource implNode = super.export(model);
+
+        // Store the HTTP method in the model
+        if (!StringUtils.isEmpty(getHttpMethod())) {
+            model.add(implNode, MpRepositoryVocabulary.HTTP_METHOD,
+                    SimpleValueFactory.getInstance().createLiteral(getHttpMethod()));
+        }
+        return implNode;
+    }
+
+    public String getHttpMethod() {
+        return httpMethod;
+    }
+
+    public void setHttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
+    }
+    
 }

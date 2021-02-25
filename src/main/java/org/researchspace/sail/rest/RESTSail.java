@@ -29,8 +29,19 @@ import org.eclipse.rdf4j.sail.SailException;
 
 public class RESTSail extends AbstractServiceWrappingSail {
 
-    public RESTSail(String url) {
+    private String httpMethod;
+
+    public RESTSail(String url, String httpMethod) {
         super(url);
+        this.setHttpMethod(httpMethod);
+    }
+
+    public String getHttpMethod() {
+        return httpMethod;
+    }
+
+    public void setHttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
     }
 
     @Override

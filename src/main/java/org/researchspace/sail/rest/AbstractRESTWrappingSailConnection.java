@@ -21,14 +21,18 @@ package org.researchspace.sail.rest;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
+
+import com.google.common.collect.Maps;
 
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -73,6 +77,31 @@ public abstract class AbstractRESTWrappingSailConnection extends AbstractService
             throw new SailException(e);
         }
     }
+
+    /**
+     * Default implementation calling the API using a HTTP POST method. Parameters
+     * are stored in JSON body.
+     * 
+     * @param parametersHolder
+     * @return
+     */
+    protected Response submitPost(RESTParametersHolder parametersHolder) {
+        try {
+
+            Map<String, String> body = Maps.newHashMap();
+
+            Client client = ClientBuilder.newClient();
+            WebTarget targetResource = client.target(getSail().getUrl()).property(ClientProperties.FOLLOW_REDIRECTS,
+                    Boolean.TRUE);
+            for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
+                body.put(entry.getKey(), entry.getValue());
+            }
+            return targetResource.request(MediaType.TEXT_PLAIN).post(Entity.json(body));
+        } catch (Exception e) {
+            throw new SailException(e);
+        }
+    }
+
 
     @Override
     protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(

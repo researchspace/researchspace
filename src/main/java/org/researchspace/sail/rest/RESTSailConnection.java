@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.HttpMethod;
+
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 
@@ -115,6 +118,9 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection {
         if (root instanceof JSONArray)
             results = iterateJsonArray((JSONArray) root, jsonPaths);
 
+        if (root instanceof Map)
+            results = iterateJsonMap((Map) root, jsonPaths);
+        
         return results;
     }
 
@@ -145,6 +151,30 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection {
         return bindingSets;
     }
 
+    private List<BindingSet> iterateJsonMap (Map map, Map<String, String> jsonPaths) {
+       
+        List<BindingSet> bindingSets = Lists.newArrayList(); 
+
+        //
+        int length = ((JSONArray) JsonPath.read(map, jsonPaths.entrySet().iterator().next().getValue())).size();
+
+
+        for (int x=0; x<length; x++) {
+
+            MapBindingSet mapBindingSet = new MapBindingSet();
+            
+            for(Map.Entry<String, String> path : jsonPaths.entrySet()) {
+
+                Object object = ((JSONArray) JsonPath.read(map, path.getValue())).get(x);
+                mapBindingSet.addBinding(path.getKey(), VF.createLiteral(object.toString(), XSD.STRING));
+            }
+
+            bindingSets.add(mapBindingSet);
+        }
+
+        return bindingSets;
+    }
+
     /**
      * 
      * @param outputVariables
@@ -160,6 +190,31 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection {
             jsonPaths.put(output.getValue() ,getJsonPath(getSail().getMapOutputParametersByProperty().get(output.getKey()), model));
         
         return jsonPaths;
+    }
+
+    /**
+     * Default implementation calling the API using an HTTP GET method. Parameters
+     * are passed via URL. JSON expected as a result format.
+     * 
+     * @param parametersHolder
+     * @return
+     */
+    @Override
+    protected Response submit(RESTParametersHolder parametersHolder) {
+        try {
+
+            String httpMethod = ((RESTSail)getSail()).getHttpMethod();
+
+            // Case with POST
+            if (httpMethod.equals(HttpMethod.POST))
+                return submitPost(parametersHolder);
+
+            // Default case as GET
+            return super.submit(parametersHolder);
+
+        } catch (Exception e) {
+            throw new SailException(e);
+        }
     }
 
     /**

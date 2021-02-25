@@ -51,7 +51,7 @@ public class RESTSailFactory implements SailFactory {
 
         RESTSailConfig config = (RESTSailConfig) originalConfig;
 
-        RESTSail sail = new RESTSail(config.getUrl());
+        RESTSail sail = new RESTSail(config.getUrl(), config.getHttpMethod());
         sail.setServiceID(config.getServiceID());
         return sail;
     }

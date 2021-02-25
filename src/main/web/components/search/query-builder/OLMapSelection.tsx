@@ -38,12 +38,14 @@ import LineString from 'ol/geom/linestring';
 import CircleGeometry from 'ol/geom/circle';
 import PolygonGeometry from 'ol/geom/polygon';
 import SimpleGeometry from 'ol/geom/simplegeometry';
-import proj from 'ol/proj';
-import control from 'ol/control';
+import {fromLonLat}  from 'ol/proj';
+import {transform} from 'ol/proj';
+import {defaults as controlDefaults} from 'ol/control';
 import Draw from 'ol/interaction/draw';
-import Sphere from 'ol/sphere';
+import * as Sphere from 'ol/sphere';
 import * as _ from 'lodash';
 import * as classNames from 'classnames';
+import GeometryType from 'ol/geom/GeometryType';
 
 import { SpatialDistance, SpatialBoundingBox, Coordinate } from 'platform/components/semantic/search/data/search/Model';
 import * as styles from './OLMapSelection.scss';
@@ -120,19 +122,19 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
     });
 
     this.view = new View({
-      center: proj.fromLonLat([0, 0], undefined),
+      center: fromLonLat([0, 0], undefined),
       zoom: 3,
     });
 
     this.map = new Map({
-      target: findDOMNode(this.refs[MAP_REF]) as Element,
+      target: findDOMNode(this.refs[MAP_REF]) as HTMLElement,
       layers: [
         new TileLayer({
           source: new OSM(),
         }),
         vector_draw,
       ],
-      controls: control.defaults({
+      controls: controlDefaults({
         attributionOptions: {
           collapsible: false,
         },
@@ -151,7 +153,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
 
   componentWillReceiveProps(props: OLMapSelectionProps) {
     if (props.zoomTo) {
-      this.view.setCenter(proj.transform([props.zoomTo.long, props.zoomTo.lat], 'EPSG:4326', 'EPSG:3857'));
+      this.view.setCenter(transform([props.zoomTo.long, props.zoomTo.lat], 'EPSG:4326', 'EPSG:3857'));
       this.view.setZoom(props.zoomTo.zoomLevel);
     }
   }
@@ -161,7 +163,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
    * @param metacor
    */
   transformToWGS84(metacor: Coord): Coord {
-    let wgs84 = proj.transform(metacor, 'EPSG:3857', 'EPSG:4326') as Coord;
+    let wgs84 = transform(metacor, 'EPSG:3857', 'EPSG:4326') as Coord;
     return wgs84;
   }
 
@@ -236,10 +238,9 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
         // will have large error up to 30%. We calculate a distance to eastern side of the circle
         const edgeCoordinate = this.transformToWGS84([olCenter[0] + olRadius, olCenter[1]]);
 
-        const wgs84Sphere = new Sphere(6378137);
         const center = this.transformToWGS84(olCenter);
-        const radius = wgs84Sphere.haversineDistance(center, edgeCoordinate);
-
+        //const wgs84Sphere = Sphere.getArea(6378137);
+        const radius = Sphere.getDistance(center, edgeCoordinate, 6378137);
         const wrappedCenter = this.wrapLongitudeOL(center);
         selectedArea = {
           type: SelectType.Circle,
@@ -261,7 +262,7 @@ export class OLMapSelection extends React.Component<OLMapSelectionProps, OLMapSe
     }
     this.currentDraw = new Draw({
       source: this.vectorSource,
-      type: this.state.selectionTool === SelectType.Box ? 'LineString' : 'Circle',
+      type: this.state.selectionTool === SelectType.Box ? GeometryType.LINE_STRING : GeometryType.CIRCLE,
       geometryFunction: this.state.selectionTool === SelectType.Box ? this.geometryFunction : undefined,
       maxPoints: 2,
       wrapX: false,

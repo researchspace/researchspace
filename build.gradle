@@ -52,6 +52,10 @@ file("${projectDir}/.eclipse/org.eclipse.jdt.core.prefs").withInputStream {
     eclipseJdtProps.load(it)
 }
 eclipse {
+    classpath {
+        downloadJavadoc = true
+        downloadSources = true
+    }
     jdt {
         file {
             withProperties { properties ->
@@ -272,6 +276,9 @@ repositories {
     // for digilib war
     maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }
 
+    // needed for SMAL2 integration
+    maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases/' }
+
     // temp, until new version of smiley-http-proxy-servlet is released
     maven {
         url 'https://dl.bintray.com/researchspace/public'
@@ -283,13 +290,21 @@ repositories {
 }
 
 ext {
-    RDF4J_VERSION = '3.4.2'
+    RDF4J_VERSION = '3.5.1'
     LOG4J_VERSION = '2.13.1'
     JERSEY_VERSION = '2.30.1'
     JACKSON_VERSION = '2.10.3'
     GUICE_VERSION = '4.2.3'
-    SHIRO_VERSION = '1.6.0'
+    SHIRO_VERSION = '1.7.1'
     IMAGEIO_VERSION = '3.5'
+}
+
+configurations.all {
+    // we use httpclient instead of httpclient-osgi used in RDF4J
+    exclude group: "org.apache.httpcomponents", module: "httpclient-osgi"
+
+    // excludes xml.bind-api from javax we already have jakarta one in the classpath
+    exclude group: 'javax.xml.bind', module: 'jaxb-api'
 }
 
 dependencies {
@@ -313,22 +328,11 @@ dependencies {
     }
 
     api (
-        "org.eclipse.rdf4j:rdf4j-repository-manager:${RDF4J_VERSION}",
-    ) { dep ->
-        // excludes xml.bind-api from javax we already have jakarta one in the classpath
-        dep.exclude group: 'javax.xml.bind', module: 'jaxb-api'
-
-        // we use httpclient instead of httpclient-osgi used in RDF4J
-        dep.exclude group: 'org.apache.httpcomponents', module: 'httpclient-osgi'
-    }
-
-    api (
         // RDF4J dependencies
         "org.eclipse.rdf4j:rdf4j-sail-nativerdf:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-sail-memory:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-sail-federation:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-binary:${RDF4J_VERSION}",
-        "org.eclipse.rdf4j:rdf4j-rio-jsonld:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-n3:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-nquads:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-ntriples:${RDF4J_VERSION}",
@@ -337,9 +341,11 @@ dependencies {
         "org.eclipse.rdf4j:rdf4j-rio-trig:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-trix:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-rio-turtle:${RDF4J_VERSION}",
+        "org.eclipse.rdf4j:rdf4j-rio-jsonld:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-queryrender:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-queryresultio-sparqljson:${RDF4J_VERSION}",
         "org.eclipse.rdf4j:rdf4j-queryresultio-text:${RDF4J_VERSION}",
+        "org.eclipse.rdf4j:rdf4j-repository-manager:${RDF4J_VERSION}",
 
         // logging related dependencies
         "org.apache.logging.log4j:log4j-api:${LOG4J_VERSION}",
@@ -372,10 +378,9 @@ dependencies {
         "org.glassfish.hk2:guice-bridge:2.6.1",
 
 
-        "io.buji:buji-pac4j:4.0.0",
-        "org.pac4j:pac4j-oauth:3.1.0",
-        "org.pac4j:pac4j-saml:3.1.0",
-
+        "io.buji:buji-pac4j:6.0.0-RC1",
+        "org.pac4j:pac4j-oidc:5.0.0-RC1",
+        "org.pac4j:pac4j-saml:5.0.0-RC1",
 
         // Apache commons stuff
         "org.apache.commons:commons-compress:1.20",
@@ -413,14 +418,14 @@ dependencies {
         "org.mitre.dsmiley.httpproxy:smiley-http-proxy-servlet:1.12.1",
 
         //JsonPath
-        "com.jayway.jsonpath:json-path:2.4.0",
+        "com.jayway.jsonpath:json-path:2.5.0",
 
         // JGit for Git storage support
         "org.eclipse.jgit:org.eclipse.jgit:5.4.0.201906121030-r",
 
         "com.twelvemonkeys.imageio:imageio-tiff:${IMAGEIO_VERSION}",
         "com.twelvemonkeys.imageio:imageio-core:${IMAGEIO_VERSION}",
-    )
+    ) 
     testImplementation (
         "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:${JERSEY_VERSION}",
         "org.hamcrest:hamcrest-library:1.3",

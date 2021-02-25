@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
@@ -31,11 +32,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.config.ConfigurationException;
 import org.apache.shiro.guice.web.ShiroWebModule;
+import org.apache.shiro.web.env.WebEnvironment;
 import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
+import org.researchspace.config.groups.EnvironmentConfiguration;
 import org.researchspace.security.sso.SSOCallbackFilter;
+import org.researchspace.security.sso.SSOEnvironment;
 import org.researchspace.security.sso.SSOLogoutFilter;
+import org.researchspace.security.sso.SSORealmProvider;
 import org.researchspace.security.sso.SSOSecurityFilter;
 
 import com.google.common.collect.Lists;
@@ -55,16 +60,16 @@ public class ShiroGuiceModule extends ShiroWebModule {
     public static final String LOGIN_PATH = "/login";
 
     private Injector coreInjector;
+    private Provider<Configuration> config;
 
     public ShiroGuiceModule(ServletContext servletContext, Injector corePlatformInjector) {
         super(servletContext);
         this.coreInjector = corePlatformInjector;
+        this.config = this.coreInjector.getProvider(org.researchspace.config.Configuration.class);
     }
 
     @Override
     protected void configureShiroWeb() {
-
-        Configuration config = this.coreInjector.getInstance(org.researchspace.config.Configuration.class);
         bindConstant().annotatedWith(Names.named("shiro.successUrl")).to("/");
 
         // note: we can't set the session timeout here, but need to do that using the
@@ -78,7 +83,12 @@ public class ShiroGuiceModule extends ShiroWebModule {
         addFilterChain("/tableau", ANON);
         addFilterChain("/tableau/isAnonymousEnabled", ANON);
 
-        configureRealmBindings(config);
+        /**
+         * @see SecurityEndpoint#getSaml2SpMetadata
+         */
+        addFilterChain("/rest/security/getSaml2SpMetadata", ANON);
+
+        configureRealmBindings(config.get());
 
         addFilterChain("/favicon.ico", ANON);
 
@@ -100,14 +110,35 @@ public class ShiroGuiceModule extends ShiroWebModule {
     }
 
     protected void configureRealmBindings(Configuration config) {
+        // if shiro-ldap.ini file is available then we should use LDAP for auth
         if (config.getEnvironmentConfig().getSecurityConfig(SecurityConfigType.ShiroLDAPConfig).exists()) {
             addLocalLogin(config);
             bindRealm().toProvider(LDAPRealmProvider.class).in(Singleton.class);
             addFilterChain("/logout", LOGOUT);
-        } else {
+        }
+        // if config.environment.sso is set then we should use Single sing-on (SSO) auth
+        else if (config.getEnvironmentConfig().getSso() != null) {
+            addLocalLogin(config);
+            bindRealm().toProvider(SSORealmProvider.class).in(Singleton.class);
+            addFilterChain("/sso/callback", ShiroFilter.ssoCallback.getFilterKey());
+            addFilterChain("/logout", ShiroFilter.ssoLogout.getFilterKey());
+        }
+        // otherwise just use local INI file based auth
+        else {
             bindLocalUsersRealm();
             addDefaultLoginPage();
             addFilterChain("/logout", LOGOUT);
+        }
+    }
+
+    @Override
+    protected void bindWebEnvironment(AnnotatedBindingBuilder<? super WebEnvironment> bind) {
+        if (this.config.get().getEnvironmentConfig().getSso() != null) {
+            bind(SSOEnvironment.class).in(Singleton.class);
+            bind(WebEnvironment.class).to(SSOEnvironment.class);
+            bind.to(SSOEnvironment.class);
+        } else {
+            super.bindWebEnvironment(bind);
         }
     }
 
@@ -141,11 +172,17 @@ public class ShiroGuiceModule extends ShiroWebModule {
 
     private Key<? extends Filter>[] getFiltersFromConfig() {
         List<Key<? extends Filter>> filters = Lists.newArrayList();
-        for (String strFilter : this.coreInjector.getInstance(Configuration.class).getEnvironmentConfig()
-                .getShiroAuthenticationFilter()) {
+        EnvironmentConfiguration envConfig = this.config.get().getEnvironmentConfig();
+        for (String strFilter : envConfig.getShiroAuthenticationFilter()) {
             try {
                 ShiroFilter filterKey = ShiroFilter.valueOf(strFilter);
-                filters.add(filterKey.getFilterKey());
+
+                // swap authc filter with sso if user enables SSO auth
+                if (envConfig.getSso() != null && filterKey.equals(ShiroFilter.authc)) {
+                    filters.add(ShiroFilter.sso.getFilterKey());
+                } else {
+                    filters.add(filterKey.getFilterKey());
+                }
             } catch (Exception e) {
                 throw new IllegalStateException("Authentication filter " + strFilter
                         + " no known. Please choose any of: " + Lists.newArrayList(ShiroFilter.values()));
@@ -174,7 +211,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
         authc(FormAuthenticationFilter.class), anon(AnonymousUserFilter.class),
         authcBasic(OptionalBasicAuthFilter.class),
 
-        oauth2(SSOSecurityFilter.class), saml2(SSOSecurityFilter.class), sso(SSOSecurityFilter.class),
+        sso(SSOSecurityFilter.class),
         ssoLogout(SSOLogoutFilter.class), ssoCallback(SSOCallbackFilter.class);
 
         private Key<? extends javax.servlet.Filter> filterKey;
@@ -187,5 +224,4 @@ public class ShiroGuiceModule extends ShiroWebModule {
             return this.filterKey;
         }
     }
-
 }

@@ -108,6 +108,14 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
     }
 
     /**
+     * SSO variant, currently we only support "keycloak" and "oidc".
+     */
+    @ConfigurationParameter
+    public String getSso() {
+        return getString("sso");
+    }
+
+    /**
      * Returns {@link SecurityConfigRecord} for specified config type.
      * <ul>
      * <li>if {@link #getSecurityConfigStorageId()} is defined then the platform
@@ -135,26 +143,10 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
         return getConfigFilePath(SecurityConfigType.ShiroLDAPConfig);
     }
 
-    @ConfigurationParameter
-    public String getOauthParameters() {
-        return getConfigFilePath(SecurityConfigType.OauthParameters);
-    }
 
-    @ConfigurationParameter
-    public String getSamlParameters() {
-        return getConfigFilePath(SecurityConfigType.SamlParameters);
-    }
-
-    @ConfigurationParameter
-    public String getSsoAuthConfigOverride() {
-        return getConfigFilePath(SecurityConfigType.SsoAuthConfigOverride);
-    }
-
-    @ConfigurationParameter
-    public String getSsoUsersConfig() {
-        return getConfigFilePath(SecurityConfigType.SsoUsersConfig);
-    }
-
+    /**
+     * @deprecated we shouldn't manipulate auth filters from the config, filter chain should be adjusted automatically based on the auth method user select
+     */
     @ConfigurationParameter
     public List<String> getShiroAuthenticationFilter() {
         return getStringList("shiroAuthenticationFilter",

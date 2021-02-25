@@ -25,7 +25,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.config.Ini;
+import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
+import org.researchspace.secrets.SecretResolver;
+import org.researchspace.secrets.SecretsHelper;
 
 public class ShiroRealmUtils {
     /**
@@ -64,4 +68,26 @@ public class ShiroRealmUtils {
         return roleNames;
     }
 
+
+    /**
+     * Resolve externally defined variables in the .ini file using provided secret
+     * resolver. Placeholder reference should be enclosed in \${}, e.g:
+     * clientId.value = \${RS_SSO_CLIENT_ID}
+     */
+    public static void resolveSecrets(Set<String> settingsWithSecrets, Ini ini, SecretResolver secretResolver) {
+        // iterate over all sections and replace known settings containing secrets
+        for (String sectionName : ini.getSectionNames()) {
+            Section section = ini.getSection(sectionName);
+            section.replaceAll((key, value) -> {
+                if (settingsWithSecrets.contains(key)) {
+                    if (value.startsWith("\\${") && value.endsWith("}")) {
+                        // get rid of the leading \ which might be used to escape the $
+                        value = value.substring(1);
+                    }
+                    return SecretsHelper.resolveSecretOrFallback(secretResolver, value);
+                }
+                return value;
+            });
+        }
+    }
 }

@@ -145,7 +145,13 @@ public class LDPAssetsLoader {
         for (Entry<String, Map<String, Map<StoragePath, FindResult>>> entry : mapResultsByRepositoryIdAndStorageId
                 .entrySet()) {
             if (isLoadableFromStorage(entry.getKey())) {
-                loadAllToRepository(entry.getKey(), entry.getValue());
+                boolean isWritable = repositoryManager.getRepository(entry.getKey()).isWritable();
+                if (isWritable) {
+                    loadAllToRepository(entry.getKey(), entry.getValue());
+                } else {
+                    logger.warn("Skipping loading of LDP assets into the " + entry.getKey()
+                            + " repository, because it is not writable!");
+                }
             } else {
                 logger.info("Skipping loading LDP assets into the \"" + entry.getKey()
                         + "\" repository: the repository is not listed in "

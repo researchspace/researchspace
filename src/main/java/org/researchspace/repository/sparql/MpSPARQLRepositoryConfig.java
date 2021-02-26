@@ -43,6 +43,7 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
     protected static final ValueFactory vf = SimpleValueFactory.getInstance();
 
     private boolean usingQuads = true;
+    private boolean writable = true;
 
     public MpSPARQLRepositoryConfig() {
         super();
@@ -66,10 +67,19 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
         this.usingQuads = usingQuads;
     }
 
+    public boolean isWritable() {
+        return writable;
+    }
+
+    public void setWritable(boolean writable) {
+        this.writable = writable;
+    }
+
     @Override
     public Resource export(Model model) {
         Resource implNode = super.export(model);
         model.add(implNode, MpRepositoryVocabulary.QUAD_MODE, vf.createLiteral(usingQuads));
+        model.add(implNode, MpRepositoryVocabulary.WRITABLE, vf.createLiteral(writable));
         return implNode;
     }
 
@@ -80,6 +90,8 @@ public class MpSPARQLRepositoryConfig extends SPARQLRepositoryConfig {
         try {
             Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.QUAD_MODE, null))
                     .ifPresent(lit -> setUsingQuads(lit.booleanValue()));
+            Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.WRITABLE, null))
+                    .ifPresent(lit -> setWritable(lit.booleanValue()));
         } catch (ModelException e) {
             throw new SailConfigException(e.getMessage(), e);
         }

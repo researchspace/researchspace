@@ -9,27 +9,24 @@
     <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
   </li>
 
-  <li class="active">Open Street Map integration</li>
+  <li class="active">Open Street Map Integration</li>
 </ol>
 
 <div class="page">
   <div class='page__body'>
     <h1>Open Street Map integration</h1>
     <p>
-      Researchspace allows users to instruct SPARQL queries to call the Open Street Map (OSM) APIs. 
+      This integration creates a simple lookup service to federate againsts the Open Street Maps (OSM) API, allowing users to reference place names in thier ResearchSpace instances. Users can lookup a street address, a city, a country etc. and be able to reference this in their data. 
     </p>
     
-    <p>
-      The integration passes through two phases: first the configuration and then the queyring. The following sections will provide implementation details for each phase.
-    </p>
 
     <h2>1. Configuring the repository</h2>
 
     <p>
       
-      OSM integration requires a custom repository that can be created using the following turtle file.
-
-      The configuration can be also retrieved in the <strong>sample app</strong>. It can be downloaded from <a href="https://github.com/villaitatti/openstreetmap-app">https://github.com/villaitatti/openstreetmap-app</a>.</p>
+      The OSM integration requires the repository to be added in the repository manager. The repository ID should match the one in the configuration file. You can copy the configuration below or use template available in the drop-down list.
+      
+      </p>
     
 
     <mp-code-block mode='text/turtle'>
@@ -42,7 +39,7 @@
       @prefix : <http://www.researchspace.org/resource/system/service/custom#> .
 
       [] a repo:Repository ;
-        repo:repositoryID "openstreetmap" ;
+        repo:repositoryID "openstreetmaps" ;
         rdfs:label "A wrapper for the OSM repository" ;
         repo:repositoryImpl [
           repo:repositoryType "openrdf:SailRepository" ;
@@ -55,17 +52,20 @@
     </mp-code-block>
 
     <p>
-      It configures a new repository called <code>openstreetmap</code>. It is also explicitly typed as being typed as <code> researchspace:OpenstreetmapSail </code>, which is required to make REST calls.The repository also exposes a <code>serviceURL</code>, which is the OSM REST endpoint.
+      
+      A <strong><a href="https://github.com/villaitatti/openstreetmap-app">sample app</a></strong> can be downloaded and installed to test this lookup service, and can be modified to suit your needs.
+      
+      It configures the <code>openstreetmaps</code> repository typed as <code> researchspace:OpenstreetmapSail </code>, which is required to make REST calls. The repository also exposes a <code>serviceURL</code>, which is the OSM REST endpoint.
     </p>
 
-    <h2>2. Query using the service</h2>
+    <h2>2. Query the service</h2>
 
-    <p><strong>REMEMBER:</strong> the query <strong>MUST</strong> be executed against the repository created in the previous passage, i.e., <code>openstreetmap</code>. Otherwise it will not work.</p>
+    <p>The query <strong>MUST</strong> be executed against the repository created in the previous passage, i.e., <code>openstreetmaps</code>. Otherwise it will not work.</p>
 
     <p>
-      When the repository is configured and created, any query executed to it will be transformed into a HTTP request.
+      When the repository is configured and created, any query will be transformed into a HTTP request against the OSM API.
       
-      A query example can be find in the following box or in the sample app <a href="https://github.com/villaitatti/openstreetmap-app">https://github.com/villaitatti/openstreetmap-app</a>.
+      You can test the integration with the following SPARQL query or the one in the sample app.
     </p>
 
     <mp-code-block mode='SPARQL'>
@@ -80,7 +80,7 @@
     </mp-code-block>
 
     <p>
-      The federation makes a <code>GET</code> request at the following URL <code>https://nominatim.openstreetmap.org/search?q=PARAMETER&format=json&polygon_text=1&extratags=1</code>
+      The integration makes a <code>GET</code> request to the following URL <code>https://nominatim.openstreetmap.org/search?q=PARAMETER&format=json&polygon_text=1&extratags=1</code>
     </p>
     
     <p>
@@ -98,13 +98,13 @@
     <tr>
       <td><strong>Input</strong> (Required)</td>
       <td><code> http://www.researchspace.com/resource/assets/Ontologies/openstreetmap#q </code></td>
-      <td>It must contain the string parameter to search. E.g. Venice</td>
+      <td>It must contain the string parameter to search. E.g. <code>"Venice"</code></td>
     </tr>
     <tr>
       <td><strong>Input</strong> (Optional)</td>
       <td><code> http://www.researchspace.com/resource/assets/Ontologies/openstreetmap#polygon_text </code></td>
       <td>When the parameter is 1, the <code>GET</code> request returns the resulting geometry, otherwise it does not. <br>When not specified in the query, <strong>Default</strong> value is 1
-        <br>For more information refer to the <a href="https://nominatim.org/release-docs/develop/api/Search/#output-details">documentation page</a></td>
+        <br>For more information refer to the OSM <a href="https://nominatim.org/release-docs/develop/api/Search/#output-details">documentation page</a></td>
       
     </tr>
     <tr>
@@ -119,12 +119,12 @@
     <tr>
       <td><strong>Output</strong></td>
       <td><code> http://www.researchspace.com/resource/assets/Ontologies/openstreetmap#displayName </code></td>
-      <td>The string describing the requested feature. It cannot be empty.</td>
+      <td>The string describing the requested feature.</td>
     </tr>
     <tr>
       <td><strong>Output</strong></td>
       <td><code> http://www.researchspace.com/resource/assets/Ontologies/openstreetmap#geoText </code></td>
-      <td>The string in WKT format describing the geografical requested feature. It can be <code>POINT</code> or <code>MULTIPOLYGON</code>. This result is empty if the input parameter <code>polygon_text</code> is 0. </td>
+      <td>The string in WKT format describing the requested geospatial feature. It can be a <code>POINT</code> or <code>MULTIPOLYGON</code>. This result is empty if the input parameter <code>polygon_text</code> is 0. </td>
     </tr>
     <tr>
       <td><strong>Output</strong></td>
@@ -132,7 +132,9 @@
       <td>The string describing the Wikidata ID of the requested feature. It can be empty if the input parameter <code>extratags</code> is 0 <strong>or</strong> if the requested feature has no Wikidata ID. </td>
     </tr>
 </table>
-
+<p> 
+  
+    </p>
 
   </div>
 </div>

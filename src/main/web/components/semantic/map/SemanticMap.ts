@@ -52,6 +52,7 @@ import {extend} from 'ol/extent';
 import {createEmpty} from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/Osm';
+import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -420,7 +421,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     const source = new Vector({ features });
     if (type === 'Point') {
       const clusterSource = new Cluster({ source, distance: 40 });
-      return new VectorLayer({
+      return new AnimatedCluster({
         source: clusterSource,
         style: getMarkerStyle(),
         zIndex: 1, // we want to always have markers on top of polygons

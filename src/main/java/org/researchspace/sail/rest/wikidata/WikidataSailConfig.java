@@ -19,7 +19,8 @@
 
 package org.researchspace.sail.rest.wikidata;
 
-import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
+import org.eclipse.rdf4j.sail.config.SailImplConfig;
+import org.researchspace.sail.rest.AbstractRESTWrappingSailConfig;
 
 /**
  * {@link SailImplConfig} for the {@link WikidataSail} text search API.
@@ -27,7 +28,7 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
  * @author Andriy Nikolov <an@metaphacts.com>
  *
  */
-public class WikidataSailConfig extends AbstractServiceWrappingSailConfig {
+public class WikidataSailConfig extends AbstractRESTWrappingSailConfig {
 
     public static final String DEFAULT_URL = "https://www.wikidata.org/w/api.php";
 

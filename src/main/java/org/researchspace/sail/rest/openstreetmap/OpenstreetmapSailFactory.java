@@ -51,10 +51,8 @@ public class OpenstreetmapSailFactory implements SailFactory {
         }
 
         OpenstreetmapSailConfig config = (OpenstreetmapSailConfig) originalConfig;
-        
-        OpenstreetmapSail sail = new OpenstreetmapSail(config.getUrl());
-        sail.setServiceID(config.getServiceID());
+        OpenstreetmapSail sail = new OpenstreetmapSail(config);
         return sail;
     }
-    
+
 }

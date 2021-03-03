@@ -22,11 +22,10 @@ package org.researchspace.sail.rest;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 
-public class AbstractRESTWrappingSail extends AbstractServiceWrappingSail {
+public class AbstractRESTWrappingSail extends AbstractServiceWrappingSail<AbstractRESTWrappingSailConfig> {
 
-    public AbstractRESTWrappingSail(String url) {
-        super(url);
-        // TODO Auto-generated constructor stub
+    public AbstractRESTWrappingSail(AbstractRESTWrappingSailConfig config) {
+        super(config);
     }
 
     @Override

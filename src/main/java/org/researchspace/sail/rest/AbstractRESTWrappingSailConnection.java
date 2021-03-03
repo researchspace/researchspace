@@ -24,22 +24,21 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
-import com.google.common.collect.Maps;
-
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
+import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.glassfish.jersey.client.ClientProperties;
+
+import com.google.common.collect.Maps;
 
 /**
  * Abstract superclass for {@link SailConnection}s that wrap around REST APIs.
@@ -47,9 +46,10 @@ import org.glassfish.jersey.client.ClientProperties;
  * @author Andriy Nikolov an@metaphacts.com
  *
  */
-public abstract class AbstractRESTWrappingSailConnection extends AbstractServiceWrappingSailConnection {
+public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTWrappingSailConfig>
+        extends AbstractServiceWrappingSailConnection<C> {
 
-    public AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail sailBase) {
+    public AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
         super(sailBase);
     }
 
@@ -66,9 +66,8 @@ public abstract class AbstractRESTWrappingSailConnection extends AbstractService
      */
     protected Response submit(RESTParametersHolder parametersHolder) {
         try {
-            Client client = ClientBuilder.newClient();
-            WebTarget targetResource = client.target(getSail().getUrl()).property(ClientProperties.FOLLOW_REDIRECTS,
-                    Boolean.TRUE);
+            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
             for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
                 targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
             }
@@ -89,10 +88,8 @@ public abstract class AbstractRESTWrappingSailConnection extends AbstractService
         try {
 
             Map<String, String> body = Maps.newHashMap();
-
-            Client client = ClientBuilder.newClient();
-            WebTarget targetResource = client.target(getSail().getUrl()).property(ClientProperties.FOLLOW_REDIRECTS,
-                    Boolean.TRUE);
+            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
             for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
                 body.put(entry.getKey(), entry.getValue());
             }
@@ -101,7 +98,6 @@ public abstract class AbstractRESTWrappingSailConnection extends AbstractService
             throw new SailException(e);
         }
     }
-
 
     @Override
     protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(

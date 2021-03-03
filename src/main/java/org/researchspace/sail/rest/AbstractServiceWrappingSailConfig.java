@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.sail.config.AbstractSailImplConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
+import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
 /**
@@ -38,8 +39,9 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  */
 public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImplConfig {
 
-    String url = null;
-    IRI serviceID = null;
+    private String url;
+    private IRI serviceID;
+    private Integer requestRateLimit;
 
     public AbstractServiceWrappingSailConfig() {
 
@@ -60,13 +62,17 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     @Override
     public Resource export(Model model) {
         Resource implNode = super.export(model);
+        var vf = SimpleValueFactory.getInstance();
         if (!StringUtils.isEmpty(url)) {
-            model.add(implNode, MpRepositoryVocabulary.SERVICE_URL,
-                    SimpleValueFactory.getInstance().createLiteral(url));
+            model.add(implNode, MpRepositoryVocabulary.SERVICE_URL, vf.createLiteral(url));
         }
 
         if (getServiceID() != null) {
             model.add(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, getServiceID());
+        }
+
+        if (getRequestRateLimit() != null) {
+            model.add(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, vf.createLiteral(getRequestRateLimit()));
         }
         return implNode;
     }
@@ -76,6 +82,8 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         super.parse(model, implNode);
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SERVICE_URL, null))
                 .ifPresent(lit -> setUrl(lit.stringValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, null))
+                .ifPresent(lit -> setRequestRateLimit(lit.intValue()));
         Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
                 .ifPresent(iri -> setServiceID(iri));
     }
@@ -84,7 +92,7 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         return url;
     }
 
-    public void setUrl(String url) {
+    protected void setUrl(String url) {
         this.url = url;
     }
 
@@ -92,8 +100,15 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         return serviceID;
     }
 
-    public void setServiceID(IRI serviceID) {
+    protected void setServiceID(IRI serviceID) {
         this.serviceID = serviceID;
     }
 
+    public Integer getRequestRateLimit() {
+        return requestRateLimit;
+    }
+
+    protected void setRequestRateLimit(int requestRateLimit) {
+        this.requestRateLimit = requestRateLimit;
+    }
 }

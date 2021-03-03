@@ -27,19 +27,15 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSail;
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
+public class OpenstreetmapSail extends AbstractServiceWrappingSail<OpenstreetmapSailConfig> {
 
-
-public class OpenstreetmapSail extends AbstractServiceWrappingSail {
-
-
-    
-    public OpenstreetmapSail(String url) {
-        super(url);
+    public OpenstreetmapSail(OpenstreetmapSailConfig config) {
+        super(config);
     }
 
     @Override
     protected SailConnection getConnectionInternal() throws SailException {
         return new OpenstreetmapSailConnection(this);
     }
-    
+
 }

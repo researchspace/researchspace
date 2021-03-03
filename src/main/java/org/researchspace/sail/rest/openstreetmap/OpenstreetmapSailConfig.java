@@ -18,7 +18,7 @@
 
 package org.researchspace.sail.rest.openstreetmap;
 
-import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
+import org.researchspace.sail.rest.AbstractRESTWrappingSailConfig;
 
 /**
  * 
@@ -26,7 +26,7 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
  *
  */
 
-public class OpenstreetmapSailConfig extends AbstractServiceWrappingSailConfig{
+public class OpenstreetmapSailConfig extends AbstractRESTWrappingSailConfig {
 
     public OpenstreetmapSailConfig() {
         super(OpenstreetmapSailFactory.SAIL_TYPE);

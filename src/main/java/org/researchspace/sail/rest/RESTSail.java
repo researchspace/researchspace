@@ -26,30 +26,18 @@ import org.eclipse.rdf4j.sail.SailException;
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
+public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
 
-public class RESTSail extends AbstractServiceWrappingSail {
-
-    private String httpMethod;
-
-    public RESTSail(String url, String httpMethod) {
-        super(url);
-        this.setHttpMethod(httpMethod);
-    }
-
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    public void setHttpMethod(String httpMethod) {
-        this.httpMethod = httpMethod;
+    public RESTSail(RESTSailConfig config) {
+        super(config);
     }
 
     @Override
     protected SailConnection getConnectionInternal() throws SailException {
-        
+
         // read input/output data from descriptor and save in the instance
         initParameters();
 
         return new RESTSailConnection(this);
-    }    
+    }
 }

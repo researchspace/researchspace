@@ -53,12 +53,7 @@ public class WikidataSailFactory implements SailFactory {
         if (!(originalConfig instanceof WikidataSailConfig)) {
             throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
         }
-        WikidataSailConfig config = (WikidataSailConfig) originalConfig;
-
-        WikidataSail sail = new WikidataSail(config.getUrl());
-        sail.setServiceID(config.getServiceID());
-        return sail;
-
+        return new WikidataSail((WikidataSailConfig) originalConfig);
     }
 
 }

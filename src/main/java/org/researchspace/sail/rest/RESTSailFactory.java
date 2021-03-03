@@ -48,13 +48,7 @@ public class RESTSailFactory implements SailFactory {
         if (!(originalConfig instanceof RESTSailConfig)) {
             throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
         }
-
-        RESTSailConfig config = (RESTSailConfig) originalConfig;
-
-        RESTSail sail = new RESTSail(config.getUrl(), config.getHttpMethod());
-        sail.setServiceID(config.getServiceID());
-        return sail;
+        return new RESTSail((RESTSailConfig) originalConfig);
     }
-    
 
 }

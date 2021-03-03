@@ -32,7 +32,7 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  *
  */
 
-public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
+public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
 
     private String httpMethod;
 
@@ -68,5 +68,5 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
     public void setHttpMethod(String httpMethod) {
         this.httpMethod = httpMethod;
     }
-    
+
 }

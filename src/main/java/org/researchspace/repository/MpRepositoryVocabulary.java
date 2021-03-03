@@ -69,6 +69,14 @@ public class MpRepositoryVocabulary {
      * is accessible
      */
     public static final IRI SERVICE_URL = VF.createIRI(FEDERATION_NAMESPACE, "serviceURL");
+
+    /**
+     * In REST service wrapper configs requestRateLimit holds number of requests
+     * that can be issued to the target resource per second. By default is
+     * unlimited.
+     */
+    public static final IRI REQUEST_RATE_LIMIT = VF.createIRI(FEDERATION_NAMESPACE, "requestRateLimit");
+
     /**
      * A datatype property that points to the repository ID which would be treated
      * as the default federation member.

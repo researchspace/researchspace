@@ -2,7 +2,7 @@ import { Props, createElement } from 'react';
 import * as React from 'react';
 import {Component, ComponentContext} from "platform/api/components";
 import XYZ from "ol/source/XYZ";
-import OSM from "ol/source/Osm";
+import OSM from "ol/source/OSM";
 import SemanticMap, {SemanticMapConfig, SemanticMapProps} from "platform/components/semantic/map/SemanticMap";
 import * as maybe from "data.maybe";
 import {findDOMNode} from "react-dom";

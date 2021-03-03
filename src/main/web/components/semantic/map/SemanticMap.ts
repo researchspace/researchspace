@@ -42,7 +42,7 @@ import MultiPoint from 'ol/geom/MultiPoint';
 import Polygon from 'ol/geom/Polygon';
 import MultiPolygon from 'ol/geom/MultiPolygon';
 import GeometryCollection from 'ol/geom/GeometryCollection';
-import WKT from 'ol/format/Wkt';
+import WKT from 'ol/format/WKT';
 import {transform} from 'ol/proj';
 import {defaults as controlDefaults} from 'ol/control';
 import {Interaction} from 'ol/interaction';
@@ -51,7 +51,7 @@ import {Extent} from 'ol/extent';
 import {extend} from 'ol/extent';
 import {createEmpty} from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
-import OSM from 'ol/source/Osm';
+import OSM from 'ol/source/OSM';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';

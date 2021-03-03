@@ -42,6 +42,7 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     private String url;
     private IRI serviceID;
     private Integer requestRateLimit;
+    private String userAgent;
 
     public AbstractServiceWrappingSailConfig() {
 
@@ -74,6 +75,10 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         if (getRequestRateLimit() != null) {
             model.add(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, vf.createLiteral(getRequestRateLimit()));
         }
+
+        if (getUserAgent() != null) {
+            model.add(implNode, MpRepositoryVocabulary.USER_AGENT, vf.createLiteral(getUserAgent()));
+        }
         return implNode;
     }
 
@@ -84,6 +89,8 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
                 .ifPresent(lit -> setUrl(lit.stringValue()));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, null))
                 .ifPresent(lit -> setRequestRateLimit(lit.intValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USER_AGENT, null))
+                .ifPresent(lit -> setUserAgent(lit.stringValue()));
         Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
                 .ifPresent(iri -> setServiceID(iri));
     }
@@ -110,5 +117,13 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
 
     protected void setRequestRateLimit(int requestRateLimit) {
         this.requestRateLimit = requestRateLimit;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    protected void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
     }
 }

@@ -36,6 +36,7 @@ import org.researchspace.federation.repository.MpSparqlServiceRegistry;
 import org.researchspace.federation.repository.service.ServiceDescriptor;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 import org.researchspace.rest.filters.RequestRateLimitFilter;
+import org.researchspace.rest.filters.UserAgentFilter;
 
 import com.google.common.collect.Maps;
 /**
@@ -76,6 +77,15 @@ public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrapp
         var clientBuilder = ClientBuilder.newBuilder();
         if (config.getRequestRateLimit() != null) {
             clientBuilder = clientBuilder.register(new RequestRateLimitFilter(config.getRequestRateLimit()));
+        }
+
+        // it is a good practice to always include application user-agent into all
+        // requests and somtime it can be even the requirement, e.g nominatim web
+        // service from OSM
+        if (config.getUserAgent() != null) {
+            clientBuilder = clientBuilder.register(new UserAgentFilter(config.getUserAgent()));
+        } else {
+            clientBuilder = clientBuilder.register(new UserAgentFilter());
         }
         this.client = clientBuilder.build();
     }

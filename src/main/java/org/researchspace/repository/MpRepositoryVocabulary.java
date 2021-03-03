@@ -24,6 +24,7 @@ import java.util.Set;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.researchspace.rest.filters.UserAgentFilter;
 
 import com.google.common.collect.Sets;
 
@@ -76,6 +77,12 @@ public class MpRepositoryVocabulary {
      * unlimited.
      */
     public static final IRI REQUEST_RATE_LIMIT = VF.createIRI(FEDERATION_NAMESPACE, "requestRateLimit");
+
+    /**
+     * User-Agent that should be used in REST calls from REST service wrapper.
+     * Otherwise default one is used, @see {@link UserAgentFilter}.
+     */
+    public static final IRI USER_AGENT = VF.createIRI(FEDERATION_NAMESPACE, "userAgent");
 
     /**
      * A datatype property that points to the repository ID which would be treated

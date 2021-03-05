@@ -139,9 +139,8 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         for (Object object : array) {
             MapBindingSet mapBindingSet = new MapBindingSet();
 
+            // Evaluate each jsonPath singularly and add the result to the binding
             for (Map.Entry<String, String> path : jsonPaths.entrySet()) {
-
-                // Add the result to the binding
                 mapBindingSet.addBinding(path.getKey(),
                         VF.createLiteral(JsonPath.read(object, path.getValue()).toString(), XSD.STRING));
             }
@@ -152,26 +151,25 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         return bindingSets;
     }
 
-    private List<BindingSet> iterateJsonMap(Map map, Map<String, String> jsonPaths) {
-
-        List<BindingSet> bindingSets = Lists.newArrayList();
-
-        //
-        int length = ((JSONArray) JsonPath.read(map, jsonPaths.entrySet().iterator().next().getValue())).size();
-
-        for (int x = 0; x < length; x++) {
-
-            MapBindingSet mapBindingSet = new MapBindingSet();
-
-            for (Map.Entry<String, String> path : jsonPaths.entrySet()) {
-
-                Object object = ((JSONArray) JsonPath.read(map, path.getValue())).get(x);
-                mapBindingSet.addBinding(path.getKey(), VF.createLiteral(object.toString(), XSD.STRING));
-            }
-
-            bindingSets.add(mapBindingSet);
+    /**
+     * 
+     * This function iterate over jsonPaths and evaluate each against the JSON object structured as a map 
+     * 
+     * @param map
+     * @param jsonPaths
+     * @return
+     */
+    private List<BindingSet> iterateJsonMap (Map map, Map<String, String> jsonPaths) {
+       
+        List<BindingSet> bindingSets = Lists.newArrayList(); 
+        MapBindingSet mapBindingSet = new MapBindingSet();
+        
+        for(Map.Entry<String, String> path : jsonPaths.entrySet()) {
+            Object object = JsonPath.read(map, path.getValue());
+            mapBindingSet.addBinding(path.getKey(), VF.createLiteral(object.toString(), XSD.STRING));
         }
 
+        bindingSets.add(mapBindingSet);
         return bindingSets;
     }
 

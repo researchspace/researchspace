@@ -66,7 +66,7 @@ import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
-import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor, SemanticMapShowBasemap } from './SemanticMapEvents';
+import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor, SemanticMapReplaceBasemap, SemanticMapReplaceHistoricalMap } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import { QueryConstantParameter } from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
@@ -155,7 +155,7 @@ export interface SemanticMapConfig {
    */
   providerOptions?: ProviderOptions;
 
-  providers?: any;
+  tilesLayers?: any;
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -165,7 +165,6 @@ interface MapState {
   errorMessage: Data.Maybe<string>;
   noResults?: boolean;
   isLoading?: boolean;
-  providers?: [];
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -174,7 +173,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
   private cancelation = new Cancellation();
-  private providers = [];
+  private tilesLayers = [];
+  private mousePosition = null;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -182,8 +182,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       tupleTemplate: maybe.Nothing<HandlebarsTemplateDelegate>(),
       noResults: false,
       isLoading: true,
-      errorMessage: maybe.Nothing<string>(),
-      providers: [] as  any
+      errorMessage: maybe.Nothing<string>()
     };
 
     this.cancelation
@@ -197,10 +196,19 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.cancelation
     .map(
       listen({
-        eventType: SemanticMapShowBasemap,
+        eventType: SemanticMapReplaceBasemap,
       })
     )
-    .onValue(this.showBasemap);
+    .onValue(this.replaceBasemap);
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapReplaceHistoricalMap,
+      })
+    )
+    .onValue(this.replaceHistoricalMap);
+    
   }
 
   private getInputCrs() {
@@ -281,8 +289,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           const tilelayer = new TileLayer({
             source: provider
           });
-          this.providers.push(tilelayer);
-        }
+          this.tilesLayers.push(tilelayer);
+          console.log("Tileslayer pushed");
+          console.log("Tileslayers now: " + this.tilesLayers.length);        }
       });
       return(cloned);
     }
@@ -325,9 +334,51 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   }
 
-  private showBasemap = (event: Event<any>) => {
+  private replaceBasemap = (event: Event<any>) => {
     this.map.getLayers().removeAt(0);
-    this.map.getLayers().insertAt(0, this.providers[event.data.selectedProvider]);
+    console.log("selectedprovider: " + event.data.selectedProvider);
+    console.log(this.tilesLayers[event.data.selectedProvider]);
+    this.map.getLayers().insertAt(0, this.tilesLayers[event.data.selectedProvider]);
+  }
+
+  private replaceHistoricalMap = (event: Event<any>) => {
+    console.log("REPLACE HISTORICAL MAP");
+    console.log("Layers before");
+    console.log(this.map.getLayers());
+    console.log("selectedprovider: " + event.data.selectedHistoricalMap);
+    console.log(this.tilesLayers[event.data.selectedHistoricalMap]);
+
+    this.map.getLayers().removeAt(1);
+    this.map.getLayers().insertAt(1, this.tilesLayers[event.data.selectedHistoricalMap]);
+    console.log("Layers after");
+    console.log(this.map.getLayers());
+
+    let radius = 120;
+
+    this.tilesLayers[event.data.selectedHistoricalMap].on('precompose', (event) => {
+      //console.log("🚀Event", event)
+      var ctx = event.context;
+      var pixelRatio = event.frameState.pixelRatio;
+      ctx.save();
+      ctx.beginPath();
+      if (this.mousePosition) {
+        //console.log("🚀mousePosition", this.mousePosition)
+        // only show a circle around the mouse
+        ctx.arc(this.mousePosition[0] * pixelRatio, this.mousePosition[1] * pixelRatio,
+            radius * pixelRatio, 0, 2 * Math.PI);
+        ctx.lineWidth = 5 * pixelRatio;
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.stroke();
+      }
+      ctx.clip();
+    });
+
+
+    // after rendering the layer, restore the canvas context
+    this.tilesLayers[event.data.selectedHistoricalMap].on('postcompose', function (event) {
+      var ctx = event.context;
+      ctx.restore();
+    });
   }
 
   /**
@@ -432,7 +483,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       style: (feature: Feature) => {
         const geometry = feature.getGeometry();
         const color = feature.get('color');
-        return getFeatureStyle(geometry, 'rgba(182,165,105,0.3)');
+        return getFeatureStyle(geometry, 'rgba(150,80,20,0.25)');
       },
       zIndex: 0,
     });
@@ -442,16 +493,42 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
-      let providers = this.providers;
+      var tilesLayers = [];
 
       //Fallback to default provider if no tiles-layers are specified in template
-      if(!providers.length){
-          providers = [new TileLayer({
+       if(!this.tilesLayers.length){
+          this.tilesLayers = [new TileLayer({
             source: new OSM(),
           })]
       } else {
-          providers = [providers[0]];
+          tilesLayers = [this.tilesLayers[0], this.tilesLayers[4]];
       }
+
+      let radius = 120;
+      tilesLayers[1].on('precompose', (event) => {
+        //console.log("🚀Event", event)
+        var ctx = event.context;
+        var pixelRatio = event.frameState.pixelRatio;
+        ctx.save();
+        ctx.beginPath();
+        if (this.mousePosition) {
+          //console.log("🚀mousePosition", this.mousePosition)
+          // only show a circle around the mouse
+          ctx.arc(this.mousePosition[0] * pixelRatio, this.mousePosition[1] * pixelRatio,
+              radius * pixelRatio, 0, 2 * Math.PI);
+          ctx.lineWidth = 5 * pixelRatio;
+          ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+          ctx.stroke();
+        }
+        ctx.clip();
+      });
+
+
+      // after rendering the layer, restore the canvas context
+      tilesLayers[1].on('postcompose', function (event) {
+        var ctx = event.context;
+        ctx.restore();
+      });
 
       const map = new Map({
         controls: controlDefaults({
@@ -462,7 +539,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interactionDefaults({}),
         layers: [
-          ..._.values(providers),
+          ..._.values(tilesLayers),
           ..._.values(layers),
         ],
         target: node,
@@ -475,6 +552,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       this.layers = layers;
       this.map = map;
+
+      /* Layer Spy functionality */
+
+      node.addEventListener('mousemove', (event) => {
+        this.mousePosition = map.getEventPixel(event);
+        this.map.render();
+      });
+
+      node.addEventListener('mouseout', () => {
+        this.mousePosition = null;
+        this.map.render();
+      });
 
       // asynch execute query and add markers
       this.addMarkersFromQuery(this.props, this.context);

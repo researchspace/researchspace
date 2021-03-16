@@ -5,11 +5,13 @@ export interface SemanticMapEventData {
 
     'SemanticMap.BoundingBoxChanged': Dictionary<any>;
     'SemanticMap.UpdateFeatureColor': string;
-    'SemanticMap.ShowBasemap': string;
+    'SemanticMap.ReplaceBasemap': string;
+    'SemanticMap.ReplaceHistoricalMap': string;
 }
 
 const event: EventMaker<SemanticMapEventData> = EventMaker;
 
 export const SemanticMapBoundingBoxChanged = event('SemanticMap.BoundingBoxChanged');
 export const SemanticMapUpdateFeatureColor = event('SemanticMap.UpdateFeatureColor');
-export const SemanticMapShowBasemap = event('SemanticMap.ShowBasemap');
+export const SemanticMapReplaceBasemap = event('SemanticMap.ReplaceBasemap');
+export const SemanticMapReplaceHistoricalMap = event('SemanticMap.ReplaceHistoricalMap');

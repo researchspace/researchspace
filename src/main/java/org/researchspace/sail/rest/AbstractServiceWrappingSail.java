@@ -32,11 +32,14 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.sail.SailException;
 import org.eclipse.rdf4j.sail.helpers.AbstractSail;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.researchspace.federation.repository.MpSparqlServiceRegistry;
 import org.researchspace.federation.repository.service.ServiceDescriptor;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 import org.researchspace.rest.filters.RequestRateLimitFilter;
 import org.researchspace.rest.filters.UserAgentFilter;
+import org.researchspace.secrets.SecretResolver;
+import org.researchspace.secrets.SecretsHelper;
 
 import com.google.common.collect.Maps;
 /**
@@ -65,12 +68,22 @@ public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrapp
 
     @Inject
     protected Provider<MpSparqlServiceRegistry> serviceRegistryProvider;
+
+    @Inject
+    private Provider<SecretResolver> secretResolver;
+
     protected Map<IRI, Parameter> mapOutputParametersByProperty = null;
     protected Map<IRI, Parameter> mapInputParametersByProperty = null;
     protected Optional<Parameter> subjectParameter = null;
 
     public AbstractServiceWrappingSail(C config) {
         this.config = config;
+
+    }
+
+    @Override
+    protected void initializeInternal() throws SailException {
+        this.resolveSecrets(config);
 
         // client Jersey HTTP client with Request Rate Limiter filter if request limit
         // is specified in the config
@@ -87,7 +100,26 @@ public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrapp
         } else {
             clientBuilder = clientBuilder.register(new UserAgentFilter());
         }
+
+        // if we have username and password in the config then conigure basic auth
+        if (config.getUsername() != null && config.getPassword() != null) {
+            HttpAuthenticationFeature basicAuthFeature = HttpAuthenticationFeature.basic(config.getUsername(),
+                    config.getPassword());
+            clientBuilder = clientBuilder.register(basicAuthFeature);
+        }
+
         this.client = clientBuilder.build();
+    }
+
+    private void resolveSecrets(C config) {
+        if (config.getUnResolvedUsername() != null && config.getUnResolvedPassword() != null) {
+            String username = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedUsername());
+            config.setUsername(username);
+            String password = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedPassword());
+            config.setPassword(password);
+        }
     }
 
     @Override

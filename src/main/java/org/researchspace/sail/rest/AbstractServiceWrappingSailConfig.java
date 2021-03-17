@@ -44,6 +44,13 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     private Integer requestRateLimit;
     private String userAgent;
 
+    // password and username that are already resolved through SecretResolver
+    private String username;
+    private String password;
+
+    private String unResolvedUsername;
+    private String unResolvedPassword;
+
     public AbstractServiceWrappingSailConfig() {
 
     }
@@ -79,6 +86,14 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         if (getUserAgent() != null) {
             model.add(implNode, MpRepositoryVocabulary.USER_AGENT, vf.createLiteral(getUserAgent()));
         }
+
+        if (getUnResolvedUsername() != null) {
+            model.add(implNode, MpRepositoryVocabulary.USERNAME, vf.createLiteral(getUnResolvedUsername()));
+        }
+
+        if (getUnResolvedPassword() != null) {
+            model.add(implNode, MpRepositoryVocabulary.PASSWORD, vf.createLiteral(getUnResolvedPassword()));
+        }
         return implNode;
     }
 
@@ -93,6 +108,11 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
                 .ifPresent(lit -> setUserAgent(lit.stringValue()));
         Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
                 .ifPresent(iri -> setServiceID(iri));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USERNAME, null))
+                .ifPresent(iri -> setUnResolvedUsername(iri.stringValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.PASSWORD, null))
+                .ifPresent(iri -> setUnResolvedPassword(iri.stringValue()));
+
     }
 
     public String getUrl() {
@@ -125,5 +145,37 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
 
     protected void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    protected void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    protected void setPassword(String password) {
+        this.password = password;
+    }
+
+    String getUnResolvedUsername() {
+        return unResolvedUsername;
+    }
+
+    void setUnResolvedUsername(String unResolvedUsername) {
+        this.unResolvedUsername = unResolvedUsername;
+    }
+
+    String getUnResolvedPassword() {
+        return unResolvedPassword;
+    }
+
+    void setUnResolvedPassword(String unResolvedPassword) {
+        this.unResolvedPassword = unResolvedPassword;
     }
 }

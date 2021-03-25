@@ -65,12 +65,15 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
     }
 
     @Override
-    protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            RESTParametersHolder parametersHolder) throws SailException {
+    protected Collection<BindingSet> convertObject2BindingSets(Object object,
+        ParametersHolder parametersHolder) throws SailException {
 
         List<BindingSet> results = Lists.newArrayList();
 
         try {
+
+            InputStream inputStream = (InputStream) object;
+
             String stringResponse = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
             Model model = getSail().getServiceDescriptor().getModel();
 
@@ -120,7 +123,6 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
         if (root instanceof Map)
             results = iterateJsonMap((Map) root, jsonPaths);
-
         return results;
     }
 
@@ -166,6 +168,8 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         
         for(Map.Entry<String, String> path : jsonPaths.entrySet()) {
             Object object = JsonPath.read(map, path.getValue());
+            
+            // TODO update Literal type to match service descriptor
             mapBindingSet.addBinding(path.getKey(), VF.createLiteral(object.toString(), XSD.STRING));
         }
 
@@ -200,7 +204,7 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
      * @return
      */
     @Override
-    protected Response submit(RESTParametersHolder parametersHolder) {
+    protected Response submit(ParametersHolder parametersHolder) {
         try {
             String httpMethod = getSail().getConfig().getHttpMethod();
 
@@ -221,8 +225,8 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
      * @param parameter
      * @param model
      * 
-     *                  Filter the statements having the JSON path predicate and
-     *                  return the one belonging to the matching parameter
+     *  Filter the statements having the JSON path predicate and
+     *  return the one belonging to the matching parameter
      * 
      * @return The string describing the JSON path for the matching parameter
      */

@@ -75,13 +75,15 @@ public class OpenstreetmapSailConnection extends AbstractRESTWrappingSailConnect
     }
 
     @Override
-    protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            RESTParametersHolder parametersHolder) throws SailException {
+    protected Collection<BindingSet> convertObject2BindingSets(Object object,
+        ParametersHolder parametersHolder) throws SailException {
 
         // Create the instance of the resulting list
         List<BindingSet> outList = Lists.newArrayList();
 
         try {
+
+            InputStream inputStream = (InputStream) object;
 
             // Read results and get the json object
             StringWriter mapper = new StringWriter();
@@ -183,5 +185,4 @@ public class OpenstreetmapSailConnection extends AbstractRESTWrappingSailConnect
 
         return res;
     }
-
 }

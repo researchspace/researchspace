@@ -52,11 +52,6 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
     public AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
         super(sailBase);
     }
-
-    @Override
-    protected abstract Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            RESTParametersHolder parametersHolder) throws SailException;
-
     /**
      * Default implementation calling the API using an HTTP GET method. Parameters
      * are passed via URL. JSON expected as a result format.
@@ -64,7 +59,7 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
      * @param parametersHolder
      * @return
      */
-    protected Response submit(RESTParametersHolder parametersHolder) {
+    protected Response submit(ParametersHolder parametersHolder) {
         try {
             WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
                     .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
@@ -84,7 +79,7 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
      * @param parametersHolder
      * @return
      */
-    protected Response submitPost(RESTParametersHolder parametersHolder) {
+    protected Response submitPost(ParametersHolder parametersHolder) {
         try {
 
             Map<String, String> body = Maps.newHashMap();
@@ -101,7 +96,7 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
 
     @Override
     protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
-            RESTParametersHolder parametersHolder) {
+            ParametersHolder parametersHolder) {
         Response response = submit(parametersHolder);
         if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
             throw new SailException("Request failed with HTTP status code " + response.getStatus() + ": "
@@ -110,8 +105,9 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
         InputStream resultStream;
 
         resultStream = (InputStream) response.getEntity();
+
         return new CollectionIteration<BindingSet, QueryEvaluationException>(
-                convertStream2BindingSets(resultStream, parametersHolder));
+            convertObject2BindingSets(resultStream, parametersHolder));
     }
 
 }

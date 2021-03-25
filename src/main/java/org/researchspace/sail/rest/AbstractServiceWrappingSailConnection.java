@@ -60,6 +60,14 @@ import com.google.common.collect.Maps;
 public abstract class AbstractServiceWrappingSailConnection<C extends AbstractServiceWrappingSailConfig>
         extends AbstractSailConnection {
 
+    protected interface ParametersHolder {
+        public String getIdentifier();
+        public void setIdentifier(String identifier);
+
+        public Map<String, String> getInputParameters();
+
+        public Map<IRI, String> getOutputVariables();
+    }
     /**
      * A class holding the mappings for the API inputs (parameter name->value as
      * string) and outputs (IRI->variable name)
@@ -67,27 +75,66 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      * @author Andriy Nikolov an@metaphacts.com
      *
      */
-    protected static class RESTParametersHolder {
-        private String subjVarName = null;
-        private Map<String, String> inputParameters = Maps.newHashMap();
-        private Map<IRI, String> outputVariables = Maps.newHashMap();
+    public class RESTParametersHolder implements ParametersHolder {
+
+        private String subjVarName;
+        private Map<String, String> inputParameters;
+        private Map<IRI, String> outputVariables;
 
         public RESTParametersHolder() {
-
+            inputParameters = Maps.newHashMap();
+            outputVariables = Maps.newHashMap();
+            subjVarName = null;
         }
 
-        public String getSubjVarName() {
+        @Override
+        public String getIdentifier() {
             return subjVarName;
         }
 
-        public void setSubjVarName(String subjVarName) {
-            this.subjVarName = subjVarName;
-        }
-
+        @Override
         public Map<String, String> getInputParameters() {
             return inputParameters;
         }
 
+        @Override
+        public Map<IRI, String> getOutputVariables() {
+            return outputVariables;
+        }
+
+        @Override
+        public void setIdentifier(String identifier) {
+            subjVarName = identifier;
+        }
+    }
+
+    public class SQLParametersHolder implements ParametersHolder {
+        private String queryId;
+        private Map<String, String> inputParameters;
+        private Map<IRI, String> outputVariables;
+
+        public SQLParametersHolder() {
+            inputParameters = Maps.newHashMap();
+            outputVariables = Maps.newHashMap();
+            queryId = null;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return queryId;
+        }
+
+        @Override
+        public void setIdentifier(String identifier) {
+            queryId = identifier;
+        }
+
+        @Override
+        public Map<String, String> getInputParameters() {
+            return inputParameters;
+        }
+
+        @Override
         public Map<IRI, String> getOutputVariables() {
             return outputVariables;
         }
@@ -123,7 +170,7 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
         StatementPatternCollector collector = new StatementPatternCollector();
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
-        RESTParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
+        ParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
         // limiter goes here
         return executeAndConvertResultsToBindingSet(parametersHolder);
     }
@@ -138,7 +185,7 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      * @return iteration over binding sets
      */
     protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
-            RESTParametersHolder parametersHolder);
+            ParametersHolder parametersHolder);
 
     @Override
     protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
@@ -217,9 +264,9 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
         return sail;
     }
 
-    protected abstract RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
+    protected abstract ParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
             throws SailException;
 
-    protected abstract Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            RESTParametersHolder parametersHolder) throws SailException;
+    protected abstract Collection<BindingSet> convertObject2BindingSets(Object object,
+        ParametersHolder parametersHolder) throws SailException;
 }

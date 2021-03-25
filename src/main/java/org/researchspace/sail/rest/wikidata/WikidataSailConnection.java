@@ -63,8 +63,8 @@ public class WikidataSailConnection extends AbstractRESTWrappingSailConnection<W
     }
 
     @Override
-    protected RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
-        RESTParametersHolder res = new RESTParametersHolder();
+    protected ParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
+        ParametersHolder res = new RESTParametersHolder();
 
         List<StatementPattern> relevant = stmtPatterns.stream()
                 .filter(stmtPattern -> stmtPattern.getPredicateVar().hasValue()
@@ -129,9 +129,12 @@ public class WikidataSailConnection extends AbstractRESTWrappingSailConnection<W
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            RESTParametersHolder parametersHolder) throws SailException {
+    protected Collection<BindingSet> convertObject2BindingSets(Object object,
+        ParametersHolder parametersHolder) throws SailException {
         try {
+
+            InputStream inputStream = (InputStream) object;
+
             ObjectMapper mapper = new ObjectMapper();
             HashMap<String, Object> map = mapper.readValue(inputStream, HashMap.class);
             List<Object> resList = (List<Object>) map.get("search");

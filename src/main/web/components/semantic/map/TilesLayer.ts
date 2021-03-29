@@ -58,7 +58,7 @@ export class TilesLayer extends Component<ProviderProps, any>{
       }
       case Source.MapBoxRasterTiles: {
         newProvider = new XYZ({
-          url: 'http://localhost:10214/proxy/mapbox/v4/' +
+          url: '/proxy/mapbox/v4/' +
             this.props.providerOptions.tileset_id + '/{z}/{x}/{y}@2x.png'
         });
         break;

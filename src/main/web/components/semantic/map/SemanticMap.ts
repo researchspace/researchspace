@@ -52,6 +52,7 @@ import {extend} from 'ol/extent';
 import {createEmpty} from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
+import {getRenderPixel} from 'ol/render';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
@@ -342,40 +343,41 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private replaceHistoricalMap = (event: Event<any>) => {
-    console.log("REPLACE HISTORICAL MAP");
-    console.log("Layers before");
-    console.log(this.map.getLayers());
-    console.log("selectedprovider: " + event.data.selectedHistoricalMap);
     console.log(this.tilesLayers[event.data.selectedHistoricalMap]);
 
     this.map.getLayers().removeAt(1);
     this.map.getLayers().insertAt(1, this.tilesLayers[event.data.selectedHistoricalMap]);
     console.log("Layers after");
     console.log(this.map.getLayers());
-
+    
     let radius = 120;
-
-    this.tilesLayers[event.data.selectedHistoricalMap].on('precompose', (event) => {
+    
+    this.tilesLayers[event.data.selectedHistoricalMap].on('prerender', (event) => {
+      
       //console.log("🚀Event", event)
       var ctx = event.context;
       var pixelRatio = event.frameState.pixelRatio;
       ctx.save();
       ctx.beginPath();
       if (this.mousePosition) {
-        //console.log("🚀mousePosition", this.mousePosition)
-        // only show a circle around the mouse
-        ctx.arc(this.mousePosition[0] * pixelRatio, this.mousePosition[1] * pixelRatio,
-            radius * pixelRatio, 0, 2 * Math.PI);
-        ctx.lineWidth = 5 * pixelRatio;
-        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-        ctx.stroke();
+          var pixel = getRenderPixel(event, this.mousePosition);
+          var offset = getRenderPixel(event, [
+            this.mousePosition[0] + radius,
+            this.mousePosition[1] ]);
+          var canvasRadius = Math.sqrt(
+            Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
+          );
+          ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
+          ctx.lineWidth = (2 * canvasRadius) / radius;
+          ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+          ctx.stroke();
       }
       ctx.clip();
     });
 
 
     // after rendering the layer, restore the canvas context
-    this.tilesLayers[event.data.selectedHistoricalMap].on('postcompose', function (event) {
+    this.tilesLayers[event.data.selectedHistoricalMap].on('postrender', function (event) {
       var ctx = event.context;
       ctx.restore();
     });
@@ -490,6 +492,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private renderMap(node, props, center, markers) {
+    console.log("RENDERED!");
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
@@ -505,27 +508,33 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       }
 
       let radius = 120;
-      tilesLayers[1].on('precompose', (event) => {
+
+      this.tilesLayers[4].on('prerender', (event) => {
+      
         //console.log("🚀Event", event)
         var ctx = event.context;
         var pixelRatio = event.frameState.pixelRatio;
         ctx.save();
         ctx.beginPath();
         if (this.mousePosition) {
-          //console.log("🚀mousePosition", this.mousePosition)
-          // only show a circle around the mouse
-          ctx.arc(this.mousePosition[0] * pixelRatio, this.mousePosition[1] * pixelRatio,
-              radius * pixelRatio, 0, 2 * Math.PI);
-          ctx.lineWidth = 5 * pixelRatio;
-          ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-          ctx.stroke();
+            var pixel = getRenderPixel(event, this.mousePosition);
+            var offset = getRenderPixel(event, [
+              this.mousePosition[0] + radius,
+              this.mousePosition[1] ]);
+            var canvasRadius = Math.sqrt(
+              Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
+            );
+            ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
+            ctx.lineWidth = (2 * canvasRadius) / radius;
+            ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+            ctx.stroke();
         }
         ctx.clip();
       });
-
-
+  
+  
       // after rendering the layer, restore the canvas context
-      tilesLayers[1].on('postcompose', function (event) {
+      this.tilesLayers[4].on('postrender', function (event) {
         var ctx = event.context;
         ctx.restore();
       });
@@ -540,7 +549,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         interactions: interactionDefaults({}),
         layers: [
           ..._.values(tilesLayers),
-          ..._.values(layers),
+          ..._.values(layers)
         ],
         target: node,
         view: new View({

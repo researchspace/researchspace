@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.sail.config.AbstractSailImplConfig;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
+import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
 /**
@@ -38,8 +39,17 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  */
 public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImplConfig {
 
-    String url = null;
-    IRI serviceID = null;
+    private String url;
+    private IRI serviceID;
+    private Integer requestRateLimit;
+    private String userAgent;
+
+    // password and username that are already resolved through SecretResolver
+    private String username;
+    private String password;
+
+    private String unResolvedUsername;
+    private String unResolvedPassword;
 
     public AbstractServiceWrappingSailConfig() {
 
@@ -60,13 +70,29 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
     @Override
     public Resource export(Model model) {
         Resource implNode = super.export(model);
+        var vf = SimpleValueFactory.getInstance();
         if (!StringUtils.isEmpty(url)) {
-            model.add(implNode, MpRepositoryVocabulary.SERVICE_URL,
-                    SimpleValueFactory.getInstance().createLiteral(url));
+            model.add(implNode, MpRepositoryVocabulary.SERVICE_URL, vf.createLiteral(url));
         }
 
         if (getServiceID() != null) {
             model.add(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, getServiceID());
+        }
+
+        if (getRequestRateLimit() != null) {
+            model.add(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, vf.createLiteral(getRequestRateLimit()));
+        }
+
+        if (getUserAgent() != null) {
+            model.add(implNode, MpRepositoryVocabulary.USER_AGENT, vf.createLiteral(getUserAgent()));
+        }
+
+        if (getUnResolvedUsername() != null) {
+            model.add(implNode, MpRepositoryVocabulary.USERNAME, vf.createLiteral(getUnResolvedUsername()));
+        }
+
+        if (getUnResolvedPassword() != null) {
+            model.add(implNode, MpRepositoryVocabulary.PASSWORD, vf.createLiteral(getUnResolvedPassword()));
         }
         return implNode;
     }
@@ -76,15 +102,24 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         super.parse(model, implNode);
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SERVICE_URL, null))
                 .ifPresent(lit -> setUrl(lit.stringValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, null))
+                .ifPresent(lit -> setRequestRateLimit(lit.intValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USER_AGENT, null))
+                .ifPresent(lit -> setUserAgent(lit.stringValue()));
         Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
                 .ifPresent(iri -> setServiceID(iri));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USERNAME, null))
+                .ifPresent(iri -> setUnResolvedUsername(iri.stringValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.PASSWORD, null))
+                .ifPresent(iri -> setUnResolvedPassword(iri.stringValue()));
+
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    protected void setUrl(String url) {
         this.url = url;
     }
 
@@ -92,8 +127,55 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         return serviceID;
     }
 
-    public void setServiceID(IRI serviceID) {
+    protected void setServiceID(IRI serviceID) {
         this.serviceID = serviceID;
     }
 
+    public Integer getRequestRateLimit() {
+        return requestRateLimit;
+    }
+
+    protected void setRequestRateLimit(int requestRateLimit) {
+        this.requestRateLimit = requestRateLimit;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    protected void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    protected void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    protected void setPassword(String password) {
+        this.password = password;
+    }
+
+    String getUnResolvedUsername() {
+        return unResolvedUsername;
+    }
+
+    void setUnResolvedUsername(String unResolvedUsername) {
+        this.unResolvedUsername = unResolvedUsername;
+    }
+
+    String getUnResolvedPassword() {
+        return unResolvedPassword;
+    }
+
+    void setUnResolvedPassword(String unResolvedPassword) {
+        this.unResolvedPassword = unResolvedPassword;
+    }
 }

@@ -22,6 +22,7 @@ package org.researchspace.sail.rest.wikidata;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.sail.Sail;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.researchspace.sail.rest.AbstractServiceWrappingSail;
@@ -33,19 +34,15 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSail;
  * @author Andriy Nikolov <an@metaphacts.com>
  *
  */
-public class WikidataSail extends AbstractServiceWrappingSail {
+public class WikidataSail extends AbstractServiceWrappingSail<WikidataSailConfig> {
 
     private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
     public static final IRI HAS_WIKIDATA_SEARCH_TOKEN = VF
             .createIRI("http://www.researchspace.org/resource/system/hasWikidataSearchToken");
 
-    public WikidataSail() {
-        this(WikidataSailConfig.DEFAULT_URL);
-    }
-
-    public WikidataSail(String url) {
-        super(url);
+    public WikidataSail(WikidataSailConfig config) {
+        super(config);
     }
 
     @Override

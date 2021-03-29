@@ -57,7 +57,8 @@ import com.google.common.collect.Maps;
  * @author Andriy Nikolov <an@metaphacts.com>
  *
  */
-public abstract class AbstractServiceWrappingSailConnection extends AbstractSailConnection {
+public abstract class AbstractServiceWrappingSailConnection<C extends AbstractServiceWrappingSailConfig>
+        extends AbstractSailConnection {
 
     /**
      * A class holding the mappings for the API inputs (parameter name->value as
@@ -92,9 +93,9 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
         }
     }
 
-    private final AbstractServiceWrappingSail sail;
+    private final AbstractServiceWrappingSail<C> sail;
 
-    public AbstractServiceWrappingSailConnection(AbstractServiceWrappingSail sailBase) {
+    public AbstractServiceWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
         super(sailBase);
         this.sail = sailBase;
     }
@@ -123,6 +124,7 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
         RESTParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
+        // limiter goes here
         return executeAndConvertResultsToBindingSet(parametersHolder);
     }
 
@@ -171,18 +173,18 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
 
     @Override
     protected void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts) throws SailException {
-        throw new SailException("The service " + this.sail.getUrl().toString() + " is read-only");
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
     }
 
     @Override
     protected void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
             throws SailException {
-        throw new SailException("The service " + this.sail.getUrl().toString() + " is read-only");
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
     }
 
     @Override
     protected void clearInternal(Resource... contexts) throws SailException {
-        throw new SailException("The service " + this.sail.getUrl().toString() + " is read-only");
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
 
     }
 
@@ -211,7 +213,7 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
 
     }
 
-    public AbstractServiceWrappingSail getSail() {
+    public AbstractServiceWrappingSail<C> getSail() {
         return sail;
     }
 

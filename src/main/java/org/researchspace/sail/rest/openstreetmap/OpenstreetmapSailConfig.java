@@ -1,7 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (C) 2021, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,29 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.researchspace.sail.rest.wikidata;
+package org.researchspace.sail.rest.openstreetmap;
 
-import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.researchspace.sail.rest.AbstractRESTWrappingSailConfig;
 
 /**
- * {@link SailImplConfig} for the {@link WikidataSail} text search API.
  * 
- * @author Andriy Nikolov <an@metaphacts.com>
+ * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
-public class WikidataSailConfig extends AbstractRESTWrappingSailConfig {
 
-    public static final String DEFAULT_URL = "https://www.wikidata.org/w/api.php";
+public class OpenstreetmapSailConfig extends AbstractRESTWrappingSailConfig {
 
-    public WikidataSailConfig() {
-        super(WikidataSailFactory.SAIL_TYPE);
-        this.setUrl(DEFAULT_URL);
+    public OpenstreetmapSailConfig() {
+        super(OpenstreetmapSailFactory.SAIL_TYPE);
     }
-
-    public WikidataSailConfig(String url) {
-        super(WikidataSailFactory.SAIL_TYPE);
-        this.setUrl(url);
-    }
-
 }

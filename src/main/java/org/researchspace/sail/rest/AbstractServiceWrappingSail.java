@@ -23,15 +23,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.sail.SailException;
 import org.eclipse.rdf4j.sail.helpers.AbstractSail;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.researchspace.federation.repository.MpSparqlServiceRegistry;
 import org.researchspace.federation.repository.service.ServiceDescriptor;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
+import org.researchspace.rest.filters.RequestRateLimitFilter;
+import org.researchspace.rest.filters.UserAgentFilter;
+import org.researchspace.secrets.SecretResolver;
+import org.researchspace.secrets.SecretsHelper;
 
 import com.google.common.collect.Maps;
 /**
@@ -43,20 +51,75 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public abstract class AbstractServiceWrappingSail extends AbstractSail {
+public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrappingSailConfig> extends AbstractSail {
 
-    private final String url;
-    private IRI serviceID;
+    private C config;
     private ServiceDescriptor serviceDescriptor = null;
+
+    /**
+     * According to the documentation of JAX-RS, "initialization as well as disposal
+     * of client may be a rather expensive operation", so we want to make sure that
+     * we reuse the same client instance for all calls for the specific service.
+     * 
+     * In Jersey Client is threadsafe, so it is fine to have the single instance in
+     * the sail and access it from multiple sail connections.
+     */
+    private Client client;
 
     @Inject
     protected Provider<MpSparqlServiceRegistry> serviceRegistryProvider;
+
+    @Inject
+    private Provider<SecretResolver> secretResolver;
+
     protected Map<IRI, Parameter> mapOutputParametersByProperty = null;
     protected Map<IRI, Parameter> mapInputParametersByProperty = null;
     protected Optional<Parameter> subjectParameter = null;
 
-    public AbstractServiceWrappingSail(String url) {
-        this.url = url;
+    public AbstractServiceWrappingSail(C config) {
+        this.config = config;
+
+    }
+
+    @Override
+    protected void initializeInternal() throws SailException {
+        this.resolveSecrets(config);
+
+        // client Jersey HTTP client with Request Rate Limiter filter if request limit
+        // is specified in the config
+        var clientBuilder = ClientBuilder.newBuilder();
+        if (config.getRequestRateLimit() != null) {
+            clientBuilder = clientBuilder.register(new RequestRateLimitFilter(config.getRequestRateLimit()));
+        }
+
+        // it is a good practice to always include application user-agent into all
+        // requests and somtime it can be even the requirement, e.g nominatim web
+        // service from OSM
+        if (config.getUserAgent() != null) {
+            clientBuilder = clientBuilder.register(new UserAgentFilter(config.getUserAgent()));
+        } else {
+            clientBuilder = clientBuilder.register(new UserAgentFilter());
+        }
+
+        // if we have username and password in the config then conigure basic auth
+        if (config.getUsername() != null && config.getPassword() != null) {
+            HttpAuthenticationFeature basicAuthFeature = HttpAuthenticationFeature.basic(config.getUsername(),
+                    config.getPassword());
+            clientBuilder = clientBuilder.register(basicAuthFeature);
+        }
+
+        this.client = clientBuilder.build();
+    }
+
+    private void resolveSecrets(C config) {
+        if (config.getUnResolvedUsername() != null && config.getUnResolvedPassword() != null) {
+            String username = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedUsername());
+            config.setUsername(username);
+            String password = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedPassword());
+            config.setPassword(password);
+        }
     }
 
     @Override
@@ -74,15 +137,11 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
 
     }
 
-    public String getUrl() {
-        return url;
-    }
-
     public ServiceDescriptor getServiceDescriptor() {
-        if ((serviceDescriptor == null) && (serviceID != null) && (serviceRegistryProvider != null)) {
+        if ((serviceDescriptor == null) && (this.config.getServiceID() != null) && (serviceRegistryProvider != null)) {
             MpSparqlServiceRegistry registry = serviceRegistryProvider.get();
             if (registry != null) {
-                registry.getDescriptorForIri(serviceID).ifPresent(descriptor -> {
+                registry.getDescriptorForIri(this.config.getServiceID()).ifPresent(descriptor -> {
                     this.serviceDescriptor = descriptor;
                 });
             }
@@ -94,14 +153,6 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
         this.serviceDescriptor = serviceDescriptor;
     }
 
-    public IRI getServiceID() {
-        return serviceID;
-    }
-
-    public void setServiceID(IRI serviceID) {
-        this.serviceID = serviceID;
-    }
-
     protected void initParameters() {
         this.mapOutputParametersByProperty = Maps.newHashMap();
         this.mapInputParametersByProperty = Maps.newHashMap();
@@ -110,7 +161,7 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
 
         if (descriptor == null) {
             throw new IllegalStateException("Service descriptor is not configured or does not exist. Hint: does "
-                    + this.serviceID + " point to an existing service descriptor?");
+                    + this.config.getServiceID() + " point to an existing service descriptor?");
         }
 
         // Collect definitions of input parameters from the service descriptor
@@ -152,6 +203,14 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
                         && stmtPattern.getObjectVar().getName().equals(parameterName)
                         && stmtPattern.getPredicateVar().hasValue())
                 .map(stmtPattern -> stmtPattern.getPredicateVar().getValue()).map(pred -> (IRI) pred).findFirst();
+    }
+
+    protected Client getClient() {
+        return client;
+    }
+
+    public C getConfig() {
+        return config;
     }
 
     public Map<IRI, Parameter> getMapOutputParametersByProperty() {

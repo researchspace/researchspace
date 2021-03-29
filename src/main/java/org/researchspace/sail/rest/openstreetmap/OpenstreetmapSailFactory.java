@@ -1,7 +1,6 @@
 /**
  * ResearchSpace
- * Copyright (C) 2020, © Trustees of the British Museum
- * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (C) 2021, © Trustees of the British Museum
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.researchspace.sail.rest.wikidata;
+package org.researchspace.sail.rest.openstreetmap;
 
 import org.eclipse.rdf4j.sail.Sail;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
@@ -25,18 +24,15 @@ import org.eclipse.rdf4j.sail.config.SailFactory;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
 
 /**
- * {@link SailFactory} implementation for {@WikidataSail}
  * 
- * @author Andriy Nikolov <an@metaphacts.com>
+ * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
-public class WikidataSailFactory implements SailFactory {
 
-    public static final String SAIL_TYPE = "researchspace:WikidataTextSearch";
+public class OpenstreetmapSailFactory implements SailFactory {
 
-    public WikidataSailFactory() {
-        // TODO Auto-generated constructor stub
-    }
+    // The sail type to reference
+    public static final String SAIL_TYPE = "researchspace:OpenstreetmapSail";
 
     @Override
     public String getSailType() {
@@ -45,15 +41,18 @@ public class WikidataSailFactory implements SailFactory {
 
     @Override
     public SailImplConfig getConfig() {
-        return new WikidataSailConfig();
+        return new OpenstreetmapSailConfig();
     }
 
     @Override
     public Sail getSail(SailImplConfig originalConfig) throws SailConfigException {
-        if (!(originalConfig instanceof WikidataSailConfig)) {
+        if (!(originalConfig instanceof OpenstreetmapSailConfig)) {
             throw new SailConfigException("Wrong config type: " + originalConfig.getClass().getCanonicalName() + ". ");
         }
-        return new WikidataSail((WikidataSailConfig) originalConfig);
+
+        OpenstreetmapSailConfig config = (OpenstreetmapSailConfig) originalConfig;
+        OpenstreetmapSail sail = new OpenstreetmapSail(config);
+        return sail;
     }
 
 }

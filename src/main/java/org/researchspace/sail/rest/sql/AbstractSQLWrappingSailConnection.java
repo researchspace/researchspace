@@ -96,6 +96,10 @@ public abstract class AbstractSQLWrappingSailConnection<C extends AbstractSQLWra
                     ps.setString(entry.getKey(), value);
                 }
 
+                if(type.equals(XSD.INTEGER) || type.equals(XSD.INT)) {
+                    ps.setInt(entry.getKey(), new Integer(value));
+                }
+
             }
 
             return ps.executeQuery();

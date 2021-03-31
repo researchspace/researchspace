@@ -26,12 +26,12 @@ import { __unsafe__setCurrentResource } from 'platform/api/navigation';
 import { Rdf, vocabularies } from 'platform/api/rdf';
 import { FieldValue, PlainTextInput, FieldDefinitionProp } from 'platform/components/forms';
 
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
 import { AsyncForm } from './fixturies/AsyncForm';
 import { FIELD_DEFINITION } from './fixturies/FieldDefinition';
 
-mockLanguagePreferences();
+mockConfig();
 __unsafe__setCurrentResource(Rdf.iri('test'));
 
 const ADD_BUTTON_SELECTOR = '.cardinality-support__add-value';

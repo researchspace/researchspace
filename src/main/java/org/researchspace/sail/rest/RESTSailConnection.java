@@ -23,9 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Map.Entry;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.Entity;
@@ -52,7 +52,9 @@ import org.eclipse.rdf4j.sail.SailException;
 import org.glassfish.jersey.client.ClientProperties;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ReadContext;
 
 import net.minidev.json.JSONArray;
@@ -70,8 +72,14 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
     private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
     protected static final ValueFactory VF = SimpleValueFactory.getInstance();
 
+    private Configuration jsonPathConfig;
+
     public RESTSailConnection(AbstractServiceWrappingSail<RESTSailConfig> sailBase) {
         super(sailBase);
+
+        // configure JsonPath to not throw exception on missing path, but return null
+        // instead
+        this.jsonPathConfig = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
     }
 
     @Override
@@ -185,27 +193,21 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         MapBindingSet mapBindingSet = new MapBindingSet();
 
         for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
+            Parameter parameter = getSail().getServiceDescriptor().getOutputParameters()
+                    .get(outputParameter.getValue());
 
-            try {
+            IRI type = parameter.getValueType();
+            String jsonPath = parameter.getJsonPath();
+            String value = JsonPath.read(object, jsonPath).toString();
 
-                Parameter parameter = getSail().getServiceDescriptor().getOutputParameters()
-                        .get(outputParameter.getValue());
-
-                IRI type = parameter.getValueType();
-                String jsonPath = parameter.getJsonPath();
-                String value = JsonPath.read(object, jsonPath).toString();
-
+            if (value != null) {
                 if (StringUtils.equals(type.stringValue(), RDFS.RESOURCE.stringValue())) {
                     logger.trace("Creating Resource ({})", value);
                     mapBindingSet.addBinding(outputParameter.getValue(), VF.createIRI(value));
-                }
-
-                else {
+                } else {
                     logger.trace("Creating Literal({},{})", value, type);
                     mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(value, type));
                 }
-            } catch (Exception e) {
-                logger.error(e);
             }
         }
 

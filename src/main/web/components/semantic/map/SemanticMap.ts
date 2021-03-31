@@ -356,7 +356,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
           const view = this.map.getView();
           const extent = this.calculateExtent();
-          view.fit(extent, { maxZoom: 10 });
+          view.fit(extent);
 
           if (fixZoomLevel) {
             view.setZoom(fixZoomLevel);

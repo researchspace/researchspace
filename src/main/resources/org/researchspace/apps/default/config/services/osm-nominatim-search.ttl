@@ -1,0 +1,104 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/osm/>
+
+:NominatimSearchService a ephedra:Service ;
+    sail:sailType "researchspace:RESTSail" ;
+    rdfs:label "A wrapper for the OpenStreetMap Nominatim service.";
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject :_results ;
+            sp:predicate :q ;
+            sp:object :_q
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :extratags ;
+            sp:object :_extratags
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :polygon_text ;
+            sp:object :_polygon_text
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :format ;
+            sp:object :_format
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :display_name ;
+            sp:object :_display_name
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :geotext ;
+            sp:object :_geotext
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :wikidata ;
+            sp:object :_wikidata
+            ]
+        );
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search query" ;
+        spl:predicate :_q ;
+        spl:valueType xsd:string
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "request that result should contain polygon text in WKT format" ;
+        spl:predicate :_polygon_text ;
+        spl:valueType xsd:string ;
+        spl:defaultValue "1"
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Include additional information in the result if available, like wikidata id" ;
+        spl:predicate :_extratags ;
+        spl:valueType xsd:string ;
+        spl:defaultValue "1"
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "we expect request in json format" ;
+        spl:predicate :_format ;
+        spl:valueType xsd:string ;
+        spl:defaultValue "json"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Display Name" ;
+        spl:predicate :_display_name ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.display_name"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "WKT" ;
+        spl:predicate :_geotext ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.geotext"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Wikidata ID" ;
+        spl:predicate :_wikidata ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.extratags.wikidata"
+        ] .
+

@@ -45,7 +45,9 @@ import org.eclipse.rdf4j.sail.SailException;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ReadContext;
 
 import net.minidev.json.JSONArray;
@@ -60,8 +62,14 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
     protected static final ValueFactory VF = (ValueFactory) SimpleValueFactory.getInstance();
 
+    private Configuration jsonPathConfig;
+
     public RESTSailConnection(AbstractServiceWrappingSail<RESTSailConfig> sailBase) {
         super(sailBase);
+
+        // configure JsonPath to not throw exception on missing path, but return null instead
+        this.jsonPathConfig = Configuration.defaultConfiguration()
+            .addOptions(Option.SUPPRESS_EXCEPTIONS);
     }
 
     @Override
@@ -141,8 +149,10 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
             // Evaluate each jsonPath singularly and add the result to the binding
             for (Map.Entry<String, String> path : jsonPaths.entrySet()) {
-                mapBindingSet.addBinding(path.getKey(),
-                        VF.createLiteral(JsonPath.read(object, path.getValue()).toString(), XSD.STRING));
+                Object value = JsonPath.using(this.jsonPathConfig).parse(object).read(path.getValue());
+                if (value != null) {
+                    mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value.toString(), XSD.STRING));
+                }
             }
 
             bindingSets.add(mapBindingSet);

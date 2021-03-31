@@ -1,0 +1,166 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/osm/>
+
+:NominatimSearchService a ephedra:Service ;
+    sail:sailType "researchspace:RESTSail" ;
+    rdfs:label "A wrapper for the OpenStreetMap Nominatim search API.";
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject :_results ;
+            sp:predicate :q ;
+            sp:object :_q
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :accept-language ;
+            sp:object :_accept-language
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :countrycodes;
+            sp:object :_countrycodes
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :viewbox;
+            sp:object :_viewbox
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :bounded;
+            sp:object :_bounded
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :extratags ;
+            sp:object :_extratags
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :polygon_text ;
+            sp:object :_polygon_text
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :format ;
+            sp:object :_format
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :display_name ;
+            sp:object :_display_name
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :geotext ;
+            sp:object :_geotext
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :wikidata ;
+            sp:object :_wikidata
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :importance ;
+            sp:object :_importance
+            ]
+        );
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search query" ;
+        spl:predicate :_q ;
+        spl:valueType xsd:string
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Preferred language order for showing search results, comma-separated list of language codes" ;
+        spl:predicate :_accept-language ;
+        spl:valueType xsd:string
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Limit search results to one or more countries. countrycode must be the ISO 3166-1alpha2 code, e.g. gb for the United Kingdom, de for Germany." ;
+        spl:predicate :_countrycodes ;
+        spl:valueType xsd:string
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "When a viewbox is given, restrict the result to items contained within that viewbox" ;
+        spl:predicate :_bounded ;
+        spl:valueType xsd:string
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "The preferred area to find search results. Any two corner points of the box are accepted as long as they span a real box. x is longitude, y is latitude.  <x1>,<y1>,<x2>,<y2>" ;
+        spl:predicate :_viewbox ;
+        spl:valueType xsd:string
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "request that result should contain polygon text in WKT format" ;
+        spl:predicate :_polygon_text ;
+        spl:valueType xsd:string ;
+        spl:defaultValue "1"
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Include additional information in the result if available, like wikidata id" ;
+        spl:predicate :_extratags ;
+        spl:valueType xsd:string ;
+        spl:defaultValue "1"
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "we expect request in json format" ;
+        spl:predicate :_format ;
+        spl:valueType xsd:string ;
+        spl:defaultValue "json"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Display Name" ;
+        spl:predicate :_display_name ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.display_name"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "WKT" ;
+        spl:predicate :_geotext ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.geotext"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Wikidata ID" ;
+        spl:predicate :_wikidata ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.extratags.wikidata"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "search result rank, the higher the more relevant is the result" ;
+        spl:predicate :_importance ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.importance"
+        ] .
+
+

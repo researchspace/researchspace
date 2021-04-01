@@ -102,6 +102,7 @@ public class MpRepositoryVocabulary {
     public static final IRI USE_COMPETING_JOIN = VF.createIRI(FEDERATION_NAMESPACE, "useCompetingJoin");
     public static final IRI USE_BOUND_JOIN = VF.createIRI(FEDERATION_NAMESPACE, "useBoundJoin");
     public static final IRI JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "jsonPath");
+    public static final IRI INPUT_JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "inputJsonPath");
     public static final IRI HTTP_METHOD = VF.createIRI(FEDERATION_NAMESPACE, "httpMethod");
     public static final IRI HTTP_HEADER = VF.createIRI(FEDERATION_NAMESPACE, "httpHeader");
     public static final IRI NAME = VF.createIRI(FEDERATION_NAMESPACE, "name");

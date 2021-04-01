@@ -35,6 +35,7 @@ import org.researchspace.repository.MpRepositoryVocabulary;
 public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
 
     private String httpMethod;
+    private String inputFormat;
 
     public RESTSailConfig() {
         super(RESTSailFactory.SAIL_TYPE);
@@ -47,6 +48,9 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
         // Get the HTTP method from the model
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.HTTP_METHOD, null))
                 .ifPresent(lit -> setHttpMethod(lit.stringValue()));
+
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.INPUT_FORMAT, null))
+                .ifPresent(lit -> setInputFormat(lit.stringValue()));
     }
 
     @Override
@@ -57,6 +61,10 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
         if (!StringUtils.isEmpty(getHttpMethod())) {
             model.add(implNode, MpRepositoryVocabulary.HTTP_METHOD,
                     SimpleValueFactory.getInstance().createLiteral(getHttpMethod()));
+        }
+        if (!StringUtils.isEmpty(getInputFormat())) {
+            model.add(implNode, MpRepositoryVocabulary.INPUT_FORMAT,
+                    SimpleValueFactory.getInstance().createLiteral(getInputFormat()));
         }
         return implNode;
     }
@@ -69,4 +77,11 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
         this.httpMethod = httpMethod;
     }
 
+    public String getInputFormat() {
+        return this.inputFormat;
+    }
+
+    public void setInputFormat(String inputFormat) {
+        this.inputFormat = inputFormat;
+    }
 }

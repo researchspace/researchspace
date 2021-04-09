@@ -23,17 +23,68 @@ import org.researchspace.services.storage.api.StorageConfig;
 import org.researchspace.services.storage.api.StorageCreationParams;
 import org.researchspace.services.storage.api.StorageException;
 
+/**
+ * 
+ * @author Janmaruko Hōrensō <@gspinaci>
+ *
+ */
+
 public class S3StorageConfig extends StorageConfig{
+
+    private String endpoint;
+    private String bucket;
+    private String region;
+    private String accessKeyId;
+    private String secretKeyId;
 
     @Override
     public String getStorageType() {
         return S3Storage.STORAGE_TYPE;
     }
 
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public String getSecretKeyId() {
+        return secretKeyId;
+    }
+
+    public void setSecretKeyId(String secretKeyId) {
+        this.secretKeyId = secretKeyId;
+    }
+
+    public String getAccessKeyId() {
+        return accessKeyId;
+    }
+
+    public void setAccessKeyId(String accessKeyId) {
+        this.accessKeyId = accessKeyId;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getBucket() {
+        return bucket;
+    }
+
+    public void setBucket(String bucket) {
+        this.bucket = bucket;
+    }
+
     @Override
     public ObjectStorage createStorage(StorageCreationParams params) throws StorageException {
-        // TODO Auto-generated method stub
-        return null;
+        return new S3Storage(params.getPathMapping(), this);
     }
     
 }

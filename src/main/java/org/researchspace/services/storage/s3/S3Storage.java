@@ -18,31 +18,126 @@
 
 package org.researchspace.services.storage.s3;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.ObjectRecord;
 import org.researchspace.services.storage.api.ObjectStorage;
+import org.researchspace.services.storage.api.PathMapping;
+import org.researchspace.services.storage.api.SizedStream;
 import org.researchspace.services.storage.api.StorageException;
+import org.researchspace.services.storage.api.StorageLocation;
 import org.researchspace.services.storage.api.StoragePath;
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * 
+ * @author Janmaruko Hōrensō <@gspinaci>
+ *
+ */
 
 public class S3Storage implements ObjectStorage {
+    
+    protected final class S3StorageLocation implements StorageLocation {
+
+        private String bucket;
+        private String key;
+
+        public S3StorageLocation(String bucket, String key) {
+           this.bucket = bucket;
+           this.key = key; 
+        }
+
+        @Override
+        public ObjectStorage getStorage() {
+            return S3Storage.this;
+        }
+
+        @Override
+        public SizedStream readSizedContent() throws IOException {
+            S3Object object = s3.getObject(config.getBucket(), key);
+            return new SizedStream((InputStream)object.getObjectContent(), object.getObjectMetadata().getContentLength());
+        }
+
+    }
 
     public static final String STORAGE_TYPE = "s3";
+    public final PathMapping paths;
+    public final S3StorageConfig config;
+
+    private AmazonS3 s3;
+
+    public S3Storage(PathMapping paths, S3StorageConfig config) throws StorageException {
+        this.paths = paths;
+        this.config = config;
+
+        initialize();
+    }
+
+    private void initialize() throws StorageException {
+
+
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(), config.getSecretKeyId());
+
+        s3 = AmazonS3ClientBuilder.standard()
+            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion()))
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+        
+    }
 
     @Override
     public boolean isMutable() {
-        // TODO Auto-generated method stub
-        return false;
+        return config.isMutable();
     }
 
     @Override
     public Optional<ObjectRecord> getObject(StoragePath path, String revision) throws StorageException {
-        // TODO Auto-generated method stub
-        return null;
+
+        try {
+            Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
+
+            if (!key.isPresent())
+                return Optional.empty(); 
+
+            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(), key.get());
+            
+            // If metadata exist
+            String user = s3Metadata.getUserMetaDataOf("Author");
+            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key.get());
+            ObjectMetadata metadata = new ObjectMetadata(Objects.isNull(user) ? "" : user, s3Metadata.getLastModified().toInstant());
+
+            ObjectRecord record = new ObjectRecord(location, path, revision, metadata);
+
+            return Optional.of(record);        
+        } 
+        catch (AmazonS3Exception e) {
+            // If the key is missing, return an empty result
+            if (StringUtils.equals(e.getErrorCode(), "NoSuchKey") || StringUtils.equals(e.getErrorCode(), "404 Not Found"))
+                return Optional.empty();
+            throw new StorageException(e.getMessage());
+        } 
+        catch (Exception e) {
+            throw new StorageException(e.getMessage());
+        }
+
     }
+    
 
     @Override
     public List<ObjectRecord> getRevisions(StoragePath path) throws StorageException {
@@ -52,8 +147,32 @@ public class S3Storage implements ObjectStorage {
 
     @Override
     public List<ObjectRecord> getAllObjects(StoragePath prefix) throws StorageException {
-        // TODO Auto-generated method stub
-        return null;
+
+        Optional<StoragePath> mappedPrefix = paths.mapForward(prefix);
+        
+        String pref = mappedPrefix.get().toString();
+        
+        try {
+
+            ListObjectsV2Result result = s3.listObjectsV2(config.getBucket(), pref);
+            List<ObjectRecord> records = new ArrayList<>();
+
+            List<S3ObjectSummary> objects = result.getObjectSummaries();
+            for (S3ObjectSummary os : objects) {
+
+                Optional<StoragePath> path = StoragePath.tryParse(os.getKey()).flatMap(paths::mapBack);
+                Optional<ObjectRecord> record = getObject(path.get(), null);
+
+                if (record.isPresent())
+                    records.add(record.get());
+            }
+
+            return records;
+    
+        } catch (Exception e) {
+
+            throw new StorageException(e.getMessage());
+        }
     }
 
     @Override
@@ -66,7 +185,6 @@ public class S3Storage implements ObjectStorage {
     @Override
     public void deleteObject(StoragePath path, ObjectMetadata metadata) throws StorageException {
         // TODO Auto-generated method stub
-        
     }
     
 }

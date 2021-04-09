@@ -23,22 +23,46 @@ import org.researchspace.services.storage.api.StorageConfig;
 import org.researchspace.services.storage.api.StorageConfigException;
 import org.researchspace.services.storage.api.StorageFactory;
 
+/**
+ * 
+ * @author Janmaruko Hōrensō <@gspinaci>
+ *
+ */
+
 public class S3StorageFactory implements StorageFactory {
+
+    private static final String ENDPOINT = "endpoint";
+    private static final String REGION = "region";
+    private static final String BUCKET = "bucket";
+    
+    private static final String ACCESS_KEY = "access-key";
+    private static final String SECRET_KEY = "secret-key";
 
     @Override
     public String getStorageType() {
         return S3Storage.STORAGE_TYPE;
     }
 
-    @Override
+   @Override
     public StorageConfig parseStorageConfig(String storageType, Configuration properties)
             throws StorageConfigException {
         S3StorageConfig config = new S3StorageConfig();
         StorageConfig.readBaseProperties(config, properties);
         
-        // Add here the cusom properties
-        // region, accesskey, endpoint, role etc.
-        // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/creating-clients.html
+        if (properties.containsKey(ENDPOINT)) 
+            config.setEndpoint(properties.getString(ENDPOINT));
+        
+        if (properties.containsKey(REGION)) 
+            config.setRegion(properties.getString(REGION));
+        
+        if (properties.containsKey(BUCKET)) 
+            config.setBucket(properties.getString(BUCKET));
+
+        if (properties.containsKey(ACCESS_KEY)) 
+            config.setAccessKeyId(properties.getString(ACCESS_KEY));
+
+        if (properties.containsKey(SECRET_KEY)) 
+            config.setSecretKeyId(properties.getString(SECRET_KEY));
 
         return config;
     }

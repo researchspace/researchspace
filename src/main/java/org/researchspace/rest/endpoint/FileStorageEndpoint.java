@@ -98,7 +98,7 @@ public class FileStorageEndpoint {
 
     @GET
     @RequiresAuthentication
-    public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId) {
+    public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId, @QueryParam("mode") String mode ) {
         if (logger.isTraceEnabled()) {
             logger.trace("Request to get a file from a storage");
         }
@@ -113,6 +113,12 @@ public class FileStorageEndpoint {
                     () -> new WebApplicationException("File not found: " + fileName, Response.Status.NOT_FOUND));
 
             StreamingOutput fileStream = readObjectContent(record);
+
+            // Set mode=open when the file will be opened in a new browser tab
+            if (mode == "open")
+                return Response.ok(fileStream, MediaType.APPLICATION_OCTET_STREAM)
+                    .header("content-disposition", "inline; filename = " + fileName).build();
+            // Download file as the default option
             return Response.ok(fileStream, MediaType.APPLICATION_OCTET_STREAM)
                     .header("content-disposition", "attachment; filename = " + fileName).build();
         } catch (Exception e) {

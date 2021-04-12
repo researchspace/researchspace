@@ -31,11 +31,15 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.SPL;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
@@ -141,14 +145,42 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
             // Evaluate each jsonPath singularly and add the result to the binding
             for (Map.Entry<String, String> path : jsonPaths.entrySet()) {
-                mapBindingSet.addBinding(path.getKey(),
-                        VF.createLiteral(JsonPath.read(object, path.getValue()).toString(), XSD.STRING));
+
+                Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
+                String value = JsonPath.read(object, path.getValue()).toString();
+
+                // If there is type check if it is a resource or a literal
+                if(type.isPresent()) {
+
+                    IRI iriType = VF.createIRI(type.get().stringValue());
+
+                    if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue()))
+                        mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+
+                    else
+                        mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
+                }
+                else    
+                    mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
+
             }
 
             bindingSets.add(mapBindingSet);
         }
 
         return bindingSets;
+    }
+
+    private Optional<Value> getType (Model model, String id) {
+            
+        // Get input json path for each input element
+        return model
+            .filter(null, SPL.PREDICATE_PROPERTY , SimpleValueFactory.getInstance().createIRI(id))
+            .stream()
+            .map(Statement::getSubject)
+            .map(sub -> model.filter(sub, SPL.VALUE_TYPE_PROPERTY, null).stream().findFirst().orElse(null))
+            .map(Statement::getObject)
+            .findFirst();
     }
 
     /**
@@ -166,7 +198,23 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         
         for(Map.Entry<String, String> path : jsonPaths.entrySet()) {
             Object object = JsonPath.read(map, path.getValue());
-            mapBindingSet.addBinding(path.getKey(), VF.createLiteral(object.toString(), XSD.STRING));
+
+            Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
+            String value = JsonPath.read(object, path.getValue()).toString();
+
+            // If there is type check if it is a resource or a literal
+            if(type.isPresent()) {
+
+                IRI iriType = VF.createIRI(type.get().stringValue());
+
+                if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue()))
+                    mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+
+                else
+                    mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
+            }
+            else    
+                mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
         }
 
         bindingSets.add(mapBindingSet);

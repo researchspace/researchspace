@@ -24,6 +24,7 @@ import * as URI from 'urijs';
 import { LdpService } from 'platform/api/services/ldp';
 import { Rdf, vocabularies } from 'platform/api/rdf';
 import { requestAsProperty } from 'platform/api/async';
+import { modeLabel } from 'platform/components/documentation/CodeBlock.scss';
 
 export const FILE_UPLOAD_SERVICE_URL = '/file';
 export const FILE_LDP_CONTAINER_ID = 'http://www.researchspace.org/resource/system/fileContainer';
@@ -242,7 +243,7 @@ export class FileManager {
       options = options || {};
       const namePredicateIri = options.namePredicateIri || VocabPlatform.fileName.value;
       const mediaTypePredicateIri = options.mediaTypePredicateIri || VocabPlatform.mediaType.value;
-
+      
       return this.getFileResourceGraph(resourceIri)
         .flatMap((graph) => {
           const triples = graph.triples;
@@ -268,11 +269,12 @@ export class FileManager {
     }
   }
 
-  static getFileUrl(fileName: string, storage: string): string {
+  static getFileUrl(fileName: string, storage: string, mode?: string): string {
     return new URI(FILE_UPLOAD_SERVICE_URL)
       .addQuery({
         fileName: fileName,
         storage: storage,
+        mode: mode,
       })
       .toString();
   }

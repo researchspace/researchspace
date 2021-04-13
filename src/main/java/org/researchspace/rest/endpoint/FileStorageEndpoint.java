@@ -98,7 +98,8 @@ public class FileStorageEndpoint {
 
     @GET
     @RequiresAuthentication
-    public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId, @QueryParam("mode") String mode ) {
+    public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId, 
+                                    @QueryParam("mode") String mode, @QueryParam("mediaType") String mediaType ) {
         if (logger.isTraceEnabled()) {
             logger.trace("Request to get a file from a storage");
         }
@@ -114,13 +115,16 @@ public class FileStorageEndpoint {
 
             StreamingOutput fileStream = readObjectContent(record);
 
-            // Set mode=open when the file will be opened in a new browser tab
-            if (mode == "open")
+            // Set mode=open when the file will be opened in a new browser tab requires the mediaType to be specified in 
+            // the client side component e.g. <rs-file-download mode='open' media-type='image/jpeg'>
+            if ("open".equals(mode) && mediaType != null) {
+                return Response.ok(fileStream, mediaType)
+                        .header("content-disposition", "inline; filename = " + fileName).build();
+            } else {
+                // Download file as the default option
                 return Response.ok(fileStream, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("content-disposition", "inline; filename = " + fileName).build();
-            // Download file as the default option
-            return Response.ok(fileStream, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("content-disposition", "attachment; filename = " + fileName).build();
+                        .header("content-disposition", "attachment; filename = " + fileName).build();
+            }
         } catch (Exception e) {
             String exceptionMessage = "Error fetching file '" + fileName + "': " + e.getMessage();
             logger.error(exceptionMessage);

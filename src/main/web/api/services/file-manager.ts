@@ -269,12 +269,13 @@ export class FileManager {
     }
   }
 
-  static getFileUrl(fileName: string, storage: string, mode?: string): string {
+  static getFileUrl(fileName: string, storage: string, mode?: string, mediaType?:string): string {
     return new URI(FILE_UPLOAD_SERVICE_URL)
       .addQuery({
         fileName: fileName,
         storage: storage,
         mode: mode,
+        mediaType: mediaType,
       })
       .toString();
   }

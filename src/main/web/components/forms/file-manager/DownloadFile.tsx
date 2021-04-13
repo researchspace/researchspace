@@ -30,6 +30,7 @@ export interface DownloadFileConfig {
   namePredicateIri?: string;
   mediaTypePredicateIri?: string;
   mode?:string;
+  mediaType?:string;
 }
 
 type DownloadFileProps = DownloadFileConfig & React.Props<DownloadFile>;
@@ -41,7 +42,7 @@ interface DownloadFileState {
 /**
  * Download the file from storage or open it in browser with the mode='open' parameter
  *
- * <rs-file-download iri='file resource iri' storage='storage id' mode='open'></rs-file-download>
+ * <rs-file-download iri='file resource iri' storage='storage id' mode='open' mediaType='application/pdf'></rs-file-download>
  */
 export class DownloadFile extends Component<DownloadFileProps, DownloadFileState> {
 
@@ -68,7 +69,7 @@ export class DownloadFile extends Component<DownloadFileProps, DownloadFileState
     this.setState({isLoading: true,});
 
     const { repository } = this.context.semanticContext;
-    const { iri, storage, mode, namePredicateIri, mediaTypePredicateIri } = this.props;
+    const { iri, storage, mode, mediaType, namePredicateIri, mediaTypePredicateIri } = this.props;
     const fileManager = new FileManager({ repository });
     this.cancel
         .map(
@@ -76,7 +77,7 @@ export class DownloadFile extends Component<DownloadFileProps, DownloadFileState
         )
         .observe({
           value: (resource) => {
-            const file = FileManager.getFileUrl(resource.fileName, storage, mode);
+            const file = FileManager.getFileUrl(resource.fileName, storage, mode, mediaType);
             window.open(file);
             this.setState({isLoading: false});
           }

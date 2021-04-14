@@ -22,6 +22,7 @@ package org.researchspace.sail.rest;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
 
@@ -86,8 +87,9 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
             for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
                 targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
             }
-            // TODO change mediatype
-            return targetResource.request(MediaType.TEXT_PLAIN).get();
+            // Get mediaType or text/plain if missing
+            String mediaType = Objects.isNull(((RESTSailConfig)getSail().getConfig()) .getMediaType()) ? MediaType.TEXT_PLAIN : ((RESTSailConfig)getSail().getConfig()) .getMediaType();
+            return targetResource.request(mediaType).get();
         } catch (Exception e) {
             throw new SailException(e);
         }

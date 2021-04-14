@@ -36,6 +36,7 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
 
     private String httpMethod;
     private String inputFormat;
+    private String mediaType;
 
     public RESTSailConfig() {
         super(RESTSailFactory.SAIL_TYPE);
@@ -45,12 +46,17 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
     public void parse(Model model, Resource implNode) throws SailConfigException {
         super.parse(model, implNode);
 
-        // Get the HTTP method from the model
+        // Get HTTP method from the model
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.HTTP_METHOD, null))
                 .ifPresent(lit -> setHttpMethod(lit.stringValue()));
 
+        // Get input format
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.INPUT_FORMAT, null))
                 .ifPresent(lit -> setInputFormat(lit.stringValue()));
+
+        // Get media_type
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.MEDIA_TYPE, null))
+                .ifPresent(lit -> setMediaType(lit.stringValue()));
     }
 
     @Override
@@ -58,14 +64,18 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
         Resource implNode = super.export(model);
 
         // Store the HTTP method in the model
-        if (!StringUtils.isEmpty(getHttpMethod())) {
+        if (!StringUtils.isEmpty(getHttpMethod())) 
             model.add(implNode, MpRepositoryVocabulary.HTTP_METHOD,
                     SimpleValueFactory.getInstance().createLiteral(getHttpMethod()));
-        }
-        if (!StringUtils.isEmpty(getInputFormat())) {
+        
+        if (!StringUtils.isEmpty(getInputFormat())) 
             model.add(implNode, MpRepositoryVocabulary.INPUT_FORMAT,
                     SimpleValueFactory.getInstance().createLiteral(getInputFormat()));
-        }
+        
+        if (!StringUtils.isEmpty(getMediaType())) 
+            model.add(implNode, MpRepositoryVocabulary.MEDIA_TYPE,
+                    SimpleValueFactory.getInstance().createLiteral(getMediaType()));
+        
         return implNode;
     }
 
@@ -83,5 +93,13 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
 
     public void setInputFormat(String inputFormat) {
         this.inputFormat = inputFormat;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
     }
 }

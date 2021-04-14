@@ -32,6 +32,8 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Model;
@@ -62,6 +64,10 @@ import net.minidev.json.JSONArray;
 
 public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTSailConfig> {
 
+    private static final String JSON = "JSON";
+    String message = "------";
+
+    private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
     protected static final ValueFactory VF = (ValueFactory) SimpleValueFactory.getInstance();
 
     public RESTSailConnection(AbstractServiceWrappingSail<RESTSailConfig> sailBase) {
@@ -72,6 +78,8 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
     protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
             RESTParametersHolder parametersHolder) throws SailException {
 
+        logger.trace("REST Response received");
+
         List<BindingSet> results = Lists.newArrayList();
 
         try {
@@ -79,9 +87,12 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
             Model model = getSail().getServiceDescriptor().getModel();
 
             // TODO: check the string format and call the right type. E.g., json or XML
-            String type = "json";
+            String type = JSON;
+
+            logger.trace("REST Response type is "+type);
+
             switch (type) {
-            case "json":
+            case JSON:
                 // Get a list of output variable names and their json paths
                 Map<String, String> jsonPaths = getJsonPaths(parametersHolder.getOutputVariables(), model);
 
@@ -137,6 +148,7 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
      */
     private List<BindingSet> iterateJsonArray(JSONArray array, Map<String, String> jsonPaths) {
 
+        logger.trace("### [START] Parsing JSONArray ###");
         List<BindingSet> bindingSets = Lists.newArrayList();
 
         // Iterate over each object in JSONArray and evaluate its
@@ -146,6 +158,9 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
             // Evaluate each jsonPath singularly and add the result to the binding
             for (Map.Entry<String, String> path : jsonPaths.entrySet()) {
 
+                logger.trace(message);
+                logger.trace("Parsing " + path.getValue());
+
                 Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
                 String value = JsonPath.read(object, path.getValue()).toString();
 
@@ -154,20 +169,25 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
                     IRI iriType = VF.createIRI(type.get().stringValue());
 
-                    if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue()))
+                    if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
+                        logger.trace("Creating Resource("+value+")");
                         mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+                    }
 
-                    else
+                    else {
+                        logger.trace("Creating Literal("+value+", "+iriType+")");
                         mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
+                    }
                 }
-                else    
+                else {
+                    logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
                     mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
-
+                }   
             }
-
             bindingSets.add(mapBindingSet);
         }
 
+        logger.trace("### [END] Parsing JSONArray ###");
         return bindingSets;
     }
 
@@ -192,11 +212,16 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
      * @return
      */
     private List<BindingSet> iterateJsonMap (Map map, Map<String, String> jsonPaths) {
+
+        logger.trace("### [START] Parsing JSONObject ###");
        
         List<BindingSet> bindingSets = Lists.newArrayList(); 
         MapBindingSet mapBindingSet = new MapBindingSet();
         
         for(Map.Entry<String, String> path : jsonPaths.entrySet()) {
+
+            logger.trace("Parsing " + path.getValue());
+
             Object object = JsonPath.read(map, path.getValue());
 
             Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
@@ -207,16 +232,23 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
                 IRI iriType = VF.createIRI(type.get().stringValue());
 
-                if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue()))
+                if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
+                    logger.trace("Creating Resource("+value+")");
                     mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+                }
 
-                else
+                else {
+                    logger.trace("Creating Literal("+value+", "+iriType+")");
                     mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
+                }
             }
-            else    
+            else {
+                logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
                 mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
+            }   
         }
 
+        logger.trace("### [END] Parsing JSONArray ###");
         bindingSets.add(mapBindingSet);
         return bindingSets;
     }
@@ -249,8 +281,11 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
      */
     @Override
     protected Response submit(RESTParametersHolder parametersHolder) {
+
         try {
             String httpMethod = getSail().getConfig().getHttpMethod();
+
+            logger.trace("Creating request with HTTP METHOD: "+httpMethod);
 
             // Case with POST
             if (httpMethod.equals(HttpMethod.POST))
@@ -281,6 +316,9 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
     @Override
     protected RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
+
+        logger.trace("### [START] Parsing SPARQL query ###");
+
         RESTParametersHolder res = new RESTParametersHolder();
 
         // Iterate over input triples in descriptor
@@ -295,8 +333,13 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
             // Add value from query or default value
             value = value.isPresent() ? value : entry.getValue().getDefaultValue();
-            if (value.isPresent())
+            if (value.isPresent()) {
+                logger.trace("------");
+                logger.trace("Input value detected");
+                logger.trace("Parameter: "+entry.getValue().getParameterName());
+                logger.trace("Value: "+value.get().stringValue());
                 res.getInputParameters().put(entry.getValue().getParameterName(), value.get().stringValue());
+            }
         }
 
         for (Map.Entry<IRI, Parameter> entry : getSail().getMapOutputParametersByProperty().entrySet()) {
@@ -305,9 +348,17 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
             Optional<Var> value = RESTWrappingSailUtils.getObjectOutputVariable(stmtPatterns, subject.orElse(null),
                     entry.getKey());
 
-            if (value.isPresent())
+            if (value.isPresent()) {
+                logger.trace("------");
+                logger.trace("Output value detected");
+                logger.trace("IRI: "+entry.getKey());
+                logger.trace("Name: "+value.get().getName());
                 res.getOutputVariables().put(entry.getKey(), value.get().getName());
+            }
+                
         }
+
+        logger.trace("### [END] Parsing SPARLQ query ###");
 
         return res;
     }

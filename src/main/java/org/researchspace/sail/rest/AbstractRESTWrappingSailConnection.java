@@ -32,6 +32,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -57,6 +59,8 @@ import net.minidev.json.JSONObject;
 public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTWrappingSailConfig>
         extends AbstractServiceWrappingSailConnection<C> {
 
+    private static final Logger logger = LogManager.getLogger(AbstractRESTWrappingSailConnection.class);
+
     public AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
         super(sailBase);
     }
@@ -73,12 +77,16 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
      * @return
      */
     protected Response submit(RESTParametersHolder parametersHolder) {
+
+        logger.trace("Submitting request");
+
         try {
             WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
                     .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
             for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
                 targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
             }
+            // TODO change mediatype
             return targetResource.request(MediaType.TEXT_PLAIN).get();
         } catch (Exception e) {
             throw new SailException(e);
@@ -93,6 +101,8 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
      * @return
      */
     protected Response submitPost(RESTParametersHolder parametersHolder) {
+
+
         try {
             String type = ((RESTSailConfig) getSail().getConfig()).getInputFormat();
 
@@ -104,6 +114,8 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
         
             WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
                     .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
+        
+            logger.trace("Submitting request");
 
             return targetResource.request(type).post(Entity.json(body));
         } catch (Exception e) {
@@ -118,12 +130,18 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
      */
     protected Object getJsonBody(Map<String, String> inputParameters) {
 
+        logger.trace("### [START] Creating input body JSON ###");
+
         Model model = getSail().getServiceDescriptor().getModel();
         JSONObject body = new JSONObject();
         
         for (Entry<String, String> entry : inputParameters.entrySet()) {
             String id = MpRepositoryVocabulary.NAMESPACE.concat("_").concat(entry.getKey());
             
+            logger.trace("------");
+            logger.trace("Parameter detected");
+            logger.trace("Name: " + entry.getKey());
+
             // Get input json path for each input element
             Optional<Value> jsonPath = model
                 .filter(null, SPL.PREDICATE_PROPERTY , SimpleValueFactory.getInstance().createIRI(id))
@@ -133,10 +151,13 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
                 .map(Statement::getObject)
                 .findFirst();
 
+
             // Create the body based on JSON object input strings
             if (jsonPath.isPresent()) {
                 String[] paths = jsonPath.get().stringValue().split("\\.");
                 int i = 0;
+
+                logger.trace("JSON path: "+jsonPath.get().stringValue());
 
                 JSONObject parent = body;
 
@@ -145,9 +166,11 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
                     parent = (parent.containsKey(key)) ? (JSONObject)parent.get(key) : new JSONObject();
                     body.put(key, parent);
                 }
+                
                 parent.put(paths[i], entry.getValue());
             }
         }
+        logger.trace("### [END] Creating input body JSON ###");
         return body;
     }
 

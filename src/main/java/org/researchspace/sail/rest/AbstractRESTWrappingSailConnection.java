@@ -31,6 +31,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
+import javax.ws.rs.client.Invocation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -82,14 +83,29 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
         logger.trace("Submitting request");
 
         try {
+            // Create request
             WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
                     .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
             for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
                 targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
             }
-            // Get mediaType or text/plain if missing
+
+            // Get mediatype
             String mediaType = Objects.isNull(((RESTSailConfig)getSail().getConfig()) .getMediaType()) ? MediaType.TEXT_PLAIN : ((RESTSailConfig)getSail().getConfig()) .getMediaType();
-            return targetResource.request(mediaType).get();
+
+            // Create request builder
+            Invocation.Builder requestBuilder = targetResource.request(mediaType);
+
+            // Add HTTP headers if found
+            Map<String, String> httpHeaders = ((RESTSailConfig)this.getSail().getConfig()).getHttpHeaders();
+            if (httpHeaders.size() > 0) {
+                logger.trace("Found number "+httpHeaders.size()+" Custom HTTP headers!");
+
+                for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
+                    requestBuilder.header(header.getKey(), header.getValue()); 
+                }
+            }
+            return requestBuilder.get();
         } catch (Exception e) {
             throw new SailException(e);
         }

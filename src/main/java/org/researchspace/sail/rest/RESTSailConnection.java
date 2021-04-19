@@ -43,6 +43,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SPL;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
@@ -52,6 +53,7 @@ import org.researchspace.federation.repository.service.ServiceDescriptor.Paramet
 import org.researchspace.repository.MpRepositoryVocabulary;
 
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
 
 import net.minidev.json.JSONArray;
@@ -161,28 +163,39 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
                 logger.trace(message);
                 logger.trace("Parsing " + path.getValue());
 
-                Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
-                String value = JsonPath.read(object, path.getValue()).toString();
-
-                // If there is type check if it is a resource or a literal
-                if(type.isPresent()) {
-
-                    IRI iriType = VF.createIRI(type.get().stringValue());
-
-                    if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
-                        logger.trace("Creating Resource("+value+")");
-                        mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+                try {
+                    Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
+                    String value = JsonPath.read(object, path.getValue()).toString();
+    
+                    // If there is type check if it is a resource or a literal
+                    if(type.isPresent()) {
+    
+                        IRI iriType = VF.createIRI(type.get().stringValue());
+    
+                        if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
+                            logger.trace("Creating Resource("+value+")");
+                            mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+                        }
+    
+                        else {
+                            logger.trace("Creating Literal("+value+", "+iriType+")");
+                            mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
+                        }
                     }
-
                     else {
-                        logger.trace("Creating Literal("+value+", "+iriType+")");
-                        mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
-                    }
-                }
-                else {
-                    logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
-                    mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
-                }   
+                        logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
+                        mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
+                    }   
+                } 
+            // If the requested parameter is not present in the returning set
+            catch(PathNotFoundException e) {
+                logger.error(e.getMessage());
+
+                // Return an empty string binding
+                logger.trace("Parameter not found. Returning empty parameter");
+                mapBindingSet.addBinding(path.getKey(), VF.createLiteral("", XSD.STRING));
+            }
+                
             }
             bindingSets.add(mapBindingSet);
         }
@@ -222,30 +235,41 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
             logger.trace("Parsing " + path.getValue());
 
-            Object object = JsonPath.read(map, path.getValue());
+            try {
 
-            Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
-            String value = JsonPath.read(object, path.getValue()).toString();
+                Object object = JsonPath.read(map, path.getValue());
 
-            // If there is type check if it is a resource or a literal
-            if(type.isPresent()) {
+                Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
+                String value = JsonPath.read(object, path.getValue()).toString();
 
-                IRI iriType = VF.createIRI(type.get().stringValue());
+                // If there is type check if it is a resource or a literal
+                if(type.isPresent()) {
 
-                if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
-                    logger.trace("Creating Resource("+value+")");
-                    mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+                    IRI iriType = VF.createIRI(type.get().stringValue());
+
+                    if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
+                        logger.trace("Creating Resource("+value+")");
+                        mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
+                    }
+
+                    else {
+                        logger.trace("Creating Literal("+value+", "+iriType+")");
+                        mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
+                    }
                 }
-
                 else {
-                    logger.trace("Creating Literal("+value+", "+iriType+")");
-                    mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
-                }
+                    logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
+                    mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
+                }   
             }
-            else {
-                logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
-                mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
-            }   
+            // If the requested parameter is not present in the returning set
+            catch(PathNotFoundException e) {
+                logger.error(e.getMessage());
+
+                // Return an empty string binding
+                logger.trace("Parameter not found. Returning empty parameter");
+                mapBindingSet.addBinding(path.getKey(), VF.createLiteral("", XSD.STRING));
+            }
         }
 
         logger.trace("### [END] Parsing JSONArray ###");

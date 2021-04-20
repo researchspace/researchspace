@@ -1,0 +1,48 @@
+<bs-tabs id='semantic-search' mount-on-enter=true>    
+  <bs-tab event-key='place-search' title='OSM search' class="basicSearch">
+  <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person> . }"]]'>
+     <semantic-search-query-keyword 
+        domain='<http://www.cidoc-crm.org/cidoc-crm/E21_Person>'
+        tokenize-lucene-query=false
+        escape-lucene-syntax=false
+        debounce=1000
+        query='
+          PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+          SELECT ?subject WHERE { 
+            ?subject osm:q ?__token__ ;
+              osm:accept-language "fr" ;
+              osm:display_name ?label ;
+              osm:geotext ?geoText ;
+              osm:wikidata ?wikidataId ;
+              osm:importance ?importance .
+          }
+        '
+        debounce=500
+      ></semantic-search-query-keyword>
+    
+    <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+         <semantic-search-result-holder>
+    <div data-flex-self="md-full">
+      <bs-tabs default-active-key='4' mount-on-enter=true unmount-on-exit=true id='search-results' animation=false class='tabs-right'>
+          <bs-tab event-key="4" title="Table" class="search-tab-table">
+            <semantic-search-result> 
+              <semantic-context repository='osm-nominatim-search'>
+                <semantic-table id='semantic-search-result-table'
+                                query='SELECT DISTINCT * WHERE {  } ORDER BY ?importance'
+
+                                options='{"showFilter":false, "resultsPerPage":10}' 
+                >
+                </semantic-table>
+              </semantic-context>
+            </semantic-search-result>
+          </bs-tab>
+      </bs-tabs>
+    </div>
+  </semantic-search-result-holder>
+    
+</div>
+
+    
+    </semantic-search>
+  </bs-tab>
+</bs-tabs>

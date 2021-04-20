@@ -1,0 +1,223 @@
+<semantic-search   
+  randomize-variables=false
+  categories='{      
+    "<http://www.researchspace.org/ontology/Place>": [{"kind": "place"}],
+    "<http://www.researchspace.org/ontology#Text>": [{
+      "kind": "text",
+      "escapeLuceneSyntax": false,
+      "tokenizeLuceneQuery": false,
+      "queryPattern": "{
+        BIND(?__value__ as ?query) .
+      }"
+    }]
+  }'       
+  relations = '{
+                 "<http://www.researchspace.org/ontology/falls_within>": [
+                   {
+                     "kind": "resource",
+                     "queryPattern": "
+                     {
+                       BIND(STRAFTER(STR(?__value__), \"http://www.researchspace.org/resource/country/\") as ?countryCode) .
+                     }
+                     "
+                   },
+                   {
+                    "kind": "place",
+                    "distanceQueryPattern": "
+                      BIND(CONCAT(?__geoSouthWestLong__, \",\", ?__geoSouthWestLat__, \",\", ?__geoNorthEastLong__, \",\", ?__geoNorthEastLat__) AS ?boundingBox)
+                    ",
+                    "boundingBoxQueryPattern": "
+                      BIND(CONCAT(?__geoSouthWestLong__, \",\", ?__geoSouthWestLat__, \",\", ?__geoNorthEastLong__, \",\", ?__geoNorthEastLat__) AS ?boundingBox) .
+                      BIND(\"1\" AS ?bounded) .
+                    "
+                   }
+                 ]
+               }'
+  search-profile='{ 
+                    "categories": [{
+                                     "iri": "<http://www.researchspace.org/ontology/Place>",
+                                     "label": "Place",
+                                     "thumbnail": "../images/help/thenounproject/noun_1113333.svg"
+                                   },
+                                   {
+                                     "iri": "<http://www.researchspace.org/ontology#Text>",
+                                     "label": "Text"
+                                   }
+                                ],
+                    "relations": [{
+                                    "iri": "<http://www.researchspace.org/ontology/falls_within>",
+                                    "label": "falls_within",
+                                    "hasDomain": "<http://www.researchspace.org/ontology/Place>",
+                                    "hasRange": "<http://www.researchspace.org/ontology/Place>"
+                                  }
+                                 ]
+                  }'
+  >
+
+  <semantic-search-query-builder 
+                                 geo-selector='{
+                                   "query": "
+                                      SELECT ?value ?label ?lat ?long WHERE {
+                                        ?value crm:P87_is_identified_by ?coord;
+                                               rso:displayLabel ?label.
+
+                                        ?coord wgs84_pos:lat ?lat;
+                                               wgs84_pos:long ?long.
+
+                                        ?label bds:search ?__token__ ;
+                                        bds:relevance ?score .
+                                       } ORDER BY DESC(?score)  LIMIT 20
+                                   "
+                                 }'
+                                 
+                                 resource-selector-relations='{
+                                                                "<http://www.researchspace.org/ontology/falls_within>": {
+                                                              		"kind": "resource",
+                                                                  "escapeLuceneSyntax": false,
+                                                                  "tokenizeLuceneQuery": false,
+                                                                  "suggestionTupleTemplate": "<span title=\"{{label.value}}\">{{label.value}}</span>",
+                                                              		"query": "
+                                                                    PREFIX wikibase: <http://wikiba.se/ontology#>
+                                                                    PREFIX bd: <http://www.bigdata.com/rdf#>
+                                                                    PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                                                    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                                                    PREFIX wd: <http://www.wikidata.org/entity/>
+
+                                                                    SELECT ?suggestion ?label WHERE {
+                                                                       SERVICE <https://query.wikidata.org/sparql> {
+                                                                        SERVICE wikibase:mwapi {
+                                                                          bd:serviceParam wikibase:endpoint \"www.wikidata.org\";
+                                                                                          wikibase:api \"EntitySearch\";
+                                                                                          mwapi:search ?__token__;
+                                                                                          mwapi:language \"en\".
+                                                                          ?item wikibase:apiOutputItem mwapi:item.
+                                                                          ?num wikibase:apiOrdinal true.
+                                                                        }
+
+                                                                        ?item wdt:P297 ?countryCode.
+                                                                        SERVICE wikibase:label { 
+                                                                          bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\" . 
+                                                                          ?item rdfs:label ?label .
+                                                                        }
+                                                                      }
+                                                                      BIND(IRI(CONCAT(\"http://www.researchspace.org/resource/country/\", ?countryCode)) AS ?suggestion)
+                                                                    }
+                                                                  "
+                                                                }
+                                                              }'
+                                 ></semantic-search-query-builder>
+  
+    <div data-flex-layout="row stretch-stretch">
+    <semantic-search-result-holder>
+      <div data-flex-self="md-full">
+        <bs-tabs unmount-on-exit=true id='search-results' animation=false>
+          
+          <bs-tab event-key="2" title="Table">
+            <semantic-search-result>
+              <semantic-context repository='ephedra'>
+                <semantic-table id='table-result'
+                                query='
+                                  PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+
+                                  SELECT * WHERE {
+                                    SERVICE osm:NominatimSearchService {
+                                      ?subject osm:q ?query .
+                                      $subject osm:viewbox ?boundingBox .
+                                      ?subject osm:bounded ?bounded .
+                                      $subject osm:countrycodes ?countryCode .
+                                      ?subject osm:display_name ?label.
+                                      ?subject osm:geotext ?geoText.
+                                      ?subject osm:wikidata ?wikidataId.
+                                    }
+                                  }
+                               '
+                                
+                                column-configuration='[
+                                                        {"displayName": "Label", "cellTemplate": "{{> label}}" },
+                                                        {"displayName": "Thumbnail (from Wikidata)", "cellTemplate": "{{> wikidata}}"},
+                                                        {"displayName": "Place", "cellTemplate": "{{> place}}" }
+                                                      ]'   
+
+                >
+                  <template id='place'>
+                    <div style='height: 300px; width: 600px;'>
+                      <semantic-context repository='default'>
+                        <semantic-map query='SELECT ?wkt WHERE { BIND("{{geoText.value}}" AS ?wkt) } '>
+
+                        </semantic-map>
+                      </semantic-context>
+                    </div>
+  
+                  </template>
+
+
+                  <template id='label'>
+                    <div>{{label.value}}</div>
+                  </template>
+
+                  <template id='wikidata'>
+                    <div>
+                      {{#if wikidataId.value}}
+                      <semantic-context repository='default'>
+                        <semantic-query
+                                        query='
+                                          PREFIX wikibase: <http://wikiba.se/ontology#>
+                                          PREFIX bd: <http://www.bigdata.com/rdf#>
+                                          PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                          PREFIX wd: <http://www.wikidata.org/entity/>
+                                          PREFIX schema: <http://schema.org/>
+
+                                          SELECT ?thumbnail ?wikiLabel ?wikiDescription WHERE { 
+                                            SERVICE <https://query.wikidata.org/sparql> {  
+                                              BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?item) .
+                                              ?item wdt:P18 ?image.
+                                              BIND(STRAFTER(wikibase:decodeUri(STR(?image)), "http://commons.wikimedia.org/wiki/Special:FilePath/") AS ?fileTitle)
+
+
+                                              SERVICE wikibase:mwapi {
+                                                bd:serviceParam wikibase:endpoint "commons.wikimedia.org";
+                                                                wikibase:api "Generator";
+                                                                wikibase:limit "once";
+                                                                mwapi:generator "allpages";
+                                                                mwapi:gapfrom ?fileTitle;
+                                                                mwapi:gapnamespace 6; # NS_FILE
+                                                                mwapi:gaplimit 1;
+                                                                mwapi:prop "imageinfo";
+                                                                mwapi:iiprop "url";
+                                                                mwapi:iiurlwidth 320 .
+                                                ?url wikibase:apiOutput "imageinfo/ii/@url".
+                                                ?thumbnail wikibase:apiOutput "imageinfo/ii/@thumburl"
+                                              }
+                                              
+                                              SERVICE wikibase:label {
+                                                bd:serviceParam wikibase:language "en" .
+                                                ?item rdfs:label ?wikiLabel .
+                                                ?item schema:description ?wikiDescription .
+                                              }
+                                            }
+                                          }
+
+                                '
+                                        template='{{> thumbnail}}'
+                                        >
+                          <template id='thumbnail'>
+                            <div>
+                              <p>{{bindings.0.wikiLabel.value}}</p>
+                              <p>{{bindings.0.wikiDescription.value}}</p>
+                              <img src='{{bindings.0.thumbnail.value}}'/>
+                            </div>
+                          </template>
+                        </semantic-query>
+                        </semantic-context>
+                      {{/if}}                    </div>
+                  </template>
+                </semantic-table>
+              </semantic-context>
+            </semantic-search-result>
+          </bs-tab>
+        </bs-tabs>
+      </div>
+    </semantic-search-result-holder>
+  </div>
+</semantic-search>

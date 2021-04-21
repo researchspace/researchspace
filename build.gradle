@@ -24,10 +24,10 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.4.v20201014'
+    id 'org.gretty' version '3.0.4'
 
     // To run webpack-dev-server in the background
-    id 'com.github.psxpaul.execfork' version '0.1.13'
+    id 'com.github.psxpaul.execfork' version '0.1.15'
 
     // To generate eclipse project files
     id 'eclipse'
@@ -257,8 +257,7 @@ tasks.testKarma.dependsOn npmInstall
 test.dependsOn testKarma
 
 repositories {
-    // Use jcenter for resolving dependencies.
-    jcenter()
+    mavenCentral()
 
     // for blazegraph war
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -268,15 +267,6 @@ repositories {
 
     // needed for SMAL2 integration
     maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases/' }
-
-    // temp, until new version of smiley-http-proxy-servlet is released
-    maven {
-        url 'https://dl.bintray.com/researchspace/public'
-    }
-
-    maven {
-        url 'file:/home/artem/work/sources/github/gretty/build/privateRepo'
-    }
 }
 
 ext {
@@ -405,7 +395,7 @@ dependencies {
         //pf4j plugin framework
         "ro.fortsoft.pf4j:pf4j:1.3.0",
 
-        "org.mitre.dsmiley.httpproxy:smiley-http-proxy-servlet:1.12.1",
+        "org.mitre.dsmiley.httpproxy:smiley-http-proxy-servlet:1.12",
 
         //JsonPath
         "com.jayway.jsonpath:json-path:2.5.0",

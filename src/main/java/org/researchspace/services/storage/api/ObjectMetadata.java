@@ -30,6 +30,8 @@ public final class ObjectMetadata {
     private String author;
     @Nullable
     private Instant creationDate;
+    @Nullable
+    private String mediaType;
 
     public ObjectMetadata() {
     }
@@ -37,6 +39,12 @@ public final class ObjectMetadata {
     public ObjectMetadata(@Nullable String author, @Nullable Instant creationDate) {
         this.author = author;
         this.creationDate = creationDate;
+    }
+
+    public ObjectMetadata(@Nullable String author, @Nullable Instant creationDate, @Nullable String mediaType) {
+        this.author = author;
+        this.creationDate = creationDate;
+        this.mediaType = mediaType;
     }
 
     /**
@@ -59,11 +67,19 @@ public final class ObjectMetadata {
         return creationDate;
     }
 
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
     public ObjectMetadata withCurrentDate() {
-        return new ObjectMetadata(author, Instant.now());
+        return new ObjectMetadata(author, Instant.now(), mediaType);
     }
 
     public static ObjectMetadata empty() {
-        return new ObjectMetadata(null, null);
+        return new ObjectMetadata(null, null, null);
     }
 }

@@ -114,7 +114,7 @@ public class FedoraStorage implements ObjectStorage {
         Response resp = client.target(this.createResourceUri(path)).request()
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
             // currently we store all files as binary blobs
-            .put(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+            .put(Entity.entity(content, metadata.getMediaType()));
         resp.close();
         return null;
     }

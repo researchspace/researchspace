@@ -98,8 +98,7 @@ public class FileStorageEndpoint {
 
     @GET
     @RequiresAuthentication
-    public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId, 
-                                    @QueryParam("mode") String mode, @QueryParam("mediaType") String mediaType ) {
+    public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId, @QueryParam("mode") String mode, @QueryParam("mediaType") String mediaType ) {
         if (logger.isTraceEnabled()) {
             logger.trace("Request to get a file from a storage");
         }
@@ -163,7 +162,9 @@ public class FileStorageEndpoint {
             String mediaType = fileDisposition.getType();
 
             ObjectStorage storage = platformStorage.getStorage(storageId);
-            fileManager.storeFile(storage, managedName, platformStorage.getDefaultMetadata(),
+            ObjectMetadata metadata = platformStorage.getDefaultMetadata();
+            metadata.setMediaType(mediaType);
+            fileManager.storeFile(storage, managedName, metadata,
                     new SizedStream(new ExactSizeInputStream(in, fileSize), fileSize));
 
             IRI resourceIri;

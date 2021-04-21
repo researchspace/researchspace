@@ -18,6 +18,9 @@
 
 package org.researchspace.sail.rest;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -41,6 +44,8 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.SailException;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 import org.researchspace.repository.MpRepositoryVocabulary;
@@ -48,6 +53,7 @@ import org.researchspace.repository.MpRepositoryVocabulary;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 
+import gr.forth.ics.isl.x3ml.X3MLEngineFactory;
 import net.minidev.json.JSONArray;
 
 /**
@@ -72,12 +78,13 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
         try {
             String stringResponse = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
-            Model model = getSail().getServiceDescriptor().getModel();
 
             // TODO: check the string format and call the right type. E.g., json or XML
-            String type = "json";
+            String type = "x3ml";
             switch (type) {
             case "json":
+                Model model = getSail().getServiceDescriptor().getModel();
+
                 // Get a list of output variable names and their json paths
                 Map<String, String> jsonPaths = getJsonPaths(parametersHolder.getOutputVariables(), model);
 
@@ -87,6 +94,24 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
                 results = executeJson(stringResponse, jsonPaths, rootPath);
                 break;
+
+            case "x3ml":
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                X3MLEngineFactory.create().withInput(new ByteArrayInputStream(stringResponse.getBytes()))
+                        .withMappings(new File("/home/artem/tmp/mappings/Mapping258.x3ml"))
+                        .withGeneratorPolicy(
+                                new File("/home/artem/tmp/mappings/BM_generator_policy___27-01-2021195625___1355.xml"))
+                        .withOutput(output, X3MLEngineFactory.OutputFormat.RDF_XML).execute();
+                Model graph = Rio.parse(new ByteArrayInputStream(output.toByteArray()), "", RDFFormat.RDFXML);
+                List<BindingSet> bindings = Lists.newArrayList();
+                graph.forEach(st -> {
+                    MapBindingSet binding = new MapBindingSet();
+                    binding.addBinding("sg", st.getSubject());
+                    binding.addBinding("sp", st.getPredicate());
+                    binding.addBinding("so", st.getObject());
+                    bindings.add(binding);
+                });
+                results = bindings;
 
             default:
                 break;
@@ -153,18 +178,19 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
     /**
      * 
-     * This function iterate over jsonPaths and evaluate each against the JSON object structured as a map 
+     * This function iterate over jsonPaths and evaluate each against the JSON
+     * object structured as a map
      * 
      * @param map
      * @param jsonPaths
      * @return
      */
-    private List<BindingSet> iterateJsonMap (Map map, Map<String, String> jsonPaths) {
-       
-        List<BindingSet> bindingSets = Lists.newArrayList(); 
+    private List<BindingSet> iterateJsonMap(Map map, Map<String, String> jsonPaths) {
+
+        List<BindingSet> bindingSets = Lists.newArrayList();
         MapBindingSet mapBindingSet = new MapBindingSet();
-        
-        for(Map.Entry<String, String> path : jsonPaths.entrySet()) {
+
+        for (Map.Entry<String, String> path : jsonPaths.entrySet()) {
             Object object = JsonPath.read(map, path.getValue());
             mapBindingSet.addBinding(path.getKey(), VF.createLiteral(object.toString(), XSD.STRING));
         }

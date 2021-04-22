@@ -21,12 +21,17 @@ package org.researchspace.sail.rest;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Map.Entry;
 
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.compress.utils.Lists;
@@ -35,25 +40,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.SPL;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.eclipse.rdf4j.sail.SailException;
+import org.glassfish.jersey.client.ClientProperties;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
-import org.researchspace.repository.MpRepositoryVocabulary;
 
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
 
 import net.minidev.json.JSONArray;
@@ -67,10 +66,9 @@ import net.minidev.json.JSONArray;
 public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTSailConfig> {
 
     private static final String JSON = "JSON";
-    String message = "------";
 
     private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
-    protected static final ValueFactory VF = (ValueFactory) SimpleValueFactory.getInstance();
+    protected static final ValueFactory VF = SimpleValueFactory.getInstance();
 
     public RESTSailConnection(AbstractServiceWrappingSail<RESTSailConfig> sailBase) {
         super(sailBase);
@@ -86,23 +84,19 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
         try {
             String stringResponse = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
-            Model model = getSail().getServiceDescriptor().getModel();
 
             // TODO: check the string format and call the right type. E.g., json or XML
             String type = JSON;
 
-            logger.trace("REST Response type is "+type);
-
+            logger.trace("REST Response type is {}", type);
             switch (type) {
             case JSON:
-                // Get a list of output variable names and their json paths
-                Map<String, String> jsonPaths = getJsonPaths(parametersHolder.getOutputVariables(), model);
 
                 // Get the root path
                 Optional<Parameter> param = getSail().getSubjectParameter();
-                String rootPath = param.isPresent() ? getJsonPath(param.get(), model) : "$";
+                String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
 
-                results = executeJson(stringResponse, jsonPaths, rootPath);
+                results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables());
                 break;
 
             default:
@@ -118,10 +112,11 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
     /**
      * 
      * @param res
-     * @param parametersHolder
-     * @param model
+     * @param rootPath
+     * @param outputParameters
+     * @return
      */
-    private List<BindingSet> executeJson(String res, Map<String, String> jsonPaths, String rootPath) {
+    private List<BindingSet> executeJson(String res, String rootPath, Map<IRI, String> outputParameters) {
 
         // Parse the response
         ReadContext context = JsonPath.parse(res);
@@ -132,11 +127,13 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         List<BindingSet> results = Lists.newArrayList();
 
         // Manipulate the results in different ways based on its structure
-        if (root instanceof JSONArray)
-            results = iterateJsonArray((JSONArray) root, jsonPaths);
+        if (root instanceof JSONArray) {
+            results = iterateJsonArray((JSONArray) root, outputParameters);
+        }
 
-        if (root instanceof Map)
-            results = iterateJsonMap((Map) root, jsonPaths);
+        if (root instanceof Map) {
+            results = iterateJsonMap((Map) root, outputParameters);
+        }
 
         return results;
     }
@@ -144,204 +141,161 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
     /**
      * 
      * @param array
-     * @param outputVariables
-     * @param model
+     * @param outputParameters
      * @return
      */
-    private List<BindingSet> iterateJsonArray(JSONArray array, Map<String, String> jsonPaths) {
+    private List<BindingSet> iterateJsonArray(JSONArray array, Map<IRI, String> outputParameters) {
 
         logger.trace("### [START] Parsing JSONArray ###");
         List<BindingSet> bindingSets = Lists.newArrayList();
 
-        // Iterate over each object in JSONArray and evaluate its
         for (Object object : array) {
-            MapBindingSet mapBindingSet = new MapBindingSet();
-
-            // Evaluate each jsonPath singularly and add the result to the binding
-            for (Map.Entry<String, String> path : jsonPaths.entrySet()) {
-
-                logger.trace(message);
-                logger.trace("Parsing " + path.getValue());
-
-                try {
-                    Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
-                    String value = JsonPath.read(object, path.getValue()).toString();
-    
-                    // If there is type check if it is a resource or a literal
-                    if(type.isPresent()) {
-    
-                        IRI iriType = VF.createIRI(type.get().stringValue());
-    
-                        if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
-                            logger.trace("Creating Resource("+value+")");
-                            mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
-                        }
-    
-                        else {
-                            logger.trace("Creating Literal("+value+", "+iriType+")");
-                            mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
-                        }
-                    }
-                    else {
-                        logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
-                        mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
-                    }   
-                } 
-            // If the requested parameter is not present in the returning set
-            catch(PathNotFoundException e) {
-                logger.error(e.getMessage());
-
-                // Return an empty string binding
-                logger.trace("Parameter not found. Returning empty parameter");
-                mapBindingSet.addBinding(path.getKey(), VF.createLiteral("", XSD.STRING));
-            }
-                
-            }
-            bindingSets.add(mapBindingSet);
+            bindingSets.add(createBindingSetFromJSONObject(object, outputParameters));
         }
 
-        logger.trace("### [END] Parsing JSONArray ###");
+        logger.trace("### [END] Parsing JSONArray");
         return bindingSets;
-    }
-
-    private Optional<Value> getType (Model model, String id) {
-            
-        // Get input json path for each input element
-        return model
-            .filter(null, SPL.PREDICATE_PROPERTY , SimpleValueFactory.getInstance().createIRI(id))
-            .stream()
-            .map(Statement::getSubject)
-            .map(sub -> model.filter(sub, SPL.VALUE_TYPE_PROPERTY, null).stream().findFirst().orElse(null))
-            .map(Statement::getObject)
-            .findFirst();
     }
 
     /**
      * 
-     * This function iterate over jsonPaths and evaluate each against the JSON object structured as a map 
-     * 
      * @param map
-     * @param jsonPaths
+     * @param outputParameters
      * @return
      */
-    private List<BindingSet> iterateJsonMap (Map map, Map<String, String> jsonPaths) {
+    private List<BindingSet> iterateJsonMap(Map map, Map<IRI, String> outputParameters) {
 
         logger.trace("### [START] Parsing JSONObject ###");
-       
-        List<BindingSet> bindingSets = Lists.newArrayList(); 
-        MapBindingSet mapBindingSet = new MapBindingSet();
-        
-        for(Map.Entry<String, String> path : jsonPaths.entrySet()) {
+        List<BindingSet> bindingSets = Lists.newArrayList();
 
-            logger.trace("Parsing " + path.getValue());
+        bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));
+
+        logger.trace("### [END] Parsing JSONObject ###");
+        return bindingSets;
+    }
+
+    /**
+     * 
+     * @param object
+     * @param outputParameters
+     * @return
+     */
+    private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters) {
+
+        MapBindingSet mapBindingSet = new MapBindingSet();
+
+        for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
 
             try {
 
-                Object object = JsonPath.read(map, path.getValue());
+                Parameter parameter = getSail().getServiceDescriptor().getOutputParameters()
+                        .get(outputParameter.getValue());
 
-                Optional<Value> type = getType(getSail().getServiceDescriptor().getModel(), MpRepositoryVocabulary.NAMESPACE.concat("_").concat(path.getKey()));
-                String value = JsonPath.read(object, path.getValue()).toString();
+                IRI type = parameter.getValueType();
+                String jsonPath = parameter.getJsonPath();
+                String value = JsonPath.read(object, jsonPath).toString();
 
-                // If there is type check if it is a resource or a literal
-                if(type.isPresent()) {
-
-                    IRI iriType = VF.createIRI(type.get().stringValue());
-
-                    if(StringUtils.equals(iriType.stringValue() , RDFS.RESOURCE.stringValue())) {
-                        logger.trace("Creating Resource("+value+")");
-                        mapBindingSet.addBinding(path.getKey(), VF.createIRI(value));
-                    }
-
-                    else {
-                        logger.trace("Creating Literal("+value+", "+iriType+")");
-                        mapBindingSet.addBinding(path.getKey(),  VF.createLiteral(value, iriType));
-                    }
+                if (StringUtils.equals(type.stringValue(), RDFS.RESOURCE.stringValue())) {
+                    logger.trace("Creating Resource ({})", value);
+                    mapBindingSet.addBinding(outputParameter.getValue(), VF.createIRI(value));
                 }
-                else {
-                    logger.trace("Missing type, Creating Literal("+value+", "+XSD.STRING+")");
-                    mapBindingSet.addBinding(path.getKey(), VF.createLiteral(value, XSD.STRING));
-                }   
-            }
-            // If the requested parameter is not present in the returning set
-            catch(PathNotFoundException e) {
-                logger.error(e.getMessage());
 
-                // Return an empty string binding
-                logger.trace("Parameter not found. Returning empty parameter");
-                mapBindingSet.addBinding(path.getKey(), VF.createLiteral("", XSD.STRING));
+                else {
+                    logger.trace("Creating Literal({},{})", value, type);
+                    mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(value, type));
+                }
+            } catch (Exception e) {
+                logger.error(e);
             }
         }
 
-        logger.trace("### [END] Parsing JSONArray ###");
-        bindingSets.add(mapBindingSet);
-        return bindingSets;
+        return mapBindingSet;
     }
 
     /**
-     * 
-     * @param outputVariables
-     * @param model
-     * 
-     * @return Map containing a couple output variable name and its json path from
-     *         the model
-     */
-    private Map<String, String> getJsonPaths(Map<IRI, String> outputVariables, Model model) {
-
-        Map<String, String> jsonPaths = new HashMap<>();
-
-        for (Map.Entry<IRI, String> output : outputVariables.entrySet())
-            jsonPaths.put(output.getValue(),
-                    getJsonPath(getSail().getMapOutputParametersByProperty().get(output.getKey()), model));
-
-        return jsonPaths;
-    }
-
-    /**
-     * Default implementation calling the API using an HTTP GET method. Parameters
-     * are passed via URL. JSON expected as a result format.
      * 
      * @param parametersHolder
      * @return
      */
-    @Override
     protected Response submit(RESTParametersHolder parametersHolder) {
 
         try {
             String httpMethod = getSail().getConfig().getHttpMethod();
 
-            logger.trace("Creating request with HTTP METHOD: "+httpMethod);
+            logger.trace("Creating request with HTTP METHOD: {}", httpMethod);
 
             // Case with POST
             if (httpMethod.equals(HttpMethod.POST))
                 return submitPost(parametersHolder);
 
             // Default case as GET
-            return super.submit(parametersHolder);
+            return submitGet(parametersHolder);
 
         } catch (Exception e) {
             throw new SailException(e);
         }
     }
 
-    /**
-     * 
-     * @param parameter
-     * @param model
-     * 
-     *                  Filter the statements having the JSON path predicate and
-     *                  return the one belonging to the matching parameter
-     * 
-     * @return The string describing the JSON path for the matching parameter
-     */
-    private String getJsonPath(Parameter parameter, Model model) {
-        return model.filter(parameter.getRootNode(), MpRepositoryVocabulary.JSON_PATH, null).stream()
-                .map(statement -> statement.getObject()).map(value -> value.stringValue()).findFirst().orElse("");
+    @Override
+    protected Response submitGet(RESTParametersHolder parametersHolder) {
+        try {
+            // Create request
+            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
+            for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
+                targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
+            }
+
+            // Get mediatype
+            String mediaType = Objects.isNull(((RESTSailConfig) getSail().getConfig()).getMediaType())
+                    ? MediaType.TEXT_PLAIN
+                    : ((RESTSailConfig) getSail().getConfig()).getMediaType();
+
+            // Create request builder
+            Invocation.Builder requestBuilder = targetResource.request(mediaType);
+
+            // Add HTTP headers if found
+            Map<String, String> httpHeaders = ((RESTSailConfig) this.getSail().getConfig()).getHttpHeaders();
+            if (httpHeaders.size() > 0) {
+                logger.trace("Found number {} Custom HTTP headers!", httpHeaders.size());
+
+                for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
+                    requestBuilder.header(header.getKey(), header.getValue());
+                }
+            }
+            return requestBuilder.get();
+        } catch (Exception e) {
+            throw new SailException(e);
+        }
+    }
+
+    @Override
+    protected Response submitPost(RESTParametersHolder parametersHolder) {
+        try {
+            String type = ((RESTSailConfig) getSail().getConfig()).getInputFormat();
+
+            Object body = null;
+
+            // TODO extend to other input formats
+            if (StringUtils.equals(type, MediaType.APPLICATION_JSON)) {
+                body = getJsonBody(parametersHolder.getInputParameters());
+            }
+
+            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
+
+            logger.trace("Submitting request");
+
+            return targetResource.request(type).post(Entity.json(body));
+        } catch (Exception e) {
+            throw new SailException(e);
+        }
     }
 
     @Override
     protected RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
 
-        logger.trace("### [START] Parsing SPARQL query ###");
+        logger.trace("[START] Parsing SPARQL query");
 
         RESTParametersHolder res = new RESTParametersHolder();
 
@@ -358,10 +312,9 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
             // Add value from query or default value
             value = value.isPresent() ? value : entry.getValue().getDefaultValue();
             if (value.isPresent()) {
-                logger.trace("------");
                 logger.trace("Input value detected");
-                logger.trace("Parameter: "+entry.getValue().getParameterName());
-                logger.trace("Value: "+value.get().stringValue());
+                logger.trace("Parameter: {}", entry.getValue().getParameterName());
+                logger.trace("Value: {}", value.get());
                 res.getInputParameters().put(entry.getValue().getParameterName(), value.get().stringValue());
             }
         }
@@ -373,18 +326,14 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
                     entry.getKey());
 
             if (value.isPresent()) {
-                logger.trace("------");
                 logger.trace("Output value detected");
-                logger.trace("IRI: "+entry.getKey());
-                logger.trace("Name: "+value.get().getName());
+                logger.trace("IRI: {}", entry.getKey());
+                logger.trace("Name: {}", value.get().getName());
                 res.getOutputVariables().put(entry.getKey(), value.get().getName());
             }
-                
         }
-
-        logger.trace("### [END] Parsing SPARLQ query ###");
+        logger.trace("[END] Parsing SPARLQ query");
 
         return res;
     }
-
 }

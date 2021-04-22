@@ -22,18 +22,12 @@ package org.researchspace.sail.rest;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
-import javax.ws.rs.client.Invocation;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
@@ -47,7 +41,6 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
-import org.glassfish.jersey.client.ClientProperties;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
 import net.minidev.json.JSONObject;
@@ -63,7 +56,7 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
 
     private static final Logger logger = LogManager.getLogger(AbstractRESTWrappingSailConnection.class);
 
-    public AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
+    protected AbstractRESTWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
         super(sailBase);
     }
 
@@ -72,74 +65,28 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
             RESTParametersHolder parametersHolder) throws SailException;
 
     /**
-     * Default implementation calling the API using an HTTP GET method. Parameters
-     * are passed via URL. JSON expected as a result format.
      * 
      * @param parametersHolder
+     * 
+     *                         Default implementation calling the API using an HTTP
+     *                         GET method. Parameters are passed via URL. JSON
+     *                         expected as a result format.
+     * 
      * @return
      */
-    protected Response submit(RESTParametersHolder parametersHolder) {
-
-        logger.trace("Submitting request");
-
-        try {
-            // Create request
-            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
-                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
-            for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
-                targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
-            }
-
-            // Get mediatype
-            String mediaType = Objects.isNull(((RESTSailConfig)getSail().getConfig()) .getMediaType()) ? MediaType.TEXT_PLAIN : ((RESTSailConfig)getSail().getConfig()) .getMediaType();
-
-            // Create request builder
-            Invocation.Builder requestBuilder = targetResource.request(mediaType);
-
-            // Add HTTP headers if found
-            Map<String, String> httpHeaders = ((RESTSailConfig)this.getSail().getConfig()).getHttpHeaders();
-            if (httpHeaders.size() > 0) {
-                logger.trace("Found number "+httpHeaders.size()+" Custom HTTP headers!");
-
-                for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
-                    requestBuilder.header(header.getKey(), header.getValue()); 
-                }
-            }
-            return requestBuilder.get();
-        } catch (Exception e) {
-            throw new SailException(e);
-        }
-    }
+    protected abstract Response submitGet(RESTParametersHolder parametersHolder);
 
     /**
-     * Default implementation calling the API using a HTTP POST method. Parameters
-     * are stored in JSON body.
      * 
      * @param parametersHolder
+     * 
+     *                         Default implementation calling the API using a HTTP
+     *                         POST method. Parameters are parsed and added to the
+     *                         body.
+     * 
      * @return
      */
-    protected Response submitPost(RESTParametersHolder parametersHolder) {
-
-
-        try {
-            String type = ((RESTSailConfig) getSail().getConfig()).getInputFormat();
-
-            Object body = null;         
-
-            // TODO extend to other input formats
-            if (StringUtils.equals(type, MediaType.APPLICATION_JSON)) 
-                body = getJsonBody(parametersHolder.getInputParameters());
-        
-            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
-                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
-        
-            logger.trace("Submitting request");
-
-            return targetResource.request(type).post(Entity.json(body));
-        } catch (Exception e) {
-            throw new SailException(e);
-        }
-    }
+    protected abstract Response submitPost(RESTParametersHolder parametersHolder);
 
     /**
      * 
@@ -152,39 +99,37 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
 
         Model model = getSail().getServiceDescriptor().getModel();
         JSONObject body = new JSONObject();
-        
+
         for (Entry<String, String> entry : inputParameters.entrySet()) {
             String id = MpRepositoryVocabulary.NAMESPACE.concat("_").concat(entry.getKey());
-            
+
             logger.trace("------");
             logger.trace("Parameter detected");
-            logger.trace("Name: " + entry.getKey());
+            logger.trace("Name: {}", entry.getKey());
 
             // Get input json path for each input element
             Optional<Value> jsonPath = model
-                .filter(null, SPL.PREDICATE_PROPERTY , SimpleValueFactory.getInstance().createIRI(id))
-                .stream()
-                .map(Statement::getSubject)
-                .map(sub -> model.filter(sub, MpRepositoryVocabulary.INPUT_JSON_PATH, null).stream().findFirst().orElse(null))
-                .map(Statement::getObject)
-                .findFirst();
-
+                    .filter(null, SPL.PREDICATE_PROPERTY, SimpleValueFactory.getInstance().createIRI(id)).stream()
+                    .map(Statement::getSubject)
+                    .map(sub -> model.filter(sub, MpRepositoryVocabulary.INPUT_JSON_PATH, null).stream().findFirst()
+                            .orElse(null))
+                    .map(Statement::getObject).findFirst();
 
             // Create the body based on JSON object input strings
             if (jsonPath.isPresent()) {
                 String[] paths = jsonPath.get().stringValue().split("\\.");
                 int i = 0;
 
-                logger.trace("JSON path: "+jsonPath.get().stringValue());
+                logger.trace("JSON path: {}", jsonPath.get());
 
                 JSONObject parent = body;
 
-                while (i < paths.length-1) {
+                while (i < paths.length - 1) {
                     String key = paths[i++];
-                    parent = (parent.containsKey(key)) ? (JSONObject)parent.get(key) : new JSONObject();
+                    parent = (parent.containsKey(key)) ? (JSONObject) parent.get(key) : new JSONObject();
                     body.put(key, parent);
                 }
-                
+
                 parent.put(paths[i], entry.getValue());
             }
         }
@@ -195,7 +140,7 @@ public abstract class AbstractRESTWrappingSailConnection<C extends AbstractRESTW
     @Override
     protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
             RESTParametersHolder parametersHolder) {
-        Response response = submit(parametersHolder);
+        Response response = submitGet(parametersHolder);
         if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
             throw new SailException("Request failed with HTTP status code " + response.getStatus() + ": "
                     + response.getStatusInfo().getReasonPhrase());

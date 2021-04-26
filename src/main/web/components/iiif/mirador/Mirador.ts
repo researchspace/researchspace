@@ -312,6 +312,7 @@ export function renderMirador(options: {
   );
   options.targetElement.style.position = 'static';
   applyRedrawHack(instance, options.onInitialized);
+  console.log("MY MIRADOR INSTANCE",instance)
   return instance;
 }
 

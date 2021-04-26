@@ -18,7 +18,6 @@
 
 import { MenuProps } from 'platform/components/ui/selection/SelectionActionProps';
 import { AllTitleProps, TypeProps } from 'platform/components/sets/TypedSelectionActionProps';
-
 /**
  * Credentials to IIIF server
  */
@@ -27,6 +26,11 @@ export interface IiifProps {
    * URL of IIIF server
    */
   iiifServerUrl: string;
+
+  /**
+   * Select pattern for image API IIIF manifest 
+   */
+  imageApiManifestPattern:string;
 
   /**
    * TODO

@@ -37,7 +37,7 @@ import {
   ImageOrRegionInfo,
   parseImageSubarea,
 } from '../../data/iiif/ImageAnnotationService';
-import { Manifest, createManifest } from '../../data/iiif/ManifestBuilder';
+import { Manifest, createManifest, ManifestBuildingError } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
 import {
   ManifestUpdatedEvent,
@@ -98,6 +98,17 @@ interface ImageRegionEditorState {
  *     iiif-server-url='http://example.com/IIIF'>
  *   </rs-iiif-mirador>
  * </div>
+ * 
+ * or
+ * 
+ * <div style='height: 700px'>
+ *   <rs-iiif-mirador 
+ *     image-or-region='https://iiif.itatti.harvard.edu/iiif/2/florentinedrawings!works!001049C-Berenson.jpg/full/full/0/default.jpg'
+ *     image-api-manifest-pattern='BIND(<https://iiif.itatti.harvard.edu/iiif/2/florentinedrawings!works!001049C-Berenson.jpg/info.json> as ?manifestUrl)'
+ *    >
+ *   </rs-iiif-mirador>
+ * </div>
+ * 
  */
 export class ImageRegionEditorComponentMirador extends Component<ImageRegionEditorProps, ImageRegionEditorState> {
   static defaultProps: Partial<ImageRegionEditorProps> = {
@@ -189,6 +200,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         return Kefir.constant([]);
       }
       const infoQuerying = images.map(Rdf.iri).map((imageOrRegionIri) => {
+        //If a manifest pattern is provided
         if (imageApiManifestPattern != undefined)
           return queryIIIFImageOrRegionManifestBased(
             imageOrRegionIri,
@@ -210,7 +222,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
           if (!imageInfo) {
             return;
           }
-          console.log('MY queryImagesInfo', imageInfo);
           info.set(imageInfo.iri.value, imageInfo);
           iiifImageId.set(imageInfo.iri.value, imageInfo.imageId);
         })
@@ -269,6 +280,7 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
 
       this.manifestQueryingCancellation = this.cancellation.deriveAndCancel(this.manifestQueryingCancellation);
       this.manifestQueryingCancellation.map(Kefir.zip(manifestQuerying)).onValue((allManifests) => {
+        0;
         const manifests = allManifests.filter((manifest) => manifest !== undefined);
         const miradorConfig = this.miradorConfigFromManifest(manifests);
         this.miradorInstance = renderMirador({
@@ -278,11 +290,11 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         });
       });
     } else {
-    // GET selected manifest as JSON
+      // GET selected manifest as JSON
       fetch(this.state.info.values().next().value.imageApiManifestUrl).then((data) => {
         data.json().then((manifestJson) => {
+          // TODO transform the manifestJson to have presentation API context? 
           const miradorConfig = this.miradorConfigFromManifest([manifestJson]);
-          console.log('MY: CONFIG LOADED:', miradorConfig);
           this.miradorInstance = renderMirador({
             targetElement: element,
             miradorConfig,
@@ -294,7 +306,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
   }
 
   private onMiradorInitialized = (mirador: Mirador.Instance) => {
-    
     scrollToRegions(mirador, ({ canvasId }) => {
       for (const [iri, image] of Array.from(this.state.info)) {
         if (canvasId === image.imageIRI.value) {
@@ -331,7 +342,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       .observe({
         value: (event) => {
           const { allImages } = this.state;
-          console.log("MY LISTENTOEVENTS");
           if (!some(allImages, (im) => im.objectIri === event.data.objectIri)) {
             // if we don't have object images loaded, then we need to fetch the manifest
             const newImage = { objectIri: event.data.objectIri, images: event.data.imageIris };
@@ -527,10 +537,16 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
       .orElse(() => Maybe.fromNullable(this.context.semanticContext).chain((c) => Maybe.fromNullable([c.repository])))
       .getOrElse(['default']);
 
+  /**
+   * Creates Mirador.Options based on an array of Manifest objects
+   *
+   * @param manifests An array of Manifest objects
+   */
+
   private miradorConfigFromManifest(manifests: Array<Manifest>): Mirador.Options {
     const { id, annotationEndpoint, useDetailsSidebar, annotationViewTooltipTemplate } = this.props;
     const imagesInfo = this.state.info as ImagesInfoByIri;
-    
+
     this.annotationEndpoint = new AnnotationEndpointProxy(
       annotationEndpoint || new LdpAnnotationEndpoint({ imagesInfo }),
       this.triggerRegionUpdatedEvent(RegionCreatedEvent),
@@ -554,7 +570,6 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
               },
             },
           ];
-
     return {
       id: id, // The CSS ID selector for the containing element.
       useDetailsSidebar,

@@ -30,6 +30,7 @@ import { OARegionAnnotation } from './LDPImageRegionService';
 const MANIFEST_FRAME = require('./ld-resources/manifest-frame.json');
 const IIIF_PRESENTATION_CONTEXT = require('./ld-resources/iiif-context.json');
 
+
 const { xsd, rdf } = vocabularies;
 
 export interface Manifest {

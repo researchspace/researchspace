@@ -32,22 +32,9 @@ export interface ImageSubarea {
   height: number;
 }
 
-// export interface BaseImageOrRegionInfo {
-//   iri: Rdf.Iri;
-//   imageId: string;
-//   isRegion: boolean;
-//   boundingBox?: ImageSubarea;
-//   viewport?: ImageSubarea;
-//   svgContent?: { __html: string };
-//   imageIRI: Rdf.Iri;
-// }
-
-// type IdBasedImageOrRegionInfo = {imageId: string} & BaseImageOrRegionInfo;
-// type ManifestBasedImageOrRegionInfo = {imageApiManifestUrl: string}
-
-// export type ImageOrRegionInfo = IdBasedImageOrRegionInfo | ManifestBasedImageOrRegionInfo;
-
-
+/**
+ * Image or region information
+ */
 interface BaseImageOrRegionInfo {
   iri: Rdf.Iri;
   isRegion: boolean;
@@ -56,15 +43,21 @@ interface BaseImageOrRegionInfo {
   svgContent?: { __html: string };
   imageIRI: Rdf.Iri;
 }
-type IdBasedImageOrRegionInfo = {imageId: string} & BaseImageOrRegionInfo;
-type ManifestBasedImageOrRegionInfo = {imageApiManifestUrl: string} & BaseImageOrRegionInfo;
+/**
+ * Extension of BaseImageOrRegionInfo adds imageId information
+ */
+type IdBasedImageOrRegionInfo = { imageId: string } & BaseImageOrRegionInfo;
+/**
+ * Extension of BaseImageOrRegionInfo adds imageApiManifestUrl information
+ */
+type ManifestBasedImageOrRegionInfo = { imageApiManifestUrl: string } & BaseImageOrRegionInfo;
 
 export type ImageOrRegionInfo = IdBasedImageOrRegionInfo | ManifestBasedImageOrRegionInfo;
 
 export type ExplicitRegion = {
-  bbox?: string
-  svg?: string
-  viewport?: string
+  bbox?: string;
+  svg?: string;
+  viewport?: string;
 };
 
 const IMAGE_REGION_INFO_QUERY = SparqlUtil.Sparql`
@@ -104,7 +97,6 @@ select ?type ?manifestUrl ?area ?bbox ?viewport ?svg ?imageIRI {
   FILTER(?__imageApiManifestPattern__)
 }
 ` as SparqlJs.SelectQuery;
-
 
 export function queryIIIFImageOrRegion(
   imageOrRegion: Rdf.Iri,
@@ -148,85 +140,17 @@ export function queryIIIFImageOrRegion(
     })
     .toProperty();
 }
-export function queryIIIFImageOrRegionManifestBased(
-  imageOrRegion: Rdf.Iri,
-  manifestPattern: string,
-  repositories: Array<string>,
-  region?: ExplicitRegion
-): Kefir.Property<ManifestBasedImageOrRegionInfo> {
-  console.log("MY: QUERY IIIF IMAGE OR REGION")
-  return searchRepositoriesForImageManifestBased(imageOrRegion, manifestPattern, repositories, region)
-    .flatMap((bindings) => {
-      const binding = bindings[0];
-      const { type, imageIRI, manifestUrl } = binding;
-      console.log("MY: queryIIIFImageOrRegionManifestBased 1 ",binding)
-      if (!type || !imageIRI.isIri() || !manifestUrl.isIri()) {
-        return Kefir.constantError<any>(`Image, region or manifest for ${imageOrRegion} not found.`);
-      } else if (!manifestUrl) {
-        return Kefir.constantError<any>(
-          `Invalid image ID '${manifestUrl.value}' ` + `generated from ${imageIRI} using pattern: ${manifestPattern}`
-        );
-      }
-
-      if (type.value === 'image') {
-        return Kefir.constant<ImageOrRegionInfo>({
-          iri: imageOrRegion,
-          imageApiManifestUrl: manifestUrl.value,
-          isRegion: false,
-          imageIRI: imageIRI,
-        });
-      } else if (type.value === 'region') {
-        const viewport = maybe.fromNullable(binding['viewport']).chain((b) => parseImageSubarea(b.value));
-        const bbox = maybe.fromNullable(binding['bbox']).chain((b) => parseImageSubarea(b.value));
-        const svg = maybe.fromNullable(binding['svg']).map((b) => ({ __html: b.value }));
-        console.log("MY queryIIIFImageOrRegionManifestBased 2",{
-          iri: imageOrRegion,
-          imageApiManifestUrl: manifestUrl.value,
-          isRegion: true,
-          viewport: viewport.getOrElse(undefined),
-          boundingBox: bbox.getOrElse(undefined),
-          svgContent: svg.getOrElse(undefined),
-          imageIRI: imageIRI,
-        })
-        return Kefir.constant<ImageOrRegionInfo>({
-          iri: imageOrRegion,
-          imageApiManifestUrl: manifestUrl.value,
-          isRegion: true,
-          viewport: viewport.getOrElse(undefined),
-          boundingBox: bbox.getOrElse(undefined),
-          svgContent: svg.getOrElse(undefined),
-          imageIRI: imageIRI,
-        });
-      }
-    })
-    .toProperty();
-}
 
 function searchRepositoriesForImage(
-  imageOrRegion: Rdf.Iri, imageIdPattern: string, repositories: Array<string>, region?: ExplicitRegion
+  imageOrRegion: Rdf.Iri,
+  imageIdPattern: string,
+  repositories: Array<string>,
+  region?: ExplicitRegion
 ) {
   return Kefir.combine(
     repositories.map((repository) => getImageBindings(imageOrRegion, imageIdPattern, repository, region))
   ).flatMap((images) => {
     const imageBindings = _.filter(images, (bindigs) => !SparqlUtil.isSelectResultEmpty(bindigs));
-    if (_.isEmpty(imageBindings)) {
-      return Kefir.constantError<any>(`Image or region ${imageOrRegion} not found.`);
-    } else if (imageBindings.length > 1) {
-      return Kefir.constantError<any>(`Multiple images and/or regions ${imageOrRegion} found.`);
-    } else {
-      return Kefir.constant(imageBindings[0].results.bindings);
-    }
-  });
-}
-
-function searchRepositoriesForImageManifestBased(
-  imageOrRegion: Rdf.Iri, manifestPattern: string, repositories: Array<string>, region?: ExplicitRegion
-) {
-  return Kefir.combine(
-    repositories.map((repository) => getImageBindingsManifestBased(imageOrRegion, manifestPattern, repository, region))
-  ).flatMap((images) => {
-    const imageBindings = _.filter(images, (bindings) => !SparqlUtil.isSelectResultEmpty(bindings));
-    console.log("MY searchRepositoriesForImageManifestBased",imageBindings[0].results.bindings);
     if (_.isEmpty(imageBindings)) {
       return Kefir.constantError<any>(`Image or region ${imageOrRegion} not found.`);
     } else if (imageBindings.length > 1) {
@@ -245,18 +169,13 @@ function getImageBindings(
 ): Kefir.Property<SparqlClient.SparqlSelectResult> {
   let query: SparqlJs.SelectQuery;
   if (region) {
-    query =
-      SparqlClient.prepareParsedQuery(
-        [
-          {
-            'bbox': Rdf.literal(region.bbox),
-            'viewport': Rdf.literal(region.viewport),
-            'svg': Rdf.literal(region.svg),
-          },
-        ]
-      )(
-        cloneQuery(INLINE_REGION_INFO_QUERY)
-      );
+    query = SparqlClient.prepareParsedQuery([
+      {
+        bbox: Rdf.literal(region.bbox),
+        viewport: Rdf.literal(region.viewport),
+        svg: Rdf.literal(region.svg),
+      },
+    ])(cloneQuery(INLINE_REGION_INFO_QUERY));
   } else {
     query = cloneQuery(IMAGE_REGION_INFO_QUERY);
   }
@@ -273,6 +192,97 @@ function getImageBindings(
   return SparqlClient.select(parametrizedQuery, { context: { repository: repository } });
 }
 
+/**
+ * Fetches the manifestUrl based on the manifestPattern
+ * and determines whether it is a region or an image type
+ * returns a ManifestBasedImageOrRegionInfo object
+ *
+ * @param imageOrRegion   An image or region IRI
+ * @param manifestPattern The manifest select pattern
+ * @param repositories    An array of possible repositories (e.g. ["default"])
+ * @param region          Explicitly set region
+ */
+ export function queryIIIFImageOrRegionManifestBased(
+  imageOrRegion: Rdf.Iri,
+  manifestPattern: string,
+  repositories: Array<string>,
+  region?: ExplicitRegion
+): Kefir.Property<ManifestBasedImageOrRegionInfo> {
+  return searchRepositoriesForImageManifestBased(imageOrRegion, manifestPattern, repositories, region)
+    .flatMap((bindings) => {
+      const binding = bindings[0];
+      const { type, imageIRI, manifestUrl } = binding;
+      
+      if (!type || !imageIRI.isIri() || !manifestUrl.isIri()) {
+        return Kefir.constantError<any>(`Image, region or manifest for ${imageOrRegion} not found.`);
+      } else if (!manifestUrl) {
+        return Kefir.constantError<any>(
+          `Invalid manifest url: '${manifestUrl.value}'`
+        );
+      }
+      //Image or region?
+      if (type.value === 'image') {
+        return Kefir.constant<ImageOrRegionInfo>({
+          iri: imageOrRegion,
+          imageApiManifestUrl: manifestUrl.value,
+          isRegion: false,
+          imageIRI: imageIRI,
+        });
+      } else if (type.value === 'region') {
+        const viewport = maybe.fromNullable(binding['viewport']).chain((b) => parseImageSubarea(b.value));
+        const bbox = maybe.fromNullable(binding['bbox']).chain((b) => parseImageSubarea(b.value));
+        const svg = maybe.fromNullable(binding['svg']).map((b) => ({ __html: b.value }));
+        return Kefir.constant<ImageOrRegionInfo>({
+          iri: imageOrRegion,
+          imageApiManifestUrl: manifestUrl.value,
+          isRegion: true,
+          viewport: viewport.getOrElse(undefined),
+          boundingBox: bbox.getOrElse(undefined),
+          svgContent: svg.getOrElse(undefined),
+          imageIRI: imageIRI,
+        });
+      }
+    })
+    .toProperty();
+}
+
+/**
+ * Finds and returns imageIRI, manifestUrl & type bindings for each repository
+ * 
+ * @param imageOrRegion   An image or region IRI
+ * @param manifestPattern The manifest select pattern
+ * @param repositories    An array of possible repositories (e.g. ["default"])
+ * @param region          Explicitly set region
+ */
+ function searchRepositoriesForImageManifestBased(
+  imageOrRegion: Rdf.Iri,
+  manifestPattern: string,
+  repositories: Array<string>,
+  region?: ExplicitRegion
+) {
+  return Kefir.combine(
+    repositories.map((repository) => getImageBindingsManifestBased(imageOrRegion, manifestPattern, repository, region))
+  ).flatMap((images) => {
+    const imageBindings = _.filter(images, (bindings) => !SparqlUtil.isSelectResultEmpty(bindings));
+    if (_.isEmpty(imageBindings)) {
+      return Kefir.constantError<any>(`Image or region ${imageOrRegion} not found.`);
+    } else if (imageBindings.length > 1) {
+      return Kefir.constantError<any>(`Multiple images and/or regions ${imageOrRegion} found.`);
+    } else {
+      return Kefir.constant(imageBindings[0].results.bindings);
+    }
+  });
+}
+
+/**
+ * Gets bindings based on imageOrRegion & manifestPattern
+ * This is used to get the manifestUrl
+ * 
+ * @param imageOrRegion   An image or region IRI
+ * @param manifestPattern The manifest select pattern
+ * @param repository      An single repository (e.g. "default")
+ * @param region          Explicitly set region
+ */
 function getImageBindingsManifestBased(
   imageOrRegion: Rdf.Iri,
   manifestPattern: string,
@@ -281,33 +291,25 @@ function getImageBindingsManifestBased(
 ): Kefir.Property<SparqlClient.SparqlSelectResult> {
   let query: SparqlJs.SelectQuery;
   if (region) {
-    query =
-      SparqlClient.prepareParsedQuery(
-        [
-          {
-            'bbox': Rdf.literal(region.bbox),
-            'viewport': Rdf.literal(region.viewport),
-            'svg': Rdf.literal(region.svg),
-          },
-        ]
-      )(
-        cloneQuery(INLINE_IMAGE_INFO_QUERY_MANIFEST)
-      );
+    query = SparqlClient.prepareParsedQuery([
+      {
+        bbox: Rdf.literal(region.bbox),
+        viewport: Rdf.literal(region.viewport),
+        svg: Rdf.literal(region.svg),
+      },
+    ])(cloneQuery(INLINE_IMAGE_INFO_QUERY_MANIFEST));
   } else {
     query = cloneQuery(INLINE_IMAGE_INFO_QUERY_MANIFEST);
   }
   let manifestPatterns: SparqlJs.Pattern[];
   try {
-    console.log("MY: query prefixes ",query.prefixes);
     manifestPatterns = SparqlUtil.parsePatterns(manifestPattern, query.prefixes);
-    console.log("MY: Manifestpatterns> ",manifestPattern)
   } catch (err) {
-    return Kefir.constantError<any>(new WrappingError(`Failed to parse image ID patterns '${manifestPattern}':`, err));
+    return Kefir.constantError<any>(new WrappingError(`Failed to parse manifest URL patterns '${manifestPattern}':`, err));
   }
   new PatternBinder('__imageApiManifestPattern__', manifestPatterns).sparqlQuery(query);
-  const parametrizedQuery = SparqlClient.setBindings(query, { __iri__: imageOrRegion});
-  console.log("MY: parametrizedQuery ",parametrizedQuery)
-
+  const parametrizedQuery = SparqlClient.setBindings(query, { __iri__: imageOrRegion });
+  
   return SparqlClient.select(parametrizedQuery, { context: { repository: repository } });
 }
 

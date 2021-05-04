@@ -54,15 +54,16 @@ export class DownloadFile extends Component<DownloadFileProps, DownloadFileState
   }
 
   render() {
-    if (this.state.isLoading) {
-      return <LoadingBackdrop />;
-    }
-
     const child = React.Children.only(this.props.children) as React.ReactElement<any>;
     const props = {
       onClick: this.download,
     };
-    return React.cloneElement(child, props);
+    return (
+      <React.Fragment>
+        {React.cloneElement(child, props)}
+        {this.state.isLoading ? <LoadingBackdrop /> : null}
+      </React.Fragment>
+    );
   }
 
   private download = () => {

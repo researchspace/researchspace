@@ -72,6 +72,8 @@ import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import { QueryConstantParameter } from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
 import { listen, Event } from 'platform/api/events';
+import { WindowScroller } from 'react-virtualized';
+import { zoomByDelta } from 'ol/interaction/Interaction';
 
 enum Source {
   OSM = 'osm'
@@ -291,8 +293,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             source: provider
           });
           this.tilesLayers.push(tilelayer);
-          console.log("Tileslayer pushed");
-          console.log("Tileslayers now: " + this.tilesLayers.length);        }
+        }
       });
       return(cloned);
     }
@@ -337,18 +338,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private replaceBasemap = (event: Event<any>) => {
     this.map.getLayers().removeAt(0);
-    console.log("selectedprovider: " + event.data.selectedProvider);
-    console.log(this.tilesLayers[event.data.selectedProvider]);
     this.map.getLayers().insertAt(0, this.tilesLayers[event.data.selectedProvider]);
   }
 
   private replaceHistoricalMap = (event: Event<any>) => {
-    console.log(this.tilesLayers[event.data.selectedHistoricalMap]);
 
     this.map.getLayers().removeAt(1);
     this.map.getLayers().insertAt(1, this.tilesLayers[event.data.selectedHistoricalMap]);
-    console.log("Layers after");
-    console.log(this.map.getLayers());
     
     let radius = 120;
     
@@ -492,7 +488,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private renderMap(node, props, center, markers) {
-    console.log("RENDERED!");
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
@@ -604,10 +599,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         });
       })
 
+      console.log(props.fixZoomLevel)
       const view = this.map.getView();
-      const extent = this.calculateExtent();
-      view.fit(extent, { maxZoom: 10 });
-
+      view.setZoom(props.fixZoomLevel);
     }, 1000);
   }
 

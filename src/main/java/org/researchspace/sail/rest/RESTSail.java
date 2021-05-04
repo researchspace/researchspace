@@ -18,7 +18,6 @@
 
 package org.researchspace.sail.rest;
 
-import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 
 /**
@@ -26,18 +25,15 @@ import org.eclipse.rdf4j.sail.SailException;
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
-public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
+public class RESTSail extends AbstractRESTWrappingSail<RESTSailConfig> {
 
     public RESTSail(RESTSailConfig config) {
         super(config);
     }
 
     @Override
-    protected SailConnection getConnectionInternal() throws SailException {
-
+    protected RESTSailConnection getConnectionInternal() throws SailException {
         // read input/output data from descriptor and save in the instance
-        initParameters();
-
         return new RESTSailConnection(this);
     }
 }

@@ -19,15 +19,61 @@
 
 package org.researchspace.sail.rest;
 
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.sail.config.SailConfigException;
+import org.researchspace.repository.MpRepositoryVocabulary;
+
 public class AbstractRESTWrappingSailConfig extends AbstractServiceWrappingSailConfig {
 
+    private Integer requestRateLimit;
+    private String userAgent;
+
     public AbstractRESTWrappingSailConfig() {
-        // TODO Auto-generated constructor stub
     }
 
     public AbstractRESTWrappingSailConfig(String type) {
         super(type);
-        // TODO Auto-generated constructor stub
     }
 
+    @Override
+    public Resource export(Model model) {
+        Resource implNode = super.export(model);
+        var vf = SimpleValueFactory.getInstance();
+
+        if (getRequestRateLimit() != null) {
+            model.add(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, vf.createLiteral(getRequestRateLimit()));
+        }
+        if (getUserAgent() != null) {
+            model.add(implNode, MpRepositoryVocabulary.USER_AGENT, vf.createLiteral(getUserAgent()));
+        }
+        return implNode;
+    }
+
+    @Override
+    public void parse(Model model, Resource implNode) throws SailConfigException {
+        super.parse(model, implNode);
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, null))
+                .ifPresent(lit -> setRequestRateLimit(lit.intValue()));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USER_AGENT, null))
+                .ifPresent(lit -> setUserAgent(lit.stringValue()));
+    }
+
+    public Integer getRequestRateLimit() {
+        return requestRateLimit;
+    }
+
+    protected void setRequestRateLimit(int requestRateLimit) {
+        this.requestRateLimit = requestRateLimit;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    protected void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
 }

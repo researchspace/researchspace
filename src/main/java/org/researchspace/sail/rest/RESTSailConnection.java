@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 
 import javax.ws.rs.HttpMethod;
@@ -40,10 +39,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.SPL;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
@@ -51,6 +53,7 @@ import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.eclipse.rdf4j.sail.SailException;
 import org.glassfish.jersey.client.ClientProperties;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
+import org.researchspace.repository.MpRepositoryVocabulary;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -58,13 +61,13 @@ import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ReadContext;
 
 import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 /**
  * 
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
-
 public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTSailConfig> {
 
     private static final String JSON = "JSON";
@@ -74,17 +77,17 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
 
     private Configuration jsonPathConfig;
 
-    public RESTSailConnection(AbstractServiceWrappingSail<RESTSailConfig> sailBase) {
+    public RESTSailConnection(AbstractRESTWrappingSail<RESTSailConfig> sailBase) {
         super(sailBase);
 
-        // configure JsonPath to not throw exception on missing path, but return null
-        // instead
+        // configure JsonPath to not throw exception on missing path, instead return
+        // null
         this.jsonPathConfig = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
     }
 
     @Override
     protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            RESTParametersHolder parametersHolder) throws SailException {
+            ServiceParametersHolder parametersHolder) throws SailException {
 
         logger.trace("REST Response received");
 
@@ -189,17 +192,14 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
      * @return
      */
     private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters) {
-
         MapBindingSet mapBindingSet = new MapBindingSet();
 
         for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
             Parameter parameter = getSail().getServiceDescriptor().getOutputParameters()
-                    .get(outputParameter.getValue());
-
+                    .get(outputParameter.getKey().getLocalName());
             IRI type = parameter.getValueType();
             String jsonPath = parameter.getJsonPath();
-            String value = JsonPath.read(object, jsonPath).toString();
-
+            String value = JsonPath.using(this.jsonPathConfig).parse(object).read(jsonPath);
             if (value != null) {
                 if (StringUtils.equals(type.stringValue(), RDFS.RESOURCE.stringValue())) {
                     logger.trace("Creating Resource ({})", value);
@@ -219,87 +219,84 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
      * @param parametersHolder
      * @return
      */
-    protected Response submit(RESTParametersHolder parametersHolder) {
+    @Override
+    protected Response submit(ServiceParametersHolder parametersHolder) {
 
         try {
             String httpMethod = getSail().getConfig().getHttpMethod();
-
             logger.trace("Creating request with HTTP METHOD: {}", httpMethod);
 
-            // Case with POST
-            if (httpMethod.equals(HttpMethod.POST))
-                return submitPost(parametersHolder);
+            // Create request
+            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
 
-            // Default case as GET
-            return submitGet(parametersHolder);
+            // Case with POST
+            if (HttpMethod.POST.equals(httpMethod)) {
+                return submitPost(targetResource, parametersHolder);
+            } else {
+                // Default case as GET
+                return submitGet(targetResource, parametersHolder);
+            }
 
         } catch (Exception e) {
             throw new SailException(e);
         }
     }
 
-    @Override
-    protected Response submitGet(RESTParametersHolder parametersHolder) {
+    protected Response submitGet(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
         try {
-            // Create request
-            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
-                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
             for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
                 targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
             }
 
-            // Get mediatype
-            String mediaType = Objects.isNull(((RESTSailConfig) getSail().getConfig()).getMediaType())
-                    ? MediaType.TEXT_PLAIN
-                    : ((RESTSailConfig) getSail().getConfig()).getMediaType();
-
-            // Create request builder
-            Invocation.Builder requestBuilder = targetResource.request(mediaType);
-
-            // Add HTTP headers if found
-            Map<String, String> httpHeaders = ((RESTSailConfig) this.getSail().getConfig()).getHttpHeaders();
-            if (httpHeaders.size() > 0) {
-                logger.trace("Found number {} Custom HTTP headers!", httpHeaders.size());
-
-                for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
-                    requestBuilder.header(header.getKey(), header.getValue());
-                }
-            }
-            return requestBuilder.get();
+            Invocation.Builder request = targetResource.request();
+            return this.addHTTPHeaders(request).get();
         } catch (Exception e) {
             throw new SailException(e);
         }
     }
 
-    @Override
-    protected Response submitPost(RESTParametersHolder parametersHolder) {
+    protected Response submitPost(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
         try {
-            String type = ((RESTSailConfig) getSail().getConfig()).getInputFormat();
+            Invocation.Builder request = targetResource.request();
+            request = this.addHTTPHeaders(request);
 
-            Object body = null;
+            String contentType = getSail().getConfig().getInputFormat();
 
-            // TODO extend to other input formats
-            if (StringUtils.equals(type, MediaType.APPLICATION_JSON)) {
-                body = getJsonBody(parametersHolder.getInputParameters());
+            logger.trace("Submitting POST request");
+            if (StringUtils.equals(contentType, MediaType.APPLICATION_JSON)) {
+                Object body = getJsonBody(parametersHolder.getInputParameters());
+                return request.post(Entity.json(body));
+            } else {
+                throw new IllegalArgumentException("RESTSail doesn't support input type: " + contentType);
             }
-
-            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
-                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
-
-            logger.trace("Submitting request");
-
-            return targetResource.request(type).post(Entity.json(body));
         } catch (Exception e) {
             throw new SailException(e);
         }
     }
 
+    private Invocation.Builder addHTTPHeaders(Invocation.Builder request) {
+        request.accept(getSail().getConfig().getMediaType());
+
+        // Add additional HTTP headers if found
+        Map<String, String> httpHeaders = this.getSail().getConfig().getHttpHeaders();
+        if (httpHeaders.size() > 0) {
+            logger.trace("Found {} custom HTTP headers.", httpHeaders.size());
+
+            for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
+                request.header(header.getKey(), header.getValue());
+            }
+        }
+        return request;
+    }
+
     @Override
-    protected RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
+    protected ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
+            throws SailException {
 
         logger.trace("[START] Parsing SPARQL query");
 
-        RESTParametersHolder res = new RESTParametersHolder();
+        ServiceParametersHolder res = new ServiceParametersHolder();
 
         // Iterate over input triples in descriptor
         // Use the SPARQL query to get values and create input parameter holder as a set
@@ -337,5 +334,54 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         logger.trace("[END] Parsing SPARLQ query");
 
         return res;
+    }
+
+    /**
+     * 
+     * @param inputParameters
+     * @return
+     */
+    protected Object getJsonBody(Map<String, String> inputParameters) {
+
+        logger.trace("### [START] Creating input body JSON ###");
+
+        Model model = getSail().getServiceDescriptor().getModel();
+        JSONObject body = new JSONObject();
+
+        for (Entry<String, String> entry : inputParameters.entrySet()) {
+            String id = MpRepositoryVocabulary.NAMESPACE.concat("_").concat(entry.getKey());
+
+            logger.trace("------");
+            logger.trace("Parameter detected");
+            logger.trace("Name: {}", entry.getKey());
+
+            // Get input json path for each input element
+            Optional<Value> jsonPath = model
+                    .filter(null, SPL.PREDICATE_PROPERTY, SimpleValueFactory.getInstance().createIRI(id)).stream()
+                    .map(Statement::getSubject)
+                    .map(sub -> model.filter(sub, MpRepositoryVocabulary.INPUT_JSON_PATH, null).stream().findFirst()
+                            .orElse(null))
+                    .map(Statement::getObject).findFirst();
+
+            // Create the body based on JSON object input strings
+            if (jsonPath.isPresent()) {
+                String[] paths = jsonPath.get().stringValue().split("\\.");
+                int i = 0;
+
+                logger.trace("JSON path: {}", jsonPath.get());
+
+                JSONObject parent = body;
+
+                while (i < paths.length - 1) {
+                    String key = paths[i++];
+                    parent = (parent.containsKey(key)) ? (JSONObject) parent.get(key) : new JSONObject();
+                    body.put(key, parent);
+                }
+
+                parent.put(paths[i], entry.getValue());
+            }
+        }
+        logger.trace("### [END] Creating input body JSON ###");
+        return body;
     }
 }

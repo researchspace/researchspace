@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.beust.jcommander.internal.Maps;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.BNode;
@@ -34,6 +34,8 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.sail.config.SailConfigException;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
+import com.beust.jcommander.internal.Maps;
+
 /**
  * 
  * @author Janmaruko Hōrensō <@gspinaci>
@@ -43,8 +45,20 @@ import org.researchspace.repository.MpRepositoryVocabulary;
 public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
 
     private String httpMethod;
+
+    /**
+     * ContentType HTTP header
+     */
     private String inputFormat;
-    private String mediaType;
+
+    /**
+     * Accept HTTP header
+     */
+    private String mediaType = MediaType.APPLICATION_JSON;
+
+    /**
+     * Additional HTTP headers
+     */
     private Map<String, String> httpHeaders;
 
     public RESTSailConfig() {
@@ -69,12 +83,11 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
                 .ifPresent(lit -> setMediaType(lit.stringValue()));
 
         // Get each httpheader
-        Models.objectResources(model.filter(implNode, MpRepositoryVocabulary.HTTP_HEADER, null))
-        .forEach(header -> {
+        Models.objectResources(model.filter(implNode, MpRepositoryVocabulary.HTTP_HEADER, null)).forEach(header -> {
             Optional<Literal> name = Models.objectLiteral(model.filter(header, MpRepositoryVocabulary.NAME, null));
             Optional<Literal> value = Models.objectLiteral(model.filter(header, MpRepositoryVocabulary.VALUE, null));
 
-            if(name.isPresent() && value.isPresent())
+            if (name.isPresent() && value.isPresent())
                 httpHeaders.put(name.get().stringValue(), value.get().stringValue());
         });
     }
@@ -84,28 +97,30 @@ public class RESTSailConfig extends AbstractRESTWrappingSailConfig {
         Resource implNode = super.export(model);
 
         // Store the HTTP method in the model
-        if (!StringUtils.isEmpty(getHttpMethod())) 
+        if (!StringUtils.isEmpty(getHttpMethod()))
             model.add(implNode, MpRepositoryVocabulary.HTTP_METHOD,
                     SimpleValueFactory.getInstance().createLiteral(getHttpMethod()));
-        
-        if (!StringUtils.isEmpty(getInputFormat())) 
+
+        if (!StringUtils.isEmpty(getInputFormat()))
             model.add(implNode, MpRepositoryVocabulary.INPUT_FORMAT,
                     SimpleValueFactory.getInstance().createLiteral(getInputFormat()));
-        
-        if (!StringUtils.isEmpty(getMediaType())) 
+
+        if (!StringUtils.isEmpty(getMediaType()))
             model.add(implNode, MpRepositoryVocabulary.MEDIA_TYPE,
                     SimpleValueFactory.getInstance().createLiteral(getMediaType()));
 
-        if(!Objects.isNull(httpHeaders) && httpHeaders.size()>0) {
+        if (!Objects.isNull(httpHeaders) && httpHeaders.size() > 0) {
             for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
                 BNode root = SimpleValueFactory.getInstance().createBNode();
 
                 model.add(implNode, MpRepositoryVocabulary.HTTP_HEADER, root);
-                model.add(root, MpRepositoryVocabulary.NAME, SimpleValueFactory.getInstance().createLiteral(header.getKey()));
-                model.add(root, MpRepositoryVocabulary.VALUE, SimpleValueFactory.getInstance().createLiteral(header.getValue()));
+                model.add(root, MpRepositoryVocabulary.NAME,
+                        SimpleValueFactory.getInstance().createLiteral(header.getKey()));
+                model.add(root, MpRepositoryVocabulary.VALUE,
+                        SimpleValueFactory.getInstance().createLiteral(header.getValue()));
             }
         }
-        
+
         return implNode;
     }
 

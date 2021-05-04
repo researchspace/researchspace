@@ -19,17 +19,67 @@
 
 package org.researchspace.sail.rest;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.researchspace.rest.filters.RequestRateLimitFilter;
+import org.researchspace.rest.filters.UserAgentFilter;
 
-public class AbstractRESTWrappingSail extends AbstractServiceWrappingSail<AbstractRESTWrappingSailConfig> {
+public abstract class AbstractRESTWrappingSail<C extends AbstractRESTWrappingSailConfig>
+        extends AbstractServiceWrappingSail<C> {
 
-    public AbstractRESTWrappingSail(AbstractRESTWrappingSailConfig config) {
+    /**
+     * According to the documentation of JAX-RS, "initialization as well as disposal
+     * of client may be a rather expensive operation", so we want to make sure that
+     * we reuse the same client instance for all calls for the specific service.
+     * 
+     * In Jersey Client is threadsafe, so it is fine to have the single instance in
+     * the sail and access it from multiple sail connections.
+     */
+    private Client client;
+
+    public AbstractRESTWrappingSail(C config) {
         super(config);
     }
 
     @Override
-    protected SailConnection getConnectionInternal() throws SailException {
-        return null;
+    protected void initializeInternal() throws SailException {
+        super.initializeInternal();
+        AbstractRESTWrappingSailConfig config = this.getConfig();
+
+        // client Jersey HTTP client with Request Rate Limiter filter if request limit
+        // is specified in the config
+        var clientBuilder = ClientBuilder.newBuilder();
+        if (config.getRequestRateLimit() != null) {
+            clientBuilder = clientBuilder.register(new RequestRateLimitFilter(config.getRequestRateLimit()));
+        }
+
+        // it is a good practice to always include application user-agent into all
+        // requests and somtime it can be even the requirement, e.g nominatim web
+        // service from OSM
+        if (config.getUserAgent() != null) {
+            clientBuilder = clientBuilder.register(new UserAgentFilter(config.getUserAgent()));
+        } else {
+            clientBuilder = clientBuilder.register(new UserAgentFilter());
+        }
+
+        // if we have username and password in the config then conigure basic auth
+        if (config.getUsername() != null && config.getPassword() != null) {
+            HttpAuthenticationFeature basicAuthFeature = HttpAuthenticationFeature.basic(config.getUsername(),
+                    config.getPassword());
+            clientBuilder = clientBuilder.register(basicAuthFeature);
+        }
+
+        this.client = clientBuilder.build();
+    }
+
+    @Override
+    protected abstract SailConnection getConnectionInternal() throws SailException;
+
+    protected Client getClient() {
+        return client;
     }
 }

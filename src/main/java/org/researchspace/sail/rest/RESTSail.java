@@ -18,14 +18,30 @@
 
 package org.researchspace.sail.rest;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.eclipse.rdf4j.sail.SailException;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.researchspace.rest.filters.RequestRateLimitFilter;
+import org.researchspace.rest.filters.UserAgentFilter;
 
 /**
  * 
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
-public class RESTSail extends AbstractRESTWrappingSail<RESTSailConfig> {
+public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
+
+    /**
+     * According to the documentation of JAX-RS, "initialization as well as disposal
+     * of client may be a rather expensive operation", so we want to make sure that
+     * we reuse the same client instance for all calls for the specific service.
+     * 
+     * In Jersey Client is threadsafe, so it is fine to have the single instance in
+     * the sail and access it from multiple sail connections.
+     */
+    private Client client;
 
     public RESTSail(RESTSailConfig config) {
         super(config);
@@ -33,7 +49,41 @@ public class RESTSail extends AbstractRESTWrappingSail<RESTSailConfig> {
 
     @Override
     protected RESTSailConnection getConnectionInternal() throws SailException {
-        // read input/output data from descriptor and save in the instance
         return new RESTSailConnection(this);
+    }
+
+    @Override
+    protected void initializeInternal() throws SailException {
+        super.initializeInternal();
+        RESTSailConfig config = this.getConfig();
+
+        // client Jersey HTTP client with Request Rate Limiter filter if request limit
+        // is specified in the config
+        var clientBuilder = ClientBuilder.newBuilder();
+        if (config.getRequestRateLimit() != null) {
+            clientBuilder = clientBuilder.register(new RequestRateLimitFilter(config.getRequestRateLimit()));
+        }
+
+        // it is a good practice to always include application user-agent into all
+        // requests and somtime it can be even the requirement, e.g nominatim web
+        // service from OSM
+        if (config.getUserAgent() != null) {
+            clientBuilder = clientBuilder.register(new UserAgentFilter(config.getUserAgent()));
+        } else {
+            clientBuilder = clientBuilder.register(new UserAgentFilter());
+        }
+
+        // if we have username and password in the config then conigure basic auth
+        if (config.getUsername() != null && config.getPassword() != null) {
+            HttpAuthenticationFeature basicAuthFeature = HttpAuthenticationFeature.basic(config.getUsername(),
+                    config.getPassword());
+            clientBuilder = clientBuilder.register(basicAuthFeature);
+        }
+
+        this.client = clientBuilder.build();
+    }
+
+    protected Client getClient() {
+        return client;
     }
 }

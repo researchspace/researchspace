@@ -27,17 +27,20 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -47,8 +50,10 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SPL;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.eclipse.rdf4j.sail.SailException;
 import org.glassfish.jersey.client.ClientProperties;
@@ -68,17 +73,19 @@ import net.minidev.json.JSONObject;
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
-public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTSailConfig> {
+public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RESTSailConfig> {
 
     private static final String JSON = "JSON";
 
     private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
     protected static final ValueFactory VF = SimpleValueFactory.getInstance();
 
+    private Client client;
     private Configuration jsonPathConfig;
 
-    public RESTSailConnection(AbstractRESTWrappingSail<RESTSailConfig> sailBase) {
+    public RESTSailConnection(RESTSail sailBase) {
         super(sailBase);
+        this.client = sailBase.getClient();
 
         // configure JsonPath to not throw exception on missing path, instead return
         // null
@@ -214,12 +221,19 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
         return mapBindingSet;
     }
 
-    /**
-     * 
-     * @param parametersHolder
-     * @return
-     */
     @Override
+    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+            ServiceParametersHolder parametersHolder) {
+        Response response = submit(parametersHolder);
+        if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
+            throw new SailException("Request failed with HTTP status code " + response.getStatus() + ": "
+                    + response.getStatusInfo().getReasonPhrase());
+        }
+        InputStream resultStream = (InputStream) response.getEntity();
+        return new CollectionIteration<BindingSet, QueryEvaluationException>(
+                convertStream2BindingSets(resultStream, parametersHolder));
+    }
+
     protected Response submit(ServiceParametersHolder parametersHolder) {
 
         try {
@@ -227,7 +241,7 @@ public class RESTSailConnection extends AbstractRESTWrappingSailConnection<RESTS
             logger.trace("Creating request with HTTP METHOD: {}", httpMethod);
 
             // Create request
-            WebTarget targetResource = this.getSail().getClient().target(getSail().getConfig().getUrl())
+            WebTarget targetResource = this.client.target(getSail().getConfig().getUrl())
                     .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
 
             // Case with POST

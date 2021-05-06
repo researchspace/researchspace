@@ -266,6 +266,14 @@ task testKarma(type: Exec) {
 tasks.testKarma.dependsOn npmInstall
 test.dependsOn testKarma
 
+task runWiremock(type: JavaExec) {
+    group = "Execution"
+    description = "Run WireMock recorder"
+    classpath = sourceSets.test.runtimeClasspath
+    main = "com.github.tomakehurst.wiremock.standalone.WireMockServerRunner"
+    args "--port", "10220"
+}
+
 repositories {
     jcenter()
     mavenCentral()
@@ -426,6 +434,7 @@ dependencies {
         "junit:junit:4.10",
         "com.github.sdorra:shiro-unit:1.0.1",
         "org.jukito:jukito:1.4.1",
-        "org.skyscreamer:jsonassert:1.5.0"
+        "org.skyscreamer:jsonassert:1.5.0",
+        "com.github.tomakehurst:wiremock-jre8:2.27.2"
     )
 }

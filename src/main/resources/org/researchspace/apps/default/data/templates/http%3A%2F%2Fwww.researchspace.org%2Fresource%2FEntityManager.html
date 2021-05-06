@@ -1,0 +1,163 @@
+[[!--
+uses client-side template:
+[[> rsp:HierarchyManagerTemplate]]
+--]]
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectDashboard"]]'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectConfiguration"]]'>
+      Configurations
+    </semantic-link>
+  </li>
+
+  <li class="active">
+    Entity Manager 
+  </li>
+</ol>
+
+<div class="page">
+[[#>rsp:ClipboardSidebar]]
+[[#>rsp:DetailsSidebar]]
+
+[[#> rsp:HierarchyManagerTemplate title="Entity"]]
+    [[#*inline "addNewStructureForm"]][[/inline]]
+    [[#*inline "exceptionsStructureList"]][[/inline]]
+    [[#*inline "customUploadNewStructureMessage"]]
+       <p>Please drag&amp;drop your *.trig or *.nq RDF file(s) with SKOS vocabularies here or Authority Document with heterogeneous data.</p>
+       <p>For a <i>skos:ConceptScheme</i> or <i>crm:E32_Authority_Document</i> all corresponding entities should be defined in one named graph that equals to the scheme IRI!</p>             
+    [[/inline]]
+    [[#*inline "searchResults"]]
+      <semantic-search>
+          <div class="rs-vocabulary-scheme-row">
+              <h1 class="rs-vocabulary-scheme-title">Entity Types</h1>
+              <div>
+                  <semantic-search-query-keyword query='
+                              PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                              SELECT ?scheme ?schemeLabel ?isManaged WHERE {
+                                ?scheme crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                                ?scheme <http://www.researchspace.org/resource/system/authority_manager/item_label> ?schemeLabel .
+                                FILTER NOT EXISTS {
+                                  ?scheme <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                                }
+                              }
+                          '
+                          default-query='
+                              PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                              SELECT ?scheme ?schemeLabel ?isManaged WHERE {
+                                ?scheme crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                                ?scheme <http://www.researchspace.org/resource/system/authority_manager/item_label> ?schemeLabel .
+                                FILTER NOT EXISTS {
+                                  ?scheme <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                                }
+                              }
+                          '
+                  ></semantic-search-query-keyword>
+              </div>
+          </div>
+
+          <semantic-search-result-holder>
+              <semantic-search-result>
+                  <semantic-table id='scheme-table'
+                          query='SELECT DISTINCT ?scheme ?schemeLabel ?isManaged WHERE {} ORDER BY ASC(STR(LCASE(?schemeLabel)))'
+                          number-of-displayed-rows=15
+                          options='{"showTableHeading": false, "showFilter": false}'
+                          no-result-template='{{> noScheme}}'
+                          column-configuration='[
+                              { "variableName": "scheme", "cellTemplate": "{{> schemeRow}}" }
+                          ]'>
+                      <template id="noScheme">
+                          <div style="padding: 12px 8px">
+                              No vocabulary available
+                          </div>
+                      </template>
+
+                      <template id='schemeRow'>
+                          <div class="scheme-table-row">
+                              <semantic-link iri="{{scheme.value}}" class="schema-label">{{schemeLabel.value}}</semantic-link>
+                              <div class="btn-table-container">
+                              <semantic-link-container uri='{{scheme.value}}' class="schema-label">
+                                              <button class="btn-table">Show Terms</button>
+                                              </semantic-link-container>
+                              <mp-overlay-dialog title="Edit {{schemeLabel.value}}" type="modal" bs-size="large">
+                                  <mp-overlay-dialog-trigger>
+                                  <button class="btn-table">Edit</button>
+                                  </mp-overlay-dialog-trigger>
+                                  <mp-overlay-dialog-content>
+                                    {{#ifCond isManaged.value "===" "true"}}
+                                      <semantic-form id='vocab-form' 
+                                                     persistence='{"type": "sparql", "targetGraphIri": "{{scheme.value}}"}'
+                                                     subject='{{scheme.value}}'
+                                                     post-action="reload"
+                                                     fields='[[
+                                                      fieldDefinitions
+                                                        rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
+                                                        prefLabel="http://www.w3.org/2004/02/skos/core#prefLabel"
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                     ]]'
+                                      >
+                                        <semantic-form-text-input for="rdfsLabel"> </semantic-form-text-input>
+                                        <semantic-form-text-input for="prefLabel"> </semantic-form-text-input>
+
+
+                                        <semantic-form-errors></semantic-form-errors>
+
+                                        <button name="reset" class="btn btn-default">Reset</button>
+                                        <button name="submit" class="btn btn-primary">Save</button>
+                                      </semantic-form>
+                                    {{else}}
+                                      <div>Authority List <b>{{schemeLabel.value}}</b> is not managed by the system.</div>
+                                      <div>Enable Authority authoring:</div>                       
+                                        <semantic-form id='manage-scheme-form' 
+                                                      persistence='{"type": "sparql", "targetGraphIri": "{{scheme.value}}"}'
+                                                      subject='{{scheme.value}}'
+                                                      post-action="redirect"
+                                                      fields='[{
+                                                        "id": "refersto",
+                                                        "label": "Entity Type",
+                                                        "xsdDatatype": "xsd:anyURI",
+                                                        "insertPattern": "INSERT { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value } WHERE {}",
+                                                        "deletePattern": "DELETE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value . } WHERE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value. }",
+                                                        "valueSetPattern": "SELECT $value $label WHERE { 
+                                                            ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                                                            ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .
+                                                         }"
+                                                        }
+                                                      ]'
+                                        >
+                                          <semantic-form-checklist-input for='refersto' type="radio" class='class name' class-item-name='item class name'></semantic-form-checklist-input>
+                                          
+                                          <semantic-form-errors></semantic-form-errors>
+                                          <button name="submit" class="btn btn-success" style="margin-right: 5px;">Confirm</button>
+                                          <button name="cancel" class="btn btn-danger">Cancel</button>
+                                        </semantic-form>
+                                    {{/ifCond}}
+                                  </mp-overlay-dialog-content>
+                              </mp-overlay-dialog>
+                              <button class="btn-table">
+                                  <mp-graph-store-action title="Export" action="GET" graphuri="{{scheme.value}}" file-ending="trig">Export</mp-graph-store-action>
+                              </button>
+                              <button class="btn-table btn-table-delete">
+                                  <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{scheme.value}}">Delete</mp-graph-store-action>
+                              </button>
+                              </div>
+                          </div>
+                      </template>
+                  </semantic-table>
+              </semantic-search-result>
+          </semantic-search-result-holder>
+      </semantic-search>
+    [[/inline]]
+
+[[/rsp:HierarchyManagerTemplate]]
+
+[[/rsp:DetailsSidebar]]
+[[/rsp:ClipboardSidebar]]
+
+</div>

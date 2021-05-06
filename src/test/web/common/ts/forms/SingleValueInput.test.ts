@@ -22,11 +22,11 @@ import { expect } from 'chai';
 import { Rdf, XsdDataTypeValidation, vocabularies } from 'platform/api/rdf';
 import { validateType, FieldValue } from 'platform/components/forms';
 
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
 import { DATATYPES_FIXTURIES } from './fixturies/Datatypes';
 
-mockLanguagePreferences();
+mockConfig();
 
 describe('SingleValueInput Component', () => {
   it('correctly validates form values', () => {

@@ -3,8 +3,27 @@
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
   <li>
-    <semantic-link iri='[[resolvePrefix "rsp:VocabularyManager"]]'>Authority Manager</semantic-link>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectDashboard"]]'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectConfiguration"]]'>
+      Configurations
+    </semantic-link>
+  </li>
+  [[#if authorityManager]]
+    <li>
+      <semantic-link iri='[[resolvePrefix "rsp:VocabularyManager"]]'>Authority Manager</semantic-link>
     </li>
+  [[/if]]
+   [[#if entityManager]]
+    <li>
+      <semantic-link iri='[[resolvePrefix "rsp:EntityManager"]]'>Entity Manager</semantic-link>
+    </li>
+  [[/if]]
+
+
   <li class="active">
     Authority Document: <mp-label iri='[[this]]'></mp-label> 
   </li>
@@ -15,33 +34,48 @@
 [[#>rsp:DetailsSidebar]]
   <semantic-query 
                   query='
-                          SELECT ?entityType ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged WHERE {
+                          SELECT ?config ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
                             OPTIONAL {
                               <[[this]]> crm:P67_refers_to ?managedConfig .
                             }
-                            BIND(COALESCE(?managedConfig, <[[defaultConfig]]>) AS ?config) .
+                            OPTIONAL {
+                              <[[this]]> a <http://www.researchspace.org/resource/system/FormConfig> .
+                              BIND(<[[this]]> as ?managedConfig) .
+                            }
+                            BIND(COALESCE(?managedConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?config) .
                             BIND(BOUND(?managedConfig) as ?isManaged) .
                             
                             ?config <http://www.researchspace.org/resource/system/authority_manager/item_label> ?title ;
-                              <http://www.researchspace.org/resource/system/authority_manager/for_type> ?type ;
-                              <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI ;
-                              <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                              <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType ;
+                              <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI .
                             
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                            }
                             OPTIONAL {
                               ?config <http://www.researchspace.org/resource/system/authority_manager/broader_property> ?broaderPropertyIRI .
                             }
                             OPTIONAL {
                               ?config <http://www.researchspace.org/resource/system/authority_manager/order_by_pattern> ?orderByPattern .
                             }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern> ?labelSparqlPattern .
+                            }
                           } LIMIT 1
                         '
   >
     <template id='template'>
       {{#ifCond bindings.0.isManaged.value "===" "true"}}
-        {{> rsp:SimpleCollectionBrowser editable=true collection="[[this]]" membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value}}
+        {{> rsp:SimpleCollectionBrowser editable=true config=bindings.0.config.value collection="[[this]]" rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value P2_has_type=bindings.0.P2_has_type.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value labelSparqlPattern=bindings.0.labelSparqlPattern.value}}
       {{else}}
         [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, so we can offer here for user to associate a config with it --]]
-        {{> rsp:SimpleCollectionBrowser editable=false collection="[[this]]" membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value}}
+        {{> rsp:SimpleCollectionBrowser editable=false config=bindings.0.config.value collection="[[this]]" rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value labelSparqlPattern=bindings.0.labelSparqlPattern.value}}
       {{/ifCond}}
     </template>
     <template id='noResultTemplate'>

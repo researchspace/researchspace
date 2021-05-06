@@ -2,9 +2,11 @@
   <div class="btn-group">
     <div>
       {{#ifCond mode "===" "edit"}}
+        {{#if broaderPropertyIRI}}
         <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "{{collection}}", "broader": "{{node}}", "new": true, "edit": false}' targets='["term-forms"]'>
           <button name="add" class="btn btn-grey">Add narrower {{itemLabel}}</button>
         </mp-event-trigger>
+        {{/if}}
       {{/ifCond}}
     </div>
     <div> 
@@ -69,6 +71,116 @@
         </mp-overlay-dialog>
       {{/ifCond}}
       <button name="submit" class="btn btn-primary">Save</button>
+      
+     
+      <button name="dry-run" class="btn btn-default" style="margin-left: 10px;">Debug</button>
+      <mp-event-proxy id='show-form-debug-dialog' on-event-source='vocab-form' on-event-type='Form.DryRunResults'
+                      proxy-event-type='Component.TemplateUpdate' additional-data='{"show": true}' proxy-targets='["form-debug-info"]'
+      ></mp-event-proxy>
+
+      <mp-event-target-template-render id='form-debug-info' template='{{> debugInfo}}'>
+        <template id='debugInfo'>
+          {{#if show}}
+            <mp-overlay-dialog show='true' id='form-debug-info-dialog' title="Form Debug" type="modal" bs-size="large">
+              <mp-overlay-dialog-content>
+                <div>
+                  <ul>
+                    {{#each dryRunResults}}
+                    <li>
+                      <semantic-link iri='{{definition.iri}}' getlabel=false><b>{{definition.iri}}</b></semantic-link>
+                      
+                      {{#if deleteTriples.length}}
+                        <p><b>Deleted Values:</b></p>
+                        <ul>
+                          {{#each deleteTriples}} 
+                            <li>
+                              <mp-code-highlight mode='text/turtle' code-text='{{value}}'></mp-code-highlight>
+                              
+                              <mp-collapsible-div expanded='true'>
+                                <mp-collapsible-div-trigger>
+                                  <b>RDF</b>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                  <mp-code-block mode='text/turtle' code-text='{{triples}}'></mp-code-block>
+                                </mp-collapsible-div-content>
+                              </mp-collapsible-div >
+
+                              <mp-collapsible-div expanded='false'>
+                                <mp-collapsible-div-trigger>
+                                  <b>DELETE Query</b>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                  <mp-code-block mode='text/turtle' code-text='{{valueDeleteQuery}}'></mp-code-block>
+                                </mp-collapsible-div-content>
+                              </mp-collapsible-div>
+                              <mp-collapsible-div expanded='false'>
+                                <mp-collapsible-div-trigger>
+                                  <b>CONSTRUCT Query (debug)</b>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                  <mp-code-block mode='text/turtle' code-text='{{valueConstructQuery}}'></mp-code-block>
+                                </mp-collapsible-div-content>
+                              </mp-collapsible-div>
+                            </li>
+                          {{/each}}
+                        </ul>
+                      {{/if}}
+                      
+                      {{#if insertTriples.length}}
+                        <p><b>Inserted Values:</b></p>
+                        <ul>
+                          {{#each insertTriples}} 
+                            <li>
+                              <mp-code-highlight mode='text/turtle' code-text='{{value}}'></mp-code-highlight>
+                              
+                              <mp-collapsible-div expanded='true'>
+                                <mp-collapsible-div-trigger>
+                                  <b>RDF</b>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                  <mp-code-block mode='text/turtle' code-text='{{triples}}'></mp-code-block>
+                                </mp-collapsible-div-content>
+                              </mp-collapsible-div >
+
+                              <mp-collapsible-div expanded='false'>
+                                <mp-collapsible-div-trigger>
+                                  <b>INSERT Query</b>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                  <mp-code-block mode='text/turtle' code-text='{{valueInsertQuery}}'></mp-code-block>
+                                </mp-collapsible-div-content>
+                              </mp-collapsible-div>
+                              <mp-collapsible-div expanded='false'>
+                                <mp-collapsible-div-trigger>
+                                  <b>CONSTRUCT Query (debug)</b>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                  <mp-code-block mode='text/turtle' code-text='{{valueConstructQuery}}'></mp-code-block>
+                                </mp-collapsible-div-content>
+                              </mp-collapsible-div>
+                            </li>
+                          {{/each}}
+                        </ul>
+                      {{/if}}
+                    </li>
+                    {{/each}}
+                  </ul>
+                  
+                  <div class="form-btn-group">
+                    <div style="display: flex; justify-content: flex-end; width: 100%;">
+                      <mp-event-trigger id='close-form-debug-dialog' type='OverlayDialog.Close' proxy-targets='["form-debug-info-dialog"]'>
+                        <button class="btn btn-default">Close</button>
+                      </mp-event-trigger>
+                    </div>
+                  </div>
+
+                </div>
+              </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
+
     </div>
   </div>
 {{/if}}

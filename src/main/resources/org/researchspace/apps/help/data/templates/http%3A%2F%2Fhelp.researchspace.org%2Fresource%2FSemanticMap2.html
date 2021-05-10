@@ -1,0 +1,218 @@
+<ol class="page-breadcrumb">
+    <li>
+      <mp-link title="Home" url="/">Home</mp-link>
+    </li>
+    <li>
+      <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+    </li>
+    <li>
+      <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+    </li>
+    <li class="active">Map Component</li>
+  </ol>
+
+
+<div class="page rs-system-documentation-page">
+
+  <div class="page__grid-container">
+    <div class="page__content-container page__withToC">
+
+      <div class="page__ToC-container page__darkerSection-container">
+        <h1 class="page__ToC-title">Table of contents</h1>
+
+        <a class="page__ToC-item" href="#description">
+          <div class="page__ToC-item-number">1</div>
+          <div>Description</div>
+        </a>
+
+        <a class="page__ToC-item" href="#basic-configuration">
+          <div class="page__ToC-item-number">2</div>
+          <div>Basic configuration</div>
+        </a>
+
+        <a class="page__ToC-item" href="#advanced-configurations">
+            <div class="page__ToC-item-number">3</div>
+            <div>Advanced configurations</div>
+        </a>
+
+        <a class="page__ToC-item" href="#custom-tiles-layers">
+            <div class="page__ToC-item-number">4</div>
+            <div>Custom Tiles Layers</div>
+        </a>
+    
+      </div>
+      <div class="page__content">
+
+        <h1 class="page__content-mainTitle">Semantic Map</h1>
+
+        <section id="description">
+          <h1 class="page__content-sectionTitle">Description</h1>
+          <div>
+            <p>The Semantic Map component is used to display semantic data on a map through markers, areas, paths and tiles layers. 
+            </p>
+          </div>
+        </section>
+
+        <section id="basic-configuration">
+        <h1 class="page__content-sectionTitle">Basic Configuration</h1>
+            <div>
+                <p>Be sure to wrap the semantic-map tag inside a container div element with a specified height.</p>
+                <mp-code-example>
+                    <![CDATA[
+<div style='height: 25vw;'>
+<semantic-map
+query='
+    SELECT ?lat ?lng ?description ?link WHERE {
+    VALUES(?lat ?lng ?description ?link) {
+        ("51.5195" "-0.1269" "The British Museum" <http://www.wikidata.org/entity/Q6373>)
+        ("51.9500" "7.6240" "Münster City" <http://www.wikidata.org/entity/Q2742>)
+    }
+    }
+'
+tuple-template='<b>{{description.value}}</b><br><a href="{{link.value}}" target="_blank">Open in wikidata</a>'
+></semantic-map>
+</div>
+                    ]]>
+                </mp-code-example>
+            </div>
+            <div>
+                <mp-documentation type="SemanticMapConfig"></mp-documentation>
+            </div>
+        </section>
+
+        <section id="advanced-configurations">
+          <h1 class="page__content-sectionTitle">Advanced Configurations</h1>
+          <h2>Map options</h2>
+          <p>It's possible to specify particular options for the map in the <code>map-options</code> optional attribute. It can contain the following optional parameters:</p>
+          <ul>
+              <li><code>crs</code> Sets coordinate reference system (CRS). By default, infact, coordinates are assumed to be in EPSG:4326 (WGS84) and will be transformed internally to EPSG:3857.              </li>
+              <li><code>fix-zoom-level</code> Manually sets the starting zoom level between 0-18 (max zoom level may vary depending on the resolution).</li>
+              <li><code>extent</code> Sets the fixed bounding box of the map, so that the map can only be moved within a certain area.
+                <p>It's defined as an array of the form <code>[topleftlatitude, topleftlongitude, bottomrightlatitude, bottomrightlongitude]</code></p></li>
+          </ul>
+          <p>Here is an example of usage for the map-options attribute: </p>
+          <mp-code-block type="text/javascript">
+<semantic-map
+    map-options='{
+        "crs":"EPSG:3857",
+        "extent": [1368358.959761288, 5692238.026840036, 1371414.0522355612, 5693523.1243780805],
+        "fix-zoom-level":10
+    }'
+...></semantic-map>
+        </mp-code-block>
+          
+          <h2>WKT Point Literal</h2>
+          <p>It is also possible to provide a position on the map using a WKT Point Literal instead of a couple of coordinates, like in the following example.</p>
+          <mp-code-example>
+            <![CDATA[
+            <div style='height: 25vw;'>
+            <semantic-map
+              query='
+                SELECT ?wkt ?description ?link WHERE {
+                  VALUES(?wkt ?description ?link) {
+                    ("Point(-0.1269 51.5195)" "The British Museum" <http://www.wikidata.org/entity/Q6373>)
+                  }
+                }
+              '
+              tuple-template='<b>{{description.value}}</b><br><a href="{{link.value}}" target="_blank">Open in wikidata</a>'
+            ></semantic-map>
+              </div>
+            ]]>
+                </mp-code-example>
+          <h2>WKT Polygons</h2>
+          <p>This visualization can be useful to show delimited areas on the map. Instead of a couple of coordinates for a single marker, we pass a WKT polygon in the query. The WKT polygon on the map can also have a customized color by adding a ?color variable in the query, defined as a string of rgba format: this way, it is possible to handle the polygon transparency as well.</p>
+          <mp-code-example>
+            <![CDATA[
+            <div style='height: 25vw;'>
+            <semantic-map
+                        fix-zoom-level=12
+              query='
+                SELECT ?wkt ?description ?link ?color WHERE {
+                  VALUES(?wkt ?description ?link ?color) {
+                    ("POLYGON((8.5952745 49.2969561,8.5956685 49.2965286,8.5974494 49.2948906,8.5993103 49.2932849,8.5998887 49.2928555,8.6012892 49.2916245,8.6014138 49.291536,8.6016512 49.2914532,8.6027306 49.2906454,8.6047839 49.2892404,8.6063108 49.2881947,8.6087466 49.2866641,8.6101675 49.2858063,8.6114369 49.2851092,8.6121208 49.2852948,8.6128631 49.2848953,8.6154836 49.2836102,8.6181853 49.2824067,8.6202411 49.2814901,8.6221902 49.2806952,8.6242502 49.2798425,8.625814 49.2792348,8.6268406 49.2787784,8.6281378 49.2782867,8.6294459 49.2778338,8.6322396 49.2768888,8.6356095 49.2758853,8.635624 49.2759972,8.6342666 49.2770302,8.6307086 49.2795505,8.6305877 49.2795953,8.6296951 49.2802173,8.6304346 49.2803191,8.6307055 49.2803498,8.6312102 49.2799581,8.6317602 49.2795435,8.63214 49.2793462,8.6328133 49.2791391,8.633683 49.2790823,8.6347724 49.2789587,8.6351282 49.2788505,8.6356744 49.2783811,8.6361747 49.2778342,8.6365403 49.2775844,8.6375015 49.2769792,8.6378912 49.2766518,8.6380608 49.2763591,8.6381885 49.2760414,8.6384108 49.2757919,8.6390587 49.2754227,8.6393519 49.2754099,8.6405103 49.2753412,8.6414483 49.2753511,8.6421202 49.2753928,8.6426415 49.2754687,8.6436355 49.2757076,8.6437006 49.275727,8.6437637 49.2757448,8.644566 49.275969,8.6454897 49.2762191,8.6462033 49.2764484,8.6470286 49.2767947,8.6470854 49.2768181,8.6471445 49.2768426,8.6474137 49.2769756,8.6475781 49.2771107,8.6478028 49.2773608,8.6481745 49.2781178,8.6484409 49.2784951,8.6489364 49.2790782,8.6507698 49.2818764,8.6526726 49.2834602,8.6532736 49.2841315,8.6535058 49.284484,8.6537798 49.2848539,8.6540576 49.285127,8.6557814 49.2869216,8.6559461 49.2870886,8.6585252 49.2896992,8.6597506 49.2907615,8.6609963 49.2918736,8.661581 49.2920918,8.661855 49.2921961,8.6622165 49.2922631,8.6624943 49.2922929,8.6628703 49.2923185,8.6633035 49.2923132,8.6636372 49.2922886,8.6639628 49.292243,8.6643515 49.2923712,8.6644794 49.292594,8.6646882 49.2925225,8.6650996 49.2934806,8.6652638 49.2938386,8.6655436 49.2945247,8.6656419 49.2948386,8.6659984 49.2957268,8.6663882 49.2968587,8.6666065 49.297773,8.6667944 49.2986787,8.6668995 49.2992891,8.6669322 49.2996176,8.6669566 49.2999485,8.6672956 49.3084048,8.6678382 49.3084241,8.6678254 49.3084835,8.6676718 49.3096851,8.6678391 49.3099517,8.6679 49.3104198,8.6676201 49.3107157,8.6676462 49.3111908,8.6677308 49.3113218,8.6680643 49.3118381,8.6685701 49.312583,8.6684807 49.3125829,8.6677198 49.3126295,8.6661176 49.3127344,8.6657484 49.3131882,8.6655009 49.3132531,8.6653787 49.3135894,8.665102 49.3136574,8.6635922 49.3138573,8.6631159 49.3139143,8.6630708 49.3137516,8.6628755 49.3133975,8.6627221 49.3132705,8.6621003 49.3134289,8.6612365 49.3136283,8.6606047 49.3137707,8.6600883 49.3139004,8.6609179 49.3143789,8.6608165 49.3144287,8.6606563 49.3145619,8.6605632 49.3146593,8.6597479 49.3151883,8.6588459 49.3159884,8.6580855 49.3166986,8.6579113 49.3169223,8.6577783 49.3170516,8.65748 49.3173413,8.6571273 49.3176628,8.6567345 49.3180706,8.6564132 49.318406,8.6558908 49.3190046,8.6556114 49.3193403,8.655522 49.3192827,8.6552067 49.31901,8.6550063 49.3187659,8.6548496 49.318547,8.654519 49.318519,8.6542882 49.318618,8.653357 49.318814,8.6528548 49.3189014,8.6525875 49.3187852,8.6519695 49.3187074,8.6513373 49.3186341,8.6509181 49.3185943,8.6499749 49.3186829,8.6494385 49.3187359,8.6488564 49.3187907,8.6485964 49.3188412,8.6481218 49.3189494,8.647728 49.3190468,8.6470596 49.3192242,8.6467255 49.3193084,8.6464586 49.3193497,8.6460695 49.3193809,8.6448565 49.3194639,8.6448113 49.319467,8.6442996 49.3195064,8.6441522 49.3195304,8.6440427 49.3195797,8.6439012 49.3196609,8.6412559 49.3205259,8.6402341 49.3208717,8.6378101 49.3216928,8.637161 49.3219548,8.631821 49.3238509,8.631516 49.3239447,8.6312301 49.324071,8.6308053 49.324371,8.6305197 49.3245498,8.6302135 49.3248086,8.6298419 49.3252538,8.6295209 49.3254069,8.6291503 49.3256817,8.6287443 49.3259675,8.6285445 49.3261253,8.6282216 49.3258887,8.6276185 49.3255283,8.6255167 49.3242722,8.6236627 49.3259705,8.6224449 49.327009,8.6223473 49.3265373,8.622243 49.3260519,8.6221732 49.3257382,8.6221175 49.3255663,8.6220165 49.3253985,8.6218838 49.3252303,8.6217299 49.3250735,8.6215131 49.3249158,8.6211136 49.3246354,8.6202991 49.3241273,8.6186129 49.3232228,8.6170036 49.322314,8.6166092 49.3220873,8.6163614 49.3219567,8.6160889 49.3218674,8.6156696 49.3217549,8.6149391 49.3215827,8.6139258 49.3213211,8.6132269 49.3211558,8.6129404 49.3210686,8.6126576 49.3209403,8.6122631 49.3207274,8.6115196 49.3203404,8.6109123 49.3200083,8.6106015 49.3198549,8.6103433 49.3196833,8.6101829 49.319571,8.6098869 49.3193125,8.6098343 49.3190729,8.6088656 49.3184133,8.6044287 49.3151597,8.6037529 49.312786,8.6030102 49.3104337,8.6027626 49.3097615,8.6023482 49.309379,8.6018908 49.3090247,8.6014139 49.3086749,8.5990223 49.3099089,8.5989623 49.3080488,8.5991676 49.3080106,8.5991407 49.307165,8.5989908 49.3069139,8.5989954 49.3067895,8.5989908 49.3065823,8.5989263 49.3063454,8.598006 49.3060261,8.5984096 49.3041909,8.5985334 49.303475,8.5985818 49.3031521,8.5985872 49.3028819,8.5984634 49.3024433,8.5983486 49.3020458,8.5982535 49.3017028,8.5982212 49.3014922,8.5982266 49.3010781,8.5982804 49.3007728,8.5983356 49.3002098,8.5983634 49.3000393,8.5984738 49.2997788,8.598607 49.2994934,8.5996106 49.2981164,8.5952745 49.2969561))" "Walldorf - WKT polygon data @ OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright" <http://www.wikidata.org/entity/Q22872> "rgba(200, 100, 30, 0.3)")
+                  }
+                }
+              '
+                      tuple-template='<b>{{description.value}}</b><br><a href="{{link.value}}" target="_blank">Open in wikidata</a>'
+    ></semantic-map>
+              </div>
+            ]]>
+          </mp-code-example>
+          <h2>Clusters</h2>
+          <p>Semantic map component visualization can also handle clusters of markers that are shown as aggregated into a single marker when the map is too zoomed out to distinguish their single positions.</p>
+          <mp-code-example>
+            <![CDATA[
+                <div style='height: 25vw;'>
+                    <semantic-map
+                    query='
+                        SELECT ?wkt ?description ?link WHERE {
+                        VALUES(?wkt ?description ?link) {
+                            ("Point(2.241389 48.835278)" "Renault" <http://www.wikidata.org/entity/Q6686>)
+                            ("Point(2.241389 48.835278)" "Buchet" <http://www.wikidata.org/entity/Q1548256>)
+                            ("Point(2.188333 48.877778)" "Peugeot" <http://www.wikidata.org/entity/Q6742>)
+                            ("Point(2.188333 48.877778)" "Groupe PSA" <http://www.wikidata.org/entity/Q275623>)
+                            ("Point(2.351828 48.856578)" "Citroën" <http://www.wikidata.org/entity/Q6746>)
+                        }
+                        }
+                    '
+                    tuple-template='<b>{{description.value}}</b><br><a href="{{link.value}}" target="_blank">Open in wikidata</a>'
+            ></semantic-map>
+                    </div>
+            ]]>
+          </mp-code-example>
+        </section>
+        <section id="custom-tiles-layers">
+            <h1 class="page__content-sectionTitle">Custom Tiles Layers</h1>
+            <p>By default, the Semantic Map component uses <a href="https://wiki.openstreetmap.org/wiki/Tile_servers">OpenStreetMap</a> as a base map provider. In order to allow for custom basemap providers or settings for the map tiles, it is possible to manually specify every layer using one or more <code><tiles-layer></tiles-layer></code> components nested as children in the Semantic Map component.</p>
+            <mp-code-example>
+                <![CDATA[
+                <div style='height: 25vw;'>
+                <semantic-map
+                query='
+                    SELECT ?lat ?lng ?description ?link WHERE {
+                    VALUES(?lat ?lng ?description ?link) {
+                        ("51.5195" "-0.1269" "The British Museum" <http://www.wikidata.org/entity/Q6373>)
+                        ("51.9500" "7.6240" "Münster City" <http://www.wikidata.org/entity/Q2742>)
+                    }
+                    }
+                '
+                tuple-template='<b>{{description.value}}</b><br><a href="{{link.value}}" target="_blank">Open in wikidata</a>'
+                fix-zoom-level=5
+                >
+                <tiles-layer provider='mapbox' provider-options='{"style": "mapbox/light-v10"}'></tiles-layer>
+                    
+            </semantic-map>
+                </div>
+                ]]>
+            </mp-code-example>
+            <p>The Tiles Layer component has two parameters:</p>
+            <ul>
+                <li><p><code>provider</code> which accepts the provider id as a string (e.g. "mapbox")</p></li>
+                <li><p><code>provider-options</code> which accepts a key-value object containing the following information:</p>
+                    <ul>
+                        <li><code>style</code></li>
+                        <li><code>tileset_id</code></li>
+                    </ul>
+                </li>
+            </ul>
+            <p>As an example, let's have look at an implementation with the MapBox provider:</p>
+            <mp-code-block mode="text/html">
+<semantic-map>
+    <tiles-layer provider='mapbox' provider-options='{"style":"stylename-v1", "tileset_id":"username.abcd"}'></tiles-layer>
+</semantic-map>
+            </mp-code-block>
+            <h2>Provider proxy registration</h2>
+            <p>In the above case we used MapBox as a provider for our satellite tiles layer. In order for our system's back-end to safely be able to send get requests to the provider's API, we need to specify all required information for the call (uri, credentials, settings, etc.) in a configuration file.</p>
+            <p>The proxy configuration file can be added in your app under <code>apps/your_app/config/proxy.prop</code>.</p>
+            <mp-code-block mode='text'>
+config.proxy.mapbox.targetUri=https://api.mapbox.com
+config.proxy.mapbox.preserveHost=false
+config.proxy.mapbox.tokenQueryName=access_token
+config.proxy.mapbox.tokenQueryValue=1234567890
+            </mp-code-block>
+            <p>You can can deepen the topic of proxy authentication <a href="/resource/Help:AuthenticationProxy">here</a>.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

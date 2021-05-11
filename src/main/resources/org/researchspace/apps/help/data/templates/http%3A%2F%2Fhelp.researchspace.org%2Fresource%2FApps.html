@@ -37,13 +37,6 @@
         
         <p>See also <semantic-link title="App Deployment" uri="http://help.researchspace.org/resource/AppDeployment">here</semantic-link> for details on the deployment of apps.</p>
     
-          <bs-alert bs-style="info"> 
-            <strong>Info!</strong><br/>
-            <p>
-              Please note that the app mechanism and respective app lifecycle is currently only beta and is subject to change in one of the next versions of platform. 
-              This may involve non-backward compatible changes!
-            </p>
-          </bs-alert>
   <h2>Basic Folder Structure</h2>
   
   <p>
@@ -86,15 +79,11 @@
           <li>/proxy.prop &nbsp; - <i style="color:black;">Properties will be read selectively or shadowed individually</i></li>
           <li>/shiro.ini &nbsp; - <i style="color:black;">If configure via <code>-Dconfig.environment.securityConfigStorageId=</code>, the entire file will be read</i></li>
         </ul>
-        <li style="color:red;"><s>/images</s> <i>&nbsp; DEPRECATED, please use /assets/images/</i></li>
-        <ul style="color:red;">
-           <li>/my-app-logo.png</li>
-           <li>...</li>
-        </ul>
         <li style="color:red;">/assets  &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps. Files will become directly available under http://platform-url.com/assets/my-styles.css</i></li>
         <ul style="color:red;">
           <li>/my_script.js</li>
           <li>/my_custom.css</li>
+          <li>/css_variables.css &nbsp; - <i style="color:black;">Set custom css variables overwriting the default values</i></li>
           <li>/images     &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps. Files will become directly available under http://platform-url.com/images/my-image.png</i></li>
           <ul style="color:red;">
              <li>/my-app-logo.png</li>
@@ -109,24 +98,6 @@
           <ul>
             <li>Template%3Ahttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2FPerson.html</li>
             <li>...</li>
-          </ul>
-        </ul>
-        <li><s>/resources</s> <i>&nbsp; DEPRECATED, please use /config/page-layout</i></li>
-        <ul style="font-style:italic;text-decoration: line-through;">
-          <li>/org</li>
-          <ul>
-            <li>/researchspace</li>
-            <ul>
-              <li>/ui</li>
-              <ul>
-                <li>/templates</li>
-                <ul>
-                  <li>/html-head.hbs</li>
-                  <li>/header.hbs</li>
-                  <li>/footer.hbs</li>
-                </ul>
-              </ul>
-            </ul>
           </ul>
         </ul>
       </ul>
@@ -186,15 +157,15 @@ plugin.version=1.0.0
     <li><code>plugin.id</code>,<code>plugin.provider</code> and <code>plugin.version</code> are mandatory.</li>
     <li><code>plugin.id</code> needs to be the same as the name of the app folder.</li>
     <li><code>plugin.version</code> needs to be a valid semantic version.</li>
-    <li><code>plugin.dependencies</code> optional, comma-separated list of app dependencies. If specified other apps will be loaded first and it influence the delegation order of <semantic-link iri="[[resolvePrefix "Help:Storage"]]">app storages</semantic-link>.</li>
+    <li><code>plugin.dependencies</code> optional, comma-separated list of app dependencies. If specified other apps will be loaded first and it influence the delegation order of <semantic-link iri='[[resolvePrefix "Help:Storage"]]'>app storages</semantic-link>.</li>
   </ul>
    <h2>App Lifecycle</h2>
-   The ResearchSpace platform reads the apps artefacts (e.g., assets, templates, config files) from respective <semantic-link iri="[[resolvePrefix "Help:Storage"]]">app storages</semantic-link> and applies them according to the delegation order specified by the plugin dependencies with the runtime storage having the highest priority. 
+   The ResearchSpace platform reads the apps artefacts (e.g., assets, templates, config files) from respective <semantic-link iri='[[resolvePrefix "Help:Storage"]]'>app storages</semantic-link> and applies them according to the delegation order specified by the plugin dependencies with the runtime storage having the highest priority. 
     
    <h3>Repositories and Ephedra services</h3>
-   <p>Configurations of repositories and <semantic-link iri="[[resolvePrefix "Help:Ephedra"]]">Ephedra services</semantic-link> follow the same rules of priority when packaged in apps. The configuration Turtle files stored in <code>/config/repositories</code> and <code>/config/services</code> subfolders in the app distribution are accessed from the respective app storages and applied in the priority order of the apps. If two or more repository configs with the same file name are available in two different storages, only the one taken from the storage with a higher priority will be applied, thus "shadowing" completely the other ones. Thus, for example, if two apps define different ephedra federation repositories under the same name <code>ephedra</code> with different sets of federation members, only one of them gets created (instead of having a "joint" one with all federation members from both configs).</p>
+   <p>Configurations of repositories and <semantic-link iri='[[resolvePrefix "Help:Ephedra"]]'>Ephedra services</semantic-link> follow the same rules of priority when packaged in apps. The configuration Turtle files stored in <code>/config/repositories</code> and <code>/config/services</code> subfolders in the app distribution are accessed from the respective app storages and applied in the priority order of the apps. If two or more repository configs with the same file name are available in two different storages, only the one taken from the storage with a higher priority will be applied, thus "shadowing" completely the other ones. Thus, for example, if two apps define different ephedra federation repositories under the same name <code>ephedra</code> with different sets of federation members, only one of them gets created (instead of having a "joint" one with all federation members from both configs).</p>
      
-     <p>The <semantic-link iri="[[resolvePrefix "Help:RepositoryManager"]]">repository manager</semantic-link> gets initialized only after reading all configs, so the repositories defined in all apps will appear in the <semantic-link iri="[[resolvePrefix "Admin:Repositories"]]">repository manager interface</semantic-link>. A user with appropriate security permission is able to edit any config, including those defined in apps. However, such edited configurations will NOT be replaced within corresponding app storages (which will remain immutable). Instead, the edited version of the config will be saved with the same name in the runtime storage, thus shadowing the original one defined in the app.</p>
+     <p>The <semantic-link iri='[[resolvePrefix "Help:RepositoryManager"]]'>repository manager</semantic-link> gets initialized only after reading all configs, so the repositories defined in all apps will appear in the <semantic-link iri='[[resolvePrefix "Admin:Repositories"]]'>repository manager interface</semantic-link>. A user with appropriate security permission is able to edit any config, including those defined in apps. However, such edited configurations will NOT be replaced within corresponding app storages (which will remain immutable). Instead, the edited version of the config will be saved with the same name in the runtime storage, thus shadowing the original one defined in the app.</p>
    <p>If any of the app storages or the runtime storage defines the default repository config in the <code>default.ttl</code> file, this configuration will be applied to initialize the default platform repository. If no <code>default.ttl</code> file is present, the SPARQL endpoint defined in the environment properties will be used.  </p>
     
    <h3 id='custom-java-implementations'>Custom Java implementations</h3>

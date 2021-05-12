@@ -23,8 +23,14 @@ import org.junit.Test;
 import org.researchspace.services.storage.api.PathMapping;
 import org.researchspace.services.storage.api.StoragePath;
 
+import javassist.Loader.Simple;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class PathMappingTest {
     @Test
@@ -56,5 +62,32 @@ public class PathMappingTest {
         assertEquals(mapping.mapBack(StoragePath.parse("qux/max/baz")).get(), StoragePath.parse("foo/bar/baz"));
         assertFalse(mapping.mapBack(StoragePath.parse("qux")).isPresent());
         assertFalse(mapping.mapBack(StoragePath.parse("qux/ma1")).isPresent());
+    }
+
+    @Test
+    public void testHierarchical() {
+        PathMapping mapping = new PathMapping.HierarchicalPathMapping(
+                SimpleValueFactory.getInstance().createIRI("http://www.researchspace.org/resource/"));
+
+        StoragePath actualPath;
+        StoragePath expectedPath;
+
+        // test mapBack
+        actualPath = mapping.mapBack(StoragePath.parse("index.html")).get();
+        expectedPath = StoragePath.parse("http%3A%2F%2Fwww.researchspace.org%2Fresource%2Findex.html");
+        assertEquals(expectedPath, actualPath);
+
+        actualPath = mapping.mapBack(StoragePath.parse("templates/index.html")).get();
+        expectedPath = StoragePath.parse("templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2Findex.html");
+        assertEquals(expectedPath, actualPath);
+
+        // test mapForward
+        actualPath = mapping.mapForward(StoragePath.parse("http%3A%2F%2Fwww.researchspace.org%2Fresource%2Findex.html")).get();
+        expectedPath = StoragePath.parse("index.html");
+        assertEquals(expectedPath, actualPath);
+
+        actualPath = mapping.mapForward(StoragePath.parse("templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2Findex.html")).get();
+        expectedPath = StoragePath.parse("templates/index.html");
+        assertEquals(expectedPath, actualPath); 
     }
 }

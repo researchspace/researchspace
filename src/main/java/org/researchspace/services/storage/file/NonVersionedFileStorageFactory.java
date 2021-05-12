@@ -20,6 +20,8 @@
 package org.researchspace.services.storage.file;
 
 import org.apache.commons.configuration2.Configuration;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.researchspace.services.storage.api.*;
 
 import java.nio.file.Path;
@@ -42,6 +44,17 @@ public class NonVersionedFileStorageFactory implements StorageFactory {
         if (properties.containsKey("root")) {
             Path root = Paths.get(properties.getString("root"));
             config.setRoot(root);
+        }
+
+        if (properties.containsKey("path-mapping")) {
+            String pathMapping = properties.getString("path-mapping");
+            config.setPathMapping(pathMapping);
+        }
+
+        if (properties.containsKey("path-mapping-base-iri")) {
+            IRI pathMappingBaseIri = SimpleValueFactory.getInstance()
+                    .createIRI(properties.getString("path-mapping-base-iri"));
+            config.setPathMappingBaseIri(pathMappingBaseIri);
         }
         return config;
     }

@@ -19,7 +19,10 @@
 
 package org.researchspace.services.storage.api;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
+
+import org.eclipse.rdf4j.model.IRI;
 
 /**
  * Represents file path mapping for storage implementations.
@@ -73,5 +76,37 @@ public abstract class PathMapping {
         public Optional<StoragePath> mapBack(StoragePath path) {
             return to.relativize(path).map(from::resolve).flatMap(base::mapBack);
         }
+    }
+
+    public static class HierarchicalPathMapping extends PathMapping {
+
+        private final IRI baseIri;
+
+        public HierarchicalPathMapping(IRI baseIri) {
+            this.baseIri = baseIri;
+        }
+
+        @Override
+        public Optional<StoragePath> mapForward(StoragePath path) {
+            // Remove base iri from html templates
+            try {
+                path = path.removeBaseIri(baseIri);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return Optional.of(path);
+        }
+
+        @Override
+        public Optional<StoragePath> mapBack(StoragePath path) {
+            // Add base iri to html templates
+            try {
+                path = path.addBaseIri(baseIri);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return Optional.of(path);
+        }
+
     }
 }

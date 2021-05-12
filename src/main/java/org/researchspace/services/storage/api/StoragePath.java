@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -72,6 +73,34 @@ public final class StoragePath {
         } else {
             return new StoragePath(this.path + SEPARATOR + other.path);
         }
+    }
+
+    public StoragePath addBaseIri(IRI baseIri) throws UnsupportedEncodingException {
+        StringBuilder builder = new StringBuilder();
+
+        String[] paths = path.split(SEPARATOR);
+        String filename = paths[paths.length - 1];
+
+        for (int i = 0; i < paths.length - 1; i++) {
+            builder.append(paths[i]);
+            builder.append(SEPARATOR);
+        }
+
+        String encoded = URLEncoder.encode(baseIri.stringValue() + filename, StandardCharsets.UTF_8.name());
+        builder.append(encoded);
+
+        String combinedPath = builder.toString();
+        assertPathIsValid(combinedPath, true);
+        return new StoragePath(combinedPath);
+    }
+
+    public StoragePath removeBaseIri(IRI baseIri) throws UnsupportedEncodingException {
+
+        String iri = URLEncoder.encode(baseIri.stringValue(), StandardCharsets.UTF_8.name());
+
+        String newPath = this.path.replace(iri, "");
+        assertPathIsValid(newPath, true);
+        return new StoragePath(newPath);
     }
 
     /**

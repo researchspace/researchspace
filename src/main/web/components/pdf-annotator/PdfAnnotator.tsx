@@ -614,7 +614,8 @@ SELECT ?page ?pageNumber ?snippet ?text ?snippetType ?position ?sortIndex {
 
                     const annotation = event.detail.annotation;
                     if (!this.state.snippets.some(s => s.id === annotation.id)) {
-                        const snippetIri = `${this.props.documentIri}/snippet/${annotation.id}`;
+                      //const snippetIri = `${this.props.documentIri}/snippet/${annotation.id}`;
+                      const snippetIri = `http://researchspace.org/snippet/${annotation.id}`
                         const modelKps = [
                             { def: RdfType, value: valueFromRdf(Rdf.iri('http://iflastandards.info/ns/fr/frbr/frbroo/F22_Self-Contained_Expression')) },
                             {

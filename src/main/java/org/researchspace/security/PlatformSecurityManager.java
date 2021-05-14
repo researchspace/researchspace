@@ -42,6 +42,8 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.servlet.SimpleCookie;
+import org.apache.shiro.web.servlet.Cookie.SameSiteOptions;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
@@ -97,6 +99,11 @@ public class PlatformSecurityManager extends DefaultWebSecurityManager {
         // Initialize a session manager
         final DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
         sessionManager.setGlobalSessionTimeout(config.getEnvironmentConfig().getShiroSessionTimeoutSecs() * 1000);
+        var cookie = new SimpleCookie("JSESSIONID");
+        cookie.setPath("/");
+        cookie.setHttpOnly(false);
+        cookie.setSameSite(SameSiteOptions.NONE);
+        sessionManager.setSessionIdCookie(cookie);
 
         /*
          * Disable sessionIdUrlRewriting (appending ;JSESSIONID=). This fixes potential

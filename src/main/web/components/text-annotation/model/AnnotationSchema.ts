@@ -140,7 +140,7 @@ export const CrmP4HasTimeSpan = Forms.normalizeFieldDefinition({
 
 export const CrmP14CarriedOutBy = createDirectField(crm.P14_carried_out_by, { id: 'author', xsdDatatype: xsd.anyURI });
 
-function createDirectField(predicate: Rdf.Iri, props: Forms.FieldDefinitionProp) {
+export function createDirectField(predicate: Rdf.Iri, props: Forms.FieldDefinitionProp) {
   return Forms.normalizeFieldDefinition({
     ...props,
     selectPattern: SparqlUtil.serializeQuery(
@@ -244,8 +244,8 @@ function makeSelector(ownerIri: Rdf.Iri, xpath: string, offset: number) {
   ]);
 }
 
-function makeComposite(
-  ownerIri: Rdf.Iri,
+export function makeComposite(
+  ownerIri: Rdf.Iri | null,
   subjectTemplate: string,
   fields: ReadonlyArray<{
     def: Forms.FieldDefinition;
@@ -284,7 +284,7 @@ export function addField(
   });
 }
 
-function valueFromRdf(value: Rdf.Iri | Rdf.Literal) {
+export function valueFromRdf(value: Rdf.Iri | Rdf.Literal) {
   return Forms.FieldValue.fromLabeled({ value });
 }
 

@@ -33,7 +33,10 @@ module.exports = {
         "@typescript-eslint/no-explicit-any": "off",
 
         // quite useless and confusing, because typescript is doing scope checks anyway
-        "@typescript-eslint/no-use-before-define": "off"
+        "@typescript-eslint/no-use-before-define": "off",
+
+        // sometimes we want to use non camel case identifiers, e.g in cidoc crm properties
+        "@typescript-eslint/camelcase": "off"
     },
     settings: {
         react: {

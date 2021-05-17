@@ -35,7 +35,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
-import org.researchspace.sail.rest.AbstractServiceWrappingSailConnection.ParametersHolder;
+import org.researchspace.sail.rest.AbstractServiceWrappingSailConnection.ServiceParametersHolder;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -184,7 +184,7 @@ public class RESTWrappingSailUtils {
                 .map(stmtPattern -> stmtPattern.getSubjectVar()).findFirst();
     }
 
-    public static void addBindingIfExists(ParametersHolder parametersHolder, Map<String, Object> resMap,
+    public static void addBindingIfExists(ServiceParametersHolder parametersHolder, Map<String, Object> resMap,
             MapBindingSet bs, String key, IRI propertyIri, IRI dataType) {
         if (parametersHolder.getOutputVariables().containsKey(propertyIri)) {
             Object objVal = resMap.get(key);
@@ -193,7 +193,7 @@ public class RESTWrappingSailUtils {
         }
     }
 
-    public static void addBindingFromJsonPathIfExists(ParametersHolder parametersHolder, Object resMap,
+    public static void addBindingFromJsonPathIfExists(ServiceParametersHolder parametersHolder, Object resMap,
             MapBindingSet bs, String key, IRI propertyIri, IRI dataType, String jsonPath) {
         if (parametersHolder.getOutputVariables().containsKey(propertyIri)) {
             try {

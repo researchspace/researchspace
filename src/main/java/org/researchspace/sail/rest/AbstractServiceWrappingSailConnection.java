@@ -75,11 +75,12 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      * @author Andriy Nikolov an@metaphacts.com
      *
      */
-    public class RESTParametersHolder implements ParametersHolder {
+    protected static class ServiceParametersHolder {
+        private String subjVarName = null;
+        private Map<String, String> inputParameters = Maps.newHashMap();
+        private Map<IRI, String> outputVariables = Maps.newHashMap();
 
-        private String subjVarName;
-        private Map<String, String> inputParameters;
-        private Map<IRI, String> outputVariables;
+        public ServiceParametersHolder() {
 
         public RESTParametersHolder() {
             inputParameters = Maps.newHashMap();
@@ -155,7 +156,7 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      * Follows the following workflow:
      * <ul>
      * <li>Extract input/output parameters and store them in a
-     * {@link RESTParametersHolder} object.</li>
+     * {@link ServiceParametersHolder} object.</li>
      * <li>Submit an HTTP request (by default, an HTTP GET request passing
      * parameters via URL)</li>
      * <li>Process the response and assign the outputs to the output variables.</li>
@@ -170,7 +171,7 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
         StatementPatternCollector collector = new StatementPatternCollector();
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
-        ParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
+        ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
         // limiter goes here
         return executeAndConvertResultsToBindingSet(parametersHolder);
     }
@@ -180,12 +181,12 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
      * <code>parametersHolder</code>, executes the wrapped service and converts the
      * returned results into {@link BindingSet}s.
      * 
-     * @param parametersHolder {@link RESTParametersHolder} containing input
+     * @param parametersHolder {@link ServiceParametersHolder} containing input
      *                         parameters to be submitted to the service
      * @return iteration over binding sets
      */
     protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
-            ParametersHolder parametersHolder);
+            ServiceParametersHolder parametersHolder);
 
     @Override
     protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
@@ -264,9 +265,9 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
         return sail;
     }
 
-    protected abstract ParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
+    protected abstract ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
             throws SailException;
 
-    protected abstract Collection<BindingSet> convertObject2BindingSets(Object object,
-        ParametersHolder parametersHolder) throws SailException;
+    protected abstract Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
+            ServiceParametersHolder parametersHolder) throws SailException;
 }

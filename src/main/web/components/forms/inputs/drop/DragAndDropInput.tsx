@@ -133,6 +133,8 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     `
   }
 
+  private htmlElement = React.createRef<HTMLDivElement>();
+
   constructor(props: DragAndDropInputProps, context: any) {
     super(props, context);
     this.state = {
@@ -163,7 +165,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
   render() {
     const canCreateNew = !_.isEmpty(this.state.nestedForm);
     return (
-      <div className={styles.holder}>
+      <div className={styles.holder} ref={this.htmlElement}>
         {
           this.props.readonly ? this.renderItems(false) :
           (
@@ -183,6 +185,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
                     definition={this.props.definition}
                     onSubmit={this.onNestedFormSubmit}
                     onCancel={() => this.setState({ nestedFormOpen: false })}
+                    parent={this.htmlElement}
                   >
                     {this.state.nestedForm}
                   </NestedModalForm>

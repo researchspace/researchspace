@@ -54,6 +54,7 @@ const DEFAULT_TEMPLATE = `<span title="{{label.value}}">{{label.value}}</span>`;
 
 export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, State> {
   private tupleTemplate: string = null;
+  private htmlElement = React.createRef<HTMLDivElement>();
 
   constructor(props: AutocompleteInputProps, context: any) {
     super(props, context);
@@ -77,7 +78,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
   render() {
     const showCreateNewButton = !_.isEmpty(this.state.nestedForm);
     return (
-      <div className={CLASS_NAME}>
+      <div className={CLASS_NAME} ref={this.htmlElement}>
         {this.renderSelect(showCreateNewButton)}
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         {this.state.nestedFormOpen ? (
@@ -88,6 +89,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             definition={this.props.definition}
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}
+            parent={this.htmlElement}
           >
             {this.state.nestedForm}
           </NestedModalForm>

@@ -19,6 +19,7 @@
 import * as React from 'react';
 import { Component, Children, ReactElement, ReactNode, cloneElement } from 'react';
 import { Modal } from 'react-bootstrap';
+import * as uuid from 'uuid';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
@@ -42,6 +43,7 @@ export interface NestedModalFormProps {
   onSubmit: (value: AtomicValue) => void;
   onCancel: () => void;
   children: ReactElement<ResourceEditorFormProps> | undefined;
+  parent: React.RefObject<HTMLElement>;
 }
 
 export class NestedModalForm extends Component<NestedModalFormProps, {}> {
@@ -52,7 +54,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 
   render() {
-    const { definition, onSubmit, onCancel, children, subject } = this.props;
+    const { definition, onSubmit, onCancel, children, subject, parent } = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
@@ -74,7 +76,14 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       },
     };
     return (
-      <Modal bsSize="large" show={true} onHide={onCancel}>
+      <Modal
+        show={true}
+        onHide={onCancel}
+        container={
+          // restrict nested form backdrop to semantic form that is closest ancestor of parent input element
+          parent.current.closest('.semantic-form')
+        }
+      >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
             (subject ? `Create New ` : 'Edit ') +
@@ -94,7 +103,7 @@ export async function tryExtractNestedForm(
     return Promise.resolve(getNestedForm(children));
   } else if (nestedFormTemplate) {
     const template = await templateScope.compile(nestedFormTemplate);
-    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template());
+    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template({"viewId": uuid.v4()}));
     return getNestedForm(parsedTemplate);
   } else {
     return Promise.resolve(undefined);

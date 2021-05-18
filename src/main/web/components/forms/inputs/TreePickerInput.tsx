@@ -98,6 +98,8 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     closeDropdownOnSelection: true,
   };
 
+  private htmlElement = React.createRef<HTMLDivElement>();
+
   constructor(props: TreePickerInputProps, context: any) {
     super(props, context);
     let config = props.definition.treePatterns;
@@ -153,7 +155,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     const { treeSelection } = this.state;
     const showCreateNewButton = this.state.nestedForm && (!treeSelection || treeSelection.length < maxOccurs);
     return (
-      <div className={CLASS_NAME}>
+      <div className={CLASS_NAME} ref={this.htmlElement}>
         {this.renderTreePicker()}
         {showCreateNewButton ? this.renderCreateNewButton() : null}
         {this.state.nestedFormOpen ? (
@@ -161,6 +163,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
             definition={this.props.definition}
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}
+            parent={this.htmlElement}
           >
             {this.state.nestedForm}
           </NestedModalForm>

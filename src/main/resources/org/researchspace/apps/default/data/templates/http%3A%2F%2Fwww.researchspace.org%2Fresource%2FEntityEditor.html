@@ -1,7 +1,6 @@
 {{#bind frameId=dashboardId}}
   <mp-event-target-template-render id='{{frameId}}-entity-editor-frame' template='{{> template}}'>
     <template id='template'>
-      {{log "entity frame" this}}
       {{#if iri}}
         <div id="entity-editor__container">
           <div class="entity-editor__content">
@@ -42,7 +41,6 @@
                                 '
             >
               <template id='template'>
-                {{log "editor" this}}
                 {{#ifCond bindings.length "==" "0"}}
                   <p>There is no form configuration for the given entity. See "Entity Manager".</p>
                 {{/ifCond}}
@@ -98,9 +96,7 @@
                                                   targets='["entity-editor-config-list-{{../iri}}"]'
                                                   data='{ 
                                                           "node":"{{../iri}}",
-                                                          "formIRI": "{{formIRI.value}}",
-                                                          "membershipProperty": "{{membershipProperty.value}}",
-                                                          "collection": "{{collection.value}}"
+                                                          "formIRI": "{{formIRI.value}}"
                                                         }'>
                                   <button class="btn btn-primary">Use</button>
                                 </mp-event-trigger>
@@ -109,7 +105,7 @@
                             </ul>
                           </template>
                           <template id='back'>
-                            {{> rsp:EntityEditorForm node=node formIRI=formIRI membershipProperty=membershipProperty collection=collection }}
+                            {{> rsp:CollectionBrowserContent frameId=frameId configOrScheme=formIRI iri=node mode="edit"}}
                           </template>
                         </two-side-panel>
                       {{/ifCond}}

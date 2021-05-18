@@ -10,7 +10,6 @@
     orderByPattern - (optional) SPARQL pattern that can be used to get the order
     editable - false if collection is readonly one, true otherwise
 --]]
-<mp-event-proxy id='{{frameId}}-tree-refresh' on-event-source='{{frameId}}-vocab-form' proxy-event-type='Component.TemplateUpdate' proxy-targets='["{{frameId}}-mytree"]'></mp-event-proxy>
 
 <div class="rs-vocabulary-terms-container">
   <div class="schema-area-bg"></div>
@@ -76,7 +75,6 @@
     <div class="rs-vocabulary-terms-form-area">
       <mp-event-target-template-render id='{{frameId}}-term-forms' template='{{> template}}'>
         <template id='template'>
-          {{log "form-area" this}}
           {{#switch mode}}
             {{#case "new" break=true}}
               {{#if broader}}
@@ -96,20 +94,22 @@
           {{/switch}}
 
           {{#if mode}}
-                    <mp-event-proxy id='{{frameId}}-form-refresh-on-created' 
-                          on-event-source='{{frameId}}-vocab-form'
-                           on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+          <mp-event-proxy id='{{frameId}}-tree-refresh-on-created' 
+                          on-event-source='{{frameId}}-vocab-form' 
+                          on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                           proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{frameId}}-term-forms"]'
+                          proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
                           additional-data='{"mode": "edit"}'
-             ></mp-event-proxy>
-                              <mp-event-proxy id='{{frameId}}-form-refresh-on-created' 
-                          on-event-source='{{frameId}}-vocab-form'
-                           on-event-types='["Form.ResourceRemoved"]'
+                          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{frameId}}-tree-refresh-on-delete' 
+                          on-event-source='{{frameId}}-vocab-form' 
+                          on-event-types='["Form.ResourceRemoved"]'
                           proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{frameId}}-term-forms"]'
-                          data='{}'
-             ></mp-event-proxy>
+                          proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
+                          additional-data='{"iri": "", "mode": ""}'
+                          ></mp-event-proxy>
+          
             <inline-template template-iri='{{resourceForm}}' 
                              options='{
                                         "scheme": "{{collection}}", 

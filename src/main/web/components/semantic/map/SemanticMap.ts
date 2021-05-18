@@ -346,21 +346,21 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.map.getLayers().removeAt(1);
     this.map.getLayers().insertAt(1, this.tilesLayers[event.data.selectedHistoricalMap]);
     
-    let radius = 120;
+    const radius = 120;
     
     this.tilesLayers[event.data.selectedHistoricalMap].on('prerender', (event) => {
       
       //console.log("🚀Event", event)
-      var ctx = event.context;
-      var pixelRatio = event.frameState.pixelRatio;
+      const ctx = event.context;
+      //let pixelRatio = event.frameState.pixelRatio;
       ctx.save();
       ctx.beginPath();
       if (this.mousePosition) {
-          var pixel = getRenderPixel(event, this.mousePosition);
-          var offset = getRenderPixel(event, [
+          const pixel = getRenderPixel(event, this.mousePosition);
+          const offset = getRenderPixel(event, [
             this.mousePosition[0] + radius,
             this.mousePosition[1] ]);
-          var canvasRadius = Math.sqrt(
+          const canvasRadius = Math.sqrt(
             Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
           );
           ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
@@ -374,7 +374,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     // after rendering the layer, restore the canvas context
     this.tilesLayers[event.data.selectedHistoricalMap].on('postrender', function (event) {
-      var ctx = event.context;
+      const ctx = event.context;
       ctx.restore();
     });
   }
@@ -502,21 +502,21 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           tilesLayers = [this.tilesLayers[0], this.tilesLayers[4]];
       }
 
-      let radius = 120;
+      const radius = 120;
 
       this.tilesLayers[4].on('prerender', (event) => {
       
         //console.log("🚀Event", event)
-        var ctx = event.context;
-        var pixelRatio = event.frameState.pixelRatio;
+        const ctx = event.context;
+        //const pixelRatio = event.frameState.pixelRatio;
         ctx.save();
         ctx.beginPath();
         if (this.mousePosition) {
-            var pixel = getRenderPixel(event, this.mousePosition);
-            var offset = getRenderPixel(event, [
+            const pixel = getRenderPixel(event, this.mousePosition);
+            const offset = getRenderPixel(event, [
               this.mousePosition[0] + radius,
               this.mousePosition[1] ]);
-            var canvasRadius = Math.sqrt(
+            const canvasRadius = Math.sqrt(
               Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
             );
             ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
@@ -530,7 +530,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   
       // after rendering the layer, restore the canvas context
       this.tilesLayers[4].on('postrender', function (event) {
-        var ctx = event.context;
+        const ctx = event.context;
         ctx.restore();
       });
 
@@ -599,9 +599,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         });
       })
 
-      console.log(props.fixZoomLevel)
+      const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
       const view = this.map.getView();
-      view.setZoom(props.fixZoomLevel);
+      view.setZoom(zoom);
     }, 1000);
   }
 

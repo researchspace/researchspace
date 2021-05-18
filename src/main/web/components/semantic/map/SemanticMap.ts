@@ -18,6 +18,7 @@
  */
 
 import { Props, createElement } from 'react';
+import * as React from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as _ from 'lodash';
@@ -44,11 +45,14 @@ import GeometryCollection from 'ol/geom/GeometryCollection';
 import WKT from 'ol/format/WKT';
 import {transform} from 'ol/proj';
 import {defaults as controlDefaults} from 'ol/control';
+import {Interaction} from 'ol/interaction';
 import {defaults as interactionDefaults} from 'ol/interaction';
+import {Extent} from 'ol/extent';
 import {extend} from 'ol/extent';
 import {createEmpty} from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
+import {getRenderPixel} from 'ol/render';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
@@ -63,6 +67,39 @@ import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
+import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor, SemanticMapReplaceBasemap, SemanticMapReplaceHistoricalMap } from './SemanticMapEvents';
+import { Dictionary } from 'platform/api/sparql/SparqlClient';
+import { QueryConstantParameter } from '../search/web-components/QueryConstant';
+import { Cancellation } from 'platform/api/async';
+import { listen, Event } from 'platform/api/events';
+import { WindowScroller } from 'react-virtualized';
+import { zoomByDelta } from 'ol/interaction/Interaction';
+
+enum Source {
+  OSM = 'osm'
+}
+
+interface ProviderOptions {
+  endpoint: string;
+  crs: string;
+  style: string;
+}
+
+interface MapOptions {
+
+  /**
+   *
+   */
+  crs?: string;
+
+
+  /**
+   *
+   */
+  extent?: Array<number>;
+
+}
+
 
 interface Marker {
   link?: string;
@@ -101,9 +138,27 @@ export interface SemanticMapConfig {
   fixZoomLevel?: number;
 
   /**
+   * Map Options
+   */
+  mapOptions?: MapOptions;
+
+  /**
    * ID for issuing component events.
    */
   id?: string;
+
+  /**
+   * Optional enum for calling the selected OpenLayer source
+   * ENUM { "mapbox", "osm"}
+   */
+  provider?: Source;
+
+  /**
+   * Optional JSON object containing various user provided options
+   */
+  providerOptions?: ProviderOptions;
+
+  tilesLayers?: any;
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -120,6 +175,9 @@ const MAP_REF = 'researchspace-map-widget';
 export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
+  private cancelation = new Cancellation();
+  private tilesLayers = [];
+  private mousePosition = null;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -127,8 +185,37 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       tupleTemplate: maybe.Nothing<HandlebarsTemplateDelegate>(),
       noResults: false,
       isLoading: true,
-      errorMessage: maybe.Nothing<string>(),
+      errorMessage: maybe.Nothing<string>()
     };
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapUpdateFeatureColor,
+      })
+    )
+    .onValue(this.updateFeatureColor);
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapReplaceBasemap,
+      })
+    )
+    .onValue(this.replaceBasemap);
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapReplaceHistoricalMap,
+      })
+    )
+    .onValue(this.replaceHistoricalMap);
+    
+  }
+
+  private getInputCrs() {
+    return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined ? 'EPSG:3857' : this.props.mapOptions.crs;
   }
 
   private static createPopupContent(props, tupleTemplate: Data.Maybe<HandlebarsTemplateDelegate>) {
@@ -169,6 +256,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     } else if (this.state.noResults) {
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
+
+    let tileslayers = React.Children.map(this.props.children, (child) => this.prepareTileLayer(child));
+
     return D.div(
       { style: { height: '100%', width: '100%' } },
       D.div(
@@ -187,10 +277,26 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           ref: 'ref-map-widget-elements',
           onClick: this.getMarkerFromMapAsElements.bind(this),
           style: { display: 'none' },
-        })
+        }),
+        tileslayers
       ),
       this.state.isLoading ? createElement(Spinner) : null
     );
+  }
+
+  private prepareTileLayer(child){
+    if(child.type.name === "TilesLayer"){
+      const cloned = React.cloneElement(child, {
+        receiveProviderFromChild: (provider) => {
+          //type Provider = typeof provider;
+          const tilelayer = new TileLayer({
+            source: provider
+          });
+          this.tilesLayers.push(tilelayer);
+        }
+      });
+      return(cloned);
+    }
   }
 
   private initializeMarkerPopup(map) {
@@ -230,14 +336,105 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   }
 
+  private replaceBasemap = (event: Event<any>) => {
+    this.map.getLayers().removeAt(0);
+    this.map.getLayers().insertAt(0, this.tilesLayers[event.data.selectedProvider]);
+  }
+
+  private replaceHistoricalMap = (event: Event<any>) => {
+
+    this.map.getLayers().removeAt(1);
+    this.map.getLayers().insertAt(1, this.tilesLayers[event.data.selectedHistoricalMap]);
+    
+    let radius = 120;
+    
+    this.tilesLayers[event.data.selectedHistoricalMap].on('prerender', (event) => {
+      
+      //console.log("🚀Event", event)
+      var ctx = event.context;
+      var pixelRatio = event.frameState.pixelRatio;
+      ctx.save();
+      ctx.beginPath();
+      if (this.mousePosition) {
+          var pixel = getRenderPixel(event, this.mousePosition);
+          var offset = getRenderPixel(event, [
+            this.mousePosition[0] + radius,
+            this.mousePosition[1] ]);
+          var canvasRadius = Math.sqrt(
+            Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
+          );
+          ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
+          ctx.lineWidth = (2 * canvasRadius) / radius;
+          ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+          ctx.stroke();
+      }
+      ctx.clip();
+    });
+
+
+    // after rendering the layer, restore the canvas context
+    this.tilesLayers[event.data.selectedHistoricalMap].on('postrender', function (event) {
+      var ctx = event.context;
+      ctx.restore();
+    });
+  }
+
+  /**
+   * 
+   * @param event
+   * 
+   * The event data is structured as follows:
+   * {
+   *    "features": [
+   *      {
+   *        "subject":"SS_BLDG_052", 
+  *         "color":"rgba(143, 29, 33, .4)"
+  *       }, ...
+   *    ]
+   * }
+   *  
+   */
+  
+  private updateFeatureColor = (event: Event<any>) => {
+
+    // It updates only the last layer, assuming it contains the features
+    const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
+
+    event.data['features'].forEach(feature => {
+
+      const i = this.getIndexBySubject(feature.subject, layer.getSource().getFeatures())
+
+      layer.getSource().getFeatures()[i].setStyle(new Style({
+        fill: new Fill({
+          color: feature.color
+        }),
+        stroke: new Stroke({
+          color: feature.color
+        })
+      })) 
+    });
+  }
+
+  private getIndexBySubject(subject: string, features: any) {
+
+    let i = 0;
+    for(const feature of features) {
+      if(feature.values_.subject.value == subject){
+        return i;
+      }
+      i++;
+    }
+    return -1;
+  }
+
   private transformToMercator(lng: number, lat: number): Coordinate {
-    return transform([lng, lat], 'EPSG:4326', 'EPSG:3857');
+    return transform([lng, lat], this.getInputCrs(), 'EPSG:3857');
   }
 
   private readWKT(wkt: string) {
     const format = new WKT();
     return format.readGeometry(wkt, {
-      dataProjection: 'EPSG:4326',
+      dataProjection: this.getInputCrs(),
       featureProjection: 'EPSG:3857',
     });
   }
@@ -284,7 +481,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       style: (feature: Feature) => {
         const geometry = feature.getGeometry();
         const color = feature.get('color');
-        return getFeatureStyle(geometry, color ? color.value : undefined);
+        return getFeatureStyle(geometry, 'rgba(150,80,20,0.25)');
       },
       zIndex: 0,
     });
@@ -294,6 +491,48 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
+      var tilesLayers = [];
+
+      //Fallback to default provider if no tiles-layers are specified in template
+       if(!this.tilesLayers.length){
+          this.tilesLayers = [new TileLayer({
+            source: new OSM(),
+          })]
+      } else {
+          tilesLayers = [this.tilesLayers[0], this.tilesLayers[4]];
+      }
+
+      let radius = 120;
+
+      this.tilesLayers[4].on('prerender', (event) => {
+      
+        //console.log("🚀Event", event)
+        var ctx = event.context;
+        var pixelRatio = event.frameState.pixelRatio;
+        ctx.save();
+        ctx.beginPath();
+        if (this.mousePosition) {
+            var pixel = getRenderPixel(event, this.mousePosition);
+            var offset = getRenderPixel(event, [
+              this.mousePosition[0] + radius,
+              this.mousePosition[1] ]);
+            var canvasRadius = Math.sqrt(
+              Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
+            );
+            ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
+            ctx.lineWidth = (2 * canvasRadius) / radius;
+            ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+            ctx.stroke();
+        }
+        ctx.clip();
+      });
+  
+  
+      // after rendering the layer, restore the canvas context
+      this.tilesLayers[4].on('postrender', function (event) {
+        var ctx = event.context;
+        ctx.restore();
+      });
 
       const map = new Map({
         controls: controlDefaults({
@@ -301,43 +540,86 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             collapsible: false,
           },
         }),
+        //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interactionDefaults({}),
         layers: [
-          new TileLayer({
-            source: new OSM(),
-          }),
-          ..._.values(layers),
+          ..._.values(tilesLayers),
+          ..._.values(layers)
         ],
         target: node,
         view: new View({
           center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
-          zoom: 1,
+          zoom: 3,
+          extent: props.mapOptions.extent
         }),
       });
 
       this.layers = layers;
       this.map = map;
 
+      /* Layer Spy functionality */
+
+      node.addEventListener('mousemove', (event) => {
+        this.mousePosition = map.getEventPixel(event);
+        this.map.render();
+      });
+
+      node.addEventListener('mouseout', () => {
+        this.mousePosition = null;
+        this.map.render();
+      });
+
       // asynch execute query and add markers
       this.addMarkersFromQuery(this.props, this.context);
 
       this.initializeMarkerPopup(map);
-      // map.getView().fit(markersSource.getExtent(), map.getSize());
+      map.getView().fit(props.mapOptions.extent);
 
       window.addEventListener('resize', () => {
         map.updateSize();
       });
+
+      this.map.on('moveend', () => {
+
+        // Pass the bounding box as data in the event called when bounding box is changed
+        const coordinates = this.map.getView().calculateExtent(this.map.getSize());
+        this.BoundingBoxChanged({
+          "southWestLat": {
+            "value": String(coordinates[0])
+          },
+          "southWestLon": {
+            "value": String(coordinates[1])
+          },
+          "northEstLat": {
+            "value": String(coordinates[2])
+          },
+          "northEstLon": {
+            "value": String(coordinates[3])
+          }
+        });
+      })
+
+      console.log(props.fixZoomLevel)
+      const view = this.map.getView();
+      view.setZoom(props.fixZoomLevel);
     }, 1000);
   }
 
+  public BoundingBoxChanged(boundingBox: Dictionary<QueryConstantParameter>) {
+    trigger({ eventType: SemanticMapBoundingBoxChanged, source: this.props.id, data: boundingBox });
+  }
+
   addMarkersFromQuery = (props: SemanticMapProps, context: ComponentContext) => {
-    const { query, fixZoomLevel } = props;
+    const { query } = props;
 
     if (query) {
       const stream = SparqlClient.select(query, { context: context.semanticContext });
 
       stream.onValue((res) => {
-        const m = _.map(res.results.bindings, (v) => <any>_.mapValues(v, (x) => x));
+
+        const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
+
+
         if (SparqlUtil.isSelectResultEmpty(res)) {
           this.setState({
             noResults: true,
@@ -351,16 +633,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             isLoading: false,
           });
 
-          const geometries = this.createGeometries(m);
+          const geometries = this.createGeometries(result);
           this.updateLayers(geometries);
+        }
 
-          const view = this.map.getView();
-          const extent = this.calculateExtent();
-          view.fit(extent, { maxZoom: 10 });
-
-          if (fixZoomLevel) {
-            view.setZoom(fixZoomLevel);
-          }
+        if (this.props.id){
+          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: {results: result}});
         }
       });
 
@@ -370,12 +648,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           isLoading: false,
         })
       );
-
-      stream.onEnd(() => {
-        if (this.props.id) {
-          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
-        }
-      });
 
       if (this.props.id) {
         trigger({
@@ -543,7 +815,7 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
     geometry,
     fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
     stroke: new Stroke({
-      color: color || '#3399CC',
+      color: color || 'rgba(202, 105, 36, .3)',
       width: 1.25,
     }),
   });

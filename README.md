@@ -1,6 +1,4 @@
-<p align='center'>
-  <img src='https://www.researchspace.org/images/rslogo_blackonwhite_crop.png' alt='ResearchSpace' />
-</p>
+# Geospatial Development branch
 
 <p align='center'>ResearchSpace is licensed under the GNU Affero General Public License, version 3 or later (AGPL v3 or later). see LICENSE file </p>
 

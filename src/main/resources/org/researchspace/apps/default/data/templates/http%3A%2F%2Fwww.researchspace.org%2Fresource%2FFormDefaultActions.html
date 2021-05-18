@@ -3,7 +3,7 @@
     <div>
       {{#ifCond mode "===" "edit"}}
         {{#if broaderPropertyIRI}}
-        <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "{{collection}}", "broader": "{{node}}", "new": true, "edit": false}' targets='["term-forms"]'>
+        <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "{{collection}}", "broader": "{{node}}", "new": true, "edit": false}' targets='["{{viewId}}-term-forms"]'>
           <button name="add" class="btn btn-grey">Add narrower {{itemLabel}}</button>
         </mp-event-trigger>
         {{/if}}
@@ -12,7 +12,7 @@
     <div> 
       {{#ifCond mode "===" "edit"}}
         <button name="reset" class="btn btn-default">Reset</button>
-        <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='item-remove-confirmation-dialog' title="Remove {{itemLabel}}" type="modal" bs-size="large">
+        <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='{{viewId}}-item-remove-confirmation-dialog' title="Remove {{itemLabel}}" type="modal" bs-size="large">
           <mp-overlay-dialog-trigger>
             <button name="delete" class="btn btn-danger">Delete</button>
           </mp-overlay-dialog-trigger>
@@ -52,17 +52,17 @@
               </div>
               <div class="form-btn-group">
                 <div style="display: flex; justify-content: flex-end; width: 100%;">
-                  <mp-event-trigger id='cancel-feature-removal' type='OverlayDialog.Close' targets='["item-remove-confirmation-dialog"]'>
+                  <mp-event-trigger id='{{viewId}}-cancel-feature-removal' type='OverlayDialog.Close' targets='["{{viewId}}-item-remove-confirmation-dialog"]'>
                     <button class="btn btn-default">Cancel</button>
                   </mp-event-trigger>
-                  <mp-event-trigger id='confirm-entity-removal' type='Form.RemoveResource' data='{"iri": "{{node}}"}' targets='["vocab-form"]'>
+                  <mp-event-trigger id='{{viewId}}-confirm-entity-removal' type='Form.RemoveResource' data='{"iri": "{{node}}"}' targets='["{{viewId}}-vocab-form"]'>
                     <button class="btn btn-danger">Delete Entity</button>
                   </mp-event-trigger>  
-                  <mp-event-proxy id='update-form' on-event-source='vocab-form' on-event-type='Form.ResourceRemoved'
-                                  proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["term-forms"]'
+                  <mp-event-proxy id='{{viewId}}-update-form' on-event-source='{{viewId}}-vocab-form' on-event-type='Form.ResourceRemoved'
+                                  proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["{{viewId}}-term-forms"]'
                   ></mp-event-proxy>
-                  <mp-event-proxy id='close-form-removal-dialog' on-event-source='vocab-form' on-event-type='Form.ResourceRemoved'
-                                  proxy-event-type='OverlayDialog.Close' data='{}' proxy-targets='["item-remove-confirmation-dialog"]'
+                  <mp-event-proxy id='{{viewId}}-close-form-removal-dialog' on-event-source='{{viewId}}-vocab-form' on-event-type='Form.ResourceRemoved'
+                                  proxy-event-type='OverlayDialog.Close' data='{}' proxy-targets='["{{viewId}}-item-remove-confirmation-dialog"]'
                   ></mp-event-proxy>
                 </div>
               </div>
@@ -74,14 +74,14 @@
       
      
       <button name="dry-run" class="btn btn-default" style="margin-left: 10px;">Debug</button>
-      <mp-event-proxy id='show-form-debug-dialog' on-event-source='vocab-form' on-event-type='Form.DryRunResults'
-                      proxy-event-type='Component.TemplateUpdate' additional-data='{"show": true}' proxy-targets='["form-debug-info"]'
+      <mp-event-proxy id='{{viewId}}-show-form-debug-dialog' on-event-source='{{viewId}}-vocab-form' on-event-type='Form.DryRunResults'
+                      proxy-event-type='Component.TemplateUpdate' additional-data='{"show": true}' proxy-targets='["{{viewId}}-form-debug-info"]'
       ></mp-event-proxy>
 
-      <mp-event-target-template-render id='form-debug-info' template='{{> debugInfo}}'>
+      <mp-event-target-template-render id='{{viewId}}-form-debug-info' template='{{> debugInfo}}'>
         <template id='debugInfo'>
           {{#if show}}
-            <mp-overlay-dialog show='true' id='form-debug-info-dialog' title="Form Debug" type="modal" bs-size="large">
+            <mp-overlay-dialog show='true' id='{{viewId}}-form-debug-info-dialog' title="Form Debug" type="modal" bs-size="large">
               <mp-overlay-dialog-content>
                 <div>
                   <ul>
@@ -168,7 +168,7 @@
                   
                   <div class="form-btn-group">
                     <div style="display: flex; justify-content: flex-end; width: 100%;">
-                      <mp-event-trigger id='close-form-debug-dialog' type='OverlayDialog.Close' proxy-targets='["form-debug-info-dialog"]'>
+                      <mp-event-trigger id='{{viewId}}-close-form-debug-dialog' type='OverlayDialog.Close' proxy-targets='["{{viewId}}-form-debug-info-dialog"]'>
                         <button class="btn btn-default">Close</button>
                       </mp-event-trigger>
                     </div>

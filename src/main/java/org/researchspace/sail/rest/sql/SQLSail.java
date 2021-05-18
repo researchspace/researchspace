@@ -52,12 +52,15 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
     private static final String SQL_PARAMETER = "?";
     private static final String SQL_PARAMETER_DELIMITER = "_";
 
-    public class SQLParameter {
+    /**
+     * 
+     */
+    public class SQLParameterWrapper {
 
         private String name;
         private IRI type;
 
-        public SQLParameter(String name) {
+        public SQLParameterWrapper(String name) {
             this.setName(name);
             this.setType(null);
         }
@@ -79,22 +82,24 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
         }
     }
 
-
-    public class SQLQuery {
+    /**
+     * 
+     */
+    public class SQLQueryWrapper {
 
         private String query;
-        private Map<Integer, SQLParameter> inputParametersMap;
+        private Map<Integer, SQLParameterWrapper> inputParametersMap;
 
-        public SQLQuery() {
+        public SQLQueryWrapper() {
             setQuery(null);
             setInputParametersMap(Maps.newHashMap());
         }
 
-        public Map<Integer, SQLParameter> getInputParametersMap() {
+        public Map<Integer, SQLParameterWrapper> getInputParametersMap() {
             return inputParametersMap;
         }
 
-        public void setInputParametersMap(Map<Integer, SQLParameter> inputParametersMap) {
+        public void setInputParametersMap(Map<Integer, SQLParameterWrapper> inputParametersMap) {
             this.inputParametersMap = inputParametersMap;
         }
 
@@ -106,13 +111,13 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
             this.query = query;
         }
 
-        public void putInput(Integer index, SQLParameter parameter) {
+        public void putInput(Integer index, SQLParameterWrapper parameter) {
             getInputParametersMap().put(index, parameter);
         }
 
     }
 
-    private Map<String, SQLQuery> sqlQueriesMap =  Maps.newHashMap();
+    
     private static final Pattern SQL_VARS_PATTERN = Pattern.compile("\\?[a-zA-Z_]+");
 
     @Inject
@@ -122,7 +127,9 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
         super(config);
     }
 
-    protected void parseQueriesMap() {
+    protected Map<String, SQLQueryWrapper> parseQueriesMap() {
+
+        Map<String, SQLQueryWrapper> sqlQueriesMap = Maps.newHashMap();
 
         Model model = getServiceDescriptor().getModel();
 
@@ -133,7 +140,7 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
             String queryText = Models.getPropertyString(model, resource, MpRepositoryVocabulary.HAS_QUERY_TEXT).orElse("");
 
             Matcher matcher = SQL_VARS_PATTERN.matcher(queryText);
-            SQLQuery query = new SQLQuery();
+            SQLQueryWrapper query = new SQLQueryWrapper();
 
             int index = 0;
 
@@ -141,7 +148,7 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
                 String varName = matcher.group().replace(SQL_PARAMETER, "");
                 Set<Resource> res = Models.getPropertyResources(model, getServiceDescriptor().getServiceIRI(), SPIN.CONSTRAINT_PROPERTY);
 
-                SQLParameter sqlParameter = new SQLParameter(varName);
+                SQLParameterWrapper sqlParameterWrapper = new SQLParameterWrapper(varName);
 
                 res.stream()
                 .filter(
@@ -152,38 +159,26 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
                 ).forEach(
                     reso-> {
                         IRI typeIri = Models.getPropertyIRI(model, reso, SPL.VALUETYPE_PROPERTY).orElse(null);
-                        sqlParameter.setType(typeIri);
+                        sqlParameterWrapper.setType(typeIri);
                     }
                 );
 
-                query.putInput(++index, sqlParameter);
+                query.putInput(++index, sqlParameterWrapper);
             }
 
             query.setQuery(matcher.replaceAll(SQL_PARAMETER));
             sqlQueriesMap.put(queryId, query);
         });
+
+        return sqlQueriesMap;
     }
-
-    public Map<String, SQLQuery> getSQLQueries() {
-        if (sqlQueriesMap.isEmpty())
-            parseQueriesMap();
-
-        return this.sqlQueriesMap;
-    }
-
-    public SQLQuery getQueryById(String id) {
-        if (sqlQueriesMap.isEmpty())
-            parseQueriesMap();
-            
-        return this.sqlQueriesMap.get(id);
-    }
-
 
     @Override
     protected SailConnection getConnectionInternal() throws SailException {
         initParameters();
 
         getConfig().setDriverManager(this.jdbcDriverManager.get());
+        getConfig().setQueriesMap(parseQueriesMap());
 
         return new SQLSailConnection(this);
     }

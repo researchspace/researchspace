@@ -19,6 +19,8 @@
 
 package org.researchspace.sail.rest;
 
+import java.io.InputStream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;

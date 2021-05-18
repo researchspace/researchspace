@@ -29,31 +29,5 @@ import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
 
 public class AbstractSQLWrappingSailConfig extends AbstractServiceWrappingSailConfig {
     
-    protected MpJDBCDriverManager driverManager; 
-    protected String username;
-    protected String password;
-
-    public MpJDBCDriverManager getDriverManager() {
-        return driverManager;
-    }
-        
-    public void setDriverManager(MpJDBCDriverManager driverManager) {
-        this.driverManager = driverManager;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    
 }

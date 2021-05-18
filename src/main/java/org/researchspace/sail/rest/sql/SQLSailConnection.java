@@ -16,31 +16,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package org.researchspace.sail.rest.sql;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.google.common.collect.Lists;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.evaluation.iterator.CollectionIteration;
 import org.eclipse.rdf4j.query.impl.MapBindingSet;
 import org.eclipse.rdf4j.sail.SailException;
+import org.glassfish.jersey.client.ClientProperties;
 import org.researchspace.sail.rest.AbstractServiceWrappingSail;
+import org.researchspace.sail.rest.AbstractServiceWrappingSailConnection;
 import org.researchspace.sail.rest.RESTWrappingSailUtils;
-import org.researchspace.federation.repository.service.ServiceDescriptor;
+import org.researchspace.sail.rest.sql.SQLSail.SQLParameterWrapper;
+import org.researchspace.sail.rest.sql.SQLSail.SQLQueryWrapper;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
 import org.researchspace.repository.MpRepositoryVocabulary;
 
@@ -50,9 +63,14 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  *
  */
 
-public class SQLSailConnection extends AbstractSQLWrappingSailConnection<SQLSailConfig> {
+public class SQLSailConnection extends AbstractServiceWrappingSailConnection<SQLSailConfig> {
 
-    protected static final ValueFactory VF = (ValueFactory) SimpleValueFactory.getInstance();
+    private static final Logger logger = LogManager.getLogger(SQLSailConnection.class);
+    protected static final ValueFactory VF = SimpleValueFactory.getInstance();
+
+    private PreparedStatement ps;
+
+    protected Connection databaseConnection = null;
 
     public SQLSailConnection(AbstractServiceWrappingSail<SQLSailConfig> sailBase) {
         super(sailBase);
@@ -61,15 +79,34 @@ public class SQLSailConnection extends AbstractSQLWrappingSailConnection<SQLSail
         initializeConnection();
     }
 
-    @Override
-    protected ParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
+    protected void initializeConnection() throws SailException {
+        try {
 
-        ParametersHolder res = new SQLParametersHolder();
+            String url = getSail().getConfig().getUrl();
+            String username = getSail().getConfig().getUsername();
+            String password = getSail().getConfig().getPassword();
+
+            MpJDBCDriverManager driverManager = getSail().getConfig().getDriverManager();
+            this.databaseConnection = driverManager.getConnection(url, username, password);
+
+        } catch (SQLException e) {
+            throw new SailException(e.getMessage());
+        }
+    }
+
+    @Override
+    protected ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
+            throws SailException {
+
+        ServiceParametersHolder res = new ServiceParametersHolder();
 
         // Check query ID
-        Literal queryId = RESTWrappingSailUtils.getLiteralObjectInputParameter(stmtPatterns, null, MpRepositoryVocabulary.HAS_QUERY_ID).orElseThrow(() -> new SailException("The SQL query ID was not provided using the " + MpRepositoryVocabulary.HAS_QUERY_ID + " property."));
+        Literal queryId = RESTWrappingSailUtils
+                .getLiteralObjectInputParameter(stmtPatterns, null, MpRepositoryVocabulary.HAS_QUERY_ID)
+                .orElseThrow(() -> new SailException("The SQL query ID was not provided using the "
+                        + MpRepositoryVocabulary.HAS_QUERY_ID + " property."));
 
-        res.setIdentifier(queryId.stringValue());
+        res.setSubjVarName(queryId.stringValue());
 
         // Iterate over input triples in descriptor
         // Use the SPARQL query to get values and create input parameter holder as a set
@@ -100,39 +137,100 @@ public class SQLSailConnection extends AbstractSQLWrappingSailConnection<SQLSail
         return res;
     }
 
-    @Override
-    protected Collection<BindingSet> convertObject2BindingSets(Object object, ParametersHolder parametersHolder)
-            throws SailException {
-        
-        // Check if object is of type ResultSet
-        if (!(object instanceof ResultSet))
-            throw new SailException();
+    protected Collection<BindingSet> convertStream2BindingSets(ResultSet resultSet,
+            ServiceParametersHolder parametersHolder) throws SailException {
 
-        List<BindingSet> results = Lists.newArrayList();
-        ServiceDescriptor descriptor = getSail().getServiceDescriptor();
-        ResultSet resultSet = (ResultSet) object;
+        List<BindingSet> bindingSets = Lists.newArrayList();
 
-        try{
-            while(resultSet.next()) {
+        try {
+            while (resultSet.next()) {
 
-                MapBindingSet bs = new MapBindingSet();
-                for(Map.Entry<IRI, String> entry : parametersHolder.getOutputVariables().entrySet()) {
-    
-                    String strObj = resultSet.getString(entry.getValue());
-    
-                    Parameter parameter = (Parameter) descriptor.getOutputParameters().get(entry.getValue());
+                MapBindingSet mapBindingSet = new MapBindingSet();
+                for (Map.Entry<IRI, String> outputParameter : parametersHolder.getOutputVariables().entrySet()) {
 
-                    // TODO update Literal type to match service descriptor
-                    bs.addBinding(parameter.getParameterName(), VF.createLiteral(strObj, XSD.STRING));
+                    Parameter parameter = getSail().getServiceDescriptor().getOutputParameters()
+                            .get(outputParameter.getKey().getLocalName());
+                    IRI type = parameter.getValueType();
+
+                    String strObj = resultSet.getString(outputParameter.getValue());
+
+                    if (strObj != null) {
+                        if (StringUtils.equals(type.stringValue(), RDFS.RESOURCE.stringValue())) {
+                            logger.trace("Creating Resource ({})", strObj);
+                            mapBindingSet.addBinding(outputParameter.getValue(), VF.createIRI(strObj));
+                        } else {
+                            logger.trace("Creating Literal({},{})", strObj, type);
+                            mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(strObj, type));
+                        }
+                    }
+
                 }
-                results.add(bs);
+                bindingSets.add(mapBindingSet);
             }
-    
-            return results;
+
+            return bindingSets;
 
         } catch (Exception e) {
             throw new SailException(e);
         }
+    }
+
+    @Override
+    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+            ServiceParametersHolder parametersHolder) {
+
+        ResultSet resultSet = submit(parametersHolder);
+
+        // add Controls
+        /*
+         * if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) { throw
+         * new SailException("Request failed with HTTP status code " +
+         * response.getStatus() + ": " + response.getStatusInfo().getReasonPhrase()); }
+         */
+
+        return new CollectionIteration<BindingSet, QueryEvaluationException>(
+                convertStream2BindingSets(resultSet, parametersHolder));
+    }
+
+    protected ResultSet submit(ServiceParametersHolder parametersHolder) throws SailException {
+
+        SQLQueryWrapper sqlQuery = getSail().getConfig().getSqlQueryById(parametersHolder.getSubjVarName());
+
+        // Prepare the statement to handle the input parameters
+        // if they are required
+        try {
+            ps = databaseConnection.prepareStatement(sqlQuery.getQuery());
+
+            for (Map.Entry<Integer, SQLParameterWrapper> entry : sqlQuery.getInputParametersMap().entrySet()) {
+
+                IRI type = entry.getValue().getType();
+                String name = entry.getValue().getName();
+                String value = parametersHolder.getInputParameters().get(name);
+
+                if (Objects.isNull(value))
+                    throw new SailException("The variable " + name + " is missing.");
+
+                if (type.equals(XSD.FLOAT)) {
+                    ps.setDouble(entry.getKey(), new Double(value));
+                }
+
+                if (type.equals(XSD.STRING)) {
+                    ps.setString(entry.getKey(), value);
+                }
+
+                if (type.equals(XSD.INTEGER) || type.equals(XSD.INT)) {
+                    ps.setInt(entry.getKey(), new Integer(value));
+                }
+
+            }
+
+            ResultSet resultSet = ps.executeQuery();
+
+            return resultSet;
+        } catch (SQLException e) {
+            throw new SailException(e.getMessage());
+        }
+
     }
 
 }

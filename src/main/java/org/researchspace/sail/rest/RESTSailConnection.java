@@ -92,7 +92,6 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
         this.jsonPathConfig = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
     }
 
-    @Override
     protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
             ServiceParametersHolder parametersHolder) throws SailException {
 
@@ -101,9 +100,6 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
         List<BindingSet> results = Lists.newArrayList();
 
         try {
-
-            InputStream inputStream = (InputStream) object;
-
             String stringResponse = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
 
             // TODO: check the string format and call the right type. E.g., json or XML

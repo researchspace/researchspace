@@ -59,15 +59,6 @@ import com.google.common.collect.Maps;
  */
 public abstract class AbstractServiceWrappingSailConnection<C extends AbstractServiceWrappingSailConfig>
         extends AbstractSailConnection {
-
-    protected interface ParametersHolder {
-        public String getIdentifier();
-        public void setIdentifier(String identifier);
-
-        public Map<String, String> getInputParameters();
-
-        public Map<IRI, String> getOutputVariables();
-    }
     /**
      * A class holding the mappings for the API inputs (parameter name->value as
      * string) and outputs (IRI->variable name)
@@ -82,60 +73,20 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
 
         public ServiceParametersHolder() {
 
-        public RESTParametersHolder() {
-            inputParameters = Maps.newHashMap();
-            outputVariables = Maps.newHashMap();
-            subjVarName = null;
         }
 
-        @Override
-        public String getIdentifier() {
+        public String getSubjVarName() {
             return subjVarName;
         }
 
-        @Override
+        public void setSubjVarName(String subjVarName) {
+            this.subjVarName = subjVarName;
+        }
+
         public Map<String, String> getInputParameters() {
             return inputParameters;
         }
 
-        @Override
-        public Map<IRI, String> getOutputVariables() {
-            return outputVariables;
-        }
-
-        @Override
-        public void setIdentifier(String identifier) {
-            subjVarName = identifier;
-        }
-    }
-
-    public class SQLParametersHolder implements ParametersHolder {
-        private String queryId;
-        private Map<String, String> inputParameters;
-        private Map<IRI, String> outputVariables;
-
-        public SQLParametersHolder() {
-            inputParameters = Maps.newHashMap();
-            outputVariables = Maps.newHashMap();
-            queryId = null;
-        }
-
-        @Override
-        public String getIdentifier() {
-            return queryId;
-        }
-
-        @Override
-        public void setIdentifier(String identifier) {
-            queryId = identifier;
-        }
-
-        @Override
-        public Map<String, String> getInputParameters() {
-            return inputParameters;
-        }
-
-        @Override
         public Map<IRI, String> getOutputVariables() {
             return outputVariables;
         }
@@ -267,7 +218,4 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
 
     protected abstract ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
             throws SailException;
-
-    protected abstract Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            ServiceParametersHolder parametersHolder) throws SailException;
 }

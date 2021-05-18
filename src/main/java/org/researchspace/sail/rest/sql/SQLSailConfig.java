@@ -19,14 +19,12 @@
 
 package org.researchspace.sail.rest.sql;
 
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.util.Models;
-import org.eclipse.rdf4j.sail.config.SailConfigException;
-import org.researchspace.repository.MpRepositoryVocabulary;
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+
+import org.researchspace.sail.rest.AbstractServiceWrappingSailConfig;
+import org.researchspace.sail.rest.sql.SQLSail.SQLQueryWrapper;
 
 /**
  * 
@@ -34,32 +32,26 @@ import org.researchspace.repository.MpRepositoryVocabulary;
  *
  */
 
-public class SQLSailConfig extends AbstractSQLWrappingSailConfig {
+public class SQLSailConfig extends AbstractServiceWrappingSailConfig {
 
-    private static ValueFactory VF = (ValueFactory)SimpleValueFactory.getInstance();
+    private MpJDBCDriverManager driverManager; 
+    private Map<String, SQLQueryWrapper> sqlQueriesMap =  Maps.newHashMap();
 
-    @Override
-    public Resource export(Model model) {
-        Resource resource = super.export(model);
-
-        if (!StringUtils.isEmpty(username))
-            model.add(resource, MpRepositoryVocabulary.USERNAME, VF.createLiteral(username));
-
-        if (!StringUtils.isEmpty(password))
-            model.add(resource, MpRepositoryVocabulary.PASSWORD, VF.createLiteral(password));
-
-        return resource;
+    public MpJDBCDriverManager getDriverManager() {
+        return driverManager;
+    }
+        
+    public void setDriverManager(MpJDBCDriverManager driverManager) {
+        this.driverManager = driverManager;
     }
 
-    @Override
-    public void parse(Model model, Resource implNode) throws SailConfigException {
-        super.parse(model, implNode);
-
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USERNAME, null))
-            .ifPresent(lit -> setUsername(lit.stringValue()));
-
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.PASSWORD, null))
-            .ifPresent(lit -> setPassword(lit.stringValue()));
+    
+    public SQLQueryWrapper getSqlQueryById(String queryId) {
+        return sqlQueriesMap.get(queryId);
     }
 
+
+    public void setQueriesMap (Map<String, SQLQueryWrapper> sqlQueriesMap) {
+        this.sqlQueriesMap = sqlQueriesMap;
+    }
 }

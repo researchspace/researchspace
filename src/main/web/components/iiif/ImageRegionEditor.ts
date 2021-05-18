@@ -37,7 +37,7 @@ import {
   ImageOrRegionInfo,
   parseImageSubarea,
 } from '../../data/iiif/ImageAnnotationService';
-import { Manifest, createManifest, ManifestBuildingError } from '../../data/iiif/ManifestBuilder';
+import { Manifest, createManifest, ManifestBuildingError, CreateManifestParams } from '../../data/iiif/ManifestBuilder';
 import { LdpAnnotationEndpoint, AnnotationEndpoint, ImagesInfoByIri } from '../../data/iiif/AnnotationEndpoint';
 import {
   ManifestUpdatedEvent,
@@ -98,17 +98,17 @@ interface ImageRegionEditorState {
  *     iiif-server-url='http://example.com/IIIF'>
  *   </rs-iiif-mirador>
  * </div>
- * 
+ *
  * or
- * 
+ *
  * <div style='height: 700px'>
- *   <rs-iiif-mirador 
+ *   <rs-iiif-mirador
  *     image-or-region='https://iiif.itatti.harvard.edu/iiif/2/florentinedrawings!works!001049C-Berenson.jpg/full/full/0/default.jpg'
  *     image-api-manifest-pattern='BIND(<https://iiif.itatti.harvard.edu/iiif/2/florentinedrawings!works!001049C-Berenson.jpg/info.json> as ?manifestUrl)'
  *    >
  *   </rs-iiif-mirador>
  * </div>
- * 
+ *
  */
 export class ImageRegionEditorComponentMirador extends Component<ImageRegionEditorProps, ImageRegionEditorState> {
   static defaultProps: Partial<ImageRegionEditorProps> = {
@@ -234,14 +234,14 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     if (!this.state || !this.state.info || !element) {
       return;
     }
-
+    //TODO rewrite - shorten this function in next commit (when /info.json replace is removed) ..
     removeMirador(this.miradorInstance, element);
+
     // If no manifest provided, continue as usual
     if (this.props.imageApiManifestPattern == undefined) {
       const iiifServerUrl = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
-
       const manifestQuerying = this.state.allImages.map(({ objectIri, images }) => {
-        this.queryManifestParameters({
+       return this.queryManifestParameters({
           infos: this.state.info,
           iiifImageIds: this.state.iiifImageId,
           iri: objectIri,
@@ -290,16 +290,54 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
         });
       });
     } else {
-      // GET selected manifest as JSON
-      fetch(this.state.info.values().next().value.imageApiManifestUrl).then((data) => {
-        data.json().then((manifestJson) => {
-          // TODO transform the manifestJson to have presentation API context? 
-          const miradorConfig = this.miradorConfigFromManifest([manifestJson]);
-          this.miradorInstance = renderMirador({
-            targetElement: element,
-            miradorConfig,
-            onInitialized: this.onMiradorInitialized,
-          });
+      // If an image API manifest is provided query for its parameters to create Presentation API manifest
+      const imageApiManifestUrl = this.state.info.values().next().value.imageApiManifestUrl;
+      const manifestQuerying = this.state.allImages.map(({ objectIri, images }) => {
+        return this.queryManifestParameters({
+          infos: this.state.info,
+          iiifImageIds: this.state.iiifImageId,
+          iri: objectIri,
+          images,
+          imageApiManifestUrl,
+        }).flatMap((allParams) => {
+          const params = allParams.filter((param) => param !== undefined);
+          if (params.length === 0) {
+            addNotification({
+              level: 'error',
+              children: React.createElement(
+                'p',
+                {},
+                'Images of the entity ',
+                React.createElement(ResourceLinkComponent, { iri: objectIri }),
+                ' not found'
+              ),
+            });
+            return Kefir.constant(undefined);
+          }
+          if (params.length < allParams.length) {
+            addNotification({
+              level: 'warning',
+              children: React.createElement(
+                'p',
+                {},
+                'Some images of the entity ',
+                React.createElement(ResourceLinkComponent, { iri: objectIri }),
+                ' not found'
+              ),
+            });
+          }
+          return createManifest(params);
+        });
+      });
+      this.manifestQueryingCancellation = this.cancellation.deriveAndCancel(this.manifestQueryingCancellation);
+      this.manifestQueryingCancellation.map(Kefir.zip(manifestQuerying)).onValue((allManifests) => {
+        0;
+        const manifests = allManifests.filter((manifest) => manifest !== undefined);
+        const miradorConfig = this.miradorConfigFromManifest(manifests);
+        this.miradorInstance = renderMirador({
+          targetElement: element,
+          miradorConfig,
+          onInitialized: this.onMiradorInitialized,
         });
       });
     }
@@ -501,12 +539,14 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     iiifServerUrl,
     infos,
     iiifImageIds,
+    imageApiManifestUrl,
   }: {
     iri: string;
     images: Array<string>;
-    iiifServerUrl: string;
+    iiifServerUrl?: string;
     infos?: ReadonlyMap<string, ImageOrRegionInfo>;
     iiifImageIds?: ReadonlyMap<string, string>;
+    imageApiManifestUrl?: string;
   }) {
     if (!images.length) {
       return Kefir.constant([]);
@@ -514,20 +554,33 @@ export class ImageRegionEditorComponentMirador extends Component<ImageRegionEdit
     const queryingImagesInfo = images.map((imageIri) => {
       const imageInfo = infos.get(imageIri);
       const iiifImageId = iiifImageIds.get(imageIri);
-      if (!imageInfo || !iiifImageId) {
+
+      if ((!imageApiManifestUrl && !iiifImageId) || !imageInfo) {
         return Kefir.constant(undefined);
       }
       const imageServiceUri = ImageApi.constructServiceRequestUri(iiifServerUrl, iiifImageId);
-      return ImageApi.queryImageBounds(iiifServerUrl, iiifImageId)
-        .flatMap((canvasSize) =>
-          Kefir.constant({
-            baseIri: imageInfo.isRegion ? imageInfo.imageIRI : Rdf.iri(iri),
-            imageIri: imageInfo.imageIRI,
-            imageServiceUri,
-            canvasSize,
-          })
-        )
-        .flatMapErrors(() => Kefir.constant(undefined));
+      return imageApiManifestUrl
+        ? ImageApi.queryImageBoundsUsingManifest(imageApiManifestUrl) // Extract canvas size using manifest
+            .flatMap((canvasSize) => {
+              return Kefir.constant({
+                baseIri: imageInfo.isRegion ? imageInfo.imageIRI : Rdf.iri(iri),
+                imageIri: imageInfo.imageIRI,
+                //remove this replace as soon as possible :)
+                imageServiceUri: imageApiManifestUrl.replace("/info.json","") ,
+                canvasSize,
+              });
+            })
+            .flatMapErrors(() => Kefir.constant(undefined))
+        : ImageApi.queryImageBounds(iiifServerUrl, iiifImageId) // Extract canvas size using iiif image id and server url
+            .flatMap((canvasSize) =>
+              Kefir.constant({
+                baseIri: imageInfo.isRegion ? imageInfo.imageIRI : Rdf.iri(iri),
+                imageIri: imageInfo.imageIRI,
+                imageServiceUri,
+                canvasSize,
+              })
+            )
+            .flatMapErrors(() => Kefir.constant(undefined));
     });
     return Kefir.zip(queryingImagesInfo).toProperty();
   }

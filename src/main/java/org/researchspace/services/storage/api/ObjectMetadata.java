@@ -20,6 +20,8 @@
 package org.researchspace.services.storage.api;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.core.MediaType;
+
 import java.time.Instant;
 
 /**
@@ -30,8 +32,8 @@ public final class ObjectMetadata {
     private String author;
     @Nullable
     private Instant creationDate;
-    @Nullable
-    private String mediaType;
+
+    private String mediaType = MediaType.APPLICATION_OCTET_STREAM;
 
     public ObjectMetadata() {
     }

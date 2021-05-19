@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
@@ -94,6 +95,7 @@ public class GitStorage implements ObjectStorage {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private ExecutorService executor;
+    private MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
 
     public GitStorage(PathMapping paths, GitStorageConfig config) throws StorageException {
         this.paths = paths;
@@ -587,7 +589,7 @@ public class GitStorage implements ObjectStorage {
             return Optional.empty();
         }
         String foundRevision = commit.getId().name();
-        ObjectMetadata metadata = getMetadata(commit);
+        ObjectMetadata metadata = getMetadata(commit, originalPath);
         return Optional.of(new ObjectRecord(location.get(), originalPath, foundRevision, metadata));
     }
 
@@ -604,10 +606,10 @@ public class GitStorage implements ObjectStorage {
         }
     }
 
-    private ObjectMetadata getMetadata(RevCommit commit) {
+    private ObjectMetadata getMetadata(RevCommit commit, StoragePath path) {
         String author = commit.getAuthorIdent().getName();
         Date when = commit.getAuthorIdent().getWhen();
-        return new ObjectMetadata(author, when.toInstant());
+        return new ObjectMetadata(author, when.toInstant(), this.fileTypeMap.getContentType(path.toString()));
     }
 
     private void assertCleanWorkTree(Git git) throws GitAPIException, StorageException {

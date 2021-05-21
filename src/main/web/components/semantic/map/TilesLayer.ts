@@ -34,6 +34,7 @@ export interface ProviderConfig {
    */
   providerOptions?: ProviderOptions;
 
+  level: String;
 
   receiveProviderFromChild?: any; 
 }

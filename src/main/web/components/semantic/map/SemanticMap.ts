@@ -67,13 +67,14 @@ import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
-import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor, SemanticMapReplaceBasemap, SemanticMapReplaceHistoricalMap } from './SemanticMapEvents';
+import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor, SemanticMapReplaceBasemap, SemanticMapReplaceOverlay } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import { QueryConstantParameter } from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
 import { listen, Event } from 'platform/api/events';
 import { WindowScroller } from 'react-virtualized';
 import { zoomByDelta } from 'ol/interaction/Interaction';
+import TilesLayer from './TilesLayer';
 
 enum Source {
   OSM = 'osm'
@@ -207,10 +208,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.cancelation
     .map(
       listen({
-        eventType: SemanticMapReplaceHistoricalMap,
+        eventType: SemanticMapReplaceOverlay,
       })
     )
-    .onValue(this.replaceHistoricalMap);
+    .onValue(this.replaceOverlay);
     
   }
 
@@ -257,7 +258,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
 
-    let tileslayers = React.Children.map(this.props.children, (child) => this.prepareTileLayer(child));
+    let tileslayers = this.getTilesLayersFromTemplate()
 
     return D.div(
       { style: { height: '100%', width: '100%' } },
@@ -284,20 +285,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     );
   }
 
-  private prepareTileLayer(child){
-    if(child.type.name === "TilesLayer"){
-      const cloned = React.cloneElement(child, {
-        receiveProviderFromChild: (provider) => {
-          //type Provider = typeof provider;
-          const tilelayer = new TileLayer({
-            source: provider
-          });
-          this.tilesLayers.push(tilelayer);
-        }
-      });
-      return(cloned);
-    }
-  }
 
   private initializeMarkerPopup(map) {
     const popup = new Popup();
@@ -337,20 +324,34 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private replaceBasemap = (event: Event<any>) => {
+    let newBasemap = this.getTilesLayerFromIdentifier(event.data.selectedBasemap);
+    console.log("Nuova basemap")
+    console.log(newBasemap)
     this.map.getLayers().removeAt(0);
-    this.map.getLayers().insertAt(0, this.tilesLayers[event.data.selectedProvider]);
+    this.map.getLayers().insertAt(0, newBasemap);
   }
 
-  private replaceHistoricalMap = (event: Event<any>) => {
+  private replaceOverlay = (event: Event<any>) => {
+    var loaded_overlays = 0
+    this.map.getLayers().forEach(function(tilesLayer){
+      if(tilesLayer instanceof TileLayer && tilesLayer.level === "overlay"){
+        loaded_overlays++
+      }
+    })
+    if(loaded_overlays > 0){
+      this.map.getLayers().removeAt(1);
+    }
 
-    this.map.getLayers().removeAt(1);
-    this.map.getLayers().insertAt(1, this.tilesLayers[event.data.selectedHistoricalMap]);
+    let new_overlay = this.getTilesLayerFromIdentifier(event.data.selectedOverlay)
+    console.log("new_overlay")
+    console.log(new_overlay)
+
+    this.map.getLayers().insertAt(1, new_overlay);
     
     const radius = 120;
     
-    this.tilesLayers[event.data.selectedHistoricalMap].on('prerender', (event) => {
+    new_overlay.on('prerender', (event) => {
       
-      //console.log("🚀Event", event)
       const ctx = event.context;
       //let pixelRatio = event.frameState.pixelRatio;
       ctx.save();
@@ -373,7 +374,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
 
     // after rendering the layer, restore the canvas context
-    this.tilesLayers[event.data.selectedHistoricalMap].on('postrender', function (event) {
+    new_overlay.on('postrender', function (event) {
       const ctx = event.context;
       ctx.restore();
     });
@@ -487,52 +488,71 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   };
 
+  private getTilesLayersFromTemplate(){
+    var tileslayers = React.Children.map(this.props.children, (child) => {
+      if(child.type.name === "TilesLayer"){
+        const cloned = React.cloneElement(child, {
+          receiveProviderFromChild: (provider) => {
+            const tilelayer = new TileLayer({
+              source: provider
+            });
+            tilelayer["level"] = child.props.level
+            tilelayer["name"] = child.props["name"]
+            tilelayer["identifier"] = child.props["identifier"]
+            this.addTilesLayer(tilelayer)
+          }
+        });
+        return(cloned);
+      }
+    })
+    return tileslayers
+  }
+
+  private addTilesLayer(tileslayer){
+    //TODO: add existence constraints to avoid duplicates (with identifiers)
+    this.tilesLayers.push(tileslayer);
+  }
+
+  private getAllTilesLayers(){
+    return this.tilesLayers
+  }
+
+  private getTilesLayerFromIdentifier(identifier){
+    let result
+    this.tilesLayers.forEach(function(tilesLayer){
+      if(tilesLayer.identifier === identifier){
+        result = tilesLayer
+      }
+    });
+    return result
+  }
+
   private renderMap(node, props, center, markers) {
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
-      var tilesLayers = [];
+      var basemapLayers = [];
+      var overlayLayers = [];
+
+      //TODO: get all basemap Layers (from an attribute on the <tileslayer> component) and give them an ID
+      //TODO: get all overlay layers and give them an ID
+      this.tilesLayers.forEach(function(tileslayer){
+        if(tileslayer.level === "basemap"){
+          basemapLayers.push(tileslayer)
+        } else if (tileslayer.level === "overlay"){
+          overlayLayers.push(tileslayer)
+        }
+      })
 
       //Fallback to default provider if no tiles-layers are specified in template
-       if(!this.tilesLayers.length){
+      if(!this.tilesLayers.length){
           this.tilesLayers = [new TileLayer({
             source: new OSM(),
           })]
       } else {
-          tilesLayers = [this.tilesLayers[0], this.tilesLayers[4]];
+          basemapLayers = [basemapLayers[0]];
       }
-
       const radius = 120;
-
-      this.tilesLayers[4].on('prerender', (event) => {
-      
-        //console.log("🚀Event", event)
-        const ctx = event.context;
-        //const pixelRatio = event.frameState.pixelRatio;
-        ctx.save();
-        ctx.beginPath();
-        if (this.mousePosition) {
-            const pixel = getRenderPixel(event, this.mousePosition);
-            const offset = getRenderPixel(event, [
-              this.mousePosition[0] + radius,
-              this.mousePosition[1] ]);
-            const canvasRadius = Math.sqrt(
-              Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
-            );
-            ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
-            ctx.lineWidth = (2 * canvasRadius) / radius;
-            ctx.strokeStyle = 'rgba(102,0,0,0.5)';
-            ctx.stroke();
-        }
-        ctx.clip();
-      });
-  
-  
-      // after rendering the layer, restore the canvas context
-      this.tilesLayers[4].on('postrender', function (event) {
-        const ctx = event.context;
-        ctx.restore();
-      });
 
       const map = new Map({
         controls: controlDefaults({
@@ -543,7 +563,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interactionDefaults({}),
         layers: [
-          ..._.values(tilesLayers),
+          ..._.values(basemapLayers),
           ..._.values(layers)
         ],
         target: node,

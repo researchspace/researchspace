@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package org.researchspace.sail.rest.sql;
 
 import org.eclipse.rdf4j.sail.Sail;
@@ -51,5 +50,5 @@ public class SQLSailFactory implements SailFactory {
         }
         return new SQLSail((SQLSailConfig) originalConfig);
     }
-    
+
 }

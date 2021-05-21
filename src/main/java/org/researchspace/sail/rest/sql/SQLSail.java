@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package org.researchspace.sail.rest.sql;
 
 import java.util.Map;
@@ -117,7 +116,6 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
 
     }
 
-    
     private static final Pattern SQL_VARS_PATTERN = Pattern.compile("\\?[a-zA-Z_]+");
 
     @Inject
@@ -133,35 +131,32 @@ public class SQLSail extends AbstractServiceWrappingSail<SQLSailConfig> {
 
         Model model = getServiceDescriptor().getModel();
 
-        Set<Resource> queries = Models.getPropertyResources(model, getServiceDescriptor().getServiceIRI(), MpRepositoryVocabulary.INCLUDE_SQL_QUERY);
+        Set<Resource> queries = Models.getPropertyResources(model, getServiceDescriptor().getServiceIRI(),
+                MpRepositoryVocabulary.INCLUDE_SQL_QUERY);
 
         queries.stream().forEach(resource -> {
             String queryId = Models.getPropertyString(model, resource, MpRepositoryVocabulary.HAS_QUERY_ID).orElse("");
-            String queryText = Models.getPropertyString(model, resource, MpRepositoryVocabulary.HAS_QUERY_TEXT).orElse("");
+            String queryText = Models.getPropertyString(model, resource, MpRepositoryVocabulary.HAS_QUERY_TEXT)
+                    .orElse("");
 
             Matcher matcher = SQL_VARS_PATTERN.matcher(queryText);
             SQLQueryWrapper query = new SQLQueryWrapper();
 
             int index = 0;
 
-            while (matcher.find()) { 
+            while (matcher.find()) {
                 String varName = matcher.group().replace(SQL_PARAMETER, "");
-                Set<Resource> res = Models.getPropertyResources(model, getServiceDescriptor().getServiceIRI(), SPIN.CONSTRAINT_PROPERTY);
+                Set<Resource> res = Models.getPropertyResources(model, getServiceDescriptor().getServiceIRI(),
+                        SPIN.CONSTRAINT_PROPERTY);
 
                 SQLParameterWrapper sqlParameterWrapper = new SQLParameterWrapper(varName);
 
-                res.stream()
-                .filter(
-                    reso -> {
-                        String tmp = Models.getPropertyString(model, reso, SPL.PREDICATE_PROPERTY).orElse("");
-                        return StringUtils.equals(MpRepositoryVocabulary.NAMESPACE.concat(SQL_PARAMETER_DELIMITER).concat(varName), tmp);
-                    }
-                ).forEach(
-                    reso-> {
-                        IRI typeIri = Models.getPropertyIRI(model, reso, SPL.VALUETYPE_PROPERTY).orElse(null);
-                        sqlParameterWrapper.setType(typeIri);
-                    }
-                );
+                res.stream().filter(reso -> {
+                    String[] propertyStringSplit = Models.getPropertyString(model, reso, SPL.PREDICATE_PROPERTY)
+                            .orElse("").split(SQL_PARAMETER_DELIMITER);
+                    return StringUtils.equals(varName, propertyStringSplit[propertyStringSplit.length - 1]);
+                }).forEach(reso -> sqlParameterWrapper
+                        .setType(Models.getPropertyIRI(model, reso, SPL.VALUETYPE_PROPERTY).orElse(null)));
 
                 query.putInput(++index, sqlParameterWrapper);
             }

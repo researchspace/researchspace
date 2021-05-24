@@ -15,19 +15,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 import { EventMaker } from 'platform/api/events';
 
-export interface LazyTreeEventData {
-  'LazyTree.ItemSelected': {
-    iri: string
-  }
+export interface FileEventData {
+  // triggers
+  'File.Removed': { iri: string }
 
-  'LazyTree.Focus': {
-    iri: string
-  }
+  //litens
+  'File.Remove': { iri: string }
 }
 
-const event: EventMaker<LazyTreeEventData> = EventMaker;
-export const ItemSelected = event('LazyTree.ItemSelected');
-export const Focus = event('LazyTree.Focus');
+const event: EventMaker<FileEventData> = EventMaker;
+export const FileRemove = event('File.Remove');
+export const FileRemoved = event('File.Removed');

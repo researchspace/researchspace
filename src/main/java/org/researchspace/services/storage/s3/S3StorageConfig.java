@@ -29,17 +29,37 @@ import org.researchspace.services.storage.api.StorageException;
  *
  */
 
-public class S3StorageConfig extends StorageConfig{
+public class S3StorageConfig extends StorageConfig {
 
     private String endpoint;
     private String bucket;
     private String region;
+
     private String accessKeyId;
     private String secretKeyId;
+
+    private String unResolvedAccessKeyId;
+    private String unResolvedSecretKeyId;
 
     @Override
     public String getStorageType() {
         return S3Storage.STORAGE_TYPE;
+    }
+
+    public String getUnResolvedSecretKeyId() {
+        return unResolvedSecretKeyId;
+    }
+
+    public void setUnResolvedSecretKeyId(String unResolvedSecretKeyId) {
+        this.unResolvedSecretKeyId = unResolvedSecretKeyId;
+    }
+
+    public String getUnResolvedAccessKeyId() {
+        return unResolvedAccessKeyId;
+    }
+
+    public void setUnResolvedAccessKeyId(String unResolvedAccessKeyId) {
+        this.unResolvedAccessKeyId = unResolvedAccessKeyId;
     }
 
     public String getEndpoint() {
@@ -86,5 +106,5 @@ public class S3StorageConfig extends StorageConfig{
     public ObjectStorage createStorage(StorageCreationParams params) throws StorageException {
         return new S3Storage(params.getPathMapping(), this);
     }
-    
+
 }

@@ -75,7 +75,8 @@ import { listen, Event } from 'platform/api/events';
 import { WindowScroller } from 'react-virtualized';
 import { zoomByDelta } from 'ol/interaction/Interaction';
 import TilesLayer from './TilesLayer';
-import { SemanticMapControlsOverlayOpacity } from './SemanticMapControlsEvents';
+import { SemanticMapControlsOverlayOpacity, SemanticMapControlsOverlayVisualization } from './SemanticMapControlsEvents';
+import { none } from 'ol/centerconstraint';
 
 enum Source {
   OSM = 'osm'
@@ -170,6 +171,7 @@ interface MapState {
   errorMessage: Data.Maybe<string>;
   noResults?: boolean;
   isLoading?: boolean;
+  overlayVisualization?: string;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -187,7 +189,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       tupleTemplate: maybe.Nothing<HandlebarsTemplateDelegate>(),
       noResults: false,
       isLoading: true,
-      errorMessage: maybe.Nothing<string>()
+      errorMessage: maybe.Nothing<string>(),
+      overlayVisualization: "normal"
     };
 
     this.cancelation
@@ -221,16 +224,20 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       })
     )
     .onValue(this.setOverlayOpacity)
-    
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapControlsOverlayVisualization
+      })
+    )
+    .onValue(this.setOverlayVisualizationFromEvent)
   }
 
   private setOverlayOpacity = (event: Event<any>) => {
     let new_opacity = event.data
-    this.map.getLayers().forEach(function(current_layer){
-      if(current_layer.level === "overlay"){
-        current_layer.setOpacity(new_opacity)
-      }
-    })
+    let overlay_layer = this.getOverlayLayer()
+    overlay_layer.setOpacity(new_opacity)
   }
 
   private getInputCrs() {
@@ -359,45 +366,66 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }
 
     let new_overlay = this.getTilesLayerFromIdentifier(event.data.selectedOverlay)
-    console.log("new_overlay")
-    console.log(new_overlay)
 
     this.map.getLayers().insertAt(1, new_overlay);
-    
-    const radius = 120;
-    
-    if(false){
-      new_overlay.on('prerender', (event) => {
-      
-        const ctx = event.context;
-        //let pixelRatio = event.frameState.pixelRatio;
-        ctx.save();
-        ctx.beginPath();
-        if (this.mousePosition) {
-            const pixel = getRenderPixel(event, this.mousePosition);
-            const offset = getRenderPixel(event, [
-              this.mousePosition[0] + radius,
-              this.mousePosition[1] ]);
-            const canvasRadius = Math.sqrt(
-              Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
-            );
-            ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
-            ctx.lineWidth = (2 * canvasRadius) / radius;
-            ctx.strokeStyle = 'rgba(102,0,0,0.5)';
-            ctx.stroke();
+  }
+
+  private setOverlayVisualizationFromEvent  = (event: Event<any>) => {
+    this.setOverlayVisualization(event.data)
+  }
+
+  private setOverlayVisualization(overlay_visualization: string){
+    console.log("Benvenuti, l'evento catturato è " + overlay_visualization)
+    let overlay_layer = this.getOverlayLayer()
+
+    this.setState({
+      overlayVisualization: overlay_visualization
+    }, () => {
+      switch(overlay_visualization){
+        case "normal": {
+          overlay_layer.un('prerender', this.spyglassFunction);
+          overlay_layer.un('postrender', function (event) {
+            const ctx = event.context;
+            ctx.restore();
+          });
+          this.map.render();
+          break;
         }
-        ctx.clip();
-      });
-      
-      // after rendering the layer, restore the canvas context
-      new_overlay.on('postrender', function (event) {
-        const ctx = event.context;
-        ctx.restore();
-      });
+        case "spyglass": {
+          overlay_layer.on('prerender', this.spyglassFunction);
+          // after rendering the layer, restore the canvas context
+          overlay_layer.on('postrender', function (event) {
+            const ctx = event.context;
+            ctx.restore();
+          });
+          this.map.render();
+          break;
+        }
+      }
     }
+    )
+  }
 
-
-
+  private spyglassFunction = (event) => {
+      const radius = 120;
+      const ctx = event.context;
+      //let pixelRatio = event.frameState.pixelRatio;
+      ctx.save();
+      ctx.beginPath();
+      if (this.mousePosition) {
+          const pixel = getRenderPixel(event, this.mousePosition);
+          const offset = getRenderPixel(event, [
+            this.mousePosition[0] + radius,
+            this.mousePosition[1] ]);
+          const canvasRadius = Math.sqrt(
+            Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
+          );
+          ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
+          ctx.lineWidth = (2 * canvasRadius) / radius;
+          ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+          ctx.stroke();
+      }
+      ctx.clip();
   }
 
   /**
@@ -545,6 +573,16 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       }
     });
     return result
+  }
+
+  private getOverlayLayer(){
+    let overlay_layer
+    this.map.getLayers().forEach(function(current_layer){
+      if(current_layer.level === "overlay"){
+        overlay_layer = current_layer
+      }
+    })
+    return overlay_layer
   }
 
   private renderMap(node, props, center, markers) {

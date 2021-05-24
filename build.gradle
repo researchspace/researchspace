@@ -86,10 +86,17 @@ farms {
             contextPath: '/blazegraph',
             overlays: [':blazegraph-vocabularies']
 
-        // setup digilib for local development
-        webapp 'digilib:digilib-webapp:2.9-20200421.092548-16',
-            contextPath: '/digilib',
-            initParameters: ["config-file": "./bundle-config/digilib-config.xml"]
+        // cantaloupe iiif server
+        webapp 'edu.illinois.library.cantaloupe:cantaloupe:4.1.6',
+            contextPath: '/cantaloupe'
+
+        // digilib iiif server
+        //webapp 'digilib:digilib-webapp:2.9-20200421.092548-16',
+        //    contextPath: '/digilib',
+        //    initParameters: ["config-file": "./bundle-config/digilib-config.xml"]
+
+        webapp 'org.fcrepo:fcrepo-webapp:6.0.0-alpha-2',
+            contextPath: '/fcrepo'
 
         webapp project,
             contextPath: '/'
@@ -100,8 +107,9 @@ products {
     product 'researchspace', {
         additionalFiles = [
             "./bundle-config/RWStore.properties": "./bundle-config/RWStore.properties",
-            "./bundle-config/digilib-config.xml": "./bundle-config/digilib-config.xml",
-            "./bundle-config/digilib-log4j-config.xml": "./bundle-config/digilib-log4j-config.xml",
+          //"./bundle-config/digilib-config.xml": "./bundle-config/digilib-config.xml",
+          //"./bundle-config/digilib-log4j-config.xml": "./bundle-config/digilib-log4j-config.xml",
+            "./bundle-config/cantaloupe.properties": "./bundle-config/cantaloupe.properties",
             "./bundle-config/ZipReadme.txt": "./README.txt",
             "./LICENSE": "./LICENSE.txt",
             "./COPYING": "./COPYING",
@@ -117,11 +125,16 @@ def defaultJvmArgs = [
 
     // for properties that get value from project.properties see gradle.properties file for more details
     "-Dconfig.environment.sparqlEndpoint=${project.properties['sparqlEndpoint']}",
-    "-Dconfig.proxy.IIIF.targetUri=${project.properties['iiifScaler']}",
 
-    // delopment storages for image upload functionality
-    "-Dconfig.storage.images.type=nonVersionedFile",
-    "-Dconfig.storage.images.mutable=true",
+    "-Dconfig.proxy.iiif-server.targetUri=${project.properties['iiifScaler']}",
+    "-Dconfig.proxy.iiif-server.preserveHost=true",
+
+    // storage for asset upload functionality
+    "-Dfcrepo.home=./runtime-data/fcrepo-data",
+    "-Dfcrepo.log=WARN",
+    "-Dconfig.storage.assets.type=fedora",
+    "-Dconfig.storage.assets.mutable=true",
+    "-Dconfig.storage.assets.containerUri=${project.properties.fedoraContainerUri}",
 
     // tmp storage is needed for image upload functionality
     "-Dconfig.storage.tmp.type=nonVersionedFile",
@@ -129,7 +142,10 @@ def defaultJvmArgs = [
 
 
     // Increase size limit for file upload
-    "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
+    "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600",
+
+    // cantaloupe iiif server config file
+    "-Dcantaloupe.config=./bundle-config/cantaloupe.properties",
 ]
 
 // configuration for local jetty container
@@ -159,15 +175,12 @@ gretty {
         jvmArgs = defaultJvmArgs + [
             "-DruntimeDirectory=./runtime-data",
             "-Dorg.researchspace.config.baselocation=./runtime-data/config",
-
-            "-Dconfig.storage.images.root=./runtime-data/images",
             "-Dconfig.storage.tmp.root=./runtime-data/tmp",
 
             "-Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml",
         ]
     } else {
         jvmArgs = defaultJvmArgs + [
-            "-Dconfig.storage.images.root=${project.properties['imageStorageRoot']}",
             "-Dconfig.storage.tmp.root=${java.nio.file.Files.createTempDirectory('images-tmp')}",
 
             // set development mode to true to make sure that assets are always up to date
@@ -278,14 +291,22 @@ repositories {
     jcenter()
     mavenCentral()
 
-    // for blazegraph war
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-
     // for digilib war
-    maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }
+    // maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }
 
     // needed for SMAL2 integration
     maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases/' }
+
+    // for gretty debug builds
+    //maven {
+    //    url 'file:/home/artem/work/sources/github/gretty/build/privateRepo'
+    //}
+
+    // used by cantaloupe image server
+    maven { url 'https://repo.osgeo.org/repository/release/' }
+
+    // for official blazegraph and fcrepo war
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 ext {

@@ -27,7 +27,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.config.NamespaceRegistry.ProtectedNamespaceDeletionException;
 import org.researchspace.config.NamespaceRegistry.RuntimeNamespace;
 import org.researchspace.junit.AbstractRepositoryBackedIntegrationTest;
@@ -265,6 +264,14 @@ public class NamespaceRegistryTest extends AbstractRepositoryBackedIntegrationTe
     }
 
     @Test
+    public void testPrefixedIRISucceedingWithColonInLocalName() throws Exception {
+        final NamespaceRegistry ns = getNamespaceRegistry();
+        namespaceRule.set(DUMMY_PREFIX1, DUMMY_NAMESPACE1);
+        final Optional<IRI> iri1 = ns.resolveToIRI("myns1:skos:Concept");
+        Assert.assertEquals("http://myns1.example.com/skos:Concept", iri1.get().stringValue());
+    }
+
+    @Test
     public void testIRIResolutionFailingBecausePrefixUndefined() throws Exception {
 
         final NamespaceRegistry ns = getNamespaceRegistry();
@@ -347,7 +354,7 @@ public class NamespaceRegistryTest extends AbstractRepositoryBackedIntegrationTe
 
         Assert.assertFalse(ns.looksLikePrefixedIri("test1"));
 
-        Assert.assertFalse(ns.looksLikePrefixedIri("test1:test2:test3"));
+        Assert.assertTrue(ns.looksLikePrefixedIri("test1:test2:test3"));
     }
 
     NamespaceRegistry getNamespaceRegistry() {

@@ -34,7 +34,7 @@ public class S3StorageFactory implements StorageFactory {
     private static final String ENDPOINT = "endpoint";
     private static final String REGION = "region";
     private static final String BUCKET = "bucket";
-    
+
     private static final String ACCESS_KEY = "access-key";
     private static final String SECRET_KEY = "secret-key";
 
@@ -43,28 +43,28 @@ public class S3StorageFactory implements StorageFactory {
         return S3Storage.STORAGE_TYPE;
     }
 
-   @Override
+    @Override
     public StorageConfig parseStorageConfig(String storageType, Configuration properties)
             throws StorageConfigException {
         S3StorageConfig config = new S3StorageConfig();
         StorageConfig.readBaseProperties(config, properties);
-        
-        if (properties.containsKey(ENDPOINT)) 
+
+        if (properties.containsKey(ENDPOINT))
             config.setEndpoint(properties.getString(ENDPOINT));
-        
-        if (properties.containsKey(REGION)) 
+
+        if (properties.containsKey(REGION))
             config.setRegion(properties.getString(REGION));
-        
-        if (properties.containsKey(BUCKET)) 
+
+        if (properties.containsKey(BUCKET))
             config.setBucket(properties.getString(BUCKET));
 
-        if (properties.containsKey(ACCESS_KEY)) 
+        if (properties.containsKey(ACCESS_KEY))
             config.setAccessKeyId(properties.getString(ACCESS_KEY));
 
-        if (properties.containsKey(SECRET_KEY)) 
+        if (properties.containsKey(SECRET_KEY))
             config.setSecretKeyId(properties.getString(SECRET_KEY));
 
         return config;
     }
-    
+
 }

@@ -75,6 +75,7 @@ import { listen, Event } from 'platform/api/events';
 import { WindowScroller } from 'react-virtualized';
 import { zoomByDelta } from 'ol/interaction/Interaction';
 import TilesLayer from './TilesLayer';
+import { SemanticMapControlsOverlayOpacity } from './SemanticMapControlsEvents';
 
 enum Source {
   OSM = 'osm'
@@ -212,7 +213,24 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       })
     )
     .onValue(this.replaceOverlay);
+
+    this.cancelation
+    .map(
+      listen({
+        eventType: SemanticMapControlsOverlayOpacity
+      })
+    )
+    .onValue(this.setOverlayOpacity)
     
+  }
+
+  private setOverlayOpacity = (event: Event<any>) => {
+    let new_opacity = event.data
+    this.map.getLayers().forEach(function(current_layer){
+      if(current_layer.level === "overlay"){
+        current_layer.setOpacity(new_opacity)
+      }
+    })
   }
 
   private getInputCrs() {
@@ -325,8 +343,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private replaceBasemap = (event: Event<any>) => {
     let newBasemap = this.getTilesLayerFromIdentifier(event.data.selectedBasemap);
-    console.log("Nuova basemap")
-    console.log(newBasemap)
     this.map.getLayers().removeAt(0);
     this.map.getLayers().insertAt(0, newBasemap);
   }
@@ -350,34 +366,38 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     
     const radius = 120;
     
-    new_overlay.on('prerender', (event) => {
+    if(false){
+      new_overlay.on('prerender', (event) => {
       
-      const ctx = event.context;
-      //let pixelRatio = event.frameState.pixelRatio;
-      ctx.save();
-      ctx.beginPath();
-      if (this.mousePosition) {
-          const pixel = getRenderPixel(event, this.mousePosition);
-          const offset = getRenderPixel(event, [
-            this.mousePosition[0] + radius,
-            this.mousePosition[1] ]);
-          const canvasRadius = Math.sqrt(
-            Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
-          );
-          ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
-          ctx.lineWidth = (2 * canvasRadius) / radius;
-          ctx.strokeStyle = 'rgba(102,0,0,0.5)';
-          ctx.stroke();
-      }
-      ctx.clip();
-    });
+        const ctx = event.context;
+        //let pixelRatio = event.frameState.pixelRatio;
+        ctx.save();
+        ctx.beginPath();
+        if (this.mousePosition) {
+            const pixel = getRenderPixel(event, this.mousePosition);
+            const offset = getRenderPixel(event, [
+              this.mousePosition[0] + radius,
+              this.mousePosition[1] ]);
+            const canvasRadius = Math.sqrt(
+              Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
+            );
+            ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
+            ctx.lineWidth = (2 * canvasRadius) / radius;
+            ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+            ctx.stroke();
+        }
+        ctx.clip();
+      });
+      
+      // after rendering the layer, restore the canvas context
+      new_overlay.on('postrender', function (event) {
+        const ctx = event.context;
+        ctx.restore();
+      });
+    }
 
 
-    // after rendering the layer, restore the canvas context
-    new_overlay.on('postrender', function (event) {
-      const ctx = event.context;
-      ctx.restore();
-    });
+
   }
 
   /**

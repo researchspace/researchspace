@@ -34,7 +34,11 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
+import org.researchspace.secrets.SecretResolver;
+import org.researchspace.secrets.SecretsHelper;
 import org.researchspace.services.storage.api.ObjectMetadata;
 import org.researchspace.services.storage.api.ObjectRecord;
 import org.researchspace.services.storage.api.ObjectStorage;
@@ -52,15 +56,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 
 public class S3Storage implements ObjectStorage {
-    
+
     protected final class S3StorageLocation implements StorageLocation {
 
         private String bucket;
         private String key;
 
         public S3StorageLocation(String bucket, String key) {
-           this.bucket = bucket;
-           this.key = key; 
+            this.bucket = bucket;
+            this.key = key;
         }
 
         @Override
@@ -71,10 +75,14 @@ public class S3Storage implements ObjectStorage {
         @Override
         public SizedStream readSizedContent() throws IOException {
             S3Object object = s3.getObject(config.getBucket(), key);
-            return new SizedStream((InputStream)object.getObjectContent(), object.getObjectMetadata().getContentLength());
+            return new SizedStream((InputStream) object.getObjectContent(),
+                    object.getObjectMetadata().getContentLength());
         }
 
     }
+
+    @Inject
+    private Provider<SecretResolver> secretResolver;
 
     public static final String STORAGE_TYPE = "s3";
     public final PathMapping paths;
@@ -89,16 +97,42 @@ public class S3Storage implements ObjectStorage {
         initialize();
     }
 
+    private void resolveSecrets(S3StorageConfig config) {
+        if (config.getUnResolvedAccessKeyId() != null && config.getUnResolvedSecretKeyId() != null) {
+            String accessKeyId = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedAccessKeyId());
+            config.setAccessKeyId(accessKeyId);
+
+            String secretKeyId = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedSecretKeyId());
+            config.setSecretKeyId(secretKeyId);
+        }
+    }
+
     private void initialize() throws StorageException {
+        this.resolveSecrets(config);
 
+        // Without access-key or secret-key throw exception
+        if (config.getAccessKeyId() != null && config.getSecretKeyId() != null) {
 
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(), config.getSecretKeyId());
+            BasicAWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(), config.getSecretKeyId());
 
-        s3 = AmazonS3ClientBuilder.standard()
-            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion()))
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-            .build();
-        
+            // Without endpoint or region create a basic s3 storage otherwise create custom
+            // endpoint configuration
+            if (config.getEndpoint() != null && config.getRegion() != null) {
+                this.s3 = AmazonS3ClientBuilder.standard()
+                        .withEndpointConfiguration(
+                                new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion()))
+                        .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
+            } else {
+                this.s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                        .build();
+            }
+
+        } else {
+            throw new StorageException("Access KEY ID or Secret KEY ID not found");
+        }
+
     }
 
     @Override
@@ -113,31 +147,29 @@ public class S3Storage implements ObjectStorage {
             Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
 
             if (!key.isPresent())
-                return Optional.empty(); 
+                return Optional.empty();
 
-            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(), key.get());
-            
+            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(),
+                    key.get());
+
             // If metadata exist
             String user = s3Metadata.getUserMetaDataOf("Author");
             S3StorageLocation location = new S3StorageLocation(config.getBucket(), key.get());
-            ObjectMetadata metadata = new ObjectMetadata(Objects.isNull(user) ? "" : user, s3Metadata.getLastModified().toInstant());
+            ObjectMetadata metadata = new ObjectMetadata(Objects.isNull(user) ? "" : user,
+                    s3Metadata.getLastModified().toInstant());
 
-            ObjectRecord record = new ObjectRecord(location, path, revision, metadata);
-
-            return Optional.of(record);        
-        } 
-        catch (AmazonS3Exception e) {
+            return Optional.of(new ObjectRecord(location, path, revision, metadata));
+        } catch (AmazonS3Exception e) {
             // If the key is missing, return an empty result
-            if (StringUtils.equals(e.getErrorCode(), "NoSuchKey") || StringUtils.equals(e.getErrorCode(), "404 Not Found"))
+            if (StringUtils.equals(e.getErrorCode(), "NoSuchKey")
+                    || StringUtils.equals(e.getErrorCode(), "404 Not Found"))
                 return Optional.empty();
             throw new StorageException(e.getMessage());
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new StorageException(e.getMessage());
         }
 
     }
-    
 
     @Override
     public List<ObjectRecord> getRevisions(StoragePath path) throws StorageException {
@@ -149,9 +181,13 @@ public class S3Storage implements ObjectStorage {
     public List<ObjectRecord> getAllObjects(StoragePath prefix) throws StorageException {
 
         Optional<StoragePath> mappedPrefix = paths.mapForward(prefix);
-        
+
+        if (!mappedPrefix.isPresent()) {
+            throw new StorageException("");
+        }
+
         String pref = mappedPrefix.get().toString();
-        
+
         try {
 
             ListObjectsV2Result result = s3.listObjectsV2(config.getBucket(), pref);
@@ -161,14 +197,18 @@ public class S3Storage implements ObjectStorage {
             for (S3ObjectSummary os : objects) {
 
                 Optional<StoragePath> path = StoragePath.tryParse(os.getKey()).flatMap(paths::mapBack);
-                Optional<ObjectRecord> record = getObject(path.get(), null);
 
-                if (record.isPresent())
-                    records.add(record.get());
+                if (path.isPresent()) {
+                    Optional<ObjectRecord> objectRecord = getObject(path.get(), null);
+                    if (objectRecord.isPresent()) {
+                        records.add(objectRecord.get());
+                    }
+                }
+
             }
 
             return records;
-    
+
         } catch (Exception e) {
 
             throw new StorageException(e.getMessage());
@@ -186,5 +226,5 @@ public class S3Storage implements ObjectStorage {
     public void deleteObject(StoragePath path, ObjectMetadata metadata) throws StorageException {
         // TODO Auto-generated method stub
     }
-    
+
 }

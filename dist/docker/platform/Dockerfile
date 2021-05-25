@@ -6,6 +6,11 @@ LABEL maintainer="ResearchSpace researchspace@britishmuseum.org"
 
 USER root
 
+# Add the wait script to the image
+# see https://github.com/ufoscout/docker-compose-wait
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.9.0/wait /wait
+RUN chmod +x /wait
+
 # install additional packages
 # RUN apk --update add vim && rm -rf /var/cache/apk/*
 
@@ -90,9 +95,7 @@ RUN java -jar "$JETTY_HOME/start.jar" --add-to-start="logging-jetty"
 ENV PLATFORM_OPTS=
 ENV RUNTIME_OPTS "-DruntimeDirectory=/runtime-data -Dorg.researchspace.config.baselocation=/runtime-data/config -DappsDirectory=/apps -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini -Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
 
-
-ENTRYPOINT ["/entrypoint.sh"]
-
+CMD /wait && /entrypoint.sh
 
 VOLUME /runtime-data
 # note: if /apps is also required as volume, it can be mounted as such from the docker-compose file

@@ -20,7 +20,6 @@ export JAVA_TOOL_OPTS="$JAVA_TOOL_OPTS \
  -Djava.awt.headless=true"
 
 RUNTIME_OPTS=" \
- -Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=/config/RWStore.properties \
  -Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
 
 # execute java command

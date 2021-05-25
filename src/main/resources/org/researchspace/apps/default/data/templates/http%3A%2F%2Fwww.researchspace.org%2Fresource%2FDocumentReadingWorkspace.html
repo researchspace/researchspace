@@ -1,0 +1,188 @@
+[[!-- EVENTS --]]
+[[!-- 
+ When list of images that can be shown in the IIIF Viewer is created or updated, it triggers `IIIFViewer.ManifestUpdated` event with list of objects and corresponding images in the event payload.
+ 
+ We proxy this event to `image-with-regions` that represents right panel view with all objects and corresponding features. 
+--]]
+<mp-event-proxy id='refresh-image-list' on-event-source='image-editor' on-event-type='IIIFViewer.ManifestUpdated'
+                proxy-event-type='Component.TemplateUpdate' proxy-targets='["image-with-regions"]'
+></mp-event-proxy>
+
+[[!-- /EVENTS --]]
+
+
+<div class="imageAnnotationWorkspace__container">
+      <div class="imageAnnotationWorkspace__viewer">
+[[!-- 
+ Here we assume that @partial-block is IIIF Viewer component.
+ It is defined in the rsp:ThinkingFramesObjectThroughImageObservation template.
+--]]
+        {{> @partial-block }}
+      </div>
+
+      <div class="imageAnnotationWorkspace__observationArea_bg"></div>
+      <div class="imageAnnotationWorkspace__observationArea_container">
+        
+[[!-- 
+ `two-side-panel` component functions as kind of a flip panel, with `front` and `back` templates. 
+ 
+ `front` template shows all objects with corresponding features.
+ `back` template shows feature creation/editing wizard.  
+ 
+ With `refresh-on-change='false'` we make sure that `front` template with all objects and features is not re-rendered when we switch to it from the `back` panel.
+--]]        
+              <two-side-panel id='objects-panel' refresh-on-change='false'>
+                <template id='front'>
+                  <div class="imageAnnotationWorkspace__observationArea_content">
+                    <div class="imageAnnotationWorkspace__observationArea">
+                          <mp-event-target-template-render id='remove-feature-dialog' template='{{> removeFeatureDialog}}'>
+                            <template id='removeFeatureDialog'>
+                              {{#if feature}}
+                              <mp-event-proxy id='close-form-removal-dialog' on-event-source='feature-creation-form' on-event-type='Form.ResourceRemoved'
+                                              proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["remove-feature-dialog"]'
+                              ></mp-event-proxy>
+                                <div style='display: none;'>
+                                  {{> rsp:DocumentSnippetForm edit=true delete=true}}
+                                </div>
+                              {{/if}}
+                            </template>
+                          </mp-event-target-template-render>
+
+                          
+                          <div class="page__main-title-row">
+                            <h1 class="rs-main-title">Reading on</h1>
+                            <mp-overlay-dialog title="Object Observations" type="modal" class="modal-documentation">
+                              <mp-overlay-dialog-trigger>
+                                <i class="iconmoon iconmoon-info"></i>
+                              </mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-content>
+                                [[> rsp:ImageAnnotationObservationDocumentation]]
+                              </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
+                          </div>
+                          <div class="imageAnnotationWorkspace__observationArea_items">
+                                                                                    
+                            <mp-event-proxy id='refresh-object-on-form-action-{{iri}}' on-event-source='feature-creation-form'
+                                            proxy-event-type='Component.TemplateUpdate' proxy-targets='["object-template-{{iri}}"]'
+                                            data='{"objectIri": "{{iri}}"}'
+                            ></mp-event-proxy>
+                            {{log "here" this}}
+                                  <mp-collapsible-div expanded='true'>
+                                      <mp-collapsible-div-trigger>
+                                          <div class="imageAnnotationWorkspace__observationArea_resourceTitleRow">
+                                            <h1 class="text-truncate"><strong><semantic-link iri='{{iri}}'></semantic-link></strong></h1>
+                                          </div>
+                                      </mp-collapsible-div-trigger>
+                                      <mp-collapsible-div-content>
+                                        [[!-- 
+                                        Query and show list of all features for the current object.
+                                        
+                                        See the assupmtions related to the data model at the top of the template.
+                                        --]]
+                                        <semantic-query
+                                            query='
+                                              SELECT DISTINCT ?feature {
+                                                <{{iri}}> crm:P165_incorporates/frbroo:R5_has_component ?page .
+                                                ?feature frbroo:R5i_is_component_of ?page .
+                                              }
+                                            '
+                                            template='{{> features}}'
+                                        >
+                                          <template id='features'>
+                                            <div class="imageAnnotationWorkspace__items page__whiteSection-container">
+                                              <h2>Snippets</h2>
+                                              <div class="imageAnnotationWorkspace__item_container">
+                                              {{#each bindings}}
+                                                <mp-event-trigger id='focus-event-trigger' type='PdfAnnotator.Highlight' targets='["pdf-annotator"]'
+                                                                  data='{"snippetIri": "{{feature.value}}"}' on='["hover"]'
+                                                >
+
+                                                  <div class="imageAnnotationWorkspace__item">
+                                                    <semantic-link iri='{{feature.value}}' class="text-truncate feature-label"></semantic-link>
+                                                    <div style="display: flex; align-items: center;">
+                                                      <mp-event-trigger id='form-event-trigger'
+                                                                        type='TwoSidePanel.ShowBack' targets='["objects-panel"]'
+                                                                        data='{ "feature": "{{feature.value}}", "objectIri": "{{../iri}}" }'>
+                                                        <button class="btn-grey btn-icon">
+                                                          <i class="fa fa-pencil" title="Edit Snippet"></i>
+                                                        </button>
+                                                      </mp-event-trigger>
+                                                      <mp-event-trigger id='details-view-trigger'
+                                                                        type='Component.TemplateUpdate'
+                                                                        data='{"iri": "{{feature.value}}"}' targets='["details-view", "open-details-sidebar"]'
+                                                      >
+                                                        <button class="btn-grey btn-icon">
+                                                          <i class="rs-icon rs-icon-sidebar_right" title="Explore Feature details"></i>
+                                                        </button>
+                                                      </mp-event-trigger>
+
+                                                      [[!--
+                                                      <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                                                                        data='{"resourceIri": "{{feature.value}}", "viewId": "featureSimilarityKm"}'
+                                                                        targets='["thinking-frames"]'>
+                                                          <button class="btn-grey btn-icon">
+                                                              <i class="rs-icon rs-icon-diagram" title="Show Connection Network"></i>
+                                                          </button>
+                                                      </mp-event-trigger>
+                                                      --]]
+
+                                                          <mp-event-trigger id='focus-event-trigger' type='PdfAnnotator.ScrollToSnippet' targets='["pdf-annotator"]'
+                                                                            data='{"snippetIri": "{{feature.value}}"}'>
+                                                              <button class="btn-grey btn-icon"><i class="rs-icon rs-icon-image" title="Focus on Feature"></i></button>
+                                                          </mp-event-trigger>
+
+                                                      [[!--
+                                                      <mp-event-trigger id='remove-feature-trigger--{{feature.value}}'
+                                                                        type='Component.TemplateUpdate'
+                                                                        data='{ "feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{../iri}}" }'
+                                                                        targets='["remove-feature-dialog"]'
+                                                                        >
+                                                        <button class="btn-grey btn-icon delete"><i class="iconmoon iconmoon-bin" title="Delete Feature"></i></button>
+
+                                                      </mp-event-trigger>
+                                                      --]]
+                                                    </div>
+                                                  </div>
+                                                </mp-event-trigger>
+                                              {{/each}}
+                                              </div>
+                                            </div>
+                                          </template>
+                                        </semantic-query>
+                                      </mp-collapsible-div-content>
+                                  </mp-collapsible-div>
+                          </div>
+                    </div>
+                  </div>
+                </template>
+                
+                <template id='back'>
+                  <div class="imageAnnotationWorkspace__formArea_container">
+                    <mp-event-trigger id='form-panel-back' 
+                                      type='TwoSidePanel.ShowFront' 
+                                      targets='["objects-panel"]'
+                    >
+                      <div class="page__back-container">
+                        <i class="iconmoon iconmoon-arrow-left2"></i>
+                      </div>
+                    </mp-event-trigger>
+
+                    <div class="imageAnnotationWorkspace__form-titleRow">
+                      <h1 class="text-truncate">Reading on <strong><semantic-link iri='{{iri}}'></semantic-link></strong></h1>
+                      <button class="btn btn-primary btn-icon"><i class="rs-icon rs-icon-image" title="Focus on resource images"></i></button>
+                    </div>
+                                  
+                    {{#if feature}}                    
+                      <div class="imageAnnotationWorkspace__form-container page__whiteSection-container">
+                        <h2>Editing snippet: &nbsp;<strong><semantic-link iri='{{feature}}'></semantic-link></strong></h2>
+                        {{> rsp:DocumentSnippetForm edit=true}}
+                      </div>
+                    {{/if}}
+                  </div>
+                </template>
+              </two-side-panel>
+
+         
+      </div>
+
+  </div>

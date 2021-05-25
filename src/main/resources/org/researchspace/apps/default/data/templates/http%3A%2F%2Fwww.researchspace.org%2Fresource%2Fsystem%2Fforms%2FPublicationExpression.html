@@ -1,0 +1,215 @@
+<semantic-form [[> rsp:FormDefaults]] 
+        persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/ns/data-updates-graph"}'
+        new-subject-template="/F24_Publication_Expression/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+        fields='[[fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  title="http://www.researchspace.org/resource/system/authority_manager/publication/crm:P102_has_title"
+     							R24i_was_created_through="http://www.researchspace.org/resource/system/authority_manager/publication/frbroo:R24i_was_created_through"		
+                  P165_incorporates="http://www.researchspace.org/resource/system/authority_manager/publication/crm:P165_incorporates"
+									P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                  R4_carrier_provided="http://www.researchspace.org/resource/system/authority_manager/publication/frbroo:R4_carrier_provided"
+                  P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"	
+                  P1_is_identified_by="http://www.researchspace.org/resource/system/authority_manager/resource/crm:P1_is_identified_by_unique_file"
+            
+                 ]]'>
+   
+
+  <div class="form-scroll-area">
+  	[[!-- TITLE --]]
+    <semantic-form-composite-input for='title' render-header="false" label="Title"  placeholder='please type title ...'
+        new-subject-template="/E35_Title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+        fields='[[fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  P190_has_symbolic_content="http://www.researchspace.org/pattern/crm:P190_has_symbolic_content"										
+                 ]]'>
+         <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+				 <semantic-form-text-input for="P190_has_symbolic_content" label="Title"  languages='["ar", "en"]' placeholder='please type title ...'></semantic-form-text-input>
+    </semantic-form-composite-input>
+    
+    [[!-- F22_Self-Contained_Expression --]]
+    <semantic-form-composite-input for='P165_incorporates' render-header='false'
+          new-subject-template="/F22_Self-Contained_Expression/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+          fields='[[fieldDefinitions
+                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                    page="http://www.researchspace.org/patterns/PublicationhasPage"			
+               			R17i_was_created_by="http://www.researchspace.org/resource/system/authority_manager/publication/frbroo:R17i_was_created_by"
+                    P128i_carried_by="http://www.cidoc-crm.org/cidoc-crm/P128i_is_carried_by_unique"
+               
+                   ]]'>
+           <semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F22_Self-Contained_Expression'> </semantic-form-hidden-input>
+			
+           <semantic-form-composite-input for='R17i_was_created_by' render-header='false'
+              new-subject-template="/F28_Expression_Creation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+              fields='[[fieldDefinitions
+                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        P01i_is_domain_of-carried_out_by="http://www.researchspace.org/resource/system/authority_manager/publication/crmpc:P01i_is_domain_of-carried_out_by"
+                        ]]'>
+           		<semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F28_Expression_Creation'> </semantic-form-hidden-input>
+			
+              <!-- Author -->
+              <semantic-form-composite-input for='P01i_is_domain_of-carried_out_by' render-header='false'
+                new-subject-template="/PC14_carried_out_by/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                fields='[[fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          R24i_was_created_through="http://www.researchspace.org/resource/system/authority_manager/publication/frbroo:R24i_was_created_through"		
+                          P02_has_range_carried_out_by="http://www.researchspace.org/resource/system/authority_manager/publication/crmpc:P02_has_range-carried_out_by"
+                          carried_out_by_in_the_role="http://www.researchspace.org/resource/system/authority_manager/publication/role/crm:P2_has_type"
+
+                        ]]'>
+                 <semantic-form-autocomplete-input for="P02_has_range_carried_out_by" scheme="https://amara-west.researchspace.org/resource/vocab/authors" nested-form-template='{{{{raw}}}}{{> forms:crm:E21_Person scheme="https://amara-west.researchspace.org/resource/vocab/authors" editable=true}}{{{{/raw}}}}'> </semantic-form-autocomplete-input>	
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by'> </semantic-form-hidden-input>
+
+                <semantic-form-hidden-input for="carried_out_by_in_the_role" default-value='https://www.researchspace.org/resource/vocab/researchspace_publication_roles/Author'> 
+                </semantic-form-hidden-input>
+
+            [[!--    <semantic-form-composite-input for='P02_has_range_carried_out_by' label='Author'  placeholder='author'
+                    new-subject-template="/E39_Author/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                    fields='[[fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          label="http://www.researchspace.org/pattern/general/rdfs:label"
+
+                        ]]'>
+
+                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E39_Actor'> </semantic-form-hidden-input>
+                     <semantic-form-text-input for='label' label="Author"  render-header="false" placeholder='please type author name here...'></semantic-form-text-input>
+           			</semantic-form-composite-input> --]]
+                
+                
+          </semantic-form-composite-input>
+             
+  			</semantic-form-composite-input>
+      
+      [[!--   
+      <semantic-form-composite-input  for="P128i_carried_by" render-header='false'
+              new-subject-template='/D13_Digital_Information_Carrier/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                  fields='[[fieldDefinitions
+                           label="http://www.w3.org/2000/01/rdf-schema#label"
+                           P1_is_identified_by="http://www.researchspace.org/resource/system/authority_manager/resource/crm:P1_is_identified_by_unique_file"
+                           type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          
+                         ]]'>
+      
+      
+              <semantic-form-hidden-input for='type' default-values='["http://www.ics.forth.gr/isl/CRMdig/D13_Digital_Information_Carrier"]'> </semantic-form-hidden-input>
+              
+  
+    	</semantic-form-composite-input>
+       --]]
+			[[!-- <semantic-form-text-input for="page" label="Number of Pages"></semantic-form-text-input>	--]]
+
+   </semantic-form-composite-input>
+    
+    <semantic-form-composite-input  for="R4_carrier_provided" render-header='false'
+              new-subject-template='/F3_Manifestation_Product_Type/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                  fields='[[fieldDefinitions
+                           label="http://www.w3.org/2000/01/rdf-schema#label"
+                           P1_is_identified_by="http://www.researchspace.org/resource/system/authority_manager/resource/crm:P1_is_identified_by_unique_file"
+                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                           R4i_comprises_carrier_of="http://www.researchspace.org/resource/system/authority_manager/publication/frbroo:R4i_comprises"
+                           publication_type="http://www.researchspace.org/resource/system/authority_manager/publication/crm:P2_has_type"
+                           other_identifiers="http://www.researchspace.org/resource/system/authority_manager/publication/crm:P1_is_identified_by"
+                           exemplifies="http://www.researchspace.org/patterns/publication/crm:P137i_is_exemplified_by"
+                         ]]'
+>
+      
+    
+     <semantic-form-hidden-input for='classtype' default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F3_Manifestation_Product_Type'> </semantic-form-hidden-input>
+     [[!-- 
+     <semantic-form-checklist-input for='exemplifies' type='checkbox'></semantic-form-checklist-input> 
+     --]] 
+     
+      
+  	 [[!-- <semantic-form-hidden-input for="exemplifies" default-value='http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object'> </semantic-form-hidden-input> --]]
+    <!-- Publication Type -->
+    <semantic-form-tree-picker-input for='publication_type' 
+             scheme='https://www.researchspace.org/resource/vocab/researchspace_publication_formats' label='Publication Format' placeholder='please select format ...'>     
+    </semantic-form-tree-picker-input>
+    
+    <!-- Other Identifiers ISBN, DOI -->
+    <semantic-form-composite-input for='other_identifiers' label='Publication Identifiers' 
+        new-subject-template="/E42_Identifier/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+        fields='[[fieldDefinitions
+              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+              label="http://www.researchspace.org/pattern/general/rdfs:label"
+              P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+            ]]'>
+
+         <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E42_Identifier'> </semantic-form-hidden-input>
+         
+      
+         <semantic-form-text-input for='label' label="Identifier"  placeholder='please type identifier ...'></semantic-form-text-input>
+      
+      		<semantic-form-tree-picker-input for='P2_has_type' 
+               scheme='https://www.researchspace.org/resource/vocab/researchspace_publication_identifier_type' label='DOI,ISBN,URL,etc.' placeholder='please select type ...'>     
+      </semantic-form-tree-picker-input>
+      
+    </semantic-form-composite-input>
+      
+    
+    </semantic-form-composite-input>     
+				
+    <semantic-form-file-input for='P1_is_identified_by' label='Associated File'
+                                        accept-pattern='.pdf'
+                                        storage='images'
+                                        temp-storage='tmp'
+                                        placeholder='Please drag&drop your file here.'
+                                        name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                        media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                        resource-query='
+                                          PREFIX rso: <http://www.researchspace.org/ontology/>
+                                          CONSTRUCT {
+                                            ?__resourceIri__ a rso:EX_File.
+                                            ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
+                                            ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                          } WHERE {}
+
+                                        '
+                                        generate-iri-query='
+                                          SELECT ?resourceIri {
+                                            BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                          }
+
+                                        '
+              ></semantic-form-file-input>   
+    <semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F24_Publication_Expression'> </semantic-form-hidden-input>
+		<semantic-form-hidden-input for="P2_has_type" default-value='https://www.researchspace.org/resource/vocab/researchspace_publication_formats/Document'> </semantic-form-hidden-input>
+		
+      	
+        
+      
+     <semantic-form-composite-input for='R24i_was_created_through' label="Created at Date" render-header="false" 
+            new-subject-template="/F30_Publication_Event/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+            fields='[[fieldDefinitions
+                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                      P4_has_time="http://www.researchspace.org/resource/system/authority_manager/publication/crm:P4_has_time-span" 
+                      P14_carried_out_by="http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by"
+                     ]]'>
+        		  <semantic-form-hidden-input for="classtype" default-value='http://iflastandards.info/ns/fr/frbr/frbroo/F30_Publication_Event'> </semantic-form-hidden-input>
+          
+          	  <semantic-form-composite-input for='P14_carried_out_by' label="publisher" render-header='false'
+                new-subject-template="/E39_Actor/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            label="http://www.researchspace.org/pattern/general/rdfs:label"
+            						]]'>
+
+                 <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E39_Actor'> </semantic-form-hidden-input>
+                 <semantic-form-text-input for='label' label="Publisher"  placeholder='please type publisher ...'></semantic-form-text-input>
+
+              </semantic-form-composite-input>
+          
+            <semantic-form-datetime-input for='P4_has_time' label='Publication Date' placeholder='select date from calendar ...'></semantic-form-datetime-input>	
+          
+          
+ 		 </semantic-form-composite-input>
+        
+     <semantic-form-text-input for='P3_has_note' label='Description' multiline=true></semantic-form-text-input>
+    
+    
+    
+    <semantic-form-errors></semantic-form-errors> 
+ </div>
+  
+ [[> rsp:FormDefaultActions]] 
+</semantic-form>
+i

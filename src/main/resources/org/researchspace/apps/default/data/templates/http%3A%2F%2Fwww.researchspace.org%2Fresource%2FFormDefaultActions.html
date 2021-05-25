@@ -55,9 +55,31 @@
                   <mp-event-trigger id='{{viewId}}-cancel-feature-removal' type='OverlayDialog.Close' targets='["{{viewId}}-item-remove-confirmation-dialog"]'>
                     <button class="btn btn-default">Cancel</button>
                   </mp-event-trigger>
-                  <mp-event-trigger id='{{viewId}}-confirm-entity-removal' type='Form.RemoveResource' data='{"iri": "{{node}}"}' targets='["{{viewId}}-vocab-form"]'>
-                    <button class="btn btn-danger">Delete Entity</button>
-                  </mp-event-trigger>  
+                  [[#if assetForm]]
+                  [[!-- It seems there is some bug with nested templates inside modal dialog, so we have to propagate viewId through query --]]
+                    <semantic-query query='SELECT ?node ?file ?viewId WHERE { BIND("{{viewId}}" as ?viewId) . BIND(<{{node}}> AS ?node) . <{{node}}> crm:P1_is_identified_by ?file . } LIMIT 1' 
+                                    template='{{> deleteFileTemplate}}'>
+                      <template id='deleteFileTemplate'>
+                        <semantic-context repository='assets'>
+                          <rs-file-remove id='{{bindings.0.viewId.value}}-file-removal-{{bindings.0.node.value}}' 
+                                          iri='{{bindings.0.file.value}}' 
+                                          storage='[[assetStorage]]'
+                                          name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                          media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                          >
+                            <button class="btn btn-danger">Delete Entity</button>
+                          </rs-file-remove>
+                        </semantic-context>
+                        <mp-event-proxy id='{{bindings.0.viewId.value}}-entity-removal' on-event-source='{{bindings.0.viewId.value}}-file-removal-{{bindings.0.node.value}}' on-event-type='File.Removed'
+                                        proxy-event-type='Form.RemoveResource' data='{"iri": "{{bindings.0.node.value}}"}' proxy-targets='["{{bindings.0.viewId.value}}-vocab-form"]'
+                        ></mp-event-proxy>
+                      </template>
+                    </semantic-query>
+                  [[else]]
+                    <mp-event-trigger id='{{viewId}}-confirm-entity-removal' type='Form.RemoveResource' data='{"iri": "{{node}}"}' targets='["{{viewId}}-vocab-form"]'>
+                      <button class="btn btn-danger">Delete Entity</button>
+                    </mp-event-trigger>  
+                  [[/if]]
                   <mp-event-proxy id='{{viewId}}-update-form' on-event-source='{{viewId}}-vocab-form' on-event-type='Form.ResourceRemoved'
                                   proxy-event-type='Component.TemplateUpdate' data='{}' proxy-targets='["{{viewId}}-term-forms"]'
                   ></mp-event-proxy>

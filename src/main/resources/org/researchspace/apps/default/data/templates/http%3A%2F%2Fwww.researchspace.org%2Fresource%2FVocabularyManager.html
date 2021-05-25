@@ -7,18 +7,10 @@ uses client-side template:
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
   <li>
-    <semantic-link iri='[[resolvePrefix "rsp:ProjectDashboard"]]'>
-      Project Dashboard
-    </semantic-link>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
   </li>
-  <li>
-    <semantic-link iri='[[resolvePrefix "rsp:ProjectConfiguration"]]'>
-      Configurations
-    </semantic-link>
-  </li>
-
   <li class="active">
-    Authority Manager 
+    Authority manager 
   </li>
 </ol>
 
@@ -35,7 +27,7 @@ uses client-side template:
   type and relations between entities are based on cidoc-crm entities and their corresponding properties; 
 
 --]]
-[[#> rsp:HierarchyManagerTemplate title="Authority"]]
+[[#> rsp:HierarchyManagerTemplate title="Authority Manager" addTitle='Authority']]
     [[#*inline "addNewStructureForm"]]
              <semantic-search id="scheme-iri-selector">
                 <semantic-search-form-query 
@@ -104,7 +96,9 @@ uses client-side template:
                         <semantic-form-hidden-input for="rdfsLabel" default-value='{{bindings.0.schemeLabel.value}}'></semantic-form-hidden-input>                       
                         <semantic-form-errors></semantic-form-errors>
                         <!-- save and reset button for form -->
-                        <button name="cancel" class="btn btn-danger" style="margin-right: 5px;">Cancel</button>
+                        <mp-event-trigger id='cancel-new-authority-trigger' type='OverlayDialog.Close' targets='["new-hierarchy-dialog"]'>
+                          <button name="cancel" class="btn btn-danger" style="margin-right: 5px;">Cancel</button>
+                        </mp-event-trigger>
                         <button name="submit" class="btn btn-success">Confirm</button>
                       </semantic-form>
                     {{/if}}

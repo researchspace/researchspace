@@ -205,7 +205,7 @@
                                                                                 <[[this]]> ?representationProp ?representation .
                                                                                 ?representation a rso:EX_Digital_Image ;
                                                                                                 crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
                                                                               }
 
                                                                               OPTIONAL {
@@ -213,7 +213,7 @@
                                                                                 ?representation a rso:EX_Digital_Image .
                                                                                 BIND(REPLACE(STR(?representation), "^.*/(.*)$", "$1") as ?imageID) .
                                                                                 BIND(?imageID as ?imgIiifId)
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
                                                                               }
 
                                                                               OPTIONAL {
@@ -223,7 +223,7 @@
                                                                                 ?image crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
                                                                                 ?representation rso:boundingBox ?bb.
                                                                                 BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?fileName, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?uploadIiifRegionUrl)
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?uploadIiifRegionUrl)
                                                                               }
 
                                                                               OPTIONAL {
@@ -233,7 +233,7 @@
                                                                                 ?representation rso:boundingBox ?bb.
                                                                                 BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
                                                                                 BIND(REPLACE(STR(?image), "^.*/(.*)$", "$1") as ?imageID) .
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?imageID, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?iiifRegionUrl)
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?iiifRegionUrl)
                                                                               }
 
 
@@ -244,13 +244,13 @@
                                                                               OPTIONAL {
                                                                                 <[[this]]> a rso:EX_Digital_Image ;
                                                                                 crm:P1_is_identified_by/rso:PX_has_file_name ?fileName. 
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
                                                                               }
 
                                                                               OPTIONAL {
                                                                                 <[[this]]> a rso:EX_Digital_Image ;
                                                                                 BIND(REPLACE(STR(<[[this]]>), "^.*/(.*)$", "$1") as ?imageID) .
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
                                                                               }
                                                                               BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURLx)
                                                                               BIND(true AS ?isMainRepy)

@@ -8,7 +8,7 @@
                           query='
                                   SELECT DISTINCT ?config ?formIRI ?restrictionPattern ?membershipProperty WHERE {
                                     {
-                                      <{{iri}}> rdf:type ?rdfType .
+                                      <{{iri}}> a/rdfs:subClassOf* ?rdfType .
                                       ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
                                                 <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
 
@@ -54,7 +54,6 @@
                                         BIND(<{{../iri}}> as ?item) .
                                         BIND(<{{config.value}}> as ?config) .
                                         {{#if restrictionPattern.value}}
-                                        {{else}}
                                           {{{restrictionPattern.value}}}
                                         {{/if}} 
 
@@ -117,8 +116,8 @@
           </div>
         </div>
       {{else}}
-        {{#if entityTypeConfig}}
-          {{> rsp:CollectionBrowserContent configOrScheme=entityTypeConfig }}
+        {{#if data.entityTypeConfig}}
+          {{> rsp:CollectionBrowserContent configOrScheme=data.entityTypeConfig }}
         {{else}}
           {{> rsp:EntityManagerContent}}
         {{/if}}

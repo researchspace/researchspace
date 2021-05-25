@@ -29,6 +29,9 @@ plugins {
     // To run webpack-dev-server in the background
     id 'com.github.psxpaul.execfork' version '0.1.13'
 
+    // To download external files, e.g keycloack distribution
+    id "de.undercouch.download" version "4.1.1"
+
     // To generate eclipse project files
     id 'eclipse'
 
@@ -78,30 +81,110 @@ war {
     }
 }
 
+// folder with external dependencies like keycloack or cantaloupe
+def externalDir = "${projectDir}/external"
+
+// set of webapps that are going to be run in the development build,
+// by default we only include ResearchSpace itself
+// then later depending on the config from the gradle.properties, we bundle blazegraph, cantaloupe, fedora, etc
+def webapps = {
+    webapp 'org.fcrepo:fcrepo-webapp:6.0.0-alpha-2',
+        contextPath: '/fcrepo'
+
+    webapp project,
+        contextPath: '/'
+}
+
+// for properties that get value from project.properties see gradle.properties file for more details
+def defaultJvmArgs = [
+    // storage for asset upload functionality
+    "-Dfcrepo.home=./runtime-data/fcrepo-data",
+    "-Dfcrepo.log=WARN",
+    "-Dconfig.storage.assets.type=fedora",
+    "-Dconfig.storage.assets.mutable=true",
+    "-Dconfig.storage.assets.containerUri=${project.properties.fedoraContainerUri}",
+
+    // tmp storage is needed for image upload functionality
+    "-Dconfig.storage.tmp.type=nonVersionedFile",
+    "-Dconfig.storage.tmp.mutable=true",
+
+
+    // Increase size limit for file upload
+    "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600",
+
+]
+
+
+// configure triplestore
+switch (project.properties['sparqlEndpoint']) {
+    case 'blazegraph':
+        // setup blazegraph
+        webapps = webapps << {
+            webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6',
+                contextPath: '/blazegraph',
+                overlays: [':blazegraph-vocabularies']
+        }
+        defaultJvmArgs = defaultJvmArgs + [
+            '-Dconfig.environment.sparqlEndpoint=http://localhost:10214/blazegraph/sparql',
+            '-Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=./bundle-config/RWStore.properties'
+        ]
+        break
+    default:
+        defaultJvmArgs << "-Dconfig.environment.sparqlEndpoint=${projects.properties['sparqlEndpoint']}"
+        break
+}
+
+// configure iiif server
+switch (project.properties['iiifEndpoint']) {
+    case 'digilib':
+        // digilib iiif server
+        webapps = webapps << {
+            webapp 'digilib:digilib-webapp:2.9-20200421.092548-16',
+                contextPath: '/digilib',
+                initParameters: ["config-file": "./bundle-config/digilib-config.xml"]
+        }
+
+        defaultJvmArgs = defaultJvmArgs + [
+            "-Dconfig.proxy.iiif-server.targetUri=http://localhost:10214/digilib/Scaler",
+            "-Dconfig.proxy.iiif-server.preserveHost=true"
+        ]
+        break
+
+    case 'cantaloupe':
+        // cantaloupe iiif server
+        webapps = webapps << {
+            webapp "${externalDir}/cantaloupe/cantaloupe.war",
+                contextPath: '/cantaloupe'
+        }
+
+        // cantaloupe iiif server config file
+        defaultJvmArgs = defaultJvmArgs + [
+            '-Dconfig.proxy.iiif-server.targetUri=http://localhost:10214/cantaloupe',
+            '-Dconfig.proxy.iiif-server.preserveHost=true',
+            '-Dcantaloupe.config=./bundle-config/cantaloupe.properties'
+        ]
+        break
+
+    default:
+        // external iiifserver
+        defaultJvmArgs = defaultJvmArgs + [
+            "-Dconfig.proxy.iiif-server.targetUri=${project.properties['iiifEndpoint']}",
+            '-Dconfig.proxy.iiif-server.preserveHost=true'
+        ]
+        break
+}
 
 farms {
-    farm 'researchspace', {
-        // setup blazegraph for local development
-        webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6',
-            contextPath: '/blazegraph',
-            overlays: [':blazegraph-vocabularies']
-
-        // setup digilib for local development
-        webapp 'digilib:digilib-webapp:2.9-20200421.092548-16',
-            contextPath: '/digilib',
-            initParameters: ["config-file": "./bundle-config/digilib-config.xml"]
-
-        webapp project,
-            contextPath: '/'
-    }
+    farm 'researchspace', webapps
 }
 
 products {
     product 'researchspace', {
         additionalFiles = [
             "./bundle-config/RWStore.properties": "./bundle-config/RWStore.properties",
-            "./bundle-config/digilib-config.xml": "./bundle-config/digilib-config.xml",
-            "./bundle-config/digilib-log4j-config.xml": "./bundle-config/digilib-log4j-config.xml",
+          //"./bundle-config/digilib-config.xml": "./bundle-config/digilib-config.xml",
+          //"./bundle-config/digilib-log4j-config.xml": "./bundle-config/digilib-log4j-config.xml",
+            "./bundle-config/cantaloupe.properties": "./bundle-config/cantaloupe.properties",
             "./bundle-config/ZipReadme.txt": "./README.txt",
             "./LICENSE": "./LICENSE.txt",
             "./COPYING": "./COPYING",
@@ -111,26 +194,6 @@ products {
     }
 }
 
-def defaultJvmArgs = [
-    // blazegraph options, for runAll
-    "-Dcom.bigdata.rdf.sail.webapp.ConfigParams.propertyFile=./bundle-config/RWStore.properties",
-
-    // for properties that get value from project.properties see gradle.properties file for more details
-    "-Dconfig.environment.sparqlEndpoint=${project.properties['sparqlEndpoint']}",
-    "-Dconfig.proxy.IIIF.targetUri=${project.properties['iiifScaler']}",
-
-    // delopment storages for image upload functionality
-    "-Dconfig.storage.images.type=nonVersionedFile",
-    "-Dconfig.storage.images.mutable=true",
-
-    // tmp storage is needed for image upload functionality
-    "-Dconfig.storage.tmp.type=nonVersionedFile",
-    "-Dconfig.storage.tmp.mutable=true",
-
-
-    // Increase size limit for file upload
-    "-Dorg.eclipse.jetty.server.Request.maxFormContentSize=104857600"
-]
 
 // configuration for local jetty container
 gretty {
@@ -159,15 +222,12 @@ gretty {
         jvmArgs = defaultJvmArgs + [
             "-DruntimeDirectory=./runtime-data",
             "-Dorg.researchspace.config.baselocation=./runtime-data/config",
-
-            "-Dconfig.storage.images.root=./runtime-data/images",
             "-Dconfig.storage.tmp.root=./runtime-data/tmp",
 
             "-Dlog4j.configurationFile=classpath:org/researchspace/logging/log4j2.xml",
         ]
     } else {
         jvmArgs = defaultJvmArgs + [
-            "-Dconfig.storage.images.root=${project.properties['imageStorageRoot']}",
             "-Dconfig.storage.tmp.root=${java.nio.file.Files.createTempDirectory('images-tmp')}",
 
             // set development mode to true to make sure that assets are always up to date
@@ -226,6 +286,33 @@ task startWebpack(type: com.github.psxpaul.task.ExecFork) {
 }
 tasks.startWebpack.dependsOn npmInstall
 
+// tasks to download cantaloupe war
+def CANTALOUPE_VERSION = '4.1.9'
+task downloadCantaloupe(type: Download) {
+    src "https://github.com/cantaloupe-project/cantaloupe/releases/download/v${CANTALOUPE_VERSION}/cantaloupe-${CANTALOUPE_VERSION}.zip"
+    dest "${externalDir}/cantaloupe/cantaloupe.zip"
+}
+task unpackCantaloupe(dependsOn: downloadCantaloupe, type: Copy) {
+    from {
+        zipTree(downloadCantaloupe.dest).matching {
+            include "**/cantaloupe-${CANTALOUPE_VERSION}.war"
+        }.singleFile
+    }
+    rename "cantaloupe-${CANTALOUPE_VERSION}.war", 'cantaloupe.war'
+    into "${externalDir}/cantaloupe/"
+}
+
+
+// tasks to stark keycloack instance
+task downloadKeycloack(type: Download) {
+    src 'https://github.com/keycloak/keycloak/releases/download/13.0.0/keycloak-13.0.0.zip'
+    dest "${externalDir}/keycloack/keycloak.zip"
+}
+task unpackKeycloack(dependsOn: downloadKeycloack, type: Copy) {
+    from zipTree(downloadKeycloack.dest)
+    into "${externalDir}/keycloack/"
+}
+
 // define custom start task so we have more convenient names than
 // farmRunresearchspace, appRun, farmRunDebugresearchspace, appRunDebug, archiveProductresearchspace
 task runAll
@@ -278,14 +365,22 @@ repositories {
     jcenter()
     mavenCentral()
 
-    // for blazegraph war
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-
     // for digilib war
-    maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }
+    // maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }
 
     // needed for SMAL2 integration
     maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases/' }
+
+    // for gretty debug builds
+    //maven {
+    //    url 'file:/home/artem/work/sources/github/gretty/build/privateRepo'
+    //}
+
+    // used by cantaloupe image server
+    maven { url 'https://repo.osgeo.org/repository/release/' }
+
+    // for official blazegraph and fcrepo war
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 ext {
@@ -424,7 +519,10 @@ dependencies {
 
         "com.twelvemonkeys.imageio:imageio-tiff:${IMAGEIO_VERSION}",
         "com.twelvemonkeys.imageio:imageio-core:${IMAGEIO_VERSION}",
-    ) 
+
+        // was available up to JAVA 11 by default in the JRE, we are using only MimetypesFileTypeMap from it for MIME type detection based on file extension
+        'com.sun.activation:javax.activation:1.2.0'
+    )
     testImplementation (
         "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:${JERSEY_VERSION}",
         "org.hamcrest:hamcrest-library:1.3",

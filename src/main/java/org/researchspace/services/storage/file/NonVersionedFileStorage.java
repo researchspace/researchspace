@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +54,7 @@ public class NonVersionedFileStorage implements ObjectStorage {
 
     private final PathMapping paths;
     private final Config config;
+    private MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
 
     public NonVersionedFileStorage(PathMapping paths, Config config) {
         this.paths = paths;
@@ -160,7 +162,7 @@ public class NonVersionedFileStorage implements ObjectStorage {
         }
 
         StorageLocation key = new DirectStorageLocation(objectFile);
-        ObjectMetadata metadata = new ObjectMetadata(null, creationDate);
+        ObjectMetadata metadata = new ObjectMetadata(null, creationDate, this.fileTypeMap.getContentType(objectFile.getFileName().toString()));
         return Optional.of(new ObjectRecord(key, path, FIXED_REVISION, metadata));
     }
 
@@ -205,7 +207,7 @@ public class NonVersionedFileStorage implements ObjectStorage {
             Files.createDirectories(objectPath.getParent());
             Files.copy(content, objectPath, StandardCopyOption.REPLACE_EXISTING);
             StorageLocation key = new DirectStorageLocation(objectPath);
-            ObjectMetadata createdMetadata = new ObjectMetadata(metadata.getAuthor(), getLastModified(objectPath));
+            ObjectMetadata createdMetadata = new ObjectMetadata(metadata.getAuthor(), getLastModified(objectPath), this.fileTypeMap.getContentType(objectPath.getFileName().toString()));
             return new ObjectRecord(key, path, FIXED_REVISION, createdMetadata);
         } catch (IOException e) {
             throw new StorageException(e);

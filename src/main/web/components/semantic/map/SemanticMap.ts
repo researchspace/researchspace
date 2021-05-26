@@ -541,7 +541,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private getTilesLayersFromTemplate() {
-    var tileslayers = React.Children.map(this.props.children, (child) => {
+    var tileslayers = React.Children.map(this.props.children, (child : any) => {
       if (child.type.name === 'TilesLayer') {
         const cloned = React.cloneElement(child, {
           receiveProviderFromChild: (provider) => {

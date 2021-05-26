@@ -48,8 +48,7 @@ function IFRAME_INITIAL_CONTENT(editorId: string, pdfUrl: string, snippets: any[
       window.rsPdfJs = {};
       window.rsPdfJs.editorId="${editorId}";
       window.rsPdfJs.pdfUrl="${pdfUrl}";
-      // we use here double quotes becasue JSON.stringify will properly escape double quotes inside the snippets but it will keep single quotes unmodified.
-      window.rsPdfJs.annotations=JSON.parse("${JSON.stringify(snippets)}");
+      window.rsPdfJs.annotations=${JSON.stringify(snippets)};
     </script>
     <script src="/assets/no_auth/pdfjs/pdf.js"></script>
     <script src="/assets/no_auth/pdfjs/viewer.js"></script>

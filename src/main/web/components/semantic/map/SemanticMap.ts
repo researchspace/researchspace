@@ -43,16 +43,16 @@ import Polygon from 'ol/geom/Polygon';
 import MultiPolygon from 'ol/geom/MultiPolygon';
 import GeometryCollection from 'ol/geom/GeometryCollection';
 import WKT from 'ol/format/WKT';
-import {transform} from 'ol/proj';
-import {defaults as controlDefaults} from 'ol/control';
-import {Interaction} from 'ol/interaction';
-import {defaults as interactionDefaults} from 'ol/interaction';
-import {Extent} from 'ol/extent';
-import {extend} from 'ol/extent';
-import {createEmpty} from 'ol/extent';
+import { transform } from 'ol/proj';
+import { defaults as controlDefaults } from 'ol/control';
+import { Interaction } from 'ol/interaction';
+import { defaults as interactionDefaults } from 'ol/interaction';
+import { Extent } from 'ol/extent';
+import { extend } from 'ol/extent';
+import { createEmpty } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
-import {getRenderPixel} from 'ol/render';
+import { getRenderPixel } from 'ol/render';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
@@ -67,7 +67,12 @@ import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
-import { SemanticMapBoundingBoxChanged, SemanticMapUpdateFeatureColor, SemanticMapReplaceBasemap, SemanticMapReplaceOverlay } from './SemanticMapEvents';
+import {
+  SemanticMapBoundingBoxChanged,
+  SemanticMapUpdateFeatureColor,
+  SemanticMapReplaceBasemap,
+  SemanticMapReplaceOverlay,
+} from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import { QueryConstantParameter } from '../search/web-components/QueryConstant';
 import { Cancellation } from 'platform/api/async';
@@ -75,11 +80,14 @@ import { listen, Event } from 'platform/api/events';
 import { WindowScroller } from 'react-virtualized';
 import { zoomByDelta } from 'ol/interaction/Interaction';
 import TilesLayer from './TilesLayer';
-import { SemanticMapControlsOverlayOpacity, SemanticMapControlsOverlayVisualization } from './SemanticMapControlsEvents';
+import {
+  SemanticMapControlsOverlayOpacity,
+  SemanticMapControlsOverlayVisualization,
+} from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 
 enum Source {
-  OSM = 'osm'
+  OSM = 'osm',
 }
 
 interface ProviderOptions {
@@ -89,20 +97,16 @@ interface ProviderOptions {
 }
 
 interface MapOptions {
-
   /**
    *
    */
   crs?: string;
 
-
   /**
    *
    */
   extent?: Array<number>;
-
 }
-
 
 interface Marker {
   link?: string;
@@ -190,58 +194,60 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       noResults: false,
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
-      overlayVisualization: "normal"
+      overlayVisualization: 'normal',
     };
 
     this.cancelation
-    .map(
-      listen({
-        eventType: SemanticMapUpdateFeatureColor,
-      })
-    )
-    .onValue(this.updateFeatureColor);
+      .map(
+        listen({
+          eventType: SemanticMapUpdateFeatureColor,
+        })
+      )
+      .onValue(this.updateFeatureColor);
 
     this.cancelation
-    .map(
-      listen({
-        eventType: SemanticMapReplaceBasemap,
-      })
-    )
-    .onValue(this.replaceBasemap);
+      .map(
+        listen({
+          eventType: SemanticMapReplaceBasemap,
+        })
+      )
+      .onValue(this.replaceBasemap);
 
     this.cancelation
-    .map(
-      listen({
-        eventType: SemanticMapReplaceOverlay,
-      })
-    )
-    .onValue(this.replaceOverlay);
+      .map(
+        listen({
+          eventType: SemanticMapReplaceOverlay,
+        })
+      )
+      .onValue(this.replaceOverlay);
 
     this.cancelation
-    .map(
-      listen({
-        eventType: SemanticMapControlsOverlayOpacity
-      })
-    )
-    .onValue(this.setOverlayOpacity)
+      .map(
+        listen({
+          eventType: SemanticMapControlsOverlayOpacity,
+        })
+      )
+      .onValue(this.setOverlayOpacity);
 
     this.cancelation
-    .map(
-      listen({
-        eventType: SemanticMapControlsOverlayVisualization
-      })
-    )
-    .onValue(this.setOverlayVisualizationFromEvent)
+      .map(
+        listen({
+          eventType: SemanticMapControlsOverlayVisualization,
+        })
+      )
+      .onValue(this.setOverlayVisualizationFromEvent);
   }
 
   private setOverlayOpacity = (event: Event<any>) => {
-    let new_opacity = event.data
-    let overlay_layer = this.getOverlayLayer()
-    overlay_layer.setOpacity(new_opacity)
-  }
+    let new_opacity = event.data;
+    let overlay_layer = this.getOverlayLayer();
+    overlay_layer.setOpacity(new_opacity);
+  };
 
   private getInputCrs() {
-    return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined ? 'EPSG:3857' : this.props.mapOptions.crs;
+    return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined
+      ? 'EPSG:3857'
+      : this.props.mapOptions.crs;
   }
 
   private static createPopupContent(props, tupleTemplate: Data.Maybe<HandlebarsTemplateDelegate>) {
@@ -283,7 +289,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
 
-    let tileslayers = this.getTilesLayersFromTemplate()
+    let tileslayers = this.getTilesLayersFromTemplate();
 
     return D.div(
       { style: { height: '100%', width: '100%' } },
@@ -309,7 +315,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       this.state.isLoading ? createElement(Spinner) : null
     );
   }
-
 
   private initializeMarkerPopup(map) {
     const popup = new Popup();
@@ -352,123 +357,122 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     let newBasemap = this.getTilesLayerFromIdentifier(event.data.selectedBasemap);
     this.map.getLayers().removeAt(0);
     this.map.getLayers().insertAt(0, newBasemap);
-  }
+  };
 
   private replaceOverlay = (event: Event<any>) => {
-    var loaded_overlays = 0
-    this.map.getLayers().forEach(function(tilesLayer){
-      if(tilesLayer instanceof TileLayer && tilesLayer.level === "overlay"){
-        loaded_overlays++
+    var loaded_overlays = 0;
+    this.map.getLayers().forEach(function (tilesLayer) {
+      if (tilesLayer instanceof TileLayer && tilesLayer.get('level') === 'overlay') {
+        loaded_overlays++;
       }
-    })
-    if(loaded_overlays > 0){
+    });
+    if (loaded_overlays > 0) {
       this.map.getLayers().removeAt(1);
     }
 
-    let new_overlay = this.getTilesLayerFromIdentifier(event.data.selectedOverlay)
+    let new_overlay = this.getTilesLayerFromIdentifier(event.data.selectedOverlay);
 
     this.map.getLayers().insertAt(1, new_overlay);
-  }
+  };
 
-  private setOverlayVisualizationFromEvent  = (event: Event<any>) => {
-    this.setOverlayVisualization(event.data)
-  }
+  private setOverlayVisualizationFromEvent = (event: Event<any>) => {
+    this.setOverlayVisualization(event.data);
+  };
 
-  private setOverlayVisualization(overlay_visualization: string){
-    console.log("Benvenuti, l'evento catturato è " + overlay_visualization)
-    let overlay_layer = this.getOverlayLayer()
+  private setOverlayVisualization(overlay_visualization: string) {
+    let overlay_layer = this.getOverlayLayer();
 
-    this.setState({
-      overlayVisualization: overlay_visualization
-    }, () => {
-      switch(overlay_visualization){
-        case "normal": {
-          overlay_layer.un('prerender', this.spyglassFunction);
-          overlay_layer.un('postrender', function (event) {
-            const ctx = event.context;
-            ctx.restore();
-          });
-          this.map.render();
-          break;
-        }
-        case "spyglass": {
-          overlay_layer.on('prerender', this.spyglassFunction);
-          // after rendering the layer, restore the canvas context
-          overlay_layer.on('postrender', function (event) {
-            const ctx = event.context;
-            ctx.restore();
-          });
-          this.map.render();
-          break;
+    this.setState(
+      {
+        overlayVisualization: overlay_visualization,
+      },
+      () => {
+        switch (overlay_visualization) {
+          case 'normal': {
+            overlay_layer.un('prerender', this.spyglassFunction);
+            overlay_layer.un('postrender', function (event) {
+              const ctx = event.context;
+              ctx.restore();
+            });
+            this.map.render();
+            break;
+          }
+          case 'spyglass': {
+            overlay_layer.on('prerender', this.spyglassFunction);
+            // after rendering the layer, restore the canvas context
+            overlay_layer.on('postrender', function (event) {
+              const ctx = event.context;
+              ctx.restore();
+            });
+            this.map.render();
+            break;
+          }
         }
       }
-    }
-    )
+    );
   }
 
   private spyglassFunction = (event) => {
-      const radius = 120;
-      const ctx = event.context;
-      //let pixelRatio = event.frameState.pixelRatio;
-      ctx.save();
-      ctx.beginPath();
-      if (this.mousePosition) {
-          const pixel = getRenderPixel(event, this.mousePosition);
-          const offset = getRenderPixel(event, [
-            this.mousePosition[0] + radius,
-            this.mousePosition[1] ]);
-          const canvasRadius = Math.sqrt(
-            Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2)
-          );
-          ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
-          ctx.lineWidth = (2 * canvasRadius) / radius;
-          ctx.strokeStyle = 'rgba(102,0,0,0.5)';
-          ctx.stroke();
-      }
-      ctx.clip();
-  }
+    const radius = 120;
+    const ctx = event.context;
+    //let pixelRatio = event.frameState.pixelRatio;
+    ctx.save();
+    ctx.beginPath();
+    if (this.mousePosition) {
+      const pixel = getRenderPixel(event, this.mousePosition);
+      const offset = getRenderPixel(event, [this.mousePosition[0] + radius, this.mousePosition[1]]);
+      const canvasRadius = Math.sqrt(Math.pow(offset[0] - pixel[0], 2) + Math.pow(offset[1] - pixel[1], 2));
+      ctx.arc(pixel[0], pixel[1], canvasRadius, 0, 2 * Math.PI);
+      ctx.lineWidth = (2 * canvasRadius) / radius;
+      ctx.strokeStyle = 'rgba(102,0,0,0.5)';
+      ctx.stroke();
+    }
+    ctx.clip();
+  };
 
   /**
-   * 
+   *
    * @param event
-   * 
+   *
    * The event data is structured as follows:
    * {
    *    "features": [
    *      {
-   *        "subject":"SS_BLDG_052", 
-  *         "color":"rgba(143, 29, 33, .4)"
-  *       }, ...
+   *        "subject":"SS_BLDG_052",
+   *         "color":"rgba(143, 29, 33, .4)"
+   *       }, ...
    *    ]
    * }
-   *  
+   *
    */
-  
-  private updateFeatureColor = (event: Event<any>) => {
 
+  private updateFeatureColor = (event: Event<any>) => {
     // It updates only the last layer, assuming it contains the features
     const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
 
-    event.data['features'].forEach(feature => {
+    event.data['features'].forEach((feature) => {
+      const i = this.getIndexBySubject(feature.subject, layer.getSource().getFeatures());
 
-      const i = this.getIndexBySubject(feature.subject, layer.getSource().getFeatures())
-
-      layer.getSource().getFeatures()[i].setStyle(new Style({
-        fill: new Fill({
-          color: feature.color
-        }),
-        stroke: new Stroke({
-          color: feature.color
-        })
-      })) 
+      layer
+        .getSource()
+        .getFeatures()
+        [i].setStyle(
+          new Style({
+            fill: new Fill({
+              color: feature.color,
+            }),
+            stroke: new Stroke({
+              color: feature.color,
+            }),
+          })
+        );
     });
-  }
+  };
 
   private getIndexBySubject(subject: string, features: any) {
-
     let i = 0;
-    for(const feature of features) {
-      if(feature.values_.subject.value == subject){
+    for (const feature of features) {
+      if (feature.values_.subject.value == subject) {
         return i;
       }
       i++;
@@ -536,53 +540,53 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   };
 
-  private getTilesLayersFromTemplate(){
+  private getTilesLayersFromTemplate() {
     var tileslayers = React.Children.map(this.props.children, (child) => {
-      if(child.type.name === "TilesLayer"){
+      if (child.type.name === 'TilesLayer') {
         const cloned = React.cloneElement(child, {
           receiveProviderFromChild: (provider) => {
             const tilelayer = new TileLayer({
-              source: provider
+              source: provider,
             });
-            tilelayer["level"] = child.props.level
-            tilelayer["name"] = child.props["name"]
-            tilelayer["identifier"] = child.props["identifier"]
-            this.addTilesLayer(tilelayer)
-          }
+            tilelayer.set('level', child.props.level);
+            tilelayer.set('name', child.props.name);
+            tilelayer.set('identifier', child.props.identifier);
+            this.addTilesLayer(tilelayer);
+          },
         });
-        return(cloned);
+        return cloned;
       }
-    })
-    return tileslayers
+    });
+    return tileslayers;
   }
 
-  private addTilesLayer(tileslayer){
+  private addTilesLayer(tileslayer) {
     //TODO: add existence constraints to avoid duplicates (with identifiers)
     this.tilesLayers.push(tileslayer);
   }
 
-  private getAllTilesLayers(){
-    return this.tilesLayers
+  private getAllTilesLayers() {
+    return this.tilesLayers;
   }
 
-  private getTilesLayerFromIdentifier(identifier){
-    let result
-    this.tilesLayers.forEach(function(tilesLayer){
-      if(tilesLayer.identifier === identifier){
-        result = tilesLayer
+  private getTilesLayerFromIdentifier(identifier) {
+    let result;
+    this.tilesLayers.forEach(function (tilesLayer) {
+      if (tilesLayer.get('identifier') === identifier) {
+        result = tilesLayer;
       }
     });
-    return result
+    return result;
   }
 
-  private getOverlayLayer(){
-    let overlay_layer
-    this.map.getLayers().forEach(function(current_layer){
-      if(current_layer.level === "overlay"){
-        overlay_layer = current_layer
+  private getOverlayLayer() {
+    let overlay_layer;
+    this.map.getLayers().forEach(function (current_layer) {
+      if (current_layer.get('level') === 'overlay') {
+        overlay_layer = current_layer;
       }
-    })
-    return overlay_layer
+    });
+    return overlay_layer;
   }
 
   private renderMap(node, props, center, markers) {
@@ -594,21 +598,23 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       //TODO: get all basemap Layers (from an attribute on the <tileslayer> component) and give them an ID
       //TODO: get all overlay layers and give them an ID
-      this.tilesLayers.forEach(function(tileslayer){
-        if(tileslayer.level === "basemap"){
-          basemapLayers.push(tileslayer)
-        } else if (tileslayer.level === "overlay"){
-          overlayLayers.push(tileslayer)
+      this.tilesLayers.forEach(function (tileslayer) {
+        if (tileslayer.get('level') === 'basemap') {
+          basemapLayers.push(tileslayer);
+        } else if (tileslayer.get('level') === 'overlay') {
+          overlayLayers.push(tileslayer);
         }
-      })
+      });
 
       //Fallback to default provider if no tiles-layers are specified in template
-      if(!this.tilesLayers.length){
-          this.tilesLayers = [new TileLayer({
+      if (!this.tilesLayers.length) {
+        this.tilesLayers = [
+          new TileLayer({
             source: new OSM(),
-          })]
+          }),
+        ];
       } else {
-          basemapLayers = [basemapLayers[0]];
+        basemapLayers = [basemapLayers[0]];
       }
       const radius = 120;
 
@@ -620,15 +626,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         }),
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interactionDefaults({}),
-        layers: [
-          ..._.values(basemapLayers),
-          ..._.values(layers)
-        ],
+        layers: [..._.values(basemapLayers), ..._.values(layers)],
         target: node,
         view: new View({
           center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
           zoom: 3,
-          extent: props.mapOptions.extent
+          extent: props.mapOptions.extent,
         }),
       });
 
@@ -658,24 +661,23 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       });
 
       this.map.on('moveend', () => {
-
         // Pass the bounding box as data in the event called when bounding box is changed
         const coordinates = this.map.getView().calculateExtent(this.map.getSize());
         this.BoundingBoxChanged({
-          "southWestLat": {
-            "value": String(coordinates[0])
+          southWestLat: {
+            value: String(coordinates[0]),
           },
-          "southWestLon": {
-            "value": String(coordinates[1])
+          southWestLon: {
+            value: String(coordinates[1]),
           },
-          "northEstLat": {
-            "value": String(coordinates[2])
+          northEstLat: {
+            value: String(coordinates[2]),
           },
-          "northEstLon": {
-            "value": String(coordinates[3])
-          }
+          northEstLon: {
+            value: String(coordinates[3]),
+          },
         });
-      })
+      });
 
       const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
       const view = this.map.getView();
@@ -694,9 +696,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       const stream = SparqlClient.select(query, { context: context.semanticContext });
 
       stream.onValue((res) => {
-
         const result = _.map(res.results.bindings, (v) => _.mapValues(v, (x) => x) as any);
-
 
         if (SparqlUtil.isSelectResultEmpty(res)) {
           this.setState({
@@ -715,8 +715,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           this.updateLayers(geometries);
         }
 
-        if (this.props.id){
-          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: {results: result}});
+        if (this.props.id) {
+          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id, data: { results: result } });
         }
       });
 

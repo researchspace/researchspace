@@ -1,8 +1,8 @@
-import { EventMaker } from 'platform/api/events'
+import { EventMaker } from 'platform/api/events';
 
 export interface SemanticMapControlsEventData {
-    'SemanticMapControls.OverlayOpacity': number;
-    'SemanticMapControls.OverlayVisualization': string;
+  'SemanticMapControls.OverlayOpacity': number;
+  'SemanticMapControls.OverlayVisualization': string;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;

@@ -45,17 +45,6 @@ public class NonVersionedFileStorageFactory implements StorageFactory {
             Path root = Paths.get(properties.getString("root"));
             config.setRoot(root);
         }
-
-        if (properties.containsKey("path-mapping")) {
-            String pathMapping = properties.getString("path-mapping");
-            config.setPathMapping(pathMapping);
-        }
-
-        if (properties.containsKey("path-mapping-base-iri")) {
-            IRI pathMappingBaseIri = SimpleValueFactory.getInstance()
-                    .createIRI(properties.getString("path-mapping-base-iri"));
-            config.setPathMappingBaseIri(pathMappingBaseIri);
-        }
         return config;
     }
 }

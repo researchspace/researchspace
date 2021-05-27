@@ -60,17 +60,7 @@ public class NonVersionedFileStorage implements ObjectStorage {
     public NonVersionedFileStorage(PathMapping paths, Config config) {
 
         this.config = config;
-
-        // Check if the config requires a hierarchical path mapping
-        String pathMapping = config.getPathMapping();
-        IRI pathMappingBaseIri = config.getPathMappingBaseIri();
-
-        if (Objects.nonNull(pathMapping) && Objects.nonNull(pathMappingBaseIri) && pathMapping.equals("hierarchical")) {
-            logger.info("Found hierarchical config");
-            this.paths = new PathMapping.HierarchicalPathMapping(pathMappingBaseIri);
-        } else {
-            this.paths = paths;
-        }
+        this.paths = paths;
     }
 
     public static final class Config extends StorageConfig {

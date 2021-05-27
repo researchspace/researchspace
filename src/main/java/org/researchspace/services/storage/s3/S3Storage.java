@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -218,8 +219,30 @@ public class S3Storage implements ObjectStorage {
     @Override
     public ObjectRecord appendObject(StoragePath path, ObjectMetadata metadata, InputStream content, long contentLength)
             throws StorageException {
-        // TODO Auto-generated method stub
-        return null;
+
+        try {
+            ObjectRecord objectRecord;
+
+            Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
+
+            if (!key.isPresent())
+                throw new StorageException("Error, the object key is not present");
+
+            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key.get());
+
+            // TODO: calculate revision
+            objectRecord = new ObjectRecord(location, path, "", metadata);
+
+            // TODO: check PutObjectResult
+            s3.putObject(config.getBucket(), key.get(), content.toString());
+
+            return objectRecord;
+
+        } catch (SdkClientException e) {
+            throw new StorageException(e.getMessage());
+        } catch (Exception e) {
+            throw new StorageException(e.getMessage());
+        }
     }
 
     @Override

@@ -145,17 +145,14 @@ public class S3Storage implements ObjectStorage {
     public Optional<ObjectRecord> getObject(StoragePath path, String revision) throws StorageException {
 
         try {
-            Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
 
-            if (!key.isPresent())
-                return Optional.empty();
+            String key = getKeyFromStoragePath(path);
 
-            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(),
-                    key.get());
+            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(), key);
 
             // If metadata exist
             String user = s3Metadata.getUserMetaDataOf("Author");
-            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key.get());
+            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key);
             ObjectMetadata metadata = new ObjectMetadata(Objects.isNull(user) ? "" : user,
                     s3Metadata.getLastModified().toInstant());
 
@@ -223,18 +220,15 @@ public class S3Storage implements ObjectStorage {
         try {
             ObjectRecord objectRecord;
 
-            Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
+            String key = getKeyFromStoragePath(path);
 
-            if (!key.isPresent())
-                throw new StorageException("Error, the object key is not present");
-
-            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key.get());
+            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key);
 
             // TODO: calculate revision
             objectRecord = new ObjectRecord(location, path, "", metadata);
 
             // TODO: check PutObjectResult
-            s3.putObject(config.getBucket(), key.get(), content.toString());
+            s3.putObject(config.getBucket(), key, content.toString());
 
             return objectRecord;
 
@@ -247,7 +241,30 @@ public class S3Storage implements ObjectStorage {
 
     @Override
     public void deleteObject(StoragePath path, ObjectMetadata metadata) throws StorageException {
-        // TODO Auto-generated method stub
+        try {
+            String key = getKeyFromStoragePath(path);
+
+            s3.deleteObject(config.getBucket(), key);
+
+        } catch (Exception e) {
+            throw new StorageException(e.getMessage());
+        }
+    }
+
+    /**
+     * 
+     * @param path
+     * @return
+     * @throws StorageException
+     */
+    private String getKeyFromStoragePath(StoragePath path) throws StorageException {
+
+        Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
+
+        if (!key.isPresent())
+            throw new StorageException("Error, the object key is not present");
+
+        return key.get();
     }
 
 }

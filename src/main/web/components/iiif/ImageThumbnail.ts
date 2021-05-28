@@ -29,7 +29,7 @@ import { Component } from 'platform/api/components';
 
 import * as ImageApi from '../../data/iiif/ImageAPI';
 import {
-  queryIIIFImageOrRegion, ImageOrRegionInfo, ExplicitRegion,
+  queryIIIFImageOrRegion, ImageOrRegionInfo, ExplicitRegion,IdBasedImageOrRegionInfo
 } from '../../data/iiif/ImageAnnotationService';
 
 export interface Props {
@@ -135,11 +135,11 @@ class ImageThumbnailComponent extends Component<Props, State> {
       .map((c) => c.repository)
       .getOrElse('default');
     const queryResult = queryIIIFImageOrRegion(iri, imageIdPattern, [repository], region).flatMap<QueryResult>((info) =>
-      ImageApi.queryImageBounds(iiifServerUrl, info.imageId).map((bounds) => ({ info, bounds }))
+      ImageApi.queryImageBounds(iiifServerUrl, (info as IdBasedImageOrRegionInfo).imageId).map((bounds) => ({ info, bounds }))
     );
     return queryResult.map(({ info, bounds }) => {
       const requestParams: ImageApi.ImageRequestParams = {
-        imageId: info.imageId,
+        imageId: (info as IdBasedImageOrRegionInfo).imageId,
         format: format || 'jpg',
       };
       const requestedRegion =

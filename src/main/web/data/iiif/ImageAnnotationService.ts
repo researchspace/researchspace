@@ -46,11 +46,11 @@ interface BaseImageOrRegionInfo {
 /**
  * Extension of BaseImageOrRegionInfo adds imageId information
  */
-type IdBasedImageOrRegionInfo = { imageId: string } & BaseImageOrRegionInfo;
+export type IdBasedImageOrRegionInfo = { imageId: string } & BaseImageOrRegionInfo;
 /**
  * Extension of BaseImageOrRegionInfo adds imageApiManifestUrl information
  */
-type ManifestBasedImageOrRegionInfo = { imageApiManifestUrl: string } & BaseImageOrRegionInfo;
+export type ManifestBasedImageOrRegionInfo = { imageApiManifestUrl: string } & BaseImageOrRegionInfo;
 
 export type ImageOrRegionInfo = IdBasedImageOrRegionInfo | ManifestBasedImageOrRegionInfo;
 

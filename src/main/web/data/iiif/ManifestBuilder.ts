@@ -155,8 +155,8 @@ exif:height ?canvasHeight.
     .flatMap(([displayLabel, labels]) => {
       const parameters = params.map((param) => ({
         displayLabel: Rdf.literal(displayLabel), 
-        imageIri: param.imageIri,                // 
-        service: Rdf.iri(param.imageServiceUri), // Manifest URL https://iiif.itatti.harvard.edu/iiif/2/florentinedrawings!works!001049C-Berenson.jpg/info.json
+        imageIri: param.imageIri,                
+        service: Rdf.iri(param.imageServiceUri), 
         canvasWidth: Rdf.literal(param.canvasSize.width.toString(), xsd.integer),
         canvasHeight: Rdf.literal(param.canvasSize.height.toString(), xsd.integer),
         label: Rdf.literal(labels.get(param.imageIri)),

@@ -22,7 +22,7 @@ import * as OpenSeadragon from 'openseadragon';
 import * as Immutable from 'immutable';
 
 import * as ImageApi from '../../data/iiif/ImageAPI';
-import { ImageOrRegionInfo } from '../../data/iiif/ImageAnnotationService';
+import { ImageOrRegionInfo, IdBasedImageOrRegionInfo } from '../../data/iiif/ImageAnnotationService';
 
 import './image-overlay.scss';
 import * as block from 'bem-cn';
@@ -64,7 +64,7 @@ export class OpenSeadragonOverlay extends Component<OverlayProps, {}> {
 
   getImageInformationRequestUri(imageInfo: ImageOrRegionInfo) {
     const serverAndPrefix = ImageApi.getIIIFServerUrl(this.props.iiifServerUrl);
-    return ImageApi.constructInformationRequestUri(serverAndPrefix, imageInfo.imageId);
+    return ImageApi.constructInformationRequestUri(serverAndPrefix,(imageInfo as IdBasedImageOrRegionInfo).imageId);
   }
 
   render() {

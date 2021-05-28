@@ -27,7 +27,7 @@ import { Rdf } from 'platform/api/rdf';
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
 
-import { queryIIIFImageOrRegion, ImageOrRegionInfo } from '../../data/iiif/ImageAnnotationService';
+import { queryIIIFImageOrRegion, ImageOrRegionInfo, IdBasedImageOrRegionInfo } from '../../data/iiif/ImageAnnotationService';
 import * as ImageApi from '../../data/iiif/ImageAPI';
 import { createManifest, Manifest } from '../../data/iiif/ManifestBuilder';
 import { LdpRegionService, OARegionAnnotation } from '../../data/iiif/LDPImageRegionService';
@@ -124,9 +124,9 @@ export class SideBySideComparison extends Component<Props, State> {
       .map((iri) =>
         queryIIIFImageOrRegion(iri, request.imageIdPattern, repositories).flatMap((imageInfo) => {
           // creating image API request url for given image
-          const serviceRequestUri = ImageApi.constructServiceRequestUri(serviceUrl, imageInfo.imageId);
+          const serviceRequestUri = ImageApi.constructServiceRequestUri(serviceUrl, (imageInfo as IdBasedImageOrRegionInfo).imageId);
           // getting info.json from image API
-          return ImageApi.queryImageBounds(serviceUrl, imageInfo.imageId).flatMap((bounds) =>
+          return ImageApi.queryImageBounds(serviceUrl, (imageInfo as IdBasedImageOrRegionInfo).imageId).flatMap((bounds) =>
             // we've got image size, we can create manifest
             // but instead we are starting to fetch for regions
             LdpRegionService.search(imageInfo.imageIRI).flatMap((annotations) =>

@@ -144,6 +144,8 @@ export interface SemanticMapConfig {
    */
   fixZoomLevel?: number;
 
+  fixCenter?: Array<number>;
+
   /**
    * Map Options
    */
@@ -681,6 +683,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
       const view = this.map.getView();
+
+      view.setCenter(this.props.fixCenter);
       view.setZoom(zoom);
     }, 1000);
   }

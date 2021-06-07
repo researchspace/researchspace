@@ -8,35 +8,14 @@ import * as maybe from "data.maybe";
 import {findDOMNode} from "react-dom";
 
 
-interface ProviderOptions {
-  endpoint: string;
-  crs: string;
-  style: string;
-  tileset_id: string;
-}
-
-enum Source {
-  OSM = 'osm',
-  MapBox = 'mapbox',
-  MapBoxRasterTiles = 'mapboxRasterTiles',
-  ComuneDiVenezia = 'ComuneDiVenezia'
-}
-
 export interface ProviderConfig {
-  /**
-   * Optional enum for calling the selected OpenLayer source
-   * ENUM { "mapbox", "osm"}
-   */
-  provider?: Source;
-
-  /**
-   * Optional JSON object containing various user provided options
-   */
-  providerOptions?: ProviderOptions;
-
   level: String;
 
-  receiveProviderFromChild?: any; 
+  name: String;
+
+  identifier: String;
+
+  url: String;
 }
 
 export type ProviderProps = ProviderConfig & Props<any>;
@@ -48,42 +27,11 @@ export class TilesLayer extends Component<ProviderProps, any>{
   }
 
   public componentDidMount() {
-    let newProvider;
-    switch (this.props.provider) {
-      case Source.MapBox: {
-        newProvider = new XYZ({
-          url: '/proxy/mapbox/styles/v1/' +
-            this.props.providerOptions.style + '/tiles/256/{z}/{x}/{y}'
-        });
-        break;
-      }
-      case Source.MapBoxRasterTiles: {
-        newProvider = new XYZ({
-          url: '/proxy/mapbox/v4/' +
-            this.props.providerOptions.tileset_id + '/{z}/{x}/{y}@2x.png'
-        });
-        break;
-      }
-      case Source.ComuneDiVenezia: {
-        newProvider = new XYZ({
-          url: 'http://geoportale.comune.venezia.it/Geocortex/Essentials/REST/local-proxy/GeoPortale/11/RasterDataset_2014_2/MapServer/tile/{z}/{y}/{x}'
-        });
-        break;
-      }
-      default: {
-        newProvider = new OSM({});
-        break;
-      }
-    }
-    this.sendProviderToParent(newProvider)
+
   }
 
   public render() {
     return null;
-  }
-
-  private sendProviderToParent(provider){
-    this.props.receiveProviderFromChild(provider);
   }
 }
 

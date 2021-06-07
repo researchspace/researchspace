@@ -54,6 +54,7 @@ import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
 import { getRenderPixel } from 'ol/render';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
+import XYZ from "ol/source/XYZ";
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -545,18 +546,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private getTilesLayersFromTemplate() {
     var tileslayers = React.Children.map(this.props.children, (child : any) => {
       if (child.type.name === 'TilesLayer') {
-        const cloned = React.cloneElement(child, {
-          receiveProviderFromChild: (provider) => {
-            const tilelayer = new TileLayer({
-              source: provider,
-            });
-            tilelayer.set('level', child.props.level);
-            tilelayer.set('name', child.props.name);
-            tilelayer.set('identifier', child.props.identifier);
-            this.addTilesLayer(tilelayer);
-          },
+        let tileslayer = new TileLayer({
+          source: new XYZ({url: child.props.url})
         });
-        return cloned;
+        tileslayer.set('level', child.props.level);
+        tileslayer.set('name', child.props.name);
+        tileslayer.set('identifier', child.props.identifier);
+        this.addTilesLayer(tileslayer)
+        return child;
       }
     });
     return tileslayers;

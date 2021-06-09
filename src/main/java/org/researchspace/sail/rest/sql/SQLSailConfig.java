@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package org.researchspace.sail.rest.sql;
 
 import java.util.Map;
@@ -34,24 +33,22 @@ import org.researchspace.sail.rest.sql.SQLSail.SQLQueryWrapper;
 
 public class SQLSailConfig extends AbstractServiceWrappingSailConfig {
 
-    private MpJDBCDriverManager driverManager; 
-    private Map<String, SQLQueryWrapper> sqlQueriesMap =  Maps.newHashMap();
+    private MpJDBCDriverManager driverManager;
+    private Map<String, SQLQueryWrapper> sqlQueriesMap = Maps.newHashMap();
 
     public MpJDBCDriverManager getDriverManager() {
         return driverManager;
     }
-        
+
     public void setDriverManager(MpJDBCDriverManager driverManager) {
         this.driverManager = driverManager;
     }
 
-    
     public SQLQueryWrapper getSqlQueryById(String queryId) {
         return sqlQueriesMap.get(queryId);
     }
 
-
-    public void setQueriesMap (Map<String, SQLQueryWrapper> sqlQueriesMap) {
+    public void setQueriesMap(Map<String, SQLQueryWrapper> sqlQueriesMap) {
         this.sqlQueriesMap = sqlQueriesMap;
     }
 }

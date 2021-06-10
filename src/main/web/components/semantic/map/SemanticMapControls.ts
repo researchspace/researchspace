@@ -9,6 +9,7 @@ import { trigger, listen } from 'platform/api/events';
 import {
   SemanticMapControlsOverlayOpacity,
   SemanticMapControlsOverlayVisualization,
+  SemanticMapControlsOverlaySwipe,
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -21,6 +22,7 @@ const sliderbar: CSSProperties = {
 
 interface State {
   overlayOpacity?: number;
+  swipeValue?: number;
   overlayVisualization?: string;
   loading?: boolean;
   id: string;
@@ -31,6 +33,7 @@ export class SemanticMapControls extends Component<State, any> {
     super(props, context);
     this.state = {
       overlayOpacity: 1,
+      swipeValue: 100,
       overlayVisualization: 'normal',
     };
   }
@@ -76,13 +79,28 @@ export class SemanticMapControls extends Component<State, any> {
             },
           }),
           'Spyglass'
+        ),
+        D.br(),
+        D.label(
+          {},
+          D.input({
+            name: 'overlay-visualization',
+            type: 'radio',
+            value: 'swipe',
+            onChange: (event) => {
+              this.setState({ overlayVisualization: event.target.value }, () =>
+                this.triggerVisualization(this.state.overlayVisualization)
+              );
+            },
+          }),
+          'Swipe'
         )
       ),
       D.br(),
       D.br(),
       D.label(
         { style: sliderbar },
-        'Layer Opacity',
+        'Overlay Opacity',
         D.br(),
         D.input({
           type: 'range',
@@ -97,6 +115,25 @@ export class SemanticMapControls extends Component<State, any> {
             this.setState({ overlayOpacity: capped }, () => this.triggerOpacity(this.state.overlayOpacity));
           },
         })
+      ),
+      D.label(
+        { style: sliderbar },
+        'Overlay Swipe',
+        D.br(),
+        D.input({
+          id: "swipe",
+          type: 'range',
+            min: 0,
+            max: 100,
+            step: 1,
+            style: {"width": "100%"},
+            value: this.state.swipeValue as any,
+            onChange: (event) => {
+              const input = event.target as HTMLInputElement;
+              const input2 = input.value;
+              this.setState({ swipeValue: input2 }, () => this.triggerSwipe(this.state.swipeValue));
+            },
+        })
       )
     );
   }
@@ -106,6 +143,14 @@ export class SemanticMapControls extends Component<State, any> {
       eventType: SemanticMapControlsOverlayOpacity,
       source: this.props.id,
       data: opacity,
+    });
+  };
+
+  private triggerSwipe = (swipeValue: number) => {
+    trigger({
+      eventType: SemanticMapControlsOverlaySwipe,
+      source: this.props.id,
+      data: swipeValue,
     });
   };
 

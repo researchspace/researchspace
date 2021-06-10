@@ -83,6 +83,7 @@ import { zoomByDelta } from 'ol/interaction/Interaction';
 import TilesLayer from './TilesLayer';
 import {
   SemanticMapControlsOverlayOpacity,
+  SemanticMapControlsOverlaySwipe,
   SemanticMapControlsOverlayVisualization,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
@@ -189,6 +190,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private cancelation = new Cancellation();
   private tilesLayers = [];
   private mousePosition = null;
+  private swipeValue: number;
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -235,6 +237,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.cancelation
       .map(
         listen({
+          eventType: SemanticMapControlsOverlaySwipe,
+        })
+      )
+    .onValue(this.setOverlaySwipe);
+
+    this.cancelation
+      .map(
+        listen({
           eventType: SemanticMapControlsOverlayVisualization,
         })
       )
@@ -246,6 +256,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     let overlay_layer = this.getOverlayLayer();
     overlay_layer.setOpacity(new_opacity);
   };
+
+  private setOverlaySwipe = (event: Event<any>) => {
+    let new_swipeValue = event.data;
+    this.swipeValue = new_swipeValue;
+    console.log(this.swipeValue)
+    this.map.render()
+  }
 
   private getInputCrs() {
     return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined
@@ -382,6 +399,16 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.setOverlayVisualization(event.data);
   };
 
+  private resetVisualizations(){
+    let overlay_layer = this.getOverlayLayer();
+    overlay_layer.un('prerender', this.spyglassFunction);
+    overlay_layer.un('prerender', this.swipeFunction);
+    overlay_layer.un('postrender', function (event) {
+      const ctx = event.context;
+      ctx.restore();
+    });
+  }
+
   private setOverlayVisualization(overlay_visualization: string) {
     let overlay_layer = this.getOverlayLayer();
 
@@ -392,17 +419,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       () => {
         switch (overlay_visualization) {
           case 'normal': {
-            overlay_layer.un('prerender', this.spyglassFunction);
-            overlay_layer.un('postrender', function (event) {
-              const ctx = event.context;
-              ctx.restore();
-            });
+            this.resetVisualizations();
             this.map.render();
             break;
           }
           case 'spyglass': {
+            this.resetVisualizations();
             overlay_layer.on('prerender', this.spyglassFunction);
-            // after rendering the layer, restore the canvas context
             overlay_layer.on('postrender', function (event) {
               const ctx = event.context;
               ctx.restore();
@@ -410,6 +433,16 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             this.map.render();
             break;
           }
+          case 'swipe': {
+            this.resetVisualizations();
+            overlay_layer.on('prerender', this.swipeFunction);
+            overlay_layer.on('postrender', function (event) {
+              var ctx = event.context;
+              ctx.restore();
+            });
+          this.map.render();
+          break;
+          };
         }
       }
     );
@@ -431,6 +464,25 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       ctx.stroke();
     }
     ctx.clip();
+  };
+
+  private swipeFunction = (event) => {
+      var ctx = event.context;
+      var mapSize = this.map.getSize();
+      var width = mapSize[0] * (this.swipeValue / 100);
+      var tl = getRenderPixel(event, [width, 0]);
+      var tr = getRenderPixel(event, [mapSize[0], 0]);
+      var bl = getRenderPixel(event, [width, mapSize[1]]);
+      var br = getRenderPixel(event, mapSize);
+    
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(tl[0], tl[1]);
+      ctx.lineTo(bl[0], bl[1]);
+      ctx.lineTo(br[0], br[1]);
+      ctx.lineTo(tr[0], tr[1]);
+      ctx.closePath();
+      ctx.clip();
   };
 
   /**

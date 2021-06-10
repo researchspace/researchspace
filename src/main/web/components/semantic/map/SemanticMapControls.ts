@@ -155,7 +155,7 @@ export class SemanticMapControls extends Component<State, any> {
     });
   };
 
-  private triggerVisualization = (visualization: string, value: number) => {
+  private triggerVisualization = (visualization: string) => {
     trigger({
       eventType: SemanticMapControlsOverlayVisualization,
       source: this.props.id,

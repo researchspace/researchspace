@@ -39,7 +39,7 @@ export class SemanticMapControls extends Component<State, any> {
   }
 
   public componentDidMount() {
-    console.log('mounted');
+    
   }
 
   public render() {
@@ -48,8 +48,9 @@ export class SemanticMapControls extends Component<State, any> {
       D.label(
         { style: sliderbar },
         'Visualization mode',
-        D.br(),
-        D.br(),
+        D.br()
+      ),
+      D.br(),
         D.label(
           {},
           D.input({
@@ -94,8 +95,27 @@ export class SemanticMapControls extends Component<State, any> {
             },
           }),
           'Swipe'
-        )
-      ),
+        ),
+      this.state.overlayVisualization === "swipe"
+      ? D.label(
+        { style: sliderbar },
+        'Overlay Swipe',
+        D.br(),
+        D.input({
+          id: "swipe",
+          type: 'range',
+            min: 0,
+            max: 100,
+            step: 1,
+            style: {"width": "100%"},
+            value: this.state.swipeValue as any,
+            onChange: (event) => {
+              const input = event.target as HTMLInputElement;
+              const input2 = input.value;
+              this.setState({ swipeValue: input2 }, () => this.triggerSwipe(this.state.swipeValue));
+            },
+        })
+      ) : (null),
       D.br(),
       D.br(),
       D.label(
@@ -116,25 +136,6 @@ export class SemanticMapControls extends Component<State, any> {
           },
         })
       ),
-      D.label(
-        { style: sliderbar },
-        'Overlay Swipe',
-        D.br(),
-        D.input({
-          id: "swipe",
-          type: 'range',
-            min: 0,
-            max: 100,
-            step: 1,
-            style: {"width": "100%"},
-            value: this.state.swipeValue as any,
-            onChange: (event) => {
-              const input = event.target as HTMLInputElement;
-              const input2 = input.value;
-              this.setState({ swipeValue: input2 }, () => this.triggerSwipe(this.state.swipeValue));
-            },
-        })
-      )
     );
   }
 
@@ -154,12 +155,18 @@ export class SemanticMapControls extends Component<State, any> {
     });
   };
 
-  private triggerVisualization = (visualization: string) => {
+  private triggerVisualization = (visualization: string, value: number) => {
     trigger({
       eventType: SemanticMapControlsOverlayVisualization,
       source: this.props.id,
       data: visualization,
     });
+    switch (visualization){
+      case "swipe": {
+        this.triggerSwipe(this.state.swipeValue)
+      }
+    }
+
   };
 }
 

@@ -260,7 +260,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private setOverlaySwipe = (event: Event<any>) => {
     let new_swipeValue = event.data;
     this.swipeValue = new_swipeValue;
-    console.log(this.swipeValue)
     this.map.render()
   }
 
@@ -470,10 +469,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       var ctx = event.context;
       var mapSize = this.map.getSize();
       var width = mapSize[0] * (this.swipeValue / 100);
-      var tl = getRenderPixel(event, [width, 0]);
-      var tr = getRenderPixel(event, [mapSize[0], 0]);
-      var bl = getRenderPixel(event, [width, mapSize[1]]);
-      var br = getRenderPixel(event, mapSize);
+      var tl = getRenderPixel(event, [0, 0]);
+      var tr = getRenderPixel(event, [width, 0]);
+      var bl = getRenderPixel(event, [0, mapSize[1]]);
+      var br = getRenderPixel(event, [width, mapSize[1]]);
     
       ctx.save();
       ctx.beginPath();

@@ -201,8 +201,11 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
         MapBindingSet mapBindingSet = new MapBindingSet();
 
         for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
-            Parameter parameter = getSail().getServiceDescriptor().getOutputParameters()
-                    .get(outputParameter.getKey().getLocalName());
+
+            String parameterName = getSail().getMapOutputParametersByProperty().get(outputParameter.getKey())
+                    .getParameterName();
+            Parameter parameter = getSail().getServiceDescriptor().getOutputParameters().get(parameterName);
+
             IRI type = parameter.getValueType();
             String jsonPath = parameter.getJsonPath();
             Object value = JsonPath.using(this.jsonPathConfig).parse(object).read(jsonPath);

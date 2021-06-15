@@ -38,11 +38,13 @@ import Stroke from 'ol/style/Stroke';
 import Feature from 'ol/Feature';
 import Geometry from 'ol/geom/Geometry';
 import Point from 'ol/geom/Point';
+import { Control } from 'ol/control';
 import MultiPoint from 'ol/geom/MultiPoint';
 import Polygon from 'ol/geom/Polygon';
 import MultiPolygon from 'ol/geom/MultiPolygon';
 import GeometryCollection from 'ol/geom/GeometryCollection';
 import WKT from 'ol/format/WKT';
+import { Draw, Modify, Snap } from 'ol/interaction';
 import { transform } from 'ol/proj';
 import { defaults as controlDefaults } from 'ol/control';
 import { Interaction } from 'ol/interaction';
@@ -86,8 +88,12 @@ import {
   SemanticMapControlsOverlaySwipe,
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsFeatureColor,
+  SemanticMapToggleEditingMode,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
+import VectorSource from 'ol/source/Vector';
+import CircleStyle from 'ol/style/Circle';
+import { options } from 'superagent';
 
 enum Source {
   OSM = 'osm',
@@ -194,6 +200,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private mousePosition = null;
   private swipeValue: number;
 
+  private source: VectorSource;
+  private vector: VectorLayer;
+  private modify: Modify;
+
+  private draw: Interaction;
+  private snap: Interaction;
+
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -204,6 +217,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       overlayVisualization: 'normal',
       featureColor: 'normal',
     };
+
+    this.initInteractions();
 
     this.cancelation
       .map(
@@ -260,6 +275,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.setFeatureColor);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapToggleEditingMode,
+        })
+      )
+      .onValue(this.handleEditingMode);
   }
 
   /**
@@ -304,6 +327,52 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     const newSwipeValue = event.data;
     this.swipeValue = newSwipeValue;
     this.map.render();
+  };
+
+  initInteractions = () => {
+    this.source = new VectorSource();
+    this.vector = new VectorLayer({
+      source: this.source,
+      style: new Style({
+        fill: new Fill({
+          color: 'rgba(255, 255, 255, 0.2)',
+        }),
+        stroke: new Stroke({
+          color: '#ffcc33',
+          width: 2,
+        }),
+        image: new CircleStyle({
+          radius: 7,
+          fill: new Fill({
+            color: '#ffcc33',
+          }),
+        }),
+      }),
+    });
+
+    this.modify = new Modify({ source: this.source });
+
+    this.draw = new Draw({
+      source: this.source,
+      type: 'Polygon',
+    });
+
+    this.snap = new Snap({ source: this.source });
+  };
+
+  private handleEditingMode = (event: Event<any>) => {
+    if (event.data) this.setEditingMode();
+    else this.revokeEditingMode();
+  };
+
+  private setEditingMode = () => {
+    this.map.addInteraction(this.draw);
+    this.map.addInteraction(this.snap);
+  };
+
+  private revokeEditingMode = () => {
+    this.map.removeInteraction(this.draw);
+    this.map.removeInteraction(this.snap);
   };
 
   private getInputCrs() {
@@ -711,10 +780,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           attributionOptions: {
             collapsible: false,
           },
-        }),
+        }).extend([new AnnotateControl()]),
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interactionDefaults({}),
-        layers: [..._.values(basemapLayers), ..._.values(layers)],
+        layers: [..._.values(basemapLayers), ..._.values(layers), this.vector],
         target: node,
         view: new View({
           center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
@@ -741,7 +810,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       // asynch execute query and add markers
       this.addMarkersFromQuery(this.props, this.context);
 
-      this.initializeMarkerPopup(map);
+      // TODO: popup only on features
+      //this.initializeMarkerPopup(map);
       map.getView().fit(props.mapOptions.extent);
 
       window.addEventListener('resize', () => {
@@ -772,6 +842,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       view.setCenter(this.props.fixCenter);
       view.setZoom(zoom);
+
+      this.map.addInteraction(this.modify);
     }, 1000);
   }
 
@@ -925,6 +997,42 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     } else {
       return props.tupleTemplate;
     }
+  }
+}
+
+export class AnnotateControl extends Control {
+  editingMode: boolean;
+
+  constructor() {
+    super({});
+
+    // default editing mode
+    this.editingMode = false;
+
+    // Create edit button
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'ol-control';
+    button.innerHTML = 'E';
+
+    //
+    const element = document.createElement('div');
+    element.className = 'ol-feature ol-control';
+    element.appendChild(button);
+    Control.call(this, {
+      element: element,
+    });
+    button.addEventListener('click', () => this.click());
+  }
+
+  click() {
+    this.editingMode = !this.editingMode;
+
+    trigger({
+      eventType: SemanticMapToggleEditingMode,
+      source: 'Annotate-button',
+      data: this.editingMode,
+    });
   }
 }
 

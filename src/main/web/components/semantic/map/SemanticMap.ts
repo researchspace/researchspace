@@ -94,6 +94,7 @@ import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
 import CircleStyle from 'ol/style/Circle';
 import { options } from 'superagent';
+import GeometryType from 'ol/geom/GeometryType';
 
 enum Source {
   OSM = 'osm',
@@ -354,7 +355,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     this.draw = new Draw({
       source: this.source,
-      type: 'Polygon',
+      type: GeometryType.POLYGON,
     });
 
     this.snap = new Snap({ source: this.source });
@@ -844,6 +845,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       view.setZoom(zoom);
 
       this.map.addInteraction(this.modify);
+
+      this.map.on()
+
+
     }, 1000);
   }
 

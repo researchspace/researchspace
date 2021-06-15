@@ -160,6 +160,23 @@ export function queryImageBounds(serverAndPrefix: string, imageId: string) {
   }).toProperty();
 }
 
+export function queryImageBoundsUsingManifest(imageApiManifestUrl:string) {
+  const uri = imageApiManifestUrl
+  return Kefir.fromNodeCallback<ImageBounds>((cb) => {
+    request
+      .get(uri)
+      .accept('application/ld+json')
+      .end((err, res) => {
+        if (err) {
+          cb(err);
+        } else {
+          const json = JSON.parse(res.text);
+          cb(err, json);
+        }
+      });
+  }).toProperty();
+}
+
 /*
  * Incoming config.iiifServerUrl could be absolute or relative
  * (due to no client-side configuration and ease of deployment).

@@ -30,6 +30,7 @@ import { OARegionAnnotation } from './LDPImageRegionService';
 const MANIFEST_FRAME = require('./ld-resources/manifest-frame.json');
 const IIIF_PRESENTATION_CONTEXT = require('./ld-resources/iiif-context.json');
 
+
 const { xsd, rdf } = vocabularies;
 
 export interface Manifest {
@@ -111,7 +112,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX rso: <http://www.researchspace.org/ontology/>
 
 CONSTRUCT {
-?manifestURI a sc:Manifest ;
+?manifestURI a sc:Manifest ; 
 rdfs:label ?displayLabel;
 sc:attributionLabel "Provided by the ..." ;
 sc:hasSequences ?sequenceURI;
@@ -153,9 +154,9 @@ exif:height ?canvasHeight.
   return Kefir.zip([queryingDisplayLabel, queryingImagesLabels])
     .flatMap(([displayLabel, labels]) => {
       const parameters = params.map((param) => ({
-        displayLabel: Rdf.literal(displayLabel),
-        imageIri: param.imageIri,
-        service: Rdf.iri(param.imageServiceUri),
+        displayLabel: Rdf.literal(displayLabel), 
+        imageIri: param.imageIri,                
+        service: Rdf.iri(param.imageServiceUri), 
         canvasWidth: Rdf.literal(param.canvasSize.width.toString(), xsd.integer),
         canvasHeight: Rdf.literal(param.canvasSize.height.toString(), xsd.integer),
         label: Rdf.literal(labels.get(param.imageIri)),

@@ -4,6 +4,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.OverlayOpacity': number;
   'SemanticMapControls.OverlayVisualization': string;
   'SemanticMapControls.OverlaySwipe': number;
+  'SemanticMapControls.FeatureColor': string;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -11,3 +12,4 @@ const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
 export const SemanticMapControlsOverlayOpacity = event('SemanticMapControls.OverlayOpacity');
 export const SemanticMapControlsOverlayVisualization = event('SemanticMapControls.OverlayVisualization');
 export const SemanticMapControlsOverlaySwipe = event('SemanticMapControls.OverlaySwipe');
+export const SemanticMapControlsFeatureColor = event('SemanticMapControls.FeatureColor');

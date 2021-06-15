@@ -85,6 +85,7 @@ import {
   SemanticMapControlsOverlayOpacity,
   SemanticMapControlsOverlaySwipe,
   SemanticMapControlsOverlayVisualization,
+  SemanticMapControlsFeatureColor,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 
@@ -180,6 +181,7 @@ interface MapState {
   noResults?: boolean;
   isLoading?: boolean;
   overlayVisualization?: string;
+  featureColor?: string;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -200,6 +202,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       isLoading: true,
       errorMessage: maybe.Nothing<string>(),
       overlayVisualization: 'normal',
+      featureColor: 'normal',
     };
 
     this.cancelation
@@ -249,7 +252,35 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.setOverlayVisualizationFromEvent);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsFeatureColor,
+        })
+      )
+      .onValue(this.setFeatureColor);
   }
+
+  private setFeatureColor = (event: Event<any>) => {
+    let new_color: string;
+    new_color = event.data;
+    console.log("received" + new_color);
+    const features_layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
+
+    features_layer.getSource().getFeatures().forEach((feature) => {
+      feature.setStyle(
+          new Style({
+            fill: new Fill({
+              color: new_color,
+            }),
+            stroke: new Stroke({
+              color: new_color,
+            }),
+          })
+        );
+    });
+  };
 
   private setOverlayOpacity = (event: Event<any>) => {
     let new_opacity = event.data;

@@ -10,9 +10,17 @@ import {
   SemanticMapControlsOverlayOpacity,
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
+  SemanticMapControlsFeatureColor,
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
+import ColorPicker, { RgbColor } from 'react-pick-color';
+import ColorObject from 'react-pick-color';
+import useColor from 'react-pick-color';
+import { themes } from "react-pick-color";
+import { string } from 'prop-types';
+
+const colorPickerComponent = React.createFactory(ColorPicker);
 
 const b = block('overlay-comparison');
 
@@ -26,6 +34,8 @@ interface State {
   overlayVisualization?: string;
   loading?: boolean;
   id: string;
+  color: typeof ColorObject;
+  setColor:typeof ColorObject;
 }
 
 export class SemanticMapControls extends Component<State, any> {
@@ -35,6 +45,8 @@ export class SemanticMapControls extends Component<State, any> {
       overlayOpacity: 1,
       swipeValue: 100,
       overlayVisualization: 'normal',
+      color: 'rgba(200,50,50,0.5)',
+      setColor: 'rgba(200,50,50,0.5)',
     };
   }
 
@@ -136,8 +148,35 @@ export class SemanticMapControls extends Component<State, any> {
           },
         })
       ),
+      D.label(
+        {},
+        'Features Default Color',
+      ),
+      D.br(),
+        colorPickerComponent({
+          theme: {width: "100px"},
+          color: this.state.color,
+          hideInputs: true,
+          onChange: (color) => {
+            console.log("sending")
+            console.log(color);
+            this.setState({setColor: color}, () => this.triggerFeatureColor(this.state.setColor));
+          }
+        })
     );
   }
+
+  private triggerFeatureColor = (color: any) => {
+    let color_rgba: RgbColor;
+    color_rgba = color.rgb;
+    let rgba_string: string;
+    rgba_string = "rgba(" + color_rgba.r + ", " + color_rgba.g + ", " + color_rgba.b + ", " + color_rgba.a + ")";
+    trigger({
+      eventType: SemanticMapControlsFeatureColor,
+      source: this.props.id,
+      data: rgba_string,
+    });
+  };
 
   private triggerOpacity = (opacity: number) => {
     trigger({

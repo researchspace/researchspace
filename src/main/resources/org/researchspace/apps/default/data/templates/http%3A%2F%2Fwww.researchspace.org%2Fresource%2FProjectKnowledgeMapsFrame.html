@@ -34,9 +34,8 @@
                        '
                        column-configuration='[
                             {"variableName":"diagram", "displayName":"Knowledge Map", "cellTemplate":"{{> view}}"},
-                            {"variableName":"author", "displayName":"Author", "cellTemplate":"<div><i class=\"fa fa-user\" style=\"margin-right: 10px\"></i>
-                                             <mp-label iri=\"{{author.value}}\"></mp-label></div>"},
-                            {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{dateTimeFormat modified.value }}" }
+                            {"variableName":"author", "displayName":"Author", "cellTemplate":"{{> author}}"},
+                            {"variableName":"modified", "displayName":"Last Update", "cellTemplate": "{{> modifiedAt}}" }
                             [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/ontodiaDiagramContainer>:delete:any")]]
                               ,{"displayName":"Actions", "cellTemplate": "<mp-ldp-remove-from-container-action iri=\"{{diagram.value}}\" 
                                               data-container=\"http://www.researchspace.org/resource/system/ontodiaDiagramContainer\">
@@ -58,6 +57,14 @@
               </div>
               </semantic-link>
             </div>
+          </template>
+          <template id='author'>
+            <div><i class="fa fa-user" style="margin-right: 10px"></i>
+               <mp-label iri="{{author.value}}"></mp-label>
+            </div>
+          </template>
+          <template id='modifiedAt'>
+            {{dateTimeFormat modified.value "LLL"}}
           </template>
        </semantic-table>
           </bs-col>   

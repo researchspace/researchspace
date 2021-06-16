@@ -185,45 +185,55 @@
 
 
         <mp-user-language-switch></mp-user-language-switch>
-        <mp-anonymous-hidden alt='<li><a href="/login" title="login" class="rs-body-m-M">Logout</a></li>'>
-          <bs-nav-dropdown title="Account" id="rs-account-dropdown" class="rs-account-dropdown">
-
-            <bs-menu-item title='userPrincipal'>
-              <semantic-query
-                query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                template='\{{> template}}'>
-                <template id='template'>
-                  <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
-                    <div class="user-dropdown_item">
-                      <i class="rs-icon rs-icon-user_round rs-xs-none"></i>
-                      <span>\{{bindings.0.userName.value}}</span>
-                    </div>
-                  </semantic-link-container>
-                </template>
-              </semantic-query>
-            </bs-menu-item>
-
-            {{!--       <semantic-link-container uri="http://www.researchspace.org/resource/MyImages">
-                  <bs-menu-item title='my images'>My Images</bs-menu-item>
-                </semantic-link-container>
-
-                <semantic-link-container uri="http://www.researchspace.org/resource/MyPages">
-                  <bs-menu-item title='my pages'>My Narratives</bs-menu-item>
-                </semantic-link-container>
-
-                <semantic-link-container uri="http://www.researchspace.org/resource/MyKnowledgeMaps">
-                  <bs-menu-item title='my maps'>My Knowledge Maps</bs-menu-item>
-                </semantic-link-container>
-                
-                <bs-menu-item divider="true"></bs-menu-item> --}}
-            <bs-menu-item href="/logout" title='logout'>
-              <div class="user-dropdown_item">
-                <i class="rs-icon rs-icon-logout rs-xs-none"></i>
-                <span>Logout</span>
+        <mp-anonymous-hidden alt='<li><a href="/login" title="login">
+                                      <div class="nav-iconAndLabel"> 
+                                        <i class="rs-icon rs-icon-user_round"></i>
+                                        <div>Logout</div>
+                                      </div>
+                                  </a></li>'>
+            <li class="nav-dropdown-container">
+              <div class="nav-iconAndLabel"> 
+                  <i class="rs-icon rs-icon-user_round"></i>
+                  <div>Account</div>
               </div>
-            </bs-menu-item>
+              <bs-nav-dropdown title='' id="rs-account-dropdown" class="rs-account-dropdown">
+                <bs-menu-item title='userPrincipal'>
+                  <semantic-query
+                    query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+                    template='\{{> template}}'>
+                    <template id='template'>
+                      <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
+                        <div class="user-dropdown_item">
+                          <i class="rs-icon rs-icon-user_round rs-xs-none"></i>
+                          <span>\{{bindings.0.userName.value}}</span>
+                        </div>
+                      </semantic-link-container>
+                    </template>
+                  </semantic-query>
+                </bs-menu-item>
 
-          </bs-nav-dropdown>
+                {{!--       <semantic-link-container uri="http://www.researchspace.org/resource/MyImages">
+                      <bs-menu-item title='my images'>My Images</bs-menu-item>
+                    </semantic-link-container>
+
+                    <semantic-link-container uri="http://www.researchspace.org/resource/MyPages">
+                      <bs-menu-item title='my pages'>My Narratives</bs-menu-item>
+                    </semantic-link-container>
+
+                    <semantic-link-container uri="http://www.researchspace.org/resource/MyKnowledgeMaps">
+                      <bs-menu-item title='my maps'>My Knowledge Maps</bs-menu-item>
+                    </semantic-link-container>
+                    
+                    <bs-menu-item divider="true"></bs-menu-item> --}}
+                <bs-menu-item href="/logout" title='logout'>
+                  <div class="user-dropdown_item">
+                    <i class="rs-icon rs-icon-logout rs-xs-none"></i>
+                    <span>Logout</span>
+                  </div>
+                </bs-menu-item>
+
+              </bs-nav-dropdown>
+           </li>
         </mp-anonymous-hidden>
 
 

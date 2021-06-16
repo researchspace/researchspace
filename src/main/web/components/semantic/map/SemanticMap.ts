@@ -263,35 +263,40 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private setFeatureColor = (event: Event<any>) => {
-    let new_color: string;
-    new_color = event.data;
-    console.log("received" + new_color);
-    const features_layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
+    if(event.targets[0] === this.props.id){
+      let new_color: string;
+      new_color = event.data;
+      const features_layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
 
-    features_layer.getSource().getFeatures().forEach((feature) => {
-      feature.setStyle(
-          new Style({
-            fill: new Fill({
-              color: new_color,
-            }),
-            stroke: new Stroke({
-              color: new_color,
-            }),
-          })
-        );
-    });
+      features_layer.getSource().getFeatures().forEach((feature) => {
+        feature.setStyle(
+            new Style({
+              fill: new Fill({
+                color: new_color,
+              }),
+              stroke: new Stroke({
+                color: new_color,
+              }),
+            })
+          );
+      });
+    }
   };
 
   private setOverlayOpacity = (event: Event<any>) => {
-    let new_opacity = event.data;
-    let overlay_layer = this.getOverlayLayer();
-    overlay_layer.setOpacity(new_opacity);
+    if(event.targets[0] === this.props.id){
+      let new_opacity = event.data;
+      let overlay_layer = this.getOverlayLayer();
+      overlay_layer.setOpacity(new_opacity);
+    }
   };
 
   private setOverlaySwipe = (event: Event<any>) => {
-    let new_swipeValue = event.data;
-    this.swipeValue = new_swipeValue;
-    this.map.render()
+    if(event.targets[0] === this.props.id){
+      let new_swipeValue = event.data;
+      this.swipeValue = new_swipeValue;
+      this.map.render()
+    }
   }
 
   private getInputCrs() {
@@ -426,7 +431,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private setOverlayVisualizationFromEvent = (event: Event<any>) => {
-    this.setOverlayVisualization(event.data);
+    if(event.targets[0] === this.props.id){
+      this.setOverlayVisualization(event.data);
+    }
   };
 
   private resetVisualizations(){

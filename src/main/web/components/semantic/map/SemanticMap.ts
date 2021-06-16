@@ -38,11 +38,13 @@ import Stroke from 'ol/style/Stroke';
 import Feature from 'ol/Feature';
 import Geometry from 'ol/geom/Geometry';
 import Point from 'ol/geom/Point';
+import { Control } from 'ol/control';
 import MultiPoint from 'ol/geom/MultiPoint';
 import Polygon from 'ol/geom/Polygon';
 import MultiPolygon from 'ol/geom/MultiPolygon';
 import GeometryCollection from 'ol/geom/GeometryCollection';
 import WKT from 'ol/format/WKT';
+import { Draw, Modify, Snap } from 'ol/interaction';
 import { transform } from 'ol/proj';
 import { defaults as controlDefaults } from 'ol/control';
 import { Interaction } from 'ol/interaction';
@@ -54,7 +56,7 @@ import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
 import { getRenderPixel } from 'ol/render';
 import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
-import XYZ from "ol/source/XYZ";
+import XYZ from 'ol/source/XYZ';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -86,8 +88,13 @@ import {
   SemanticMapControlsOverlaySwipe,
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsFeatureColor,
+  SemanticMapToggleEditingMode,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
+import VectorSource from 'ol/source/Vector';
+import CircleStyle from 'ol/style/Circle';
+import { options } from 'superagent';
+import GeometryType from 'ol/geom/GeometryType';
 
 enum Source {
   OSM = 'osm',
@@ -119,13 +126,13 @@ interface Marker {
 export interface SemanticMapConfig {
   /**
    * SPARQL Select query. Query should project `lat` and `lng`, with the WKT point.
-   * Or `wkt` variable with WKT point literal.
+   * Or `wkt` letiable with WKT point literal.
    *
    * Also to use default marker template one need to project `link` with IRI of
    * the corresponding resource and `description` with some short textual
    * marker description text.
    *
-   * One can customize color of the marker/polygon using `color` projection variable
+   * One can customize color of the marker/polygon using `color` projection letiable
    */
   query: string;
 
@@ -140,7 +147,7 @@ export interface SemanticMapConfig {
   noResultTemplate?: string;
 
   /**
-   * Optional numeric zoom between 0-18 (max zoom level may vary depending on the resolution)
+   * Optional numeric zoom between 0-18 (max zoom level may lety depending on the resolution)
    * to fix the inital map zoom.
    * If no fixed zoom level is provided, the zoom will be calculated on the max bounding box
    * of available markers.
@@ -166,7 +173,7 @@ export interface SemanticMapConfig {
   provider?: Source;
 
   /**
-   * Optional JSON object containing various user provided options
+   * Optional JSON object containing letious user provided options
    */
   providerOptions?: ProviderOptions;
 
@@ -194,6 +201,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private mousePosition = null;
   private swipeValue: number;
 
+  private source: VectorSource;
+  private vector: VectorLayer;
+  private modify: Modify;
+
+  private draw: Interaction;
+  private snap: Interaction;
+
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -204,6 +218,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       overlayVisualization: 'normal',
       featureColor: 'normal',
     };
+
+    this.initInteractions();
 
     this.cancelation
       .map(
@@ -243,7 +259,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           eventType: SemanticMapControlsOverlaySwipe,
         })
       )
-    .onValue(this.setOverlaySwipe);
+      .onValue(this.setOverlaySwipe);
 
     this.cancelation
       .map(
@@ -260,44 +276,112 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.setFeatureColor);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapToggleEditingMode,
+        })
+      )
+      .onValue(this.handleEditingMode);
   }
 
+  /**
+   *
+   * @param event
+   */
   private setFeatureColor = (event: Event<any>) => {
     if(event.targets[0] === this.props.id){
-      let new_color: string;
-      new_color = event.data;
-      const features_layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
-
-      features_layer.getSource().getFeatures().forEach((feature) => {
-        feature.setStyle(
+      const newColor: string = event.data;
+      const featuresLayer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
+  
+      featuresLayer
+        .getSource()
+        .getFeatures()
+        .forEach((feature) => {
+          feature.setStyle(
             new Style({
               fill: new Fill({
-                color: new_color,
+                color: newColor,
               }),
               stroke: new Stroke({
-                color: new_color,
+                color: newColor,
               }),
             })
           );
-      });
+        });
     }
   };
 
+  /**
+   *
+   * @param event
+   */
   private setOverlayOpacity = (event: Event<any>) => {
     if(event.targets[0] === this.props.id){
-      let new_opacity = event.data;
-      let overlay_layer = this.getOverlayLayer();
-      overlay_layer.setOpacity(new_opacity);
+      const newOpacity = event.data;
+      this.getOverlayLayer().setOpacity(newOpacity);
     }
   };
 
+  /**
+   *
+   * @param event
+   */
   private setOverlaySwipe = (event: Event<any>) => {
     if(event.targets[0] === this.props.id){
-      let new_swipeValue = event.data;
-      this.swipeValue = new_swipeValue;
-      this.map.render()
+      const newSwipeValue = event.data;
+      this.swipeValue = newSwipeValue;
+      this.map.render();
     }
   }
+
+
+  initInteractions = () => {
+    this.source = new VectorSource();
+    this.vector = new VectorLayer({
+      source: this.source,
+      style: new Style({
+        fill: new Fill({
+          color: 'rgba(255, 255, 255, 0.2)',
+        }),
+        stroke: new Stroke({
+          color: '#ffcc33',
+          width: 2,
+        }),
+        image: new CircleStyle({
+          radius: 7,
+          fill: new Fill({
+            color: '#ffcc33',
+          }),
+        }),
+      }),
+    });
+
+    this.modify = new Modify({ source: this.source });
+
+    this.draw = new Draw({
+      source: this.source,
+      type: GeometryType.POLYGON,
+    });
+
+    this.snap = new Snap({ source: this.source });
+  };
+
+  private handleEditingMode = (event: Event<any>) => {
+    if (event.data) this.setEditingMode();
+    else this.revokeEditingMode();
+  };
+
+  private setEditingMode = () => {
+    this.map.addInteraction(this.draw);
+    this.map.addInteraction(this.snap);
+  };
+
+  private revokeEditingMode = () => {
+    this.map.removeInteraction(this.draw);
+    this.map.removeInteraction(this.snap);
+  };
 
   private getInputCrs() {
     return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined
@@ -409,25 +493,24 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private replaceBasemap = (event: Event<any>) => {
-    let newBasemap = this.getTilesLayerFromIdentifier(event.data.selectedBasemap);
+    const newBasemap = this.getTilesLayerFromIdentifier(event.data.selectedBasemap);
     this.map.getLayers().removeAt(0);
     this.map.getLayers().insertAt(0, newBasemap);
   };
 
   private replaceOverlay = (event: Event<any>) => {
-    var loaded_overlays = 0;
+    let loadedOverlays = 0;
     this.map.getLayers().forEach(function (tilesLayer) {
       if (tilesLayer instanceof TileLayer && tilesLayer.get('level') === 'overlay') {
-        loaded_overlays++;
+        loadedOverlays++;
       }
     });
-    if (loaded_overlays > 0) {
+    if (loadedOverlays > 0) {
       this.map.getLayers().removeAt(1);
     }
 
-    let new_overlay = this.getTilesLayerFromIdentifier(event.data.selectedOverlay);
-
-    this.map.getLayers().insertAt(1, new_overlay);
+    const newOverlay = this.getTilesLayerFromIdentifier(event.data.selectedOverlay);
+    this.map.getLayers().insertAt(1, newOverlay);
   };
 
   private setOverlayVisualizationFromEvent = (event: Event<any>) => {
@@ -436,25 +519,25 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }
   };
 
-  private resetVisualizations(){
-    let overlay_layer = this.getOverlayLayer();
-    overlay_layer.un('prerender', this.spyglassFunction);
-    overlay_layer.un('prerender', this.swipeFunction);
-    overlay_layer.un('postrender', function (event) {
+  private resetVisualizations() {
+    const overlayLayer = this.getOverlayLayer();
+    overlayLayer.un('prerender', this.spyglassFunction);
+    overlayLayer.un('prerender', this.swipeFunction);
+    overlayLayer.un('postrender', function (event) {
       const ctx = event.context;
       ctx.restore();
     });
   }
 
-  private setOverlayVisualization(overlay_visualization: string) {
-    let overlay_layer = this.getOverlayLayer();
+  private setOverlayVisualization(overlayVisualization: string) {
+    const overlayLayer = this.getOverlayLayer();
 
     this.setState(
       {
-        overlayVisualization: overlay_visualization,
+        overlayVisualization: overlayVisualization,
       },
       () => {
-        switch (overlay_visualization) {
+        switch (overlayVisualization) {
           case 'normal': {
             this.resetVisualizations();
             this.map.render();
@@ -462,24 +545,22 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           }
           case 'spyglass': {
             this.resetVisualizations();
-            overlay_layer.on('prerender', this.spyglassFunction);
-            overlay_layer.on('postrender', function (event) {
-              const ctx = event.context;
-              ctx.restore();
+            overlayLayer.on('prerender', this.spyglassFunction);
+            overlayLayer.on('postrender', function (event) {
+              event.context.restore();
             });
             this.map.render();
             break;
           }
           case 'swipe': {
             this.resetVisualizations();
-            overlay_layer.on('prerender', this.swipeFunction);
-            overlay_layer.on('postrender', function (event) {
-              var ctx = event.context;
-              ctx.restore();
+            overlayLayer.on('prerender', this.swipeFunction);
+            overlayLayer.on('postrender', function (event) {
+              event.context.restore();
             });
-          this.map.render();
-          break;
-          };
+            this.map.render();
+            break;
+          }
         }
       }
     );
@@ -488,7 +569,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private spyglassFunction = (event) => {
     const radius = 120;
     const ctx = event.context;
-    //let pixelRatio = event.frameState.pixelRatio;
     ctx.save();
     ctx.beginPath();
     if (this.mousePosition) {
@@ -504,22 +584,22 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private swipeFunction = (event) => {
-      var ctx = event.context;
-      var mapSize = this.map.getSize();
-      var width = mapSize[0] * (this.swipeValue / 100);
-      var tl = getRenderPixel(event, [0, 0]);
-      var tr = getRenderPixel(event, [width, 0]);
-      var bl = getRenderPixel(event, [0, mapSize[1]]);
-      var br = getRenderPixel(event, [width, mapSize[1]]);
-    
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(tl[0], tl[1]);
-      ctx.lineTo(bl[0], bl[1]);
-      ctx.lineTo(br[0], br[1]);
-      ctx.lineTo(tr[0], tr[1]);
-      ctx.closePath();
-      ctx.clip();
+    const ctx = event.context;
+    const mapSize = this.map.getSize();
+    const width = mapSize[0] * (this.swipeValue / 100);
+    const tl = getRenderPixel(event, [0, 0]);
+    const tr = getRenderPixel(event, [width, 0]);
+    const bl = getRenderPixel(event, [0, mapSize[1]]);
+    const br = getRenderPixel(event, [width, mapSize[1]]);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(tl[0], tl[1]);
+    ctx.lineTo(bl[0], bl[1]);
+    ctx.lineTo(br[0], br[1]);
+    ctx.lineTo(tr[0], tr[1]);
+    ctx.closePath();
+    ctx.clip();
   };
 
   /**
@@ -598,7 +678,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       if (_.isUndefined(geo)) {
         const msg = `Result of SPARQL Select query does have neither
-                    lat,lng nor wkt projection variable. `;
+                    lat,lng nor wkt projection letiable. `;
         this.setState({ errorMessage: maybe.Just(msg) });
       } else {
         f.setGeometry(geo);
@@ -633,19 +713,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private getTilesLayersFromTemplate() {
-    var tileslayers = React.Children.map(this.props.children, (child : any) => {
+    return React.Children.map(this.props.children, (child: any) => {
       if (child.type.name === 'TilesLayer') {
-        let tileslayer = new TileLayer({
-          source: new XYZ({url: child.props.url})
+        const tileslayer = new TileLayer({
+          source: new XYZ({ url: child.props.url }),
         });
         tileslayer.set('level', child.props.level);
         tileslayer.set('name', child.props.name);
         tileslayer.set('identifier', child.props.identifier);
-        this.addTilesLayer(tileslayer)
+        this.addTilesLayer(tileslayer);
         return child;
       }
     });
-    return tileslayers;
   }
 
   private addTilesLayer(tileslayer) {
@@ -668,21 +747,21 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private getOverlayLayer() {
-    let overlay_layer;
-    this.map.getLayers().forEach(function (current_layer) {
-      if (current_layer.get('level') === 'overlay') {
-        overlay_layer = current_layer;
+    let overlayLayer;
+    this.map.getLayers().forEach(function (currentLayer) {
+      if (currentLayer.get('level') === 'overlay') {
+        overlayLayer = currentLayer;
       }
     });
-    return overlay_layer;
+    return overlayLayer;
   }
 
   private renderMap(node, props, center, markers) {
     window.setTimeout(() => {
       const geometries = this.createGeometries(markers);
       const layers = _.mapValues(geometries, this.createLayer);
-      var basemapLayers = [];
-      var overlayLayers = [];
+      let basemapLayers = [];
+      const overlayLayers = [];
 
       //TODO: get all basemap Layers (from an attribute on the <tileslayer> component) and give them an ID
       //TODO: get all overlay layers and give them an ID
@@ -711,10 +790,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           attributionOptions: {
             collapsible: false,
           },
-        }),
+        }).extend([new AnnotateControl()]),
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interactionDefaults({}),
-        layers: [..._.values(basemapLayers), ..._.values(layers)],
+        layers: [..._.values(basemapLayers), ..._.values(layers), this.vector],
         target: node,
         view: new View({
           center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
@@ -741,7 +820,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       // asynch execute query and add markers
       this.addMarkersFromQuery(this.props, this.context);
 
-      this.initializeMarkerPopup(map);
+      // TODO: popup only on features
+      //this.initializeMarkerPopup(map);
       map.getView().fit(props.mapOptions.extent);
 
       window.addEventListener('resize', () => {
@@ -772,6 +852,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       view.setCenter(this.props.fixCenter);
       view.setZoom(zoom);
+
+      this.map.addInteraction(this.modify);
+
+      this.map.on()
+
+
     }, 1000);
   }
 
@@ -925,6 +1011,42 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     } else {
       return props.tupleTemplate;
     }
+  }
+}
+
+export class AnnotateControl extends Control {
+  editingMode: boolean;
+
+  constructor() {
+    super({});
+
+    // default editing mode
+    this.editingMode = false;
+
+    // Create edit button
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'ol-control';
+    button.innerHTML = 'E';
+
+    //
+    const element = document.createElement('div');
+    element.className = 'ol-feature ol-control';
+    element.appendChild(button);
+    Control.call(this, {
+      element: element,
+    });
+    button.addEventListener('click', () => this.click());
+  }
+
+  click() {
+    this.editingMode = !this.editingMode;
+
+    trigger({
+      eventType: SemanticMapToggleEditingMode,
+      source: 'Annotate-button',
+      data: this.editingMode,
+    });
   }
 }
 

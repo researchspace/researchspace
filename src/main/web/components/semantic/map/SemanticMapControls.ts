@@ -1,4 +1,4 @@
-import { Props, createElement } from 'react';
+import { createElement } from 'react';
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { Component, ComponentContext } from 'platform/api/components';
@@ -33,12 +33,16 @@ interface State {
   swipeValue?: number;
   overlayVisualization?: string;
   loading?: boolean;
-  id: string;
-  color: typeof ColorObject;
-  setColor:typeof ColorObject;
+  color: any;
+  setColor: any;
 }
 
-export class SemanticMapControls extends Component<State, any> {
+interface Props {
+  targetMapId: string;
+  id: string;
+}
+
+export class SemanticMapControls extends Component<Props, State> {
   constructor(props: any, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -124,7 +128,7 @@ export class SemanticMapControls extends Component<State, any> {
             onChange: (event) => {
               const input = event.target as HTMLInputElement;
               const input2 = input.value;
-              this.setState({ swipeValue: input2 }, () => this.triggerSwipe(this.state.swipeValue));
+              this.setState({ swipeValue: Number(input2) }, () => this.triggerSwipe(this.state.swipeValue));
             },
         })
       ) : (null),
@@ -158,8 +162,6 @@ export class SemanticMapControls extends Component<State, any> {
           color: this.state.color,
           hideInputs: true,
           onChange: (color) => {
-            console.log("sending")
-            console.log(color);
             this.setState({setColor: color}, () => this.triggerFeatureColor(this.state.setColor));
           }
         })
@@ -175,6 +177,7 @@ export class SemanticMapControls extends Component<State, any> {
       eventType: SemanticMapControlsFeatureColor,
       source: this.props.id,
       data: rgba_string,
+      targets: [this.props.targetMapId]
     });
   };
 
@@ -183,6 +186,7 @@ export class SemanticMapControls extends Component<State, any> {
       eventType: SemanticMapControlsOverlayOpacity,
       source: this.props.id,
       data: opacity,
+      targets: [this.props.targetMapId]
     });
   };
 
@@ -191,6 +195,7 @@ export class SemanticMapControls extends Component<State, any> {
       eventType: SemanticMapControlsOverlaySwipe,
       source: this.props.id,
       data: swipeValue,
+      targets: [this.props.targetMapId]
     });
   };
 
@@ -199,6 +204,7 @@ export class SemanticMapControls extends Component<State, any> {
       eventType: SemanticMapControlsOverlayVisualization,
       source: this.props.id,
       data: visualization,
+      targets: [this.props.targetMapId]
     });
     switch (visualization){
       case "swipe": {

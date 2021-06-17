@@ -291,24 +291,26 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
    * @param event
    */
   private setFeatureColor = (event: Event<any>) => {
-    const newColor: string = event.data;
-    const featuresLayer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
-
-    featuresLayer
-      .getSource()
-      .getFeatures()
-      .forEach((feature) => {
-        feature.setStyle(
-          new Style({
-            fill: new Fill({
-              color: newColor,
-            }),
-            stroke: new Stroke({
-              color: newColor,
-            }),
-          })
-        );
-      });
+    if(event.targets[0] === this.props.id){
+      const newColor: string = event.data;
+      const featuresLayer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
+  
+      featuresLayer
+        .getSource()
+        .getFeatures()
+        .forEach((feature) => {
+          feature.setStyle(
+            new Style({
+              fill: new Fill({
+                color: newColor,
+              }),
+              stroke: new Stroke({
+                color: newColor,
+              }),
+            })
+          );
+        });
+    }
   };
 
   /**
@@ -316,8 +318,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
    * @param event
    */
   private setOverlayOpacity = (event: Event<any>) => {
-    const newOpacity = event.data;
-    this.getOverlayLayer().setOpacity(newOpacity);
+    if(event.targets[0] === this.props.id){
+      const newOpacity = event.data;
+      this.getOverlayLayer().setOpacity(newOpacity);
+    }
   };
 
   /**
@@ -325,10 +329,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
    * @param event
    */
   private setOverlaySwipe = (event: Event<any>) => {
-    const newSwipeValue = event.data;
-    this.swipeValue = newSwipeValue;
-    this.map.render();
-  };
+    if(event.targets[0] === this.props.id){
+      const newSwipeValue = event.data;
+      this.swipeValue = newSwipeValue;
+      this.map.render();
+    }
+  }
+
 
   initInteractions = () => {
     this.source = new VectorSource();
@@ -512,7 +519,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private setOverlayVisualizationFromEvent = (event: Event<any>) => {
-    this.setOverlayVisualization(event.data);
+    if(event.targets[0] === this.props.id){
+      this.setOverlayVisualization(event.data);
+    }
   };
 
   private resetVisualizations() {

@@ -860,7 +860,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       this.map.addInteraction(this.modify);
 
-      this.map.on();
     }, 1000);
   }
 

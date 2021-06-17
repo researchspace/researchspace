@@ -369,6 +369,11 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private setEditingMode = () => {
     this.map.addInteraction(this.draw);
     this.map.addInteraction(this.snap);
+
+    // Get feature just drawn
+    this.draw.on('drawend', (event) => {
+      console.log(event.feature);
+    });
   };
 
   private revokeEditingMode = () => {
@@ -846,9 +851,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       this.map.addInteraction(this.modify);
 
-      this.map.on()
-
-
+      this.map.on();
     }, 1000);
   }
 

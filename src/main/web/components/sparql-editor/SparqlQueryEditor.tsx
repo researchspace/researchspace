@@ -102,7 +102,7 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
               permission={Permissions.toLdp('container', VocabPlatform.QueryTemplateContainer, 'create', 'owner')}
             >
               <Button
-              className='btn-grey'
+              className='btn-grey-dark-border'
                 onClick={() =>
                   getOverlaySystem().show(
                     SaveQueryModal.KEY,

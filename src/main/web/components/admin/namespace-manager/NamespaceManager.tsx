@@ -264,10 +264,10 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
           <div>
             Delete prefix "{record.prefix}"?
             <div>
-              <Button className="btn-grey btn-danger" onClick={this.onConfirm}>
+              <Button className="btn-grey-dark-border btn-danger" onClick={this.onConfirm}>
                 Delete
               </Button>
-              <Button className="btn-grey" onClick={this.onCancel}>
+              <Button className="btn-grey-dark-border" onClick={this.onCancel}>
                 Cancel
               </Button>
             </div>
@@ -275,7 +275,7 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
         );
       } else {
         return (
-          <Button className="btn-grey btn-danger" onClick={this.onDeleteClick}>
+          <Button className="btn-grey-dark-border btn-danger" onClick={this.onDeleteClick}>
             <span className="fa fa-trash-o" />
             &nbsp;Delete
           </Button>

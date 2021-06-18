@@ -153,7 +153,7 @@ export class ConfigManager extends Component<ConfigManagerProps, State> {
                     ))}
                   </div>
                   <Button
-                    className="btn-grey"
+                    className="btn-grey-dark-border"
                     disabled={!editable || savingProperty}
                     onClick={() => setEditedProperty(record.name)}
                   >

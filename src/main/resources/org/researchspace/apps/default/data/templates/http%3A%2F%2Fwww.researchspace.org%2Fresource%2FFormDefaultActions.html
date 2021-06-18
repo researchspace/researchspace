@@ -4,17 +4,17 @@
       {{#ifCond mode "===" "edit"}}
         {{#if broaderPropertyIRI}}
         <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "{{collection}}", "broader": "{{node}}", "new": true, "edit": false}' targets='["{{viewId}}-term-forms"]'>
-          <button name="add" class="btn btn-grey">Add narrower {{itemLabel}}</button>
+          <button name="add" class="btn btn-grey-dark-border">Add narrower {{itemLabel}}</button>
         </mp-event-trigger>
         {{/if}}
       {{/ifCond}}
     </div>
-    <div> 
+    <div class="btn-form-actions"> 
       {{#ifCond mode "===" "edit"}}
         <button name="reset" class="btn btn-default">Reset</button>
         <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='{{viewId}}-item-remove-confirmation-dialog' title="Remove {{itemLabel}}" type="modal" bs-size="large">
           <mp-overlay-dialog-trigger>
-            <button name="delete" class="btn btn-danger">Delete</button>
+            <button name="delete" class="btn btn-default">Delete</button>
           </mp-overlay-dialog-trigger>
           <mp-overlay-dialog-content>
             <div>
@@ -67,7 +67,7 @@
                                           name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
                                           media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
                           >
-                            <button class="btn btn-danger">Delete Entity</button>
+                            <button class="btn btn-default">Delete Entity</button>
                           </rs-file-remove>
                         </semantic-context>
                         <mp-event-proxy id='{{bindings.0.viewId.value}}-entity-removal' on-event-source='{{bindings.0.viewId.value}}-file-removal-{{bindings.0.node.value}}' on-event-type='File.Removed'
@@ -77,7 +77,7 @@
                     </semantic-query>
                   [[else]]
                     <mp-event-trigger id='{{viewId}}-confirm-entity-removal' type='Form.RemoveResource' data='{"iri": "{{node}}"}' targets='["{{viewId}}-vocab-form"]'>
-                      <button class="btn btn-danger">Delete Entity</button>
+                      <button class="btn btn-default">Delete Entity</button>
                     </mp-event-trigger>  
                   [[/if]]
                   <mp-event-proxy id='{{viewId}}-update-form' on-event-source='{{viewId}}-vocab-form' on-event-type='Form.ResourceRemoved'
@@ -92,10 +92,10 @@
           </mp-overlay-dialog-content>
         </mp-overlay-dialog>
       {{/ifCond}}
+
+      <button name="dry-run" class="btn btn-default">Debug</button>
       <button name="submit" class="btn btn-primary">Save</button>
       
-     
-      <button name="dry-run" class="btn btn-default" style="margin-left: 10px;">Debug</button>
       <mp-event-proxy id='{{viewId}}-show-form-debug-dialog' on-event-source='{{viewId}}-vocab-form' on-event-type='Form.DryRunResults'
                       proxy-event-type='Component.TemplateUpdate' additional-data='{"show": true}' proxy-targets='["{{viewId}}-form-debug-info"]'
       ></mp-event-proxy>

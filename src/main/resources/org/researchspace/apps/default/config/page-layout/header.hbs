@@ -185,60 +185,49 @@
 
 
         <mp-user-language-switch></mp-user-language-switch>
-        <mp-anonymous-hidden alt='<li><a href="/login" title="login">
+        <li>
+          <mp-anonymous-hidden alt='<li><a href="/login" title="login">
                                       <div class="nav-iconAndLabel"> 
                                         <i class="rs-icon rs-icon-user_round"></i>
                                         <div>Logout</div>
                                       </div>
                                   </a></li>'>
-            <li class="nav-dropdown-container">
-              <div class="nav-iconAndLabel"> 
-                  <i class="rs-icon rs-icon-user_round"></i>
-                  <div>Account</div>
-              </div>
-              <bs-nav-dropdown title='' id="rs-account-dropdown" class="rs-account-dropdown">
+
+            <bs-dropdown id="rs-navbar-dropdown" class="rs-navbar-dropdown">
+              <bs-dropdown-toggle>
+                <div class="navDropdown-iconAndLabel"> 
+                    <i class="rs-icon rs-icon-user_round"></i>
+                    <div>Account</div>
+                </div>
+              </bs-dropdown-toggle>
+              <bs-dropdown-menu>
                 <bs-menu-item title='userPrincipal'>
-                  <semantic-query
-                    query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                    template='\{{> template}}'>
-                    <template id='template'>
-                      <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
-                        <div class="user-dropdown_item">
-                          <i class="rs-icon rs-icon-user_round rs-xs-none"></i>
-                          <span>\{{bindings.0.userName.value}}</span>
-                        </div>
-                      </semantic-link-container>
-                    </template>
-                  </semantic-query>
+                    <semantic-query
+                      query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+                      template='\{{> template}}'>
+                      <template id='template'>
+                        <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
+                          <div class="user-dropdown_item">
+                            <i class="rs-icon rs-icon-user_round rs-xs-none"></i>
+                            <span>\{{bindings.0.userName.value}}</span>
+                          </div>
+                        </semantic-link-container>
+                      </template>
+                    </semantic-query>
                 </bs-menu-item>
-
-                {{!--       <semantic-link-container uri="http://www.researchspace.org/resource/MyImages">
-                      <bs-menu-item title='my images'>My Images</bs-menu-item>
-                    </semantic-link-container>
-
-                    <semantic-link-container uri="http://www.researchspace.org/resource/MyPages">
-                      <bs-menu-item title='my pages'>My Narratives</bs-menu-item>
-                    </semantic-link-container>
-
-                    <semantic-link-container uri="http://www.researchspace.org/resource/MyKnowledgeMaps">
-                      <bs-menu-item title='my maps'>My Knowledge Maps</bs-menu-item>
-                    </semantic-link-container>
-                    
-                    <bs-menu-item divider="true"></bs-menu-item> --}}
                 <bs-menu-item href="/logout" title='logout'>
-                  <div class="user-dropdown_item">
-                    <i class="rs-icon rs-icon-logout rs-xs-none"></i>
-                    <span>Logout</span>
-                  </div>
+                    <div class="user-dropdown_item">
+                      <i class="rs-icon rs-icon-logout rs-xs-none"></i>
+                      <span>Logout</span>
+                    </div>
                 </bs-menu-item>
-
-              </bs-nav-dropdown>
-           </li>
-        </mp-anonymous-hidden>
-
+              </bs-dropdown-menu>
+            </bs-dropdown>
+          </mp-anonymous-hidden>
+        </li>
 
       </ul>
 
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
+    </div>
+  </div>
 </nav>

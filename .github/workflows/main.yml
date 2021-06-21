@@ -54,13 +54,13 @@ jobs:
             ${{ runner.os }}-node-
 
       # run tests with gradle only if no build_image label is present and we are not building master branch, otherwise tests are run as part of buildZip task
-      - name: test
-        if: (contains(github.event.pull_request.labels.*.name, 'build_image') == false && github.ref != 'refs/heads/master') || contains(github.ref, 'build-docker')
-        uses: eskatos/gradle-command-action@v1
-        env:
-          CHROMIUM_BIN: /usr/bin/google-chrome
-        with:
-          arguments: test
+      # - name: test
+      #   if: (contains(github.event.pull_request.labels.*.name, 'build_image') == false && github.ref != 'refs/heads/master') || contains(github.ref, 'build-docker')
+      #   uses: eskatos/gradle-command-action@v1
+      #   env:
+      #     CHROMIUM_BIN: /usr/bin/google-chrome
+      #   with:
+      #     arguments: test
 
       - name: Set current date as env variable
         run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV

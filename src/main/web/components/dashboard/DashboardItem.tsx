@@ -329,16 +329,16 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   private renderGridViewDashboard = () => {
     const { views } = this.props;
     const authItems = views.filter((item) => item.type === 'authoring' || !item.type);
-    const searchViewItems = views.filter((item) => item.type === 'search' || item.type === 'view');
+    const searchViewItems = views.filter((item) => item.type === 'view');
 
     return (
       <div className={styles.gridViewDashboard} onClick={this.onFocus}>
         
         <div className={styles.help}>
           <i className={'fa fa-question'}></i>
-          <div className={styles.helpText}>What is the Thinking Frames?</div>
+          <div className={styles.helpText}>What are the Thinking Frames?</div>
         </div>
-        <div className={styles.gridViewTitle1}>Search and View</div>
+        <div className={styles.gridViewTitle1}>View</div>
         <div className={styles.gridViewItemsView}>{searchViewItems.map(this.renderItemCard)}</div>
       
         <div className={styles.gridViewTitle2}>Authoring</div>

@@ -2,21 +2,8 @@
 uses client-side template:
 [[> rsp:HierarchyManagerTemplate]]
 --]]
-<ol class="page-breadcrumb">
-  <li>
-    <mp-link title="Home" url="/">Home</mp-link>
-  </li>
-  <li>
-    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
-  </li>
-  <li class="active">
-    Authority manager 
-  </li>
-</ol>
 
-<div class="page">
-[[#>rsp:ClipboardSidebar]]
-[[#>rsp:DetailsSidebar]]
+<div>
 
 [[!--
   About VOCABULARY and AUTHORITY representation:
@@ -27,9 +14,9 @@ uses client-side template:
   type and relations between entities are based on cidoc-crm entities and their corresponding properties; 
 
 --]]
-[[#> rsp:HierarchyManagerTemplate title="Authority Manager" addTitle='Authority']]
+[[#> rsp:HierarchyManagerTemplate title="Authority Editor" addTitle='Authority']]
     [[#*inline "addNewStructureForm"]]
-             <semantic-search id="scheme-iri-selector">
+        <semantic-search id="scheme-iri-selector">
                 <semantic-search-form-query 
                                             query-template='{
                                               "queryString": "SELECT $schemeLabel ?entityTypeURI { BIND($label as ?schemeLabel). BIND(?entitytype as ?entityTypeURI )}",
@@ -226,13 +213,19 @@ uses client-side template:
                       </template>
 
                       <template id='schemeRow'>
-                          <div class="scheme-table-row">
-                              <semantic-link iri="{{scheme.value}}" class="schema-label">{{schemeLabel.value}}</semantic-link>
+                          <div class="scheme-table-row"> [[!-- <semantic-link iri="{{scheme.value}}"  --]]
+                               <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                                      data='{"resourceIri": "{{scheme.value}}", "viewId": "authority-content"}' 
+                                      targets='["thinking-frames"]'>
+                                     <a class="schema-label">{{schemeLabel.value}}</a>
+                                 </mp-event-trigger>
                               <div class="btn-grey-container">
-                              <semantic-link-container uri='{{scheme.value}}' class="schema-label">
-                                              <button class="btn-grey">Show Terms</button>
-                                              </semantic-link-container>
-                              <mp-overlay-dialog title="Edit {{schemeLabel.value}}" type="modal" bs-size="large">
+                                 <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                                      data='{"resourceIri": "{{scheme.value}}", "viewId": "authority-content"}' 
+                                      targets='["thinking-frames"]'>
+                                     <button class="btn-grey">Show Terms</button>
+                                 </mp-event-trigger>
+                                  <mp-overlay-dialog title="Edit {{schemeLabel.value}}" type="modal" bs-size="large">
                                   <mp-overlay-dialog-trigger>
                                   <button class="btn-grey">Edit</button>
                                   </mp-overlay-dialog-trigger>
@@ -303,8 +296,5 @@ uses client-side template:
     [[/inline]]
 
 [[/rsp:HierarchyManagerTemplate]]
-
-[[/rsp:DetailsSidebar]]
-[[/rsp:ClipboardSidebar]]
 
 </div>

@@ -98,12 +98,8 @@ public class FileStorageEndpoint {
 
     @GET
     @RequiresAuthentication
-<<<<<<< HEAD
     public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId, 
                                     @QueryParam("mode") String mode, @QueryParam("mediaType") String mediaType ) {
-=======
-    public Response getFile(@QueryParam("fileName") String fileName, @QueryParam("storage") String storageId, @QueryParam("mode") String mode, @QueryParam("mediaType") String mediaType ) {
->>>>>>> build-docker/west-african-bronzes
         if (logger.isTraceEnabled()) {
             logger.trace("Request to get a file from a storage");
         }

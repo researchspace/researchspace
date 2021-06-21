@@ -103,11 +103,7 @@ export async function tryExtractNestedForm(
     return Promise.resolve(getNestedForm(children));
   } else if (nestedFormTemplate) {
     const template = await templateScope.compile(nestedFormTemplate);
-<<<<<<< HEAD
     const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template({"viewId": uuid.v4()}));
-=======
-    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template());
->>>>>>> build-docker/west-african-bronzes
     return getNestedForm(parsedTemplate);
   } else {
     return Promise.resolve(undefined);

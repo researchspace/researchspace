@@ -6,11 +6,14 @@ import XYZ from 'ol/source/XYZ';
 import OSM from 'ol/source/OSM';
 import SemanticMap, { SemanticMapConfig, SemanticMapProps } from 'platform/components/semantic/map/SemanticMap';
 import { trigger, listen } from 'platform/api/events';
+import { Cancellation } from 'platform/api/async';
 import {
   SemanticMapControlsOverlayOpacity,
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
   SemanticMapControlsFeatureColor,
+  SemanticMapSendTilesLayers,
+  SemanticMapControlsSyncFromMap
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -19,6 +22,7 @@ import ColorObject from 'react-pick-color';
 import useColor from 'react-pick-color';
 import { themes } from "react-pick-color";
 import { string } from 'prop-types';
+import { check } from 'basil.js';
 
 const colorPickerComponent = React.createFactory(ColorPicker);
 
@@ -35,6 +39,7 @@ interface State {
   loading?: boolean;
   color: any;
   setColor: any;
+  tilesLayers: Array<any>
 }
 
 interface Props {
@@ -43,6 +48,8 @@ interface Props {
 }
 
 export class SemanticMapControls extends Component<Props, State> {
+  private cancelation = new Cancellation();
+
   constructor(props: any, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -51,11 +58,22 @@ export class SemanticMapControls extends Component<Props, State> {
       overlayVisualization: 'normal',
       color: 'rgba(200,50,50,0.5)',
       setColor: 'rgba(200,50,50,0.5)',
+      tilesLayers: []
     };
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapSendTilesLayers
+        })
+      )
+      .onValue(this.initializeTilesLayers);
   }
 
+  
+
   public componentDidMount() {
-    
+    trigger({eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets:[this.props.targetMapId]});
   }
 
   public render() {
@@ -164,8 +182,81 @@ export class SemanticMapControls extends Component<Props, State> {
           onChange: (color) => {
             this.setState({setColor: color}, () => this.triggerFeatureColor(this.state.setColor));
           }
+        }),
+        D.h3(
+          {},
+          "Levels"
+        ),
+        this.state.tilesLayers.map((tilesLayer) => {
+          return D.div(
+            {style: {}},
+            D.img({src: tilesLayer.get("thumbnail"), style: {height: "100px", width: "100px", objectFit: "cover", margin:"10px"}}),
+            D.div({style: {display: "inline-block", verticalAlign: "top", padding: "10px"}},
+              D.div({style:{width: "140px"}},              
+                D.label({style: {fontWeight: "bold"}}, tilesLayer.get("name")),
+                D.input({
+                  type: "checkbox",
+                  style: {marginLeft: "10px"},
+                  checked: tilesLayer.get("visible"),
+                  onChange: (event) => {
+                    this.setTilesLayerProperty(tilesLayer.get("identifier"), "visible", event.target.checked);
+                  }
+                })
+                ),
+              D.div({},
+                D.label({}, tilesLayer.get("level")),
+                D.input({
+                  type: 'range',
+                  className: 'opacitySlider',
+                  min: 0,
+                  max: 1,
+                  step: 0.01,
+                  value: tilesLayer.get("opacity"),
+                  onChange: (event) => {
+                    const input = event.target as HTMLInputElement;
+                    const opacity = parseFloat(input.value);
+                    const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
+                    this.setTilesLayerProperty(tilesLayer.get("identifier"), "opacity", capped);
+                  },
+                })
+                )
+              )
+          )
         })
     );
+  }
+
+  private getTilesLayerFromIdentifier(identifier) {
+    let result;
+    this.state.tilesLayers.forEach(function (tilesLayer) {
+      if (tilesLayer.get('identifier') === identifier) {
+        result = tilesLayer;
+      }
+    });
+    return result;
+  }
+
+  private initializeTilesLayers = (event: any) => {
+    this.setState({
+      tilesLayers: event.data
+    }, () => {
+      console.log(this.state.tilesLayers);
+    })
+  }
+
+  private setTilesLayerProperty(identifier, propertyName, propertyValue){
+    let tilesLayersClone = this.state.tilesLayers; 
+
+    tilesLayersClone.forEach(function (tilesLayer) {
+      if (tilesLayer.get('identifier') === identifier) {
+        tilesLayer.set(propertyName, propertyValue);
+      }
+    });
+    
+    this.setState({tilesLayers: tilesLayersClone}, () => {
+      console.log("State updated:")
+      console.log(this.state.tilesLayers);
+    })
   }
 
   private triggerFeatureColor = (color: any) => {

@@ -89,6 +89,8 @@ import {
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsFeatureColor,
   SemanticMapToggleEditingMode,
+  SemanticMapSendTilesLayers,
+  SemanticMapControlsSyncFromMap,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -100,6 +102,7 @@ enum Source {
   OSM = 'osm',
 }
 
+//TODO: remove them
 interface ProviderOptions {
   endpoint: string;
   crs: string;
@@ -178,6 +181,11 @@ export interface SemanticMapConfig {
   providerOptions?: ProviderOptions;
 
   tilesLayers?: any;
+
+  /**
+   * Optional array of strings containing IDs of SemanticMapControls component(s) the map should sync with. 
+   */
+  targetControls?: Array<string>;
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -288,6 +296,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.handleEditingMode);
+
+      this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSyncFromMap,
+        })
+      )
+      .onValue(this.syncControls);
   }
 
   /**
@@ -314,6 +330,32 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         );
       });
   };
+
+  private syncControls = (event: Event<any>) => {
+    this.triggerSendLayers()
+  }
+
+  private triggerSendLayers(){
+    let basemapLayers = [];
+    const overlayLayers = [];
+
+    this.tilesLayers.forEach(function (tileslayer) {
+      if (tileslayer.get('level') === 'basemap') {
+        basemapLayers.push(tileslayer);
+      } else if (tileslayer.get('level') === 'overlay') {
+        overlayLayers.push(tileslayer);
+      }
+    });
+
+    let sentTilesLayers = basemapLayers.concat(overlayLayers);
+
+    trigger({
+      eventType: SemanticMapSendTilesLayers,
+      data: sentTilesLayers,
+      source: this.props.id,
+      targets: this.props.targetControls
+    });
+  }
 
   /**
    *
@@ -406,6 +448,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   public componentDidMount() {
     this.createMap();
+    let tileslayers = this.setTilesLayersFromTemplate();
   }
 
   public componentWillReceiveProps(props: SemanticMapProps, context: ComponentContext) {
@@ -430,8 +473,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       return createElement(TemplateItem, { template: { source: this.props.noResultTemplate } });
     }
 
-    let tileslayers = this.getTilesLayersFromTemplate();
-
     return D.div(
       { style: { height: '100%', width: '100%' } },
       D.div(
@@ -450,8 +491,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           ref: 'ref-map-widget-elements',
           onClick: this.getMarkerFromMapAsElements.bind(this),
           style: { display: 'none' },
-        }),
-        tileslayers
+        })
       ),
       this.state.isLoading ? createElement(Spinner) : null
     );
@@ -712,7 +752,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   };
 
-  private getTilesLayersFromTemplate() {
+  private setTilesLayersFromTemplate() {
     return React.Children.map(this.props.children, (child: any) => {
       if (child.type.name === 'TilesLayer') {
         const tileslayer = new TileLayer({
@@ -721,7 +761,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         tileslayer.set('level', child.props.level);
         tileslayer.set('name', child.props.name);
         tileslayer.set('identifier', child.props.identifier);
+        tileslayer.set('thumbnail', child.props.thumbnail);
         this.addTilesLayer(tileslayer);
+        console.log("added from template")
         return child;
       }
     });
@@ -763,8 +805,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       let basemapLayers = [];
       const overlayLayers = [];
 
-      //TODO: get all basemap Layers (from an attribute on the <tileslayer> component) and give them an ID
-      //TODO: get all overlay layers and give them an ID
+
+      //TODO: clean duplicate code (it's also in triggersendlayers)
       this.tilesLayers.forEach(function (tileslayer) {
         if (tileslayer.get('level') === 'basemap') {
           basemapLayers.push(tileslayer);
@@ -772,6 +814,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           overlayLayers.push(tileslayer);
         }
       });
+
+      this.triggerSendLayers();
 
       //Fallback to default provider if no tiles-layers are specified in template
       if (!this.tilesLayers.length) {

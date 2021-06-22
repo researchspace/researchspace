@@ -8,6 +8,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.SyncFromMap': any[];
   'SemanticMap.toggleEditingMode': boolean;
   'SemanticMap.SendTilesLayers': any[];
+  'SemanticMapControls.SendTilesLayersToMap': any[];
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -19,3 +20,4 @@ export const SemanticMapControlsFeatureColor = event('SemanticMapControls.Featur
 export const SemanticMapControlsSyncFromMap = event('SemanticMapControls.SyncFromMap');
 export const SemanticMapToggleEditingMode = event('SemanticMap.toggleEditingMode');
 export const SemanticMapSendTilesLayers = event('SemanticMap.SendTilesLayers');
+export const SemanticMapControlsSendTilesLayersToMap = event('SemanticMapControls.SendTilesLayersToMap');

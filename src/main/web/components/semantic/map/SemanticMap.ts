@@ -91,6 +91,7 @@ import {
   SemanticMapToggleEditingMode,
   SemanticMapSendTilesLayers,
   SemanticMapControlsSyncFromMap,
+  SemanticMapControlsSendTilesLayersToMap,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -180,8 +181,6 @@ export interface SemanticMapConfig {
    */
   providerOptions?: ProviderOptions;
 
-  tilesLayers?: any;
-
   /**
    * Optional array of strings containing IDs of SemanticMapControls component(s) the map should sync with. 
    */
@@ -197,6 +196,7 @@ interface MapState {
   isLoading?: boolean;
   overlayVisualization?: string;
   featureColor?: string;
+  tilesLayers?: Array<any>
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -225,6 +225,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       errorMessage: maybe.Nothing<string>(),
       overlayVisualization: 'normal',
       featureColor: 'normal',
+      tilesLayers: [new TileLayer({source: new OSM()})]
     };
 
     this.initInteractions();
@@ -304,6 +305,23 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.syncControls);
+
+      this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendTilesLayersToMap,
+        })
+      )
+      .onValue(this.updateTilesLayersFromControls);
+  }
+
+  private updateTilesLayersFromControls = (event: Event<any>) => {
+
+    this.setState({
+      tilesLayers : event.data
+    }, () => {
+      
+    });
   }
 
   /**
@@ -336,22 +354,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private triggerSendLayers(){
-    let basemapLayers = [];
-    const overlayLayers = [];
-
-    this.tilesLayers.forEach(function (tileslayer) {
-      if (tileslayer.get('level') === 'basemap') {
-        basemapLayers.push(tileslayer);
-      } else if (tileslayer.get('level') === 'overlay') {
-        overlayLayers.push(tileslayer);
-      }
-    });
-
-    let sentTilesLayers = basemapLayers.concat(overlayLayers);
-
     trigger({
       eventType: SemanticMapSendTilesLayers,
-      data: sentTilesLayers,
+      data: this.state.tilesLayers,
       source: this.props.id,
       targets: this.props.targetControls
     });
@@ -448,7 +453,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   public componentDidMount() {
     this.createMap();
-    let tileslayers = this.setTilesLayersFromTemplate();
+    this.setState({
+      tilesLayers: this.setTilesLayersFromTemplate()
+    })
   }
 
   public componentWillReceiveProps(props: SemanticMapProps, context: ComponentContext) {
@@ -753,7 +760,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private setTilesLayersFromTemplate() {
-    return React.Children.map(this.props.children, (child: any) => {
+    let tilesLayers = [];
+    React.Children.forEach(this.props.children, (child: any) => {
       if (child.type.name === 'TilesLayer') {
         const tileslayer = new TileLayer({
           source: new XYZ({ url: child.props.url }),
@@ -762,25 +770,19 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         tileslayer.set('name', child.props.name);
         tileslayer.set('identifier', child.props.identifier);
         tileslayer.set('thumbnail', child.props.thumbnail);
-        this.addTilesLayer(tileslayer);
-        console.log("added from template")
-        return child;
+        tilesLayers.push(tileslayer);
       }
     });
-  }
-
-  private addTilesLayer(tileslayer) {
-    //TODO: add existence constraints to avoid duplicates (with identifiers)
-    this.tilesLayers.push(tileslayer);
+    return tilesLayers;
   }
 
   private getAllTilesLayers() {
-    return this.tilesLayers;
+    return this.state.tilesLayers;
   }
 
   private getTilesLayerFromIdentifier(identifier) {
     let result;
-    this.tilesLayers.forEach(function (tilesLayer) {
+    this.state.tilesLayers.forEach(function (tilesLayer) {
       if (tilesLayer.get('identifier') === identifier) {
         result = tilesLayer;
       }
@@ -805,29 +807,20 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       let basemapLayers = [];
       const overlayLayers = [];
 
-
       //TODO: clean duplicate code (it's also in triggersendlayers)
-      this.tilesLayers.forEach(function (tileslayer) {
+      this.state.tilesLayers.forEach(function (tileslayer) {
         if (tileslayer.get('level') === 'basemap') {
+          tileslayer.set("visible", false);
           basemapLayers.push(tileslayer);
         } else if (tileslayer.get('level') === 'overlay') {
+          tileslayer.set("visible", false);
           overlayLayers.push(tileslayer);
         }
       });
 
       this.triggerSendLayers();
 
-      //Fallback to default provider if no tiles-layers are specified in template
-      if (!this.tilesLayers.length) {
-        this.tilesLayers = [
-          new TileLayer({
-            source: new OSM(),
-          }),
-        ];
-      } else {
-        basemapLayers = [basemapLayers[0]];
-      }
-      const radius = 120;
+      basemapLayers[0].set("visible", true);
 
       const map = new Map({
         controls: controlDefaults({
@@ -837,7 +830,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         }).extend([new AnnotateControl()]),
         //interactions: interaction.defaults({ mouseWheelZoom: false }),
         interactions: interactionDefaults({}),
-        layers: [..._.values(basemapLayers), ..._.values(layers), this.vector],
+        layers: [..._.values(this.state.tilesLayers), ..._.values(layers), this.vector],
         target: node,
         view: new View({
           center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),

@@ -25,7 +25,7 @@ $loading-error-color: $color-warning;
 $form-group-margin-bottom: 15px; //bootstrap variable
 
 //Bootstrap mixin override
-@mixin form-control-validation($border-color, $border-bg-color) {
+@mixin form-control-validation($color, $border-color, $border-bg-color) {
   // Color the label and help text
   .help-block,
   .control-label,
@@ -41,10 +41,17 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   }
   // Set the border and box shadow on specific inputs to match
   .form-control {
+
+    color: $color;
     
     &:focus {
       border-color: $border-color;
       background-color: $border-bg-color;
+    }
+
+    &::placeholder {
+      color: $color;
+      opacity: .6;
     }
   }
   // Set validation states also for addons
@@ -129,13 +136,12 @@ $form-group-margin-bottom: 15px; //bootstrap variable
 
 
 
-/* textarea.form-control {
+ textarea.form-control {
 
-  border: 1px solid $input-border-color;
-  border-radius: 2px;
+  min-height: $input-height;
   padding: 10px 15px;
 
-} */
+} 
 
 .form-control[disabled],
 .form-control[readonly],
@@ -147,13 +153,13 @@ fieldset[disabled] .form-control {
 
 // Feedback states
 .has-success {
-  @include form-control-validation($color-success, $color-success-light);
+  @include form-control-validation($color-success-text, $color-success, $color-success-light);
 }
 .has-warning {
-  @include form-control-validation($color-warning, $color-warning-light);
+  @include form-control-validation($color-warning-text, $color-warning,$color-warning-light);
 }
 .has-error {
-  @include form-control-validation($color-danger, $color-danger-light);
+  @include form-control-validation($color-danger, $color-danger, $color-danger-light);
 }
 
 .form-group {
@@ -172,7 +178,6 @@ fieldset[disabled] .form-control {
 
    .form-control {
 
-     height: 100%;
      display: block;
      flex-grow: 1;
      margin-right: 5px;
@@ -183,10 +188,6 @@ fieldset[disabled] .form-control {
 
      width: auto;
      height: inherit;
-
-     & div {
-       height: 100%;
-     }
 
      & button {
       height: 100%;
@@ -617,8 +618,6 @@ fieldset[disabled] .form-control {
 /* Form buttons */
 
 //btn-default
-.field-editor__delete-label-button.btn-default,
-.field-editor__row .btn-default,
 .SemanticTreeInput--browseButton.btn-default,
 .cardinality-support__single-instance > .cardinality-support__remove-value {
 
@@ -630,6 +629,21 @@ fieldset[disabled] .form-control {
   min-height: $input-height;
   height: 100%;
   margin: 0;
+  padding: 0 10px;
+
+}
+
+.field-editor__delete-label-button.btn-default,
+.field-editor__row .btn-default:not(.SemanticTreeInput--browseButton)  {
+
+  color: $color-dark;
+  border: 1px solid $input-border-color;
+  font-size: 13px;
+  background-color: $input-color-bg;
+
+  min-height: $input-height;
+  height: 100%;
+  margin-left: 2px;
   padding: 0 10px;
 
 }

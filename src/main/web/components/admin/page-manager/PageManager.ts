@@ -262,20 +262,20 @@ export class PageManager extends Component<{}, PageAdminState> {
               {
                 type: 'submit',
                 bsSize: 'small',
-                bsStyle: 'primary',
-                onClick: this.onClickExportSelected,
+                bsStyle: 'default',
+                onClick: this.onClickDeleteSelected,
+                disabled: this.state.selectedPages.length === this.state.data.length,
               },
-              'Export Selected'
+              'Delete Selected'
             ),
             Button(
               {
                 type: 'submit',
                 bsSize: 'small',
-                bsStyle: 'danger',
-                onClick: this.onClickDeleteSelected,
-                disabled: this.state.selectedPages.length === this.state.data.length,
+                bsStyle: 'primary',
+                onClick: this.onClickExportSelected,
               },
-              'Delete Selected'
+              'Export Selected'
             )
           ),
       ),

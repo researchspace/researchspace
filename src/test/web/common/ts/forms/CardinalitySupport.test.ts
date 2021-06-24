@@ -32,11 +32,11 @@ import {
   normalizeFieldDefinition,
 } from 'platform/components/forms';
 
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
 import { AsyncForm } from './fixturies/AsyncForm';
 
-mockLanguagePreferences();
+mockConfig();
 __unsafe__setCurrentResource(Rdf.iri('http://test'));
 
 const fieldProps = {

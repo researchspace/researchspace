@@ -4,24 +4,94 @@
 --]]
 
 <div style='flex: 1 1 0px; overflow: hidden; display: flex; flex-direction: column;'>
-  <semantic-query query='
+  <ontodia id='{{ontodiaVariable}}-ontodia'
+metadata='
+<> a <http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object> ; 
+       <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/ontology/Knowledge_Map> .
+  '
+  save-diagram-label="Save Knowledge Map" settings=nostats post-saving=none add-to-default-set=true
+  collapse-navigator=true
+  request-links-on-init='false'
+  left-panel-initially-open=false 
+  default-node-template="{{> default}}"    
+  readonly='true'
+  image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation", "http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation"]'
+  query='
     PREFIX ldp: <http://www.w3.org/ns/ldp#>
-    SELECT (CONCAT("[", GROUP_CONCAT(CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items)    {
+    CONSTRUCT {
+      ?o <http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-feature-similarity> ?similar .
+      ?o <http://www.researchspace.org/pattern/image_observation/crmpc:P01i_is_domain_of-refers-to-feature> ?s .
+      ?referredToByFeature <http://www.researchspace.org/pattern/image_observation/crmpc:P02i_is_range_of-referred-to-by-feature> ?o .
+    } WHERE {
       {
-        <{{iri}}> ldp:contains / Platform:setItem ?o
-      } UNION {
+        <{{iri}}> a Platform:Set .
         <{{iri}}>  ldp:contains / Platform:setItem / crm:P65_shows_visual_item ?o .
       } UNION {
-        <{{iri}}>  ldp:contains / Platform:setItem / crm:P65_shows_visual_item / crm:P138i_has_representation ?o .
+        <{{iri}}> a crm:E25_Man-Made_Feature .
+        BIND(<{{iri}}> as ?o ).
       }
-    }'
-    template='{{> set}}'
-   >
-    <template id='set'>
-      [[!-- reset iri to null to make sure it is not picked up in the KnowledgeMapOntodiaConfig --]]
-      {{#bind iri=null}}{{> rsp:KnowledgeMapOntodiaConfig iris=bindings.0.items.value}}{{/bind}}
-    </template>
-  </semantic-query>
+      OPTIONAL {
+        ?o crm:P130_shows_features_of ?similar .
+      }
+      OPTIONAL {
+        ?o crm:P65_shows_visual_item ?visualItem .
+        ?visualItem crm:P67_refers_to ?otherVisualItem .
+        ?s crm:P65_shows_visual_item ?otherVisualItem .
+      }
+      OPTIONAL {
+        ?o crm:P65_shows_visual_item ?visualItem .
+        ?visualItem crm:P67i_is_referred_to_by ?referredToByVisualItem .
+        ?referredToByFeature crm:P65_shows_visual_item ?referredToByVisualItem .
+      }
+      
+    }
+  '
+  >
+<template id="default">
+  [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
+  <div class="rs-KM-card-container" style="width: 180px; height:230px">
+        {{#> rsp:itemCardTemplate autosize=true cardMargin=0}}
+          {{#*inline "customFooter"}}
+            <span class="rs-body-s-M">{{label}}</span>
+          {{/inline}}
+
+          {{#*inline "additionalActions"}}
+            <mp-draggable iri='{{iri}}'>
+              <div class="rs-default-card__hover-icon">
+                  <button type="button" class="rs-button" title="Drag and drop the Item">
+                    <i class="rs-icon rs-icon-drag_arrow"></i>
+                  </button>
+              </div>
+            </mp-draggable>
+
+            [[#if (hasPermission "forms:ldp:*")]]
+              <div class="rs-default-card__hover-icon">
+                <button type="button" name='edit' class="rs-button" title="Edit">
+                  <i class="fa fa-pencil"></i>
+                </button>
+              </div>
+              <div class="rs-default-card__hover-icon">
+                <button type="button" name='delete' class="rs-button" title="Delete">
+                  <i class="fa fa-trash-o"></i>
+                </button>
+              </div>
+            [[/if]]
+          {{/inline}}
+        {{/rsp:itemCardTemplate}}
+      {{#if isExpanded }}
+        {{#if props.[http://www.cidoc-crm.org/cidoc-crm/P3_has_note]}}
+            <div class="rs-card-note-container">
+              <div>
+                <span>Note: </span>
+                <span>{{props.[http://www.cidoc-crm.org/cidoc-crm/P3_has_note].values.0.value}}</span>
+              </div>
+            </div>
+        {{/if}}
+      {{/if}}
+  </div>
+</template>
+
+  </ontodia>
   
   <mp-event-proxy on-event-source='clipboard'
     on-event-type='Components.SetManagement.ItemsFiltered'

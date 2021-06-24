@@ -23,30 +23,33 @@ import { findDOMNode } from 'react-dom';
 import * as _ from 'lodash';
 import * as maybe from 'data.maybe';
 
-import Map from 'ol/map';
-import View from 'ol/view';
-import TileLayer from 'ol/layer/tile';
-import VectorLayer from 'ol/layer/vector';
-import Vector from 'ol/source/vector';
-import Cluster from 'ol/source/cluster';
-import OSM from 'ol/source/osm';
-import Style from 'ol/style/style';
-import Text from 'ol/style/text';
-import Fill from 'ol/style/fill';
-import Circle from 'ol/style/circle';
-import Stroke from 'ol/style/stroke';
-import Feature from 'ol/feature';
-import Geometry from 'ol/geom/geometry';
-import Point from 'ol/geom/point';
-import MultiPoint from 'ol/geom/multipoint';
-import Polygon from 'ol/geom/polygon';
-import MultiPolygon from 'ol/geom/multipolygon';
-import GeometryCollection from 'ol/geom/geometrycollection';
-import WKT from 'ol/format/wkt';
-import proj from 'ol/proj';
-import control from 'ol/control';
-import interaction from 'ol/interaction';
-import extent from 'ol/extent';
+import Map from 'ol/Map';
+import View from 'ol/View';
+import TileLayer from 'ol/layer/Tile';
+import VectorLayer from 'ol/layer/Vector';
+import Vector from 'ol/source/Vector';
+import Cluster from 'ol/source/Cluster';
+import Style from 'ol/style/Style';
+import Text from 'ol/style/Text';
+import Fill from 'ol/style/Fill';
+import Circle from 'ol/style/Circle';
+import Stroke from 'ol/style/Stroke';
+import Feature from 'ol/Feature';
+import Geometry from 'ol/geom/Geometry';
+import Point from 'ol/geom/Point';
+import MultiPoint from 'ol/geom/MultiPoint';
+import Polygon from 'ol/geom/Polygon';
+import MultiPolygon from 'ol/geom/MultiPolygon';
+import GeometryCollection from 'ol/geom/GeometryCollection';
+import WKT from 'ol/format/WKT';
+import {transform} from 'ol/proj';
+import {defaults as controlDefaults} from 'ol/control';
+import {defaults as interactionDefaults} from 'ol/interaction';
+import {extend} from 'ol/extent';
+import {createEmpty} from 'ol/extent';
+import { Coordinate } from 'ol/coordinate';
+import OSM from 'ol/source/OSM';
+import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -57,7 +60,6 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
 
 import * as Popup from 'ol-popup';
-import AnimatedCluster from 'ol-ext/layer/AnimatedCluster';
 
 import 'ol/ol.css';
 import 'ol-popup/src/ol-popup.css';
@@ -228,8 +230,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   }
 
-  private transformToMercator(lng: number, lat: number): [number, number] {
-    return proj.transform([lng, lat], 'EPSG:4326', 'EPSG:3857');
+  private transformToMercator(lng: number, lat: number): Coordinate {
+    return transform([lng, lat], 'EPSG:4326', 'EPSG:3857');
   }
 
   private readWKT(wkt: string) {
@@ -294,12 +296,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       const layers = _.mapValues(geometries, this.createLayer);
 
       const map = new Map({
-        controls: control.defaults({
+        controls: controlDefaults({
           attributionOptions: {
             collapsible: false,
           },
         }),
-        interactions: interaction.defaults({ mouseWheelZoom: false }),
+        interactions: interactionDefaults({}),
         layers: [
           new TileLayer({
             source: new OSM(),
@@ -405,14 +407,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private calculateExtent() {
-    const viewExtent = extent.createEmpty();
+    const viewExtent = createEmpty();
 
     _.forEach(this.layers, (layer) => {
       let source = layer.getSource();
       if (source instanceof Cluster) {
         source = source.getSource();
       }
-      extent.extend(viewExtent, source.getExtent());
+      extend(viewExtent, source.getExtent());
     });
 
     return viewExtent;

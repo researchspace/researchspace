@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, CSSProperties, createFactory } from 'react';
+import { Component, CSSProperties } from 'react';
 import * as D from 'react-dom-factories';
 import * as classNames from 'classnames';
 
@@ -25,16 +25,35 @@ import './CollapsibleDiv.scss';
 
 export interface Props {
   expanded: boolean;
+  renderHidden: boolean;
   className?: string;
   style?: CSSProperties;
 }
 
 export class CollapsibleDivContentComponent extends Component<Props, {}> {
   render() {
-    const { expanded, className, style } = this.props;
-    return expanded
-      ? D.div({ className: classNames(className, 'collapsible-div-content'), style }, this.props.children)
-      : null;
+    const { expanded, renderHidden, className, style } = this.props;
+    if (expanded) {
+      return (
+        D.div(
+          {
+            className: classNames(className, 'collapsible-div-content'),
+            style
+          }, this.props.children
+        )
+      );
+    } else if (renderHidden) {
+      return (
+        D.div(
+          {
+            className: classNames(className, 'collapsible-div-content'),
+            style: {...style, display: 'none'}
+          }, this.props.children
+        )
+      );
+    } else {
+      return null;
+    }
   }
 }
 

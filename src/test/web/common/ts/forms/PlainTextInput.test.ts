@@ -28,11 +28,11 @@ import { Rdf } from 'platform/api/rdf';
 import { PlainTextInput, PlainTextInputProps, FieldValue } from 'platform/components/forms';
 
 import { mount } from 'platform-tests/configuredEnzyme';
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
 import { PROPS as BASIC_PROPS } from './fixturies/FieldProps';
 
-mockLanguagePreferences();
+mockConfig();
 
 describe('Plain Text Component', () => {
   const inputComponent = mount(createElement(PlainTextInput, BASIC_PROPS));

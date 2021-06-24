@@ -218,6 +218,11 @@ module SparqlClient {
     readonly namedGraphs?: Array<string>;
 
     /**
+     * Applicable only to CONSTRUCT/DESCRIBE queries. True if result should be pretty printed.
+     */
+    readonly prettyPrint?: boolean;
+
+    /**
      * True if the context is a default one and has not been overwritten.
      */
     readonly isDefault?: boolean;
@@ -301,6 +306,9 @@ module SparqlClient {
     let parametrizedEndpoint = new URI(endpoint);
     if (context.repository) {
       parametrizedEndpoint.addQuery({ repository: context.repository });
+    }
+    if (context.prettyPrint) {
+      parametrizedEndpoint.addQuery({ 'prettyPrint': true });
     }
     if (context.defaultGraphs) {
       parametrizedEndpoint.addQuery({ 'default-graph-uri': context.defaultGraphs });

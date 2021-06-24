@@ -1,0 +1,119 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+
+  <li class="active">Open Street Map Integration</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Open Street Map integration</h1>
+    <p>
+      This integration creates a simple lookup service to federate againsts the Open Street Maps (OSM) API, allowing users to reference place names in their ResearchSpace instances. Users can lookup a street address, a city, a country etc. and be able to reference this in their data. 
+    </p>
+    
+    <p>
+      The OSM repository is enabled by default - <code>osm-nominatim-search</code>. 
+    </p>
+    
+    <h2>Query the service</h2>
+
+    <p>The query <strong>MUST</strong> be executed against the <code>osm-nominatim-search</code> repository. Otherwise it will not work.</p>
+
+    <p>
+      When the repository is configured and created, any query will be transformed into a HTTP request against the OSM API.
+      You can test the integration with the following SPARQL query:
+    </p>
+
+    <semantic-context repository='osm-nominatim-search'>
+      <mp-code-block mode='application/sparql-query' show-run-query-button='true'>
+        <![CDATA[
+PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+
+SELECT * WHERE {
+  ?subject osm:q "Venice" ;
+    osm:display_name ?display_name ;
+    osm:geotext ?geo_text ;
+    osm:wikidata ?wikidata ;
+    osm:importance ?score .
+}
+        ]]>
+      </mp-code-block>
+    </semantic-context>
+
+    <p>
+      This query will be converted to the following <code>GET</code> request: <code>https://nominatim.openstreetmap.org/search?q=Venice&format=json&polygon_text=1&extratags=1</code>
+    </p>
+    
+    <p>
+      It accepts the following parameters:
+    </p>
+
+
+
+<table>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td><strong>IRI</strong></td>
+      <td><strong>Description</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Input</strong> (Required)</td>
+      <td><code> http://www.researchspace.org/resource/system/services/osm/q </code></td>
+      <td>It must contain the string parameter to search. E.g. <code>"Venice"</code></td>
+    </tr>
+    <tr>
+      <td><strong>Input</strong> (Optional)</td>
+      <td><code> http://www.researchspace.org/resource/system/services/osm/viewbox </code></td>
+      <td> The preferred area to find search results. Any two corner points of the box are accepted as long as they span a real box. <code>"x1,y1,x2,y2"</code> - x is longitude, y is latitude. E.g. <code>"-5.525572687204199,41.73401944636518,9.064271062795804,52.129778849298106"</code></td>
+    </tr>
+    <tr>
+      <td><strong>Input</strong> (Optional)</td>
+      <td><code> http://www.researchspace.org/resource/system/services/osm/polygon_text </code></td>
+      <td>When the parameter is 1, the <code>GET</code> request returns the resulting geometry, otherwise it does not. <br>When not specified in the query, <strong>Default</strong> value is 1
+        <br>For more information refer to the OSM <a href="https://nominatim.org/release-docs/develop/api/Search/#output-details">documentation page</a></td>
+      
+    </tr>
+    <tr>
+      <td><strong>Input</strong> (Optional)</td>
+      <td><code> http://www.researchspace.org/resource/system/services/osm/extratags </code></td>
+      <td>
+        When the parameter is 1, the <code>GET</code> request returns also other parameters such as the Wikidata ID or Wikipedia page, otherwise it does not. 
+        <br>When not specified in the query, <strong>Default</strong> value is 1 
+        <br>For more information refer to the <a href="https://nominatim.org/release-docs/develop/api/Search/#output-details">documentation page</a>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td><code> http://www.researchspace.org/resource/system/services/osm/display_name </code></td>
+      <td>The string describing the requested feature.</td>
+    </tr>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td><code> http://www.researchspace.com/resource/assets/Ontologies/openstreetmap#geotext </code></td>
+      <td>The string in WKT format describing the requested geospatial feature. It can be a <code>POINT</code> or <code>MULTIPOLYGON</code>. This result is empty if the input parameter <code>polygon_text</code> is 0. </td>
+    </tr>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td><code> http://www.researchspace.com/resource/assets/Ontologies/openstreetmap#wikidata </code></td>
+      <td>The string describing the Wikidata ID of the requested feature. It can be empty if the input parameter <code>extratags</code> is 0 <strong>or</strong> if the requested feature has no Wikidata ID. </td>
+    </tr>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td><code> http://www.researchspace.com/resource/assets/Ontologies/openstreetmap#importance </code></td>
+      <td>Result rank, number form 0 to 1.</td>
+    </tr>
+</table>
+<p> 
+  
+    </p>
+
+  </div>
+</div>

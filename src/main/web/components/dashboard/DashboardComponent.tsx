@@ -118,6 +118,11 @@ export interface Props {
      * Resource IRI for which the view should be applied.
      */
     resource: string;
+
+    /**
+     * Additional data that will be propagate to the template.
+     */
+    data: {};
   };
 }
 
@@ -154,6 +159,7 @@ export class DashboardComponent extends Component<Props, State> {
           this.onAddNewItem({
             ...emptyItem(),
             ...(data as AddFrameEventData),
+            data: data,
           });
         },
       });
@@ -163,6 +169,7 @@ export class DashboardComponent extends Component<Props, State> {
         ...emptyItem(),
         resourceIri: this.props.initialView.resource,
         viewId: this.props.initialView.view,
+        data: this.props.initialView.data,
       };
       this.onAddNewItem(item);
     } else {
@@ -178,7 +185,8 @@ export class DashboardComponent extends Component<Props, State> {
           targets: ['thinking-frames'],
           data: {
             resourceIri: iri.value,
-            viewId: 'semantic-narrative'
+            viewId: 'semantic-narrative',
+            ...props
           }
         });
         return true;
@@ -189,7 +197,8 @@ export class DashboardComponent extends Component<Props, State> {
           targets: ['thinking-frames'],
           data: {
             resourceIri: props['resource'],
-            viewId: props['view']
+            viewId: props['view'],
+            ...props
           }
         });
         return true;
@@ -198,6 +207,9 @@ export class DashboardComponent extends Component<Props, State> {
           eventType: 'Dashboard.AddFrame',
           source: 'link',
           targets: ['thinking-frames'],
+          data: {
+            ...props
+          }
         });
         return true;
       } else if (!iri.value.startsWith('http://www.researchspace.org/resource/')) {
@@ -207,7 +219,8 @@ export class DashboardComponent extends Component<Props, State> {
           targets: ['thinking-frames'],
           data: {
             resourceIri: iri.value,
-            viewId: 'resource'
+            viewId: 'resource',
+            ...props
           }
         });
         return true;

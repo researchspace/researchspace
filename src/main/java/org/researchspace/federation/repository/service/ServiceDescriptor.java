@@ -65,6 +65,7 @@ public class ServiceDescriptor {
     public static class Parameter {
 
         private String parameterName;
+        private String jsonPath;
         private Resource parameterId;
         private Resource rootNode;
         private IRI valueType;
@@ -77,6 +78,14 @@ public class ServiceDescriptor {
 
         public Resource getParameterId() {
             return parameterId;
+        }
+
+        public String getJsonPath() {
+            return jsonPath;
+        }
+
+        public void setJsonPath(String jsonPath) {
+            this.jsonPath = jsonPath;
         }
 
         public String getParameterName() {
@@ -195,6 +204,13 @@ public class ServiceDescriptor {
         Optional<IRI> typeOptional = Models.objectIRI(model.filter(resource, SPL.VALUETYPE_PROPERTY, null));
         if (typeOptional.isPresent()) {
             parameter.valueType = typeOptional.get();
+        }
+
+        // @gspinaci Parse jsonPath from descriptor
+        Optional<Literal> jsonPathOptional = Models
+                .objectLiteral(model.filter(resource, MpRepositoryVocabulary.JSON_PATH, null));
+        if (jsonPathOptional.isPresent()) {
+            parameter.jsonPath = jsonPathOptional.get().stringValue();
         }
 
         for (Statement stmt : model.filter(resource, null, null)) {

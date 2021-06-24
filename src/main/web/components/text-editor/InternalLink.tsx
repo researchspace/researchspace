@@ -20,7 +20,7 @@ import * as React from 'react';
 import { findDOMNode } from 'react-dom';
 import * as Slate from 'slate';
 import { RenderNodeProps } from 'slate-react';
-import { Overlay, Popover, FormControl, ButtonGroup, Button } from 'react-bootstrap';
+import { Overlay, Popover, Button } from 'react-bootstrap';
 
 import { ResourceLinkComponent } from 'platform/api/navigation/components';
 import { Rdf } from 'platform/api/rdf';
@@ -78,43 +78,55 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
   render() {
     const { attributes, children, editor, node } = this.props;
 
-    const isLinkSelected =
-      editor.value.selection.isCollapsed &&
-      editor.value.inlines.contains(node as Slate.Inline);
-
     const dataAttributes = node.data.get('attributes', {});
-    const isNoHref = !dataAttributes.href;
-    const isShowPopover = isLinkSelected || isNoHref;
 
-    return (
-      <span {...attributes} className={styles.internalLink}>
-        <Overlay container={document.body} target={this.getPopoverTarget}
-          placement='top' show={isShowPopover}
-        >
-          <Popover id='internal-link-popover' placement='top' contentEditable={false}>
-            <div className={styles.linkPopover}>
-              <DropArea
-                onDrop={this.onResourceDrop}
-                dropMessage='Drop here resource from Clipboard to make a link.'
-                alwaysVisible={isNoHref}
-              >
-                {
-                  isNoHref ? null :
-                  // because ResourceLinkComponent is not update when iri changes
-                  // we need to use react key to recreate it on change
-                  <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href} />
-                }
-              </DropArea>
-              <Button bsClass='btn-grey' onMouseDown={this.onUnlink}>
-                <i className='fa fa-chain-broken' aria-hidden='true'></i>
-              </Button>
-            </div>
-          </Popover>
-        </Overlay>
-        <a {...attributes} {...dataAttributes} ref={this.aRef} onClick={this.onClick}>
-          {children}
-        </a>
-      </span>
-    );
+    // in readonly mode make a link normal ResourceLink instead of using overlay
+    if (editor.readOnly) {
+      return (
+        <span {...attributes} className={styles.internalLink}>
+          <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href}>
+            {children}
+          </ResourceLinkComponent>
+        </span>
+      );
+    } else {
+      const isLinkSelected =
+        editor.value.selection.isCollapsed &&
+        editor.value.inlines.contains(node as Slate.Inline);
+
+      const isNoHref = !dataAttributes.href;
+      const isShowPopover = isLinkSelected || isNoHref;
+
+      return (
+        <span {...attributes} className={styles.internalLink}>
+          <Overlay container={document.body} target={this.getPopoverTarget}
+            placement='top' show={isShowPopover}
+          >
+            <Popover id='internal-link-popover' placement='top' contentEditable={false}>
+              <div className={styles.linkPopover}>
+                <DropArea
+                  onDrop={this.onResourceDrop}
+                  dropMessage='Drop here resource from Clipboard to make a link.'
+                  alwaysVisible={isNoHref}
+                >
+                  {
+                    isNoHref ? null :
+                    // because ResourceLinkComponent is not update when iri changes
+                    // we need to use react key to recreate it on change
+                    <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href} />
+                  }
+                </DropArea>
+                <Button bsClass='btn-grey' onMouseDown={this.onUnlink}>
+                  <i className='fa fa-chain-broken' aria-hidden='true'></i>
+                </Button>
+              </div>
+            </Popover>
+          </Overlay>
+          <a {...attributes} {...dataAttributes} ref={this.aRef} onClick={this.onClick}>
+            {children}
+          </a>
+        </span>
+      );
+    }
   }
 }

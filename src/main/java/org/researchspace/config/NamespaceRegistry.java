@@ -372,7 +372,7 @@ public class NamespaceRegistry {
      * @return
      */
     public boolean looksLikePrefixedIri(String prefixedIri) {
-        return (prefixedIri.split(":").length == 2 || prefixedIri.endsWith(":"));
+        return (prefixedIri.contains(":"));
     }
 
     public String getPlatformNamespace() {

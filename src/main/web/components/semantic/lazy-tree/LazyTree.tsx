@@ -21,7 +21,7 @@ import * as Immutable from 'immutable';
 
 import { Cancellation } from 'platform/api/async';
 import { SparqlUtil } from 'platform/api/sparql';
-import { trigger } from 'platform/api/events';
+import { trigger, listen } from 'platform/api/events';
 
 import { Component } from 'platform/api/components';
 import { TemplateItem } from 'platform/components/ui/template';
@@ -48,9 +48,10 @@ import {
   queryMoreChildren
 } from 'platform/components/semantic/lazy-tree';
 
-import { ItemSelected } from './LazyTreeEvents';
+import { ItemSelected, Focus } from './LazyTreeEvents';
 
 import * as styles from './LazyTree.scss';
+import { Rdf } from 'platform/api/rdf';
 
 interface BaseLazyTreeProps {
   /**
@@ -69,6 +70,11 @@ interface BaseLazyTreeProps {
    * Template for node additional info.
    */
   infoTemplate?: string;
+
+  /**
+   * IRI of the element that should be focused by default.
+   */
+  focused?: string;
 }
 
 export type LazyTreeProps =
@@ -95,8 +101,8 @@ interface State {
 export class LazyTree extends Component<LazyTreeProps, State> {
   private tree: LazyTreeSelector;
   private searchedPaths = Immutable.Set<Immutable.List<string>>();
-  private readonly cancellation = new Cancellation();
   private expandingCancellation = Cancellation.cancelled;
+  private treeSelectionRef: SemanticTreeInput;
 
   static defaultProps = {
     pageSize: 50
@@ -131,6 +137,17 @@ export class LazyTree extends Component<LazyTreeProps, State> {
         });
       }
     );
+
+    if (this.props.id) {
+      this.cancel.map(
+        listen({
+          target: this.props.id,
+          eventType: Focus,
+        })
+      ).onValue(
+        event => this.treeSelectionRef.setValue(Rdf.iri(event.data.iri))
+      )
+    }
   }
 
   render() {
@@ -143,6 +160,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   renderTree() {
     const { patterns, forest, expandingToScroll, highlightedPath } = this.state;
+    const { focused } = this.props;
 
     let highlightedNodes: ReadonlyArray<Node> = [];
     if (highlightedPath) {
@@ -168,9 +186,11 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       <div className={styles.component}>
         <SemanticTreeInput
           {...patterns}
+          ref={this.onSelectionReady}
           multipleSelection={true}
           onSelectionClick={this.onSearchBadgeClick}
           onSelectionChanged={this.onSearchSelectionChanged}
+          initialSelection={focused && focused.length > 0 ? [Rdf.iri(focused)] : []}
         />
         <div className={styles.alignmentTreeContainer}>
           {expandingToScroll ? this.renderExpandToScrollMessage() : null}
@@ -217,6 +237,15 @@ export class LazyTree extends Component<LazyTreeProps, State> {
         <Spinner className={styles.scrollSpinner} spinnerDelay={0} messageDelay={Infinity} />
       </div>
     );
+  }
+
+  private onSelectionReady = (selectionInput?: SemanticTreeInput) => {
+    if (selectionInput) {
+      this.treeSelectionRef = selectionInput;
+      if (this.props.focused && this.props.focused.length > 0) {
+        selectionInput.setValue(Rdf.iri(this.props.focused));
+      }
+    }
   }
 
   private computeDecoratorsClass(item: Node, highlightedNodes: ReadonlyArray<Node>): string {
@@ -272,7 +301,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
     const path = this.state.forest.getKeyPath(node);
     const { model, forest } = this.state;
     const [loadingForest, forestChange] = queryMoreChildren((parent) => model.loadMoreChildren(parent), forest, path);
-    this.cancellation.map(forestChange).observe({
+    this.cancel.map(forestChange).observe({
       value: (changeForest) => {
         this.setState({
           forest: changeForest(forest)
@@ -303,7 +332,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       expandingToScroll: true,
       expandTarget: target,
     }, () => {
-      this.expandingCancellation = this.cancellation.deriveAndCancel(this.expandingCancellation);
+      this.expandingCancellation = this.cancel.deriveAndCancel(this.expandingCancellation);
       this.expandingCancellation
           .map(
             loadPath(

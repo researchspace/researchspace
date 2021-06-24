@@ -31,7 +31,7 @@ import { addNotification } from 'platform/components/ui/notification';
 import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { BrowserPersistence, isValidChild, componentHasType, universalChildren } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
-import { listen } from 'platform/api/events';
+import { listen, trigger } from 'platform/api/events';
 
 import { FieldDefinitionProp } from './FieldDefinition';
 import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
@@ -281,6 +281,11 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               disabled: !this.canSubmit(),
               onClick: this.onRemove,
             });
+          case 'dry-run':
+            return cloneElement(element, {
+              disabled: !this.canSubmit(),
+              onClick: this.onDryRun,
+            });
           case 'load-state': {
             let input: HTMLInputElement;
             const setInput = (value: HTMLInputElement) => (input = value);
@@ -407,6 +412,23 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         error: () => {}
       })
     ;
+  }
+
+  private onDryRun = () => {
+    const initialModel = this.initialState.model;
+    this.form
+      .finalize(this.state.model)
+      .flatMap(
+        (finalModel) => (this.persistence as SparqlPersistence).dryPersist(initialModel, finalModel)
+      ).onValue(
+        res => trigger({
+          source: this.props.id,
+          eventType: FormEvents.FormDryRunResults,
+          data: {
+            dryRunResults: res,
+          },
+        })
+      );
   }
 
   private onSaveData = () => {

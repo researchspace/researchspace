@@ -1,0 +1,50 @@
+<semantic-query 
+                  query='
+                          SELECT ?config ?collection ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
+                            OPTIONAL {
+                              <{{configOrScheme}}> crm:P67_refers_to ?managedConfig .
+                              BIND(<{{configOrScheme}}> AS ?collection) .
+                            }
+                            OPTIONAL {
+                              <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/FormConfig> .
+                              BIND(<{{configOrScheme}}> as ?managedConfig) .
+                            }
+                            BIND(COALESCE(?managedConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?config) .
+                            BIND(BOUND(?managedConfig) as ?isManaged) .
+                            
+                            ?config <http://www.researchspace.org/resource/system/authority_manager/item_label> ?title ;
+                              <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType ;
+                              <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI .
+                            
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/broader_property> ?broaderPropertyIRI .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/order_by_pattern> ?orderByPattern .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern> ?labelSparqlPattern .
+                            }
+                          } LIMIT 1
+                        '
+  >
+    <template id='template'>
+      {{#ifCond bindings.0.isManaged.value "===" "true"}}
+        {{> rsp:SimpleCollectionBrowser frameId=frameId editable=true config=bindings.0.config.value collection=bindings.0.collection.value rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value P2_has_type=bindings.0.P2_has_type.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value labelSparqlPattern=bindings.0.labelSparqlPattern.value mode=mode iri=iri}}
+      {{else}}
+        [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, so we can offer here for user to associate a config with it --]]
+        {{> rsp:SimpleCollectionBrowser frameId=frameId editable=false config=bindings.0.config.value collection=bindings.0.collection.value rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value labelSparqlPattern=bindings.0.labelSparqlPattern.value selectedEntity=selectedEntity}}
+      {{/ifCond}}
+    </template>
+    <template id='noResultTemplate'>
+    </template>
+  </semantic-query>

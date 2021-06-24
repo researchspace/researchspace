@@ -421,7 +421,8 @@ function attributeValue(name: string, val: string): any {
   // replace with something more generic, like https://github.com/YousefED/typescript-json-schema
   if (decoded === 'true' || decoded === 'false') {
     return JSON.parse(decoded);
-  } else if (!isNaN(+decoded)) {
+  } else if (decoded !== '' && !isNaN(+decoded)) {
+    // isNaN returns true for empty string, so we need to check for it 
     // custom handling for number attributes
     return +decoded;
   } else {

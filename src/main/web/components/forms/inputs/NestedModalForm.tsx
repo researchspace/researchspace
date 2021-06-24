@@ -19,6 +19,7 @@
 import * as React from 'react';
 import { Component, Children, ReactElement, ReactNode, cloneElement } from 'react';
 import { Modal } from 'react-bootstrap';
+import * as uuid from 'uuid';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
@@ -33,6 +34,8 @@ import {
   getPostActionUrlQueryParams,
 } from '../ResourceEditorFormConfig';
 import { elementHasInputType, InputKind } from './InputCommpons';
+import { ModuleRegistry } from 'platform/api/module-loader';
+import { TemplateScope } from 'platform/api/services/template';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
@@ -40,6 +43,7 @@ export interface NestedModalFormProps {
   onSubmit: (value: AtomicValue) => void;
   onCancel: () => void;
   children: ReactElement<ResourceEditorFormProps> | undefined;
+  parent: React.RefObject<HTMLElement>;
 }
 
 export class NestedModalForm extends Component<NestedModalFormProps, {}> {
@@ -50,7 +54,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 
   render() {
-    const { definition, onSubmit, onCancel, children, subject } = this.props;
+    const { definition, onSubmit, onCancel, children, subject, parent } = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
@@ -72,7 +76,14 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       },
     };
     return (
-      <Modal bsSize="large" show={true} onHide={onCancel}>
+      <Modal
+        show={true}
+        onHide={onCancel}
+        container={
+          // restrict nested form backdrop to semantic form that is closest ancestor of parent input element
+          parent.current.closest('.semantic-form')
+        }
+      >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
             (subject ? `Create New ` : 'Edit ') +
@@ -85,7 +96,21 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 }
 
-export function tryExtractNestedForm(children: ReactNode): ReactElement<ResourceEditorFormProps> | undefined {
+export async function tryExtractNestedForm(
+  children: ReactNode, templateScope: TemplateScope, nestedFormTemplate?: string
+): Promise<ReactElement<ResourceEditorFormProps> | undefined> {
+  if (React.Children.count(children) === 1) {
+    return Promise.resolve(getNestedForm(children));
+  } else if (nestedFormTemplate) {
+    const template = await templateScope.compile(nestedFormTemplate);
+    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template({"viewId": uuid.v4()}));
+    return getNestedForm(parsedTemplate);
+  } else {
+    return Promise.resolve(undefined);
+  }
+}
+
+function getNestedForm(children: ReactNode) {
   if (Children.count(children) !== 1) {
     return undefined;
   }

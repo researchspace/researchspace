@@ -229,7 +229,10 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   componentDidMount() {
-    this.setInitialSelection();
+    const { initialSelection } = this.props;
+    if (initialSelection && initialSelection.length !== 0) {
+      this.setInitialSelection(initialSelection).onValue(() => {/**/});
+    }
   }
 
   componentWillReceiveProps(nextProps: SemanticTreeInputProps) {
@@ -265,12 +268,8 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
    * selected items to the root, we use the same mechanism as we use in search.
    * But in addition to that we also need to fetch labels for selected items using LabelsService.
    */
-  private setInitialSelection = () => {
-    const { initialSelection } = this.props;
-    if (!initialSelection || initialSelection.length === 0) {
-      return;
-    }
-    this.cancellation
+  private setInitialSelection = (initialSelection: ReadonlyArray<Rdf.Iri>) => {
+    return this.cancellation
       .map(LabelsService.getLabels(initialSelection))
       .flatMap((labels) => {
         const bindings = initialSelection.map((iri) => ({
@@ -280,13 +279,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         }));
         return this.restoreTreeFromLeafNodes(bindings);
       })
-      .observe({
-        value: (forest) => {
+      .map(
+        (forest) => {
           const confirmedSelection = forest as TreeSelection<Node>;
           this.setState({ confirmedSelection });
-        },
-        error: (error) => console.error('Failed to restore initial tree selection', error),
-      });
+          return confirmedSelection;
+        }
+      );
   };
 
   componentWillUnmount() {
@@ -329,27 +328,14 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     }
   }
 
-  private setValue(iri: Rdf.Iri) {
-    this.cancellation.map(LabelsService.getLabel(iri)).onValue((label) => {
-      const newSelection = TreeSelection.setToSingleTerminal(TreeSelection.empty(this.state.forest), {
-        iri,
-        label: Rdf.literal(label),
-      });
-      this.setState(
-        {
-          mode: { type: 'collapsed' },
-          searchText: undefined,
-          searching: false,
-          searchResult: undefined,
-          confirmedSelection: newSelection,
-        },
-        () => {
-          if (this.props.onSelectionChanged) {
-            this.props.onSelectionChanged(this.state.confirmedSelection);
-          }
+  public setValue(iri: Rdf.Iri) {
+    this.setInitialSelection([iri]).onValue(
+      selection => {
+        if (this.props.onSelectionChanged) {
+          this.props.onSelectionChanged(selection);
         }
-      );
-    });
+      }
+    )
   }
 
   private renderTextField() {

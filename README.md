@@ -308,6 +308,8 @@ When developing frontend code in the Visual Studio Code we recommend setting Typ
 
 Generated eclipse project has predefined code formatter that is automatically enabled. Please always reformat your java code with eclipse before submiting PR. 
 
+For Visual Studio Code users, follow this [guide](https://github.com/redhat-developer/vscode-java/wiki/Formatter-settings) to setup the formatter.
+
 ### Typescript & SCSS
 
 We use [Prettier](https://prettier.io/) as code formatter for all `ts/tsx/js/scss` files. And [typescript-eslint](https://typescript-eslint.io) as a linter for typescript files.

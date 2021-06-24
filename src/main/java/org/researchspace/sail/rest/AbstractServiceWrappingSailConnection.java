@@ -57,7 +57,8 @@ import com.google.common.collect.Maps;
  * @author Andriy Nikolov <an@metaphacts.com>
  *
  */
-public abstract class AbstractServiceWrappingSailConnection extends AbstractSailConnection {
+public abstract class AbstractServiceWrappingSailConnection<C extends AbstractServiceWrappingSailConfig>
+        extends AbstractSailConnection {
 
     /**
      * A class holding the mappings for the API inputs (parameter name->value as
@@ -66,12 +67,12 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
      * @author Andriy Nikolov an@metaphacts.com
      *
      */
-    protected static class RESTParametersHolder {
+    protected static class ServiceParametersHolder {
         private String subjVarName = null;
         private Map<String, String> inputParameters = Maps.newHashMap();
         private Map<IRI, String> outputVariables = Maps.newHashMap();
 
-        public RESTParametersHolder() {
+        public ServiceParametersHolder() {
 
         }
 
@@ -92,9 +93,9 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
         }
     }
 
-    private final AbstractServiceWrappingSail sail;
+    private final AbstractServiceWrappingSail<C> sail;
 
-    public AbstractServiceWrappingSailConnection(AbstractServiceWrappingSail sailBase) {
+    public AbstractServiceWrappingSailConnection(AbstractServiceWrappingSail<C> sailBase) {
         super(sailBase);
         this.sail = sailBase;
     }
@@ -107,7 +108,7 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
      * Follows the following workflow:
      * <ul>
      * <li>Extract input/output parameters and store them in a
-     * {@link RESTParametersHolder} object.</li>
+     * {@link ServiceParametersHolder} object.</li>
      * <li>Submit an HTTP request (by default, an HTTP GET request passing
      * parameters via URL)</li>
      * <li>Process the response and assign the outputs to the output variables.</li>
@@ -122,7 +123,8 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
         StatementPatternCollector collector = new StatementPatternCollector();
         cloned.visit(collector);
         List<StatementPattern> stmtPatterns = collector.getStatementPatterns();
-        RESTParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
+        ServiceParametersHolder parametersHolder = extractInputsAndOutputs(stmtPatterns);
+        // limiter goes here
         return executeAndConvertResultsToBindingSet(parametersHolder);
     }
 
@@ -131,12 +133,12 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
      * <code>parametersHolder</code>, executes the wrapped service and converts the
      * returned results into {@link BindingSet}s.
      * 
-     * @param parametersHolder {@link RESTParametersHolder} containing input
+     * @param parametersHolder {@link ServiceParametersHolder} containing input
      *                         parameters to be submitted to the service
      * @return iteration over binding sets
      */
     protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
-            RESTParametersHolder parametersHolder);
+            ServiceParametersHolder parametersHolder);
 
     @Override
     protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal() throws SailException {
@@ -171,18 +173,18 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
 
     @Override
     protected void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts) throws SailException {
-        throw new SailException("The service " + this.sail.getUrl().toString() + " is read-only");
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
     }
 
     @Override
     protected void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
             throws SailException {
-        throw new SailException("The service " + this.sail.getUrl().toString() + " is read-only");
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
     }
 
     @Override
     protected void clearInternal(Resource... contexts) throws SailException {
-        throw new SailException("The service " + this.sail.getUrl().toString() + " is read-only");
+        throw new SailException("The service " + this.sail.getConfig().getUrl() + " is read-only");
 
     }
 
@@ -211,13 +213,13 @@ public abstract class AbstractServiceWrappingSailConnection extends AbstractSail
 
     }
 
-    public AbstractServiceWrappingSail getSail() {
+    public AbstractServiceWrappingSail<C> getSail() {
         return sail;
     }
 
-    protected abstract RESTParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
+    protected abstract ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
             throws SailException;
 
     protected abstract Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            RESTParametersHolder parametersHolder) throws SailException;
+            ServiceParametersHolder parametersHolder) throws SailException;
 }

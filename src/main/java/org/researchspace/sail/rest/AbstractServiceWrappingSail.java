@@ -32,6 +32,8 @@ import org.eclipse.rdf4j.sail.helpers.AbstractSail;
 import org.researchspace.federation.repository.MpSparqlServiceRegistry;
 import org.researchspace.federation.repository.service.ServiceDescriptor;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
+import org.researchspace.secrets.SecretResolver;
+import org.researchspace.secrets.SecretsHelper;
 
 import com.google.common.collect.Maps;
 /**
@@ -43,20 +45,41 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public abstract class AbstractServiceWrappingSail extends AbstractSail {
+public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrappingSailConfig> extends AbstractSail {
 
-    private final String url;
-    private IRI serviceID;
+    private C config;
     private ServiceDescriptor serviceDescriptor = null;
 
     @Inject
     protected Provider<MpSparqlServiceRegistry> serviceRegistryProvider;
+
+    @Inject
+    private Provider<SecretResolver> secretResolver;
+
     protected Map<IRI, Parameter> mapOutputParametersByProperty = null;
     protected Map<IRI, Parameter> mapInputParametersByProperty = null;
     protected Optional<Parameter> subjectParameter = null;
 
-    public AbstractServiceWrappingSail(String url) {
-        this.url = url;
+    public AbstractServiceWrappingSail(C config) {
+        this.config = config;
+
+    }
+
+    @Override
+    protected void initializeInternal() throws SailException {
+        this.resolveSecrets(config);
+        this.initParameters();
+    }
+
+    private void resolveSecrets(C config) {
+        if (config.getUnResolvedUsername() != null && config.getUnResolvedPassword() != null) {
+            String username = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedUsername());
+            config.setUsername(username);
+            String password = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+                    config.getUnResolvedPassword());
+            config.setPassword(password);
+        }
     }
 
     @Override
@@ -74,15 +97,11 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
 
     }
 
-    public String getUrl() {
-        return url;
-    }
-
     public ServiceDescriptor getServiceDescriptor() {
-        if ((serviceDescriptor == null) && (serviceID != null) && (serviceRegistryProvider != null)) {
+        if ((serviceDescriptor == null) && (this.config.getServiceID() != null) && (serviceRegistryProvider != null)) {
             MpSparqlServiceRegistry registry = serviceRegistryProvider.get();
             if (registry != null) {
-                registry.getDescriptorForIri(serviceID).ifPresent(descriptor -> {
+                registry.getDescriptorForIri(this.config.getServiceID()).ifPresent(descriptor -> {
                     this.serviceDescriptor = descriptor;
                 });
             }
@@ -94,14 +113,6 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
         this.serviceDescriptor = serviceDescriptor;
     }
 
-    public IRI getServiceID() {
-        return serviceID;
-    }
-
-    public void setServiceID(IRI serviceID) {
-        this.serviceID = serviceID;
-    }
-
     protected void initParameters() {
         this.mapOutputParametersByProperty = Maps.newHashMap();
         this.mapInputParametersByProperty = Maps.newHashMap();
@@ -110,7 +121,7 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
 
         if (descriptor == null) {
             throw new IllegalStateException("Service descriptor is not configured or does not exist. Hint: does "
-                    + this.serviceID + " point to an existing service descriptor?");
+                    + this.config.getServiceID() + " point to an existing service descriptor?");
         }
 
         // Collect definitions of input parameters from the service descriptor
@@ -152,6 +163,10 @@ public abstract class AbstractServiceWrappingSail extends AbstractSail {
                         && stmtPattern.getObjectVar().getName().equals(parameterName)
                         && stmtPattern.getPredicateVar().hasValue())
                 .map(stmtPattern -> stmtPattern.getPredicateVar().getValue()).map(pred -> (IRI) pred).findFirst();
+    }
+
+    public C getConfig() {
+        return config;
     }
 
     public Map<IRI, Parameter> getMapOutputParametersByProperty() {

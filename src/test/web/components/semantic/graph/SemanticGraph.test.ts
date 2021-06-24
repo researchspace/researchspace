@@ -27,14 +27,14 @@ import * as NamespaceService from 'platform/api/services/namespace';
 import { SemanticGraph, SemanticGraphProps, SemanticGraphState, Graph } from 'platform/components/semantic/graph';
 
 import { mount, ReactWrapper } from 'platform-tests/configuredEnzyme';
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 import { mockLabelsService } from 'platform-tests/mocks/LabelService';
 import { mockConstructQuery } from 'platform-tests/mocks/SparqlClient';
 import { mockThumbnailService } from 'platform-tests/mocks/ThumbnailService';
 
 import { foaf, person } from './TestData';
 
-mockLanguagePreferences();
+mockConfig();
 
 sinon.stub(NamespaceService, 'getRegisteredPrefixes').callsFake(function () {
   return Kefir.constant({});

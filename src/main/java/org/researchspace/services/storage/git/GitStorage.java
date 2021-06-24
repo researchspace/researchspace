@@ -33,11 +33,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import static java.util.Collections.singleton;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.ResetCommand;
@@ -78,9 +83,6 @@ import org.researchspace.services.storage.api.SizedStream;
 import org.researchspace.services.storage.api.StorageException;
 import org.researchspace.services.storage.api.StorageLocation;
 import org.researchspace.services.storage.api.StoragePath;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class GitStorage implements ObjectStorage {
     private static final Logger logger = LogManager.getLogger(GitStorage.class);
@@ -127,9 +129,15 @@ public class GitStorage implements ObjectStorage {
 
     private void cloneRepository() throws GitAPIException, IOException {
         logger.info("Cloning remote repository <" + config.getRemoteUrl() + "> at " + config.getLocalPath());
-        // TODO: this requires to provide Git credentials in some form
-        throw new StorageException(String.format(
-                "Automatic git clone is not supported: a '.git' repository must exist in %s", config.getLocalPath()));
+
+        CloneCommand cloneCommand = Git.cloneRepository().setDirectory(config.getLocalPath().toFile())
+                .setURI(config.getRemoteUrl());
+
+        if (config.getBranch() != null) {
+            String remoteBranch = "refs/heads/" +  config.getBranch();
+            cloneCommand.setBranchesToClone(singleton(remoteBranch)).setBranch(remoteBranch);
+        }
+        cloneCommand.call().close();
     }
 
     private void initializeExisting(Path gitFolder) throws GitAPIException, IOException {

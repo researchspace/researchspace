@@ -60,4 +60,12 @@ export class SparqlPersistence implements TriplestorePersistence {
   remove(model: CompositeValue): Kefir.Property<void> {
     return this.persist(model, FieldValue.empty);
   }
+
+  dryPersist(
+    initialModel: CompositeValue | EmptyValue,
+    currentModel: CompositeValue | EmptyValue,
+  ) {
+    return RawSparqlPersistence.dryRun(initialModel, currentModel, this.config.targetGraphIri, this.config.targetInsertGraphIri);
+  }
+
 }

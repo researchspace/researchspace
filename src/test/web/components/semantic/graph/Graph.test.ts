@@ -24,11 +24,11 @@ import { Rdf, vocabularies } from 'platform/api/rdf';
 import { Graph, GraphProps, GraphState } from 'platform/components/semantic/graph';
 
 import { mount } from 'platform-tests/configuredEnzyme';
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
 import { foaf, person } from './TestData';
 
-mockLanguagePreferences();
+mockConfig();
 
 const GRAPH_DATA: Cy.ElementDefinition[] = [
   {

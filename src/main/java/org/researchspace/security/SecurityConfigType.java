@@ -22,11 +22,26 @@ package org.researchspace.security;
 import org.researchspace.config.Configuration;
 
 public enum SecurityConfigType {
-    ShiroConfig("shiroConfig", "shiro.ini"), ShiroLDAPConfig("shiroLDAPConfig", "shiro-ldap.ini"),
-    OauthParameters("oauthParameters", "shiro-sso-oauth-params.ini"),
-    SamlParameters("samlParameters", "shiro-sso-saml-params.ini"),
-    SsoAuthConfigOverride("ssoFactorAuthOverride", "shiro-sso.ini"),
-    SsoUsersConfig("ssoUserConfig", "shiro-sso-users.ini");
+    /**
+     * @deprecated please use shiro-roles.ini and shiro-users.ini files.
+     */
+    ShiroConfig("shiroConfig", "shiro.ini"),
+    ShiroLDAPConfig("shiroLDAPConfig", "shiro-ldap.ini"),
+
+    /**
+     * SSO parameter configuration file that can be used to override default config.
+     */
+    SsoConfig("ssoConfig", "shiro-sso-params.ini"),
+
+    /**
+     * Ini file that defines possible user roles.
+     */
+    ShiroRoles("rolesConfig", "shiro-roles.ini"),
+
+    /**
+     * Ini file that defines users.
+     */
+    ShiroUsers("userConfig", "shiro-users.ini");
 
     private String paramKey;
     private String fileName;

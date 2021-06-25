@@ -1,0 +1,30 @@
+  <semantic-query 
+                  query='
+                          SELECT ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {    
+                            BIND(<[[config]]> as ?config) .
+                            ?config <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
+                            
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                            }
+                            OPTIONAL {
+                              ?config <http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern> ?labelSparqlPattern .
+                            }
+                          } LIMIT 1
+                        '
+  >
+    <template id='template'>
+      <mp-page-loader
+  		  iri="http://www.researchspace.org/resource/EntitySearchTemplate"
+  	 	  urlqueryparam-type="<{{bindings.0.rdfType.value}}>"
+        urlqueryparam-p2='{{#if bindings.0.P2_has_type.value}}{{bindings.0.P2_has_type.value}}{{/if}}' 
+        urlqueryparam-restriction='{{#if bindings.0.restrictionPattern.value}}{{bindings.0.restrictionPattern.value}}{{/if}}'
+        urlqueryparam-label='{{#if bindings.0.labelSparqlPattern.value}}{{bindings.0.labelSparqlPattern.value}}{{/if}}'
+  	  ></mp-page-loader>
+    </template>
+    <template id='noResultTemplate'>
+    </template>
+  </semantic-query>

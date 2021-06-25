@@ -44,7 +44,7 @@ public class SSOUsersRegistry {
 
     public SSOUsersRegistry(Configuration config) {
         SecurityConfigRecord record = config.getEnvironmentConfig()
-                .getSecurityConfig(SecurityConfigType.SsoUsersConfig);
+                .getSecurityConfig(SecurityConfigType.ShiroUsers);
         if (record.exists()) {
             Ini ini = SecurityConfigRecord.readIni(record);
             initUsers(ini.getSection(IniRealm.USERS_SECTION_NAME));

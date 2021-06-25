@@ -24,6 +24,7 @@ import java.util.Set;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.researchspace.rest.filters.UserAgentFilter;
 
 import com.google.common.collect.Sets;
 
@@ -69,6 +70,20 @@ public class MpRepositoryVocabulary {
      * is accessible
      */
     public static final IRI SERVICE_URL = VF.createIRI(FEDERATION_NAMESPACE, "serviceURL");
+
+    /**
+     * In REST service wrapper configs requestRateLimit holds number of requests
+     * that can be issued to the target resource per second. By default is
+     * unlimited.
+     */
+    public static final IRI REQUEST_RATE_LIMIT = VF.createIRI(FEDERATION_NAMESPACE, "requestRateLimit");
+
+    /**
+     * User-Agent that should be used in REST calls from REST service wrapper.
+     * Otherwise default one is used, @see {@link UserAgentFilter}.
+     */
+    public static final IRI USER_AGENT = VF.createIRI(FEDERATION_NAMESPACE, "userAgent");
+
     /**
      * A datatype property that points to the repository ID which would be treated
      * as the default federation member.
@@ -80,16 +95,20 @@ public class MpRepositoryVocabulary {
     public static final IRI AUTHENTICATION_TOKEN = VF.createIRI(NAMESPACE, "authenticationToken");
     public static final IRI REALM = VF.createIRI(NAMESPACE, "realm");
     public static final IRI QUAD_MODE = VF.createIRI(NAMESPACE, "quadMode");
+    public static final IRI WRITABLE = VF.createIRI(NAMESPACE, "writable");
+
     public static final IRI USE_ASYNCHRONOUS_PARALLEL_JOIN = VF.createIRI(FEDERATION_NAMESPACE,
             "useAsynchronousParallelJoin");
     public static final IRI USE_COMPETING_JOIN = VF.createIRI(FEDERATION_NAMESPACE, "useCompetingJoin");
     public static final IRI USE_BOUND_JOIN = VF.createIRI(FEDERATION_NAMESPACE, "useBoundJoin");
     public static final IRI JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "jsonPath");
+    public static final IRI INPUT_JSON_PATH = VF.createIRI(FEDERATION_NAMESPACE, "inputJsonPath");
     public static final IRI HTTP_METHOD = VF.createIRI(FEDERATION_NAMESPACE, "httpMethod");
     public static final IRI HTTP_HEADER = VF.createIRI(FEDERATION_NAMESPACE, "httpHeader");
     public static final IRI NAME = VF.createIRI(FEDERATION_NAMESPACE, "name");
     public static final IRI VALUE = VF.createIRI(FEDERATION_NAMESPACE, "value");
     public static final IRI INPUT_FORMAT = VF.createIRI(FEDERATION_NAMESPACE, "inputFormat");
+    public static final IRI MEDIA_TYPE = VF.createIRI(FEDERATION_NAMESPACE, "mediaType");
 
     public static final IRI IMPLEMENTS_SERVICE = VF.createIRI(FEDERATION_NAMESPACE, "implementsService");
 

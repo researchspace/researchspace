@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
@@ -67,6 +68,7 @@ import org.researchspace.security.PermissionUtil;
 import org.researchspace.security.Permissions.ACCOUNTS;
 import org.researchspace.security.Permissions.PERMISSIONS;
 import org.researchspace.security.Permissions.ROLES;
+import org.researchspace.security.sso.SSOEnvironment.SSOVariant;
 import org.researchspace.security.PermissionsDocGroup;
 import org.researchspace.security.PermissionsParameterInfo;
 import org.researchspace.security.PlatformSecurityManager;
@@ -431,6 +433,34 @@ public class SecurityEndpoint {
         securityService.saveUsersMetadataTurtleInContainer(turtle,
                 new MpRepositoryProvider(this.repositoryManager, RepositoryManager.ASSET_REPOSITORY_ID));
         return true;
+    }
+
+    @GET
+    @NoCache
+    @Path("getSaml2SpMetadata")
+    public Response getSaml2SpMetadata() {
+        final var securityManager = (PlatformSecurityManager) SecurityUtils.getSecurityManager();
+
+        // try to get SSO realm
+        return Optional.ofNullable(securityManager.getSsoRealm())
+            // only if SAML2 is enabled
+            .filter(realm -> realm.getSsoEnvironment().ssoVariant.equals(SSOVariant.saml2))
+            // get SMAL2 Sp Metadata from the SSO shiro environment
+            .flatMap(realm -> realm.getSsoEnvironment().getSamlSpMetadata())
+            .map(spMetadata ->
+                 Response.status(Status.OK)
+                 // send Sp metadata as file for download
+                 .header("content-disposition", "attachment; filename = researchspace-saml2-sp-metadata.xml")
+                 .entity(spMetadata)
+                 .type(MediaType.APPLICATION_XML)
+                 .build()
+                 )
+            .orElseGet(() ->
+                       Response
+                       .status(Status.BAD_REQUEST)
+                       .entity("Can't generate SAML2 Sp metadata, SSO with SAML is not enabled.")
+                       .build()
+                );
     }
 
     private ShiroTextRealm getShiroTextRealm() {

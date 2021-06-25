@@ -33,7 +33,7 @@ export interface Props {
   /**
    * Substring to highlight
    */
-  highlight?: string;
+  highlight?: string | number;
   /**
    * Props for highlighted substring span
    */
@@ -57,11 +57,14 @@ export class HighlightComponent extends Component<Props, {}> {
 
 function highlight(
   sourceText: string,
-  highlightedTerm: string,
+  highlightedTerm: string | number,
   highlightProps: HTMLProps<HTMLSpanElement> = { className: styles.highlight }
 ): ReactNode[] {
   if (highlightedTerm) {
-    const highlightedTermLower = highlightedTerm.toLowerCase();
+    // we need to cast highlightedTerm to string because in some cases the value that we actually get here
+    // can be a number, that happens because of the way we transform html attributes to react properties.
+    // see Registry#attributeValue
+    const highlightedTermLower = highlightedTerm.toString().toLowerCase();
     const startIndex = sourceText.toLowerCase().indexOf(highlightedTermLower);
     if (startIndex >= 0) {
       const endIndex = startIndex + highlightedTermLower.length;

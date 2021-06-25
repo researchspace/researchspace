@@ -46,6 +46,7 @@ import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.researchspace.cache.CacheManager;
 import org.researchspace.config.Configuration;
 import org.researchspace.security.ShiroGuiceModule.ShiroFilter;
+import org.researchspace.security.sso.SSORealm;
 
 import io.buji.pac4j.token.Pac4jToken;
 
@@ -233,6 +234,19 @@ public class PlatformSecurityManager extends DefaultWebSecurityManager {
         for (Realm realm : manager.getRealms()) {
             if (realm instanceof LDAPRealm)
                 return (LDAPRealm) realm;
+        }
+        return null;
+    }
+
+    /**
+     * @return Instance of the {@link SSORealm} if configured, <code>null</code>
+     *         otherwise
+     */
+    public SSORealm getSsoRealm() {
+        DefaultSecurityManager manager = (DefaultSecurityManager) SecurityUtils.getSecurityManager();
+        for (Realm realm : manager.getRealms()) {
+            if (realm instanceof SSORealm)
+                return (SSORealm) realm;
         }
         return null;
     }

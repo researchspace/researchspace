@@ -19,8 +19,6 @@
 
 package org.researchspace.sail.rest;
 
-import java.io.InputStream;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +57,6 @@ import com.google.common.collect.Maps;
  */
 public abstract class AbstractServiceWrappingSailConnection<C extends AbstractServiceWrappingSailConfig>
         extends AbstractSailConnection {
-
     /**
      * A class holding the mappings for the API inputs (parameter name->value as
      * string) and outputs (IRI->variable name)
@@ -219,7 +216,4 @@ public abstract class AbstractServiceWrappingSailConnection<C extends AbstractSe
 
     protected abstract ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
             throws SailException;
-
-    protected abstract Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            ServiceParametersHolder parametersHolder) throws SailException;
 }

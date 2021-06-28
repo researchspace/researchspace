@@ -1,0 +1,103 @@
+
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX : <http://www.researchspace.org/resource/system/repository#>
+PREFIX rssqlsail: <http://www.researchspace.org/resource/system/sql#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+
+:artworks a ephedra:Service ;
+  <http://www.openrdf.org/config/sail#sailType> "researchspace:SQLSail" ;
+  rdfs:label "A wrapper for the SQL Artworks service." ;
+  ephedra:hasSPARQLPattern (
+      [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasQueryId ;
+      sp:object :_queryId
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:title ;
+      sp:object :_title
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:technique ;
+      sp:object :_technique
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasInputTechnique ;
+      sp:object :_inputTechnique
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:catalogue ;
+      sp:object :_catalogue
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:width ;
+      sp:object :_width
+    ]
+
+  ) ;
+  spin:constraint
+  [
+    a spl:Argument ;
+    rdfs:comment "query ID" ;
+    spl:predicate :_queryId ;
+    spl:valueType xsd:string
+    ] ;
+  spin:constraint
+  [
+    a spl:Argument ;
+    rdfs:comment "The technique parameter used as input" ;
+    spl:predicate :_inputTechnique ;
+    spl:valueType xsd:string
+    ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Row index: will be assigned a random blank node" ;
+    spl:predicate :_results ;
+    spl:valueType rdfs:Resource
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output title" ;
+    spl:predicate :_title ;
+    spl:valueType xsd:string
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output technique" ;
+    spl:predicate :_technique ;
+    spl:valueType xsd:string
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output catalogue" ;
+    spl:predicate :_catalogue ;
+    spl:valueType xsd:integer
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output width" ;
+    spl:predicate :_width ;
+    spl:valueType xsd:integer
+  ] ;
+  rssqlsail:includesSQLQuery
+  [
+    rssqlsail:hasQueryId "default" ;
+    rssqlsail:text "SELECT * FROM Artworks;"
+  ] ;
+  rssqlsail:includesSQLQuery
+  [
+    rssqlsail:hasQueryId "getBySize" ;
+    rssqlsail:text "SELECT * FROM Artworks where technique = ?inputTechnique;"
+  ] .

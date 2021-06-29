@@ -1,0 +1,51 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX example: <http://www.example.org/ontology#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX : <http://www.researchspace.org/resource/system/service/mapbox/>
+
+:mapbox a ephedra:Service ;
+	sail:sailType "researchspace:RESTSail" ;
+	rdfs:label "A wrapper for a REST API." ;
+	ephedra:hasSPARQLPattern (
+		[
+			sp:subject :_results ;
+			sp:predicate :coordinates ;
+			sp:object :_coordinates
+		]
+		[
+			sp:subject :_results ;
+			sp:predicate :distance ;
+			sp:object :_distance
+		]
+	) ;
+
+	spin:constraint
+	[
+		a spl:Argument ;
+		rdfs:comment "Coordinates" ;
+		spl:predicate :_coordinates ;
+		spl:valueType xsd:string
+    	] ;
+
+    spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "results (fixed column, must be present)" ;
+		spl:predicate :_results ;
+		spl:valueType rdfs:Resource;
+		ephedra:jsonPath "$.waypoints"
+	] ;
+
+	spin:column
+	[
+		a spin:Column ;
+		rdfs:comment "Distance data" ;
+		spl:predicate :_distance ;
+		spl:valueType xsd:float;
+		ephedra:jsonPath "$.distance"
+	] .

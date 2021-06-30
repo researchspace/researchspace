@@ -334,24 +334,24 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     return (
       <div className={styles.gridViewDashboard} onClick={this.onFocus}>
         
-        <div className={styles.help}>
+        {/* <div className={styles.help}>
           <i className={'fa fa-question'}></i>
           <div className={styles.helpText}>What are the Thinking Frames?</div>
-        </div>
+        </div> */}
         <div className={styles.gridViewTitle1}>View</div>
         <div className={styles.gridViewItemsView}>{searchViewItems.map(this.renderItemCard)}</div>
       
         <div className={styles.gridViewTitle2}>Authoring</div>
         <div className={styles.gridViewItemsAuth}>{authItems.map(this.renderItemCard)}</div>
         
-        <div className={styles.dropResourceContainer}>
+{/*         <div className={styles.dropResourceContainer}>
           <div>
             <div className={styles.dropResourceIcon}>
               <i className={'rs-icon rs-icon-drop_resource'}></i>
             </div>
-            <div className={styles.dropResourceText}>drop resource here</div>
+            <div className={styles.dropResourceText}>drop entity here</div>
           </div>
-        </div>
+        </div> */}
 
       </div>
     );
@@ -389,7 +389,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           </div>
           <div className={styles.emptyPageDrop}>
             <div><i className={'rs-icon rs-icon-drop_resource'}></i></div>
-            <div className={styles.emptyPageDroptext}>drop resource here</div>
+            <div className={styles.emptyPageDroptext}>drop entity here</div>
             {view.resourceNotRequired ? (
               <div>
                 or

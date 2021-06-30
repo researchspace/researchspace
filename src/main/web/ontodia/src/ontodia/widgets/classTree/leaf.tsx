@@ -85,7 +85,7 @@ export class Leaf extends React.Component<LeafProps, State> {
           {creatableClasses.get(node.model.id) ? (
             <div className={`${LEAF_CLASS}__create ontodia-btn-group ontodia-btn-group-xs`}>
               <button
-                className="ontodia-btn ontodia-btn-default"
+                className="ontodia-btn ontodia-btn-primary"
                 title={'Click or drag to create new entity of this type'}
                 draggable={true}
                 onClick={this.onClickCreate}

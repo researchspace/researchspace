@@ -25,7 +25,7 @@ $loading-error-color: $color-warning;
 $form-group-margin-bottom: 15px; //bootstrap variable
 
 //Bootstrap mixin override
-@mixin form-control-validation($text-color, $border-color, $border-color-darker) {
+@mixin form-control-validation($color, $border-color, $border-bg-color) {
   // Color the label and help text
   .help-block,
   .control-label,
@@ -37,56 +37,62 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   &.checkbox label,
   &.radio-inline label,
   &.checkbox-inline label  {
-    color: $text-color;
+  //  color: $color-dark;
   }
   // Set the border and box shadow on specific inputs to match
   .form-control {
-    border-bottom: 1px solid $border-color;
-    box-shadow: none;
+
+    color: $color;
+    
     &:focus {
-      border-bottom-color: $border-color-darker;
+      border-color: $border-color;
+      background-color: $border-bg-color;
+    }
+
+    &::placeholder {
+      color: $color;
+      opacity: .6;
     }
   }
   // Set validation states also for addons
   .input-group-addon {
-    color: $text-color;
-    border-bottom: 1px solid $border-color;
+  //  color: $color-dark;
+ //   border-bottom: 1px solid $border-color;
   }
   // Optional feedback icon
   .form-control-feedback {
-    color: $text-color;
+    color: $color-dark;
   }
 }
 
 .form-control {
 
-  height: $form-height;
+  height: $input-height;
 
   color: $color-dark;
   font-size: $font-size-base;
-  font-weight: 600;
   
-  background-color: $color-formInputs-bg;
+  background-color: $input-color-bg;
 
-  border-radius: 0;
-  border: none;
-  border-bottom: 1px solid $color-form-border;
+  border-radius: $input-border-radius;
+  border: 1px solid $input-border-color;
 
-  padding: 6px 12px;
+  padding: 0px 12px;
 
   -webkit-box-shadow: none;
   box-shadow: none;
 
   &::placeholder {
-    color: $color-form-placeholder;
+    color: $input-placeholder-color;
     font-weight: normal;
   }
 
   &:focus {
     outline: none;
-    border-bottom: 1px solid $color-dark;
     -webkit-box-shadow: none;
     box-shadow: none;
+    border-color: inherit;
+    border: 1px solid $input-border-color;
 
     &::placeholder {
       /* Chrome, Firefox, Opera, Safari 10.1+ */
@@ -96,42 +102,73 @@ $form-group-margin-bottom: 15px; //bootstrap variable
   }
 }
 
-textarea.form-control {
+.keyword-search-container {
 
-  border: 1px solid $color-form-border;
-  border-radius: 2px;
-  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  height: $input-height;
 
-  &:focus {
-    
-    border: 1px solid $color-dark;
+  background-color: $input-color-bg;
+  border-radius: $input-border-radius;
+  border: 1px solid $input-border-color;
+
+  i {
+
+    font-size: 16px;
+    padding-left: 20px;
+    color: $color-dark--op75;
+  }
+
+  .form-group {
+    margin: 0;
+    border: none;
+    min-height: inherit;
+  }
+
+  .form-control.input-keyword-search {
+
+    border: none;
+    height: inherit;
+  //  font-size: 15px;
+  //  letter-spacing: 0.2px;
+    padding: 0px 20px;
   }
 }
+
+
+
+ textarea.form-control {
+
+  min-height: $input-height;
+  padding: 10px 15px;
+
+} 
 
 .form-control[disabled],
 .form-control[readonly],
 fieldset[disabled] .form-control {
 
-  background-color: $color-formInputs-bg;
-  opacity: 0.7;
+  background-color: inherit;
+  opacity: 0.4;
 }
 
 // Feedback states
 .has-success {
-  @include form-control-validation($color-success-darker, $color-success, $color-success-darker);
+  @include form-control-validation($color-success-text, $color-success, $color-success-light);
 }
 .has-warning {
-  @include form-control-validation($color-warning-text, $color-warning, $color-warning-darker);
+  @include form-control-validation($color-warning-text, $color-warning,$color-warning-light);
 }
 .has-error {
-  @include form-control-validation($color-danger-darker, $color-danger, $color-danger-darker);
+  @include form-control-validation($color-danger, $color-danger, $color-danger-light);
 }
 
 .form-group {
  margin-bottom: $form-group-margin-bottom;
  width: 100%;
- min-height: $form-height;
+ min-height: $input-height;
  height: 100%;
+ border-radius: $input-border-radius;
 
  .input-group {
    display: flex;
@@ -142,7 +179,6 @@ fieldset[disabled] .form-control {
 
    .form-control {
 
-     height: 100%;
      display: block;
      flex-grow: 1;
      margin-right: 5px;
@@ -153,10 +189,6 @@ fieldset[disabled] .form-control {
 
      width: auto;
      height: inherit;
-
-     & div {
-       height: 100%;
-     }
 
      & button {
       height: 100%;
@@ -216,6 +248,10 @@ fieldset[disabled] .form-control {
   }
 
   &__single-instance {
+
+    border: 1px solid $input-border-color;
+    border-radius: $input-border-radius;
+    background-color: $input-color-bg;
     display: flex;
     align-items: flex-start;
 
@@ -241,7 +277,7 @@ fieldset[disabled] .form-control {
   &__group-instance {
     position: relative;
     padding: 15px;
-    border: 1px solid $color-form-border;
+    border: 1px solid $input-border-color;
 
     .semantic-form-input-decorator--with-header:first-of-type {
 
@@ -282,25 +318,24 @@ fieldset[disabled] .form-control {
 
   textarea.plain-text-field__text {
     
-    min-height: $form-height;
+    min-height: $input-height;
     width: 100%;
 
-    background-color: $color-formInputs-bg;
-    border: 1px solid $color-form-border;
-    border-radius: 4px;
+    background-color: $input-color-bg;
+    border: 1px solid $input-border-color;
+    border-radius: $input-border-radius;
     font-size: $font-size-base;
-    font-weight: 600;
+  //  font-weight: 600;
 
     padding: 10px 15px;
 
     &::placeholder {
-      color: $color-form-placeholder;
+      color: $input-placeholder-color;
       font-weight: normal;
     }
   
     &:focus {
       
-      border: 1px solid $color-dark;
       outline: none;
 
       &::placeholder {
@@ -329,14 +364,15 @@ fieldset[disabled] .form-control {
   }
 
   &__create-button {
-    margin: 0 5px;
+
     display: flex;
     align-items: center;
 
-    background-color: $color-formInputs-bg;
+    background-color: $input-color-bg;
 
-    border: none;
-    border-bottom: 1px solid $color-form-border;
+    border-radius: 0;
+
+    height: $input-height;
 
     font-weight: 600;
     font-size: 16px;
@@ -345,8 +381,17 @@ fieldset[disabled] .form-control {
     .fa-plus {
 
       font-size: 14px;
-      padding-right: 7px;
     }
+
+  }
+
+  &__create-button.btn-default,
+  &__create-button.btn-default:active:hover {
+
+    border: none;
+    border-right: 1px solid $input-border-color;
+    border-left: 1px solid $input-border-color;
+
   }
 }
 
@@ -399,10 +444,11 @@ fieldset[disabled] .form-control {
     display: flex;
     align-items: center;
 
-    background-color: $color-formInputs-bg;
+    background-color: $input-color-bg;
 
-    border: none;
-    border-bottom: 1px solid $color-form-border;
+    border-radius: $input-border-radius;
+
+    height: $input-height;
 
     font-weight: 600;
     font-size: 16px;
@@ -411,8 +457,13 @@ fieldset[disabled] .form-control {
     .fa-plus {
 
       font-size: 14px;
-      padding-right: 7px;
     }
+  }
+
+  &__create-button.btn-default,
+  &__create-button.btn-default:active:hover {
+
+    border: 1px solid $input-border-color;
   }
 }
 
@@ -475,7 +526,7 @@ fieldset[disabled] .form-control {
   &__hide:focus,
   &__hide:focus-within {
 
-    background-color: $color-formInputs-bg;
+    background-color: $input-color-bg;
     border: none;
     padding: 5px 8px;
   }
@@ -557,55 +608,45 @@ fieldset[disabled] .form-control {
 .form-switch {
   &__content {
     width: 100%;
-    margin: 5px;
   }
 
   &__select {
-
-    background-color: $color-primary-10;
-    color: $color-dark;
-    padding: 0.5em 2em 0.5em 1em !important; //overwrite inline
-    border-color: $color-primary-50;
-    font-size: $font-size-base;
     text-transform: uppercase;
     font-weight: 600;
-
-    min-width: max-content;   
   }
 }
 
 /* Form buttons */
 
 //btn-default
-.field-editor__delete-label-button.btn-default,
-.field-editor__row .btn-default,
 .SemanticTreeInput--browseButton.btn-default,
 .cardinality-support__single-instance > .cardinality-support__remove-value {
 
   color: $color-dark;
   border: none;
-  border-bottom: 1px solid $color-form-border;
   font-size: 13px;
   background-color: transparent;
 
-  min-height: $form-height;
+  min-height: $input-height;
   height: 100%;
-
   margin: 0;
   padding: 0 10px;
 
-  &.active,
-  &:hover,
-  &:focus,
-  &:visited {
-
-    color: $color-dark;
-  }
 }
 
-.SemanticTreeInput--browseButton.btn-default {
+.field-editor__delete-label-button.btn-default,
+.field-editor__row .btn-default:not(.SemanticTreeInput--browseButton)  {
 
   color: $color-dark;
+  border: 1px solid $input-border-color;
+  font-size: 13px;
+  background-color: $input-color-bg;
+
+  min-height: $input-height;
+  height: 100%;
+  margin-left: 2px;
+  padding: 0 10px;
+
 }
 
 .semantic-form {
@@ -657,50 +698,9 @@ fieldset[disabled] .form-control {
   & .form-control,
   & .plain-text-field textarea.plain-text-field__text,
   & .Select-control,
-  & .form-group {
-
-    border: none;
-    border-radius: 8px;
-  }
-
-  .SemanticTreeInput--inputAndButtons,
-  .cardinality-support__single-instance,
-  .DragAndDropInput--itemArea,
-  .semantic-form-tree-picker-input__create-button {
-
-    border: 0.5px solid $color-form-border;
-    border-radius: 8px;
-    background-color: $color-white;
-  //  box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.12);
-  }
-
-  .cardinality-support__group-instance {
-
-    border: 1px solid $color-form-border;
-  }
-
-  .semantic-form-tree-picker-input__create-button {
-
-    height: 43px;
-  }
-
-  & .form-control,
-  & .plain-text-field textarea.plain-text-field__text,
-  & .Select-control,
-  &.form-group,
-  .field-editor__delete-label-button.btn-default, 
-  .field-editor__row .btn-default, 
-  .SemanticTreeInput--browseButton.btn-default, 
-  .cardinality-support__single-instance > .cardinality-support__remove-value {
-
-    min-height: 41px;
-    height: 41px;
-    border: none;
-  }
-
+  & .form-group,
   .clearable-input {
 
-    min-height: 41px;
     border: none;
   }
 

@@ -560,19 +560,7 @@ export class DashboardComponent extends Component<Props, State> {
               className: 'thinking-frames__frames-sidebar',
               content: (<div className={styles.itemsContainer}>{this.renderItems()}</div>) as React.ReactElement<any>,
               heading: (
-                <div>
-                  Thinking Frames&nbsp;
-                  <button
-                    className={`btn btn-link btn-xs pull-right ${styles.addItemButton}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      this.onAddNewItem();
-                    }}
-                  >
-                    <i className="fa fa-plus" /> Add frame
-                  </button>
-                </div>
+                <div>Thinking Frames</div>
               ),
             },
           ],

@@ -1,0 +1,28 @@
+<div class='rs-search-page' style='flex: 1 1 0px; overflow: auto; padding: 30px;'>
+  <div style="font-size: 18px; margin-bottom: 20px;">Entities related to: place label</div>
+    <semantic-search config='[[searchConfigForFieldsFromQuery "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range . }"]]'>
+      <semantic-search-query-keyword 
+          domain='<http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>'
+          query='
+            SELECT ?subject WHERE { 
+              ?subject a ?type .
+              ?type rdfs:subClassOf* crm:E1_CRM_Entity .
+              ?subject rdfs:label ?label .
+              SERVICE <http://www.bigdata.com/rdf/search#search> {
+                ?label bds:search ?__token__ ;
+                          bds:minRelevance "0.3" ;
+                          bds:matchAllTerms "true"  .
+              }
+            }
+          '
+          default-query='
+              SELECT ?subject WHERE { 
+              ?subject a ?type .
+              ?type rdfs:subClassOf* crm:E1_CRM_Entity .
+              }         
+          '
+          debounce=500
+        ></semantic-search-query-keyword>
+        [[> rsp:SearchResults]]  
+    </semantic-search>
+</div>

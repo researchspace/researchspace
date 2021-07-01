@@ -55,6 +55,16 @@
       "resourceNotRequired": true,
       "type": "search"
     },
+    {
+    	"id": "entity-search",
+      "label": "Search",
+      "description": "Search for resources",
+      "iconClass": "rs-icon rs-icon-semantic_search",
+      "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
+      "template": "{{> entitySearchTemplate}}",
+      "resourceNotRequired": true,
+      "type": "search-by-entity-type"
+    },
 
     {
     	"id": "resource",
@@ -265,6 +275,11 @@
         <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/SearchContent'>
         </mp-page-loader>
     	</div>
+    </template>
+   <template id='entitySearchTemplate'>
+      <div class='rs-search-page' style='flex: 1 1 0px; overflow: auto; padding: 20px;'>
+         [[> rsp:EntitySearchContent config='{{iri}}']]
+    	</div> 
     </template>
     <template id='entityEditor'>
       [[> rsp:EntityEditor]]

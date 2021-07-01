@@ -15,6 +15,7 @@ import {
   SemanticMapSendTilesLayers,
   SemanticMapControlsSyncFromMap,
   SemanticMapControlsSendTilesLayersToMap,
+  SemanticMapControlsSendMaskIndexToMap,
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -48,6 +49,7 @@ interface State {
   color: any;
   setColor: any;
   tilesLayers: Array<any>;
+  maskIndex: number;
 }
 
 interface Props {
@@ -67,6 +69,7 @@ export class SemanticMapControls extends Component<Props, State> {
       color: 'rgba(200,50,50,0.5)',
       setColor: 'rgba(200,50,50,0.5)',
       tilesLayers: [],
+      maskIndex: 1,
     };
 
     this.cancelation
@@ -86,24 +89,39 @@ export class SemanticMapControls extends Component<Props, State> {
       return;
     }
 
-    console.log("finito di draggare!!! CAZZO!");
+    console.log('result');
+    console.log(result);
 
     const tilesLayers = this.reorder(this.state.tilesLayers, result.source.index, result.destination.index);
 
-    this.setState({
-      tilesLayers,
-    }, () => {
-      console.log("ecco dunque il nuovo ordine mondiale")
-      console.log(this.state.tilesLayers)
-
-      trigger({
-        eventType: SemanticMapControlsSendTilesLayersToMap,
-        source: this.props.id,
-        targets: [this.props.targetMapId],
-        data: this.state.tilesLayers,
-      })
-    });
+    this.setState(
+      {
+        tilesLayers,
+      },
+      () => {
+        this.triggerSendLayersToMap();
+      }
+    );
   };
+
+  private setMaskIndex(index: number){
+    this.setState({
+      maskIndex: index
+    }, ()=>{
+      console.log("mando il nuovo maskindex")
+      console.log(index)
+      this.triggerSendMaskIndexToMap(index);
+    })
+  }
+
+  private triggerSendMaskIndexToMap(index: number){
+    trigger({
+      eventType: SemanticMapControlsSendMaskIndexToMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: index
+    })
+  }
 
   public componentDidMount() {
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
@@ -117,115 +135,143 @@ export class SemanticMapControls extends Component<Props, State> {
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
               <h3 className={'mapLayersTitle'}>Tiles Layers</h3>
-              <hr id={'tilesLayerSeparator'} style={{margin: '0px !important'}}></hr>
+              <hr id={'tilesLayerSeparator'} style={{ margin: '0px !important' }}></hr>
               {this.state.tilesLayers.map((tilesLayer, index) => (
-                <Draggable key={tilesLayer.get("identifier")} draggableId={tilesLayer.get("identifier")} index={index}>
+                <Draggable key={tilesLayer.get('identifier')} draggableId={tilesLayer.get('identifier')} index={index}>
                   {(provided, snapshot) => (
                     <div
                       className="draggableLayer"
                       ref={provided.innerRef}
-                      style={{border: "1px solid red !important;", borderRadius: "2px"}}
+                      style={{ border: '1px solid red !important;', borderRadius: '2px' }}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
+                    >
+                      <div
+                        id="togglesColumn"
+                        style={{ display: 'inline-block', width: '20px', height: 'auto', padding: '2px' }}
                       >
-                        <img src={tilesLayer.get('thumbnail')} className={'layerThumbnail'}></img>
-                        <div style={{ display: 'inline-block', verticalAlign: 'top', padding: '10px' }}>
-                          <div style={{width: '160px'}}>
-                            <label className={'layerName'}>{tilesLayer.get('name')}</label>
-                            <input type={'checkbox'} style={{ float: 'right' }} checked={tilesLayer.get('visible')}
-                              onChange={(event) => {this.setTilesLayerProperty(tilesLayer.get('identifier'),'visible', event.target.checked)}}></input>
-                              <div>
-                                <label className={'layerLevelLabel'}>{tilesLayer.get('level')}</label>
-                                <input type={'range'} className={'opacitySlider'} min={0} max={1} step={0.01} value={tilesLayer.get('opacity')} onChange={
-                                  (event) => {
-                                    const input = event.target as HTMLInputElement;
-                                    const opacity = parseFloat(input.value);
-                                    const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
-                                    this.setTilesLayerProperty(tilesLayer.get('identifier'), 'opacity', capped);
-                                  }
-                                }></input>
-                              </div>
+                        {tilesLayer.get('visible') && (
+                          <i
+                            className="fa fa-check-square-o"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', false);
+                            }}
+                          ></i>
+                        )}
+                        {!tilesLayer.get('visible') && (
+                          <i
+                            className="fa fa-square-o"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', true);
+                            }}
+                          ></i>
+                        )}
+                        <i className="fa fa-bars"></i>
+                        {this.state.maskIndex == index && 
+                        <i className="fa fa-eye"></i>}
+                        {this.state.maskIndex !== index &&
+                        <i className="fa fa-eye-slash" onClick={()=>{this.setMaskIndex(index)}}></i>}
+                      </div>
+                      <img src={tilesLayer.get('thumbnail')} className={'layerThumbnail'}></img>
+                      <div style={{ display: 'inline-block', verticalAlign: 'top', padding: '10px' }}>
+                        <div style={{ width: 'auto' }}>
+                          <label className={'layerName'}>{tilesLayer.get('name')}</label>
+                          <div>
+                            <label className={'layerLevelLabel'}>{tilesLayer.get('level')}</label>
+                            <input
+                              type={'range'}
+                              className={'opacitySlider'}
+                              min={0}
+                              max={1}
+                              step={0.01}
+                              value={tilesLayer.get('opacity')}
+                              onChange={(event) => {
+                                const input = event.target as HTMLInputElement;
+                                const opacity = parseFloat(input.value);
+                                const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
+                                this.setTilesLayerProperty(tilesLayer.get('identifier'), 'opacity', capped);
+                              }}
+                            ></input>
                           </div>
                         </div>
                       </div>
+                      {this.state.maskIndex == index && (
+                        <div>
+                          <label style={{ margin: '2px;' }}>
+                            Normal
+                            <input
+                              name={'overlay-visualization'}
+                              type={'radio'}
+                              value={'normal'}
+                              checked={this.state.overlayVisualization === 'normal'}
+                              onChange={(event) => {
+                                this.setState({ overlayVisualization: event.target.value }, () =>
+                                  this.triggerVisualization(this.state.overlayVisualization)
+                                );
+                              }}
+                            ></input>
+                          </label>
+                          <label style={{ margin: '2px;' }}>
+                            Spyglass
+                            <input
+                              name={'overlay-visualization'}
+                              type={'radio'}
+                              value={'spyglass'}
+                              checked={this.state.overlayVisualization === 'spyglass'}
+                              onChange={(event) => {
+                                this.setState({ overlayVisualization: event.target.value }, () =>
+                                  this.triggerVisualization(this.state.overlayVisualization)
+                                );
+                              }}
+                            ></input>
+                          </label>
+                          <label style={{ margin: '2px;' }}>
+                            Swipe
+                            <input
+                              name={'overlay-visualization'}
+                              type={'radio'}
+                              value={'swipe'}
+                              checked={this.state.overlayVisualization === 'swipe'}
+                              onChange={(event) => {
+                                this.setState({ overlayVisualization: event.target.value }, () =>
+                                  this.triggerVisualization(this.state.overlayVisualization)
+                                );
+                              }}
+                            ></input>
+                          </label>
+                          {this.state.overlayVisualization === 'swipe' && (
+                            <label>
+                              <input
+                                id={'swipe'}
+                                type={'range'}
+                                min={0}
+                                max={100}
+                                step={1}
+                                style={{ width: '100%' }}
+                                value={this.state.swipeValue as any}
+                                onChange={(event) => {
+                                  const input = event.target as HTMLInputElement;
+                                  const input2 = input.value;
+                                  this.setState({ swipeValue: Number(input2) }, () =>
+                                    this.triggerSwipe(this.state.swipeValue)
+                                  );
+                                }}
+                              ></input>
+                            </label>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </Draggable>
               ))}
               {provided.placeholder}
             </div>
-            )}
-          </Droppable>
+          )}
+        </Droppable>
       </DragDropContext>,
-      D.br(),
-      D.h3({ style: sliderbar }, 'Visualization mode', D.br()),
-      D.br(),
-      D.label(
-        {},
-        D.input({
-          name: 'overlay-visualization',
-          type: 'radio',
-          value: 'normal',
-          checked: this.state.overlayVisualization === 'normal',
-          onChange: (event) => {
-            this.setState({ overlayVisualization: event.target.value }, () =>
-              this.triggerVisualization(this.state.overlayVisualization)
-            );
-          },
-        }),
-        'Normal'
-      ),
-      D.br(),
-      D.label(
-        {},
-        D.input({
-          name: 'overlay-visualization',
-          type: 'radio',
-          value: 'spyglass',
-          onChange: (event) => {
-            this.setState({ overlayVisualization: event.target.value }, () =>
-              this.triggerVisualization(this.state.overlayVisualization)
-            );
-          },
-        }),
-        'Spyglass'
-      ),
-      D.br(),
-      D.label(
-        {},
-        D.input({
-          name: 'overlay-visualization',
-          type: 'radio',
-          value: 'swipe',
-          onChange: (event) => {
-            this.setState({ overlayVisualization: event.target.value }, () =>
-              this.triggerVisualization(this.state.overlayVisualization)
-            );
-          },
-        }),
-        'Swipe'
-      ),
-      this.state.overlayVisualization === 'swipe'
-        ? D.label(
-            { style: sliderbar },
-            'Overlay Swipe',
-            D.br(),
-            D.input({
-              id: 'swipe',
-              type: 'range',
-              min: 0,
-              max: 100,
-              step: 1,
-              style: { width: '100%' },
-              value: this.state.swipeValue as any,
-              onChange: (event) => {
-                const input = event.target as HTMLInputElement;
-                const input2 = input.value;
-                this.setState({ swipeValue: Number(input2) }, () => this.triggerSwipe(this.state.swipeValue));
-              },
-            })
-          )
-        : null,
-      D.br(),
       D.br(),
       D.label({}, 'Features Default Color'),
       D.br(),
@@ -264,14 +310,14 @@ export class SemanticMapControls extends Component<Props, State> {
         tilesLayers: event.data,
       },
       () => {
-        //console.log(this.state.tilesLayers);
+        console.log('Control state tileslayers (initialization)');
+        console.log(this.state.tilesLayers);
       }
     );
   };
 
   private setTilesLayerProperty(identifier, propertyName, propertyValue) {
     let tilesLayersClone = this.state.tilesLayers;
-
     tilesLayersClone.forEach(function (tilesLayer) {
       if (tilesLayer.get('identifier') === identifier) {
         tilesLayer.set(propertyName, propertyValue);
@@ -279,8 +325,7 @@ export class SemanticMapControls extends Component<Props, State> {
     });
 
     this.setState({ tilesLayers: tilesLayersClone }, () => {
-      //console.log('State updated:');
-      //console.log(this.state.tilesLayers);
+      this.triggerSendLayersToMap();
     });
   }
 
@@ -316,6 +361,15 @@ export class SemanticMapControls extends Component<Props, State> {
       targets: [this.props.targetMapId],
     });
   };
+
+  private triggerSendLayersToMap() {
+    trigger({
+      eventType: SemanticMapControlsSendTilesLayersToMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: this.state.tilesLayers,
+    });
+  }
 
   private triggerVisualization = (visualization: string) => {
     trigger({

@@ -92,6 +92,7 @@ import {
   SemanticMapSendTilesLayers,
   SemanticMapControlsSyncFromMap,
   SemanticMapControlsSendTilesLayersToMap,
+  SemanticMapControlsSendMaskIndexToMap,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -196,7 +197,8 @@ interface MapState {
   isLoading?: boolean;
   overlayVisualization?: string;
   featureColor?: string;
-  tilesLayers?: Array<any>
+  tilesLayers?: Array<any>;
+  maskIndex?: number;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -205,7 +207,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private layers: { [id: string]: VectorLayer };
   private map: Map;
   private cancelation = new Cancellation();
-  private tilesLayers = [];
   private mousePosition = null;
   private swipeValue: number;
 
@@ -225,7 +226,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       errorMessage: maybe.Nothing<string>(),
       overlayVisualization: 'normal',
       featureColor: 'normal',
-      tilesLayers: [new TileLayer({source: new OSM()})]
+      tilesLayers: [new TileLayer({source: new OSM()})],
+      maskIndex: 1,
     };
 
     this.initInteractions();
@@ -253,15 +255,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.replaceOverlay);
-
-    this.cancelation
-      .map(
-        listen({
-          eventType: SemanticMapControlsOverlayOpacity,
-          target: this.props.id,
-        })
-      )
-      .onValue(this.setOverlayOpacity);
 
     this.cancelation
       .map(
@@ -313,14 +306,35 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.updateTilesLayersFromControls);
+
+      this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendMaskIndexToMap,
+        })
+      )
+      .onValue(this.setMaskIndex);
+  }
+
+  private setMaskIndex = (event: Event<any>) => {
+    console.log("event")
+    console.log(event)
+    this.setState({maskIndex: event.data});
   }
 
   private updateTilesLayersFromControls = (event: Event<any>) => {
+    const incomingLayers = event.data; 
+    console.log("incomingLayers")
+    console.log(incomingLayers)
 
     this.setState({
-      tilesLayers : event.data
+      tilesLayers : incomingLayers
     }, () => {
-      
+      incomingLayers.forEach((value, index) => {
+        let layer = this.getMapLayerFromIdentifier(value.get("identifier"))
+        //Calculate Z-index reverting the order (i.e. top layer has highest z index)
+        layer.setZIndex(Math.abs(index - event.data.length));
+      });
     });
   }
 
@@ -342,7 +356,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
               color: newColor,
             }),
             stroke: new Stroke({
-              color: newColor,
+              color: newColor,  
             }),
           })
         );
@@ -361,15 +375,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       targets: this.props.targetControls
     });
   }
-
-  /**
-   *
-   * @param event
-   */
-  private setOverlayOpacity = (event: Event<any>) => {
-    const newOpacity = event.data;
-    this.getOverlayLayer().setOpacity(newOpacity);
-  };
 
   /**
    *
@@ -563,11 +568,11 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private setOverlayVisualizationFromEvent = (event: Event<any>) => {
-    this.setOverlayVisualization(event.data);
+    this.setOverlayVisualization(event.data, this.state.maskIndex);
   };
 
-  private resetVisualizations() {
-    const overlayLayer = this.getOverlayLayer();
+  private resetVisualization(layerIndex: number) {
+    const overlayLayer = this.state.tilesLayers[layerIndex]
     overlayLayer.un('prerender', this.spyglassFunction);
     overlayLayer.un('prerender', this.swipeFunction);
     overlayLayer.un('postrender', function (event) {
@@ -576,8 +581,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   }
 
-  private setOverlayVisualization(overlayVisualization: string) {
-    const overlayLayer = this.getOverlayLayer();
+  private resetAllVisualizations(){
+    this.state.tilesLayers.forEach((tilesLayer, index)=>{
+      this.resetVisualization(index);
+    })
+  }
+
+  private setOverlayVisualization(overlayVisualization: string, layerIndex: number) {
+    const overlayLayer = this.state.tilesLayers[this.state.maskIndex]
 
     this.setState(
       {
@@ -586,12 +597,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       () => {
         switch (overlayVisualization) {
           case 'normal': {
-            this.resetVisualizations();
+            this.resetAllVisualizations();
             this.map.render();
             break;
           }
           case 'spyglass': {
-            this.resetVisualizations();
+            this.resetAllVisualizations();
             overlayLayer.on('prerender', this.spyglassFunction);
             overlayLayer.on('postrender', function (event) {
               event.context.restore();
@@ -600,7 +611,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             break;
           }
           case 'swipe': {
-            this.resetVisualizations();
+            this.resetAllVisualizations();
             overlayLayer.on('prerender', this.swipeFunction);
             overlayLayer.on('postrender', function (event) {
               event.context.restore();
@@ -776,10 +787,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return tilesLayers;
   }
 
-  private getAllTilesLayers() {
-    return this.state.tilesLayers;
-  }
-
   private getTilesLayerFromIdentifier(identifier) {
     let result;
     this.state.tilesLayers.forEach(function (tilesLayer) {
@@ -790,13 +797,22 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return result;
   }
 
-  private getOverlayLayer() {
-    let overlayLayer;
-    this.map.getLayers().forEach(function (currentLayer) {
-      if (currentLayer.get('level') === 'overlay') {
-        overlayLayer = currentLayer;
+  private getMapLayerFromIdentifier(identifier){
+    let result;
+    this.map.getLayers().getArray().forEach(function (tilesLayer) {
+      if (tilesLayer.get('identifier') === identifier) {
+        result = tilesLayer;
       }
     });
+    return result;
+  }
+
+  private getOverlayLayer() {
+    let overlayLayer;
+    console.log("this.state.maskIndex");
+    console.log(this.state.maskIndex);
+    overlayLayer = this.state.tilesLayers[this.state.maskIndex]
+    console.log(overlayLayer);
     return overlayLayer;
   }
 
@@ -807,7 +823,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       let basemapLayers = [];
       const overlayLayers = [];
 
-      //TODO: clean duplicate code (it's also in triggersendlayers)
+      //TODO: IF tileslayers ARE present in template
       this.state.tilesLayers.forEach(function (tileslayer) {
         if (tileslayer.get('level') === 'basemap') {
           tileslayer.set("visible", false);

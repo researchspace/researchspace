@@ -48,17 +48,16 @@
     {
     	"id": "simple-search",
       "label": "Search",
-      "description": "Search for resources",
       "iconClass": "rs-icon rs-icon-semantic_search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> simpleSearchTemplate}}",
       "resourceNotRequired": true,
       "type": "search"
     },
+
     {
     	"id": "entity-search",
       "label": "Search",
-      "description": "Search for resources",
       "iconClass": "rs-icon rs-icon-semantic_search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> entitySearchTemplate}}",
@@ -70,6 +69,7 @@
     	"id": "resource",
       "label": "Entity record",
       "description": "Drag and drop an entity here to display the entity record",
+      "dropAreaDescription": "Drag and drop an entity here to display the entity record",
       "iconClass": "rs-icon rs-icon-page",
       "template": "{{> resourceTemplate}}",
       "type": "view"
@@ -79,6 +79,7 @@
     	"id": "iiif",
       "label": "Image Viewer",
       "description": "Drag and drop an entity here to view and compare related high-resolution images",
+      "dropAreaDescription": "Drag and drop an entity here to view and compare related high-resolution images",
       "iconClass": "rs-icon rs-icon-images",
       "template": "{{> iiifTemplate}}",
       "frameVariable": "miradorVariable",
@@ -88,11 +89,11 @@
     {
     	"id": "map",
       "label": "Map",
-      "description": "Drag and drop an entity here to explore related geographic information",
+      "description": "Drag and drop a place here to explore related geographic information",
+      "dropAreaDescription": "Drag and drop a place here to explore related geographic information",
       "iconClass": "rs-icon rs-icon-map_location_grouped",
       "checkQuery": "ASK { ?value a crm:E53_Place . }",
       "template": "{{> mapTemplate}}",
-      "resourceNotRequired": true,
       "type": "view"
     },
 
@@ -119,7 +120,6 @@
     {
     	"id": "authority-content",
       "label": "Authority Content",
-      "description": "Authoring a resource through the Authority Edit Form",
       "iconClass": "rs-icon rs-icon-form_edit",
       "template": "{{> authorityContent}}",
        "type": "authoring-content"
@@ -128,7 +128,6 @@
     {
     	"id": "authority-entity-configuration",
       "label": "Authority and Entity Configuration",
-      "description": "Defining an entity or authority through the Authority and Entity Configuration Form",
       "iconClass": "rs-icon rs-icon-form_edit",
       "template": "{{> authorityAndEntityConfiguration}}",
       "resourceNotRequired": true,
@@ -164,6 +163,7 @@
     	"id": "objectImageObservation",
       "label": "Object Observations through Images",
       "description": "Drag and drop an entity here to combine image annotations with form authoring",
+      "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through forms",
       "iconClass": "rs-icon rs-icon-area_annotation",
       "template": "{{> objectImageObservationTemplate}}",
       "checkQuery": "
@@ -193,7 +193,6 @@
 [[!--     {
     	"id": "featureSimilarityKm",
       "label": "Exploring and Comparing (Visual) Features",
-      "description": "",
       "iconClass": "rs-icon rs-icon-diagram",
       "template": "{{> featureSimilarityKm }}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
@@ -204,7 +203,6 @@
     {
     	"id": "system-narrative",
       "label": "Narratives",
-      "description": "",
       "iconClass": "rs-icon rs-icon-page",
       "template": "{{> systemNarrativesTemplate}}",
       "resourceNotRequired": true,
@@ -214,7 +212,6 @@
     {
     	"id": "system-knowledge-maps",
       "label": "Knowledge Maps",
-      "description": "",
       "iconClass": "rs-icon rs-icon-page",
       "template": "{{> systemKnowledgeMapsTemplate}}",
       "resourceNotRequired": true,
@@ -224,7 +221,6 @@
     {
     	"id": "system-assets",
       "label": "Digital Assets",
-      "description": "",
       "iconClass": "rs-icon rs-icon-page",
       "template": "{{> systemDigitalAssetsTemplate}}",
       "resourceNotRequired": true,
@@ -234,7 +230,6 @@
     {
     	"id": "system-activity",
       "label": "Activities",
-      "description": "",
       "iconClass": "rs-icon rs-icon-page",
       "template": "{{> systemActivityTemplate}}",
       "resourceNotRequired": true,
@@ -243,7 +238,6 @@
     {
     	"id": "mapEntitySearch",
       "label": "Objects Referred By Place",
-      "description": "",
       "iconClass": "rs-icon rs-icon-area_annotation",
       "template": "{{> mapEntitySearch}}",
       "type": "referred"
@@ -255,6 +249,7 @@
       "id": "image-graph-authoring",
       "label": "Image Graph Authoring",
       "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
+      "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
       "iconClass": "rs-icon rs-icon-image_annotation_grouped",
       "viewIds": ["knowledge-map", "iiif"],
       "resourceNotRequired": true,
@@ -294,16 +289,16 @@
       [[> rsp:AuthorityAndEntityConfiguration]]
     </template>
     <template id='systemNarrativesTemplate'>
-      [[> rsp:ProjectNarrativesFrame]]
+      [[> rsp:SystemNarrativesFrame]]
     </template>
     <template id='systemKnowledgeMapsTemplate'>
-      [[> rsp:ProjectKnowledgeMapsFrame]]
+      [[> rsp:SystemKnowledgeMapsFrame]]
     </template>
     <template id='systemDigitalAssetsTemplate'>
-      [[> rsp:ProjectImagesFrame]]
+      [[> rsp:SystemAssetsFrame]]
     </template>
     <template id='systemActivityTemplate'>
-      [[> rsp:ProjectActivityFrame]]
+      [[> rsp:SystemActivityFrame]]
     </template>
     <template id='ontodiaTemplate'>
       [[> rsp:ThinkingFramesKnowledgeMapTemplate]]
@@ -379,7 +374,7 @@
                 BIND(true AS ?isBuilding)
                 BIND(2 as ?order)
               }
-              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(178, 235, 242, 0.3)") AS ?color)
+              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
             } ORDER BY ASC(?order)
           '
 				>
@@ -388,26 +383,29 @@
 
           <style>
 
-            .detail-link {
-              padding-left: 10px;
-              cursor: pointer;
+            .place-row {
+              display: flex; 
+              align-items: center;
+              justify-content:space-between;
+              flex-wrap: wrap;
+              overflow: hidden;
+              margin-bottom: 10px;
+            }
+
+            .text-underline {
               text-decoration: underline;
+              cursor: pointer;
             }
 
           </style>
 
-            <div style="min-width:250px">
+            <div style="min-width:250px; font-size: 14.5px; overflow: hidden;">
 
-              <div style="display: flex; 
-                          align-items: center;
-                          justify-content:space-between;
-                          flex-wrap: wrap;
-                          overflow: hidden;
-                          margin-bottom: 10px;">
+              <div class="place-row">
                 <div>Place: <semantic-link iri='{{place.value}}'></semantic-link></div>
                 <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
                                   data='{"iri": "{{place.value}}"}' targets='["details-view", "open-details-sidebar"]'>
-                  <div class="detail-link">details</div>
+                  <div class="text-underline">details</div>
                 </mp-event-trigger>
               </div>
 
@@ -430,17 +428,14 @@
                         <template id="entitySearchforPlace">
                           <div>
                             {{#if bindings.0.place.value}}
-                            <div>
                               <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
                                   data='{"resourceIri": "{{bindings.0.place.value}}", "viewId": "mapEntitySearch"}' 
                                   targets='["thinking-frames"]'>
-                                <a style="text-decoration: underline;cursor:pointer;">
+                                <a class="text-underline">
                                     Explore {{bindings.0.count.value}} related entities
                                 </a>
                         		</mp-event-trigger>
-                            </div>
                             {{/if}}
-                            
                           </div>
                         </template>
                 </semantic-query>

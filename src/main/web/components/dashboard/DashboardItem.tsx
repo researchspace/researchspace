@@ -49,6 +49,10 @@ export interface DashboardViewConfig {
    * Description of the view.
    */
   description?: string;
+   /**
+   * Description of the view in the droparea.
+   */
+  dropAreaDescription?: string;
   /**
    * Image that will be displayed in the Dashboard Item as the representation for the specific View.
    */
@@ -336,7 +340,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         
         {/* <div className={styles.help}>
           <i className={'fa fa-question'}></i>
-          <div className={styles.helpText}>What are the Thinking Frames?</div>
+          <div className={styles.text-underline}>What are the Thinking Frames?</div>
         </div> */}
         <div className={styles.gridViewTitle1}>View</div>
         <div className={styles.gridViewItemsView}>{searchViewItems.map(this.renderItemCard)}</div>
@@ -384,7 +388,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
             {image}
             <div>
               <div className={styles.emptyPageLabel}>{view.label}</div>
-              <div className={styles.emptyPageDescription}>{view.description}</div>
+              <div className={styles.emptyPageDescription}>{view.dropAreaDescription}</div>
             </div>
           </div>
           <div className={styles.emptyPageDrop}>

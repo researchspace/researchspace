@@ -83,9 +83,16 @@
         <div class="frame-header rs-vocabulary-terms-header">
           {{#if collection}}<h1><mp-label iri='{{collection}}'></mp-label></h1>{{else}}<h1>{{itemLabel}}s</h1>{{/if}}
           <div class='rs-vocabulary-buttons'> 
-            <semantic-link class='btn btn-primary' iri='[[resolvePrefix "rsp:EntitySearch"]]' urlqueryparam-config='{{config}}'>
+            [[!-- <semantic-link class='btn btn-primary' iri='[[resolvePrefix "rsp:EntitySearch"]]' urlqueryparam-config='{{config}}'>
               Search&nbsp; {{#if collection}}<mp-label iri='{{collection}}'></mp-label>{{else}}{{itemLabel}}s{{/if}}
-            </semantic-link>
+            </semantic-link> --]]
+            <mp-event-trigger id='set-action__search-add-add-frame' type='Dashboard.AddFrame' 
+                              data='{"viewId": "entity-search","resourceIri":"{{config}}"}' 
+                              targets='["thinking-frames"]'>
+           <button type="button" class='btn btn-primary btn-newTerm' title="Entity Search">
+                  Search&nbsp; {{#if collection}}<mp-label iri='{{collection}}'></mp-label>{{else}}{{itemLabel}}s{{/if}}
+           </button>
+           </mp-event-trigger>
             {{#if editable}}
               <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["{{frameId}}-term-forms"]'>
                 <button class="btn btn-primary" style="margin-left: 10px;">

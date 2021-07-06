@@ -317,8 +317,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private setMaskIndex = (event: Event<any>) => {
-    console.log("event")
-    console.log(event)
     this.setState({maskIndex: event.data});
   }
 

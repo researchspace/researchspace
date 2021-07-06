@@ -28,6 +28,7 @@ import { check } from 'basil.js';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { identityTransform } from 'ol/proj';
+import { source } from 'react-dom-factories';
 
 const colorPickerComponent = React.createFactory(ColorPicker);
 
@@ -89,6 +90,13 @@ export class SemanticMapControls extends Component<Props, State> {
       return;
     }
 
+    //Drag also the mask in case it corresponds to the dragged layer
+    if (result.source.index == this.state.maskIndex){
+      this.setMaskIndex(result.destination.index)
+    }
+
+    //TODO: if destination has masklayer, do not attach to new layer (move it to the previous which should be index+1?)
+
     console.log('result');
     console.log(result);
 
@@ -104,12 +112,12 @@ export class SemanticMapControls extends Component<Props, State> {
     );
   };
 
-  private setMaskIndex(index: number){
+  private setMaskIndex(index: number){  
     this.setState({
-      maskIndex: index
+      maskIndex: index,
+      overlayVisualization: 'normal'
     }, ()=>{
-      console.log("mando il nuovo maskindex")
-      console.log(index)
+      this.triggerVisualization(this.state.overlayVisualization)
       this.triggerSendMaskIndexToMap(index);
     })
   }
@@ -147,35 +155,14 @@ export class SemanticMapControls extends Component<Props, State> {
                       {...provided.dragHandleProps}
                     >
                       <div
-                        id="togglesColumn"
-                        style={{ display: 'inline-block', width: '20px', height: 'auto', padding: '2px' }}
+                        className="togglesColumnLeft"
                       >
-                        {tilesLayer.get('visible') && (
-                          <i
-                            className="fa fa-check-square-o"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => {
-                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', false);
-                            }}
-                          ></i>
-                        )}
-                        {!tilesLayer.get('visible') && (
-                          <i
-                            className="fa fa-square-o"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => {
-                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', true);
-                            }}
-                          ></i>
-                        )}
                         <i className="fa fa-bars"></i>
-                        {this.state.maskIndex == index && 
-                        <i className="fa fa-eye"></i>}
-                        {this.state.maskIndex !== index &&
-                        <i className="fa fa-eye-slash" onClick={()=>{this.setMaskIndex(index)}}></i>}
+                        </div>
+                      <div style={{verticalAlign: 'middle', display: 'inline-block'}}>
+                        <img src={tilesLayer.get('thumbnail')} className={'layerThumbnail'}></img>
                       </div>
-                      <img src={tilesLayer.get('thumbnail')} className={'layerThumbnail'}></img>
-                      <div style={{ display: 'inline-block', verticalAlign: 'top', padding: '10px' }}>
+                      <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
                         <div style={{ width: 'auto' }}>
                           <label className={'layerName'}>{tilesLayer.get('name')}</label>
                           <div>
@@ -197,10 +184,32 @@ export class SemanticMapControls extends Component<Props, State> {
                           </div>
                         </div>
                       </div>
+                      <div className='togglesColumnRight' style={{display: 'inline-block'}}>
+                      {tilesLayer.get('visible') && (
+                          <i
+                            className="fa fa-check-square-o layerCheck"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', false);
+                            }}
+                          ></i>
+                        )}
+                        {!tilesLayer.get('visible') && (
+                          <i
+                            className="fa fa-square-o layerCheck"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', true);
+                            }}
+                          ></i>
+                        )}
+                        {this.state.maskIndex == index && 
+                        <i className="fa fa-eye layerMaskIcon" style={{cursor: "pointer"}} onClick={()=>{this.setMaskIndex(-1)}}></i>}
+                        {this.state.maskIndex !== index &&
+                        <i className="fa fa-eye-slash layerMaskIcon" style={{cursor: "pointer", color: 'rgba(230,230,230,1)'}} onClick={()=>{this.setMaskIndex(index)}}></i>}
+                      </div>
                       {this.state.maskIndex == index && (
-                        <div>
-                          <label style={{ margin: '2px;' }}>
-                            Normal
+                        <div id={'visualizationModeContainer'}>
                             <input
                               name={'overlay-visualization'}
                               type={'radio'}
@@ -212,9 +221,9 @@ export class SemanticMapControls extends Component<Props, State> {
                                 );
                               }}
                             ></input>
-                          </label>
                           <label style={{ margin: '2px;' }}>
-                            Spyglass
+                            Normal
+                          </label>
                             <input
                               name={'overlay-visualization'}
                               type={'radio'}
@@ -226,9 +235,8 @@ export class SemanticMapControls extends Component<Props, State> {
                                 );
                               }}
                             ></input>
-                          </label>
                           <label style={{ margin: '2px;' }}>
-                            Swipe
+                            Spyglass</label>
                             <input
                               name={'overlay-visualization'}
                               type={'radio'}
@@ -240,9 +248,10 @@ export class SemanticMapControls extends Component<Props, State> {
                                 );
                               }}
                             ></input>
+                          <label style={{ margin: '2px;' }}>
+                            Swipe
                           </label>
                           {this.state.overlayVisualization === 'swipe' && (
-                            <label>
                               <input
                                 id={'swipe'}
                                 type={'range'}
@@ -259,7 +268,6 @@ export class SemanticMapControls extends Component<Props, State> {
                                   );
                                 }}
                               ></input>
-                            </label>
                           )}
                         </div>
                       )}

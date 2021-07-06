@@ -19,36 +19,32 @@
 
 @import '~react-select/scss/default.scss';
 
-// Variables set as css variables
-$select-input-bg: $color-formInputs-bg;
 
 .Select-control {
   // need to prevent border collapse when nested in table
   border-collapse: initial;
 
-  height: $form-height;
-  border: none;
-  border-bottom: 1px solid $color-form-border;
-  border-radius: 0px;
+  height: $input-height;
+  
+  border-radius: $input-border-radius;
+  border: 1px solid $input-border-color;
+
   font-family: $font-family-base;
   font-size: $font-size-base;
 
-  background-color: $select-input-bg; //css variable
+  background-color: $input-color-bg;
 
   &:hover {
     box-shadow: none;
   }
 
   &:focus {
-
-    border-bottom: 1px solid $color-dark;
-    background-color: $select-input-bg;
     opacity: .7;
   }
 
   &.disabled {
     background-color: transparent;
-    opacity: .7
+    opacity: .5
   }
 
   & .Select-multi-value-wrapper {
@@ -58,17 +54,18 @@ $select-input-bg: $color-formInputs-bg;
 
 .Select-placeholder {
   font-weight: normal;
-  color: $color-form-placeholder;
+  color: $input-placeholder-color;
 }
 
 .Select--single > .Select-control .Select-value {
 
-  font-weight: 600;
+//  font-weight: 600;
 }
 
 .Select-placeholder,
 .Select--single > .Select-control .Select-value {
 
+  color:$color-dark;
   line-height: unset;
   display: flex;
   align-items: center;
@@ -77,7 +74,8 @@ $select-input-bg: $color-formInputs-bg;
 
 .is-open > .Select-control {
 
-  background: $select-input-bg; //css variable
+  background: $input-color-bg;
+  border-color: $input-border-color;
 
   .Select-placeholder {
     opacity: 0.7;
@@ -87,7 +85,7 @@ $select-input-bg: $color-formInputs-bg;
 
 .is-focused:not(.is-open) > .Select-control {
 
-  border-color: $color-dark;
+  border-color: $input-border-color;
 }
 
 .Select:focus {
@@ -101,11 +99,10 @@ $select-input-bg: $color-formInputs-bg;
 
 .Select-menu-outer {
 
-  background-color: $select-input-bg; //css variable
+  background-color: $input-color-bg;
 
   margin-top: 0;
-  border: 1px solid $select-input-border-color;
-  border-top-color: $select-input-border-color;
+  border: 1px solid $input-border-color;
   z-index: $zindex-select-menu;
 }
 

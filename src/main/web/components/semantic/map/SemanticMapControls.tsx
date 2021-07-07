@@ -42,6 +42,12 @@ const sliderbar: CSSProperties = {
   width: '100%',
 };
 
+interface Filters {
+  vector: boolean;
+  overlay: boolean;
+  basemap: boolean;
+}
+
 interface State {
   overlayOpacity?: number;
   swipeValue?: number;
@@ -51,6 +57,7 @@ interface State {
   setColor: any;
   tilesLayers: Array<any>;
   maskIndex: number;
+  filters: Filters;
 }
 
 interface Props {
@@ -70,7 +77,12 @@ export class SemanticMapControls extends Component<Props, State> {
       color: 'rgba(200,50,50,0.5)',
       setColor: 'rgba(200,50,50,0.5)',
       tilesLayers: [],
-      maskIndex: 1,
+      maskIndex: -1,
+      filters: {
+        vector: false,
+        overlay: true,
+        basemap: true
+      }
     };
 
     this.cancelation
@@ -95,7 +107,10 @@ export class SemanticMapControls extends Component<Props, State> {
       this.setMaskIndex(result.destination.index)
     }
 
-    //TODO: if destination has masklayer, do not attach to new layer (move it to the previous which should be index+1?)
+    //TODO: if destination position is occupied by a masklayer, remove the visualization mode
+    if (result.destination.index == this.state.maskIndex){
+      this.setMaskIndex(-1)
+    }
 
     console.log('result');
     console.log(result);
@@ -143,12 +158,47 @@ export class SemanticMapControls extends Component<Props, State> {
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
               <h3 className={'mapLayersTitle'}>Tiles Layers</h3>
+              <div className='mapLayersFiltersContainer'>
+                <label>Filter:</label>
+                <input
+                  className='mapLayersFilters'
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.vector}
+                    onChange={(event) => {
+                      this.setState({filters: {...this.state.filters, vector: event.target.checked}}, () => {});
+                    }}
+                  ></input>
+                  <label className='fitersLabel'>Vector</label>
+                  <input
+                  className='mapLayersFilters'
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.overlay}
+                    onChange={(event) => {
+                      this.setState({filters: {...this.state.filters, overlay: event.target.checked}}, () => {});
+                    }}
+                  ></input>
+                  <label className='fitersLabel'>Overlay</label>
+                  <input
+                  className='mapLayersFilters'
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.basemap}
+                    onChange={(event) => {
+                      this.setState({filters: {...this.state.filters, basemap: event.target.checked}}, () => {});
+                    }}
+                  ></input>
+                  <label className='fitersLabel'>Basemap</label>
+              </div>
               <hr id={'tilesLayerSeparator'} style={{ margin: '0px !important' }}></hr>
               {this.state.tilesLayers.map((tilesLayer, index) => (
+               (this.state.filters[tilesLayer.get('level')])
+               && 
                 <Draggable key={tilesLayer.get('identifier')} draggableId={tilesLayer.get('identifier')} index={index}>
                   {(provided, snapshot) => (
                     <div
-                      className="draggableLayer"
+                      className={`draggableLayer ${(tilesLayer.get('visible')) ? "visible" : "nonvisible"}`}
                       ref={provided.innerRef}
                       style={{ border: '1px solid red !important;', borderRadius: '2px' }}
                       {...provided.draggableProps}
@@ -191,6 +241,9 @@ export class SemanticMapControls extends Component<Props, State> {
                             style={{ cursor: 'pointer' }}
                             onClick={() => {
                               this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', false);
+                              if(this.state.maskIndex == index){
+                                this.setMaskIndex(-1);
+                              }
                             }}
                           ></i>
                         )}
@@ -206,11 +259,18 @@ export class SemanticMapControls extends Component<Props, State> {
                         {this.state.maskIndex == index && 
                         <i className="fa fa-eye layerMaskIcon" style={{cursor: "pointer"}} onClick={()=>{this.setMaskIndex(-1)}}></i>}
                         {this.state.maskIndex !== index &&
-                        <i className="fa fa-eye-slash layerMaskIcon" style={{cursor: "pointer", color: 'rgba(230,230,230,1)'}} onClick={()=>{this.setMaskIndex(index)}}></i>}
+                        <i className="fa fa-eye-slash layerMaskIcon" style={{cursor: "pointer", color: 'rgba(230,230,230,1)'}}
+                        onClick={()=>{
+                          if(!tilesLayer.get('visible')){
+                            this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', true);
+                          }
+                          this.setMaskIndex(index)
+                          }}></i>}
                       </div>
                       {this.state.maskIndex == index && (
                         <div id={'visualizationModeContainer'}>
                             <input
+                            className='visualizationModeRadio'
                               name={'overlay-visualization'}
                               type={'radio'}
                               value={'normal'}
@@ -225,6 +285,7 @@ export class SemanticMapControls extends Component<Props, State> {
                             Normal
                           </label>
                             <input
+                            className='visualizationModeRadio'
                               name={'overlay-visualization'}
                               type={'radio'}
                               value={'spyglass'}
@@ -238,6 +299,7 @@ export class SemanticMapControls extends Component<Props, State> {
                           <label style={{ margin: '2px;' }}>
                             Spyglass</label>
                             <input
+                            className='visualizationModeRadio'
                               name={'overlay-visualization'}
                               type={'radio'}
                               value={'swipe'}

@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 
-import { Component, ComponentProps } from 'platform/api/components';
+import { Component, ComponentProps, SemanticContextProvider } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
 import * as Forms from 'platform/components/forms';
 import { componentHasType } from 'platform/components/utils';
@@ -96,8 +96,11 @@ export function extractAnnotationType(child: React.ReactNode): AnnotationBodyTyp
   }
 
   if (!(typeof props.children === 'object' && componentHasType(props.children, Forms.CompositeInput))) {
+    // Allow Semantic Context
+  if (!(typeof props.children === 'object' && props.children.type == SemanticContextProvider && componentHasType(props.children.props.children, Forms.CompositeInput))) {
     throw new Error(`${COMPONENT_TAG} must have a single <semantic-form-composite-input> as child`);
-  }
+  }    
+}
 
   return {
     iri: Rdf.iri(props.rdfType),

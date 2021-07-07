@@ -1,0 +1,42 @@
+<semantic-search config='[[searchConfigForFieldsFromQuery (setQueryBindings "SELECT DISTINCT ?field WHERE { ?field a <http://www.researchspace.org/resource/system/fields/Field> .  ?field <http://www.researchspace.org/resource/system/fields/domain> ?domain . ?field <http://www.researchspace.org/resource/system/fields/range> ?range .}" domain=(urlParam "type" escape=false))]]'>
+       <semantic-search-query-keyword 
+          domain='[[urlParam "type" escape=false]]'
+          query='
+            SELECT ?subject WHERE { 
+               ?subject a [[urlParam "type" escape=false]] .
+               [[#if (urlParam "p2")]] 
+                 ?subject crm:P2_has_type <[[urlParam "p2" escape=false]]> .
+               [[/if]]
+              
+               BIND(?subject as ?item) .
+               [[#if (urlParam "restriction")]] 
+                 [[urlParam "restriction" escape=false]] 
+               [[/if]]              
+               [[#if (urlParam "label")]]
+                 [[urlParam "label" escape=false]]
+               [[else]]
+                 ?subject rdfs:label ?label .
+               [[/if]]
+               SERVICE <http://www.bigdata.com/rdf/search#search> {
+                 ?label bds:search ?__token__ ;
+                          bds:minRelevance "0.3" ;
+                          bds:matchAllTerms "true"  .
+               }
+            }
+          '
+          default-query='
+              SELECT ?subject WHERE { 
+               ?subject a [[urlParam "type" escape=false]] .
+               [[#if (urlParam "p2")]] 
+                 ?subject crm:P2_has_type <[[urlParam "p2" escape=false]]> .
+               [[/if]]
+               BIND(?subject as ?item) .
+               [[#if (urlParam "restriction")]] 
+                 [[urlParam "restriction" escape=false]] 
+               [[/if]]
+              }         
+          '
+          debounce=500
+        ></semantic-search-query-keyword>
+        [[> rsp:SearchResults]]  
+</semantic-search>

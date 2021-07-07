@@ -37,6 +37,12 @@ export interface FormEventData {
    */
   'Form.ResourceRemoved': { iri: string };
 
+  /**
+   * Don't perform persistance, just run it without saving and send the output with event.
+   */
+  'Form.DryRunResults': Record<string, any>;
+
+
   // listens
   /**
    * Triggers remove resource action, iri needs to match current subject.
@@ -48,5 +54,6 @@ const event: EventMaker<FormEventData> = EventMaker;
 export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
+export const FormDryRunResults = event('Form.DryRunResults');
 
 export const FormRemoveResource = event('Form.RemoveResource');

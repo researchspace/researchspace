@@ -70,23 +70,24 @@
             <dl class="config-params">
               <dt><code>bucket</code>*</dt>
               <dd>Source bucket to read onjects and version info.</dd>
-              <dt><code>usingEmulator</code></dt>
-              <dd>Determines whether storage should ignore AWS sign configuration to test on an S3 emulator.</dd>
+              <!--<dt><code>usingEmulator</code></dt>
+              <dd>Determines whether storage should ignore AWS sign configuration to test on an S3 emulator.</dd>-->
               <dt><code>endpoint</code><sup>1</sup></dt>
               <dd></dd>
-              <dt><code>signingRegion</code><sup>1</sup></dt>
+              <dt><code>region</code><sup>1</sup></dt>
               <dd></dd>
-              <dt><code>accessKey</code><sup>2</sup></dt>
+              <dt><code>access-key</code><sup>2</sup></dt>
               <dd></dd>
-              <dt><code>secretKey</code><sup>2</sup></dt>
+              <dt><code>secret-key</code><sup>2</sup></dt>
               <dd></dd>
+              <!--
               <dt><code>assumedRole</code></dt>
               <dd></dd>
               <dt><code>roleSessionName</code></dt>
-              <dd></dd>
+              <dd></dd>-->
             </dl>
-            <p><sup>1</sup><code>endpoint</code> and <code>signingRegion</code> must be specified together.</p>
-            <p><sup>2</sup><code>accessKey</code> and <code>secretKey</code> must be specified together.</p>
+            <p><sup>1</sup><code>endpoint</code> and <code>region</code> must be specified together.</p>
+            <p><sup>2</sup><code>access-key</code> and <code>secret-key</code> must be specified together.</p>
           </td>
         </tr>
         <tr>
@@ -138,13 +139,13 @@
 -Dconfig.storage.my-storage.type=s3 \
 -Dconfig.storage.my-storage.mutable=false \
 -Dconfig.storage.my-storage.endpoint=https://s3.amazonaws.com/ \
--Dconfig.storage.my-storage.signingRegion=us-east-1 \
+-Dconfig.storage.my-storage.region=us-east-1 \
 -Dconfig.storage.my-storage.bucket=my-storage-bucket \
--Dconfig.storage.my-storage.accessKey=XXXAWSaccessKeyXXX \
--Dconfig.storage.my-storage.secretKey=XXXAWSsecretKeyXXX
+-Dconfig.storage.my-storage.access-key=XXXAWSaccess-keyXXX \
+-Dconfig.storage.my-storage.secret-key=XXXAWSsecret-keyXXX
     </code></pre>
 
-    <p>Please note that specified S3 buckets will be created if they do not yet exist. This can be prevented with limited user permissions.</p>
+    <!--<p>Please note that specified S3 buckets will be created if they do not yet exist. This can be prevented with limited user permissions.</p>-->
     <p>The minimum rights for the user, and these can be limited to relevant S3 buckets/resources, are:</p>
     <pre>
 <code>
@@ -163,8 +164,8 @@ s3:GetBucketLocation
 -Dconfig.storage.runtime.endpoint=https://s3.amazonaws.com/ \
 -Dconfig.storage.runtime.signingRegion=us-east-1 \
 -Dconfig.storage.runtime.bucket=my-researchspace-app-bucket \
--Dconfig.storage.runtime.accessKey=XXXAWSaccessKeyXXX \
--Dconfig.storage.runtime.secretKey=XXXAWSsecretKeyXXX \
+-Dconfig.storage.runtime.access-key=XXXAWSaccess-keyXXX \
+-Dconfig.storage.runtime.secret-key=XXXAWSsecret-keyXXX \
 -Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini
     </code></pre>
 
@@ -177,7 +178,7 @@ s3:GetBucketLocation
     <p>The assumed role requires the same permissions as listed for users above.</p>
 
     <h3>Assume role on EC2 instances</h3>
-    <p></p>EC2 instances which are setup with a role allow researchspace to directly utilize these roles. Please do not specify any of <code>accessKey</code>, <code>secretKey</code> or <code>assumedRole</code> to utilize these instance profile credentials</p>
+    <p></p>EC2 instances which are setup with a role allow researchspace to directly utilize these roles. Please do not specify any of <code>access-key</code>, <code>secret-key</code> or <code>assumedRole</code> to utilize these instance profile credentials</p>
 
     <h4>Troubleshooting</h4>
    <p>The researchspace log will provide most relevant information, but in some cases (E.g. on 403 Access denied) the AWS CloudTrail will provide additional insights.</p>

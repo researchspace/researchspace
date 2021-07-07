@@ -3,8 +3,27 @@
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
   <li>
-    <semantic-link iri='[[resolvePrefix "rsp:VocabularyManager"]]'>Authority Manager</semantic-link>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectDashboard"]]'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li>
+    <semantic-link iri='[[resolvePrefix "rsp:ProjectConfiguration"]]'>
+      Configurations
+    </semantic-link>
+  </li>
+  [[#if authorityManager]]
+    <li>
+      <semantic-link iri='[[resolvePrefix "rsp:VocabularyManager"]]'>Authority Manager</semantic-link>
     </li>
+  [[/if]]
+   [[#if entityManager]]
+    <li>
+      <semantic-link iri='[[resolvePrefix "rsp:EntityManager"]]'>Entity Manager</semantic-link>
+    </li>
+  [[/if]]
+
+
   <li class="active">
     Authority Document: <mp-label iri='[[this]]'></mp-label> 
   </li>
@@ -13,40 +32,9 @@
 <div class="page">
 [[#>rsp:ClipboardSidebar]]
 [[#>rsp:DetailsSidebar]]
-  <semantic-query 
-                  query='
-                          SELECT ?entityType ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged WHERE {
-                            OPTIONAL {
-                              <[[this]]> crm:P67_refers_to ?managedConfig .
-                            }
-                            BIND(COALESCE(?managedConfig, <[[defaultConfig]]>) AS ?config) .
-                            BIND(BOUND(?managedConfig) as ?isManaged) .
-                            
-                            ?config <http://www.researchspace.org/resource/system/authority_manager/item_label> ?title ;
-                              <http://www.researchspace.org/resource/system/authority_manager/for_type> ?type ;
-                              <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI ;
-                              <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
-                            
-                            OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/broader_property> ?broaderPropertyIRI .
-                            }
-                            OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/order_by_pattern> ?orderByPattern .
-                            }
-                          } LIMIT 1
-                        '
-  >
-    <template id='template'>
-      {{#ifCond bindings.0.isManaged.value "===" "true"}}
-        {{> rsp:SimpleCollectionBrowser editable=true collection="[[this]]" membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value}}
-      {{else}}
-        [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, so we can offer here for user to associate a config with it --]]
-        {{> rsp:SimpleCollectionBrowser editable=false collection="[[this]]" membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value}}
-      {{/ifCond}}
-    </template>
-    <template id='noResultTemplate'>
-    </template>
-  </semantic-query>
+  <inline-template template-iri='[[resolvePrefix "rsp:CollectionBrowserContent"]]' 
+                   options='{ "configOrScheme": "[[this]]", "frameId": "fixed"}'>
+  </inline-template>
 [[/rsp:DetailsSidebar]]
 [[/rsp:ClipboardSidebar]]
 

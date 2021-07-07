@@ -62,11 +62,13 @@ import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.rio.RDFWriterFactory;
 import org.eclipse.rdf4j.rio.RDFWriterRegistry;
+import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.researchspace.api.sparql.ServletRequestUtil;
 import org.researchspace.api.sparql.SparqlOperationBuilder;
 import org.researchspace.api.sparql.SparqlUtil;
 import org.researchspace.api.sparql.SparqlUtil.SparqlOperation;
 import org.researchspace.config.NamespaceRegistry;
+import org.researchspace.data.rdf.PrettyPrintTurtleWriter;
 import org.researchspace.di.MainGuiceModule.MainTemplateProvider;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.security.PermissionUtil;
@@ -309,7 +311,6 @@ public class SparqlServlet extends HttpServlet {
                 Optional<TupleQueryResultWriterFactory> writerFactory = resultWriterRegistry
                         .get((QueryResultFormat) rdfFormat);
                 TupleQueryResultWriter writer = writerFactory.get().getWriter(resp.getOutputStream());
-                addNamespaces(writer);
                 logger.trace("Evaluating query with hash \"{}\" as TupleQuery using \"{}\"", queryString.hashCode(),
                         writer.getClass());
                 setContentType(resp, rdfFormat);
@@ -321,8 +322,14 @@ public class SparqlServlet extends HttpServlet {
                 RDFWriterRegistry resultWriterRegistry = RDFWriterRegistry.getInstance();
                 rdfFormat = resultWriterRegistry.getFileFormatForMIMEType(preferredMimeTypeString)
                         .orElse(RDFFormat.TURTLE);
-                Optional<RDFWriterFactory> writerFactory = resultWriterRegistry.get((RDFFormat) rdfFormat);
-                RDFWriter writer = writerFactory.get().getWriter(resp.getOutputStream());
+
+                RDFWriter writer;
+                if ("true".equals(req.getParameter("prettyPrint"))) {
+                    writer = new PrettyPrintTurtleWriter(resp.getOutputStream());
+                } else {
+                    Optional<RDFWriterFactory> writerFactory = resultWriterRegistry.get((RDFFormat) rdfFormat);
+                    writer = writerFactory.get().getWriter(resp.getOutputStream());
+                }
                 logger.trace("Evaluating query with hash \"{}\" as GraphQuery using \"{}\"", queryString.hashCode(),
                         writer.getClass());
                 setContentType(resp, rdfFormat);
@@ -343,7 +350,6 @@ public class SparqlServlet extends HttpServlet {
                 Optional<BooleanQueryResultWriterFactory> writerFactory = resultWriterRegistry
                         .get((QueryResultFormat) rdfFormat);
                 BooleanQueryResultWriter writer = writerFactory.get().getWriter(resp.getOutputStream());
-                addNamespaces(writer);
                 logger.trace("Evaluating query with hash \"{}\" as BooleanQuery using \"{}\"", queryString.hashCode(),
                         writer.getClass());
                 boolean result = ((BooleanQuery) sparqlOperation).evaluate();
@@ -381,12 +387,7 @@ public class SparqlServlet extends HttpServlet {
         resp.setContentType(rdfFormat.getDefaultMIMEType() + ";charset=" + Charsets.UTF_8);
     }
 
-    private void addNamespaces(QueryResultWriter writer) {
-        /// TODO get and iterate of namespaces from registry
-        // writer.handleNamespace(prefix, uri);
-    }
-
-    private void addNamespaces(RDFHandler handler) {
+    private void addNamespaces(RDFWriter handler) {
         nsRegistry.getRioNamespaces().stream()
                 .forEach(namespace -> handler.handleNamespace(namespace.getPrefix(), namespace.getName()));
     }

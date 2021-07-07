@@ -55,7 +55,7 @@ import org.researchspace.config.NamespaceRegistry;
 import org.researchspace.data.rdf.PointedGraph;
 import org.researchspace.data.rdf.ReadConnection;
 import org.researchspace.repository.MpRepositoryProvider;
-import org.researchspace.services.storage.StorageUtils;
+import org.researchspace.security.SecurityService;
 import org.researchspace.services.storage.api.*;
 import org.researchspace.services.storage.api.PlatformStorage.FindResult;
 import org.researchspace.vocabulary.LDP;
@@ -318,7 +318,7 @@ public abstract class AbstractLDPResource implements LDPResource {
 
         Optional<String> author = (optAuthor.isPresent() && optAuthor.get().equals(PLATFORM.SYSTEM_USER_INDIVIDUAL))
                 ? Optional.empty()
-                : StorageUtils.currentUsername();
+                : Optional.of(SecurityService.getUserName());
 
         ByteArrayInputStream content = new ByteArrayInputStream(bytes);
         platformStorage.getStorage(PlatformStorage.DEVELOPMENT_RUNTIME_STORAGE_KEY).appendObject(objectId,

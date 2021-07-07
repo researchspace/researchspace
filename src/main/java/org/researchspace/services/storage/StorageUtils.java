@@ -20,15 +20,12 @@
 package org.researchspace.services.storage;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
 import org.researchspace.services.storage.api.ObjectRecord;
 import org.researchspace.services.storage.api.StorageException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 public final class StorageUtils {
     private StorageUtils() {
@@ -38,12 +35,6 @@ public final class StorageUtils {
         try (InputStream content = record.getLocation().readContent()) {
             return IOUtils.toString(content, StandardCharsets.UTF_8);
         }
-    }
-
-    public static Optional<String> currentUsername() {
-        Subject subject = SecurityUtils.getSubject();
-        Object principal = subject.getPrincipal();
-        return principal == null ? Optional.empty() : Optional.of(principal.toString());
     }
 
     public static void throwIfNonMutable(boolean isMutable) throws StorageException {

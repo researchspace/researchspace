@@ -120,6 +120,8 @@ public class MProxyServlet extends ProxyServlet {
         String encodedAuth = null;
         String accessToken = getConfigParam("access_token");
 
+        this.setXForwardedFor(servletRequest, proxyRequest);
+
         if (!SecurityUtils.getSubject().isPermitted(new WildcardPermission(permission))) {
             return createHttpError("You do not have required permissions to access this resource",
                     HttpStatus.SC_FORBIDDEN);
@@ -173,5 +175,11 @@ public class MProxyServlet extends ProxyServlet {
                 null);
         response.setEntity(new StringEntity(message));
         return response;
+    }
+
+    private void setXForwardedFor(HttpServletRequest servletRequest, HttpRequest proxyRequest) {
+        proxyRequest.addHeader("X-Forwarded-Path", "/proxy/" + this.key);
+        proxyRequest.addHeader("X-Forwarded-Port", String.valueOf(servletRequest.getServerPort()));
+        proxyRequest.addHeader("X-Forwarded-Proto", servletRequest.getScheme());
     }
 }

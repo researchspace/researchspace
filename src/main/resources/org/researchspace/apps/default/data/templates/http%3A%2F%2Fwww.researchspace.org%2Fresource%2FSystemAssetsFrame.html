@@ -19,94 +19,54 @@
     <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
       <div class="split-pane__sidebar-open asset-uploads">
         [[#if (hasPermission "forms:ldp:*")]]
-        <mp-event-target-template-render id='asset-upload-form-area' template='{{> assetUploadForm}}'>
-          <template id='assetUploadForm'>
-            <div class="asset-uploads-container">
-              <div class="asset-upload-form-types">
-                {{#if assetType}}
-                  <mp-event-trigger id='upload-image' type='Component.TemplateUpdate' data='{"assetType": "image"}' targets='["asset-upload-form-area"]'>
-                    <button class='btn-tab {{#ifCond assetType "==" "image"}}btn-selected{{/ifCond}}'>Image</button>
-                  </mp-event-trigger>
-                {{else}}
-                  <button class='btn-tab btn-selected'>Image</button>
-                {{/if}}
-                <mp-event-trigger id='upload-pdf' type='Component.TemplateUpdate' data='{"assetType": "document"}' targets='["asset-upload-form-area"]'>
-                  <button class='btn-tab {{#ifCond assetType "==" "document"}}btn-selected{{/ifCond}}'>PDF document</button>
-                </mp-event-trigger> 
-                <mp-event-trigger id='upload-video' type='Component.TemplateUpdate' data='{"assetType": "video"}' targets='["asset-upload-form-area"]'>
-                  <button class='btn-tab {{#ifCond assetType "==" "video"}}btn-selected{{/ifCond}}'>Video</button>
-                </mp-event-trigger>
-                <mp-event-trigger id='upload-audio' type='Component.TemplateUpdate' data='{"assetType": "audio"}' targets='["asset-upload-form-area"]'>
-                  <button class='btn-tab {{#ifCond assetType "==" "audio"}}btn-selected{{/ifCond}}'>Audio</button>
-                </mp-event-trigger>
-              </div>
-              <div class="asset-upload-form">
-                {{#switch assetType}}
-                {{#case "document" break=true}}
-                <div>doc form</div>
-                {{/case}}
-              
-                {{#case "video" break=true}}
-                <div>video form</div>
-                {{/case}}
-              
-                {{#case "audio" break=true}}
-                <div>audio form</div>
-                {{/case}}
-    
-                {{#default}}
-                  <semantic-context repository='assets'>
-                    <semantic-form new-subject-template='/EX_Digital_Image/{{UUID}}'
-                                    fields='[[fieldDefinitions
-                                label="http://www.w3.org/2000/01/rdf-schema#label"
-                                P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
-                                P1_is_identified_by="http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by"
-                                type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                              ]]'
-                                    >
-                      <semantic-form-hidden-input for='type' 
-                                                  default-values='["http://www.researchspace.org/ontology/EX_Digital_Image"]'
-                                                  > </semantic-form-hidden-input>
-            
-                      <semantic-form-file-input for='P1_is_identified_by' 
-                                                accept-pattern='image/*' 
-                                                storage='images'
-                                                temp-storage='tmp'
-                                                placeholder='Please drag&drop your image here'
-                                                from-url-or-drop=true
-                                                name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
-                                                media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
-                                                resource-query='
-                                                    PREFIX rso: <http://www.researchspace.org/ontology/>
-                                                    CONSTRUCT {
-                                                      ?__resourceIri__ a rso:EX_File.
-                                                      ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
-                                                      ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
-                                                    } WHERE {}
-            
-                                                '
-                                                generate-iri-query='
-                                                  SELECT ?resourceIri {
-                                                    BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
-                                                  }
-                                                '
-                                                ></semantic-form-file-input>
-                      <semantic-form-text-input for='label'></semantic-form-text-input>
-                      <semantic-form-text-input for='P3_has_note' multiline=true></semantic-form-text-input>
-            
-                      <div class='form-btn-group'>
-                        <button name="reset" class="btn btn-default">Reset</button>
-                        <button name="submit" class="btn btn-primary">Save</button>
-                      </div>
-                    </semantic-form>
-                  </semantic-context>
-                {{/default}}
-              {{/switch}}
-              </div>
-            </div>
-            
-          </template>
-        </mp-event-target-template-render>
+            <semantic-query
+                            query='
+                              SELECT ?title ?formIRI WHERE {
+                                VALUES (?config ?order) {
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Image> 1)
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Document> 2)
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Audio> 3)
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Video> 4)
+                                }
+                                ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+																	<http://www.researchspace.org/resource/system/authority_manager/item_label> ?title ;
+                                  <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI .
+                              } ORDER BY ?order
+                            '
+                            template='{{> assets-upload}}'
+            >
+              <template id='assets-upload'>
+                <mp-event-target-template-render id='asset-upload-form-area' template='{{> assetUploadForm}}'>
+                  <template id='assetUploadForm'>
+                    <bs-dropdown-button
+                                    bs-style="default"
+                                    title="{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{title.value}}{{/with}}{{else}}{{bindings.0.title.value}}{{/if}}"
+                                    id="upload-type-selection"
+                    >
+                      {{#each bindings}}
+                      <mp-event-trigger id='upload-pdf' type='Component.TemplateUpdate' data='{"assetTypeIndex": "{{@index}}"}' targets='["asset-upload-form-area"]'>
+                        <bs-menu-item event-key="{{title.value}}" active='{{#if ../assetTypeIndex}}{{#ifCond ../assetTypeIndex "==" @index}}true{{else}}false{{/ifCond}}{{else}}{{#ifCond @index "==" "0"}}true{{else}}false{{/ifCond}}{{/if}}'>{{title.value}}</bs-menu-item>
+                      </mp-event-trigger> 
+                      {{/each}}
+                    </bs-dropdown-button>
+                    {{#each bindings}}
+                    {{/each}}
+                    
+                    <div class="asset-upload-form">
+                      <semantic-context repository='assets'>
+                        <inline-template template-iri='{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{formIRI.value}}{{/with}}{{else}}{{bindings.0.formIRI.value}}{{/if}}' 
+                                         options='{
+                                                  "editable": true,
+                                                  "mode": "new",
+                                                  "viewId": "assets"
+                                                  }'>
+                        </inline-template>
+                      </semantic-context>
+                    </div>
+                  </template>
+                </mp-event-target-template-render>
+              </template>
+            </semantic-query>
         [[/if]]
 
       </div>

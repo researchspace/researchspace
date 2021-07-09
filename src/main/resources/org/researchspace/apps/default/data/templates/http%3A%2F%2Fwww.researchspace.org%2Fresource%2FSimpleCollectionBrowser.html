@@ -14,21 +14,53 @@
 
 <div class="rs-vocabulary-terms-container">
 
-  <mp-splitpane min-size=150 default-size=360 default-open='false' class="frame-split-pane">
+  <mp-splitpane min-size=180 default-size=400 default-open='true' class="frame-split-pane">
     <div data-flex-layout="column top-stretch">
       <mp-splitpane-toggle-on>
-        <button data-flex-layout="row center-left" class="btn-toggle-on">
-          <div>List of {{itemLabel}}s</div>
-          <i class="fa fa-angle-double-right"></i>
+        <button class="btn-toggle-on">
+          <div class="btn-toggle-on-content">
+            <div style='text-align: left;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            padding-bottom: 3px;'>{{itemLabel}}s</div>
+            <div class="btn btn-grey">
+              <i class='iconmoon iconmoon-arrow-right2'></i>
+            </div>
+          </div>
+          
         </button>
       </mp-splitpane-toggle-on>
       <mp-splitpane-toggle-off>
         <div class="split-pane__leftsidebar-header">
           <button data-flex-layout='row center-left' class="btn-toggle-off">
-            <div>
-              {{#if collection}}<mp-label iri='{{collection}}'></mp-label> - {{/if}}List of {{itemLabel}}s
+            <div style='text-align: left;
+            min-height: 30px;
+            display: flex;
+            align-items: center;'>
+              {{#if collection}}<mp-label iri='{{collection}}'></mp-label> - {{/if}}{{itemLabel}}s
             </div>
-            <div class="fa fa-angle-double-left" aria-hidden="true"></div>
+            <div class="page__main-top-actions">
+              {{#if editable}}
+                <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["{{frameId}}-term-forms"]'>
+                  <button class="btn btn-grey">
+                    <i class='fa fa-plus btn-icon-left'></i>
+                    <span>new</span>
+                  </button>
+                </mp-event-trigger>
+              {{/if}}
+                <mp-event-trigger id='set-action__search-add-add-frame' type='Dashboard.AddFrame' 
+                                  data='{"viewId": "entity-search","resourceIri":"{{config}}"}' 
+                                  targets='["thinking-frames"]'>
+                  <button type="button" class='btn btn-grey' title="Entity Search">
+                    <i class='rs-icon rs-icon-search btn-icon-left'></i>
+                          Search all
+                  </button>
+              </mp-event-trigger>
+              <button class="btn btn-grey">
+                <i class='iconmoon iconmoon-arrow-left2'></i>
+              </button>
+            </div>
           </button>
         </div>
       </mp-splitpane-toggle-off>
@@ -79,32 +111,9 @@
         </div>
       </mp-splitpane-sidebar-open>
     </div>
-      <div class="frame-container">
-        <div class="frame-header rs-vocabulary-terms-header">
-          {{#if collection}}<h1><mp-label iri='{{collection}}'></mp-label></h1>{{else}}<h1>{{itemLabel}}s</h1>{{/if}}
-          <div class='rs-vocabulary-buttons'> 
-            [[!-- <semantic-link class='btn btn-primary' iri='[[resolvePrefix "rsp:EntitySearch"]]' urlqueryparam-config='{{config}}'>
-              Search&nbsp; {{#if collection}}<mp-label iri='{{collection}}'></mp-label>{{else}}{{itemLabel}}s{{/if}}
-            </semantic-link> --]]
-            <mp-event-trigger id='set-action__search-add-add-frame' type='Dashboard.AddFrame' 
-                              data='{"viewId": "entity-search","resourceIri":"{{config}}"}' 
-                              targets='["thinking-frames"]'>
-           <button type="button" class='btn btn-primary btn-newTerm' title="Entity Search">
-                  Search&nbsp; {{#if collection}}<mp-label iri='{{collection}}'></mp-label>{{else}}{{itemLabel}}s{{/if}}
-           </button>
-           </mp-event-trigger>
-            {{#if editable}}
-              <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["{{frameId}}-term-forms"]'>
-                <button class="btn btn-primary" style="margin-left: 10px;">
-                  <i class='fa fa-plus btn-icon-left'></i>
-                  <span>new {{itemLabel}}</span>
-                </button>
-              </mp-event-trigger>
-            {{/if}}
-          </div>
-        </div>
-        <div class="frame-separator"></div>
-        <div class="frame-content rs-vocabulary-terms-form-area">
+      <div class="page__grid-container">
+
+        <div class="page__content-container rs-vocabulary-terms-form-area">
           <mp-event-target-template-render id='{{frameId}}-term-forms' template='{{> template}}'>
             <template id='template'>
               {{#switch mode}}

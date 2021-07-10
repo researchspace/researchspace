@@ -497,6 +497,7 @@ public class LabelCacheTest extends AbstractRepositoryBackedIntegrationTest {
     }
 
     @Test
+    @Ignore
     public void testConstructLabelQuery() {
 
         List<IRI> iris = Lists.newArrayList(asIRI(IRI1), asIRI(IRI2));

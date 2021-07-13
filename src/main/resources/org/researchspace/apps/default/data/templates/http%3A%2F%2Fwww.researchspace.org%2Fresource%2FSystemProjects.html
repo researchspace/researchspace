@@ -1,21 +1,13 @@
 <div class="page__grid-container">
   <div class='page__content-container'>
     <div class="page__main-title-row">
-      <h1 class="rs-main-title">Semantic narratives</h1>
+      <h1 class="rs-main-title">Projects</h1>
       <div class="page__main-top-actions">
         [[#if (hasPermission "forms:ldp:*")]]
-          <mp-resource-link-container 
-                                      uri="http://www.researchspace.org/resource/ThinkingFrames"
-                                      urlqueryparam-view='semantic-narrative'
-                                      urlqueryparam-previous-page='[[this]]'
-                                      urlqueryparam-previous-page-title='Project - Semantic Narratives'
-                                      >
-
             <button class="btn btn-grey" title="New Semantic Narrative">
               <i class="fa fa-plus btn-icon-left"></i>
-              <span>New Semantic Narrative</span>
+              <span>New Project</span>
             </button>
-          </mp-resource-link-container>
         [[/if]]
       </div>
     </div>
@@ -29,24 +21,12 @@
                         rdfs:label ?label ;
                         <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
 
-                      [[#if (hasPermission "forms:ldp:*")]]
-                        ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
-                      [[else]]
-                        ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
-                        FILTER(?user = <http://www.researchspace.org/resource/system/anonymousUser> )
-
-                      [[/if]]
                     } ORDER BY DESC(?modified)",
                     
           "columnConfiguration": [{
                                     "variableName": "page",
                                     "displayName": "Semantic Narrative - title",
                                     "cellTemplate": "{{> view}}"
-                                  },
-                                  
-                                    {"variableName": "user", 
-                                    "displayName": "Author", 
-                                    "cellTemplate": "{{> user}}"
                                   },
                                   
                                   {
@@ -56,14 +36,15 @@
                                   },
                                   
                                   {"displayName":"Actions", "cellTemplate": 
-                                  "<div class=\"btn-grey-container\">
+                                  "<div style=\"display:flex;\">
                                       <mp-ldp-duplicate-resource-action iri=\"{{page.value}}\">
-                                        <button class=\"btn-grey\">Duplicate</button>
+                                        <i class=\"fa fa-files-o\" style=\"cursor:pointer; padding-right:12px;\" title=\"Duplicate\" aria-hidden=\"true\"></i>
                                       </mp-ldp-duplicate-resource-action>
                                   
                                       <mp-anonymous-hidden>
                                         <mp-ldp-remove-from-container-action data-iri=\"{{page.value}}\" data-container=\"http://www.researchspace.org/ontology/UserDefinedPage\">
-                                          <button class=\"btn-grey\">Delete</button>
+                                  
+                                          <i class=\"fa fa-trash\" style=\"cursor:pointer;\" title=\"Delete\" aria-hidden=\"true\"></i>
                                         </mp-ldp-remove-from-container-action>
                                       </mp-anonymous-hidden>
                                     </div>"} 
@@ -85,12 +66,7 @@
               </div>
               
             </template>
-            <template id='user'>
-              <div>
-                <i class="fa fa-user" style="margin-right: 10px"></i>
-                <semantic-link class="rs-dashboard--a\" uri="{{user.value}}" target="_blank"></semantic-link>
-              </div>
-            </template>
+            
             <template id='modifiedAt'>
                 {{dateTimeFormat modified.value "LLL"}}
             </template>

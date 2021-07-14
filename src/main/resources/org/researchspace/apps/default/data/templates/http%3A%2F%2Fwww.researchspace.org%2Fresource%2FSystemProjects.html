@@ -4,7 +4,7 @@
       <h1 class="rs-main-title">Projects</h1>
       <div class="page__main-top-actions">
         [[#if (hasPermission "forms:ldp:*")]]
-            <button class="btn btn-grey" title="New Semantic Narrative">
+            <button class="btn btn-grey" title="New Project">
               <i class="fa fa-plus btn-icon-left"></i>
               <span>New Project</span>
             </button>
@@ -17,37 +17,26 @@
           <semantic-table config='{
 
           "query": "SELECT * WHERE {
-                    ?page a rso:Semantic_Narrative ;
-                        rdfs:label ?label ;
-                        <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
+                      ?page crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+                      ?page crm:P1_is_identified_by ?identifier.
+                      ?identifier rdfs:label ?label;
+                        crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/projectid>.
 
-                    } ORDER BY DESC(?modified)",
+                      ?page crm:P67i_is_referred_to_by ?ref .
+                      ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                      ?ref crm:P190_has_symbolic_content ?description .
+                    } ORDER BY DESC(?ref)",
                     
           "columnConfiguration": [{
                                     "variableName": "page",
-                                    "displayName": "Semantic Narrative - title",
+                                    "displayName": "Project",
                                     "cellTemplate": "{{> view}}"
                                   },
                                   
                                   {
-                                    "variableName": "modified",
-                                    "displayName": "Last Update",
-                                    "cellTemplate":"{{> modifiedAt}}"
-                                  },
-                                  
-                                  {"displayName":"Actions", "cellTemplate": 
-                                  "<div style=\"display:flex;\">
-                                      <mp-ldp-duplicate-resource-action iri=\"{{page.value}}\">
-                                        <i class=\"fa fa-files-o\" style=\"cursor:pointer; padding-right:12px;\" title=\"Duplicate\" aria-hidden=\"true\"></i>
-                                      </mp-ldp-duplicate-resource-action>
-                                  
-                                      <mp-anonymous-hidden>
-                                        <mp-ldp-remove-from-container-action data-iri=\"{{page.value}}\" data-container=\"http://www.researchspace.org/ontology/UserDefinedPage\">
-                                  
-                                          <i class=\"fa fa-trash\" style=\"cursor:pointer;\" title=\"Delete\" aria-hidden=\"true\"></i>
-                                        </mp-ldp-remove-from-container-action>
-                                      </mp-anonymous-hidden>
-                                    </div>"} 
+                                    "variableName": "description",
+                                    "displayName": "Description"
+                                  }                                  
                                 ]}'>
             
             <template id='view'>
@@ -55,8 +44,6 @@
                 <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
                 <semantic-link iri='{{page.value}}' 
                                 class='a-draggable'
-                                urlqueryparam-previous-page='[[this]]'
-                                urlqueryparam-previous-page-title='Project - Semantic Narratives'
                                 >
                   <div style="display: flex; align-items: center;">
                     <span>{{label.value}}</span>
@@ -65,10 +52,6 @@
 
               </div>
               
-            </template>
-            
-            <template id='modifiedAt'>
-                {{dateTimeFormat modified.value "LLL"}}
             </template>
           </semantic-table>
       </semantic-context>

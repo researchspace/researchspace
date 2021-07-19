@@ -122,11 +122,6 @@ public class MpRepositoryVocabulary {
     public static final IRI PRIOR = VF.createIRI(FEDERATION_NAMESPACE, "Prior");
     public static final IRI QUERY = VF.createIRI(FEDERATION_NAMESPACE, "Query");
 
-    // REST authorization
-    public static final IRI AUTHORIZATION_KEY = VF.createIRI(FEDERATION_NAMESPACE, "authKey");
-    public static final IRI AUTHORIZATION_VALUE = VF.createIRI(FEDERATION_NAMESPACE, "authValue");
-    public static final IRI AUTHORIZATION_LOCATION = VF.createIRI(FEDERATION_NAMESPACE, "authLocation");
-
     public static final Set<IRI> queryHints = Sets.newHashSet(EXECUTE_FIRST, EXECUTE_LAST, DISABLE_JOIN_REORDERING);
 
     private MpRepositoryVocabulary() {

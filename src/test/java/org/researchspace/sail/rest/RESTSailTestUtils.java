@@ -20,13 +20,7 @@ public class RESTSailTestUtils {
      * @param port                      - port from wiremock
      * @return repository repository that implements given service descriptor
      */
-    public static Repository createRestSailRepo(String serviceDescriptorLocation, int port, String url,
-            String httpMethod) {
-        return createRestSailRepo(serviceDescriptorLocation, port, url, httpMethod, null);
-    }
-
-    public static Repository createRestSailRepo(String serviceDescriptorLocation, int port, String url,
-            String httpMethod, String mediaType) {
+    public static Repository createRestSailRepo(String serviceDescriptorLocation, int port) {
         try {
             Model model = Rio.parse(OsmSailTest.class.getResourceAsStream(serviceDescriptorLocation), "",
                     RDFFormat.TURTLE);
@@ -34,14 +28,9 @@ public class RESTSailTestUtils {
             ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
             serviceDescriptor.parse(model, rootNode);
             RESTSailConfig sailConfig = new RESTSailConfig();
-
-            sailConfig.setHttpMethod(httpMethod);
-            if (mediaType != null) {
-                sailConfig.setMediaType(mediaType);
-            }
-
             // construct service url based on the dynamic port from wiremock
-            sailConfig.setUrl("http://localhost:" + port + url);
+            sailConfig.setUrl("http://localhost:" + port + "/search");
+            // sailConfig.setUrl("http://localhost:" + "10220" + "/search");
 
             RESTSailFactory factory = new RESTSailFactory();
             RESTSail sail = (RESTSail) factory.getSail(sailConfig);

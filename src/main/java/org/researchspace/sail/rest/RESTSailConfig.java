@@ -44,52 +44,6 @@ import com.beust.jcommander.internal.Maps;
 
 public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
-
-    public enum AUTH_LOCATION {
-        PARAMETER, HEADER
-    }
-
-    public class RestAuthorization {
-        private String type;
-        private String key;
-        private String value;
-        private AUTH_LOCATION location;
-
-        public AUTH_LOCATION getLocation() {
-            return location;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public void setKey(String key) {
-            this.key = key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public void setLocation(String location) {
-            this.location = AUTH_LOCATION.valueOf(location.toUpperCase());
-        }
-    }
-
-    public static final String JSON = "JSON";
-
     private String httpMethod;
 
     /**
@@ -114,9 +68,6 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
     private String userAgent;
 
-
-    private RestAuthorization auth;
-
     public RESTSailConfig() {
         super(RESTSailFactory.SAIL_TYPE);
         httpHeaders = Maps.newHashMap();
@@ -132,11 +83,11 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
         // Get input format
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.INPUT_FORMAT, null))
-                .ifPresentOrElse(lit -> setInputFormat(lit.stringValue()), () -> setInputFormat(JSON));
+                .ifPresent(lit -> setInputFormat(lit.stringValue()));
 
         // Get media_type
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.MEDIA_TYPE, null)).ifPresentOrElse(
-                lit -> setMediaType(lit.stringValue()), () -> setMediaType(MediaType.APPLICATION_JSON));
+        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.MEDIA_TYPE, null))
+                .ifPresent(lit -> setMediaType(lit.stringValue()));
 
         // Get each httpheader
         Models.objectResources(model.filter(implNode, MpRepositoryVocabulary.HTTP_HEADER, null)).forEach(header -> {
@@ -151,20 +102,6 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
                 .ifPresent(lit -> setRequestRateLimit(lit.intValue()));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USER_AGENT, null))
                 .ifPresent(lit -> setUserAgent(lit.stringValue()));
-
-        model.filter(implNode, MpRepositoryVocabulary.AUTHORIZATION_KEY, null).forEach(data -> {
-            data.getObject();
-        });
-
-        // Set Authorization
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.AUTHORIZATION_KEY, null))
-                .ifPresent(lit -> setAuthKey(lit.stringValue()));
-
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.AUTHORIZATION_VALUE, null))
-                .ifPresent(lit -> setAuthValue(lit.stringValue()));
-
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.AUTHORIZATION_LOCATION, null))
-                .ifPresent(lit -> setAuthLocation(lit.stringValue()));
     }
 
     @Override
@@ -175,7 +112,6 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
         // Store the HTTP method in the model
         if (!StringUtils.isEmpty(getHttpMethod())) {
             model.add(implNode, MpRepositoryVocabulary.HTTP_METHOD, vf.createLiteral(getHttpMethod()));
-
         }
 
         if (!StringUtils.isEmpty(getInputFormat())) {
@@ -203,25 +139,6 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
         if (getUserAgent() != null) {
             model.add(implNode, MpRepositoryVocabulary.USER_AGENT, vf.createLiteral(getUserAgent()));
         }
-
-        if (this.getAuth() != null) {
-
-            if (this.getAuth().getKey() != null) {
-                model.add(implNode, MpRepositoryVocabulary.AUTHORIZATION_KEY,
-                        vf.createLiteral(this.getAuth().getKey()));
-            }
-
-            if (this.getAuth().getValue() != null) {
-                model.add(implNode, MpRepositoryVocabulary.AUTHORIZATION_VALUE,
-                        vf.createLiteral(this.getAuth().getValue()));
-            }
-
-            if (this.getAuth().getLocation() != null) {
-                model.add(implNode, MpRepositoryVocabulary.AUTHORIZATION_LOCATION,
-                        vf.createLiteral(this.getAuth().getLocation().toString()));
-            }
-        }
-
 
         return implNode;
     }
@@ -269,29 +186,4 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
     protected void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
-
-    public RestAuthorization getAuth() {
-        return auth;
-    }
-
-    public void initAuth() {
-        if (this.auth == null)
-            this.auth = new RestAuthorization();
-    }
-
-    public void setAuthKey(String key) {
-        initAuth();
-        this.auth.setKey(key);
-    }
-
-    public void setAuthValue(String value) {
-        initAuth();
-        this.auth.setValue(value);
-    }
-
-    public void setAuthLocation(String location) {
-        initAuth();
-        this.auth.setLocation(location);
-    }
-
 }

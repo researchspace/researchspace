@@ -51,8 +51,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
  * nominatim search we need to execute something like:
  * 
  * curl
- * 'http://localhost:10220/search?q=British%20Museum&polygon_text=1&format=json&extraargs=1'
- * -H 'Accept: application/json'
+ * 'http://localhost:10220/search?q=British%20Museum&polygon_text=1&format=json&extraargs=1' -H 'Accept: application/json'
  * 
  * 3) Stop the recording, go to http://localhost:10220/__admin/mappings to see
  * the stub that we recorded, it contains Request + Response, the stubs are also
@@ -79,8 +78,7 @@ public class OsmSailTest {
     @BeforeClass
     public static void setup() throws Exception {
         osmRepo = RESTSailTestUtils.createRestSailRepo(
-                "/org/researchspace/apps/default/config/services/osm-nominatim-search.ttl", wireMockRule.port(),
-                "/search", "GET");
+                "/org/researchspace/apps/default/config/services/osm-nominatim-search.ttl", wireMockRule.port());
     }
 
     @AfterClass

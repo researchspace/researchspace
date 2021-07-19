@@ -45,7 +45,7 @@ interface EventTriggerConfig {
   /**
    * Array of actions to trigger event.
    *
-   * Can be "hover" or "click" or both.
+   * Can be "hover", "click", "mounted".
    *
    * @default ["click"]
    */
@@ -71,30 +71,44 @@ export class EventTrigger extends Component<EventTriggerProps, void> {
     on: ["click"],
   };
 
+  componentDidMount() {
+    if (this.props.on.some(o => o === 'mounted')) {
+      this.triggerEvent();
+    }
+  }
+
   render() {
-    const child = Children.only(this.props.children) as ReactElement<any>;
-    const props = this.props.on.reduce(
-      (res, action) => {
-        if (action == 'click') {
-          res['onClick'] = this.onEvent;
-        } else if (action === 'hover') {
-          res['onMouseEnter'] = this.onEvent;
-        }
-        return res;
-      }, {}
-    )
-    return cloneElement(child, props);
+    if (this.props.children) {
+      const child = Children.only(this.props.children) as ReactElement<any>;
+      const props = this.props.on.reduce(
+        (res, action) => {
+          if (action == 'click') {
+            res['onClick'] = this.onEvent;
+          } else if (action === 'hover') {
+            res['onMouseEnter'] = this.onEvent;
+          }
+          return res;
+        }, {}
+      )
+      return cloneElement(child, props);
+    } else {
+      return null;
+    }
   }
 
   private onEvent = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    this.triggerEvent();
+  };
+
+  private triggerEvent() {
     trigger({
       eventType: this.props.type,
       source: this.props.id,
       targets: this.props.targets,
       data: this.props.data,
     });
-  };
+  }
 }
 export default EventTrigger;

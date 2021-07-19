@@ -23,7 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
 import java.util.Objects;
+
 import java.util.Map.Entry;
 import java.util.Optional;
 
@@ -33,8 +35,10 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -45,10 +49,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.model.IRI;
+
+
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+
+
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
@@ -76,11 +84,13 @@ import net.minidev.json.JSONObject;
  */
 public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RESTSailConfig> {
 
+
     private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
     protected static final ValueFactory VF = SimpleValueFactory.getInstance();
 
     private Client client;
     private Configuration jsonPathConfig;
+
 
     public RESTSailConnection(RESTSail sailBase) {
         super(sailBase);
@@ -103,11 +113,13 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             String stringResponse = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
 
             // TODO: check the string format and call the right type. E.g., json or XML
+
             String type = RESTSailConfig.JSON;
 
             logger.trace("REST Response type is {}", type);
             switch (type) {
             case RESTSailConfig.JSON:
+
 
                 // Get the root path
                 Optional<Parameter> param = getSail().getSubjectParameter();
@@ -182,8 +194,10 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
      */
     private List<BindingSet> iterateJsonMap(Map map, Map<IRI, String> outputParameters) {
 
+
         logger.trace("### [START] Parsing JSONObject ###");
         List<BindingSet> bindingSets = Lists.newArrayList();
+
 
         bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));
 
@@ -202,6 +216,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
         for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
 
+
             String parameterName = getSail().getMapOutputParametersByProperty().get(outputParameter.getKey())
                     .getParameterName();
             Parameter parameter = getSail().getServiceDescriptor().getOutputParameters().get(parameterName);
@@ -217,6 +232,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                 } else {
                     logger.trace("Creating Literal({},{})", value, type);
                     mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(stringValue, type));
+
                 }
             }
         }
@@ -255,6 +271,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                 return submitGet(targetResource, parametersHolder);
             }
 
+
         } catch (Exception e) {
             throw new SailException(e);
         }
@@ -284,10 +301,12 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
             Invocation.Builder request = targetResource.request();
             return this.addHTTPHeaders(request).get();
+
         } catch (Exception e) {
             throw new SailException(e);
         }
     }
+
 
     protected Response submitPost(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
         try {
@@ -382,6 +401,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
         logger.trace("### [START] Creating input body JSON ###");
 
+
         JSONObject body = new JSONObject();
 
         for (Entry<String, String> entry : inputParameters.entrySet()) {
@@ -389,9 +409,11 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             String inputJsonPath = getSail().getServiceDescriptor().getInputParameters().get(entry.getKey())
                     .getInputJsonPath();
 
+
             logger.trace("------");
             logger.trace("Parameter detected");
             logger.trace("Name: {}", entry.getKey());
+
 
             // Create the body based on JSON object input strings
             if (Objects.nonNull(inputJsonPath)) {
@@ -399,6 +421,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                 int i = 0;
 
                 logger.trace("JSON path: {}", inputJsonPath);
+
 
                 JSONObject parent = body;
 
@@ -409,16 +432,19 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
                 }
 
                 parent.put(paths[i], entry.getValue());
+
             } else {
                 logger.trace("JSON path: $");
                 body.put(entry.getKey(), entry.getValue());
             }
 
             // Run here using root
+
         }
         logger.trace("### [END] Creating input body JSON ###");
         return body;
     }
+
 
     protected MultivaluedMap<String, String> getHashMapBody(Map<String, String> inputParameters) {
 
@@ -430,4 +456,5 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
         return map;
     }
+
 }

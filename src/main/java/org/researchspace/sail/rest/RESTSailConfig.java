@@ -44,6 +44,7 @@ import com.beust.jcommander.internal.Maps;
 
 public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
+
     public enum AUTH_LOCATION {
         PARAMETER, HEADER
     }
@@ -113,6 +114,7 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
 
     private String userAgent;
 
+
     private RestAuthorization auth;
 
     public RESTSailConfig() {
@@ -173,6 +175,7 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
         // Store the HTTP method in the model
         if (!StringUtils.isEmpty(getHttpMethod())) {
             model.add(implNode, MpRepositoryVocabulary.HTTP_METHOD, vf.createLiteral(getHttpMethod()));
+
         }
 
         if (!StringUtils.isEmpty(getInputFormat())) {
@@ -218,6 +221,7 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
                         vf.createLiteral(this.getAuth().getLocation().toString()));
             }
         }
+
 
         return implNode;
     }
@@ -289,4 +293,5 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
         initAuth();
         this.auth.setLocation(location);
     }
+
 }

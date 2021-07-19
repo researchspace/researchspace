@@ -67,6 +67,7 @@ public class ServiceDescriptor {
         private String parameterName;
         private String jsonPath;
         private String inputJsonPath;
+
         private Resource parameterId;
         private Resource rootNode;
         private IRI valueType;
@@ -80,6 +81,7 @@ public class ServiceDescriptor {
         public Resource getParameterId() {
             return parameterId;
         }
+
 
         public String getInputJsonPath() {
             return inputJsonPath;
@@ -221,6 +223,7 @@ public class ServiceDescriptor {
         if (jsonPathOptional.isPresent()) {
             parameter.jsonPath = jsonPathOptional.get().stringValue();
         }
+
 
         // @gspinaci Parse inputJsonPath from descriptor
         Optional<Literal> inputJsonPathOptional = Models

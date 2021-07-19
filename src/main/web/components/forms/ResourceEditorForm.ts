@@ -19,7 +19,7 @@
 
 import { Props, ReactNode, Children, cloneElement, MouseEvent, createElement } from 'react';
 import * as Kefir from 'kefir';
-import { uniqBy } from 'lodash';
+import { uniqBy, isEmpty } from 'lodash';
 import * as fileSaver from 'file-saver';
 import * as moment from 'moment';
 
@@ -39,7 +39,7 @@ import { readyToSubmit } from './FormModel';
 import { SemanticForm, SemanticFormProps } from './SemanticForm';
 import { ValuePatch, computeValuePatch, applyValuePatch } from './Serialization';
 
-import { TriplestorePersistence, isTriplestorePersistence } from './persistence/TriplestorePersistence';
+import { TriplestorePersistence, isTriplestorePersistence, computeModelDiff } from './persistence/TriplestorePersistence';
 import { LdpPersistence } from './persistence/LdpPersistence';
 import { SparqlPersistence } from './persistence/SparqlPersistence';
 import { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
@@ -204,9 +204,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     }
 
     const formProps: SemanticFormProps & Props<SemanticForm> = {
-      ref: (form: SemanticForm) => {
-        this.form = form;
-      },
+      ref: this.setRef,
       fields: this.props.fields,
       model: this.state.model || FieldValue.fromLabeled({ value: getSubject(this.props) }),
       newSubjectTemplate: this.props.newSubjectTemplate,
@@ -224,14 +222,26 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         this.setState({ model });
       },
       onUpdated: (modelState) => {
-        this.setState({ modelState });
-        if (this.initialState && modelState === DataState.Ready) {
-          this.saveToStorage(this.state.model);
-        }
+        this.setState({ modelState }, () => {
+          if (this.initialState && modelState === DataState.Ready && !this.state.submitting) {
+            if (this.props.autoSave) {
+              this.autoSave();
+            }
+            this.saveToStorage(this.state.model);
+          }
+        });
       },
       debug: this.props.debug,
     };
     return createElement(SemanticForm, formProps, this.mapChildren(this.props.children));
+  }
+
+  /**
+   * we can't use inline anonymous function in render for that, otherwise ref's get messy:
+   * see https://github.com/facebook/react/issues/6249#issuecomment-195412139
+   */
+  private setRef = (form: SemanticForm) => {
+    this.form = form;
   }
 
   private applyCachedData(model: CompositeValue): { model: CompositeValue; recoveredFromStorage: boolean } {
@@ -348,49 +358,73 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     this.setState(state);
   }
 
+  private autoSave = () => {
+    this.cancellation.map(
+      this.form
+        .finalize(this.state.model)
+        .map(
+          (finalModel) => {
+            const changes = computeModelDiff(this.initialState.model, finalModel)
+            if (!isEmpty(changes)) {
+              this.onSave();
+            }
+          }
+        )
+    ).onValue(() => {});
+  }
+
   private onSubmit = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    this.onSave();
+  }
 
+  private onSave = () => {
     const validatedModel = this.form.validate(this.state.model);
     if (readyToSubmit(validatedModel, FieldError.isPreventSubmit)) {
-      this.setState((state) => ({ model: validatedModel, submitting: true }));
+      this.setState({ model: validatedModel, submitting: true }, () => {
+        const initialModel = this.initialState.model;
+        this.form
+          .finalize(this.state.model)
+          .flatMap((finalModel) =>
+            this.persistence
+              .persist(initialModel, finalModel)
+              .map(() =>
+                this.props.addToDefaultSet ? addToDefaultSet(finalModel.subject, this.props.id) : Kefir.constant(true)
+                  )
+              .map(() => finalModel)
+                  )
+          .observe({
+            value: (finalModel) => {
+              // only ignore setState() and always reset localStorage and perform post-action
+              // event if the form is already unmounted
+              this.resetStorage();
+              const isNewSubject =
+                !this.initialState.model || CompositeValue.isPlaceholder(this.initialState.model.subject);
+              // after persistence we reset initial state to the current state
+              this.initialState = this.state;
+              // we are still in sumbitting state here so we reset it for the next initial state
+              (this.initialState as any).submitting = false;
 
-      const initialModel = this.initialState.model;
-      this.form
-        .finalize(this.state.model)
-        .flatMap((finalModel) =>
-          this.persistence
-            .persist(initialModel, finalModel)
-            .map(() =>
-              this.props.addToDefaultSet ? addToDefaultSet(finalModel.subject, this.props.id) : Kefir.constant(true)
-            )
-            .map(() => finalModel)
-        )
-        .observe({
-          value: (finalModel) => {
-            // only ignore setState() and always reset localStorage and perform post-action
-            // event if the form is already unmounted
-            this.resetStorage();
-            if (!this.unmounted) {
-              this.setState({ model: finalModel, submitting: false });
-            }
-            const isNewSubject =
-              !this.initialState.model || CompositeValue.isPlaceholder(this.initialState.model.subject);
-            performFormPostAction({
-              postAction: this.props.postAction,
-              subject: finalModel.subject,
-              eventProps: { isNewSubject, sourceId: this.props.id },
-              queryParams: getPostActionUrlQueryParams(this.props),
-            });
-          },
-          error: (error) => {
-            if (!this.unmounted) {
-              this.setState({ submitting: false });
-            }
-            addNotification({ level: 'error', message: 'Failed to submit the form' }, error);
-          },
-        });
+              performFormPostAction({
+                postAction: this.props.postAction,
+                subject: finalModel.subject,
+                eventProps: { isNewSubject, sourceId: this.props.id },
+                queryParams: getPostActionUrlQueryParams(this.props),
+              });
+
+              if (!this.unmounted) {
+                this.setState({ model: finalModel, submitting: false });
+              }
+            },
+            error: (error) => {
+              if (!this.unmounted) {
+                this.setState({ submitting: false });
+              }
+              addNotification({ level: 'error', message: 'Failed to submit the form' }, error);
+            },
+          });
+      });
     } else {
       this.setState((state) => ({ model: validatedModel, submitting: false }));
     }

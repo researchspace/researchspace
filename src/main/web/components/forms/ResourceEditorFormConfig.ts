@@ -86,6 +86,13 @@ export interface ResourceEditorFormProps {
    * @default false
    */
   addToDefaultSet?: boolean;
+
+  /**
+   *  Automatically persist data on every change.
+   *
+   * @default false
+   */
+  autoSave?: boolean;
 }
 
 export type TriplestorePersistenceConfig = LdpPersistenceConfig | SparqlPersistenceConfig | RawSparqlPersistenceConfig;

@@ -240,9 +240,18 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             String httpMethod = getSail().getConfig().getHttpMethod();
             logger.trace("Creating request with HTTP METHOD: {}", httpMethod);
 
+            String url = getSail().getConfig().getUrl();
+            if (url.equals("https://discovery.nationalarchives.gov.uk/API/records/children/{parentId}")) {
+                url = url.replace("{parentId}", parametersHolder.getInputParameters().get("parentId"));
+                parametersHolder.getInputParameters().remove("parentId");
+            } else if (url.equals("https://discovery.nationalarchives.gov.uk/API/records/details/{id}")) {
+                url = url.replace("{id}", parametersHolder.getInputParameters().get("id"));
+                parametersHolder.getInputParameters().remove("id");
+            }
+
             // Create request
-            WebTarget targetResource = this.client.target(getSail().getConfig().getUrl())
-                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
+            WebTarget targetResource = this.client.target(url).property(ClientProperties.FOLLOW_REDIRECTS,
+                    Boolean.TRUE);
 
             // Case with POST
             if (HttpMethod.POST.equals(httpMethod)) {

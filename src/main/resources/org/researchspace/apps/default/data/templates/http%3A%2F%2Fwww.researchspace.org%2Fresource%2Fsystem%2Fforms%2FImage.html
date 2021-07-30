@@ -1,0 +1,39 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "http://www.researchspace.org/assets/images"}'
+               new-subject-template='/EX_Digital_Image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+               fields='[[fieldDefinitions
+                             label="http://www.w3.org/2000/01/rdf-schema#label"
+                             P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                             P1_is_identified_by="http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by"
+                             type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                      ]]'
+>
+  <div class="form-scroll-area">
+    <semantic-form-hidden-input for='type' default-values='["http://www.researchspace.org/ontology/EX_Digital_Image"]'> </semantic-form-hidden-input>
+    <semantic-form-file-input for='P1_is_identified_by' 
+                              accept-pattern='image/*' 
+                              storage='images'
+                              temp-storage='tmp'
+                              placeholder='Please drag&drop your image file here.'
+                              name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                              media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                              resource-query='
+                                PREFIX rso: <http://www.researchspace.org/ontology/>
+                                CONSTRUCT {
+                                  ?__resourceIri__ a rso:EX_File.
+                                  ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
+                                  ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                } WHERE {}
+                              '
+                              generate-iri-query='
+                                SELECT ?resourceIri {
+                                  BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                }
+                              '
+    ></semantic-form-file-input>
+    <semantic-form-text-input for='label'></semantic-form-text-input>
+    <semantic-form-text-input for='P3_has_note' multiline=true></semantic-form-text-input>
+    <semantic-form-errors></semantic-form-errors>
+ </div>
+ [[> rsp:FormDefaultActions assetForm=true assetStorage='tmp']] 
+</semantic-form>

@@ -112,13 +112,13 @@
             </mp-event-trigger>
         </div>
 
-        <div class="rs-default-card__hover-icon">
+        [[!--       <div class="rs-default-card__hover-icon">
             <semantic-link-container uri="{{iri}}">
                 <button type="button" class="rs-button" title="Explore Resource">
                   <i class="iconmoon iconmoon-file-empty"></i>
                 </button>
-            </semantic-link-container>
-        </div>
+            </semantic-link-container> 
+        </div> --]]
 
         <div class="rs-default-card__hover-icon">
           <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
@@ -149,6 +149,22 @@
                 </button>
             </mp-event-trigger>
         </div>
+
+        {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E53_Place")}}
+        <semantic-if query='ASK { <{{iri}}> <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?value . }'>
+            <template id='then'>
+              <div class="rs-default-card__hover-icon">
+                <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                          urlqueryparam-view='map' 
+                                          urlqueryparam-resource='{{iri}}'>
+                    <button type="button" class="rs-button" title="Visualise on map">
+                        <i class="iconmoon iconmoon-location"></i>
+                    </button>
+                </semantic-link-container>
+              </div>
+            </template>
+          </semantic-if>
+        {{/if}}
 
         {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
           [[!-- don't show resource media icon for image regions --]]

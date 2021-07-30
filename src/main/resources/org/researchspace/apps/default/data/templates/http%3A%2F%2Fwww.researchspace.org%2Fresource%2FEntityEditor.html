@@ -113,11 +113,19 @@
         </semantic-query>
       {{else}}
         {{#if data.entityTypeConfig}}
-          {{> rsp:CollectionBrowserContent configOrScheme=data.entityTypeConfig }}
+        {{#if data.mode}}
+          {{#if data.additional_data}}
+            {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+          {{else}}
+            {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+          {{/if}}
         {{else}}
-          {{> rsp:EntityManagerContent}}
+          {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig }}
         {{/if}}
+      {{else}}
+        {{> rsp:EntityManagerContent}}
       {{/if}}
+    {{/if}}
     </template>
   </mp-event-target-template-render>  
 {{/bind}}

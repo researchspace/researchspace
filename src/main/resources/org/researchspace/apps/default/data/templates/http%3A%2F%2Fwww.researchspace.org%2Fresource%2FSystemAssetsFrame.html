@@ -90,16 +90,16 @@
     <template id='assetDisplay'>
       <div class="frame-container asset-display">
         <div class="frame-header">
-          <h1 class="rs-main-title">Recent files</h1>
+          <h1 class="rs-main-title">Images</h1>
           <div class="asset-display-types">
-            {{#if assetDisplayType}}
+     [[!--        {{#if assetDisplayType}}
               <mp-event-trigger id='display-image' type='Component.TemplateUpdate' data='{"assetDisplayType": "image"}' targets='["asset-display-area"]'>
                 <button class='btn-tab {{#ifCond assetDisplayType "==" "image"}}btn-selected{{/ifCond}}'>Images</button>
               </mp-event-trigger>
             {{else}}
               <button class='btn-tab btn-selected'>Image</button>
             {{/if}}
-            <mp-event-trigger id='display-pdf' type='Component.TemplateUpdate' data='{"assetDisplayType": "document"}' targets='["asset-display-area"]'>
+           <mp-event-trigger id='display-pdf' type='Component.TemplateUpdate' data='{"assetDisplayType": "document"}' targets='["asset-display-area"]'>
               <button class='btn-tab {{#ifCond assetDisplayType "==" "document"}}btn-selected{{/ifCond}}'>PDF documents</button>
             </mp-event-trigger> 
             <mp-event-trigger id='display-video' type='Component.TemplateUpdate' data='{"assetDisplayType": "video"}' targets='["asset-display-area"]'>
@@ -107,13 +107,95 @@
             </mp-event-trigger>
             <mp-event-trigger id='display-audio' type='Component.TemplateUpdate' data='{"assetDisplayType": "audio"}' targets='["asset-display-area"]'>
               <button class='btn-tab {{#ifCond assetDisplayType "==" "audio"}}btn-selected{{/ifCond}}'>Audios</button>
-            </mp-event-trigger>
+            </mp-event-trigger> --]]
           </div>
         </div>
         <div class="frame-content asset-display-results">
           {{#switch assetDisplayType}}
             {{#case "document" break=true}}
-            <div>doc</div>
+            <semantic-search>
+              <div class="asset-display__filter-actions">
+                <semantic-search-query-keyword
+                    query='
+                      SELECT ?subject WHERE { 
+                        ?subject a rso:EX_File .
+                        ?subject <http://www.researchspace.org/ontology/PX_has_media_type> "application/pdf" .
+                        ?subject rdfs:label ?label .
+                        ?label bds:search ?__token__ ;
+                                    bds:minRelevance "0.3" ;
+                                    bds:matchAllTerms "true"  .
+                      }
+                    '
+                    default-query='
+                      SELECT ?subject WHERE {
+                        ?subject a rso:EX_File .
+                        ?subject <http://www.researchspace.org/ontology/PX_has_media_type> "application/pdf" .
+                      }
+                    '
+                    debounce=500
+                  ></semantic-search-query-keyword>
+                  <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+                    <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
+                    <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
+                      [[#if (hasPermission "forms:ldp:*")]]
+                    <mp-create-set-action></mp-create-set-action>
+                    [[/if]]
+                  </mp-selection-action-choice>
+              </div>
+              <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+                <semantic-search-result-holder>
+                  <div data-flex-self="md-full">
+                    <semantic-search-result id='semantic-search-result'>
+                        <semantic-table id='image-grid'
+                                  query='
+                                    SELECT DISTINCT ?subject ?container WHERE {
+                                      OPTIONAL {
+                                        ?subject crm:P1_is_identified_by/prov:generatedAtTime ?generated .
+                                      }
+                                      BIND(CONCAT(STR(?subject), "/container") AS ?container)
+                                    } ORDER BY DESC(?generated) ?subject
+                                    '
+                                  tuple-template='{{> gridItem }}',
+                                  options='{"showFilter":false, "resultsPerPage":30}'
+                        >
+                          <template id='gridItem'>
+                            <div class='card-select-container'>
+                              <div class='card-select-input'>
+                                <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                              </div>
+                            <mp-draggable iri='{{subject.value}}'>
+                              <div class="rs-card-container">
+                                {{#> rsp:itemCardTemplate iri=subject.value}}
+                                  {{#*inline "hoverContent"}}
+                                    <div>
+                                      <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                                    </div>
+                                  {{/inline}}
+                                  [[#if (hasPermission "forms:ldp:*")]]
+                                  {{#*inline "additionalActions"}}
+                                    <div class="rs-default-card__hover-icon">
+                                      <mp-ldp-remove-from-container-action 
+                                        iri='{{container.value}}' 
+                                        container='http://www.researchspace.org/resource/system/formContainer'
+                                      >
+                                        <button type="button" name='delete' class="rs-button" title="Delete">
+                                          <i class="fa fa-trash-o" style="font-size: 23px;"></i>
+                                        </button>
+                                      </mp-ldp-remove-from-container-action>
+                                    </div>
+                                  {{/inline}}
+                                  [[/if]]
+                                {{/rsp:itemCardTemplate}}
+                              </div>
+                            </mp-draggable>
+                          </div>
+                          </template>
+                        </semantic-table>
+                      </semantic-search-result>
+                  </div>
+                </semantic-search-result-holder>
+              </div>
+            </semantic-search>
             {{/case}}
           
             {{#case "video" break=true}}

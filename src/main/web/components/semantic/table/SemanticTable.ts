@@ -148,7 +148,10 @@ interface ColumnConfig extends BaseConfig {
 interface RowConfig extends BaseConfig {
   /**
    * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.
-   * The template has access to all projection variables for a single result tuple
+   * The template has access to all projection variables for a single result tuple.
+   *
+   * In addition to data from the sparql results cell template has access to current row index with "__semanticTableIndex" property and total table size with "__semanticTableSize" property.
+   *
    */
   tupleTemplate: string;
 }

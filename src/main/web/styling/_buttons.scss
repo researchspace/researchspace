@@ -76,15 +76,21 @@
 }
 
 @mixin tag {
-    color: white;
+    color: $color-white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    
     padding: 0px 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 20px;
+    height: 27px;
     text-align: center;
     white-space: nowrap;
-    border-radius: 2px;
+    border-radius: 3px;
     transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
@@ -103,14 +109,24 @@
 .btn {
     border-width: 1px;
     font-size: 14px;
-    border-radius: 0;
+    border-radius: 3px;
     line-height: 1.2;
+    padding: 8px 10px;
 
     @media screen and (max-width: 767px) {
         font-size: 12px !important;
     }   
 
-  }
+    &:hover, &:focus, &.focus {
+        color: inherit;
+    }
+
+}
+
+.btn-table {
+
+    padding: 6px 10px;
+}
 
 button:disabled {
 
@@ -136,13 +152,14 @@ fieldset[disabled] .btn {
 .btn-default {
     color: $color-dark;
     background-color: transparent;
-    border-color: $color-primary-50;
+    border-color: $color-dark;
 }
 
 .btn-default:hover,
 .btn-default:focus,
 .btn-default:focus-within,
 .btn-default:active,
+.btn-default:active:hover,
 .btn-default.active,
 .open > .btn-default.dropdown-toggle,
 .btn-default:active:hover,
@@ -153,12 +170,7 @@ fieldset[disabled] .btn {
 .btn-default.active.focus,
 .open > .btn-default.dropdown-toggle:hover,
 .open > .btn-default.dropdown-toggle:focus,
-.open > .btn-default.dropdown-toggle.focus {
-    color: $color-dark;
-    background-color: transparent;
-    border-color: $color-dark--op20;
-}
-
+.open > .btn-default.dropdown-toggle.focus,
 .btn-default.disabled:hover,
 .btn-default.disabled:focus,
 .btn-default.disabled.focus,
@@ -170,13 +182,14 @@ fieldset[disabled] .btn-default:focus,
 fieldset[disabled] .btn-default.focus {
     color: $color-dark;
     background-color: transparent;
-    border-color: $color-primary-50;
+    border-color: $color-dark;
 }
 
 .btn-primary {
     background-color: $color-dark;
     border-color: $color-dark;
     color: $color-white;
+    font-weight: 600;
 
     &:hover,
     &:active,
@@ -193,75 +206,63 @@ fieldset[disabled] .btn-default.focus {
     .open > &.dropdown-toggle:hover, 
     .open > &.dropdown-toggle:focus, 
     .open > &.dropdown-toggle.focus {
+        background-color: $color-dark;
+        border-color: $color-dark;
         color: $color-white;
-        background-color: $color-dark-darker;
-        border-color: $color-dark-darker;
+        font-weight: 600;
     }
-}
-
-
-.btn-grey {
-
-    color: $color-grey-dark;
-    border: 1px solid $color-light-grey2;
-    box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.17);
-    background-color: $color-btn-bg-grey;
-    border-radius: 3px;
-    padding: 5px 7px;
-    white-space: nowrap;
-
-    height: 100%;
 
     .fa,
     .rs-icon,
     .iconmoon {
 
-        padding-right: 3px;
+        color: $color-white;
     }
+}
+
+.btn-grey {
+
+    color: $btn-grey-color;
+    border: 1px solid $btn-grey-border-color;
+    box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.14);
+    background-color: $btn-grey-color-bg;
+    white-space: nowrap;
+
+    border-radius: 3px;
+    line-height: 1.2;
+    padding: 6px 10px;
+
+    display: flex;
+    align-items: flex-end;
+    width: fit-content;
 
     &:hover,
     &:focus {
 
-        color: $color-grey-dark;
-        border-radius: 3px;
-        background-color: $color-btnHover-bg-grey;
+        color: $btn-grey-color;
+        background-color: $btn-grey-hover-color-bg;
         outline: none;
+    }
+
+    i {
+        font-size: 16px;
     }
 
     &.btn-icon {
 
+        .fa,
         .rs-icon,
         .iconmoon {
 
-            color: $color-grey-dark;
+            color: $btn-grey-color;
         }
     }
 
-    &.btn-danger {
+    .fa,
+    .rs-icon,
+    .iconmoon {
 
-        &:hover,
-        &:focus,
-        &:focus-within {
-
-            background-color: $color-danger-darker;
-            border-color: $color-danger-darker;
-            color: $color-white;
-        }
-    }
-
-    &.btn-icon.delete {
-        
-        &:hover,
-        &:focus {
-
-            border: 1px solid $color-danger;
-            background-color: $color-danger;
-
-            .rs-icon,
-            .iconmoon {
-                color: $color-white;
-            }
-        }
+        color: $btn-grey-color;
     }
 
     &:disabled,
@@ -272,54 +273,61 @@ fieldset[disabled] .btn-default.focus {
         &:hover,
         &:focus {
 
-            background-color: $color-btn-bg-grey;
-            color: $color-grey-dark;
-            border: 1px solid $color-light-grey2;
+            background-color: $btn-grey-color-bg;
+            color: $btn-grey-color;
+            border: 1px solid $btn-grey-border-color;
 
+            .fa,
             .rs-icon,
             .iconmoon {
 
-                color: $color-grey-dark;
+                color: $btn-grey-color;
             }
-        }
-    }
-}
-
-.btn-table {
-
-    color: $color-btn-grey;
-    background-color: $color-btn-bg-grey;
-
-    font-size: 14.5px;
-    letter-spacing: .1px;
-
-    padding: 4px 10px;
-    border: none;
-    border-radius: 2px;
-
-    &:hover,
-    &:focus,
-    &:focus-within {
-
-        outline: none;
-        background-color: $color-btnHover-bg-grey;
-    }
-
-    &.btn-table-delete {
-
-        &:hover,
-        &:focus,
-        &:focus-within {
-
-            background-color: $color-danger;
-            color: $color-white;
         }
     }
 
     .mp-rdf-graph-action {
-
         color: inherit;
     }
+
+    &.btn-selected {
+        background-color: $color-btn-selected;
+        border-color: $color-btn-selected;
+        color: $color-white;
+        box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.25);
+    }
+}
+
+.btn-grey-container {
+
+    display: flex;
+
+    button:not(:last-child) {
+        margin-right: .8em;
+    }
+}
+
+.btn-tab {
+
+    border: none;
+    background-color: transparent;
+    white-space: nowrap;
+
+    font-size: 14.5px;
+    border-radius: 3px;
+    padding: 8px 14px;
+
+    &:hover,
+    &:focus {
+        background-color: $color-btn-tab-bg;
+        outline: none;
+    }
+
+    &.btn-selected {
+        background-color: $color-btn-tab-bg;
+        font-weight: 600;
+    }
+
 }
 
 .btn-export {
@@ -328,7 +336,6 @@ fieldset[disabled] .btn-default.focus {
     background-color: $color-secondaryB-10;
     border: 1px solid $color-secondaryB-50;
     padding: 5px 8px;
-    border-radius: 2px;
     font-size: 12px;
 
     &:hover {
@@ -344,7 +351,6 @@ fieldset[disabled] .btn-default.focus {
     font-weight: bold;
     text-shadow: 0px 0px 1px #4c040485;
     padding: 5px 8px;
-    border-radius: 2px;
     font-size: 12px;
     margin-bottom: 3px;
     margin: 2px 0px 2px 0px;
@@ -361,6 +367,7 @@ fieldset[disabled] .btn-default.focus {
 .btn-success {
     background-color: $color-success;
     border-color: $color-success;
+    color:$color-white;
     text-shadow: 0px 0px 1px #00000061;
     font-weight: 600;
 
@@ -372,6 +379,7 @@ fieldset[disabled] .btn-default.focus {
     &.focus {
         background-color: $color-success-darker;
         border-color: $color-success-darker;
+        color:$color-white;
     }
 }
 
@@ -387,6 +395,7 @@ fieldset[disabled] .btn-default.focus {
 
     background-color: $color-success-darker;
     border-color: $color-success-darker;
+    color:$color-white;
 }
 
 .btn-warning {
@@ -424,6 +433,16 @@ fieldset[disabled] .btn-default.focus {
 
     display: flex;
     align-items: center;
+}
+
+.btn-icon-right {
+
+    padding-left: 7px;
+}
+
+.btn-icon-left {
+
+    padding-right: 7px;
 }
 
 .btn-back {
@@ -521,12 +540,7 @@ fieldset[disabled] .btn-default.focus {
     right: 38px;
 
     padding: 7px 10px;
-    border-radius: 3px;
 
-    .fa {
-
-        margin-right: 8px;
-    }
 }
 
 /* Search page buttons */
@@ -620,7 +634,6 @@ fieldset[disabled] .btn-default.focus {
     
     box-shadow: 3px 2px 10px rgba(0, 0, 0, 0.1);
     border: 1px solid #ededed;
-    border-radius: 4px;
 
     transition: all .2s ease;
 
@@ -645,7 +658,7 @@ fieldset[disabled] .btn-default.focus {
                 color: $color-dashboard-km;
             }
 
-            &.rs-icon-narrative_edit {
+            &.iconmoon-file-text2 {
                 color: $color-dashboard-narrative;
             }
 
@@ -727,7 +740,6 @@ fieldset[disabled] .btn-default.focus {
     min-width: 144px;
     width: 144px;
     height: 37px;
-    border-radius: 3px;
     background-color: $color-grey;
 
     @include rotate-text(270);
@@ -754,20 +766,12 @@ fieldset[disabled] .btn-default.focus {
     height: 40px;
     background-color: transparent;
     padding: 0;
+    font-size: 16.5px;
     font-weight: 600;
 
     @include rotate-text(270);
 
 }
-
-/* .badge {
-    background-color: $rs-color-lightgrey;
-    margin-top: -2px;
-  }
-  
-  li.active .badge {
-    background-color: #2c3e50;
-  } */
 
 .badge {
     display: inline-flex;
@@ -829,7 +833,6 @@ fieldset[disabled] .btn-default.focus {
     width: 170px;
     height: 30px;
     padding: 0;
-    border-radius: 30px;
 }
 
 /*  Conclusion */
@@ -885,5 +888,24 @@ fieldset[disabled] .btn-default.focus {
 
     & .radio label {
         padding-left: 25px;
+    }
+}
+
+// form buttons
+.form-btn-group {
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 25px;
+    margin-bottom: 10px;
+
+    button {
+        margin-bottom: 5px;
+    }
+
+    button:not(:first-child) {
+        margin-left: 5px;
     }
 }

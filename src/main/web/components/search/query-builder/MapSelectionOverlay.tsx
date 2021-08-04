@@ -83,7 +83,7 @@ export class MapSelectionOverlay extends Component<MapSelectionProps, MapSelecti
         <div className={styles.actions}>
           <div className="form-group">
             <div className="btn-group" role="group">
-              <button type="button" className="btn btn-danger" onClick={this.props.onCancel}>
+              <button type="button" className="btn btn-default" onClick={this.props.onCancel}>
                 Cancel
               </button>
               <button

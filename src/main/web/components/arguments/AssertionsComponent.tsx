@@ -202,10 +202,10 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
               <div data-flex-layout="column justify-stretch" className={styles.valueHolder}>
                 <div>{this.state.formTemplate.getOrElse(null)}</div>
                 <div className={styles.actions} data-flex-layout="row top-right">
-                  <button className="btn btn-danger" onClick={this.toggleAddNewValue}>
+                  <button className="btn btn-default" onClick={this.toggleAddNewValue}>
                     Cancel
                   </button>
-                  <button name="submit" className="btn btn-success">
+                  <button name="submit" className="btn btn-primary">
                     Submit
                   </button>
                 </div>

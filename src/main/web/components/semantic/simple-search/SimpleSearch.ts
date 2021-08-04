@@ -53,7 +53,7 @@ export class SimpleSearch extends Component<SimpleSearchProps, SimpleSearchState
   }
 
   static defaultProps = {
-    placeholder: 'type to search, minimum 3 symbols ...',
+    placeholder: 'Search all, minimum 3 characters',
     searchTermVariable: '__token__',
     minSearchTermLength: 3,
     resourceBindingName: 'resource',

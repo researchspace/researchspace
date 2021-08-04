@@ -150,7 +150,10 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
       this.props.definition.minOccurs === 1 &&
       this.props.definition.maxOccurs === 1;
 
-    const className = childIsInputGroup && !canCollapseGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
+    let className = childIsInputGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
+    if (canCollapseGroup) {
+      className = className + ` ${COMPONENT_NAME}_no-header`;
+    }
 
     return this.props.values.map((value, index) =>
       D.div(

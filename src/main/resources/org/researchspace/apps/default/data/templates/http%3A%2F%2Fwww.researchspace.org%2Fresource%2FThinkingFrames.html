@@ -1,16 +1,14 @@
-[[!-- 
-    we need to set this sizes because otherwise ontodia can't properly make initial layout
-    if node-templates is defined. This is a bug in ontodia.
-  --]]
 <style>
  
+   /*  we need to set this sizes because otherwise ontodia can't properly make initial layout
+    if node-templates is defined. This is a bug in ontodia. */
+
   .ontodia-overlayed-element  {
     min-height: 234px;
     min-width: 185px;
   }
 
   .component-page-toolbar.btn-toolbar {
-
     display: none;
   }
   
@@ -49,7 +47,6 @@
     {
     	"id": "simple-search",
       "label": "Search",
-      "description": "Search for resources",
       "iconClass": "rs-icon rs-icon-semantic_search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> simpleSearchTemplate}}",
@@ -58,50 +55,30 @@
     },
 
     {
+    	"id": "entity-search",
+      "label": "Search",
+      "iconClass": "rs-icon rs-icon-semantic_search",
+      "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
+      "template": "{{> entitySearchTemplate}}",
+      "resourceNotRequired": true,
+      "type": "search-by-entity-type"
+    },
+
+    {
     	"id": "resource",
-      "label": "Resource",
-      "description": "View resource details",
-      "iconClass": "rs-icon rs-icon-page",
+      "label": "Entity record",
+      "description": "Drag and drop an entity here to display the entity record",
+      "dropAreaDescription": "Drag and drop any entity here to display the entity record",
+      "iconClass": "iconmoon iconmoon-file-empty",
       "template": "{{> resourceTemplate}}",
       "type": "view"
     },
-    {
-    	"id": "project-narratives",
-      "label": "Project Narratives",
-      "description": "View Project Narratives",
-      "iconClass": "rs-icon rs-icon-page",
-      "template": "{{> projectNarrativesTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view-project"
-    },{
-    	"id": "project-knowledge-maps",
-      "label": "Project Knowledge Maps",
-      "description": "View Project Knowledge Maps",
-      "iconClass": "rs-icon rs-icon-page",
-      "template": "{{> projectKnowledgeMapsTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view-project"
-    },{
-    	"id": "project-assets",
-      "label": "Project Digital Assets",
-      "description": "View Project Digital Assets",
-      "iconClass": "rs-icon rs-icon-page",
-      "template": "{{> projectDigitalAssetsTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view-project"
-    },{
-    	"id": "project-activity",
-      "label": "Project Activity",
-      "description": "View Project Activity",
-      "iconClass": "rs-icon rs-icon-page",
-      "template": "{{> projectActivityTemplate}}",
-      "resourceNotRequired": true,
-      "type": "view-project"
-    },
+
     {
     	"id": "iiif",
       "label": "Image Viewer",
-      "description": "View and compare High-Resolution images",
+      "description": "Drag and drop an entity here to view and compare related high-resolution images",
+      "dropAreaDescription": "Drag and drop any entity here to view and compare related high-resolution images",
       "iconClass": "rs-icon rs-icon-images",
       "template": "{{> iiifTemplate}}",
       "frameVariable": "miradorVariable",
@@ -111,49 +88,51 @@
     {
     	"id": "map",
       "label": "Map",
-      "description": "Explore places geographic information",
+      "description": "Drag and drop a place here to explore related geographic information",
+      "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
       "iconClass": "rs-icon rs-icon-map_location_grouped",
       "checkQuery": "ASK { ?value a crm:E53_Place . }",
       "template": "{{> mapTemplate}}",
-      "resourceNotRequired": true,
       "type": "view"
     },
 
     {
     	"id": "entity-editor",
       "label": "Entity Editor",
-      "description": "Authoring a resource through the Entity Edit Form",
+      "description": "Creare and author an entity through custom forms",
       "iconClass": "rs-icon rs-icon-form_edit",
       "template": "{{> entityEditor}}",
       "resourceNotRequired": true,
       "type": "authoring"
     },
+
     {
     	"id": "authority-editor",
-      "label": "Authority Editor",
-      "description": "Authoring a resource through the Authority Edit Form",
-      "iconClass": "rs-icon rs-icon-form_edit",
+      "label": "Authorities",
+      "description": "Create, view and edit vocabulary lists and term authorities",
+      "iconClass": "iconmoon iconmoon-books",
       "template": "{{> authorityEditor}}",
       "resourceNotRequired": true,
       "type": "authoring"
     }, 
+
     {
     	"id": "authority-content",
       "label": "Authority Content",
-      "description": "Authoring a resource through the Authority Edit Form",
       "iconClass": "rs-icon rs-icon-form_edit",
       "template": "{{> authorityContent}}",
        "type": "authoring-content"
     },
+
     {
     	"id": "authority-entity-configuration",
       "label": "Authority and Entity Configuration",
-      "description": "Defining an entity or authority through the Authority and Entity Configuration Form",
       "iconClass": "rs-icon rs-icon-form_edit",
       "template": "{{> authorityAndEntityConfiguration}}",
       "resourceNotRequired": true,
       "type": "configuration"
     },
+
     {
     	"id": "knowledge-map",
       "label": "Knowledge Map",
@@ -169,8 +148,8 @@
     {
     	"id": "semantic-narrative",
       "label": "Semantic Narrative",
-      "description": "Compose and share your research through as evolving narrative",
-      "iconClass": "rs-icon rs-icon-narrative_edit",
+      "description": "Compose and share your research through an evolving narrative",
+      "iconClass": "rs-icon rs-icon-page",
       "template": "{{> semanticNarrativeTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
@@ -182,7 +161,8 @@
     {
     	"id": "objectImageObservation",
       "label": "Object Observations through Images",
-      "description": "",
+      "description": "Drag and drop an object here to combine image annotations with form authoring",
+      "dropAreaDescription": "Drag and drop any entity of type MAN-MADE OBJECT here to combine image annotations with data authoring through forms",
       "iconClass": "rs-icon rs-icon-area_annotation",
       "template": "{{> objectImageObservationTemplate}}",
       "checkQuery": "
@@ -225,22 +205,72 @@
     },
            
     {
+
+[[!--     {
     	"id": "featureSimilarityKm",
       "label": "Exploring and Comparing (Visual) Features",
-      "description": "",
       "iconClass": "rs-icon rs-icon-diagram",
       "template": "{{> featureSimilarityKm }}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "frameVariable": "ontodiaVariable",
       "type": "authoring"
+    }, --]]
+
+    {
+    	"id": "system-narrative",
+      "label": "Narratives",
+      "template": "{{> systemNarrativesTemplate}}",
+      "resourceNotRequired": true,
+      "type": "view-system"
+    },
+    
+    {
+    	"id": "system-knowledge-maps",
+      "label": "Knowledge Maps",
+      "template": "{{> systemKnowledgeMapsTemplate}}",
+      "resourceNotRequired": true,
+      "type": "view-system"
+    },
+    
+    {
+    	"id": "system-assets",
+      "label": "Digital Assets",
+      "template": "{{> systemDigitalAssetsTemplate}}",
+      "resourceNotRequired": true,
+      "type": "view-system"
+    },
+    
+    {
+    	"id": "system-activity",
+      "label": "Activities",
+      "template": "{{> systemActivityTemplate}}",
+      "resourceNotRequired": true,
+      "type": "view-system"
+    },
+
+    {
+    	"id": "system-projects",
+      "label": "Projects",
+      "template": "{{> systemProjects}}",
+      "resourceNotRequired": true,
+      "type": "view-system"
+    },
+
+    {
+    	"id": "mapEntitySearch",
+      "label": "Objects Referred By Place",
+      "iconClass": "rs-icon rs-icon-area_annotation",
+      "template": "{{> mapEntitySearch}}",
+      "type": "referred"
     }
     ]'
 
-    [[#if (hasPermission "forms:ldp:*")]]       
+    [[#if (hasPermission "forms:ldp:*")]]
     linked-views='[{
       "id": "image-graph-authoring",
       "label": "Image Graph Authoring",
-      "description": "Knowledge Map + High-Resolution Image Viewer",
+      "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
+      "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
       "iconClass": "rs-icon rs-icon-image_annotation_grouped",
       "viewIds": ["knowledge-map", "iiif"],
       "resourceNotRequired": true,
@@ -262,6 +292,11 @@
         </mp-page-loader>
     	</div>
     </template>
+   <template id='entitySearchTemplate'>
+      <div class='rs-search-page' style='flex: 1 1 0px; overflow: auto; padding: 20px;'>
+         [[> rsp:EntitySearchContent config='{{iri}}']]
+    	</div> 
+    </template>
     <template id='entityEditor'>
       [[> rsp:EntityEditor]]
     </template>
@@ -274,17 +309,20 @@
     <template id='authorityAndEntityConfiguration'>
       [[> rsp:AuthorityAndEntityConfiguration]]
     </template>
-    <template id='projectNarrativesTemplate'>
-      [[> rsp:ProjectNarrativesFrame]]
+    <template id='systemNarrativesTemplate'>
+      [[> rsp:SystemNarrativesFrame]]
     </template>
-    <template id='projectKnowledgeMapsTemplate'>
-      [[> rsp:ProjectKnowledgeMapsFrame]]
+    <template id='systemKnowledgeMapsTemplate'>
+      [[> rsp:SystemKnowledgeMapsFrame]]
     </template>
-    <template id='projectDigitalAssetsTemplate'>
-      [[> rsp:ProjectImagesFrame]]
+    <template id='systemDigitalAssetsTemplate'>
+      [[> rsp:SystemAssetsFrame]]
     </template>
-    <template id='projectActivityTemplate'>
-      [[> rsp:ProjectActivityFrame]]
+    <template id='systemActivityTemplate'>
+      [[> rsp:SystemActivityFrame]]
+    </template>
+    <template id='systemProjects'>
+      [[> rsp:SystemProjects]]
     </template>
     <template id='ontodiaTemplate'>
       [[> rsp:ThinkingFramesKnowledgeMapTemplate]]
@@ -293,13 +331,13 @@
       [[> rsp:ThinkingFramesIIIFTemplate]]
     </template>
     <template id='objectImageObservationTemplate'>
-      [[> rsp:ThinkingFramesObjectThroughImageObservation ]]
+      [[> rsp:ThinkingFramesObjectThroughImageObservation]]
     </template>
     <template id='documentReadingTemplate'>
       [[> rsp:ThinkingFramesDocumentReading ]]
     </template>
     <template id='featureSimilarityKm'>
-      [[> rsp:ThinkingFramesFeatureSimilarityKm ]]
+      [[> rsp:ThinkingFramesFeatureSimilarityKm]]
     </template>
     <template id='semanticNarrativeTemplate'>
       [[> rsp:ThinkingFramesSemanticNarrativeTemplate]]
@@ -335,14 +373,22 @@
         </template>
       </ontodia-contents>
     </template>
+
     <template id='mapTemplate'>
+      
+      <style>
+        .ol-popup-content {
+          max-height: 100% !important;
+        }
+      </style>
+      
       <div style='flex: 1 1 0px; overflow: auto;'>
-        <semantic-map fix-zoom-level=14
+        <semantic-map
           tuple-template='{{>popover}}'
           query='
             SELECT DISTINCT ?wkt ?place ?color WHERE {
               {
-                <{{iri}}> crm:P168_place_is_defined_by ?wkt .
+               <{{iri}}> crm:P168_place_is_defined_by ?wkt .
                 BIND(<{{iri}}> AS ?place).
                 BIND(0 as ?order)
               } UNION {
@@ -354,25 +400,84 @@
                 ?place crm:P168_place_is_defined_by ?wkt .
                 BIND(true AS ?isBuilding)
                 BIND(2 as ?order)
-              }              
-              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(178, 235, 242, 0.3)") AS ?color)
+              }
+              BIND(IF(?isBuilding, "rgba(244, 224, 77, 0.7)", "rgba(56, 178, 194, 0.44)") AS ?color)
             } ORDER BY ASC(?order)
           '
 				>
-          <template id='popover'>
-            <div>
-              <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
-                                data='{"iri": "{{place.value}}"}' targets='["details-view", "open-details-sidebar"]'>
-                <button type="button" class="rs-button" title="Resource Details">
-                  <span class="rs-icon rs-icon-sidebar_right"></span>
-                </button>
-              </mp-event-trigger>
-              <semantic-link iri='{{place.value}}'></semantic-link>
+
+         <template id='popover'>
+
+          <style>
+
+            .place-row {
+              display: flex; 
+              align-items: center;
+              justify-content:space-between;
+              flex-wrap: wrap;
+              overflow: hidden;
+              margin-bottom: 10px;
+            }
+
+            .text-underline {
+              text-decoration: underline;
+              cursor: pointer;
+            }
+
+          </style>
+
+            <div style="min-width:250px; font-size: 14.5px; overflow: hidden;">
+
+              <div class="place-row">
+                <div>Place: <semantic-link iri='{{place.value}}'></semantic-link></div>
+                <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
+                                  data='{"iri": "{{place.value}}"}' targets='["details-view", "open-details-sidebar"]'>
+                  <div class="text-underline">details</div>
+                </mp-event-trigger>
+              </div>
+
+              <semantic-query query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                                      PREFIX rso: <http://www.researchspace.org/ontology/>
+                                      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+																			PREFIX crmsci: <http://www.ics.forth.gr/isl/CRMsci/>
+                                      SELECT ?place (count(?object) as ?count) WHERE {
+                                        BIND(<{{place.value}}> AS ?place)
+                                        ?object crmsci:O19i_was_object_found_by ?discovery.
+                                        ?discovery crmsci:O21_has_found_at ?place.
+                                        OPTIONAL {?object rs:PX_has_main_representation|crm:P138i_has_representation ?image.}
+                                        ?object rdfs:label ?objlabel.
+
+                                      } group by ?place'
+
+                                    template='{{> entitySearchforPlace}}'
+                >
+
+                        <template id="entitySearchforPlace">
+                          <div>
+                            {{#if bindings.0.place.value}}
+                              <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                                  data='{"resourceIri": "{{bindings.0.place.value}}", "viewId": "mapEntitySearch"}' 
+                                  targets='["thinking-frames"]'>
+                                <a class="text-underline">
+                                    Explore {{bindings.0.count.value}} related entities
+                                </a>
+                        		</mp-event-trigger>
+                            {{/if}}
+                          </div>
+                        </template>
+                </semantic-query>
             </div>
+
           </template>
+
         </semantic-map>
     	</div>
     </template>
+
+    <template id='mapEntitySearch'>
+      [[> rsp:MapEntitySearch]]
+    </template>
+    
   </rs-dashboard>
   [[/rsp:DetailsSidebar]]
 </div>

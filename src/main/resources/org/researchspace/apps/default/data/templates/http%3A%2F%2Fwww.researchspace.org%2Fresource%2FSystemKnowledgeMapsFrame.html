@@ -48,15 +48,13 @@
             <template id='view'>
               <div style="display: flex; align-items: center;">
                 <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
-                <semantic-link iri='{{diagram.value}}' 
-                               class='a-draggable'
-                               urlqueryparam-previous-page='[[this]]'
-                                urlqueryparam-previous-page-title='Project - Knowledge Maps'
-                >
-                  <div style="display: flex; align-items: center;">
-                  <span>{{label.value}}</span>
-                </div>
-                </semantic-link>
+                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                    data='{"resourceIri": "{{diagram.value}}", "viewId": "knowledge-map"}' 
+                    targets='["thinking-frames"]'>
+                   <div style="display: flex; align-items: center;">
+                      <span>{{label.value}}</span>
+                   </div>
+              </mp-event-trigger>
               </div>
             </template>
             <template id='author'>

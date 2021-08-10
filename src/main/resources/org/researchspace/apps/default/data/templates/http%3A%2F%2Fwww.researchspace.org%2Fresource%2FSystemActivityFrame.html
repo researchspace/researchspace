@@ -56,15 +56,30 @@
                                 ]'>
 
         <template id='title'>
-            <semantic-link class='rs-dashboard--a-title a-draggable' iri='{{page.value}}'
-                          urlqueryparam-previous-page='[[this]]' 
-                          urlqueryparam-previous-page-title='Project Dashboard'
-            >
-              <div style="display: flex; align-items: center;">
-                <span class="rs-icon rs-icon-drag_points"></span>
-                <span>{{title.value}}</span>
+          {{#ifCond content_type.value "===" "Knowledge Map"}} 
+          <div style="display: flex; align-items: center;">
+                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                    data='{"resourceIri": "{{page.value}}", "viewId": "knowledge-map"}' 
+                    targets='["thinking-frames"]'>
+                   <div style="display: flex; align-items: center;">
+                      <span>{{title.value}}</span>
+                   </div>
+              </mp-event-trigger>
               </div>
-            </semantic-link>
+         {{/ifCond}}
+          {{#ifCond content_type.value "===" "Semantic Narrative"}} 
+            <div style="display: flex; align-items: center;">
+                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                    data='{"resourceIri": "{{page.value}}", "viewId": "semantic-narrative"}' 
+                    targets='["thinking-frames"]'>
+                   <div style="display: flex; align-items: center;">
+                      <span>{{title.value}}</span>
+                   </div>
+              </mp-event-trigger>
+              </div>
+             {{/ifCond}}
         </template>
 
         <template id='user'>

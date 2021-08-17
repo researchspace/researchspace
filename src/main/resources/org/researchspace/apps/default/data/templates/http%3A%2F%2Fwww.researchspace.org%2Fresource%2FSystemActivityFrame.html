@@ -101,23 +101,34 @@
         </template>
 
         <template id="data_download">
-            <mp-sparql-download
-              query="prefix ontodia: <http://ontodia.org/schema/v1#>
-                      select ?s ?p ?o where {
-                                       BIND(IRI('{{page.value}}') as ?diagramContainer)
-                            ?diagramContainer    ontodia:layoutData/ontodia:hasElement/ontodia:resource  ?diagramNode .
-                            BIND (IRI(CONCAT(STR(?diagramNode),'/container/context')) as ?g) 
-                            {select * where {graph ?g {?s ?p ?o. 
-                                                       MINUS {?s <http://www.w3.org/ns/ldp#contains> ?o .} 
-                                                       MINUS {?s rdf:type <http://www.w3.org/ns/ldp#Resource> .}
-                                                       MINUS {?s rdf:type <http://www.w3.org/ns/prov#Entity> .} } } } }"
-              header="text/csv" filename="myDiagramEntities.csv">
-              <div>
-                <a href="#" title="Download data" class="rs-dashboard--a">
-                  <i class="fa fa-download"></i></a>
-              </div>
-            </mp-sparql-download>
-        </template>
+         	{{#ifCond content_type.value "!==" "Semantic Narrative"}} 
+         	<mp-sparql-download
+            	query="prefix ontodia: <http://ontodia.org/schema/v1#>
+                   select distinct ?source ?property ?target ?sourceLabel ?propertyLabel ?targetLabel where {
+                      BIND(IRI('{{page.value}}') as ?diagramContainer)
+                      BIND(CONCAT(?diagramContainer,'/','context') as ?graph)
+                      {select * 
+                        {graph ?g { 
+
+                            ?link ontodia:property ?property.
+                            ?link ontodia:source/ontodia:resource ?source .
+                            ?link ontodia:target/ontodia:resource ?target .
+
+                          }
+                          optional {?property rdfs:label ?propertyLabel . FILTER(LANG(?propertyLabel)='en')}
+                          optional {?source rdfs:label ?sourceLabel .}
+                          optional {?target rdfs:label ?targetLabel .}
+                        }
+                      }
+                     }"
+                header="text/csv" filename="myDiagramEntities.csv">
+                <div>
+                  <a href="#" title="Download data" class="rs-dashboard--a">
+                    <i class="fa fa-download"></i></a>
+                </div>
+              </mp-sparql-download>
+          {{/ifCond}}
+          </template>
 
       </semantic-table>
 

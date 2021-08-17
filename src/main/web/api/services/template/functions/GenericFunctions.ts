@@ -69,7 +69,7 @@ export const GenericFunctions = {
   },
 
   eq: (v1, v2) => v1 === v2,
-  ne: (v1, v2) => v1 !== v2,
+  not: (v1) => !v1,
 
   or: function() {
     return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);

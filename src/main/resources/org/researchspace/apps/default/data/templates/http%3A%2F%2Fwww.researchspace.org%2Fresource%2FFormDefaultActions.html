@@ -1,5 +1,16 @@
 {{#if editable}}
   <div class="btn-group">
+    <div>
+      [[!--
+      {{#ifCond mode "===" "edit"}}
+        {{#if broaderPropertyIRI}}
+        <mp-event-trigger id='form-new-trigger' type='Component.TemplateUpdate' data='{"scheme": "{{collection}}", "broader": "{{node}}", "new": true, "edit": false}' targets='["{{viewId}}-term-forms"]'>
+          <button name="add" class="btn btn-grey">Add narrower {{itemLabel}}</button>
+        </mp-event-trigger>
+        {{/if}}
+      {{/ifCond}}
+      --]]
+    </div> 
     <div class="btn-form-actions"> 
       {{#ifCond mode "===" "edit"}}
         <button name="reset" class="btn btn-default">Reset</button>
@@ -34,7 +45,18 @@
                     <ul>
                       {{#each bindings}}
                         <li>
+                          [[!-- 
+                          		Enable opening the links to the connected entities in a new frame
+                          
                           <semantic-link iri='{{resource.value}}'>{{label.value}}</semantic-link>
+                          --]]
+                          <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                              data='{"resourceIri": "{{resource.value}}", "viewId": "entity-editor"}' 
+                              targets='["thinking-frames"]'>
+                             <div style="display: flex; align-items: center;">
+                                <span>{{label.value}}</span>
+                             </div>
+                        </mp-event-trigger> 
                         </li>
                       {{/each}}
                     </ul>

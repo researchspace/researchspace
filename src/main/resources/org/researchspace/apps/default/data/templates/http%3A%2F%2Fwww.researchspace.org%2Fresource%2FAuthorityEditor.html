@@ -207,15 +207,18 @@ uses client-side template:
                       </template>
 
                       <template id='schemeRow'>
-                          <div class="scheme-table-row"> [[!-- <semantic-link iri="{{scheme.value}}"  --]]
-                                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                                      data='{"resourceIri": "{{scheme.value}}", "viewId": "authority-content"}' 
-                                      targets='["thinking-frames"]'>
-                                      <a class="schema-label">{{schemeLabel.value}}</a>
-                                  </mp-event-trigger>
-                              <div class="btn-grey-container">
-                                  <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                                      data='{"resourceIri": "{{scheme.value}}", "viewId": "authority-content"}' 
+                          <div class="scheme-table-row"> 
+                            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                              urlqueryparam-view='authority-content' 
+                              urlqueryparam-resource='{{scheme.value}}'
+                              urlqueryparam-mode='new'
+                            >
+                                <span class="schema-label">{{schemeLabel.value}}</span>
+                            </semantic-link>
+                              
+                            <div class="btn-grey-container">
+                                  <mp-event-trigger id='{{viewId}}-set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                                      data='{"resourceIri": "{{scheme.value}}", "viewId": "authority-content","frameId":"{{viewId}}"}' 
                                       targets='["thinking-frames"]'>
                                       <button class="btn-grey">Show Terms</button>
                                   </mp-event-trigger>

@@ -40,7 +40,7 @@
                     
           "columnConfiguration": [{
                                     "variableName": "page",
-                                    "displayName": "Semantic Narrative - title",
+                                    "displayName": "Semantic Narrative - Title",
                                     "cellTemplate": "{{> view}}"
                                   },
                                   
@@ -55,18 +55,10 @@
                                     "cellTemplate":"{{> modifiedAt}}"
                                   },
                                   
-                                  {"displayName":"Actions", "cellTemplate": 
-                                  "<div class=\"btn-grey-container\">
-                                      <mp-ldp-duplicate-resource-action iri=\"{{page.value}}\">
-                                        <button class=\"btn-grey\">Duplicate</button>
-                                      </mp-ldp-duplicate-resource-action>
-                                  
-                                      <mp-anonymous-hidden>
-                                        <mp-ldp-remove-from-container-action data-iri=\"{{page.value}}\" data-container=\"http://www.researchspace.org/ontology/UserDefinedPage\">
-                                          <button class=\"btn-grey\">Delete</button>
-                                        </mp-ldp-remove-from-container-action>
-                                      </mp-anonymous-hidden>
-                                    </div>"} 
+                                  {
+                                    "displayName":"Actions", 
+                                    "cellTemplate": "{{> actions}}"
+                                  } 
                                 ]}'>
             
             <template id='view'>
@@ -94,6 +86,19 @@
             <template id='modifiedAt'>
                 {{dateTimeFormat modified.value "LLL"}}
             </template>
+           <template id='actions'>
+             <div class="btn-grey-container">
+                <mp-ldp-duplicate-resource-action iri="{{page.value}}">
+                  <button class="btn-grey">Duplicate</button>
+                </mp-ldp-duplicate-resource-action>
+            
+                <mp-anonymous-hidden>
+                  <mp-ldp-remove-from-container-action data-iri="{{page.value}}" data-container="http://www.researchspace.org/ontology/UserDefinedPage">
+                    <button class="btn-grey">Delete</button>
+                  </mp-ldp-remove-from-container-action>
+                </mp-anonymous-hidden>
+                </div>
+           </template>
           </semantic-table>
       </semantic-context>
     </div>

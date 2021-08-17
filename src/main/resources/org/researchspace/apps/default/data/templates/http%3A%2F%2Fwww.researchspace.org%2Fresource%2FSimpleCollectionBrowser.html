@@ -67,7 +67,6 @@
       </mp-splitpane-toggle-off>
       <mp-splitpane-sidebar-open style="flex: 1;">
         <div class="split-pane__sidebar-open">
-          
           <div class="rs-vocabulary-terms-area">
             <mp-event-target-template-render id='{{frameId}}-mytree'  template='{{> treeTemplate}}'>
               <template id='treeTemplate'>
@@ -88,7 +87,7 @@
                     <span class="tree-item-actions-container">
                       {{#if editable}}
                         <mp-event-trigger id='{{frameId}}-form-edit-trigger--{{iri}}' type='Component.TemplateUpdate'
-                                          data='{"iri":"{{iri}}",  "mode": "edit" }' targets='["{{frameId}}-term-forms"]'>
+                                          data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' targets='["{{frameId}}-term-forms"]'>
                           <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-pencil' title="Edit {{itemLabel}}"></i></span>
                         </mp-event-trigger>
                         <mp-event-proxy id='{{frameId}}-focus-tree-element' on-event-source='{{frameId}}-form-edit-trigger--{{iri}}' proxy-event-type='LazyTree.Focus' proxy-targets='["{{frameId}}-scheme-tree"]' data='{"iri":"{{iri}}"}'></mp-event-proxy>
@@ -152,9 +151,13 @@
                   </mp-copy-to-clipboard>
                 </div>
                 {{/case}}
+              
+                {{#case "deleted" break=true}}
+                  <p>Deleted {{label}}</p>
+                {{/case}}
               {{/switch}}
     
-              {{#if mode}}
+              {{#if (not (eq mode "deleted"))}}
               <mp-event-proxy id='{{frameId}}-tree-refresh-on-created' 
                               on-event-source='{{frameId}}-vocab-form' 
                               on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
@@ -168,7 +171,7 @@
                               on-event-types='["Form.ResourceRemoved"]'
                               proxy-event-type='Component.TemplateUpdate' 
                               proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
-                              additional-data='{"iri": "", "mode": ""}'
+                              additional-data='{"mode": "deleted", "label": "{{label}}"}'
                               ></mp-event-proxy>
               
               <inline-template template-iri='{{resourceForm}}' 

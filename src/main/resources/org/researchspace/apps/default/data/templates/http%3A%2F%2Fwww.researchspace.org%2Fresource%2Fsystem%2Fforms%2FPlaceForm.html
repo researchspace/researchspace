@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                persistence='{"type": "sparql", "targetInsertGraphIri": "{{scheme}}"}'
-               new-subject-template='{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+               new-subject-template='Place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                fields='[[
                 fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -21,7 +21,7 @@
 >
   <div class="form-scroll-area">
     <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}" force-defaults='true'> </semantic-form-hidden-input>  
+    [[!-- <semantic-form-hidden-input for="inScheme"> </semantic-form-hidden-input>  --]]
     
     <semantic-form-composite-input for="appelation" 
                                    label="Known As"
@@ -64,6 +64,12 @@
     <semantic-form-errors></semantic-form-errors>
  </div>
   
-  
+[[!-- If form is opened in a modal --]]
+<mp-event-proxy id='{{frameId}}-close-modal-window' 
+            on-event-source='{{frameId}}-vocab-form' 
+            on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+            proxy-event-type='OverlayDialog.Close' 
+            proxy-targets='["save-place"]'
+            ></mp-event-proxy> 
  [[> rsp:FormDefaultActions]] 
 </semantic-form>

@@ -75,7 +75,7 @@ export function extractAnnotationType(child: React.ReactNode): AnnotationBodyTyp
   if (!componentHasType(child, TextAnnotationType)) {
     throw new Error(`<rs-text-annotation-workspace> should contain only ${COMPONENT_TAG} children`);
   }
-  const props = child.props as TextAnnotationTypeProps;
+  const props = child.props;
   if (!props.rdfType) {
     throw new Error(`<rs-text-annotation-workspace> should contain only ${COMPONENT_TAG} children`);
   }
@@ -96,6 +96,7 @@ export function extractAnnotationType(child: React.ReactNode): AnnotationBodyTyp
   }
 
   if (!(typeof props.children === 'object' && componentHasType(props.children, Forms.CompositeInput))) {
+    
     // Allow Semantic Context
   if (!(typeof props.children === 'object' && props.children.type == SemanticContextProvider && componentHasType(props.children.props.children, Forms.CompositeInput))) {
     throw new Error(`${COMPONENT_TAG} must have a single <semantic-form-composite-input> as child`);

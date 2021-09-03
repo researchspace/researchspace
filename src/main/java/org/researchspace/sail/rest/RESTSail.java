@@ -66,7 +66,7 @@ public class RESTSail extends AbstractServiceWrappingSail<RESTSailConfig> {
 
         // it is a good practice to always include application user-agent into all
         // requests and somtime it can be even the requirement, e.g nominatim web
-        // service from OSM
+        // service from OSM 
         if (config.getUserAgent() != null) {
             clientBuilder = clientBuilder.register(new UserAgentFilter(config.getUserAgent()));
         } else {

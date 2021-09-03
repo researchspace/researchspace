@@ -29,9 +29,9 @@ import org.researchspace.config.PropertyPattern;
 import org.researchspace.junit.AbstractIntegrationTest;
 import org.researchspace.junit.NamespaceRule;
 
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
 
 /**
  * Test cases for {@link PropertyPattern}

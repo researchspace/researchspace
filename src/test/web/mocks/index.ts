@@ -20,6 +20,7 @@
 import * as sinon from 'sinon';
 
 import { ConfigHolder } from 'platform/api/services/config-holder';
+import { init as initNavigation } from 'platform/api/navigation';
 
 export function mockRequest() {
   beforeEach(function () {
@@ -34,8 +35,15 @@ export function mockRequest() {
   });
 }
 
-export function mockLanguagePreferences() {
+export function mockConfig() {
+  initNavigation();
   sinon.stub(ConfigHolder, 'getUIConfig').callsFake(function () {
     return { preferredLanguages: [] };
+  });
+  sinon.stub(ConfigHolder, 'getGlobalConfig').callsFake(function () {
+    return { };
+  });
+  sinon.stub(ConfigHolder, 'getEnvironmentConfig').callsFake(function () {
+    return { resourceUrlMapping: { value: 'http://example.com/' } };
   });
 }

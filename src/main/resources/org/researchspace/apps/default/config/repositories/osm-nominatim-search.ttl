@@ -9,12 +9,15 @@
 @prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
 
 [] a rep:Repository;
-  rep:repositoryID "openstreetmaps";
-  rdfs:label "A wrapper for the OSM repository";
+  rep:repositoryID "osm-nominatim-search";
+  rdfs:label "A wrapper for OSM using RESTSail repository";
   rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository";
       sr:sailImpl [
-          sail:sailType "researchspace:OpenstreetmapSail";
-          ephedra:serviceURL "https://nominatim.openstreetmap.org/search"
+          sail:sailType "researchspace:RESTSail";
+          ephedra:serviceURL "https://nominatim.openstreetmap.org/search";
+          ephedra:implementsService <http://www.researchspace.org/resource/system/services/osm/NominatimSearchService>;
+          ephedra:requestRateLimit "1"^^xsd:int;
+          ephedra:httpMethod "GET"
         ]
     ] .

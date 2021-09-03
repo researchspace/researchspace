@@ -23,21 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.sail.SailException;
 import org.eclipse.rdf4j.sail.helpers.AbstractSail;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.researchspace.federation.repository.MpSparqlServiceRegistry;
 import org.researchspace.federation.repository.service.ServiceDescriptor;
 import org.researchspace.federation.repository.service.ServiceDescriptor.Parameter;
-import org.researchspace.rest.filters.RequestRateLimitFilter;
-import org.researchspace.rest.filters.UserAgentFilter;
 import org.researchspace.secrets.SecretResolver;
 import org.researchspace.secrets.SecretsHelper;
 
@@ -55,16 +49,6 @@ public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrapp
 
     private C config;
     private ServiceDescriptor serviceDescriptor = null;
-
-    /**
-     * According to the documentation of JAX-RS, "initialization as well as disposal
-     * of client may be a rather expensive operation", so we want to make sure that
-     * we reuse the same client instance for all calls for the specific service.
-     * 
-     * In Jersey Client is threadsafe, so it is fine to have the single instance in
-     * the sail and access it from multiple sail connections.
-     */
-    private Client client;
 
     @Inject
     protected Provider<MpSparqlServiceRegistry> serviceRegistryProvider;
@@ -84,31 +68,7 @@ public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrapp
     @Override
     protected void initializeInternal() throws SailException {
         this.resolveSecrets(config);
-
-        // client Jersey HTTP client with Request Rate Limiter filter if request limit
-        // is specified in the config
-        var clientBuilder = ClientBuilder.newBuilder();
-        if (config.getRequestRateLimit() != null) {
-            clientBuilder = clientBuilder.register(new RequestRateLimitFilter(config.getRequestRateLimit()));
-        }
-
-        // it is a good practice to always include application user-agent into all
-        // requests and somtime it can be even the requirement, e.g nominatim web
-        // service from OSM
-        if (config.getUserAgent() != null) {
-            clientBuilder = clientBuilder.register(new UserAgentFilter(config.getUserAgent()));
-        } else {
-            clientBuilder = clientBuilder.register(new UserAgentFilter());
-        }
-
-        // if we have username and password in the config then conigure basic auth
-        if (config.getUsername() != null && config.getPassword() != null) {
-            HttpAuthenticationFeature basicAuthFeature = HttpAuthenticationFeature.basic(config.getUsername(),
-                    config.getPassword());
-            clientBuilder = clientBuilder.register(basicAuthFeature);
-        }
-
-        this.client = clientBuilder.build();
+        this.initParameters();
     }
 
     private void resolveSecrets(C config) {
@@ -203,10 +163,6 @@ public abstract class AbstractServiceWrappingSail<C extends AbstractServiceWrapp
                         && stmtPattern.getObjectVar().getName().equals(parameterName)
                         && stmtPattern.getPredicateVar().hasValue())
                 .map(stmtPattern -> stmtPattern.getPredicateVar().getValue()).map(pred -> (IRI) pred).findFirst();
-    }
-
-    protected Client getClient() {
-        return client;
     }
 
     public C getConfig() {

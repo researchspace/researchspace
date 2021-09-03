@@ -22,7 +22,12 @@ export interface LazyTreeEventData {
   'LazyTree.ItemSelected': {
     iri: string
   }
+
+  'LazyTree.Focus': {
+    iri: string
+  }
 }
 
 const event: EventMaker<LazyTreeEventData> = EventMaker;
 export const ItemSelected = event('LazyTree.ItemSelected');
+export const Focus = event('LazyTree.Focus');

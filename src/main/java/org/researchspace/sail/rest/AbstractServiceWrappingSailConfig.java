@@ -41,8 +41,6 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
 
     private String url;
     private IRI serviceID;
-    private Integer requestRateLimit;
-    private String userAgent;
 
     // password and username that are already resolved through SecretResolver
     private String username;
@@ -79,14 +77,6 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
             model.add(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, getServiceID());
         }
 
-        if (getRequestRateLimit() != null) {
-            model.add(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, vf.createLiteral(getRequestRateLimit()));
-        }
-
-        if (getUserAgent() != null) {
-            model.add(implNode, MpRepositoryVocabulary.USER_AGENT, vf.createLiteral(getUserAgent()));
-        }
-
         if (getUnResolvedUsername() != null) {
             model.add(implNode, MpRepositoryVocabulary.USERNAME, vf.createLiteral(getUnResolvedUsername()));
         }
@@ -102,10 +92,6 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
         super.parse(model, implNode);
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.SERVICE_URL, null))
                 .ifPresent(lit -> setUrl(lit.stringValue()));
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.REQUEST_RATE_LIMIT, null))
-                .ifPresent(lit -> setRequestRateLimit(lit.intValue()));
-        Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USER_AGENT, null))
-                .ifPresent(lit -> setUserAgent(lit.stringValue()));
         Models.objectIRI(model.filter(implNode, MpRepositoryVocabulary.IMPLEMENTS_SERVICE, null))
                 .ifPresent(iri -> setServiceID(iri));
         Models.objectLiteral(model.filter(implNode, MpRepositoryVocabulary.USERNAME, null))
@@ -129,22 +115,6 @@ public abstract class AbstractServiceWrappingSailConfig extends AbstractSailImpl
 
     protected void setServiceID(IRI serviceID) {
         this.serviceID = serviceID;
-    }
-
-    public Integer getRequestRateLimit() {
-        return requestRateLimit;
-    }
-
-    protected void setRequestRateLimit(int requestRateLimit) {
-        this.requestRateLimit = requestRateLimit;
-    }
-
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    protected void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
     }
 
     public String getUsername() {

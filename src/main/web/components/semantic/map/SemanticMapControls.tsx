@@ -16,6 +16,7 @@ import {
   SemanticMapControlsSyncFromMap,
   SemanticMapControlsSendMapLayersToMap,
   SemanticMapControlsSendMaskIndexToMap,
+  SemanticMapControlsSendFeaturesLabelToMap
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -29,6 +30,8 @@ import { check } from 'basil.js';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { identityTransform } from 'ol/proj';
 import { source } from 'react-dom-factories';
+import { List } from 'immutable';
+import { resetMemoryHistory } from 'platform/api/navigation/PersistentHistory';
 
 const colorPickerComponent = React.createFactory(ColorPicker);
 
@@ -58,15 +61,18 @@ interface State {
   mapLayers: Array<any>;
   maskIndex: number;
   filters: Filters;
+  selectedFeaturesLabel: string;
 }
 
 interface Props {
   targetMapId: string;
   id: string;
+  featuresTaxonomies: string;
 }
 
 export class SemanticMapControls extends Component<Props, State> {
   private cancelation = new Cancellation();
+  private featuresTaxonomies = [];
 
   constructor(props: any, context: ComponentContext) {
     super(props, context);
@@ -82,8 +88,11 @@ export class SemanticMapControls extends Component<Props, State> {
         feature: true,
         overlay: true,
         basemap: true
-      }
+      },
+      selectedFeaturesLabel: ""
     };
+
+    this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this)
 
     this.cancelation
       .map(
@@ -94,6 +103,14 @@ export class SemanticMapControls extends Component<Props, State> {
       .onValue(this.initializeMapLayers);
 
     this.onDragEnd = this.onDragEnd.bind(this);
+  }
+
+  handleSelectedLabelChange(e) {
+    this.setState({
+      selectedFeaturesLabel: e.target.value
+    }, () => {
+      this.triggerSendFeaturesLabelToMap()
+    })
   }
 
   private onDragEnd = (result: any) => {
@@ -148,16 +165,39 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   public componentWillMount() {
-
+    this.featuresTaxonomies = this.props.featuresTaxonomies.split(",");
   }
 
   public componentWillUnmount() {
 
   }
 
+  //TODO: MOVE ALL THE STYLING TO RS
+
   public render() {
     return D.div(
       null,
+      <div className={'featuresOptionsContainer'}>
+        <h3>Features Options</h3>
+        <label style={{marginRight: '10px'}}>Label</label>
+        <select name="featuresLabelList" id="featuresLabelList"  onChange={this.handleSelectedLabelChange}>
+          {this.featuresTaxonomies.map((taxonomy) => 
+            <option value={taxonomy}>{taxonomy}</option>)
+        }
+        </select>
+      </div>,
+      D.br(),
+      D.label({}, 'Features Default Color'),
+      D.br(),
+      colorPickerComponent({
+        theme: { width: '100px' },
+        color: this.state.color,
+        hideInputs: true,
+        onChange: (color) => {
+          this.setState({ setColor: color }, () => this.triggerFeatureColor(this.state.setColor));
+        },
+      }),
+      D.br(),
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
@@ -347,17 +387,7 @@ export class SemanticMapControls extends Component<Props, State> {
           )}
         </Droppable>
       </DragDropContext>,
-      D.br(),
-      D.label({}, 'Features Default Color'),
-      D.br(),
-      colorPickerComponent({
-        theme: { width: '100px' },
-        color: this.state.color,
-        hideInputs: true,
-        onChange: (color) => {
-          this.setState({ setColor: color }, () => this.triggerFeatureColor(this.state.setColor));
-        },
-      })
+      D.br()
     );
   }
 
@@ -434,6 +464,17 @@ export class SemanticMapControls extends Component<Props, State> {
       targets: [this.props.targetMapId],
       data: this.state.mapLayers,
     });
+  }
+
+  private triggerSendFeaturesLabelToMap(){
+    console.log("SENDING FEATURE TAXONOMY");
+    console.log(this.state.selectedFeaturesLabel)
+    trigger({
+      eventType: SemanticMapControlsSendFeaturesLabelToMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: this.state.selectedFeaturesLabel
+    })
   }
 
   private triggerVisualization = (visualization: string) => {

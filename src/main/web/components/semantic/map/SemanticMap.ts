@@ -93,6 +93,7 @@ import {
   SemanticMapControlsSyncFromMap,
   SemanticMapControlsSendMapLayersToMap,
   SemanticMapControlsSendMaskIndexToMap,
+  SemanticMapControlsSendFeaturesLabelToMap,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -200,6 +201,7 @@ interface MapState {
   featureColor?: string;
   mapLayers?: Array<any>;
   maskIndex?: number;
+  featuresLabel: string;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -228,7 +230,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       overlayVisualization: 'normal',
       featureColor: 'rgba(180,100,20,0.2)',
       mapLayers: [new TileLayer({source: new OSM()})],
-      maskIndex: 1
+      maskIndex: 1,
+      featuresLabel: ""
     };
 
     this.initInteractions();
@@ -315,6 +318,23 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.setMaskIndex);
+
+
+      this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendFeaturesLabelToMap,
+        })
+      )
+      .onValue(this.setFeaturesLabel);
+  }
+
+  private setFeaturesLabel = (event: Event<any>) => {
+    this.setState({
+      featuresLabel: event.data
+    }, () => {
+      this.updateVectorLayersStyle();
+    })
   }
 
   private setMaskIndex = (event: Event<any>) => {
@@ -337,6 +357,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   }
 
+  private updateVectorLayersStyle(){
+    let vectorLayers = this.getVectorLayersFromMap();
+    vectorLayers.forEach((vectorLayer) => {  
+      vectorLayer
+      .getSource()
+      .getFeatures()
+      .forEach((feature) => {
+        feature.setStyle()
+      });
+    })
+  }
+
   private getVectorLayersFromMap(){
     const allLayers = this.map.getLayers().getArray();
     let vectorLayers = []
@@ -357,8 +389,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.setState({
       featureColor: newColor
     }, () => {
-      console.log("Features color updated:")
-      console.log(this.state.featureColor);
+      this.updateVectorLayersStyle();
     })
   };
 
@@ -776,11 +807,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       source,
       style: (feature: Feature) => {
         //TODO: aggiorniamo getfearturestyle prendendo anche il testo
+        //TODO: dinamicamente (con valori a scelta, non necessariamente l'id. legge l'impostazione dai controls)
         const geometry = feature.getGeometry();
-        const label = feature.get('name').value;
+        let label = "";
+        if(this.state.featuresLabel){
+          label = feature.get(this.state.featuresLabel).value;
+        }
         const color = feature.get('color');
         let featureStyle = getFeatureStyle(geometry, this.state.featureColor);
-        //TODO: dinamicamente (con valori a scelta, non necessariamente l'id. legge l'impostazione dai controls)
         if(label){
           featureStyle.getText().setText(label);
         }
@@ -1015,7 +1049,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.setState({
       mapLayers : newMapLayers
     }, () => {
-
+      //TODO: IMPROVE SYNCING (CHANGING LAYERS WHILE FEATURES ARE LOADING GENERATES INCOSTINTENT STATES)
+      this.triggerSendLayers();
     });
   };
 
@@ -1225,7 +1260,7 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
     }),
     fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
     stroke: new Stroke({
-      color: color || 'rgba(202, 105, 36, .3)',
+      color: color || 'rgba(202, 255, 36, .3)',
       width: 1.25,
     }),
   });

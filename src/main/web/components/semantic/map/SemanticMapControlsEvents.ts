@@ -10,6 +10,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMap.SendMapLayers': any[];
   'SemanticMapControls.SendMapLayersToMap': any[];
   'SemanticMapControls.SendMaskIndexToMap': number;
+  'SemanticMapControls.SendFeaturesLabelToMap': string;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -23,3 +24,4 @@ export const SemanticMapToggleEditingMode = event('SemanticMap.toggleEditingMode
 export const SemanticMapSendMapLayers = event('SemanticMap.SendMapLayers');
 export const SemanticMapControlsSendMapLayersToMap = event('SemanticMapControls.SendMapLayersToMap');
 export const SemanticMapControlsSendMaskIndexToMap = event('SemanticMapControls.SendMaskIndexToMap');
+export const SemanticMapControlsSendFeaturesLabelToMap = event('SemanticMapControls.SendFeaturesLabelToMap');

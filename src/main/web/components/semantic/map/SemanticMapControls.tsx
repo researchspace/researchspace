@@ -12,9 +12,9 @@ import {
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
   SemanticMapControlsFeatureColor,
-  SemanticMapSendTilesLayers,
+  SemanticMapSendMapLayers,
   SemanticMapControlsSyncFromMap,
-  SemanticMapControlsSendTilesLayersToMap,
+  SemanticMapControlsSendMapLayersToMap,
   SemanticMapControlsSendMaskIndexToMap,
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
@@ -43,7 +43,7 @@ const sliderbar: CSSProperties = {
 };
 
 interface Filters {
-  vector: boolean;
+  feature: boolean;
   overlay: boolean;
   basemap: boolean;
 }
@@ -55,7 +55,7 @@ interface State {
   loading?: boolean;
   color: any;
   setColor: any;
-  tilesLayers: Array<any>;
+  mapLayers: Array<any>;
   maskIndex: number;
   filters: Filters;
 }
@@ -76,10 +76,10 @@ export class SemanticMapControls extends Component<Props, State> {
       overlayVisualization: 'normal',
       color: 'rgba(200,50,50,0.5)',
       setColor: 'rgba(200,50,50,0.5)',
-      tilesLayers: [],
+      mapLayers: [],
       maskIndex: -1,
       filters: {
-        vector: false,
+        feature: true,
         overlay: true,
         basemap: true
       }
@@ -88,10 +88,10 @@ export class SemanticMapControls extends Component<Props, State> {
     this.cancelation
       .map(
         listen({
-          eventType: SemanticMapSendTilesLayers,
+          eventType: SemanticMapSendMapLayers,
         })
       )
-      .onValue(this.initializeTilesLayers);
+      .onValue(this.initializeMapLayers);
 
     this.onDragEnd = this.onDragEnd.bind(this);
   }
@@ -112,14 +112,11 @@ export class SemanticMapControls extends Component<Props, State> {
       this.setMaskIndex(-1)
     }
 
-    console.log('result');
-    console.log(result);
-
-    const tilesLayers = this.reorder(this.state.tilesLayers, result.source.index, result.destination.index);
+    const mapLayers = this.reorder(this.state.mapLayers, result.source.index, result.destination.index);
 
     this.setState(
       {
-        tilesLayers,
+        mapLayers,
       },
       () => {
         this.triggerSendLayersToMap();
@@ -150,6 +147,14 @@ export class SemanticMapControls extends Component<Props, State> {
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
   }
 
+  public componentWillMount() {
+
+  }
+
+  public componentWillUnmount() {
+
+  }
+
   public render() {
     return D.div(
       null,
@@ -157,19 +162,19 @@ export class SemanticMapControls extends Component<Props, State> {
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
-              <h3 className={'mapLayersTitle'}>Tiles Layers</h3>
+              <h3 className={'mapLayersTitle'}>Map Layers</h3>
               <div className='mapLayersFiltersContainer'>
                 <label>Filter:</label>
                 <input
                   className='mapLayersFilters'
                     name={'overlay-visualization'}
                     type={'checkbox'}
-                    checked={this.state.filters.vector}
+                    checked={this.state.filters.feature}
                     onChange={(event) => {
-                      this.setState({filters: {...this.state.filters, vector: event.target.checked}}, () => {});
+                      this.setState({filters: {...this.state.filters, feature: event.target.checked}}, () => {});
                     }}
                   ></input>
-                  <label className='fitersLabel'>Vector</label>
+                  <label className='fitersLabel'>Features</label>
                   <input
                   className='mapLayersFilters'
                     name={'overlay-visualization'}
@@ -179,7 +184,7 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({filters: {...this.state.filters, overlay: event.target.checked}}, () => {});
                     }}
                   ></input>
-                  <label className='fitersLabel'>Overlay</label>
+                  <label className='fitersLabel'>Overlays</label>
                   <input
                   className='mapLayersFilters'
                     name={'overlay-visualization'}
@@ -189,16 +194,16 @@ export class SemanticMapControls extends Component<Props, State> {
                       this.setState({filters: {...this.state.filters, basemap: event.target.checked}}, () => {});
                     }}
                   ></input>
-                  <label className='fitersLabel'>Basemap</label>
+                  <label className='fitersLabel'>Basemaps</label>
               </div>
-              <hr id={'tilesLayerSeparator'} style={{ margin: '0px !important' }}></hr>
-              {this.state.tilesLayers.map((tilesLayer, index) => (
-               (this.state.filters[tilesLayer.get('level')])
+              <hr id={'mapLayerSeparator'} style={{ margin: '0px !important' }}></hr>
+              {this.state.mapLayers.map((mapLayer, index) => (
+               (this.state.filters[mapLayer.get('level')])
                && 
-                <Draggable key={tilesLayer.get('identifier')} draggableId={tilesLayer.get('identifier')} index={index}>
+                <Draggable key={mapLayer.get('identifier')} draggableId={mapLayer.get('identifier')} index={index}>
                   {(provided, snapshot) => (
                     <div
-                      className={`draggableLayer ${(tilesLayer.get('visible')) ? "visible" : "nonvisible"}`}
+                      className={`draggableLayer ${(mapLayer.get('visible')) ? "visible" : "nonvisible"}`}
                       ref={provided.innerRef}
                       style={{ border: '1px solid red !important;', borderRadius: '2px' }}
                       {...provided.draggableProps}
@@ -210,49 +215,49 @@ export class SemanticMapControls extends Component<Props, State> {
                         <i className="fa fa-bars"></i>
                         </div>
                       <div style={{verticalAlign: 'middle', display: 'inline-block'}}>
-                        <img src={tilesLayer.get('thumbnail')} className={'layerThumbnail'}></img>
+                        <img src={mapLayer.get('thumbnail')} className={'layerThumbnail'}></img>
                       </div>
                       <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
                         <div style={{ width: 'auto' }}>
-                          <label className={'layerName'}>{tilesLayer.get('name')}</label>
+                          <label className={'layerName'}>{mapLayer.get('name')}</label>
                           <div>
-                            <label className={'layerLevelLabel'}>{tilesLayer.get('level')}</label>
+                            <label className={'layerLevelLabel'}>{mapLayer.get('level')}</label>
                             <input
                               type={'range'}
                               className={'opacitySlider'}
                               min={0}
                               max={1}
                               step={0.01}
-                              value={tilesLayer.get('opacity')}
+                              value={mapLayer.get('opacity')}
                               onChange={(event) => {
                                 const input = event.target as HTMLInputElement;
                                 const opacity = parseFloat(input.value);
                                 const capped = isNaN(opacity) ? 0.5 : Math.min(1, Math.max(0, opacity));
-                                this.setTilesLayerProperty(tilesLayer.get('identifier'), 'opacity', capped);
+                                this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
                               }}
                             ></input>
                           </div>
                         </div>
                       </div>
                       <div className='togglesColumnRight' style={{display: 'inline-block'}}>
-                      {tilesLayer.get('visible') && (
+                      {mapLayer.get('visible') && (
                           <i
                             className="fa fa-check-square-o layerCheck"
                             style={{ cursor: 'pointer' }}
                             onClick={() => {
-                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', false);
+                              this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', false);
                               if(this.state.maskIndex == index){
                                 this.setMaskIndex(-1);
                               }
                             }}
                           ></i>
                         )}
-                        {!tilesLayer.get('visible') && (
+                        {!mapLayer.get('visible') && (
                           <i
                             className="fa fa-square-o layerCheck"
                             style={{ cursor: 'pointer' }}
                             onClick={() => {
-                              this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', true);
+                              this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
                             }}
                           ></i>
                         )}
@@ -261,8 +266,8 @@ export class SemanticMapControls extends Component<Props, State> {
                         {this.state.maskIndex !== index &&
                         <i className="fa fa-eye-slash layerMaskIcon" style={{cursor: "pointer", color: 'rgba(230,230,230,1)'}}
                         onClick={()=>{
-                          if(!tilesLayer.get('visible')){
-                            this.setTilesLayerProperty(tilesLayer.get('identifier'), 'visible', true);
+                          if(!mapLayer.get('visible')){
+                            this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
                           }
                           this.setMaskIndex(index)
                           }}></i>}
@@ -281,7 +286,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                 );
                               }}
                             ></input>
-                          <label style={{ margin: '2px;' }}>
+                          <label style={{ margin: '2px' }}>
                             Normal
                           </label>
                             <input
@@ -296,7 +301,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                 );
                               }}
                             ></input>
-                          <label style={{ margin: '2px;' }}>
+                          <label style={{ margin: '2px' }}>
                             Spyglass</label>
                             <input
                             className='visualizationModeRadio'
@@ -310,7 +315,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                 );
                               }}
                             ></input>
-                          <label style={{ margin: '2px;' }}>
+                          <label style={{ margin: '2px' }}>
                             Swipe
                           </label>
                           {this.state.overlayVisualization === 'swipe' && (
@@ -364,37 +369,27 @@ export class SemanticMapControls extends Component<Props, State> {
     return result;
   };
 
-  private getTilesLayerFromIdentifier(identifier) {
-    let result;
-    this.state.tilesLayers.forEach(function (tilesLayer) {
-      if (tilesLayer.get('identifier') === identifier) {
-        result = tilesLayer;
-      }
-    });
-    return result;
-  }
-
-  private initializeTilesLayers = (event: any) => {
+  private initializeMapLayers = (event: any) => {
     this.setState(
       {
-        tilesLayers: event.data,
+        mapLayers: event.data,
       },
       () => {
-        console.log('Control state tileslayers (initialization)');
-        console.log(this.state.tilesLayers);
+        console.log("Controls '" + this.props.id + "': layers synced from map '" + this.props.targetMapId+"'");
+        console.log(event.data);
       }
     );
   };
 
-  private setTilesLayerProperty(identifier, propertyName, propertyValue) {
-    let tilesLayersClone = this.state.tilesLayers;
-    tilesLayersClone.forEach(function (tilesLayer) {
-      if (tilesLayer.get('identifier') === identifier) {
-        tilesLayer.set(propertyName, propertyValue);
+  private setMapLayerProperty(identifier, propertyName, propertyValue) {
+    let mapLayersClone = this.state.mapLayers;
+    mapLayersClone.forEach(function (mapLayer) {
+      if (mapLayer.get('identifier') === identifier) {
+        mapLayer.set(propertyName, propertyValue);
       }
     });
 
-    this.setState({ tilesLayers: tilesLayersClone }, () => {
+    this.setState({ mapLayers: mapLayersClone }, () => {
       this.triggerSendLayersToMap();
     });
   }
@@ -434,10 +429,10 @@ export class SemanticMapControls extends Component<Props, State> {
 
   private triggerSendLayersToMap() {
     trigger({
-      eventType: SemanticMapControlsSendTilesLayersToMap,
+      eventType: SemanticMapControlsSendMapLayersToMap,
       source: this.props.id,
       targets: [this.props.targetMapId],
-      data: this.state.tilesLayers,
+      data: this.state.mapLayers,
     });
   }
 

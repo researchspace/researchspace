@@ -94,6 +94,8 @@ import {
   SemanticMapControlsSendMapLayersToMap,
   SemanticMapControlsSendMaskIndexToMap,
   SemanticMapControlsSendFeaturesLabelToMap,
+  SemanticMapControlsSendFeaturesColorTaxonomyToMap,
+  SemanticMapControlsSendGroupColorsAssociationsToMap,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -101,6 +103,7 @@ import CircleStyle from 'ol/style/Circle';
 import { options } from 'superagent';
 import GeometryType from 'ol/geom/GeometryType';
 import { __values } from 'tslib';
+import { group } from 'platform/components/3-rd-party/ontodia/Toolbar.scss';
 
 enum Source {
   OSM = 'osm',
@@ -185,7 +188,7 @@ export interface SemanticMapConfig {
   providerOptions?: ProviderOptions;
 
   /**
-   * Optional array of strings containing IDs of SemanticMapControls component(s) the map should sync with. 
+   * Optional array of strings containing IDs of SemanticMapControls component(s) the map should sync with.
    */
   targetControls?: Array<string>;
 }
@@ -202,6 +205,8 @@ interface MapState {
   mapLayers?: Array<any>;
   maskIndex?: number;
   featuresLabel: string;
+  featuresColorTaxonomy: string;
+  groupColorAssociations: {};
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -219,6 +224,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private draw: Interaction;
   private snap: Interaction;
+  private defaultFeaturesColor = "rgba(200,80,20,0.3)";
 
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
@@ -229,9 +235,11 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       errorMessage: maybe.Nothing<string>(),
       overlayVisualization: 'normal',
       featureColor: 'rgba(180,100,20,0.2)',
-      mapLayers: [new TileLayer({source: new OSM()})],
+      mapLayers: [new TileLayer({ source: new OSM() })],
       maskIndex: 1,
-      featuresLabel: ""
+      featuresLabel: '',
+      featuresColorTaxonomy: '',
+      groupColorAssociations: {}
     };
 
     this.initInteractions();
@@ -295,15 +303,15 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       )
       .onValue(this.handleEditingMode);
 
-      this.cancelation
+    this.cancelation
       .map(
         listen({
           eventType: SemanticMapControlsSyncFromMap,
         })
       )
-      .onValue(this.syncControls);
+      .onValue(this.syncControlsFromEvent);
 
-      this.cancelation
+    this.cancelation
       .map(
         listen({
           eventType: SemanticMapControlsSendMapLayersToMap,
@@ -311,7 +319,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       )
       .onValue(this.updateMapLayersFromControls);
 
-      this.cancelation
+    this.cancelation
       .map(
         listen({
           eventType: SemanticMapControlsSendMaskIndexToMap,
@@ -319,64 +327,119 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       )
       .onValue(this.setMaskIndex);
 
-
-      this.cancelation
+    this.cancelation
       .map(
         listen({
           eventType: SemanticMapControlsSendFeaturesLabelToMap,
         })
       )
       .onValue(this.setFeaturesLabel);
+
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendFeaturesColorTaxonomyToMap,
+        })
+      )
+      .onValue(this.setFeaturesColorTaxonomy);
+      
+    this.cancelation
+      .map(
+        listen({
+          eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
+        })
+      )
+      .onValue(this.updateFeatureColorsByGroups);
+      
   }
 
-  private setFeaturesLabel = (event: Event<any>) => {
+  private updateFeatureColorsByGroups = (event: Event<any>) => {
+    console.log("I MAP HAVE RECEIVED THE COLORS")
+    const groupColorsAssociationsNew = event.data;
+    console.log(groupColorsAssociationsNew);
     this.setState({
-      featuresLabel: event.data
-    }, () => {
-      this.updateVectorLayersStyle();
+      groupColorAssociations: groupColorsAssociationsNew
+    }, ()=>{
+      console.log("I ALSO SET GROUP COLORS ASSOCIATIONS");
+      console.log(this.state.groupColorAssociations);
+      let vectorLayers = this.getVectorLayersFromMap();
+      vectorLayers.forEach((vectorLayer) => {
+      vectorLayer
+        .getSource()
+        .getFeatures()
+        .forEach((feature) => {
+          //console.log("Color: " + this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].hex + " for " + feature.get(this.state.featuresColorTaxonomy).value);
+          feature.setStyle();
+        })})
     })
   }
 
+
+  private setFeaturesColorTaxonomy = (event: Event<any>) => {
+    this.setState(
+      {
+        featuresColorTaxonomy: event.data,
+      },
+      () => {
+        console.log('Map received color taxonomy:');
+        console.log(this.state.featuresColorTaxonomy);
+      }
+    );
+  };
+
+  private setFeaturesLabel = (event: Event<any>) => {
+    this.setState(
+      {
+        featuresLabel: event.data,
+      },
+      () => {
+        this.updateVectorLayersStyle();
+      }
+    );
+  };
   private setMaskIndex = (event: Event<any>) => {
-    this.setState({maskIndex: event.data});
-  }
+    this.setState({ maskIndex: event.data });
+  };
 
   private updateMapLayersFromControls = (event: Event<any>) => {
     const incomingLayers = event.data;
-    console.log("Syncing Layers from Controls: ")
-    console.log(incomingLayers)
+    console.log('Syncing Layers from Controls: ');
+    console.log(incomingLayers);
 
-    this.setState({
-      mapLayers : incomingLayers
-    }, () => {
-      incomingLayers.forEach((value, index) => {
-        let layer = this.getMapLayerByIdentifier(value.get("identifier"))
-        //Calculate Z-index reverting the order (i.e. top layer has highest z index)
-        layer.setZIndex(Math.abs(index - event.data.length));
-      });
+    this.setState(
+      {
+        mapLayers: incomingLayers,
+      },
+      () => {
+        incomingLayers.forEach((value, index) => {
+          let layer = this.getMapLayerByIdentifier(value.get('identifier'));
+          //Calculate Z-index reverting the order (i.e. top layer has highest z index)
+          layer.setZIndex(Math.abs(index - event.data.length));
+        });
+      }
+    );
+  };
+
+  private updateVectorLayersStyle() {
+    let vectorLayers = this.getVectorLayersFromMap();
+    vectorLayers.forEach((vectorLayer) => {
+      vectorLayer
+        .getSource()
+        .getFeatures()
+        .forEach((feature) => {
+          feature.setStyle();
+        });
     });
   }
 
-  private updateVectorLayersStyle(){
-    let vectorLayers = this.getVectorLayersFromMap();
-    vectorLayers.forEach((vectorLayer) => {  
-      vectorLayer
-      .getSource()
-      .getFeatures()
-      .forEach((feature) => {
-        feature.setStyle()
-      });
-    })
-  }
-
-  private getVectorLayersFromMap(){
+  private getVectorLayersFromMap() {
     const allLayers = this.map.getLayers().getArray();
-    let vectorLayers = []
+    let vectorLayers = [];
     allLayers.forEach((layer) => {
-      if (layer instanceof VectorLayer){
+      if (layer instanceof VectorLayer) {
         vectorLayers.push(layer);
       }
-    })
+    });
     return vectorLayers;
   }
 
@@ -386,19 +449,27 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
    */
   private setFeatureColor = (event: Event<any>) => {
     const newColor: string = event.data;
-    this.setState({
-      featureColor: newColor
-    }, () => {
-      this.updateVectorLayersStyle();
-    })
+    this.setState(
+      {
+        featureColor: newColor,
+      },
+      () => {
+        this.updateVectorLayersStyle();
+      }
+    );
   };
 
   //TODO: improve sync (sometimes it's not ready)
-  private syncControls = (event: Event<any>) => {
-    this.triggerSendLayers()
+  private syncControlsFromEvent = (event: Event<any>) => {
+    this.syncControls();
+  };
+
+  private syncControls(){
+    this.triggerSendLayers();
+    console.log("SYNCCONTROLS ACTIVE!")
   }
 
-  private triggerSendLayers(){
+  private triggerSendLayers() {
     //TODOZZ: move them away!
     let vectorLayers = this.getVectorLayersFromMap();
     vectorLayers.forEach((vectorLayer) => {
@@ -407,14 +478,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       vectorLayer.set('name', vectorLayer.ol_uid);
     });
 
-    console.log("Sending map layers to Control...")
-    console.log(this.state.mapLayers)
+    console.log('Sending map layers to Control...');
+    console.log(this.state.mapLayers);
     trigger({
       eventType: SemanticMapSendMapLayers,
       //TODOZZ: sistemare layers in unicum
       data: [..._.values(this.state.mapLayers)],
       source: this.props.id,
-      targets: this.props.targetControls
+      targets: this.props.targetControls,
     });
   }
 
@@ -501,8 +572,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   public componentDidMount() {
     this.createMap();
     this.setState({
-      mapLayers: this.setTilesLayersFromTemplate()
-    })
+      mapLayers: this.setTilesLayersFromTemplate(),
+    });
   }
 
   public componentWillReceiveProps(props: SemanticMapProps, context: ComponentContext) {
@@ -614,7 +685,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private resetVisualization(layerIndex: number) {
-    const overlayLayer = this.state.mapLayers[layerIndex]
+    const overlayLayer = this.state.mapLayers[layerIndex];
     overlayLayer.un('prerender', this.spyglassFunction);
     overlayLayer.un('prerender', this.swipeFunction);
     overlayLayer.un('postrender', function (event) {
@@ -623,14 +694,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
   }
 
-  private resetAllVisualizations(){
-    this.state.mapLayers.forEach((tilesLayer, index)=>{
+  private resetAllVisualizations() {
+    this.state.mapLayers.forEach((tilesLayer, index) => {
       this.resetVisualization(index);
-    })
+    });
   }
 
   private setOverlayVisualization(overlayVisualization: string, layerIndex: number) {
-    const overlayLayer = this.state.mapLayers[this.state.maskIndex]
+    const overlayLayer = this.state.mapLayers[this.state.maskIndex];
 
     this.setState(
       {
@@ -801,21 +872,27 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         zIndex: 1, // we want to always have markers on top of polygons
       });
     }
-    console.log("Features Created: ");
+    console.log('Features Created: ');
     console.log(features);
     return new VectorLayer({
       source,
       style: (feature: Feature) => {
-        //TODO: aggiorniamo getfearturestyle prendendo anche il testo
-        //TODO: dinamicamente (con valori a scelta, non necessariamente l'id. legge l'impostazione dai controls)
         const geometry = feature.getGeometry();
-        let label = "";
-        if(this.state.featuresLabel){
+        let label = '';
+        if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
           label = feature.get(this.state.featuresLabel).value;
         }
-        const color = feature.get('color');
-        let featureStyle = getFeatureStyle(geometry, this.state.featureColor);
-        if(label){
+        let color = this.defaultFeaturesColor;
+        //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
+        if(this.state.featuresColorTaxonomy
+          && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
+          && this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] !== this.defaultFeaturesColor){
+            let color_rgba = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].rgb;
+            let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+            color = rgba_string
+        }
+        let featureStyle = getFeatureStyle(geometry, color);
+        if (label) {
           featureStyle.getText().setText(label);
         }
         return featureStyle;
@@ -842,7 +919,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return tilesLayers;
   }
 
-  //TODO: unify these two functions 
+  //TODO: unify these two functions
   private getMapLayerFromIdentifier(identifier) {
     let result;
     this.state.mapLayers.forEach(function (tilesLayer) {
@@ -853,13 +930,16 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return result;
   }
 
-  private getMapLayerByIdentifier(identifier){
+  private getMapLayerByIdentifier(identifier) {
     let result;
-    this.map.getLayers().getArray().forEach(function (mapLayer) {
-      if (mapLayer.get('identifier') === identifier) {
-        result = mapLayer;
-      }
-    });
+    this.map
+      .getLayers()
+      .getArray()
+      .forEach(function (mapLayer) {
+        if (mapLayer.get('identifier') === identifier) {
+          result = mapLayer;
+        }
+      });
     return result;
   }
 
@@ -878,96 +958,97 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         } else if (tileslayer.get('level') === 'overlay') {
           overlayLayers.push(tileslayer);
         }
-        tileslayer.set("visible", false);
+        tileslayer.set('visible', false);
       });
 
-      basemapLayers[0].set("visible", true);
+      basemapLayers[0].set('visible', true);
 
       let mapLayersClone = this.state.mapLayers;
-      let newMapLayers = [..._.values(mapLayersClone), ..._.values(layers)]
+      let newMapLayers = [..._.values(mapLayersClone), ..._.values(layers)];
 
-      this.setState({
-        mapLayers : newMapLayers
-      }, () => {
-        const map = new Map({
-          controls: controlDefaults({
-            attributionOptions: {
-              collapsible: false,
-            },
-          }).extend([new AnnotateControl()]),
-          //interactions: interaction.defaults({ mouseWheelZoom: false }),
-          interactions: interactionDefaults({}),
-          //TODO: check REMOVED EMPTY VECTOR: what was it for?
-          //layers: [..._.values(this.state.mapLayers), ..._.values(layers), this.vector],
-  
-          
-  
-          layers: [..._.values(this.state.mapLayers)],
-          target: node,
-          view: new View({
-            center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
-            zoom: 3,
-            extent: props.mapOptions.extent,
-          }),
-        });
-  
-        this.layers = layers;
-        this.map = map;
-  
-        //TODO: Do this only If there's a semantic-map-controls component
-        //this.triggerSendLayers();
-  
-        /* Layer Spy functionality */
-  
-        //TODO: try to remove this 
-        node.addEventListener('mousemove', (event) => {
-          this.mousePosition = map.getEventPixel(event);
-          this.map.render();
-        });
-  
-        node.addEventListener('mouseout', () => {
-          this.mousePosition = null;
-          this.map.render();
-        });
-  
-        // asynch execute query and add markers
-        this.addMarkersFromQuery(this.props, this.context);
-  
-        // TODO: popup only on features
-        //this.initializeMarkerPopup(map);
-        map.getView().fit(props.mapOptions.extent);
-  
-        window.addEventListener('resize', () => {
-          map.updateSize();
-        });
-  
-        this.map.on('moveend', () => {
-          // Pass the bounding box as data in the event called when bounding box is changed
-          const coordinates = this.map.getView().calculateExtent(this.map.getSize());
-          this.BoundingBoxChanged({
-            southWestLat: {
-              value: String(coordinates[0]),
-            },
-            southWestLon: {
-              value: String(coordinates[1]),
-            },
-            northEstLat: {
-              value: String(coordinates[2]),
-            },
-            northEstLon: {
-              value: String(coordinates[3]),
-            },
+      this.setState(
+        {
+          mapLayers: newMapLayers,
+        },
+        () => {
+          const map = new Map({
+            controls: controlDefaults({
+              attributionOptions: {
+                collapsible: false,
+              },
+            }).extend([new AnnotateControl()]),
+            //interactions: interaction.defaults({ mouseWheelZoom: false }),
+            interactions: interactionDefaults({}),
+            //TODO: check REMOVED EMPTY VECTOR: what was it for?
+            //layers: [..._.values(this.state.mapLayers), ..._.values(layers), this.vector],
+
+            layers: [..._.values(this.state.mapLayers)],
+            target: node,
+            view: new View({
+              center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
+              zoom: 3,
+              extent: props.mapOptions.extent,
+            }),
           });
-        });
-  
-        const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
-        const view = this.map.getView();
-  
-        view.setCenter(this.props.fixCenter);
-        view.setZoom(zoom);
-  
-        this.map.addInteraction(this.modify);
-      });
+
+          this.layers = layers;
+          this.map = map;
+
+          //TODO: Do this only If there's a semantic-map-controls component
+          //this.triggerSendLayers();
+
+          /* Layer Spy functionality */
+
+          //TODO: try to remove this
+          node.addEventListener('mousemove', (event) => {
+            this.mousePosition = map.getEventPixel(event);
+            this.map.render();
+          });
+
+          node.addEventListener('mouseout', () => {
+            this.mousePosition = null;
+            this.map.render();
+          });
+
+          // asynch execute query and add markers
+          this.addMarkersFromQuery(this.props, this.context);
+
+          // TODO: popup only on features
+          //this.initializeMarkerPopup(map);
+          map.getView().fit(props.mapOptions.extent);
+
+          window.addEventListener('resize', () => {
+            map.updateSize();
+          });
+
+          this.map.on('moveend', () => {
+            // Pass the bounding box as data in the event called when bounding box is changed
+            const coordinates = this.map.getView().calculateExtent(this.map.getSize());
+            this.BoundingBoxChanged({
+              southWestLat: {
+                value: String(coordinates[0]),
+              },
+              southWestLon: {
+                value: String(coordinates[1]),
+              },
+              northEstLat: {
+                value: String(coordinates[2]),
+              },
+              northEstLon: {
+                value: String(coordinates[3]),
+              },
+            });
+          });
+
+          const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
+          const view = this.map.getView();
+
+          view.setCenter(this.props.fixCenter);
+          view.setZoom(zoom);
+
+          this.map.addInteraction(this.modify);
+        }
+      );
     }, 1000);
   }
 
@@ -1043,35 +1124,38 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       }
     });
 
-    let newMapLayers = [..._.values(mapLayersClone)]
-    console.log("Map Layers Updated:");
-    console.log(newMapLayers)
-    this.setState({
-      mapLayers : newMapLayers
-    }, () => {
-      //TODO: IMPROVE SYNCING (CHANGING LAYERS WHILE FEATURES ARE LOADING GENERATES INCOSTINTENT STATES)
-      this.triggerSendLayers();
-    });
+    let newMapLayers = [..._.values(mapLayersClone)];
+    console.log('Map Layers Updated:');
+    console.log(newMapLayers);
+    this.setState(
+      {
+        mapLayers: newMapLayers,
+      },
+      () => {
+        //TODO: IMPROVE SYNCING (CHANGING LAYERS WHILE FEATURES ARE LOADING GENERATES INCOSTINTENT STATES)
+        this.syncControls();
+      }
+    );
   };
 
-  private getAllVectorLayers(){
+  private getAllVectorLayers() {
     const allLayers = this.state.mapLayers;
-    let vectorLayers = []
+    let vectorLayers = [];
     allLayers.forEach((layer) => {
-      if (layer instanceof VectorLayer){
+      if (layer instanceof VectorLayer) {
         vectorLayers.push(layer);
       }
-    })
+    });
     return vectorLayers;
   }
 
-  private getVectorLayerByType(type: string){
+  private getVectorLayerByType(type: string) {
     let foundVectorLayer;
     _.forEach(this.getAllVectorLayers(), (vectorLayer) => {
-      if(vectorLayer.get('type') === type){
+      if (vectorLayer.get('type') === type) {
         foundVectorLayer = vectorLayer;
       }
-    })
+    });
     return foundVectorLayer;
   }
   /*
@@ -1255,7 +1339,7 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
       }),
       stroke: new Stroke({
         color: '#fff',
-        width: 3,
+        width: 2,
       }),
     }),
     fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),

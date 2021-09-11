@@ -466,7 +466,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private syncControls(){
     this.triggerSendLayers();
-    console.log("SYNCCONTROLS ACTIVE!")
   }
 
   private triggerSendLayers() {
@@ -887,9 +886,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         if(this.state.featuresColorTaxonomy
           && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
           && this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] !== this.defaultFeaturesColor){
-            let color_rgba = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].rgb;
-            let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-            color = rgba_string
+            if(typeof this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] === "string"){
+               color = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value];
+            } else {
+              let color_rgba = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].rgb;
+              let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+              color = rgba_string
+            }
         }
         let featureStyle = getFeatureStyle(geometry, color);
         if (label) {

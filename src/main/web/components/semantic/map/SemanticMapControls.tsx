@@ -2,8 +2,6 @@ import { createElement } from 'react';
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { Component, ComponentContext } from 'platform/api/components';
-import XYZ from 'ol/source/XYZ';
-import OSM from 'ol/source/OSM';
 import SemanticMap, { SemanticMapConfig, SemanticMapProps } from 'platform/components/semantic/map/SemanticMap';
 import { trigger, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
@@ -22,25 +20,17 @@ import {
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
-import { string } from 'prop-types';
-import { check } from 'basil.js';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { identityTransform } from 'ol/proj';
-import { source } from 'react-dom-factories';
-import { List } from 'immutable';
-import { resetMemoryHistory } from 'platform/api/navigation/PersistentHistory';
 
-import { GithubPicker, SwatchesPicker } from 'react-color';
+import { CirclePicker, GithubPicker, SwatchesPicker } from 'react-color';
 import reactCSS from 'reactcss';
 import _ = require('lodash');
-import { rgb } from 'd3-color';
-import { highlightSubstring } from 'platform/ontodia/src/ontodia/internalApi';
 import VectorLayer from 'ol/layer/Vector';
-
-const DragDropContextComponent = React.createFactory(DragDropContext);
-const DroppableComponent = React.createFactory(Droppable);
-const DraggableComponent = React.createFactory(Draggable);
+import { group } from 'platform/components/3-rd-party/ontodia/Toolbar.scss';
+import { d3adaptor } from 'webcola';
+import ColorPicker from 'react-pick-color';
+import { rgb } from 'd3-color';
 
 const b = block('overlay-comparison');
 
@@ -82,8 +72,7 @@ export class SemanticMapControls extends Component<Props, State> {
   private cancelation = new Cancellation();
   private featuresTaxonomies = [];
   private featuresColorTaxonomies = [];
-  private defaultFeaturesColor = "rgba(200,80,20,0.3)";
-
+  private defaultFeaturesColor = "";
   constructor(props: any, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -103,12 +92,13 @@ export class SemanticMapControls extends Component<Props, State> {
       featuresColorTaxonomy: '',
       featuresColorGroups: [],
       displayColorPicker: {},
-      groupColorAssociations: {}
+      groupColorAssociations: {},
     };
 
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
     this.handleColorTaxonomyChange = this.handleColorTaxonomyChange.bind(this);
     this.handleColorPickerChange = this.handleColorPickerChange.bind(this);
+    this.handleGenerateColorPalette = this.handleGenerateColorPalette.bind(this);
 
     this.cancelation
       .map(
@@ -213,8 +203,9 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   public componentDidMount() {
+  console.log("DEFAULT FEATURES COLOR OBJECT")
+  console.log(this.defaultFeaturesColor);
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
-    this.triggerSendFeaturesColorTaxonomy();
   }
 
   public componentWillMount() {
@@ -263,9 +254,9 @@ export class SemanticMapControls extends Component<Props, State> {
         <label style={{ marginRight: '10px' }}>Label by: </label>
         <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
            {' '}
-            <option value={"none"}>None</option>
+            <option key={"none"} value={"none"}>None</option>
           {this.featuresTaxonomies.map((taxonomy) => (
-            <option value={taxonomy}>{taxonomy}</option>
+            <option key={taxonomy} value={taxonomy}>{taxonomy}</option>
           ))}
         </select>
         <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr>
@@ -273,9 +264,10 @@ export class SemanticMapControls extends Component<Props, State> {
         <label style={{ marginRight: '10px' }}>Color by: </label>
         <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
           {this.featuresColorTaxonomies.map((taxonomy) => (
-            <option value={taxonomy}>{taxonomy}</option>
+            <option  key={taxonomy} value={taxonomy}>{taxonomy}</option>
           ))}
         </select>
+        <i className={'fa fa-random'} style={{display: "inline-block", cursor: "pointer", marginLeft:"10px"}} onClick={this.handleGenerateColorPalette}></i>
         <div>
         {this.state.featuresColorGroups.map(
                 (group, index) => (
@@ -490,7 +482,7 @@ export class SemanticMapControls extends Component<Props, State> {
         </Droppable>
       </DragDropContext>,
       D.br()
-    );
+      );
   }
 
   private reorder = (list, startIndex, endIndex) => {
@@ -509,8 +501,13 @@ export class SemanticMapControls extends Component<Props, State> {
       () => {
         console.log("Controls '" + this.props.id + "': layers synced from map '" + this.props.targetMapId + "'");
         console.log(event.data);
-        if(this.getAllVectorLayers.length){
-          this.setFeaturesColorTaxonomy()
+        if(this.getAllVectorLayers().length){
+          console.log(this.getAllVectorLayers().length)
+          this.setState({
+            featuresColorTaxonomy: this.featuresColorTaxonomies[0]
+          }, () => {
+            this.setFeaturesColorTaxonomy();
+          })
         }
       }
     );
@@ -545,9 +542,83 @@ export class SemanticMapControls extends Component<Props, State> {
     return groups;
   }
 
+  /* accepts parameters
+ * h  Object = {h:x, s:y, v:z}
+ * OR 
+ * h, s, v
+*/
+  private HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (arguments.length === 1) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    let rgb = {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
+    return "rgba("+rgb.r+","+rgb.g+","+rgb.b+",0.4)";
+  }
 
 
+  private handleGenerateColorPalette(){
+    this.generateColorPalette();
+  }
 
+  private generateColorPalette(){
+    let colorNumbers = this.state.featuresColorGroups.length;
+    let palette = []
+    console.log("GENRATING COLOR PALETTE")
+    console.log(colorNumbers)
+    let hueFraction = 360 / colorNumbers;
+    let seed = Math.floor(Math.random() * (360));
+    console.log("SEED");
+    console.log(seed);
+    for (let i = 0; i < colorNumbers; i++) {
+      let generatedAngle = ((hueFraction*i) + seed)
+      if(generatedAngle > 360){
+        generatedAngle -= 360
+      }
+      console.log("GENERTED ANGLE")
+      console.log(generatedAngle)
+      palette.push({
+        "h": (generatedAngle.toString()),
+        "s": "0.8",
+        "l": "0.7",
+        "a": "0.4"
+      });
+    }
+    let groupColorAssociationsClone = this.state.groupColorAssociations;
+    let _i = 0;
+    for(let association in groupColorAssociationsClone){
+      //groupColorAssociationsClone[association] = "hsv(" + palette[_i].h + ","+palette[_i].s+","+palette[_i].v+",0.4)";
+      let rgbstring = "hsl("+palette[_i].h+",70%, 40%, 0.5)";
+      groupColorAssociationsClone[association] = rgbstring;
+      _i++;
+    }
+    console.log("NEW ASSOCIATIONS BEFORE STATE:")
+    console.log(groupColorAssociationsClone)
+    this.setState({
+      groupColorAssociations: groupColorAssociationsClone
+    }, ()=> {
+      console.log("Ecco il nuovo associationsssssssss");
+      console.log(this.state.groupColorAssociations);
+      this.syncMapFromControls()
+    })
+  }
 
   private getAllVectorLayers() {
     const allLayers = this.state.mapLayers;
@@ -560,13 +631,21 @@ export class SemanticMapControls extends Component<Props, State> {
     return vectorLayers;
   }
 
+  private syncMapFromControls(){
+    this.triggerSendFeaturesColorTaxonomy();
+    this.triggerSendFeaturesColorsAssociationsToMap();
+  }
 
   private getRgbaString(group){
     let rgba_string = "";
     if(group in this.state.groupColorAssociations && this.state.groupColorAssociations[group] && this.state.groupColorAssociations[group] !== this.defaultFeaturesColor){
-      let color = this.state.groupColorAssociations[group];
-      let color_rgba = color.rgb;
-      rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.4' + ')';
+      if(typeof this.state.groupColorAssociations[group] === "string"){
+        return this.state.groupColorAssociations[group];
+      } else {
+        let color = this.state.groupColorAssociations[group];
+        let color_rgba = color.rgb;
+        rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.4' + ')';
+      }
     } else {
       rgba_string = this.defaultFeaturesColor;
     }
@@ -584,10 +663,7 @@ export class SemanticMapControls extends Component<Props, State> {
       groupColorAssociations: colorGroups,
       displayColorPicker: displayColorPickerNew
     }, () => {
-      console.log("groupColorAssociations")
-      console.log(this.state.groupColorAssociations);
-      console.log("initializedDisplayColorPicker");
-      console.log(this.state.displayColorPicker);
+      //console.log("GroupColorassociatoins intialized.")
     })
   }
 
@@ -605,6 +681,8 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private triggerSendFeaturesColorsAssociationsToMap(){
+    console.log("SENDING FEATURES COLORS ASSOCIATIONS TO MAP");
+    console.log(this.state.groupColorAssociations);
     trigger({
       eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
       source: this.props.id,
@@ -624,17 +702,6 @@ export class SemanticMapControls extends Component<Props, State> {
       targets: [this.props.targetMapId],
     });
   };
-
-  /*
-  private triggerOpacity = (opacity: number) => {
-    trigger({
-      eventType: SemanticMapControlsOverlayOpacity,
-      source: this.props.id,
-      data: opacity,
-      targets: [this.props.targetMapId]
-    });
-  };
-  */
 
   private triggerSwipe = (swipeValue: number) => {
     trigger({

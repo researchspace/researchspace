@@ -900,13 +900,15 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         this.addMarkersFromQuery(this.props, this.context);
   
         // TODO: popup only on features
-        //this.initializeMarkerPopup(map);
+        this.initializeMarkerPopup(map);
         map.getView().fit(props.mapOptions.extent);
   
         window.addEventListener('resize', () => {
           map.updateSize();
         });
   
+        /*
+
         this.map.on('moveend', () => {
           // Pass the bounding box as data in the event called when bounding box is changed
           const coordinates = this.map.getView().calculateExtent(this.map.getSize());
@@ -925,6 +927,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             },
           });
         });
+        */
   
         const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
         const view = this.map.getView();
@@ -980,6 +983,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       );
 
       if (this.props.id) {
+
+
         trigger({
           eventType: BuiltInEvents.ComponentLoading,
           source: this.props.id,
@@ -990,7 +995,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private updateLayers = (geometries: { [type: string]: Feature[] }) => {
-    let mapLayersClone = this.state.mapLayers;
+    const mapLayersClone = this.state.mapLayers;
 
     _.forEach(geometries, (features, type) => {
       let layer = this.getVectorLayerByType(type);
@@ -1009,7 +1014,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       }
     });
 
-    let newMapLayers = [..._.values(mapLayersClone)]
+    const newMapLayers = [..._.values(mapLayersClone)]
     console.log("Map Layers Updated:");
     console.log(newMapLayers)
     this.setState({
@@ -1145,9 +1150,9 @@ export class AnnotateControl extends Control {
     Control.call(this, {
       element: element,
     });
-    button.addEventListener('click', () => this.click());
+    //button.addEventListener('click', () => this.click());
   }
-
+  /*
   click() {
     this.editingMode = !this.editingMode;
 
@@ -1157,6 +1162,7 @@ export class AnnotateControl extends Control {
       data: this.editingMode,
     });
   }
+  */
 }
 
 function getMarkerStyle() {

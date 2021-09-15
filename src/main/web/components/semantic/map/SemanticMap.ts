@@ -878,8 +878,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       style: (feature: Feature) => {
         const geometry = feature.getGeometry();
         let label = '';
-        if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
-          label = feature.get(this.state.featuresLabel).value;
+        if(feature.get(this.state.featuresLabel) !== undefined){
+          if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
+            label = feature.get(this.state.featuresLabel).value;
+          }
         }
         let color = this.defaultFeaturesColor;
         //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)

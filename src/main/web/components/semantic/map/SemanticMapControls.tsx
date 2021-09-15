@@ -60,6 +60,7 @@ interface State {
   featuresColorGroups: string[];
   groupColorAssociations: {};
   displayColorPicker: {};
+  year: number;
 }
 
 interface Props {
@@ -94,6 +95,7 @@ export class SemanticMapControls extends Component<Props, State> {
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
+      year: 1500,
     };
 
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -206,6 +208,7 @@ export class SemanticMapControls extends Component<Props, State> {
 
   public componentDidMount() {
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
+    console.log("MONTO e setto color taxonomy")
     this.setFeaturesColorTaxonomy();
     this.initializeGroupColorAssociations(this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, this.getAllVectorLayers(this.state.mapLayers)));
   }
@@ -308,25 +311,47 @@ export class SemanticMapControls extends Component<Props, State> {
 
     return D.div(
       null,
+      <div           style={{display: 'none'}}
+      className={'featuresOptionsContainer'}>
+        <input
+          type={'range'}
+          className={'timelineSlider'}
+          min={1500}
+          max={1800}
+          step={1}
+          value={this.state.year}
+          onChange={(event) => {
+            const input = event.target as HTMLInputElement;
+            const value = parseInt(input.value);
+            console.log(value);
+            this.setState({
+              year: value
+
+            })
+          }}
+        ></input>
+        <div style={{position: 'fixed', bottom:'10', left:'10', fontSize:'20pt'}}>{this.state.year}</div>
+      </div>,
+      D.br(),
       <div className={'featuresOptionsContainer'}>
         <h3 className={'mapOptionsSectionTitle'}>Features Options</h3>
-        <label style={{ marginRight: '10px' }}>Label by: </label>
+        <label style={{ marginRight: '10px', userSelect: 'none'}}>Label by: </label>
         <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
           <option key={'none'} value={'none'}>
             None
           </option>
           {this.featuresTaxonomies.map((taxonomy) => (
             <option key={taxonomy} value={taxonomy}>
-              {taxonomy}
+              {this.capitalizeFirstLetter(taxonomy)}
             </option>
           ))}
         </select>
         <div className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></div>
-        <label style={{ marginRight: '10px' }}>Color by: </label>
+        <label style={{ marginRight: '10px', userSelect: 'none'}}>Color by: </label>
         <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
           {this.featuresColorTaxonomies.map((taxonomy) => (
             <option key={taxonomy} value={taxonomy}>
-              {taxonomy}
+              {this.capitalizeFirstLetter(taxonomy)}
             </option>
           ))}
         </select>
@@ -341,7 +366,7 @@ export class SemanticMapControls extends Component<Props, State> {
         >
           <i
             className={'fa fa-refresh'}
-            style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px' }}
+            style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none'}}
             onClick={this.handleGenerateColorPalette}
           ></i>
         </OverlayTrigger>
@@ -356,7 +381,7 @@ export class SemanticMapControls extends Component<Props, State> {
         >
         <i
           className={'fa fa-paint-brush'}
-          style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px' }}
+          style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none'}}
           onClick={this.handleRestartColorPalette}
         ></i>
         </OverlayTrigger>
@@ -456,7 +481,7 @@ export class SemanticMapControls extends Component<Props, State> {
                             <img src={mapLayer.get('thumbnail')} className={'layerThumbnail'}></img>
                           </div>
                           <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
-                            <div style={{ width: 'auto' }}>
+                            <div style={{ width: '200px' }}>
                               <label className={'layerName'}>{mapLayer.get('name')}</label>
                               <div>
                                 <label className={'layerLevelLabel'}>{mapLayer.get('level')}</label>
@@ -623,6 +648,7 @@ export class SemanticMapControls extends Component<Props, State> {
         featuresColorGroups: groups,
       },
       () => {
+        console.log("Settate oclortaxonomi")
         this.initializeGroupColorAssociations(this.state.featuresColorGroups);
       }
     );
@@ -750,6 +776,10 @@ export class SemanticMapControls extends Component<Props, State> {
       }
     });
     return vectorLayers;
+  }
+
+  private capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
   private getRgbaString(group) {

@@ -24,7 +24,7 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.4.v20201014'
+    id 'org.gretty' version '3.0.6'
 
     // To run webpack-dev-server in the background
     id 'com.github.psxpaul.execfork' version '0.1.13'
@@ -75,8 +75,9 @@ war {
 farms {
     farm 'researchspace', {
         // setup blazegraph for local development
-        webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6-researchspace',
-            contextPath: '/blazegraph'
+        webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6',
+            contextPath: '/blazegraph',
+            overlays: [':blazegraph-vocabularies']
 
         // setup digilib for local development
         webapp 'digilib:digilib-webapp:2.9-20200421.092548-16',
@@ -253,19 +254,13 @@ tasks.testKarma.dependsOn npmInstall
 test.dependsOn testKarma
 
 repositories {
-    // Use jcenter for resolving dependencies.
-    jcenter()
+    mavenCentral()
 
     // for blazegraph war
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 
     // for digilib war
     maven { url 'https://robcast.github.io/digilib-repo/maven-repo' }
-
-    // temp, until new version of smiley-http-proxy-servlet is released
-    maven {
-        url 'https://dl.bintray.com/researchspace/public'
-    }
 
     maven {
         url 'file:/home/artem/work/sources/github/gretty/build/privateRepo'
@@ -400,7 +395,7 @@ dependencies {
         //pf4j plugin framework
         "ro.fortsoft.pf4j:pf4j:1.3.0",
 
-        "org.mitre.dsmiley.httpproxy:smiley-http-proxy-servlet:1.12.1",
+        "org.mitre.dsmiley.httpproxy:smiley-http-proxy-servlet:1.12",
 
         //JsonPath
         "com.jayway.jsonpath:json-path:2.4.0",

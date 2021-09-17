@@ -28,6 +28,12 @@ export interface ProviderConfig {
    * A String corresponding to the URL Pattern of the API from which tilesets are loaded. Private Tokens SHOULD NOT be put here, consider using RS proxy system instead.  
    */
   url: String;
+
+  author: String;
+
+  location: String;
+
+  year: String;
 }
 
 export type ProviderProps = ProviderConfig & Props<any>;

@@ -332,9 +332,10 @@ export class SemanticMapControls extends Component<Props, State> {
         ></input>
         <div style={{position: 'fixed', bottom:'10', left:'10', fontSize:'20pt'}}>{this.state.year}</div>
       </div>,
-      D.br(),
       <div className={'featuresOptionsContainer'}>
-        <h3 className={'mapOptionsSectionTitle'}>Features Options</h3>
+        <h3 className={'mapOptionsSectionTitle'}>Options</h3>
+        <div className={'mapLayersFiltersContainer'}>
+          <div>
         <label style={{ marginRight: '10px', userSelect: 'none'}}>Label by: </label>
         <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
           <option key={'none'} value={'none'}>
@@ -346,7 +347,9 @@ export class SemanticMapControls extends Component<Props, State> {
             </option>
           ))}
         </select>
+        </div>
         <div className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></div>
+        <div>
         <label style={{ marginRight: '10px', userSelect: 'none'}}>Color by: </label>
         <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
           {this.featuresColorTaxonomies.map((taxonomy) => (
@@ -420,6 +423,8 @@ export class SemanticMapControls extends Component<Props, State> {
               )}
             </div>
           ))}
+          </div>
+        </div>
         </div>
       </div>,
       D.br(),
@@ -482,9 +487,11 @@ export class SemanticMapControls extends Component<Props, State> {
                           </div>
                           <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
                             <div style={{ width: '200px' }}>
-                              <label className={'layerName'}>{mapLayer.get('name')}</label>
+                              <label className={'layerTitle'}>{mapLayer.get('author')}</label>
                               <div>
-                                <label className={'layerLevelLabel'}>{mapLayer.get('level')}</label>
+                                <label className={'layerLabel'}><em>{mapLayer.get('name')}</em></label>
+                                <label className={'layerLabel'}>{mapLayer.get('year')}</label>
+                                {/*<label className={'layerLabel'}>{mapLayer.get('location')}</label>*/}
                                 <input
                                   type={'range'}
                                   className={'opacitySlider'}

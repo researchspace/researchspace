@@ -354,14 +354,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private updateFeatureColorsByGroups = (event: Event<any>) => {
-    console.log("I MAP HAVE RECEIVED THE COLORS")
     const groupColorsAssociationsNew = event.data;
-    console.log(groupColorsAssociationsNew);
     this.setState({
       groupColorAssociations: groupColorsAssociationsNew
     }, ()=>{
-      console.log("I ALSO SET GROUP COLORS ASSOCIATIONS");
-      console.log(this.state.groupColorAssociations);
       let vectorLayers = this.getVectorLayersFromMap();
       vectorLayers.forEach((vectorLayer) => {
       vectorLayer
@@ -381,8 +377,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         featuresColorTaxonomy: event.data,
       },
       () => {
-        console.log('Map received color taxonomy:');
-        console.log(this.state.featuresColorTaxonomy);
       }
     );
   };
@@ -403,8 +397,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private updateMapLayersFromControls = (event: Event<any>) => {
     const incomingLayers = event.data;
-    console.log('Syncing Layers from Controls: ');
-    console.log(incomingLayers);
 
     this.setState(
       {
@@ -477,8 +469,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       vectorLayer.set('name', vectorLayer.ol_uid);
     });
 
-    console.log('Sending map layers to Control...');
-    console.log(this.state.mapLayers);
     trigger({
       eventType: SemanticMapSendMapLayers,
       //TODOZZ: sistemare layers in unicum
@@ -871,8 +861,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         zIndex: 1, // we want to always have markers on top of polygons
       });
     }
-    console.log('Features Created: ');
-    console.log(features);
     return new VectorLayer({
       source,
       style: (feature: Feature) => {
@@ -1026,6 +1014,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             map.updateSize();
           });
 
+          /*
           this.map.on('moveend', () => {
             // Pass the bounding box as data in the event called when bounding box is changed
             const coordinates = this.map.getView().calculateExtent(this.map.getSize());
@@ -1044,6 +1033,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
               },
             });
           });
+          */
 
           const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
           const view = this.map.getView();
@@ -1132,8 +1122,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
 
     let newMapLayers = [..._.values(mapLayersClone)];
-    console.log('Map Layers Updated:');
-    console.log(newMapLayers);
     this.setState(
       {
         mapLayers: newMapLayers,

@@ -27,11 +27,8 @@ import { CirclePicker, GithubPicker, SwatchesPicker } from 'react-color';
 import reactCSS from 'reactcss';
 import _ = require('lodash');
 import VectorLayer from 'ol/layer/Vector';
-import { group } from 'platform/components/3-rd-party/ontodia/Toolbar.scss';
-import { d3adaptor } from 'webcola';
-import ColorPicker from 'react-pick-color';
-import { rgb } from 'd3-color';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { SearchAndFilters } from 'platform/components/sets/views/SearchAndFilters';
 
 const b = block('overlay-comparison');
 
@@ -68,6 +65,10 @@ interface Props {
   id: string;
   featuresTaxonomies: string;
   featuresColorTaxonomies: string;
+  featuresOptionsEnabled: boolean;
+  //TODO: optionals
+  filtersInitialization: Filters;
+  showFilters: boolean;
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -75,6 +76,7 @@ export class SemanticMapControls extends Component<Props, State> {
   private featuresTaxonomies = [];
   private featuresColorTaxonomies = [];
   private defaultFeaturesColor = 'rgba(200,50,50,0.5)';
+  //TODO: optionals
   constructor(props: any, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -85,11 +87,7 @@ export class SemanticMapControls extends Component<Props, State> {
       setColor: 'rgba(200,50,50,0.5)',
       mapLayers: [],
       maskIndex: -1,
-      filters: {
-        feature: true,
-        overlay: true,
-        basemap: true,
-      },
+      filters: this.props.filtersInitialization,
       selectedFeaturesLabel: '',
       featuresColorTaxonomy: this.featuresColorTaxonomies[0],
       featuresColorGroups: [],
@@ -216,6 +214,7 @@ export class SemanticMapControls extends Component<Props, State> {
   public componentWillMount() {
     this.featuresTaxonomies = this.props.featuresTaxonomies.split(',');
     this.featuresColorTaxonomies = this.props.featuresColorTaxonomies.split(',');
+    console.log(this.props.filtersInitialization);
   }
 
   public componentWillUnmount() {}
@@ -332,9 +331,10 @@ export class SemanticMapControls extends Component<Props, State> {
         ></input>
         <div style={{position: 'fixed', bottom:'10', left:'10', fontSize:'20pt'}}>{this.state.year}</div>
       </div>,
-      D.br(),
-      <div className={'featuresOptionsContainer'}>
-        <h3 className={'mapOptionsSectionTitle'}>Features Options</h3>
+      (this.props.featuresOptionsEnabled && <div className={'featuresOptionsContainer'}>
+        <h3 className={'mapOptionsSectionTitle'}>Options</h3>
+        <div className={'mapLayersFiltersContainer'}>
+          <div>
         <label style={{ marginRight: '10px', userSelect: 'none'}}>Label by: </label>
         <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
           <option key={'none'} value={'none'}>
@@ -346,7 +346,9 @@ export class SemanticMapControls extends Component<Props, State> {
             </option>
           ))}
         </select>
+        </div>
         <div className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></div>
+        <div>
         <label style={{ marginRight: '10px', userSelect: 'none'}}>Color by: </label>
         <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
           {this.featuresColorTaxonomies.map((taxonomy) => (
@@ -420,15 +422,17 @@ export class SemanticMapControls extends Component<Props, State> {
               )}
             </div>
           ))}
+          </div>
         </div>
-      </div>,
+        </div>
+      </div>),
       D.br(),
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
               <h3 className={'mapLayersTitle'}>Map Layers</h3>
-              <div className="mapLayersFiltersContainer">
+              {this.props.showFilters && <div className="mapLayersFiltersContainer">
                 <label>Filter:</label>
                 <input
                   className="mapLayersFilters"
@@ -460,7 +464,7 @@ export class SemanticMapControls extends Component<Props, State> {
                   }}
                 ></input>
                 <label className="fitersLabel">Basemaps</label>
-              </div>
+              </div>}
               <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr>
               {this.state.mapLayers.map(
                 (mapLayer, index) =>
@@ -482,9 +486,11 @@ export class SemanticMapControls extends Component<Props, State> {
                           </div>
                           <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
                             <div style={{ width: '200px' }}>
-                              <label className={'layerName'}>{mapLayer.get('name')}</label>
+                              <label className={'layerTitle'}>{mapLayer.get('author')}</label>
                               <div>
-                                <label className={'layerLevelLabel'}>{mapLayer.get('level')}</label>
+                                <label className={'layerLabel'}><em>{mapLayer.get('name')}</em></label>
+                                <label className={'layerLabel'}>{mapLayer.get('year')}</label>
+                                {/*<label className={'layerLabel'}>{mapLayer.get('location')}</label>*/}
                                 <input
                                   type={'range'}
                                   className={'opacitySlider'}

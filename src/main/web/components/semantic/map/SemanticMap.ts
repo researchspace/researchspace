@@ -466,7 +466,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     vectorLayers.forEach((vectorLayer) => {
       vectorLayer.set('level', 'feature');
       vectorLayer.set('identifier', vectorLayer.ol_uid);
-      vectorLayer.set('name', vectorLayer.ol_uid);
+      vectorLayer.set('name', "Buildings");
+      vectorLayer.set('year', "");
+      vectorLayer.set('location', "");
+      vectorLayer.set('author', "");
     });
 
     trigger({
@@ -904,6 +907,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         });
         tileslayer.set('level', child.props.level);
         tileslayer.set('name', child.props.name);
+        tileslayer.set('year', child.props.year);
+        tileslayer.set('location', child.props.location);
+        tileslayer.set('author', child.props.author);
         tileslayer.set('identifier', child.props.identifier);
         tileslayer.set('thumbnail', child.props.thumbnail);
         tilesLayers.push(tileslayer);

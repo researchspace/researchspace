@@ -1065,20 +1065,21 @@ export class Ontodia extends Component<OntodiaProps, State> {
       .then(() => {
         const { query, iri, linkSettings, iris } = this.props;
         const { diagramIri } = this.state;
+        let linkOptions = linkSettings as ReadonlyArray<LinkTypeOptions>;
 
         if (diagramIri) {
           return this.setLayoutByDiagram(diagramIri);
         } else if (query) {
-          return this.setLayoutBySparqlQuery(query);
+          return this.setLayoutBySparqlQuery(query, linkOptions);
         } else if (iri) {
-          return this.setLayoutByIri(iri);
+          return this.setLayoutByIri(iri, linkOptions);
         } else if (iris) {
-          return this.setLayoutByIris(iris);
+          return this.setLayoutByIris(iris, linkOptions);
         } else {
           return this.importModelLayout({
             preloadedElements: {},
             diagram: makeSerializedDiagram({
-              linkTypeOptions: linkSettings as ReadonlyArray<LinkTypeOptions>,
+              linkTypeOptions: linkOptions,
             }),
           });
         }
@@ -1091,11 +1092,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
   /**
    * Sets diagram layout by sparql query
    */
-  private setLayoutBySparqlQuery(query: string): Promise<void> {
+  private setLayoutBySparqlQuery(query: string, linkSettings: ReadonlyArray<LinkTypeOptions>): Promise<void> {
     const { onNewDigaramInitialized: performDiagramLayout } = DEFAULT_FACTORY;
     const repositories = this.getRepositories();
     const loadingLayout = getRdfExtGraphBySparqlQuery(query, repositories).then((graph) => {
-      const layoutProvider = new GraphBuilder(this.dataProvider);
+      const layoutProvider = new GraphBuilder(this.dataProvider, linkSettings);
       return layoutProvider.getGraphFromRDFGraph(graph as Triple[]);
     });
     this.workspace.showWaitIndicatorWhile(loadingLayout);
@@ -1162,8 +1163,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
       });
   }
 
-  private setLayoutByIri(iri: string): Promise<void> {
-    return this.setLayoutByIris([iri]).then(() => {
+  private setLayoutByIri(iri: string, linkSettings: ReadonlyArray<LinkTypeOptions>): Promise<void> {
+    return this.setLayoutByIris([iri], linkSettings).then(() => {
       const editor = this.workspace.getEditor();
       const element = editor.model.elements.find(({ data }) => data.id === iri);
       if (element) {
@@ -1176,9 +1177,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
       }
     });
   }
-  private setLayoutByIris(iris: string[]): Promise<void> {
+  private setLayoutByIris(iris: string[], linkSettings: ReadonlyArray<LinkTypeOptions>): Promise<void> {
     const { onNewDigaramInitialized: performDiagramLayout } = DEFAULT_FACTORY;
-    const layoutProvider = new GraphBuilder(this.dataProvider);
+    const layoutProvider = new GraphBuilder(this.dataProvider, linkSettings);
     const buildingGraph = layoutProvider.createGraph({
       elementIds: iris.map((iri) => iri as ElementIri),
       links: [],

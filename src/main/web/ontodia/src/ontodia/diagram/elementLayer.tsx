@@ -460,8 +460,13 @@ class OverlayedElement extends React.Component<OverlayedElementProps, OverlayedE
     this.observeTypes();
     this.requestResize();
 
+
+    // we support resizing only for typed nodes, because we need to make sure that we can select right template
     if (this.minSize === undefined &&
-        !this.props.state.element.temporary) {
+        !this.props.state.element.temporary &&
+        // we don't want to init size until element types are loaded
+        this.props.state.element.data.types.length > 0
+    ) {
       this.initSize();
     }
   }

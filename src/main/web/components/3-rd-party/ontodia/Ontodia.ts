@@ -26,7 +26,7 @@ import {
   createElement,
 } from 'react';
 import * as Kefir from 'kefir';
-import { debounce } from 'lodash';
+import { debounce, includes } from 'lodash';
 import {
   Workspace,
   WorkspaceProps,
@@ -38,6 +38,7 @@ import {
   Triple,
   Dictionary,
   ElementModel,
+  Element,
   SparqlQueryMethod,
   TemplateProps,
   ElementTemplate,
@@ -65,6 +66,8 @@ import {
   LinkModel,
   LinkTypeIri,
   CancellationToken,
+  getContentFittingBox,
+  Highlighter,
 } from 'ontodia';
 import * as URI from 'urijs';
 
@@ -807,13 +810,50 @@ export class Ontodia extends Component<OntodiaProps, State> {
       )
       .observe({
         value: ({ data }) => {
-          const element = model.elements.find(({ iri }) => iri === data.iri);
-          if (element) {
-            const { x, y } = element.position;
-            const { width, height } = element.size;
-            this.workspace.zoomToFitRect({ x, y, width, height });
-            editor.setSelection([element]);
+          if (data.iri) {
+            const element = model.elements.find(({ iri }) => iri === data.iri);
+            if (element) {
+              const box = getContentFittingBox([element], []);
+              this.workspace.zoomToFitRect(box);
+              editor.setSelection([element]);
+            }
+          } else if (data.iris) {
+            const elements = model.elements.filter(({ iri }) => includes(data.iris, iri));
+            if (elements.length !== 0) {
+              const box = getContentFittingBox(elements, []);
+              this.workspace.zoomToFitRect(box);
+              editor.setSelection(elements);
+            }
           }
+        },
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: OntodiaEvents.HighlightElements,
+          target: id,
+        })
+      )
+      .observe({
+        value: ({ data }) => {
+          const view = this.workspace.getDiagram();
+          let highlighter: Highlighter;
+          if (data.iris) {
+            const highlightedElements = new Set<string>();
+            data.iris.forEach((iri) => highlightedElements.add(iri));
+            highlighter = (item) => {
+              if (item instanceof Element) {
+                return highlightedElements.has(item.iri);
+              }
+              if (item instanceof Link) {
+                const { sourceId, targetId } = item.data;
+                return highlightedElements.has(sourceId) || highlightedElements.has(targetId);
+              }
+              throw Error('Unknown item type');
+            };
+          }
+          view.setHighlighter(highlighter);
         },
       });
   }

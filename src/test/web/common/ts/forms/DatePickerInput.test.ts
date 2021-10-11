@@ -41,9 +41,9 @@ import {
 } from 'platform/components/forms/inputs/DatePickerInput';
 
 import { shallow, mount } from 'platform-tests/configuredEnzyme';
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
-mockLanguagePreferences();
+mockConfig();
 
 const DATE_TIME = 'http://www.w3.org/2001/XMLSchema-datatypes#dateTime';
 const DATE = 'http://www.w3.org/2001/XMLSchema-datatypes#date';

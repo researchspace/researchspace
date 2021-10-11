@@ -120,6 +120,15 @@
             </semantic-link-container>
         </div>
 
+        <div class="rs-default-card__hover-icon">
+          <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                        urlqueryparam-view='entity-editor' urlqueryparam-resource='{{iri}}'>
+              <button type="button" class="rs-button" title="Author Resource in Form">
+                  <i class="rs-icon rs-icon-form_edit"></i>
+              </button>
+          </semantic-link-container>
+        </div>
+
         [[!-- is shown only when we are not in the frames view, hidden by css --]]
         <div class="rs-default-card__hover-icon rs-default-card-action__km-navigate">
             <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
@@ -144,41 +153,68 @@
         {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
           [[!-- don't show resource media icon for image regions --]]
         {{else}}
-        <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
-            <mp-overlay-dialog-trigger>
-                <div class="rs-default-card__hover-icon">
-                    <button type="button" class="rs-button" title="Explore Media">
-                      <i class="rs-icon rs-icon-media"></i>
-                    </button>
-                </div>
-            </mp-overlay-dialog-trigger>
-            <mp-overlay-dialog-content>
-              <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='{{iri}}'>
-              </mp-page-loader>
-            </mp-overlay-dialog-content>
-        </mp-overlay-dialog>
+          <semantic-if query='
+                              ASK { 
+                                {
+                                  <{{iri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+                                  ?image a rso:EX_Digital_Image .
+                                } UNION {
+                                  <{{iri}}> a rso:EX_Digital_Image .
+                                }
+                              }
+                             '>
+            <template id='then'>
+              <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
+                  <mp-overlay-dialog-trigger>
+                      <div class="rs-default-card__hover-icon">
+                          <button type="button" class="rs-button" title="Explore Media">
+                            <i class="rs-icon rs-icon-media"></i>
+                          </button>
+                      </div>
+                  </mp-overlay-dialog-trigger>
+                  <mp-overlay-dialog-content>
+                    <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='{{iri}}'>
+                    </mp-page-loader>
+                  </mp-overlay-dialog-content>
+              </mp-overlay-dialog>
+            </template>
+          </semantic-if>
         {{/if}}
 
-        [[!-- is shown only when we are not in the frames view, hidden by css --]]
-        <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
-          <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                    urlqueryparam-view='iiif' urlqueryparam-resource='{{iri}}'>
-            <button type="button" class="rs-button" title="Explore Images in high resolution Viewer">
-              <i class="rs-icon rs-icon-image"></i>
-            </button>
-          </semantic-link-container>
-        </div>
+      <semantic-if query='
+                          ASK { 
+                            {
+                              <{{iri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+                              ?image a rso:EX_Digital_Image .
+                            } UNION {
+                              <{{iri}}> a rso:EX_Digital_Image .
+                            }
+                          }
+                         '>
+        <template id='then'>
+          [[!-- is shown only when we are not in the frames view, hidden by css --]]
+          <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
+            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                      urlqueryparam-view='iiif' urlqueryparam-resource='{{iri}}'>
+              <button type="button" class="rs-button" title="Explore Images in High Resolution Viewer">
+                <i class="rs-icon rs-icon-image"></i>
+              </button>
+            </semantic-link-container>
+          </div>
 
-        [[!-- is shown only when we are in the frames view, hidden by css --]]
-        <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
-          <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
-                            data='{"resourceIri": "{{iri}}", "viewId": "iiif"}'
-                            targets='["thinking-frames"]'>
-            <button type="button" class="rs-button" title="Explore Images in high resolution Viewer">
-              <i class="rs-icon rs-icon-image"></i>
-            </button>
-          </mp-event-trigger>
-        </div>
+          [[!-- is shown only when we are in the frames view, hidden by css --]]
+          <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
+            <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                              data='{"resourceIri": "{{iri}}", "viewId": "iiif"}'
+                              targets='["thinking-frames"]'>
+              <button type="button" class="rs-button" title="Explore Images in High Resolution Viewer">
+                <i class="rs-icon rs-icon-image"></i>
+              </button>
+            </mp-event-trigger>
+          </div>
+        </template>
+      </semantic-if>
+      
 
         [[#if (hasPermission "forms:ldp:*")]]
           {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing")}}
@@ -187,28 +223,38 @@
               [[!-- don't show annotation icon for image regions --]]
             {{else}}
 
-            [[!-- is shown only when we are not in the frames view, hidden by css --]]
-            <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
-              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                      urlqueryparam-view='objectImageObservation' 
-                                      urlqueryparam-resource='{{iri}}'>
-                <button type="button" class="rs-button" title="Annotate Images">
-                  <i class="rs-icon rs-icon-area_annotation"></i>
-                </button>
-              </semantic-link-container>
-            </div>
+            <semantic-if query='
+                                  ASK { 
+                                    <{{iri}}> a/rdfs:subClassOf* crm:E18_Physical_Thing . 
+                                    <{{iri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+                                    ?image a rso:EX_Digital_Image .
+                                  }
+                               '>
+              <template id='then'>
+                  [[!-- is shown only when we are not in the frames view, hidden by css --]]
+                  <div class="rs-default-card__hover-icon rs-default-card-action__image-navigate">
+                    <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                            urlqueryparam-view='objectImageObservation' 
+                                            urlqueryparam-resource='{{iri}}'>
+                      <button type="button" class="rs-button" title="Annotate Images">
+                        <i class="rs-icon rs-icon-area_annotation"></i>
+                      </button>
+                    </semantic-link-container>
+                  </div>
 
-            [[!-- is shown only when we are in the frames view, hidden by css --]]
-            <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
-              <mp-event-trigger id='set-action__km-add-frame' 
-                                type='Dashboard.AddFrame' 
-                                data='{"resourceIri": "{{iri}}", "viewId": "objectImageObservation", "objectIri": "{{iri}}"}' 
-                                targets='["thinking-frames"]'>
-                <button type="button" class="rs-button" title="Annotate Images">
-                  <i class="rs-icon rs-icon-area_annotation"></i>
-                </button>
-              </mp-event-trigger>
-            </div>
+                  [[!-- is shown only when we are in the frames view, hidden by css --]]
+                  <div class="rs-default-card__hover-icon rs-default-card-action__image-add-frame">
+                    <mp-event-trigger id='set-action__km-add-frame' 
+                                      type='Dashboard.AddFrame' 
+                                      data='{"resourceIri": "{{iri}}", "viewId": "objectImageObservation", "objectIri": "{{iri}}"}' 
+                                      targets='["thinking-frames"]'>
+                      <button type="button" class="rs-button" title="Annotate Images">
+                        <i class="rs-icon rs-icon-area_annotation"></i>
+                      </button>
+                    </mp-event-trigger>
+                  </div>
+                </template>
+              </semantic-if>
             {{/if}}
           {{/if}}
         [[/if]]

@@ -158,7 +158,11 @@ export class SemanticSearch extends Component<Props, State> {
   componentDidMount() {
     if (this.props.searchProfile) {
       this.cancellation.map(createSearchProfileStore(this.props, this.props.searchProfile)).onValue((store) => {
-        const savedState = this.getStateFromHistory(store, { reload: true });
+        const savedState =
+          this.props.initialState ?
+          this.decodeSavedSearch(store, this.props.initialState, { reload: true }) :
+          this.getStateFromHistory(store, { reload: true });
+
         this.setState((s: State) => ({
           selectedDatasets: savedState.map((state) => state.datasets).getOrElse(s.selectedDatasets),
           selectedAlignment: savedState.chain((state) => state.alignment).orElse(() => s.selectedAlignment),
@@ -345,23 +349,29 @@ export class SemanticSearch extends Component<Props, State> {
         : this.serializedState;
 
     if (typeof compressed === 'string') {
-      try {
-        const packedJson = decompressFromEncodedURIComponent(compressed);
-        const packed = JSON.parse(packedJson);
-        const serialized = unpackState(packed);
-        const raw = new Deserializer(profileStore).deserializeState(serialized);
-        return Maybe.Just(raw);
-      } catch (error) {
-        if (params.reload) {
-          addNotification({ level: 'warning', message: 'Error restoring search state' });
-        }
-        console.error('Error restoring search state: ', error);
-        return Maybe.Nothing<RawState>();
-      }
+      return this.decodeSavedSearch(profileStore, compressed, params);
     } else {
       return Maybe.Nothing<RawState>();
     }
   };
+
+  private decodeSavedSearch = (
+    profileStore: SearchProfileStore, compressed: string, params: { reload?: boolean } = {}
+  ) => {
+    try {
+      const packedJson = decompressFromEncodedURIComponent(compressed);
+      const packed = JSON.parse(packedJson);
+      const serialized = unpackState(packed);
+      const raw = new Deserializer(profileStore).deserializeState(serialized);
+      return Maybe.Just(raw);
+    } catch (error) {
+      if (params.reload) {
+        addNotification({ level: 'warning', message: 'Error restoring search state' });
+      }
+      console.error('Error restoring search state: ', error);
+      return Maybe.Nothing<RawState>();
+    }
+  }
 
   private saveStateIntoHistory = (state: RawState) => {
     const previousState = this.state.searchProfileStore

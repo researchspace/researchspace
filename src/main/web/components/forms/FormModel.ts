@@ -210,7 +210,7 @@ function loadInitialOrDefaultValues(
 ): Kefir.Property<FieldValue[]> {
   const isPlaceholderSubject = CompositeValue.isPlaceholder(subject);
   const shouldLoadInitials = !isPlaceholderSubject && def.selectPattern;
-  const shouldLoadDefaults = isPlaceholderSubject && mapping;
+  const shouldLoadDefaults = (isPlaceholderSubject && mapping) || mapping.element.props.forceDefaults;
 
   // TODO load default values for existing subject only if forceDefaults is true
   const loadingValues = shouldLoadInitials

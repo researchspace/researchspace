@@ -24,7 +24,6 @@ declare namespace DashboardScssNamespace {
     gridViewTitle1: string;
     gridViewTitle2: string;
     help: string;
-    helpText: string;
     icon: string;
     iconComponent: string;
     image: string;

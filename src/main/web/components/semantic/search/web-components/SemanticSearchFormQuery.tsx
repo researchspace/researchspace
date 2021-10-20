@@ -76,6 +76,11 @@ export interface SemanticFormBasedQueryConfig {
    * @default false
    */
   multi?: boolean;
+
+  /**
+   * Default query that should be executed when no input values are provided.
+   */
+  defaultQuery?: string;
 }
 
 export interface QueryTemplate {
@@ -84,6 +89,7 @@ export interface QueryTemplate {
    * have query variables as listed in the arguments maps.
    */
   queryString: string;
+
   /**
    * A map of query arguments.
    * The key of every map entry must be equal to the query variable in the SPARQL queryString.
@@ -181,6 +187,12 @@ class FormQueryInner extends React.Component<InnerProps, State> {
     const { context } = props;
     if (context.searchProfileStore.isJust && context.domain.isNothing) {
       setSearchDomain(props.domain, context);
+    }
+  }
+
+  componentDidMount() {
+    if (this.props.defaultQuery) {
+      return this.props.context.setBaseQuery(Just(SparqlUtil.parseQuery(this.props.defaultQuery)));
     }
   }
 

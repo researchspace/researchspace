@@ -77,6 +77,8 @@ export interface ColumnConfiguration {
    * Custom cell visualization <semantic-link
    *   uri='http://help.researchspace.org/resource/FrontendTemplating'>template</semantic-link>.
    * Template has access to all projection variables for a single result tuple.
+   *
+   * In addition to data from the sparql results cell template has access to current row index with "__semanticTableIndex" property and total table size with "__semanticTableSize" property.
    */
   cellTemplate?: string;
 }
@@ -333,7 +335,11 @@ export class Table extends Component<TableProps, State> {
     columns: ReadonlyArray<ExtendedColumnMetadata>
   ) {
     const additionalColumns = this.getAdditionalColumns(columns);
-    return data.results.bindings.map((binding) => {
+    return data.results.bindings.map((binding, i) => {
+      // so we know the number of results in the table as well as the index of the current row
+      binding['__semanticTableIndex'] = Rdf.literal(i.toString());
+      binding['__semanticTableSize'] = Rdf.literal(data.results.bindings.length.toString());
+
       for (const column of additionalColumns) {
         this.defineAdditionalColumnProperty(column, binding, undefined);
       }

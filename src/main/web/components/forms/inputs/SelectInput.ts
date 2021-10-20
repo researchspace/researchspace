@@ -172,7 +172,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         name: definition.id,
         placeholder: placeholder,
         onChange: this.onValueChanged,
-        disabled: !this.canEdit,
+        disabled: !this.canEdit(),
         options: options,
         value: selectedValue,
         optionRenderer: this.optionRenderer,

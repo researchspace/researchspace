@@ -34,7 +34,6 @@
 
 
 <div class='page_100vh thinking-frames-page'>
-  [[#> rsp:DetailsSidebar navHeight=70]]
   <rs-dashboard
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", "resource": "[[urlParam "resource"]]" [[#if (urlParam "entityTypeConfig")]] , "data": {"entityTypeConfig": "[[urlParam "entityTypeConfig"]]"} [[/if]]}'
@@ -263,8 +262,26 @@
     }
     ]'
     [[/if]]
+
+    left-panels='[{"label": "Clipboard", "template": "{{> clipboard}}"}]'
+    right-panels='[{"label": "Details", "template": "{{> details}}"}]'
     >
-    [[> rsp:Clipboard navHeight=70 id="clipboard" defaultViewMode="grid"]]
+    <template id='clipboard'>
+        [[> rsp:Clipboard id="clipboard" defaultViewMode="grid"]]
+    </template>
+    <template id='details'>
+          <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
+              <template id='template'>
+                  {{#if iri}}
+                  <mp-event-target-refresh id='details-fields-view'>
+                      <mp-page-loader iri='{{iri}}' context='{{iri}}' urlqueryparam-frame="true" urlqueryparam-details="true"></mp-page-loader>
+                  </mp-event-target-refresh>
+                  {{else}}
+                  <div></div>
+                  {{/if}}
+              </template>
+          </mp-event-target-template-render>
+    </template>
     <template id='resourceTemplate'>
       <div style='flex: 1 1 0px; overflow: auto;'>
         <mp-page-loader urlqueryparam-frame=true iri='{{iri}}' context='{{iri}}'>
@@ -461,5 +478,4 @@
     </template>
     
   </rs-dashboard>
-  [[/rsp:DetailsSidebar]]
 </div>

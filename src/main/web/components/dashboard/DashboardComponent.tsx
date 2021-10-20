@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import { uniqueId, isEmpty } from 'lodash';
-import { WorkspaceLayout, WorkspaceLayoutNode, WorkspaceLayoutType } from 'ontodia';
+import FlexLayout, { Model, Node, TabNode, Layout, TabSetNode, DockLocation } from 'flexlayout-react';
 
 import { setFrameNavigation } from 'platform/api/navigation';
 import { Component } from 'platform/api/components';
@@ -124,9 +124,13 @@ export interface Props {
      */
     data: {};
   };
+
+  leftPanels?: {template: string, label: string}[];
+  rightPanels?: {template: string, label: string}[];
 }
 
 export interface State {
+  layout?: Model;
   items?: ReadonlyArray<Item>;
   focus?: string;
 }
@@ -138,31 +142,68 @@ export class DashboardComponent extends Component<Props, State> {
   };
 
   private readonly cancellation = new Cancellation();
+  private layoutRef = React.createRef<Layout>();
 
   constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
       items: [],
+      layout: FlexLayout.Model.fromJson({
+        global: {},
+        borders: [
+          {
+            type: 'border',
+	          location: 'left',
+            children: []
+          },
+          
+          {
+	          "type": "border",
+	 	      "location": "right",
+			      "children": []
+		      }
+        ],
+	      layout:{
+		      "type": "row",
+		      "weight": 100,
+		      "children": [
+			      {
+				      "type": "tabset",
+              "id": "main",
+				      "weight": 100,
+				      "selected": 0,
+				      "children": [
+					      /* {
+						       "type": "tab",
+						       "name": "Frame",
+						       "component": "item",
+                 *   "config": emptyItem()
+ 				           } */
+				      ]
+			      }
+          ]
+        }
+      }),
     };
   }
 
   componentDidMount() {
     this.cancellation
-      .map(
-        listen({
-          eventType: AddFrameEvent,
-          target: this.props.id,
-        })
-      )
-      .observe({
-        value: ({ data }) => {
-          this.onAddNewItem({
-            ...emptyItem(),
-            ...(data as AddFrameEventData),
-            data: data,
-          });
-        },
-      });
+        .map(
+          listen({
+            eventType: AddFrameEvent,
+            target: this.props.id,
+          })
+        )
+        .observe({
+          value: ({ data }) => {
+            this.onAddNewItem({
+              ...emptyItem(),
+              ...(data as AddFrameEventData),
+              data,
+            });
+          },
+        });
 
     if (this.props.initialView) {
       const item = {
@@ -174,6 +215,33 @@ export class DashboardComponent extends Component<Props, State> {
       this.onAddNewItem(item);
     } else {
       this.onAddNewItem();
+    }
+
+
+    if (this.props.leftPanels) {
+      this.props.leftPanels.forEach((panelConfig, i) =>
+        this.layoutRef.current.addTabToTabSet(
+          this.state.layout
+              .getBorderSet()
+              .getBorders()
+              .find(b => b.getLocation() === DockLocation.LEFT)
+              .getId(),
+          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false }
+        )
+      );
+    }
+
+    if (this.props.rightPanels) {
+      this.props.rightPanels.forEach((panelConfig, i) =>
+        this.layoutRef.current.addTabToTabSet(
+          this.state.layout
+              .getBorderSet()
+              .getBorders()
+              .find(b => b.getLocation() === DockLocation.RIGHT)
+              .getId(),
+          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false }
+        )
+      );
     }
 
     // That is ugly hack for in frame navigation until we find a better way to do this
@@ -247,6 +315,9 @@ export class DashboardComponent extends Component<Props, State> {
           return { items: newItems };
         },
         () => {
+          this.layoutRef.current.addTabToActiveTabSet(
+            {'type': 'tab', 'name': item.id, 'component': "item", 'config': item.id }
+          );
           this.onSelectView({
             itemId: item.id,
             viewId: item.viewId,
@@ -256,20 +327,6 @@ export class DashboardComponent extends Component<Props, State> {
       );
     }
   };
-
-  onExpandItem(itemId: string) {
-    this.setState(
-      (prevState): State => {
-        const newItems = prevState.items.map((item) => {
-          if (item.id === itemId) {
-            return { ...item, isExpanded: !item.isExpanded };
-          }
-          return item;
-        });
-        return { items: newItems };
-      }
-    );
-  }
 
   private renderLabel(item: Item) {
     const { focus } = this.state;
@@ -384,35 +441,6 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private renderItems() {
-    const { items } = this.state;
-    if (!items.length) {
-      return <div className="text-center">No frames</div>;
-    }
-    return (
-      <div className={`list-group ${styles.itemsList}`}>
-        {items.map((item) => {
-          const body = this.renderBody(item);
-          return (
-            <div key={item.id} className="list-group-item" onClick={() => this.setState({ focus: item.id })}>
-              <div className={styles.itemLabelContainer}>
-                {body ? (
-                  <button
-                    className={`btn btn-xs ${styles.expandItemButton}`}
-                    onClick={() => this.onExpandItem(item.id)}
-                  >
-                    <i className={`fa ${item.isExpanded ? 'fa fa-caret-down' : 'fa-caret-right'}`} />
-                  </button>
-                ) : null}
-                {this.renderLabel(item)}
-              </div>
-              {body && item.isExpanded ? body : null}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
 
   private onSelectView({ itemId, viewId, resourceIri }: { itemId: string; viewId: string; resourceIri: string }) {
     const { linkedViews } = this.props;
@@ -516,64 +544,48 @@ export class DashboardComponent extends Component<Props, State> {
     );
   }
 
-  render() {
-    const { items } = this.state;
-    const children = React.Children.toArray(this.props.children);
-
-    const frames = items.map((item) => ({
-      id: item.id,
-      type: WorkspaceLayoutType.Component,
-      className: 'thinking-frames__frames',
-      content: this.renderView(item) as React.ReactElement<any>,
-      heading: this.renderLabel(item),
-      minSize: this.props.frameMinSize,
-    })) as any;
-    if (children.length > 1) {
-      frames.unshift({
-        id: 'heading',
-        type: WorkspaceLayoutType.Component,
-        className: 'thinking-frames__frames',
-        content: React.Children.only(children[1]) as any,
-        heading: null,
-        minSize: 60,
-        defaultSize: 60,
-      } as any);
+  private factory = (node: TabNode) => {
+    if (node.getComponent() === 'leftItem') {
+      return <TemplateItem template={{source: this.props.leftPanels[node.getConfig()].template}} />;
+    } else if (node.getComponent() === 'rightItem') {
+      return <TemplateItem template={{source: this.props.rightPanels[node.getConfig()].template}} />;
+    } else {
+      return this.renderView(this.state.items.find(item => item.id === node.getConfig()));
     }
+  }
 
-    const layout: WorkspaceLayoutNode = {
-      type: WorkspaceLayoutType.Row,
-      children: [
-        {
-          type: WorkspaceLayoutType.Column,
-          children: [
-            {
-              id: 'thought-board',
-              type: WorkspaceLayoutType.Component,
-              className: 'thinking-frames__clipboard-sidebar',
-              content: React.Children.only(children[0]) as any,
-              heading: 'Clipboard',
-            },
-            {
-              id: 'items',
-              type: WorkspaceLayoutType.Component,
-              defaultCollapsed: true,
-              className: 'thinking-frames__frames-sidebar',
-              content: (<div className={styles.itemsContainer}>{this.renderItems()}</div>) as React.ReactElement<any>,
-              heading: (
-                <div>Thinking Frames</div>
-              ),
-            },
-          ],
-          defaultSize: 300,
-        },
-        {
-          type: WorkspaceLayoutType.Column,
-          children: frames,
-          undocked: true,
-        },
-      ],
-    };
-    return <WorkspaceLayout layout={layout} _onResize={() => window.dispatchEvent(new Event('resize'))} />;
+  private titleFactory = (node: TabNode) => {
+    console.log(this.state.items)
+    console.log(node.getConfig())
+    const item = this.state.items.find(item => item.id === node.getConfig());
+    if (item) {
+      return this.renderLabel(item);
+    } else {
+      return "Frame " + node.getConfig();
+    }
+  }
+
+  private onRenderTabSet = (node: TabSetNode, renderValues: {buttons: React.ReactNode[]}) => {
+    renderValues.buttons.push(
+      <button
+        onMouseDown={event=> event.stopPropagation()}
+        onClick={(event) => {
+          this.onAddNewItem();
+        }}>
+        Add
+      </button>
+    );
+  }
+
+  render() {
+    return (
+      <FlexLayout.Layout
+        ref={this.layoutRef}
+        model={this.state.layout}
+        factory={this.factory}
+        onRenderTabSet={this.onRenderTabSet}
+      />
+    );
   }
 }
 

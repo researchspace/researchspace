@@ -166,7 +166,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         })
       ).observe({
         value: () => {
-          this.onSave();
+          this.onSaveData();
         }
       });
     }

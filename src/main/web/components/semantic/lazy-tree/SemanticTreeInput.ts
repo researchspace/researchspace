@@ -20,7 +20,6 @@
 import { ReactElement, createElement, ReactNode, Children, Props as ReactProps } from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
-import { List } from 'immutable';
 import * as Kefir from 'kefir';
 import * as _ from 'lodash';
 import { Overlay, Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
@@ -29,6 +28,7 @@ import * as classnames from 'classnames';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
+import { trigger } from 'platform/api/events';
 import { SparqlUtil, SparqlClient } from 'platform/api/sparql';
 import * as LabelsService from 'platform/api/services/resource-label';
 import { Component } from 'platform/api/components';
@@ -43,10 +43,16 @@ import { SingleFullSubtree, MultipleFullSubtrees } from './SelectionMode';
 import { TreeNode, ForestChange, queryMoreChildren } from './NodeModel';
 import { Node, SparqlNodeModel, sealLazyExpanding } from './SparqlNodeModel';
 import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
+import { ItemSelectionChanged } from './SemanticTreeInputEvents';
 
 import * as styles from './SemanticTreeInput.scss';
 
 export interface ComplexTreePatterns {
+  /*
+   *  Need to be specified if component should emit events.
+   */
+  id?: string;
+
   /**
    * Tree roots query with no input and [?item, ?label, ?hasChildren] output variables.
    */
@@ -329,13 +335,23 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   public setValue(iri: Rdf.Iri) {
-    this.setInitialSelection([iri]).onValue(
-      selection => {
-        if (this.props.onSelectionChanged) {
-          this.props.onSelectionChanged(selection);
-        }
-      }
-    )
+    this.setInitialSelection([iri]).onValue(this.onSelectionChanged);
+  }
+
+  private onSelectionChanged = (selection: TreeSelection<Node>) => {
+    if (this.props.onSelectionChanged) {
+      this.props.onSelectionChanged(selection);
+    }
+
+    /**
+     * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
+     */
+    if (this.props.id && selection.nodes.size <=2 ) {
+      const iri = selection.nodes.size == 1 ? undefined : selection.nodes.last().first().iri.value;
+      trigger({
+        eventType: ItemSelectionChanged, source: this.props.id, data: {iri}
+      });
+    }
   }
 
   private renderTextField() {
@@ -392,9 +408,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
                 const previous = this.state.confirmedSelection;
                 const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));
                 this.setState({ confirmedSelection: newSelection }, () => {
-                  if (this.props.onSelectionChanged) {
-                    this.props.onSelectionChanged(newSelection);
-                  }
+                  this.onSelectionChanged(newSelection)
                 });
               },
             },
@@ -501,7 +515,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   private closeDropdown(options: { saveSelection: boolean }) {
     this.search.cancelAll();
     this.setState(
-      (state: State, props: SemanticTreeInputProps): State => {
+      (state: State): State => {
         const mode = state.mode;
         const newState: State = {
           mode: { type: 'collapsed' },
@@ -511,9 +525,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         };
         if (mode.type !== 'collapsed' && options.saveSelection) {
           newState.confirmedSelection = mode.selection;
-          if (props.onSelectionChanged) {
-            props.onSelectionChanged(mode.selection);
-          }
+          this.onSelectionChanged(mode.selection);
         }
         return newState;
       }
@@ -607,7 +619,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         Button,
         {
           className: styles.dropdownButton,
-          bsStyle: 'danger',
+          bsStyle: 'default',
           onClick: () => this.closeDropdown({ saveSelection: false }),
         },
         'Cancel'
@@ -616,7 +628,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         Button,
         {
           className: styles.dropdownButton,
-          bsStyle: 'success',
+          bsStyle: 'primary',
           disabled: !enableSelectionSave,
           onClick: () => this.closeDropdown({ saveSelection: true }),
         },

@@ -1,3 +1,13 @@
+{{#if node}}
+<semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
+  <template id='template'>
+    <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
+        <div style="margin: 10px 0;" class="text-underline"><i class="fa fa-pencil btn-icon-left"></i>Edit form template</div>
+    </semantic-link-container>
+  </template>
+</semantic-query>
+{{/if}}
+
 <semantic-form [[> rsp:FormDefaults]] 
                persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
                new-subject-template='{{scheme}}/data/{{{{raw}}}}{{item_label}}{{{{/raw}}}}'
@@ -34,18 +44,6 @@
     <semantic-form-text-input for="order_by_pattern"> </semantic-form-text-input>
 
     <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/"></semantic-form-text-input>
-
-    {{#if node}}
-      <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
-        <template id='template'>
-          <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
-            <button class="btn btn-warning btn-edit-form">
-              <i class="fa fa-pencil"></i>Edit Form
-            </button>
-          </semantic-link-container>
-        </template>
-      </semantic-query>
-    {{/if}}
     
     <semantic-form-errors></semantic-form-errors>
   </div>

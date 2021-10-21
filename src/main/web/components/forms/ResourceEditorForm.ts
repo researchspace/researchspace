@@ -158,6 +158,17 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
           }
         }
       });
+
+      this.cancellation.map(
+        listen({
+          target: this.props.id,
+          eventType: FormEvents.FormSave,
+        })
+      ).observe({
+        value: () => {
+          this.onSaveData();
+        }
+      });
     }
   }
 

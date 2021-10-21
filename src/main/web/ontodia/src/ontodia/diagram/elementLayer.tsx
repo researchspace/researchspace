@@ -460,8 +460,12 @@ class OverlayedElement extends React.Component<OverlayedElementProps, OverlayedE
     this.observeTypes();
     this.requestResize();
 
+
     if (this.minSize === undefined &&
-        !this.props.state.element.temporary) {
+        !this.props.state.element.temporary &&
+        // we are waiting until there are some elements in the card, until elements are rendered there is only resizable handle
+        this.htmlElement.firstElementChild.className !== 'ontodia-overlayed-element__resizable-handle'
+    ) {
       this.initSize();
     }
   }

@@ -74,7 +74,23 @@ uses client-side templates:
                             force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
 >
 
-    <rs-ontodia-metadata-from-fields></rs-ontodia-metadata-from-fields>
+    [[!-- <http://www.researchspace.org/category/generic/summary> --]]
+
+    <rs-ontodia-metadata-from-fields
+      fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
+        SELECT DISTINCT ?field WHERE { { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field  <http://www.researchspace.org/resource/system/fields/category> ?category . 
+          FILTER (?category in (<http://www.researchspace.org/vocab/pattern_category/object>,<http://www.researchspace.org/category/generic/summary>))}
+          UNION {
+            VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
+                            (<http://www.w3.org/2000/01/rdf-schema#label>)
+                      (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                      (<http://www.researchspace.org/ontology/PX_has_main_representation>)
+                    }
+            BIND(?value as ?field)
+          } 
+        }
+    '>
+  </rs-ontodia-metadata-from-fields>
     
     <ontodia-field-input-override for-field="http://www.researchspace.org/ontology/PX_has_main_representation">
       <semantic-form-autocomplete-input for='http://www.researchspace.org/ontology/PX_has_main_representation'>

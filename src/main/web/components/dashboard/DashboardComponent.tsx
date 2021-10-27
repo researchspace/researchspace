@@ -154,7 +154,7 @@ export class DashboardComponent extends Component<Props, State> {
         },
         global: { 
           "borderBarSize": 43,
-          "tabSetTabStripHeight": 44,
+          "tabSetTabStripHeight": 42,
           "splitterSize": 6 ,
         },
 	      borders: [

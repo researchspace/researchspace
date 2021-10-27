@@ -30,11 +30,11 @@ $color_3: #d7d7de;
 $color_4: #c7c7d0;
 $color_5: #b9b9c2;
 
-$font-size: 16px;
+$font-size: 15.5px;
 
  @mixin absoluteFill {
   left: 0;
-  top: 2px;
+  top: 0;
   right: 0;
   bottom: 0;
   position: absolute;
@@ -46,7 +46,7 @@ $font-size: 16px;
       @include absoluteFill;
       overflow: hidden;
 
-      height: calc(100vh - 2px - #{$nav-height});
+      height: calc(100vh - #{$nav-height});
   }
 
   &__splitter {
@@ -173,15 +173,16 @@ $font-size: 16px;
 
               &_tab_container {
                   display: flex;
+                  align-items: center;
                   box-sizing: border-box;
                   position: absolute;
                   top: 0;
                   bottom: 0;
                   width: 10000px;
-                  padding: 0 10px;
+                  padding: 3px;
 
                   &_top {
-                      border-top: 2px solid transparent; // if you change this, update the _sizer above
+              //        border-top: 2px solid transparent; // if you change this, update the _sizer above
                   }
                   &_bottom {
                       border-bottom: 2px solid transparent;
@@ -207,33 +208,36 @@ $font-size: 16px;
       background-color: $color-frames-tab-bg;
 
       &_button {
-          display: inline-flex;
-          align-items: center;
-          box-sizing: border-box;
-          padding: 3px 10px; // if you change top or bottom update the tabset_sizer above
-          margin: 5px 3px 4px 3px;
-          cursor: pointer;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        height: 30px;
+        padding: 0px 10px; // if you change top or bottom update the tabset_sizer above
+        margin: 3px;
+        box-sizing: border-box;
 
-          font-weight: 600;
-          letter-spacing: .2px;
+        white-space: nowrap;
+        border: 1px solid $color-frame-button-border;
+        border-radius: 2px;
+        font-weight: 600;
+        letter-spacing: .25px;
 
-          color: $color-dark;
-
-          border-radius: 3px;
+       //   color: $color-dark;
 
           &--selected {
            //   box-shadow: inset 0px -3px 0px 0px $color-dark;
            background-color: $color-dark;
+           border-color: $color-dark;
            color: $color-white;
           }
 
           &--unselected {
-            color: $color-dark--op50;
+            color: $color-frame-button;
 
             &:hover {
             //  box-shadow: inset 0px -3px 0px 0px $color-dark;
-              background-color: $color_2;
-              color: $color-dark;
+              background-color: $color-frame-button-hover-bg;
+           //   color: $color-dark;
             }
           }
 
@@ -271,10 +275,13 @@ $font-size: 16px;
           &_trailing {
               display: inline-block;
               margin-left: 8px;
-              min-width: 8px;
-              min-height: 8px;
+              min-width: 10px;
+              min-height: 10px;
+
+              background: transparent url("/assets/images/icons/close.png") no-repeat center;
           }
-          @media (pointer: coarse) {
+
+          /* @media (pointer: coarse) {
               &_trailing {
                   min-width: 20px;
                   min-height: 20px;
@@ -288,13 +295,14 @@ $font-size: 16px;
 
           &--selected &_trailing {
               background: transparent url("/assets/images/icons/close.png") no-repeat center;
-          }
+          } */
 
           &_overflow {
               margin: 0 6px;
               padding-right: 15px;
               border: none;
               color: $color-frame-button;
+              font-weight: 600;
               font-size: inherit;
               background: transparent url(/assets/images/icons/more2.png) no-repeat right;
           }
@@ -303,7 +311,7 @@ $font-size: 16px;
       &_toolbar {
           display: flex;
           align-items: center;
-          padding: 0 20px;
+          padding: 0 10px;
 
           &_button {
               min-width: 25px;
@@ -385,7 +393,6 @@ $font-size: 16px;
           align-items: center;
           background-image: linear-gradient(90deg, $color-border-light 0%, $color-border-dark 100%);
 
-          padding-right: 10px;
       }
 
       &_left {
@@ -394,7 +401,6 @@ $font-size: 16px;
           flex-direction: column;
           background-image: linear-gradient($color-border-light,$color-border-dark);
 
-          padding-bottom: 7px;
       }
 
       &_right {
@@ -403,7 +409,6 @@ $font-size: 16px;
           flex-direction: column;
           background-image: linear-gradient($color-border-light, $color-border-dark);
 
-          padding-bottom: 7px;
       }
 
       &_inner {
@@ -440,8 +445,9 @@ $font-size: 16px;
           display: flex;
           align-items: center;
           cursor: pointer;
-          padding: 3px 10px;
-          margin: 2px;
+          height: 30px;
+          padding: 0px 10px;
+          margin: 3px;
           box-sizing: border-box;
           white-space: nowrap;
           border: 1px solid $color-frame-button-border;
@@ -452,7 +458,8 @@ $font-size: 16px;
 
           &--selected {
             background-color: $color-dark;
-            color: #ffffff;
+            border-color: $color-dark;
+            color: $color-white;
           }
 
           &--unselected {
@@ -475,11 +482,13 @@ $font-size: 16px;
           &_trailing {
               display: inline-block;
               margin-left: 8px;
-              min-width: 8px;
-              min-height: 8px;
+              min-width: 10px;
+              min-height: 10px;
+
+              background: transparent url("/assets/images/icons/close.png") no-repeat center;
           }
 
-          @media (pointer: coarse) {
+         /*  @media (pointer: coarse) {
               &_trailing {
                   min-width: 20px;
                   min-height: 20px;
@@ -494,7 +503,7 @@ $font-size: 16px;
 
           &--selected &_trailing {
               background: transparent url("/assets/images/icons/close.png") no-repeat center;
-          }
+          } */
       }
 
       &_toolbar {
@@ -503,10 +512,16 @@ $font-size: 16px;
 
           &_left {
               flex-direction: column;
+              padding: 10px 0;
           }
 
           &_right {
               flex-direction: column;
+              padding: 10px 0;
+          }
+
+          &_bottom {
+            padding: 0 10px;
           }
 
           &_button {
@@ -523,6 +538,7 @@ $font-size: 16px;
                   border: none;
                   padding-left: 12px;
                   color: $color-frame-button;
+                  font-weight: 600;
                   font-size: inherit;
                   background: transparent url("/assets/images/icons/more2.png") no-repeat left;
               }
@@ -542,8 +558,8 @@ $font-size: 16px;
   }
 
   &__popup_menu {
-      font-size: 16px;
-      letter-spacing: .1px;
+      font-size: $font-size;
+      letter-spacing: .25px;
 
       &_item {
           padding: 5px 10px;

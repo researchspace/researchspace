@@ -267,7 +267,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
         childrenClassName={`${styles.dropAreaChildren} ${styles.notOpacity}`}
         dropMessageWrapperStyle={{ display: 'none' }}
         dropStyles={{
-          enabledHover: { backgroundColor: '#f6f6f6', outline: '3px dashed #1d0a6e' },
+          enabledHover: { backgroundColor: '#f6f6f6', outline: '3px dashed var(--color-dark)' },
           enabled: { outline: '1px solid #ddd' },
           disabled: { opacity: '.2' },
         }}
@@ -380,7 +380,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
           dropMessageWrapperStyle={{ display: 'none' }}
           dropStyles={{
             enabledHover: { backgroundColor: '#f6f6f6' },
-            enabled: { outline: '3px dashed #1d0a6e' },
+            enabled: { outline: '3px dashed var(--color-dark)' },
             disabled: { backgroundColor: '#ff000054' },
           }}
         >

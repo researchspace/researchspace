@@ -196,7 +196,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
           query: createDropAskQueryForField(definition),
           styles: {
             enabled: {
-              outline: '2px solid #1D0A6E'
+              outline: '2px solid var(--color-dark)'
             },
             disabled: {}
           }

@@ -72,6 +72,7 @@ public class ST {
         public static final String LOGIN_PAGE = "login";
         public static final String HTML_HEAD = "html-head";
         public static final String NO_PERMISSIONS_PAGE = "no-permissions-page";
+        public static final String SIDEBAR = "sidebar";
     }
 
     public static StoragePath objectIdForTemplate(String name) {

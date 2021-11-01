@@ -300,8 +300,7 @@ export class MainAppComponent extends Component<
   public render() {
     return D.div(
       {},
-      ...this.getHeader(),
-      
+      this.getHeader(),
       D.div({className:'page-container'},
         D.div(
           {className:'pageSidebar-container'},

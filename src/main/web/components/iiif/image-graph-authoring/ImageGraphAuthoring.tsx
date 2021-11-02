@@ -180,7 +180,7 @@ export interface State {
  *
  *          <button name="submit" class="btn btn-sm btn-success">Save</button>
  *          <button name="reset" class="btn btn-sm btn-default">Reset</button>
- *          <button name="cancel" class="btn btn-sm btn-danger pull-right">Cancel</button>
+ *          <button name="cancel" class="btn btn-sm pull-right">Cancel</button>
  *        </semantic-form>
  *      </ontodia>
  *    </div>

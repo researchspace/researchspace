@@ -18,6 +18,7 @@ declare namespace TextEditorScssNamespace {
     titleHolder: string;
     titleInput: string;
     toolbar: string;
+    toolbarBtnGroup: string;
   }
 }
 

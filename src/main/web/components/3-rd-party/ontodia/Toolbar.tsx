@@ -48,7 +48,7 @@ export interface ToolbarCommand {
 
 export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Component<P, S> {
   static defaultProps: Partial<ToolbarProps> = {
-    saveDiagramLabel: 'Save diagram',
+    saveDiagramLabel: 'Save map',
     persistChangesLabel: 'Save data',
   };
   protected readonly listener = new EventObserver();
@@ -76,17 +76,17 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     } = this.props;
     if (onPersistChanges && hasUnpersistedChanges) {
       return (
-        <Dropdown id="persist-changes-button" className="btn-group-sm"
+        <Dropdown id="persist-changes-button"
           disabled={!canPersistChanges}
         >
           <Button disabled={!canPersistChanges}
-                  bsStyle="success"
                   onClick={onPersistChanges} 
-                  className={styles.saveButton}
+                  className="btn btn-action"
+                  bsStyle=''
           >
             {persistChangesLabel}
           </Button>
-          <Dropdown.Toggle bsStyle="success" />
+          <Dropdown.Toggle bsStyle='' className="btn btn-action" />
           <Dropdown.Menu>
             <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
               {persistChangesLabel} &amp; {saveDiagramLabel}
@@ -97,13 +97,14 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     }
     if (onSaveDiagram && canSaveDiagram) {
       return (
-        <Dropdown id="save-diagram-button" className="btn-group-sm">
-          <Button bsStyle="primary" 
-                  onClick={onSaveDiagram} 
-                  className={styles.saveButton}>
+        <Dropdown id="save-diagram-button">
+          <Button onClick={onSaveDiagram} bsStyle=''
+                  className="btn btn-action"
+                  bsStyle=''
+                  >
             {saveDiagramLabel}
           </Button>
-          <Dropdown.Toggle bsStyle="primary" />
+          <Dropdown.Toggle bsStyle='' className="btn btn-action" />
           <Dropdown.Menu>
             <MenuItem href="#" onClick={onSaveDiagramAs}>
               {saveDiagramLabel} as...
@@ -120,15 +121,9 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
     return (
       <div className={styles.component}>
-        <HasPermission
-          permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
-        >
-          <ButtonGroup bsSize="small" className={classnames(styles.group, styles.groupSave)}>
-            {this.renderSaveButton()}
-          </ButtonGroup>
-        </HasPermission>
+
         {undo && redo ? (
-          <ButtonGroup bsSize="small" className={styles.group}>
+          <ButtonGroup className={styles.group}>
             <Button
               className="ontodia-btn ontodia-btn-default"
               title={undo.title}
@@ -147,50 +142,64 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
             </Button>
           </ButtonGroup>
         ) : null}
-        <ButtonGroup bsSize="small" className={classnames(styles.group, styles.groupButtons)}>
-          <Button title="Zoom In" onClick={this.props.onZoomIn}>
-            <span className="fa fa-search-plus" aria-hidden="true" />
-            &nbsp;Zoom in
-          </Button>
 
-          <Button title="Zoom Out" onClick={this.props.onZoomOut}>
-            <span className="fa fa-search-minus" aria-hidden="true" />
-            &nbsp;Zoom out
-          </Button>
+        <ButtonGroup className={classnames(styles.group, styles.groupButtons)}>
 
-          <Button title="Fit to Screen" onClick={this.props.onZoomToFit}>
-            <span className="fa fa-arrows-alt" aria-hidden="true" />
-            &nbsp;Fit to screen
-          </Button>
-
-          <Button type="button" className="ontodia-btn ontodia-btn-default" onClick={this.props.onForceLayout}>
-            <span title="Force layout" className="fa fa-snowflake-o" aria-hidden="true" />
-            &nbsp;Force Layout
-          </Button>
-
-          {this.props.onClearAll ? (
-            <Button onClick={this.props.onClearAll}>
-              <span className="fa fa-trash" aria-hidden="true" />
-              &nbsp;Clear All
+     
+            <Button title="Zoom In" className="btn btn-toolbar" onClick={this.props.onZoomIn}>
+              <span className="fa fa-search-plus" aria-hidden="true" />
+              &nbsp;Zoom in
             </Button>
-          ) : null}
-         
-         <Button title="Print diagram" onClick={this.props.onPrint}>
-            <span className="fa fa-print" aria-hidden="true" />
-            &nbsp;Print
-          </Button>
 
-          <Button title="Export diagram as PNG" onClick={this.onExportPng}>
-            <span className="fa fa-picture-o" aria-hidden="true" />
-            &nbsp;Export PNG
-          </Button>
+            <Button title="Zoom Out" className="btn btn-toolbar" onClick={this.props.onZoomOut}>
+              <span className="fa fa-search-minus" aria-hidden="true" />
+              &nbsp;Zoom out
+            </Button>
+        
+            <Button title="Fit to Screen" className="btn btn-toolbar" onClick={this.props.onZoomToFit}>
+              <span className="fa fa-arrows-alt" aria-hidden="true" />
+              &nbsp;Fit to screen
+            </Button>
+
+            <Button title="Force layout" className="btn btn-toolbar" onClick={this.props.onForceLayout}>
+              <span  className="fa fa-snowflake-o" aria-hidden="true" />
+              &nbsp;Force Layout
+            </Button>
+
+            {this.props.onClearAll ? (
+              <Button onClick={this.props.onClearAll} className="btn btn-toolbar">
+                <span className="fa fa-trash" aria-hidden="true" />
+                &nbsp;Clear All
+              </Button>
+            ) : null}
           
-          <Button title="Export diagram as SVG" onClick={this.onExportSvg}>
-            <span className="fa fa-picture-o" aria-hidden="true" />
-            &nbsp;Export SVG
-          </Button>
+            <Button title="Print diagram" className="btn btn-toolbar" onClick={this.props.onPrint}>
+                <span className="fa fa-print" aria-hidden="true" />
+                &nbsp;Print
+              </Button>
+
+              <Button title="Export diagram as PNG" className="btn btn-toolbar" onClick={this.onExportPng}>
+                <span className="fa fa-picture-o" aria-hidden="true" />
+                &nbsp;Export PNG
+              </Button>
+              
+              <Button title="Export diagram as SVG" className="btn btn-toolbar" onClick={this.onExportSvg}>
+                <span className="fa fa-picture-o" aria-hidden="true" />
+                &nbsp;Export SVG
+              </Button>
+
+          </ButtonGroup>
           
-        </ButtonGroup>
+            <HasPermission permission={Permissions.toLdp('container', VocabPlatform.OntodiaDiagramContainer, 'create', 'any')}
+            >
+              {this.renderSaveButton()}
+            </HasPermission>
+         
+          
+        
+
+        
+
         {this.renderLanguages()}
       </div>
     );

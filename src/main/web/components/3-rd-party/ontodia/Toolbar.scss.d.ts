@@ -1,7 +1,7 @@
 declare namespace ToolbarScssNamespace {
   export interface IToolbarScss {
+    buttonsContainer: string;
     component: string;
-    group: string;
     groupButtons: string;
     languageSelector: string;
   }

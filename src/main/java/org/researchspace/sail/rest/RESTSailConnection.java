@@ -21,6 +21,7 @@ package org.researchspace.sail.rest;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -77,370 +78,473 @@ import net.minidev.json.JSONObject;
  */
 public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RESTSailConfig> {
 
-    private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
-    protected static final ValueFactory VF = SimpleValueFactory.getInstance();
+  private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
+  protected static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-    private Client client;
-    private Configuration jsonPathConfig;
+  private Client client;
+  private Configuration jsonPathConfig;
+  private boolean isTransposed;
 
-    public RESTSailConnection(RESTSail sailBase) {
-        super(sailBase);
-        this.client = sailBase.getClient();
+  public RESTSailConnection(RESTSail sailBase) {
+    super(sailBase);
+    this.client = sailBase.getClient();
 
-        // configure JsonPath to not throw exception on missing path, instead return
-        // null
-        this.jsonPathConfig = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+    // configure JsonPath to not throw exception on missing path, instead return
+    // null
+    this.jsonPathConfig = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+  }
+
+  @Override
+  protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
+      ServiceParametersHolder parametersHolder) throws SailException {
+
+    logger.trace("REST Response received");
+
+    List<BindingSet> results = Lists.newArrayList();
+
+    try {
+      String stringResponse = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+
+      // TODO: check the string format and call the right type. E.g., json or XML
+      String type = RESTSailConfig.JSON;
+
+      logger.trace("REST Response type is {}", type);
+      switch (type) {
+      case RESTSailConfig.JSON:
+
+        // Get the root path
+        Optional<Parameter> param = getSail().getSubjectParameter();
+        String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
+
+        results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables());
+        break;
+
+      default:
+        break;
+      }
+
+      return results;
+    } catch (Exception e) {
+      throw new SailException(e);
+    }
+  }
+
+  /**
+   * 
+   * @param res
+   * @param rootPath
+   * @param outputParameters
+   * @return
+   */
+  private List<BindingSet> executeJson(String res, String rootPath, Map<IRI, String> outputParameters) {
+
+    // Parse the response
+    ReadContext context = JsonPath.parse(res);
+
+    // Get the root object
+    Object root = context.read(rootPath);
+
+    List<BindingSet> results = Lists.newArrayList();
+
+    // If the response is a transposed matrix (e.g. Pastec see issue #247) then
+    // change its structure
+    root = transposeObject(root, outputParameters);
+
+    // Manipulate the results in different ways based on its structure
+    if (root instanceof JSONArray) {
+      results = iterateJsonArray((JSONArray) root, outputParameters);
     }
 
-    @Override
-    protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
-            ServiceParametersHolder parametersHolder) throws SailException {
+    if (root instanceof Map) {
+      results = iterateJsonMap((Map) root, outputParameters);
+    }
 
-        logger.trace("REST Response received");
+    return results;
+  }
 
-        List<BindingSet> results = Lists.newArrayList();
+  /**
+   * 
+   * @param array
+   * @param outputParameters
+   * @return
+   */
+  private List<BindingSet> iterateJsonArray(JSONArray array, Map<IRI, String> outputParameters) {
 
-        try {
-            String stringResponse = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+    logger.trace("### [START] Parsing JSONArray ###");
+    List<BindingSet> bindingSets = Lists.newArrayList();
 
-            // TODO: check the string format and call the right type. E.g., json or XML
-            String type = RESTSailConfig.JSON;
+    for (Object object : array) {
+      bindingSets.add(createBindingSetFromJSONObject(object, outputParameters));
+    }
 
-            logger.trace("REST Response type is {}", type);
-            switch (type) {
-            case RESTSailConfig.JSON:
+    logger.trace("### [END] Parsing JSONArray");
+    return bindingSets;
+  }
 
-                // Get the root path
-                Optional<Parameter> param = getSail().getSubjectParameter();
-                String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
+  /**
+   * 
+   * @param map
+   * @param outputParameters
+   * @return
+   */
+  private List<BindingSet> iterateJsonMap(Map map, Map<IRI, String> outputParameters) {
 
-                results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables());
-                break;
+    logger.trace("### [START] Parsing JSONObject ###");
+    List<BindingSet> bindingSets = Lists.newArrayList();
 
-            default:
-                break;
-            }
+    bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));
 
-            return results;
-        } catch (Exception e) {
-            throw new SailException(e);
+    logger.trace("### [END] Parsing JSONObject ###");
+    return bindingSets;
+  }
+
+  /**
+   * 
+   * @param object
+   * @param outputParameters
+   * 
+   *                         Check if the object has the output parameters as
+   *                         Array and all of them have the same length
+   * 
+   * @return
+   */
+  private boolean isTransposed(Object object, Map<IRI, String> outputParameters) {
+    isTransposed = false;
+    int prevSize = -1;
+    logger.trace("Checking the response body correctness");
+
+    try {
+
+      for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
+
+        // Get value
+        Parameter parameter = getParameter(outputParameter);
+        String jsonPath = parameter.getJsonPath();
+        Object value = JsonPath.using(this.jsonPathConfig).parse(object).read(jsonPath);
+
+        if (value instanceof JSONArray) {
+          JSONArray valueArray = (JSONArray) value;
+          if (prevSize != -1 && prevSize == valueArray.size())
+            isTransposed = true;
+          prevSize = valueArray.size();
         }
+      }
+    } catch (Exception e) {
+      isTransposed = false;
     }
 
-    /**
-     * 
-     * @param res
-     * @param rootPath
-     * @param outputParameters
-     * @return
-     */
-    private List<BindingSet> executeJson(String res, String rootPath, Map<IRI, String> outputParameters) {
+    return isTransposed;
+  }
 
-        // Parse the response
-        ReadContext context = JsonPath.parse(res);
+  /**
+   * 
+   * @param object
+   * @param outputParameters
+   * 
+   *                         Transpose the structure of the object according to
+   *                         #247
+   * 
+   * @return
+   */
+  private Object transposeObject(Object object, Map<IRI, String> outputParameters) {
 
-        // Get the root object
-        Object root = context.read(rootPath);
+    if (!isTransposed(object, outputParameters))
+      return object;
 
-        List<BindingSet> results = Lists.newArrayList();
+    logger.trace("Transposing the response body structure");
+    JSONArray outputArray = new JSONArray();
 
-        // Manipulate the results in different ways based on its structure
-        if (root instanceof JSONArray) {
-            results = iterateJsonArray((JSONArray) root, outputParameters);
+    try {
+
+      int size = -1;
+
+      // Save data in format of <String key, JSONArray value>
+      LinkedHashMap<String, JSONArray> data = new LinkedHashMap<String, JSONArray>();
+      for (Map.Entry<IRI, String> entry : outputParameters.entrySet()) {
+        Parameter parameter = getParameter(entry);
+        JSONArray array = JsonPath.using(this.jsonPathConfig).parse(object).read(parameter.getJsonPath());
+        data.put(parameter.getParameterName(), array);
+        size = array.size();
+      }
+
+      // Iterate over each element in the array
+      for (int i = 0; i < size; i++) {
+
+        // Create each object
+        JSONObject newJsonObject = new JSONObject();
+        for (Map.Entry<String, JSONArray> array : data.entrySet())
+          newJsonObject.appendField(array.getKey(), array.getValue().get(i));
+
+        // Append object to the array
+        outputArray.add(newJsonObject);
+      }
+
+    } catch (Exception e) {
+      logger.trace("The transposing process encountered the following error: {}", e);
+      return object;
+    }
+
+    logger.trace("Transposing complete.");
+    return outputArray;
+  }
+
+  /**
+   * 
+   * @param entry
+   * @return
+   */
+  private Parameter getParameter(Map.Entry<IRI, String> entry) {
+
+    String parameterName = getSail().getMapOutputParametersByProperty().get(entry.getKey()).getParameterName();
+    return getSail().getServiceDescriptor().getOutputParameters().get(parameterName);
+  }
+
+  /**
+   * 
+   * @param object
+   * @param outputParameters
+   * @return
+   */
+  private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters) {
+    MapBindingSet mapBindingSet = new MapBindingSet();
+
+    for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
+
+      Parameter parameter = getParameter(outputParameter);
+
+      IRI type = parameter.getValueType();
+      String jsonPath = parameter.getJsonPath();
+      Object value = JsonPath.using(this.jsonPathConfig).parse(object).read(jsonPath);
+      if (value != null) {
+        String stringValue = value.toString();
+        if (StringUtils.equals(type.stringValue(), RDFS.RESOURCE.stringValue())) {
+          logger.trace("Creating Resource ({})", value);
+          mapBindingSet.addBinding(outputParameter.getValue(), VF.createIRI(stringValue));
+        } else {
+          logger.trace("Creating Literal({},{})", value, type);
+          mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(stringValue, type));
+        }
+      }
+    }
+
+    return mapBindingSet;
+  }
+
+  @Override
+  protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
+      ServiceParametersHolder parametersHolder) {
+    Response response = submit(parametersHolder);
+    if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
+      throw new SailException("Request failed with HTTP status code " + response.getStatus() + ": "
+          + response.getStatusInfo().getReasonPhrase());
+    }
+    InputStream resultStream = (InputStream) response.getEntity();
+    return new CollectionIteration<BindingSet, QueryEvaluationException>(
+        convertStream2BindingSets(resultStream, parametersHolder));
+  }
+
+  protected Response submit(ServiceParametersHolder parametersHolder) {
+
+    try {
+      String httpMethod = getSail().getConfig().getHttpMethod();
+      logger.trace("Creating request with HTTP METHOD: {}", httpMethod);
+
+      // Create request
+      WebTarget targetResource = this.client.target(getSail().getConfig().getUrl())
+          .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
+
+      // Case with POST
+      if (HttpMethod.POST.equals(httpMethod)) {
+        return submitPost(targetResource, parametersHolder);
+      } else {
+        // Default case as GET
+        return submitGet(targetResource, parametersHolder);
+      }
+
+    } catch (Exception e) {
+      throw new SailException(e);
+    }
+  }
+
+  private WebTarget auth(WebTarget targetResource) {
+    RestAuthorization auth = getSail().getConfig().getAuth();
+    if (auth != null && auth.getLocation() == AUTH_LOCATION.PARAMETER) {
+      return authQueryParams(targetResource);
+    }
+
+    return targetResource;
+  }
+
+  private WebTarget authQueryParams(WebTarget targetResource) {
+    RestAuthorization auth = getSail().getConfig().getAuth();
+    return targetResource.queryParam(auth.getKey(), auth.getValue());
+  }
+
+  protected Response submitGet(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
+    try {
+      for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
+        targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
+      }
+
+      // Add additional HTTP headers if found
+      MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+      Map<String, String> httpHeaders = this.getSail().getConfig().getHttpHeaders();
+      if (httpHeaders.size() > 0) {
+        logger.trace("Found {} custom HTTP headers.", httpHeaders.size());
+
+        for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
+          headers.add(header.getKey(), header.getValue());
+        }
+      }
+
+      // Create async response
+      Future<Response> response = targetResource.request(getSail().getConfig().getMediaType()).headers(headers).async()
+          .get();
+
+      return response.get();
+    } catch (Exception e) {
+      throw new SailException(e);
+    }
+  }
+
+  protected Response submitPost(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
+    try {
+      targetResource = auth(targetResource);
+
+      Invocation.Builder request = targetResource.request();
+      request = this.addHTTPHeaders(request);
+
+      String mediaType = getSail().getConfig().getMediaType();
+
+      logger.trace("Submitting POST request");
+      if (StringUtils.equals(mediaType, MediaType.APPLICATION_JSON)) {
+        Object body = getJsonBody(parametersHolder.getInputParameters());
+        return request.post(Entity.json(body));
+      } else if (StringUtils.equals(mediaType, MediaType.APPLICATION_FORM_URLENCODED)) {
+        return request.post(Entity.form(getHashMapBody(parametersHolder.getInputParameters())));
+      } else {
+        throw new IllegalArgumentException("RESTSail doesn't support media type: " + mediaType);
+      }
+    } catch (Exception e) {
+      throw new SailException(e);
+    }
+  }
+
+  private Invocation.Builder addHTTPHeaders(Invocation.Builder request) {
+    request.accept(getSail().getConfig().getMediaType());
+
+    // Add additional HTTP headers if found
+    Map<String, String> httpHeaders = this.getSail().getConfig().getHttpHeaders();
+    if (httpHeaders.size() > 0) {
+      logger.trace("Found {} custom HTTP headers.", httpHeaders.size());
+
+      for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
+        request.header(header.getKey(), header.getValue());
+      }
+    }
+    return request;
+  }
+
+  @Override
+  protected ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns) throws SailException {
+
+    logger.trace("[START] Parsing SPARQL query");
+
+    ServiceParametersHolder res = new ServiceParametersHolder();
+
+    // Iterate over input triples in descriptor
+    // Use the SPARQL query to get values and create input parameter holder as a set
+    // of tuple IRI, value
+    for (Map.Entry<IRI, Parameter> entry : getSail().getMapInputParametersByProperty().entrySet()) {
+
+      // Get subject and value
+      Optional<Var> subject = RESTWrappingSailUtils.getSubjectOutputVariable(stmtPatterns, null, entry.getKey());
+      Optional<Value> value = RESTWrappingSailUtils.getObjectInputParameter(stmtPatterns, subject.orElse(null),
+          entry.getKey());
+
+      // Add value from query or default value
+      value = value.isPresent() ? value : entry.getValue().getDefaultValue();
+      if (value.isPresent()) {
+        logger.trace("Input value detected");
+        logger.trace("Parameter: {}", entry.getValue().getParameterName());
+        logger.trace("Value: {}", value.get());
+        res.getInputParameters().put(entry.getValue().getParameterName(), value.get().stringValue());
+      }
+    }
+
+    for (Map.Entry<IRI, Parameter> entry : getSail().getMapOutputParametersByProperty().entrySet()) {
+
+      Optional<Var> subject = RESTWrappingSailUtils.getSubjectOutputVariable(stmtPatterns, null, entry.getKey());
+      Optional<Var> value = RESTWrappingSailUtils.getObjectOutputVariable(stmtPatterns, subject.orElse(null),
+          entry.getKey());
+
+      if (value.isPresent()) {
+        logger.trace("Output value detected");
+        logger.trace("IRI: {}", entry.getKey());
+        logger.trace("Name: {}", value.get().getName());
+        res.getOutputVariables().put(entry.getKey(), value.get().getName());
+      }
+    }
+    logger.trace("[END] Parsing SPARLQ query");
+
+    return res;
+  }
+
+  /**
+   * 
+   * @param inputParameters
+   * @return
+   */
+  protected Object getJsonBody(Map<String, String> inputParameters) {
+
+    logger.trace("### [START] Creating input body JSON ###");
+
+    JSONObject body = new JSONObject();
+
+    for (Entry<String, String> entry : inputParameters.entrySet()) {
+
+      String inputJsonPath = getSail().getServiceDescriptor().getInputParameters().get(entry.getKey())
+          .getInputJsonPath();
+
+      logger.trace("------");
+      logger.trace("Parameter detected");
+      logger.trace("Name: {}", entry.getKey());
+
+      // Create the body based on JSON object input strings
+      if (Objects.nonNull(inputJsonPath)) {
+        String[] paths = inputJsonPath.split("\\.");
+        int i = 0;
+
+        logger.trace("JSON path: {}", inputJsonPath);
+
+        JSONObject parent = body;
+
+        while (i < paths.length - 1) {
+          String key = paths[i++];
+          parent = (parent.containsKey(key)) ? (JSONObject) parent.get(key) : new JSONObject();
+          body.put(key, parent);
         }
 
-        if (root instanceof Map) {
-            results = iterateJsonMap((Map) root, outputParameters);
-        }
+        parent.put(paths[i], entry.getValue());
+      } else {
+        logger.trace("JSON path: $");
+        body.put(entry.getKey(), entry.getValue());
+      }
 
-        return results;
+      // Run here using root
+    }
+    logger.trace("### [END] Creating input body JSON ###");
+    return body;
+  }
+
+  protected MultivaluedMap<String, String> getHashMapBody(Map<String, String> inputParameters) {
+
+    MultivaluedMap<String, String> map = new MultivaluedHashMap<>();
+
+    for (Map.Entry<String, String> entry : inputParameters.entrySet()) {
+      map.add(entry.getKey(), entry.getValue());
     }
 
-    /**
-     * 
-     * @param array
-     * @param outputParameters
-     * @return
-     */
-    private List<BindingSet> iterateJsonArray(JSONArray array, Map<IRI, String> outputParameters) {
-
-        logger.trace("### [START] Parsing JSONArray ###");
-        List<BindingSet> bindingSets = Lists.newArrayList();
-
-        for (Object object : array) {
-            bindingSets.add(createBindingSetFromJSONObject(object, outputParameters));
-        }
-
-        logger.trace("### [END] Parsing JSONArray");
-        return bindingSets;
-    }
-
-    /**
-     * 
-     * @param map
-     * @param outputParameters
-     * @return
-     */
-    private List<BindingSet> iterateJsonMap(Map map, Map<IRI, String> outputParameters) {
-
-        logger.trace("### [START] Parsing JSONObject ###");
-        List<BindingSet> bindingSets = Lists.newArrayList();
-
-        bindingSets.add(createBindingSetFromJSONObject(map, outputParameters));
-
-        logger.trace("### [END] Parsing JSONObject ###");
-        return bindingSets;
-    }
-
-    /**
-     * 
-     * @param object
-     * @param outputParameters
-     * @return
-     */
-    private MapBindingSet createBindingSetFromJSONObject(Object object, Map<IRI, String> outputParameters) {
-        MapBindingSet mapBindingSet = new MapBindingSet();
-
-        for (Map.Entry<IRI, String> outputParameter : outputParameters.entrySet()) {
-
-            String parameterName = getSail().getMapOutputParametersByProperty().get(outputParameter.getKey())
-                    .getParameterName();
-            Parameter parameter = getSail().getServiceDescriptor().getOutputParameters().get(parameterName);
-
-            IRI type = parameter.getValueType();
-            String jsonPath = parameter.getJsonPath();
-            Object value = JsonPath.using(this.jsonPathConfig).parse(object).read(jsonPath);
-            if (value != null) {
-                String stringValue = value.toString();
-                if (StringUtils.equals(type.stringValue(), RDFS.RESOURCE.stringValue())) {
-                    logger.trace("Creating Resource ({})", value);
-                    mapBindingSet.addBinding(outputParameter.getValue(), VF.createIRI(stringValue));
-                } else {
-                    logger.trace("Creating Literal({},{})", value, type);
-                    mapBindingSet.addBinding(outputParameter.getValue(), VF.createLiteral(stringValue, type));
-                }
-            }
-        }
-
-        return mapBindingSet;
-    }
-
-    @Override
-    protected CloseableIteration<? extends BindingSet, QueryEvaluationException> executeAndConvertResultsToBindingSet(
-            ServiceParametersHolder parametersHolder) {
-        Response response = submit(parametersHolder);
-        if (!response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
-            throw new SailException("Request failed with HTTP status code " + response.getStatus() + ": "
-                    + response.getStatusInfo().getReasonPhrase());
-        }
-        InputStream resultStream = (InputStream) response.getEntity();
-        return new CollectionIteration<BindingSet, QueryEvaluationException>(
-                convertStream2BindingSets(resultStream, parametersHolder));
-    }
-
-    protected Response submit(ServiceParametersHolder parametersHolder) {
-
-        try {
-            String httpMethod = getSail().getConfig().getHttpMethod();
-            logger.trace("Creating request with HTTP METHOD: {}", httpMethod);
-
-            // Create request
-            WebTarget targetResource = this.client.target(getSail().getConfig().getUrl())
-                    .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE);
-
-            // Case with POST
-            if (HttpMethod.POST.equals(httpMethod)) {
-                return submitPost(targetResource, parametersHolder);
-            } else {
-                // Default case as GET
-                return submitGet(targetResource, parametersHolder);
-            }
-
-        } catch (Exception e) {
-            throw new SailException(e);
-        }
-    }
-
-    private WebTarget auth(WebTarget targetResource) {
-        RestAuthorization auth = getSail().getConfig().getAuth();
-        if (auth != null && auth.getLocation() == AUTH_LOCATION.PARAMETER) {
-            return authQueryParams(targetResource);
-        }
-
-        return targetResource;
-    }
-
-    private WebTarget authQueryParams(WebTarget targetResource) {
-        RestAuthorization auth = getSail().getConfig().getAuth();
-        return targetResource.queryParam(auth.getKey(), auth.getValue());
-    }
-
-    protected Response submitGet(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
-        try {
-            for (Entry<String, String> entry : parametersHolder.getInputParameters().entrySet()) {
-                targetResource = targetResource.queryParam(entry.getKey(), entry.getValue());
-            }
-
-            // Add additional HTTP headers if found
-            MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-            Map<String, String> httpHeaders = this.getSail().getConfig().getHttpHeaders();
-            if (httpHeaders.size() > 0) {
-                logger.trace("Found {} custom HTTP headers.", httpHeaders.size());
-
-                for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
-                    headers.add(header.getKey(), header.getValue());
-                }
-            }
-
-            // Create async response
-            Future<Response> response = targetResource.request(getSail().getConfig().getMediaType()).headers(headers)
-                    .async().get();
-
-            return response.get();
-        } catch (Exception e) {
-            throw new SailException(e);
-        }
-    }
-
-    protected Response submitPost(WebTarget targetResource, ServiceParametersHolder parametersHolder) {
-        try {
-            targetResource = auth(targetResource);
-
-            Invocation.Builder request = targetResource.request();
-            request = this.addHTTPHeaders(request);
-
-            String mediaType = getSail().getConfig().getMediaType();
-
-            logger.trace("Submitting POST request");
-            if (StringUtils.equals(mediaType, MediaType.APPLICATION_JSON)) {
-                Object body = getJsonBody(parametersHolder.getInputParameters());
-                return request.post(Entity.json(body));
-            } else if (StringUtils.equals(mediaType, MediaType.APPLICATION_FORM_URLENCODED)) {
-                return request.post(Entity.form(getHashMapBody(parametersHolder.getInputParameters())));
-            } else {
-                throw new IllegalArgumentException("RESTSail doesn't support media type: " + mediaType);
-            }
-        } catch (Exception e) {
-            throw new SailException(e);
-        }
-    }
-
-    private Invocation.Builder addHTTPHeaders(Invocation.Builder request) {
-        request.accept(getSail().getConfig().getMediaType());
-
-        // Add additional HTTP headers if found
-        Map<String, String> httpHeaders = this.getSail().getConfig().getHttpHeaders();
-        if (httpHeaders.size() > 0) {
-            logger.trace("Found {} custom HTTP headers.", httpHeaders.size());
-
-            for (Map.Entry<String, String> header : httpHeaders.entrySet()) {
-                request.header(header.getKey(), header.getValue());
-            }
-        }
-        return request;
-    }
-
-    @Override
-    protected ServiceParametersHolder extractInputsAndOutputs(List<StatementPattern> stmtPatterns)
-            throws SailException {
-
-        logger.trace("[START] Parsing SPARQL query");
-
-        ServiceParametersHolder res = new ServiceParametersHolder();
-
-        // Iterate over input triples in descriptor
-        // Use the SPARQL query to get values and create input parameter holder as a set
-        // of tuple IRI, value
-        for (Map.Entry<IRI, Parameter> entry : getSail().getMapInputParametersByProperty().entrySet()) {
-
-            // Get subject and value
-            Optional<Var> subject = RESTWrappingSailUtils.getSubjectOutputVariable(stmtPatterns, null, entry.getKey());
-            Optional<Value> value = RESTWrappingSailUtils.getObjectInputParameter(stmtPatterns, subject.orElse(null),
-                    entry.getKey());
-
-            // Add value from query or default value
-            value = value.isPresent() ? value : entry.getValue().getDefaultValue();
-            if (value.isPresent()) {
-                logger.trace("Input value detected");
-                logger.trace("Parameter: {}", entry.getValue().getParameterName());
-                logger.trace("Value: {}", value.get());
-                res.getInputParameters().put(entry.getValue().getParameterName(), value.get().stringValue());
-            }
-        }
-
-        for (Map.Entry<IRI, Parameter> entry : getSail().getMapOutputParametersByProperty().entrySet()) {
-
-            Optional<Var> subject = RESTWrappingSailUtils.getSubjectOutputVariable(stmtPatterns, null, entry.getKey());
-            Optional<Var> value = RESTWrappingSailUtils.getObjectOutputVariable(stmtPatterns, subject.orElse(null),
-                    entry.getKey());
-
-            if (value.isPresent()) {
-                logger.trace("Output value detected");
-                logger.trace("IRI: {}", entry.getKey());
-                logger.trace("Name: {}", value.get().getName());
-                res.getOutputVariables().put(entry.getKey(), value.get().getName());
-            }
-        }
-        logger.trace("[END] Parsing SPARLQ query");
-
-        return res;
-    }
-
-    /**
-     * 
-     * @param inputParameters
-     * @return
-     */
-    protected Object getJsonBody(Map<String, String> inputParameters) {
-
-        logger.trace("### [START] Creating input body JSON ###");
-
-        JSONObject body = new JSONObject();
-
-        for (Entry<String, String> entry : inputParameters.entrySet()) {
-
-            String inputJsonPath = getSail().getServiceDescriptor().getInputParameters().get(entry.getKey())
-                    .getInputJsonPath();
-
-            logger.trace("------");
-            logger.trace("Parameter detected");
-            logger.trace("Name: {}", entry.getKey());
-
-            // Create the body based on JSON object input strings
-            if (Objects.nonNull(inputJsonPath)) {
-                String[] paths = inputJsonPath.split("\\.");
-                int i = 0;
-
-                logger.trace("JSON path: {}", inputJsonPath);
-
-                JSONObject parent = body;
-
-                while (i < paths.length - 1) {
-                    String key = paths[i++];
-                    parent = (parent.containsKey(key)) ? (JSONObject) parent.get(key) : new JSONObject();
-                    body.put(key, parent);
-                }
-
-                parent.put(paths[i], entry.getValue());
-            } else {
-                logger.trace("JSON path: $");
-                body.put(entry.getKey(), entry.getValue());
-            }
-
-            // Run here using root
-        }
-        logger.trace("### [END] Creating input body JSON ###");
-        return body;
-    }
-
-    protected MultivaluedMap<String, String> getHashMapBody(Map<String, String> inputParameters) {
-
-        MultivaluedMap<String, String> map = new MultivaluedHashMap<>();
-
-        for (Map.Entry<String, String> entry : inputParameters.entrySet()) {
-            map.add(entry.getKey(), entry.getValue());
-        }
-
-        return map;
-    }
+    return map;
+  }
 }

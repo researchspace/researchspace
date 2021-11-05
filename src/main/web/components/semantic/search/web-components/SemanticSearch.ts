@@ -335,7 +335,7 @@ export class SemanticSearch extends Component<Props, State> {
     return React.createElement(
       SemanticSearchContext.Provider,
       { value: this.makeSearchContext() },
-      D.div({}, this.props.children)
+      D.div({ className: 'search-container' }, this.props.children)
     );
   }
 

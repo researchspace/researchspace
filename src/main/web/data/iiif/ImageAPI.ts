@@ -135,7 +135,7 @@ export function constructInformationRequestUri(serverAndPrefix: string, imageId:
 }
 
 export function constructServiceRequestUri(serverAndPrefix: string, imageId: string) {
-  return serverAndPrefix + `/${imageId}`;
+  return serverAndPrefix + '/' + encodeURIComponent(imageId);
 }
 
 export interface ImageBounds {

@@ -109,11 +109,11 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
       return D.div({});
     }
 
-    const dataState = this.props.dataState;
+    const { dataState, readonly } = this.props;
     this.lastRenderedDataState = this.dataState();
 
     const size = this.props.values.size;
-    const canEdit = dataState === DataState.Ready || dataState === DataState.Verifying;
+    const canEdit = readonly != true && (dataState === DataState.Ready || dataState === DataState.Verifying);
     const canAddValue = canEdit && size < definition.maxOccurs;
     const canRemoveValue = canEdit && size > definition.minOccurs && size > 0;
     const fieldLabel = (this.props.label || getPreferredLabel(definition.label) || 'value').toLowerCase();
@@ -150,7 +150,10 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
       this.props.definition.minOccurs === 1 &&
       this.props.definition.maxOccurs === 1;
 
-    const className = childIsInputGroup && !canCollapseGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
+    let className = childIsInputGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
+    if (canCollapseGroup) {
+      className = className + ` ${COMPONENT_NAME}_no-header`;
+    }
 
     return this.props.values.map((value, index) =>
       D.div(

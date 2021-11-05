@@ -26,7 +26,7 @@ import {
   createElement,
 } from 'react';
 import * as Kefir from 'kefir';
-import { debounce } from 'lodash';
+import { debounce, includes } from 'lodash';
 import {
   Workspace,
   WorkspaceProps,
@@ -38,6 +38,7 @@ import {
   Triple,
   Dictionary,
   ElementModel,
+  Element,
   SparqlQueryMethod,
   TemplateProps,
   ElementTemplate,
@@ -65,6 +66,8 @@ import {
   LinkModel,
   LinkTypeIri,
   CancellationToken,
+  getContentFittingBox,
+  Highlighter,
 } from 'ontodia';
 import * as URI from 'urijs';
 
@@ -807,13 +810,50 @@ export class Ontodia extends Component<OntodiaProps, State> {
       )
       .observe({
         value: ({ data }) => {
-          const element = model.elements.find(({ iri }) => iri === data.iri);
-          if (element) {
-            const { x, y } = element.position;
-            const { width, height } = element.size;
-            this.workspace.zoomToFitRect({ x, y, width, height });
-            editor.setSelection([element]);
+          if (data.iri) {
+            const element = model.elements.find(({ iri }) => iri === data.iri);
+            if (element) {
+              const box = getContentFittingBox([element], []);
+              this.workspace.zoomToFitRect(box);
+              editor.setSelection([element]);
+            }
+          } else if (data.iris) {
+            const elements = model.elements.filter(({ iri }) => includes(data.iris, iri));
+            if (elements.length !== 0) {
+              const box = getContentFittingBox(elements, []);
+              this.workspace.zoomToFitRect(box);
+              editor.setSelection(elements);
+            }
           }
+        },
+      });
+
+    this.cancellation
+      .map(
+        listen({
+          eventType: OntodiaEvents.HighlightElements,
+          target: id,
+        })
+      )
+      .observe({
+        value: ({ data }) => {
+          const view = this.workspace.getDiagram();
+          let highlighter: Highlighter;
+          if (data.iris) {
+            const highlightedElements = new Set<string>();
+            data.iris.forEach((iri) => highlightedElements.add(iri));
+            highlighter = (item) => {
+              if (item instanceof Element) {
+                return highlightedElements.has(item.iri);
+              }
+              if (item instanceof Link) {
+                const { sourceId, targetId } = item.data;
+                return highlightedElements.has(sourceId) || highlightedElements.has(targetId);
+              }
+              throw Error('Unknown item type');
+            };
+          }
+          view.setHighlighter(highlighter);
         },
       });
   }
@@ -1065,20 +1105,21 @@ export class Ontodia extends Component<OntodiaProps, State> {
       .then(() => {
         const { query, iri, linkSettings, iris } = this.props;
         const { diagramIri } = this.state;
+        let linkOptions = linkSettings as ReadonlyArray<LinkTypeOptions>;
 
         if (diagramIri) {
           return this.setLayoutByDiagram(diagramIri);
         } else if (query) {
-          return this.setLayoutBySparqlQuery(query);
+          return this.setLayoutBySparqlQuery(query, linkOptions);
         } else if (iri) {
-          return this.setLayoutByIri(iri);
+          return this.setLayoutByIri(iri, linkOptions);
         } else if (iris) {
-          return this.setLayoutByIris(iris);
+          return this.setLayoutByIris(iris, linkOptions);
         } else {
           return this.importModelLayout({
             preloadedElements: {},
             diagram: makeSerializedDiagram({
-              linkTypeOptions: linkSettings as ReadonlyArray<LinkTypeOptions>,
+              linkTypeOptions: linkOptions,
             }),
           });
         }
@@ -1091,11 +1132,11 @@ export class Ontodia extends Component<OntodiaProps, State> {
   /**
    * Sets diagram layout by sparql query
    */
-  private setLayoutBySparqlQuery(query: string): Promise<void> {
+  private setLayoutBySparqlQuery(query: string, linkSettings: ReadonlyArray<LinkTypeOptions>): Promise<void> {
     const { onNewDigaramInitialized: performDiagramLayout } = DEFAULT_FACTORY;
     const repositories = this.getRepositories();
     const loadingLayout = getRdfExtGraphBySparqlQuery(query, repositories).then((graph) => {
-      const layoutProvider = new GraphBuilder(this.dataProvider);
+      const layoutProvider = new GraphBuilder(this.dataProvider, linkSettings);
       return layoutProvider.getGraphFromRDFGraph(graph as Triple[]);
     });
     this.workspace.showWaitIndicatorWhile(loadingLayout);
@@ -1162,8 +1203,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
       });
   }
 
-  private setLayoutByIri(iri: string): Promise<void> {
-    return this.setLayoutByIris([iri]).then(() => {
+  private setLayoutByIri(iri: string, linkSettings: ReadonlyArray<LinkTypeOptions>): Promise<void> {
+    return this.setLayoutByIris([iri], linkSettings).then(() => {
       const editor = this.workspace.getEditor();
       const element = editor.model.elements.find(({ data }) => data.id === iri);
       if (element) {
@@ -1176,9 +1217,9 @@ export class Ontodia extends Component<OntodiaProps, State> {
       }
     });
   }
-  private setLayoutByIris(iris: string[]): Promise<void> {
+  private setLayoutByIris(iris: string[], linkSettings: ReadonlyArray<LinkTypeOptions>): Promise<void> {
     const { onNewDigaramInitialized: performDiagramLayout } = DEFAULT_FACTORY;
-    const layoutProvider = new GraphBuilder(this.dataProvider);
+    const layoutProvider = new GraphBuilder(this.dataProvider, linkSettings);
     const buildingGraph = layoutProvider.createGraph({
       elementIds: iris.map((iri) => iri as ElementIri),
       links: [],

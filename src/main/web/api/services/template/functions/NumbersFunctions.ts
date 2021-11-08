@@ -22,4 +22,6 @@ export const NumbersFunctions = {
   floor: (number) => Math.floor(number),
   round: (number) => Math.round(number),
   toFixed: (number: number, digits: number) => Number(number).toFixed(digits),
+  plus: (n1: number, n2: number) => Number(n1) + Number(n2),
+  minus: (n1: number, n2: number) => Number(n1) - Number(n2),
 };

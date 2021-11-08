@@ -93,6 +93,6 @@ export class Reparentable extends React.Component<Props> {
   }
 
   render() {
-    return <div style={{flex: '1 1 auto', overflowY: 'auto'}} ref={(el) => { this.el = el; }}></div>;
+    return <div style={{flex: '1 1 auto', overflowY: 'auto', height: '100%'}} ref={(el) => { this.el = el; }}></div>;
   }
 }

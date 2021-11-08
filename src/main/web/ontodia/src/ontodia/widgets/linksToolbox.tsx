@@ -204,21 +204,21 @@ class LinkTypesToolboxView extends React.Component<LinkTypesToolboxViewProps, { 
           <div className={`${className}__switch-all`}>
             <div className="ontodia-btn-group ontodia-btn-group-xs">
               <label
-                className="ontodia-btn ontodia-btn-default"
+                className="ontodia-btn ontodia-btn-primary"
                 title="Hide links and labels"
                 onClick={() => changeLinkTypeState(history, 'invisible', links)}
               >
                 <span className="fa fa-times" aria-hidden="true" />
               </label>
               <label
-                className="ontodia-btn ontodia-btn-default"
+                className="ontodia-btn ontodia-btn-primary"
                 title="Show links without labels"
                 onClick={() => changeLinkTypeState(history, 'withoutLabels', links)}
               >
                 <span className="fa fa-arrows-h" aria-hidden="true" />
               </label>
               <label
-                className="ontodia-btn ontodia-btn-default"
+                className="ontodia-btn ontodia-btn-primary"
                 title="Show links with labels"
                 onClick={() => changeLinkTypeState(history, 'allVisible', links)}
               >

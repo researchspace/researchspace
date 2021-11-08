@@ -64,9 +64,12 @@ interface KeywordSearchProps extends BaseConfig<React.CSSProperties> {}
 class KeywordSearch extends Component<KeywordSearchProps, {}> {
   render() {
     return (
-      <SemanticSearchContext.Consumer>
-        {(context) => <KeywordSearchInner {...this.props} context={context} />}
-      </SemanticSearchContext.Consumer>
+      <div className='keyword-search-container'>
+        <i className='rs-icon rs-icon-search'></i>
+        <SemanticSearchContext.Consumer>
+          {(context) => <KeywordSearchInner {...this.props} context={context} />}
+        </SemanticSearchContext.Consumer>
+      </div>
     );
   }
 }
@@ -81,7 +84,8 @@ interface State {
 
 class KeywordSearchInner extends React.Component<InnerProps, State> {
   static defaultProps: Partial<KeywordSearchProps> = {
-    placeholder: 'type to search, minimum 3 symbols ...',
+    placeholder: 'Search all, minimum 3 characters',
+    className: "input-keyword-search",
     searchTermVariable: '__token__',
     minSearchTermLength: 3,
     debounce: 300,

@@ -36,6 +36,7 @@ export interface AutocompleteInputProps extends AtomicValueInputProps {
   template?: string;
   placeholder?: string;
   nestedFormTemplate?: string;
+  minimumInput?: number;
 }
 
 interface SelectValue {
@@ -145,7 +146,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             // however, what will be passed in is a SelectValue
             onSelected: this.onChange as (val: any) => void,
           }}
-          minimumInput={MINIMUM_LIMIT}
+          minimumInput={this.props.minimumInput || MINIMUM_LIMIT}
         />
         {showCreateNewButton ? (
           <Button className={`${CLASS_NAME}__create-button`} onClick={this.toggleNestedForm}>

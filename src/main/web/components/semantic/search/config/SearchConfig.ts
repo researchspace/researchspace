@@ -660,6 +660,12 @@ export interface SemanticFacetConfig {
   openByDefault?: boolean;
 
   /**
+   * Selection to sort value resuls.
+   *
+   */
+  sortby?: string;
+
+  /**
    * Flag to select first category in the categories filter by default.
    *
    * Can be used in situations with many categories to reduce facets loading time.

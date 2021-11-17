@@ -157,8 +157,8 @@ export class RelationFacetComponent extends PureComponent<RelationFacetProps, Re
         }),
         Infinite(
           {
-            elementHeight: 20,
-            containerHeight: 250,
+            elementHeight: 35,
+            containerHeight: 300,
           },
           facetValues
             .filter((facetValue) => {

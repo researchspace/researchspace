@@ -29,34 +29,41 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 
-import io.buji.pac4j.filter.CallbackFilter;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+import org.researchspace.config.Configuration;
+import org.researchspace.servlet.filter.CorsFilter;
+
+import io.buji.pac4j.filter.SecurityFilter;
+import io.buji.pac4j.filter.LogoutFilter;
 
 /**
- * Proxies SSO callbacks to the filter from pac4j configuration.
- * 
- * @author Artem Kozlov {@literal <ak@metaphacts.com>}
+ * Provides an SSO login endpoint
  */
 @Singleton
-public class SSOCallbackFilter implements Filter {
+public class SSOLoginFilter implements Filter {
 
     /**
-     * Name of the callback filter parameter in the shiro INI configuration file.
-     * 
-     * @see org.researchspace.security.sso.shiro-sso-oauth-default.ini
-     * @see org.researchspace.security.sso.shiro-sso-saml-default.ini
+     * Name of the security and logout filter parameters in the shiro INI configuration file.
+     *
+     * @see researchspace.security.sso.shiro-sso-oauth-default.ini
+     * @see researchspace.security.sso.shiro-sso-saml-default.ini
      */
-    private static final String CALLBACK_FILTER = "callbackFilter";
+    private static final String SECURITY_FILTER = "securityFilter";
+    private static final String LOGOUT_FILTER = "logoutFilter";
 
-    private CallbackFilter callbackFilter;
+    private SecurityFilter securityFilter;
+    private LogoutFilter logoutFilter;
+
+    private Configuration config;
 
     @Inject
-    public SSOCallbackFilter(SSOEnvironment env) {
-        this.callbackFilter = env.getObject(CALLBACK_FILTER, CallbackFilter.class);
-
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-        httpResponse.sendRedirect("/");
+    public SSOLoginFilter(SSOEnvironment env, Configuration config) {
+        super();
+        this.config = config;
+        this.securityFilter = env.getObject(SECURITY_FILTER, SecurityFilter.class);
+        this.logoutFilter = env.getObject(LOGOUT_FILTER, LogoutFilter.class);
     }
 
     @Override
@@ -66,11 +73,14 @@ public class SSOCallbackFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        this.callbackFilter.doFilter(request, response, chain);
+
+            this.logoutFilter.doFilter(request, response, chain);
+            this.securityFilter.doFilter(request, response, chain); 
     }
 
     @Override
     public void destroy() {
-        this.callbackFilter.destroy();
+        this.securityFilter.destroy();
+        this.logoutFilter.destroy();
     }
 }

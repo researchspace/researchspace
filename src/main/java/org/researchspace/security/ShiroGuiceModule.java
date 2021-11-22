@@ -42,6 +42,7 @@ import org.researchspace.security.sso.SSOEnvironment;
 import org.researchspace.security.sso.SSOLogoutFilter;
 import org.researchspace.security.sso.SSORealmProvider;
 import org.researchspace.security.sso.SSOSecurityFilter;
+import org.researchspace.security.sso.SSOLoginFilter;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
@@ -119,6 +120,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
         // if config.environment.sso is set then we should use Single sing-on (SSO) auth
         else if (config.getEnvironmentConfig().getSso() != null) {
             addLocalLogin(config);
+            addSSOLogin();
             bindRealm().toProvider(SSORealmProvider.class).in(Singleton.class);
             addFilterChain("/sso/callback", ShiroFilter.ssoCallback.getFilterKey());
             addFilterChain("/logout", ShiroFilter.ssoLogout.getFilterKey());
@@ -147,12 +149,19 @@ public class ShiroGuiceModule extends ShiroWebModule {
         addFilterChain(LOGIN_PATH, Key.get(FormLogoutLoginFilter.class), ShiroFilter.authc.getFilterKey());
     }
 
+    protected void addSSOLogin() {
+        bindConstant().annotatedWith(Names.named("authc.loginUrl")).to(LOGIN_PATH);
+        addFilterChain(LOGIN_PATH, Key.get(SSOLoginFilter.class));
+    }
+
     protected void addLocalLogin(Configuration config) {
         if (config.getEnvironmentConfig().isEnableLocalUsers()) {
             bindLocalUsersRealm();
         }
 
-        addDefaultLoginPage();
+        if (config.getEnvironmentConfig().getSso() == null) {
+            addDefaultLoginPage();
+        }
     }
 
     protected void bindLocalUsersRealm() {

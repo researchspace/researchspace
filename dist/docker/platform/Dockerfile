@@ -76,11 +76,17 @@ COPY --chown=100:0 config/shiro.ini /runtime-data/config/shiro.ini
 # copy migrations scripts into docker image 
 COPY --chown=100:0 ./migrations /migrations
 
+# copy newrelic agent into docker image
+COPY --chown=100:0 ./newrelic-java.zip /opt/newrelic/newrelic-java.zip
+RUN unzip -j /opt/newrelic/newrelic-java.zip -d /opt/newrelic
+
 # one final, recursive change of permissions in /runtime-data
 RUN chmod g+w "/var/lib/jetty/webapps/ROOT.xml" \
 	&& chown -R 100:0 "/runtime-data" \
 	&& chmod -R g=u "/runtime-data" \
-	&& chmod -R g+ws "/runtime-data"
+	&& chmod -R g+ws "/runtime-data" \
+	&& chmod -R g=u "/opt/newrelic" \
+	&& chmod -R g+ws "/opt/newrelic"
 
 USER jetty
 

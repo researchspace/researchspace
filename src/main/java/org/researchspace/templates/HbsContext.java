@@ -44,6 +44,10 @@ public class HbsContext {
         return Optional.ofNullable(preferredLanguage);
     }
 
+    public String getLang() {
+        return preferredLanguage;
+    }
+
     public String getDeploymentTitle() {
         return deploymentTitle;
     }

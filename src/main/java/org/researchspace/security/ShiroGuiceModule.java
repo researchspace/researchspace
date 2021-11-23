@@ -121,7 +121,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
         // if config.environment.sso is set then we should use Single sing-on (SSO) auth
         else if (config.getEnvironmentConfig().getSso() != null) {
             addLocalLogin(config);
-            addSSOLogin();
+            addSSOLogin(config);
             bindRealm().toProvider(SSORealmProvider.class).in(Singleton.class);
             addFilterChain("/sso/callback", ShiroFilter.ssoCallback.getFilterKey());
             addFilterChain("/logout", ShiroFilter.ssoLogout.getFilterKey());
@@ -150,7 +150,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
         addFilterChain(LOGIN_PATH, Key.get(FormLogoutLoginFilter.class), ShiroFilter.authc.getFilterKey());
     }
 
-    protected void addSSOLogin() {
+    protected void addSSOLogin(Configuration config) {
         if (config.getEnvironmentConfig().isDisableLocalLogin()) {
             bindConstant().annotatedWith(Names.named("authc.loginUrl")).to(LOGIN_PATH);
             addFilterChain(LOGIN_PATH, Key.get(SSOLoginFilter.class));

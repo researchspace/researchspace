@@ -54,9 +54,6 @@ public class SSOCallbackFilter implements Filter {
     @Inject
     public SSOCallbackFilter(SSOEnvironment env) {
         this.callbackFilter = env.getObject(CALLBACK_FILTER, CallbackFilter.class);
-
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-        httpResponse.sendRedirect("/");
     }
 
     @Override
@@ -67,6 +64,9 @@ public class SSOCallbackFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         this.callbackFilter.doFilter(request, response, chain);
+
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        httpResponse.sendRedirect("/");
     }
 
     @Override

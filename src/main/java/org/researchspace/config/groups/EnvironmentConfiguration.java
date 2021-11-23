@@ -166,6 +166,14 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
         return getBoolean("enableLocalUsers", false);
     }
 
+    /**
+     * Disables the local login page for sso-only applications.
+     */
+    @ConfigurationParameter
+    public Boolean isDisableLocalLogin() {
+        return getBoolean("disableLocalLogin", false);
+    }
+
     /**************************** SPARQL HTTP CLIENT PARAMETERS ***************/
     @ConfigurationParameter
     public Integer getMaxSparqlHttpConnections() {

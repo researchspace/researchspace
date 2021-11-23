@@ -59,6 +59,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
     private static Logger logger = LogManager.getLogger(ShiroGuiceModule.class);
 
     public static final String LOGIN_PATH = "/login";
+    public static final String SSO_LOGIN_PATH = "/sso-login";
 
     private Injector coreInjector;
     private Provider<Configuration> config;
@@ -150,8 +151,12 @@ public class ShiroGuiceModule extends ShiroWebModule {
     }
 
     protected void addSSOLogin() {
-        bindConstant().annotatedWith(Names.named("authc.loginUrl")).to(LOGIN_PATH);
-        addFilterChain(LOGIN_PATH, Key.get(SSOLoginFilter.class));
+        if (config.getEnvironmentConfig().isDisableLocalLogin()) {
+            bindConstant().annotatedWith(Names.named("authc.loginUrl")).to(LOGIN_PATH);
+            addFilterChain(LOGIN_PATH, Key.get(SSOLoginFilter.class));
+        } else {
+            addFilterChain(SSO_LOGIN_PATH, Key.get(SSOLoginFilter.class));
+        }
     }
 
     protected void addLocalLogin(Configuration config) {
@@ -159,7 +164,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
             bindLocalUsersRealm();
         }
 
-        if (config.getEnvironmentConfig().getSso() == null) {
+        if (!config.getEnvironmentConfig().isDisableLocalLogin()) {
             addDefaultLoginPage();
         }
     }

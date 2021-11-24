@@ -170,8 +170,8 @@ public class EnvironmentConfiguration extends ConfigurationGroupBase {
      * Disables the local login page for sso-only applications.
      */
     @ConfigurationParameter
-    public Boolean isDisableLocalLogin() {
-        return getBoolean("disableLocalLogin", false);
+     public Boolean isEnableLocalLogin() {
+        return getBoolean("enableLocalLogin", false);
     }
 
     /**************************** SPARQL HTTP CLIENT PARAMETERS ***************/

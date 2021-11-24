@@ -151,7 +151,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
     }
 
     protected void addSSOLogin(Configuration config) {
-        if (config.getEnvironmentConfig().isDisableLocalLogin()) {
+        if (!config.getEnvironmentConfig().isEnableLocalLogin()) {
             bindConstant().annotatedWith(Names.named("authc.loginUrl")).to(LOGIN_PATH);
             addFilterChain(LOGIN_PATH, Key.get(SSOLoginFilter.class));
         } else {
@@ -164,7 +164,7 @@ public class ShiroGuiceModule extends ShiroWebModule {
             bindLocalUsersRealm();
         }
 
-        if (!config.getEnvironmentConfig().isDisableLocalLogin()) {
+        if (config.getEnvironmentConfig().isEnableLocalLogin() || config.getEnvironmentConfig().getSso() == null) {
             addDefaultLoginPage();
         }
     }

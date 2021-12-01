@@ -706,7 +706,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     };
   };
 
-  private getTimelineItemTemplate = makeVisJsTemplateFunction(this, (item) => {
+  private getTimelineItemTemplate = makeVisJsItemTemplateFunction(this, (item) => {
     const { tupleTemplate, tupleTemplateHeight } = this.props;
     // restore initial values that were in the result
     const options = {
@@ -721,7 +721,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     );
   });
 
-  private getTimelineGroupTemplate = makeVisJsTemplateFunction(this, (group) => {
+  private getTimelineGroupTemplate = makeVisJsGroupTemplateFunction(this, (group) => {
     const { groupTemplate } = this.props.options;
     if (!groupTemplate) {
       return group.content;
@@ -838,7 +838,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
   }
 }
 
-function makeVisJsTemplateFunction(
+function makeVisJsItemTemplateFunction(
   parent: React.Component,
   renderData: (item: any) => JSX.Element
 ): TimelineOptionsTemplateFunction {
@@ -855,6 +855,23 @@ function makeVisJsTemplateFunction(
     // In React 16.x rendering using ReactDOM always returns null inside lifecycle methods,
     // however if we return a non-Element object, Vis.js will call template function again
     // without `changedData` specified.
+    return {} as any;
+  };
+}
+
+/**
+ * We need to have a separate template function for groups because the API
+ * is slightly different from an item one, there is no changedData parameter.
+ *
+ * See comment in the makeVisJsItemTemplateFunction for more details
+ */
+function makeVisJsGroupTemplateFunction(
+  parent: React.Component,
+  renderData: (item: any) => JSX.Element
+): TimelineOptionsTemplateFunction {
+  return (item: any, element: Element) => {
+    const markup = renderData(item);
+    ReactDOM.unstable_renderSubtreeIntoContainer(parent, markup, element);
     return {} as any;
   };
 }

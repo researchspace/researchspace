@@ -58,216 +58,216 @@ import org.apache.commons.lang3.StringUtils;
 
 public class S3Storage implements ObjectStorage {
 
-    protected final class S3StorageLocation implements StorageLocation {
+  protected final class S3StorageLocation implements StorageLocation {
 
-        private String bucket;
-        private String key;
+    private String bucket;
+    private String key;
 
-        public S3StorageLocation(String bucket, String key) {
-            this.bucket = bucket;
-            this.key = key;
-        }
-
-        @Override
-        public ObjectStorage getStorage() {
-            return S3Storage.this;
-        }
-
-        @Override
-        public SizedStream readSizedContent() throws IOException {
-            S3Object object = s3.getObject(config.getBucket(), key);
-            return new SizedStream((InputStream) object.getObjectContent(),
-                    object.getObjectMetadata().getContentLength());
-        }
-
-    }
-
-    @Inject
-    private Provider<SecretResolver> secretResolver;
-
-    public static final String AUTHOR_KEY = "Author";
-    public static final String STORAGE_TYPE = "s3";
-    public final PathMapping paths;
-    public final S3StorageConfig config;
-
-    private AmazonS3 s3;
-
-    public S3Storage(PathMapping paths, S3StorageConfig config) throws StorageException {
-        this.paths = paths;
-        this.config = config;
-
-        initialize();
-    }
-
-    private void resolveSecrets(S3StorageConfig config) {
-        if (config.getUnResolvedAccessKeyId() != null && config.getUnResolvedSecretKeyId() != null) {
-            String accessKeyId = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
-                    config.getUnResolvedAccessKeyId());
-            config.setAccessKeyId(accessKeyId);
-
-            String secretKeyId = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
-                    config.getUnResolvedSecretKeyId());
-            config.setSecretKeyId(secretKeyId);
-        }
-    }
-
-    private void initialize() throws StorageException {
-        this.resolveSecrets(config);
-
-        // Without access-key or secret-key throw exception
-        if (config.getAccessKeyId() != null && config.getSecretKeyId() != null) {
-
-            BasicAWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(), config.getSecretKeyId());
-
-            // Without endpoint or region create a basic s3 storage otherwise create custom
-            // endpoint configuration
-            if (config.getEndpoint() != null && config.getRegion() != null) {
-                this.s3 = AmazonS3ClientBuilder.standard()
-                        .withEndpointConfiguration(
-                                new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion()))
-                        .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
-            } else {
-                this.s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                        .build();
-            }
-
-        } else {
-            throw new StorageException("Access KEY ID or Secret KEY ID not found");
-        }
-
+    public S3StorageLocation(String bucket, String key) {
+      this.bucket = bucket;
+      this.key = key;
     }
 
     @Override
-    public boolean isMutable() {
-        return config.isMutable();
+    public ObjectStorage getStorage() {
+      return S3Storage.this;
     }
 
     @Override
-    public Optional<ObjectRecord> getObject(StoragePath path, String revision) throws StorageException {
+    public SizedStream readSizedContent() throws IOException {
+      S3Object object = s3.getObject(config.getBucket(), key);
+      return new SizedStream((InputStream) object.getObjectContent(),
+          object.getObjectMetadata().getContentLength());
+    }
 
-        try {
+  }
 
-            String key = getKeyFromStoragePath(path);
+  @Inject
+  private Provider<SecretResolver> secretResolver;
 
-            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(), key);
+  public static final String AUTHOR_KEY = "Author";
+  public static final String STORAGE_TYPE = "s3";
+  public final PathMapping paths;
+  public final S3StorageConfig config;
 
-            // If metadata exist
-            String user = s3Metadata.getUserMetaDataOf(AUTHOR_KEY);
-            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key);
-            ObjectMetadata metadata = new ObjectMetadata(Objects.isNull(user) ? "" : user,
-                    s3Metadata.getLastModified().toInstant());
+  private AmazonS3 s3;
 
-            return Optional.of(new ObjectRecord(location, path, revision, metadata));
-        } catch (AmazonS3Exception e) {
-            // If the key is missing, return an empty result
-            if (StringUtils.equals(e.getErrorCode(), "NoSuchKey")
-                    || StringUtils.equals(e.getErrorCode(), "404 Not Found"))
-                return Optional.empty();
-            throw new StorageException(e.getMessage());
-        } catch (Exception e) {
-            throw new StorageException(e.getMessage());
+  public S3Storage(PathMapping paths, S3StorageConfig config) throws StorageException {
+    this.paths = paths;
+    this.config = config;
+
+    initialize();
+  }
+
+  private void resolveSecrets(S3StorageConfig config) {
+    if (config.getUnResolvedAccessKeyId() != null && config.getUnResolvedSecretKeyId() != null) {
+      String accessKeyId = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+          config.getUnResolvedAccessKeyId());
+      config.setAccessKeyId(accessKeyId);
+
+      String secretKeyId = SecretsHelper.resolveSecretOrFallback(secretResolver.get(),
+          config.getUnResolvedSecretKeyId());
+      config.setSecretKeyId(secretKeyId);
+    }
+  }
+
+  private void initialize() throws StorageException {
+    this.resolveSecrets(config);
+
+    // Without access-key or secret-key throw exception
+    if (config.getAccessKeyId() != null && config.getSecretKeyId() != null) {
+
+      BasicAWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(), config.getSecretKeyId());
+
+      // Without endpoint or region create a basic s3 storage otherwise create custom
+      // endpoint configuration
+      if (config.getEndpoint() != null && config.getRegion() != null) {
+        this.s3 = AmazonS3ClientBuilder.standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion()))
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
+      } else {
+        this.s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+      }
+
+    } else {
+      throw new StorageException("Access KEY ID or Secret KEY ID not found");
+    }
+
+  }
+
+  @Override
+  public boolean isMutable() {
+    return config.isMutable();
+  }
+
+  @Override
+  public Optional<ObjectRecord> getObject(StoragePath path, String revision) throws StorageException {
+
+    try {
+
+      String key = getKeyFromStoragePath(path);
+
+      com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(), key);
+
+      // If metadata exist
+      String user = s3Metadata.getUserMetaDataOf(AUTHOR_KEY);
+      S3StorageLocation location = new S3StorageLocation(config.getBucket(), key);
+      ObjectMetadata metadata = new ObjectMetadata(Objects.isNull(user) ? "" : user,
+          s3Metadata.getLastModified().toInstant());
+
+      return Optional.of(new ObjectRecord(location, path, revision, metadata));
+    } catch (AmazonS3Exception e) {
+      // If the key is missing, return an empty result
+      if (StringUtils.equals(e.getErrorCode(), "NoSuchKey")
+          || StringUtils.equals(e.getErrorCode(), "404 Not Found"))
+        return Optional.empty();
+      throw new StorageException(e.getMessage());
+    } catch (Exception e) {
+      throw new StorageException(e.getMessage());
+    }
+
+  }
+
+  @Override
+  public List<ObjectRecord> getRevisions(StoragePath path) throws StorageException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<ObjectRecord> getAllObjects(StoragePath prefix) throws StorageException {
+
+    Optional<StoragePath> mappedPrefix = paths.mapForward(prefix);
+
+    if (!mappedPrefix.isPresent()) {
+      throw new StorageException("");
+    }
+
+    String pref = mappedPrefix.get().toString();
+
+    try {
+
+      ListObjectsV2Result result = s3.listObjectsV2(config.getBucket(), pref);
+      List<ObjectRecord> records = new ArrayList<>();
+
+      List<S3ObjectSummary> objects = result.getObjectSummaries();
+      for (S3ObjectSummary os : objects) {
+
+        Optional<StoragePath> path = StoragePath.tryParse(os.getKey()).flatMap(paths::mapBack);
+
+        if (path.isPresent()) {
+          Optional<ObjectRecord> objectRecord = getObject(path.get(), null);
+          if (objectRecord.isPresent()) {
+            records.add(objectRecord.get());
+          }
         }
 
+      }
+
+      return records;
+
+    } catch (Exception e) {
+
+      throw new StorageException(e.getMessage());
     }
+  }
 
-    @Override
-    public List<ObjectRecord> getRevisions(StoragePath path) throws StorageException {
-        // TODO Auto-generated method stub
-        return null;
+  @Override
+  public ObjectRecord appendObject(StoragePath path, ObjectMetadata metadata, InputStream content, long contentLength)
+      throws StorageException {
+
+    try {
+      ObjectRecord objectRecord;
+
+      String key = getKeyFromStoragePath(path);
+
+      S3StorageLocation location = new S3StorageLocation(config.getBucket(), key);
+
+      // TODO: calculate revision
+      objectRecord = new ObjectRecord(location, path, "", metadata);
+      com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = new com.amazonaws.services.s3.model.ObjectMetadata();
+      s3Metadata.addUserMetadata(AUTHOR_KEY, metadata.getAuthor());
+
+      // TODO: check PutObjectResult
+      s3.putObject(config.getBucket(), key, content, s3Metadata);
+
+      return objectRecord;
+
+    } catch (SdkClientException e) {
+      throw new StorageException(e.getMessage());
+    } catch (Exception e) {
+      throw new StorageException(e.getMessage());
     }
+  }
 
-    @Override
-    public List<ObjectRecord> getAllObjects(StoragePath prefix) throws StorageException {
+  @Override
+  public void deleteObject(StoragePath path, ObjectMetadata metadata) throws StorageException {
+    try {
+      String key = getKeyFromStoragePath(path);
 
-        Optional<StoragePath> mappedPrefix = paths.mapForward(prefix);
+      s3.deleteObject(config.getBucket(), key);
 
-        if (!mappedPrefix.isPresent()) {
-            throw new StorageException("");
-        }
-
-        String pref = mappedPrefix.get().toString();
-
-        try {
-
-            ListObjectsV2Result result = s3.listObjectsV2(config.getBucket(), pref);
-            List<ObjectRecord> records = new ArrayList<>();
-
-            List<S3ObjectSummary> objects = result.getObjectSummaries();
-            for (S3ObjectSummary os : objects) {
-
-                Optional<StoragePath> path = StoragePath.tryParse(os.getKey()).flatMap(paths::mapBack);
-
-                if (path.isPresent()) {
-                    Optional<ObjectRecord> objectRecord = getObject(path.get(), null);
-                    if (objectRecord.isPresent()) {
-                        records.add(objectRecord.get());
-                    }
-                }
-
-            }
-
-            return records;
-
-        } catch (Exception e) {
-
-            throw new StorageException(e.getMessage());
-        }
+    } catch (Exception e) {
+      throw new StorageException(e.getMessage());
     }
+  }
 
-    @Override
-    public ObjectRecord appendObject(StoragePath path, ObjectMetadata metadata, InputStream content, long contentLength)
-            throws StorageException {
+  /**
+   * 
+   * @param path
+   * @return
+   * @throws StorageException
+   */
+  private String getKeyFromStoragePath(StoragePath path) throws StorageException {
 
-        try {
-            ObjectRecord objectRecord;
+    Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
 
-            String key = getKeyFromStoragePath(path);
+    if (!key.isPresent())
+      throw new StorageException("Error, the object key is not present");
 
-            S3StorageLocation location = new S3StorageLocation(config.getBucket(), key);
-
-            // TODO: calculate revision
-            objectRecord = new ObjectRecord(location, path, "", metadata);
-            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = new com.amazonaws.services.s3.model.ObjectMetadata();
-            s3Metadata.addUserMetadata(AUTHOR_KEY, metadata.getAuthor());
-
-            // TODO: check PutObjectResult
-            s3.putObject(config.getBucket(), key, content, s3Metadata);
-
-            return objectRecord;
-
-        } catch (SdkClientException e) {
-            throw new StorageException(e.getMessage());
-        } catch (Exception e) {
-            throw new StorageException(e.getMessage());
-        }
-    }
-
-    @Override
-    public void deleteObject(StoragePath path, ObjectMetadata metadata) throws StorageException {
-        try {
-            String key = getKeyFromStoragePath(path);
-
-            s3.deleteObject(config.getBucket(), key);
-
-        } catch (Exception e) {
-            throw new StorageException(e.getMessage());
-        }
-    }
-
-    /**
-     * 
-     * @param path
-     * @return
-     * @throws StorageException
-     */
-    private String getKeyFromStoragePath(StoragePath path) throws StorageException {
-
-        Optional<String> key = this.paths.mapForward(path).map(StoragePath::toString);
-
-        if (!key.isPresent())
-            throw new StorageException("Error, the object key is not present");
-
-        return key.get();
-    }
+    return key.get();
+  }
 
 }

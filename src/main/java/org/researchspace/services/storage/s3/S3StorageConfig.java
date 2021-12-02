@@ -31,80 +31,80 @@ import org.researchspace.services.storage.api.StorageException;
 
 public class S3StorageConfig extends StorageConfig {
 
-    private String endpoint;
-    private String bucket;
-    private String region;
+  private String endpoint;
+  private String bucket;
+  private String region;
 
-    private String accessKeyId;
-    private String secretKeyId;
+  private String accessKeyId;
+  private String secretKeyId;
 
-    private String unResolvedAccessKeyId;
-    private String unResolvedSecretKeyId;
+  private String unResolvedAccessKeyId;
+  private String unResolvedSecretKeyId;
 
-    @Override
-    public String getStorageType() {
-        return S3Storage.STORAGE_TYPE;
-    }
+  @Override
+  public String getStorageType() {
+    return S3Storage.STORAGE_TYPE;
+  }
 
-    public String getUnResolvedSecretKeyId() {
-        return unResolvedSecretKeyId;
-    }
+  public String getUnResolvedSecretKeyId() {
+    return unResolvedSecretKeyId;
+  }
 
-    public void setUnResolvedSecretKeyId(String unResolvedSecretKeyId) {
-        this.unResolvedSecretKeyId = unResolvedSecretKeyId;
-    }
+  public void setUnResolvedSecretKeyId(String unResolvedSecretKeyId) {
+    this.unResolvedSecretKeyId = unResolvedSecretKeyId;
+  }
 
-    public String getUnResolvedAccessKeyId() {
-        return unResolvedAccessKeyId;
-    }
+  public String getUnResolvedAccessKeyId() {
+    return unResolvedAccessKeyId;
+  }
 
-    public void setUnResolvedAccessKeyId(String unResolvedAccessKeyId) {
-        this.unResolvedAccessKeyId = unResolvedAccessKeyId;
-    }
+  public void setUnResolvedAccessKeyId(String unResolvedAccessKeyId) {
+    this.unResolvedAccessKeyId = unResolvedAccessKeyId;
+  }
 
-    public String getEndpoint() {
-        return endpoint;
-    }
+  public String getEndpoint() {
+    return endpoint;
+  }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
+  public void setEndpoint(String endpoint) {
+    this.endpoint = endpoint;
+  }
 
-    public String getSecretKeyId() {
-        return secretKeyId;
-    }
+  public String getSecretKeyId() {
+    return secretKeyId;
+  }
 
-    public void setSecretKeyId(String secretKeyId) {
-        this.secretKeyId = secretKeyId;
-    }
+  public void setSecretKeyId(String secretKeyId) {
+    this.secretKeyId = secretKeyId;
+  }
 
-    public String getAccessKeyId() {
-        return accessKeyId;
-    }
+  public String getAccessKeyId() {
+    return accessKeyId;
+  }
 
-    public void setAccessKeyId(String accessKeyId) {
-        this.accessKeyId = accessKeyId;
-    }
+  public void setAccessKeyId(String accessKeyId) {
+    this.accessKeyId = accessKeyId;
+  }
 
-    public String getRegion() {
-        return region;
-    }
+  public String getRegion() {
+    return region;
+  }
 
-    public void setRegion(String region) {
-        this.region = region;
-    }
+  public void setRegion(String region) {
+    this.region = region;
+  }
 
-    public String getBucket() {
-        return bucket;
-    }
+  public String getBucket() {
+    return bucket;
+  }
 
-    public void setBucket(String bucket) {
-        this.bucket = bucket;
-    }
+  public void setBucket(String bucket) {
+    this.bucket = bucket;
+  }
 
-    @Override
-    public ObjectStorage createStorage(StorageCreationParams params) throws StorageException {
-        return new S3Storage(params.getPathMapping(), this);
-    }
+  @Override
+  public ObjectStorage createStorage(StorageCreationParams params) throws StorageException {
+    return new S3Storage(params.getPathMapping(), this);
+  }
 
 }

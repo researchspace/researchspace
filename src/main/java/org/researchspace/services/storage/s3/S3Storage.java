@@ -85,6 +85,7 @@ public class S3Storage implements ObjectStorage {
     @Inject
     private Provider<SecretResolver> secretResolver;
 
+    public static final String AUTHOR_KEY = "Author";
     public static final String STORAGE_TYPE = "s3";
     public final PathMapping paths;
     public final S3StorageConfig config;
@@ -151,7 +152,7 @@ public class S3Storage implements ObjectStorage {
             com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = s3.getObjectMetadata(config.getBucket(), key);
 
             // If metadata exist
-            String user = s3Metadata.getUserMetaDataOf("Author");
+            String user = s3Metadata.getUserMetaDataOf(AUTHOR_KEY);
             S3StorageLocation location = new S3StorageLocation(config.getBucket(), key);
             ObjectMetadata metadata = new ObjectMetadata(Objects.isNull(user) ? "" : user,
                     s3Metadata.getLastModified().toInstant());
@@ -226,9 +227,11 @@ public class S3Storage implements ObjectStorage {
 
             // TODO: calculate revision
             objectRecord = new ObjectRecord(location, path, "", metadata);
+            com.amazonaws.services.s3.model.ObjectMetadata s3Metadata = new com.amazonaws.services.s3.model.ObjectMetadata();
+            s3Metadata.addUserMetadata(AUTHOR_KEY, metadata.getAuthor());
 
             // TODO: check PutObjectResult
-            s3.putObject(config.getBucket(), key, content.toString());
+            s3.putObject(config.getBucket(), key, content, s3Metadata);
 
             return objectRecord;
 

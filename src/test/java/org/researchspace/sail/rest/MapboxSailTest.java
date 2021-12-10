@@ -30,6 +30,7 @@ import org.eclipse.rdf4j.repository.util.Repositories;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.researchspace.sparql.SparqlTestUtils;
 
@@ -40,6 +41,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
  * @author Janmaruko Hōrensō <@gspinaci>
  *
  */
+@Ignore
 public class MapboxSailTest {
     @ClassRule
     public static WireMockRule wireMockRule = new WireMockRule(

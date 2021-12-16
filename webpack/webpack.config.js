@@ -262,6 +262,7 @@ module.exports = function(isProd) {
                     'basil.js': 'basil.js/src/basil.js',
                     'handlebars': 'handlebars/dist/handlebars.js',
                     'jsonld': path.join(ROOT_DIR, 'node_modules/jsonld/dist/jsonld.js'),
+                    'cesium': path.join(ROOT_DIR, 'node_modules/cesium/Build/CesiumUnminified/Cesium.js'),
                 },
             ),
             extensions: ['.ts', '.tsx', '.js']

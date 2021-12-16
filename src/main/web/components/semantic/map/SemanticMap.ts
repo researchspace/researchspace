@@ -67,8 +67,8 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
 
 
-import * as Cesium from '../../../../../../node_modules/cesium/Build/CesiumUnminified/Cesium.js';
-(<any>window).Cesium = Cesium;
+import * as cesium from 'cesium';
+(<any>window).Cesium = cesium;
 (<any>window).CESIUM_BASE_URL = '/assets/no_auth/';
 import OLCesium from 'olcs/OLCesium';
 

@@ -66,6 +66,12 @@ import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
 import { TemplateItem } from 'platform/components/ui/template';
 
+
+import * as Cesium from '../../../../../../node_modules/cesium/Build/CesiumUnminified/Cesium.js';
+(<any>window).Cesium = Cesium;
+(<any>window).CESIUM_BASE_URL = '/assets/no_auth/';
+import OLCesium from 'olcs/OLCesium';
+
 import * as Popup from 'ol-popup';
 
 import 'ol/ol.css';
@@ -96,6 +102,7 @@ import {
   SemanticMapControlsSendFeaturesLabelToMap,
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
+  SemanticMapControlsSendToggle3d
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -226,6 +233,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   private snap: Interaction;
   private defaultFeaturesColor = "rgba(200,80,20,0.3)";
 
+  private ol3d: OLCesium;
+
   constructor(props: SemanticMapProps, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -350,7 +359,19 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         })
       )
       .onValue(this.updateFeatureColorsByGroups);
-      
+
+    this.cancelation
+      .map(
+        listen({
+            eventType: SemanticMapControlsSendToggle3d
+          })
+      )
+      .onValue(this.toggle3d);
+  }
+
+  private toggle3d = (event: Event<any>) => {
+    console.log("TOGGLED" + event.data)
+    this.ol3d.setEnabled(!this.ol3d.getEnabled())
   }
 
   private updateFeatureColorsByGroups = (event: Event<any>) => {
@@ -993,6 +1014,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           this.layers = layers;
           this.map = map;
 
+          const ol3d = new OLCesium({map: this.map, resolutionScale: 0.1}); // ol2dMap is the ol.Map instance
+          this.ol3d = ol3d;
           //TODO: Do this only If there's a semantic-map-controls component
           //this.triggerSendLayers();
 

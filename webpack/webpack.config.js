@@ -24,6 +24,9 @@ const CircularDependencyPlugin = require('circular-dependency-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaults = require('./defaults')();
 
+const cesiumSource = 'node_modules/cesium/Build/CesiumUnminified/';
+const CopyPlugin = require("copy-webpack-plugin");
+
 /**
  * @param {ReturnType<import('./defaults')>} defaults
  * @returns {import('webpack').Configuration}
@@ -272,6 +275,15 @@ module.exports = function(isProd) {
             'react/lib/ReactContext': true
         },
         plugins: [
+            //new WriteFilePlugin(),
+            // Copy Cesium Assets, Widgets, and Workers to a static directory
+            new CopyPlugin(
+                [
+                    { from: path.join(cesiumSource, 'Workers'), to: 'Workers' },
+                    { from: path.join(cesiumSource, 'Assets'), to: 'Assets' },
+                    { from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' }
+                ]
+            ),
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
                 exclude: /src\/main\/web\/ontodia|node_modules/,

@@ -1,12 +1,9 @@
-import { createElement } from 'react';
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { Component, ComponentContext } from 'platform/api/components';
-import SemanticMap, { SemanticMapConfig, SemanticMapProps } from 'platform/components/semantic/map/SemanticMap';
 import { trigger, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import {
-  SemanticMapControlsOverlayOpacity,
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
   SemanticMapControlsFeatureColor,
@@ -17,6 +14,7 @@ import {
   SemanticMapControlsSendFeaturesLabelToMap,
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
+  SemanticMapControlsSendToggle3d
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -28,9 +26,6 @@ import reactCSS from 'reactcss';
 import _ = require('lodash');
 import VectorLayer from 'ol/layer/Vector';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { SearchAndFilters } from 'platform/components/sets/views/SearchAndFilters';
-
-const b = block('overlay-comparison');
 
 const sliderbar: CSSProperties = {
   width: '100%',
@@ -219,7 +214,7 @@ export class SemanticMapControls extends Component<Props, State> {
 
   public componentWillUnmount() {}
 
-  componentDidUpdate(PrevProps, prevState) {
+  public componentDidUpdate(PrevProps, prevState) {
     //Group Color associations
     if (JSON.stringify(this.state.groupColorAssociations) !== JSON.stringify(prevState.groupColorAssociations)) {
       console.log('%cGroupColors Associations  È Cambiato! Prima era:', 'color: green; font-size: 20px');
@@ -310,8 +305,11 @@ export class SemanticMapControls extends Component<Props, State> {
 
     return D.div(
       null,
-      <div           style={{display: 'none'}}
-      className={'featuresOptionsContainer'}>
+      // <div className={'featuresOptionsContainer'}>
+      //   {/* <h3 className={'mapOptionsSectionTitle'}>3D</h3> */}
+      // </div>,
+      <div style={{display: 'none'}}
+      className={'timeSliderContainer'}>
         <input
           type={'range'}
           className={'timelineSlider'}
@@ -333,6 +331,11 @@ export class SemanticMapControls extends Component<Props, State> {
       </div>,
       (this.props.featuresOptionsEnabled && <div className={'featuresOptionsContainer'}>
         <h3 className={'mapOptionsSectionTitle'}>Options</h3>
+        <div
+          className={'toggle3dBtn'}
+          onClick={() => this.triggerSendToggle3d()}
+          style={{cursor: "pointer"}}
+        ><i className="fa fa-cube" aria-hidden="true"></i> Toggle 3d</div>
         <div className={'mapLayersFiltersContainer'}>
           <div>
         <label style={{ marginRight: '10px', userSelect: 'none'}}>Label by: </label>
@@ -431,7 +434,7 @@ export class SemanticMapControls extends Component<Props, State> {
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
-              <h3 className={'mapLayersTitle'}>Map Layers</h3>
+              {/* <h3 className={'mapLayersTitle'}>Map Layers</h3> */}
               {this.props.showFilters && <div className="mapLayersFiltersContainer">
                 <label>Filter:</label>
                 <input
@@ -465,7 +468,7 @@ export class SemanticMapControls extends Component<Props, State> {
                 ></input>
                 <label className="fitersLabel">Basemaps</label>
               </div>}
-              <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr>
+              {/* <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr> */}
               {this.state.mapLayers.map(
                 (mapLayer, index) =>
                   this.state.filters[mapLayer.get('level')] && (
@@ -485,10 +488,10 @@ export class SemanticMapControls extends Component<Props, State> {
                             <img src={mapLayer.get('thumbnail')} className={'layerThumbnail'}></img>
                           </div>
                           <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
-                            <div style={{ width: '200px' }}>
+                            <div style={{ width: '250px' }}>
                               <label className={'layerTitle'}>{mapLayer.get('author')}</label>
                               <div>
-                                <label className={'layerLabel'}><em>{mapLayer.get('name')}</em></label>
+                                <label className={'layerLabel'}><span>{mapLayer.get('name')}</span></label>
                                 <label className={'layerLabel'}>{mapLayer.get('year')}</label>
                                 {/*<label className={'layerLabel'}>{mapLayer.get('location')}</label>*/}
                                 <input
@@ -511,7 +514,7 @@ export class SemanticMapControls extends Component<Props, State> {
                           <div className="togglesColumnRight" style={{ display: 'inline-block' }}>
                             {mapLayer.get('visible') && (
                               <i
-                                className="fa fa-check-square-o layerCheck"
+                                className="fa fa-toggle-on layerCheck"
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => {
                                   this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', false);
@@ -523,7 +526,7 @@ export class SemanticMapControls extends Component<Props, State> {
                             )}
                             {!mapLayer.get('visible') && (
                               <i
-                                className="fa fa-square-o layerCheck"
+                                className="fa fa-toggle-off layerCheck"
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => {
                                   this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
@@ -542,7 +545,7 @@ export class SemanticMapControls extends Component<Props, State> {
                             {this.state.maskIndex !== index && (
                               <i
                                 className="fa fa-eye-slash layerMaskIcon"
-                                style={{ cursor: 'pointer', color: 'rgba(230,230,230,1)' }}
+                                style={{ cursor: 'pointer', color: 'rgba(200,200,200,1)' }}
                                 onClick={() => {
                                   if (!mapLayer.get('visible')) {
                                     this.setMapLayerProperty(mapLayer.get('identifier'), 'visible', true);
@@ -841,10 +844,20 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   }
 
+  private triggerSendToggle3d() {
+    console.log("fired 3d");
+    trigger({
+      eventType: SemanticMapControlsSendToggle3d,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: "toggle"
+    });
+  }
+
   private triggerSendFeaturesColorsAssociationsToMap() {
-    console.log('%cSENDING FEATURES COLORS ASSOCIATIONS', 'color: yellow; font-size: 15px');
-    console.log(this.state.groupColorAssociations);
-    console.log('%c*************************', 'color: yellow; font-size: 15px');
+    //console.log('%cSENDING FEATURES COLORS ASSOCIATIONS', 'color: yellow; font-size: 15px');
+    //console.log(this.state.groupColorAssociations);
+    //console.log('%c*************************', 'color: yellow; font-size: 15px');
     trigger({
       eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
       source: this.props.id,
@@ -852,7 +865,7 @@ export class SemanticMapControls extends Component<Props, State> {
       targets: [this.props.targetMapId],
     });
   }
-
+  /*
   private triggerFeatureColor = (color: any) => {
     let color_rgba = color.rgb;
     let rgba_string: string;
@@ -864,6 +877,7 @@ export class SemanticMapControls extends Component<Props, State> {
       targets: [this.props.targetMapId],
     });
   };
+  */
 
   private triggerSwipe = (swipeValue: number) => {
     trigger({

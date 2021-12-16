@@ -14,6 +14,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.SendFeaturesColorTaxonomyToMap': string;
   'SemanticMapControls.SendFeaturesGroupsToControls': string[];
   'SemanticMapControls.SendGroupColorsAssociationsToMap': {};
+  'SemanticMapControls.SendToggle3d': string;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -30,3 +31,4 @@ export const SemanticMapControlsSendMaskIndexToMap = event('SemanticMapControls.
 export const SemanticMapControlsSendFeaturesLabelToMap = event('SemanticMapControls.SendFeaturesLabelToMap');
 export const SemanticMapControlsSendFeaturesColorTaxonomyToMap = event('SemanticMapControls.SendFeaturesColorTaxonomyToMap');
 export const SemanticMapControlsSendGroupColorsAssociationsToMap = event('SemanticMapControls.SendGroupColorsAssociationsToMap');
+export const SemanticMapControlsSendToggle3d = event('SemanticMapControls.SendToggle3d');

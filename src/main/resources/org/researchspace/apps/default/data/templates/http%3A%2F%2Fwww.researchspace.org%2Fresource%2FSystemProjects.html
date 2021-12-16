@@ -1,0 +1,60 @@
+<div class="page__grid-container">
+  <div class='page__content-container'>
+    <div class="page__main-title-row">
+      <h1 class="rs-main-title">Projects</h1>
+      <div class="page__main-top-actions">
+        [[#if (hasPermission "forms:ldp:*")]]
+            <button class="btn btn-grey" title="New Project">
+              <i class="fa fa-plus btn-icon-left"></i>
+              <span>New Project</span>
+            </button>
+        [[/if]]
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <semantic-context repository='assets'>
+          
+          <semantic-table config='{
+
+          "query": "SELECT * WHERE {
+                      ?page crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+                      ?page crm:P1_is_identified_by ?identifier.
+                      ?identifier rdfs:label ?label;
+                        crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/projectid>.
+
+                      ?page crm:P67i_is_referred_to_by ?ref .
+                      ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                      ?ref crm:P190_has_symbolic_content ?description .
+                    } ORDER BY DESC(?ref)",
+                    
+          "columnConfiguration": [{
+                                    "variableName": "page",
+                                    "displayName": "Project",
+                                    "cellTemplate": "{{> view}}"
+                                  },
+                                  
+                                  {
+                                    "variableName": "description",
+                                    "displayName": "Description"
+                                  }                                  
+                                ]}'>
+            
+            <template id='view'>
+              <div style="display: flex; align-items: center;">
+                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <semantic-link iri='{{page.value}}' 
+                                class='a-draggable'
+                                >
+                  <div style="display: flex; align-items: center;">
+                    <span>{{label.value}}</span>
+                  </div>
+                </semantic-link>
+
+              </div>
+              
+            </template>
+          </semantic-table>
+      </semantic-context>
+    </div>
+  </div>
+</div>

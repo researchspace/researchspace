@@ -75,7 +75,7 @@ public class LoginEndpoint {
         if (request.getAttribute(
                 org.apache.shiro.web.filter.authc.FormAuthenticationFilter.DEFAULT_ERROR_KEY_ATTRIBUTE_NAME) != null) {
             map.put(org.apache.shiro.web.filter.authc.FormAuthenticationFilter.DEFAULT_ERROR_KEY_ATTRIBUTE_NAME,
-                    "Username or Password incorrect.");
+                    "Incorrect username or password.");
         }
         map.put("assetsMap", this.assetsMap.get().getAssets());
         return st.renderPageLayoutTemplate(TEMPLATES.LOGIN_PAGE, map);

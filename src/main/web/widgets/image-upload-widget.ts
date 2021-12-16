@@ -371,7 +371,7 @@ class ImageUploadWidget extends Component<Props, State> {
         ),
         D.button(
           {
-            className: 'btn btn-sm btn-danger iiif-upload__cancel-button pull-right',
+            className: 'btn btn-sm btn-default iiif-upload__cancel-button pull-right',
             onClick: () => window.location.reload(),
           },
           'Cancel'

@@ -223,7 +223,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   private renderNodeInfoTemplate(node: Node) {
     if (this.props.infoTemplate) {
-      return <TemplateItem template={{source: this.props.infoTemplate, options: {iri: node.iri.value}}} />;
+      return <TemplateItem template={{source: this.props.infoTemplate, options: {iri: node.iri.value, label: node.label.value}}} />;
     } else {
       return null;
     }

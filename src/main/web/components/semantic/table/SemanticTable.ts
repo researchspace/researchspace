@@ -47,6 +47,7 @@ interface ControlledProps {
 interface TableState {
   data?: SparqlClient.SparqlSelectResult;
   isLoading?: boolean;
+  currentPage?: number;
   error?: any;
 }
 
@@ -148,7 +149,10 @@ interface ColumnConfig extends BaseConfig {
 interface RowConfig extends BaseConfig {
   /**
    * <semantic-link uri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> for the whole table row. Can be used to have visualizations different from the standard, e.g grid of thumbnails.
-   * The template has access to all projection variables for a single result tuple
+   * The template has access to all projection variables for a single result tuple.
+   *
+   * In addition to data from the sparql results cell template has access to current row index with "__semanticTableIndex" property and total table size with "__semanticTableSize" property.
+   *
    */
   tupleTemplate: string;
 }
@@ -175,6 +179,7 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
     super(props, context);
     this.state = {
       isLoading: true,
+      currentPage: props.currentPage ? props.currentPage : 0,
     };
   }
 
@@ -191,7 +196,9 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
 
   public componentWillReceiveProps(nextProps: SemanticTableProps, context: ComponentContext) {
     if (nextProps.query !== this.props.query) {
-      this.prepareConfigAndExecuteQuery(nextProps, context);
+
+      // we need to reset currentPage when we receive new query when component is used in semantic-search.
+      this.prepareConfigAndExecuteQuery({...nextProps, currentPage: 0}, context);
     }
   }
 
@@ -226,10 +233,13 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
       prefetchLabels: this.props.prefetchLabels,
     };
     layout = this.handleDeprecatedLayout(layout);
-    const { currentPage, onControlledPropChange, ...otherProps } = this.props;
+    const { onControlledPropChange, ...otherProps } = this.props;
     const controlledProps: Partial<TableConfig> = {
-      currentPage,
-      onPageChange: onControlledPropChange ? (page) => onControlledPropChange({ currentPage: page }) : undefined,
+      currentPage: this.state.currentPage,
+      onPageChange: onControlledPropChange ? (page) => {
+        this.setState({currentPage: page});
+        onControlledPropChange({ currentPage: page });
+      } : undefined,
     };
     return createElement(Table, {
       ...otherProps,
@@ -245,6 +255,7 @@ export class SemanticTable extends Component<SemanticTableProps, TableState> {
     this.setState({
       isLoading: true,
       error: undefined,
+      currentPage: props.currentPage,
     });
     this.querying = this.cancellation.deriveAndCancel(this.querying);
     const loading = this.querying

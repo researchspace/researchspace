@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 import { Props, createElement } from 'react';
 import * as React from 'react';
 import * as D from 'react-dom-factories';
@@ -370,7 +371,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private toggle3d = (event: Event<any>) => {
-    console.log("TOGGLED" + event.data)
     this.ol3d.setEnabled(!this.ol3d.getEnabled())
   }
 
@@ -380,6 +380,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       groupColorAssociations: groupColorsAssociationsNew
     }, ()=>{
       let vectorLayers = this.getVectorLayersFromMap();
+      console.log(vectorLayers);
       vectorLayers.forEach((vectorLayer) => {
       vectorLayer
         .getSource()
@@ -1278,7 +1279,7 @@ export class AnnotateControl extends Control {
     // Create edit button
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'ol-control';
+    button.className = 'ol-control editButton';
     button.innerHTML = 'E';
 
     //

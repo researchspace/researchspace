@@ -14,7 +14,7 @@ import {
   SemanticMapControlsSendFeaturesLabelToMap,
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
-  SemanticMapControlsSendToggle3d
+  SemanticMapControlsSendToggle3d,
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -201,9 +201,11 @@ export class SemanticMapControls extends Component<Props, State> {
 
   public componentDidMount() {
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
-    console.log("MONTO e setto color taxonomy")
+    console.log('MONTO e setto color taxonomy');
     this.setFeaturesColorTaxonomy();
-    this.initializeGroupColorAssociations(this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, this.getAllVectorLayers(this.state.mapLayers)));
+    this.initializeGroupColorAssociations(
+      this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, this.getAllVectorLayers(this.state.mapLayers))
+    );
   }
 
   public componentWillMount() {
@@ -217,19 +219,19 @@ export class SemanticMapControls extends Component<Props, State> {
   public componentDidUpdate(PrevProps, prevState) {
     //Group Color associations
     if (JSON.stringify(this.state.groupColorAssociations) !== JSON.stringify(prevState.groupColorAssociations)) {
-      console.log('%cGroupColors Associations  È Cambiato! Prima era:', 'color: green; font-size: 20px');
-      console.log(JSON.stringify(prevState.groupColorAssociations));
-      console.log('Ora è: ');
-      console.log(JSON.stringify(this.state.groupColorAssociations));
-      console.log('%c************************', 'color: green; font-size: 20px');
+      // console.log('%cGroupColors Associations  È Cambiato! Prima era:', 'color: green; font-size: 20px');
+      // console.log(JSON.stringify(prevState.groupColorAssociations));
+      // console.log('Ora è: ');
+      // console.log(JSON.stringify(this.state.groupColorAssociations));
+      // console.log('%c************************', 'color: green; font-size: 20px');
 
       this.triggerSendFeaturesColorsAssociationsToMap();
     } else {
-      console.log('%cGroupColors Associations NON È Cambiato! Prima era:', 'color: red; font-size: 20px');
-      console.log(JSON.stringify(prevState.groupColorAssociations));
-      console.log('Ora è: ');
-      console.log(JSON.stringify(this.state.groupColorAssociations));
-      console.log('%c************************', 'color: red; font-size: 20px');
+      // console.log('%cGroupColors Associations NON È Cambiato! Prima era:', 'color: red; font-size: 20px');
+      // console.log(JSON.stringify(prevState.groupColorAssociations));
+      // console.log('Ora è: ');
+      // console.log(JSON.stringify(this.state.groupColorAssociations));
+      // console.log('%c************************', 'color: red; font-size: 20px');
     }
 
     //Color Taxonomy
@@ -308,8 +310,7 @@ export class SemanticMapControls extends Component<Props, State> {
       // <div className={'featuresOptionsContainer'}>
       //   {/* <h3 className={'mapOptionsSectionTitle'}>3D</h3> */}
       // </div>,
-      <div style={{display: 'none'}}
-      className={'timeSliderContainer'}>
+      <div style={{ display: 'none' }} className={'timeSliderContainer'}>
         <input
           type={'range'}
           className={'timelineSlider'}
@@ -322,152 +323,148 @@ export class SemanticMapControls extends Component<Props, State> {
             const value = parseInt(input.value);
             console.log(value);
             this.setState({
-              year: value
-
-            })
+              year: value,
+            });
           }}
         ></input>
-        <div style={{position: 'fixed', bottom:'10', left:'10', fontSize:'20pt'}}>{this.state.year}</div>
+        <div style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
       </div>,
-      (this.props.featuresOptionsEnabled && <div className={'featuresOptionsContainer'}>
-        <h3 className={'mapOptionsSectionTitle'}>Options</h3>
-        <div
-          className={'toggle3dBtn'}
-          onClick={() => this.triggerSendToggle3d()}
-          style={{cursor: "pointer"}}
-        ><i className="fa fa-cube" aria-hidden="true"></i> Toggle 3d</div>
-        <div className={'mapLayersFiltersContainer'}>
-          <div>
-        <label style={{ marginRight: '10px', userSelect: 'none'}}>Label by: </label>
-        <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
-          <option key={'none'} value={'none'}>
-            None
-          </option>
-          {this.featuresTaxonomies.map((taxonomy) => (
-            <option key={taxonomy} value={taxonomy}>
-              {this.capitalizeFirstLetter(taxonomy)}
-            </option>
-          ))}
-        </select>
-        </div>
-        <div className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></div>
-        <div>
-        <label style={{ marginRight: '10px', userSelect: 'none'}}>Color by: </label>
-        <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
-          {this.featuresColorTaxonomies.map((taxonomy) => (
-            <option key={taxonomy} value={taxonomy}>
-              {this.capitalizeFirstLetter(taxonomy)}
-            </option>
-          ))}
-        </select>
-        <OverlayTrigger
-          key={'random'}
-          placement={'top'}
-          overlay={
-            <Tooltip id={'tooltip-right'}>
-              Generate a random color palette.
-            </Tooltip>
-          }
-        >
-          <i
-            className={'fa fa-refresh'}
-            style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none'}}
-            onClick={this.handleGenerateColorPalette}
-          ></i>
-        </OverlayTrigger>
-        <OverlayTrigger
-          key={'reset'}
-          placement={'top'}
-          overlay={
-            <Tooltip id={'tooltip-right'}>
-              Restart palette to a single color.
-            </Tooltip>
-          }
-        >
-        <i
-          className={'fa fa-paint-brush'}
-          style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none'}}
-          onClick={this.handleRestartColorPalette}
-        ></i>
-        </OverlayTrigger>
-        <div>
-          {this.state.featuresColorGroups.map((group, index) => (
-            <div key={group} id={'color-' + group} style={{ display: 'flex', alignItems: 'center', margin: '5px' }}>
-              <div
-                style={styles.swatch}
-                onClick={() => {
-                  this.handleColorpickerClick(group);
-                }}
+      this.props.featuresOptionsEnabled && (
+        <div className={'featuresOptionsContainer'}>
+          {/* <h3 className={'mapOptionsSectionTitle'}>Options</h3> */}
+          <div className={'toggle3dBtn'} onClick={() => this.triggerSendToggle3d()} style={{ cursor: 'pointer' }}>
+            <i className="fa fa-cube" aria-hidden="true"></i> Toggle 3d
+          </div>
+          <div className={'mapLayersFiltersContainer'}>
+            <div className={'featuresOptionsDiv'}>
+              <label style={{ marginRight: '10px', userSelect: 'none' }}>Color by: </label>
+              <select name="featuresColorsList" id="featuresColorsList" onChange={this.handleColorTaxonomyChange}>
+                {this.featuresColorTaxonomies.map((taxonomy) => (
+                  <option key={taxonomy} value={taxonomy}>
+                    {this.capitalizeFirstLetter(taxonomy)}
+                  </option>
+                ))}
+              </select>
+              <OverlayTrigger
+                key={'random'}
+                placement={'top'}
+                overlay={<Tooltip id={'tooltip-right'}>Generate a random color palette.</Tooltip>}
               >
-                <div
-                  style={{
-                    width: '15px',
-                    height: '15px',
-                    borderRadius: '50%',
-                    backgroundColor: this.getRgbaString(group),
-                  }}
-                />
-              </div>
-              <label style={{ marginLeft: '5px', marginBottom: '0px' }}>{group}</label>
-              {this.state.displayColorPicker[group] && (
-                <div style={{ position: 'absolute', zIndex: 2 }}>
+                <i
+                  className={'fa fa-refresh'}
+                  style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                  onClick={this.handleGenerateColorPalette}
+                ></i>
+              </OverlayTrigger>
+              <OverlayTrigger
+                key={'reset'}
+                placement={'top'}
+                overlay={<Tooltip id={'tooltip-right'}>Restart palette to a single color.</Tooltip>}
+              >
+                <i
+                  className={'fa fa-paint-brush'}
+                  style={{ display: 'inline-block', cursor: 'pointer', marginLeft: '10px', userSelect: 'none' }}
+                  onClick={this.handleRestartColorPalette}
+                ></i>
+              </OverlayTrigger>
+              <div>
+                {this.state.featuresColorGroups.map((group, index) => (
                   <div
-                    style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
-                    onClick={this.handleClose}
-                  />
-                  <SwatchesPicker
-                    color={this.state.groupColorAssociations[group]}
-                    onChange={(color) => {
-                      this.handleColorPickerChange(color, group);
-                    }}
-                  />
-                </div>
-              )}
+                    key={group}
+                    id={'color-' + group}
+                    style={{ display: 'flex', alignItems: 'center', margin: '5px' }}
+                  >
+                    <div
+                      style={styles.swatch}
+                      onClick={() => {
+                        this.handleColorpickerClick(group);
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '15px',
+                          height: '15px',
+                          borderRadius: '50%',
+                          backgroundColor: this.getRgbaString(group),
+                        }}
+                      />
+                    </div>
+                    <label style={{ marginLeft: '5px', marginBottom: '0px' }}>{group}</label>
+                    {this.state.displayColorPicker[group] && (
+                      <div style={{ position: 'absolute', zIndex: 2 }}>
+                        <div
+                          style={{ position: 'fixed', top: '0px', right: '0px', left: '0px', bottom: '0px' }}
+                          onClick={this.handleClose}
+                        />
+                        <SwatchesPicker
+                          color={this.state.groupColorAssociations[group]}
+                          onChange={(color) => {
+                            this.handleColorPickerChange(color, group);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+            <div className={'featuresOptionsDiv'}>
+              <label style={{ marginRight: '10px', userSelect: 'none' }}>Label by: </label>
+              <select name="featuresLabelList" id="featuresLabelList" onChange={this.handleSelectedLabelChange}>
+                <option key={'none'} value={'none'}>
+                  None
+                </option>
+                {this.featuresTaxonomies.map((taxonomy) => (
+                  <option key={taxonomy} value={taxonomy}>
+                    {this.capitalizeFirstLetter(taxonomy)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
-        </div>
-      </div>),
+      ),
       D.br(),
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className={'layersContainer'}>
               {/* <h3 className={'mapLayersTitle'}>Map Layers</h3> */}
-              {this.props.showFilters && <div className="mapLayersFiltersContainer">
-                <label>Filter:</label>
-                <input
-                  className="mapLayersFilters"
-                  name={'overlay-visualization'}
-                  type={'checkbox'}
-                  checked={this.state.filters.feature}
-                  onChange={(event) => {
-                    this.setState({ filters: { ...this.state.filters, feature: event.target.checked } }, () => {});
-                  }}
-                ></input>
-                <label className="fitersLabel">Features</label>
-                <input
-                  className="mapLayersFilters"
-                  name={'overlay-visualization'}
-                  type={'checkbox'}
-                  checked={this.state.filters.overlay}
-                  onChange={(event) => {
-                    this.setState({ filters: { ...this.state.filters, overlay: event.target.checked } }, () => {});
-                  }}
-                ></input>
-                <label className="fitersLabel">Overlays</label>
-                <input
-                  className="mapLayersFilters"
-                  name={'overlay-visualization'}
-                  type={'checkbox'}
-                  checked={this.state.filters.basemap}
-                  onChange={(event) => {
-                    this.setState({ filters: { ...this.state.filters, basemap: event.target.checked } }, () => {});
-                  }}
-                ></input>
-                <label className="fitersLabel">Basemaps</label>
-              </div>}
+              {this.props.showFilters && (
+                <div className="mapLayersFiltersContainer">
+                  <label>Filter:</label>
+                  <input
+                    className="mapLayersFilters"
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.feature}
+                    onChange={(event) => {
+                      this.setState({ filters: { ...this.state.filters, feature: event.target.checked } }, () => {});
+                    }}
+                  ></input>
+                  <label className="fitersLabel">Features</label>
+                  <input
+                    className="mapLayersFilters"
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.overlay}
+                    onChange={(event) => {
+                      this.setState({ filters: { ...this.state.filters, overlay: event.target.checked } }, () => {});
+                    }}
+                  ></input>
+                  <label className="fitersLabel">Overlays</label>
+                  <input
+                    className="mapLayersFilters"
+                    name={'overlay-visualization'}
+                    type={'checkbox'}
+                    checked={this.state.filters.basemap}
+                    onChange={(event) => {
+                      this.setState({ filters: { ...this.state.filters, basemap: event.target.checked } }, () => {});
+                    }}
+                  ></input>
+                  <label className="fitersLabel">Basemaps</label>
+                </div>
+              )}
               {/* <hr className={'mapControlsSeparator'} style={{ margin: '0px !important' }}></hr> */}
               {this.state.mapLayers.map(
                 (mapLayer, index) =>
@@ -491,7 +488,9 @@ export class SemanticMapControls extends Component<Props, State> {
                             <div style={{ width: '250px' }}>
                               <label className={'layerTitle'}>{mapLayer.get('author')}</label>
                               <div>
-                                <label className={'layerLabel'}><span>{mapLayer.get('name')}</span></label>
+                                <label className={'layerLabel'}>
+                                  <span>{mapLayer.get('name')}</span>
+                                </label>
                                 <label className={'layerLabel'}>{mapLayer.get('year')}</label>
                                 {/*<label className={'layerLabel'}>{mapLayer.get('location')}</label>*/}
                                 <input
@@ -657,7 +656,6 @@ export class SemanticMapControls extends Component<Props, State> {
         featuresColorGroups: groups,
       },
       () => {
-        console.log("Settate oclortaxonomi")
         this.initializeGroupColorAssociations(this.state.featuresColorGroups);
       }
     );
@@ -845,12 +843,12 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private triggerSendToggle3d() {
-    console.log("fired 3d");
+    console.log('fired 3d');
     trigger({
       eventType: SemanticMapControlsSendToggle3d,
       source: this.props.id,
       targets: [this.props.targetMapId],
-      data: "toggle"
+      data: 'toggle',
     });
   }
 

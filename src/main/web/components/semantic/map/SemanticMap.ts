@@ -515,6 +515,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   initInteractions = () => {
     this.source = new VectorSource();
+    console.log("SOURCEEEEEEE");
+    console.log(this.source);
     this.vector = new VectorLayer({
       source: this.source,
       style: new Style({

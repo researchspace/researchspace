@@ -367,7 +367,7 @@ export class SemanticMapControls extends Component<Props, State> {
                   onClick={this.handleRestartColorPalette}
                 ></i>
               </OverlayTrigger>
-              <div>
+              <div className={'colorsLegend'}>
                 {this.state.featuresColorGroups.map((group, index) => (
                   <div
                     key={group}
@@ -734,7 +734,15 @@ export class SemanticMapControls extends Component<Props, State> {
 
   private generateColorPalette() {
     let colorNumbers = this.state.featuresColorGroups.length;
-    let palette = [];
+    let palette = [
+      "rgba(245,185,153,0.6)",
+      "rgba(124,164,204,0.6)",
+      "rgb(183,161,209,0.6)",
+      "rgba(0,63,114,0.6)",
+      "rgba(173,195,165,0.6)",
+      "rgba(214,223,218,0.6)",
+    ];
+    /*
     let hueFraction = 360 / colorNumbers;
     let seed = Math.floor(Math.random() * 360);
     for (let i = 0; i < colorNumbers; i++) {
@@ -744,17 +752,19 @@ export class SemanticMapControls extends Component<Props, State> {
       }
       palette.push({
         h: generatedAngle.toString(),
-        s: '0.8',
+        s: '0.4',
         l: '0.7',
         a: '0.4',
       });
     }
+    */
+
     //Update state with generated palette
     let groupColorAssociationsClone = this.state.groupColorAssociations;
     let _i = 0;
     for (let association in groupColorAssociationsClone) {
       //groupColorAssociationsClone[association] = "hsv(" + palette[_i].h + ","+palette[_i].s+","+palette[_i].v+",0.4)";
-      let rgbstring = 'hsl(' + palette[_i].h + ',70%, 40%, 0.5)';
+      let rgbstring = palette[_i];
       groupColorAssociationsClone[association] = rgbstring;
       _i++;
     }

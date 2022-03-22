@@ -149,19 +149,30 @@ export class DashboardComponent extends Component<Props, State> {
     this.state = {
       items: [],
       layout: FlexLayout.Model.fromJson({
-        global: {},
-        borders: [
+        icons: {
+          close: () => <i className="iconmoon iconmoon-download2"></i>
+        },
+        global: { 
+          "borderBarSize": 37,
+          "tabSetTabStripHeight": 36,
+          "splitterSize": 6 ,
+        },
+	      borders: [
           {
-            type: 'border',
-	          location: 'left',
-            children: []
-          },
-          
-          {
-	          "type": "border",
-	 	      "location": "right",
+		        "type": "border",
+             "location": "left",
 			      "children": []
-		      }
+          },
+		      {
+		        "type": "border",
+		 	      "location": "right",
+			      "children": []
+          },
+          {
+            "type": "border",
+            "location":"bottom",
+            "children": []
+          }
         ],
 	      layout:{
 		      "type": "row",
@@ -567,12 +578,12 @@ export class DashboardComponent extends Component<Props, State> {
 
   private onRenderTabSet = (node: TabSetNode, renderValues: {buttons: React.ReactNode[]}) => {
     renderValues.buttons.push(
-      <button
+      <button className='flexlayout__tab_toolbar_button'
         onMouseDown={event=> event.stopPropagation()}
         onClick={(event) => {
           this.onAddNewItem();
         }}>
-        Add
+        <i className="fa fa-plus-square"/>
       </button>
     );
   }

@@ -143,13 +143,15 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
       const classLabel = view.formatLabel(classInfo.label, classInfo.id);
       criterions.push(
         <div key="hasType" className={`${CLASS_NAME}__criterion`}>
+          <div className={`${CLASS_NAME}__criterion-row`}>
+            Has type{' '}
+            <span className={`${CLASS_NAME}__criterion-class`} title={classInfo.id}>
+              {classLabel}
+            </span>
+          </div>
           {this.renderRemoveCriterionButtons(() =>
             this.props.onCriteriaChanged({ ...this.props.criteria, elementType: undefined })
           )}
-          Has type{' '}
-          <span className={`${CLASS_NAME}__criterion-class`} title={classInfo.id}>
-            {classLabel}
-          </span>
         </div>
       );
     } else if (criteria.refElement) {

@@ -39,7 +39,7 @@ import { ViewState, ViewModel } from './ViewModel';
 
 import { SearchAndFilters } from './views/SearchAndFilters';
 import { SetWithItems, ItemsView, OpenedSetView } from './views/SetsAndItems';
-import { Footer } from './views/Footer';
+import { Toolbar } from './views/Toolbar';
 
 import './set-management.scss';
 
@@ -183,9 +183,7 @@ export class SetManagement extends Component<Props, ViewState> {
     const view = (
       <div className={`${CLASS_NAME}__drop-area-children`}>
         {this.renderSearchAndFilters()}
-        {hasOpenedSet ? this.renderBackToContentsButton() : undefined}
-        {hasSearchOpened ? this.renderSearchResults() : hasOpenedSet ? this.renderOpenedSet() : this.renderAllSets()}
-        <Footer
+        <Toolbar
           baseClass={CLASS_NAME}
           readonly={readonly}
           itemViewMode={itemViewMode}
@@ -201,6 +199,9 @@ export class SetManagement extends Component<Props, ViewState> {
           onPressCreateNewSet={this.model.startCreatingNewSet}
           onPressReorderApply={this.model.applyItemsOrder}
         />
+        {hasOpenedSet ? this.renderBackToContentsButton() : undefined}
+        {hasSearchOpened ? this.renderSearchResults() : hasOpenedSet ? this.renderOpenedSet() : this.renderAllSets()}
+
       </div>
     );
     return Children.toArray((view.props as React.Props<any>).children);
@@ -308,8 +309,9 @@ export class SetManagement extends Component<Props, ViewState> {
 
   private renderBackToContentsButton() {
     return (
-      <button
-        className={`${CLASS_NAME}__back-to-contents btn btn-success`}
+      <div
+        role="button"
+        className={`${CLASS_NAME}__back-to-contents`}
         onClick={() =>
           this.setViewState({
             openedSet: undefined,
@@ -318,8 +320,8 @@ export class SetManagement extends Component<Props, ViewState> {
           })
         }
       >
-        <span className="fa fa-chevron-left"></span> Back to contents
-      </button>
+        <span className="fa fa-angle-left"></span> Back to contents
+      </div>
     );
   }
 

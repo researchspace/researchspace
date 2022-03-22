@@ -133,11 +133,11 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
                       <i className='fa fa-floppy-o' aria-hidden='true'></i>
                     </Button>
                     :
-                    <Button bsClass='btn-grey' onMouseDown={this.onEdit}>
+                    <Button bsClass='btn-default' onMouseDown={this.onEdit}>
                       <i className='fa fa-pencil' aria-hidden='true'></i>
                     </Button>
                 }
-                <Button bsClass='btn-grey' onMouseDown={this.onUnlink}>
+                <Button bsClass='btn-default' onMouseDown={this.onUnlink}>
                   <i className='fa fa-chain-broken' aria-hidden='true'></i>
                 </Button>
               </ButtonGroup>

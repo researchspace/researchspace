@@ -130,10 +130,10 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             query: createDropAskQueryForField(definition),
             styles: {
               enabled: {
-                outline: '2px dashed #1D0A6E'
+                outline: '2px dashed var(--color-dark)'
               },
               enabledHover: {
-                outline: '4px dashed #1D0A6E'
+                outline: '4px dashed var(--color-dark)'
               },
               disabled: {}
             }

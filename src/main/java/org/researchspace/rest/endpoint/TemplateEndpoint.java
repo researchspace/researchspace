@@ -649,6 +649,14 @@ public class TemplateEndpoint extends ResourceConfig {
     }
 
     @GET()
+    @Path("sidebar")
+    @Produces(MediaType.TEXT_HTML)
+    @RequiresAuthentication
+    public String getSidebar() throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.SIDEBAR);
+    }
+
+    @GET()
     @Path("noPermissionsPage")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication

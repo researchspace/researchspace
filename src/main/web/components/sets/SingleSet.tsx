@@ -45,7 +45,7 @@ import { ViewState, ViewModel, emptySet } from './ViewModel';
 
 import { SearchAndFilters } from './views/SearchAndFilters';
 import { ItemsView, EditableLabel } from './views/SetsAndItems';
-import { ReorderingProps, ReorderItemsButton, ReorderConfirmation, ItemViewModeSwitch } from './views/Footer';
+import { ReorderingProps, ReorderItemsButton, ReorderConfirmation, ItemViewModeSwitch } from './views/Toolbar';
 
 import { CLASS_NAME } from './SetManagement';
 
@@ -223,7 +223,7 @@ export class SingleSet extends Component<Props, ViewState> {
     return (
       <div className={`${CLASS_NAME}__single-set-caption`}>
         <div className={`${CLASS_NAME}__single-set-icon`}>
-          <span className="fa fa-folder-open" />
+          <span className="iconmoon iconmoon-folder-open" />
         </div>
         {isEditing ? (
           <EditableLabel

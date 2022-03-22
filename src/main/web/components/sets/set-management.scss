@@ -20,14 +20,13 @@
 
 $light-border: 1px solid #dddddd;
 $dark-border: 1px solid #a2a2a2;
-$background-color-set-management: $color-sidebar-bg;
 
 .set-management {
 
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: $background-color-set-management;
+  background: $color-set-management-bg;
 
   :global(.DropArea--dropMessage) {
     position: absolute;
@@ -68,25 +67,6 @@ $background-color-set-management: $color-sidebar-bg;
   &__search {
     display: flex;
 
-    //Search input specific for the Clipboard
-    .clearable-input {
-      padding: 0px;
-      height: 33px;
-      border-radius: 15px;
-
-      &:focus {
-        background-color: $color-off-white;
-      }
-
-    }
-    
-    .clearable-input__input.form-control {
-      padding: 4px 8px 4px 15px;
-      width: 100%;
-      background-color: transparent;
-      height: 33px;
-    }
-
   }
 
   &__search-input {
@@ -94,26 +74,42 @@ $background-color-set-management: $color-sidebar-bg;
   }
 
   &__search-message {
-    padding: 7px 24px 0px 24px;
+    padding-top: 8px ;
     font-size: 12px;
     font-weight: 600;
+    color: $color-info;
   }
 
-  &__show-filters.btn-default {
-    margin-left: 6px;
-    border: none;
-    padding: 0px 0px 0px 10px;
+  &__show-filters.btn-icon {
+    margin-left: 5px;
+    padding: 8px;
+
+    &:hover,
+    &:focus,
+    &:focus-within,
+    &.focus,
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus {
+
+        background-color: transparent;
+    }
   }
 
   &__search-and-filters {
-    background-color: $background-color-set-management;
+    background-color: $color-set-management-bg;
     z-index: 20;
+    padding: 8px 20px;
+
   }
 
   &__filters {
     opacity: 1;
     transition: opacity 0.2s;
-    padding-top: 16px;
+    padding-top: 5px;
 
     &--hidden {
       height: 0;
@@ -140,21 +136,24 @@ $background-color-set-management: $color-sidebar-bg;
     flex: auto;
     overflow-y: auto;
     height: 0;
-    background: $background-color-set-management;
+    background: $color-set-management-bg;
     z-index: 10;
-    padding: 16px 24px;
+    padding: 0 20px 8px;
   }
 
   //sidebar set folder
   &__set {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     list-style-type: none;
     background-color: $color-primary-50;
 
-    padding: 4px 8px;
-    min-height: 28px;
+    padding: 0 8px;
+    height: 32px;
     margin-bottom: 5px;
+
+    border-radius: 2px;
 
     .dropdown-menu.dropdown-menu-right {
       right: -42px;
@@ -185,7 +184,7 @@ $background-color-set-management: $color-sidebar-bg;
   }
 
   &__items-view {
-    padding-top: 12px;
+    padding-top: 5px;
   }
 
   &__set-item-count {
@@ -229,9 +228,8 @@ $background-color-set-management: $color-sidebar-bg;
     text-align: center;
 
     font-size: 15px;
-    font-style: italic;
     font-weight: 600;
-    letter-spacing: 0.3px;
+    color: $color-info;
   }
 
   &__search-results {
@@ -239,7 +237,7 @@ $background-color-set-management: $color-sidebar-bg;
     flex: auto;
     overflow-y: auto;
     height: 0;
-    padding: 0;
+    padding: 0 1.3em .5em 1.7em;
     
     & .set-management__items-view {
       margin-left: 10px;
@@ -250,10 +248,11 @@ $background-color-set-management: $color-sidebar-bg;
     & .set-management__set {
       margin-bottom: 14px;
       padding: 14px 15px;
+      height: auto;
     }
 
     & .set-management__set-items {
-      border-left: 5px solid $color-primary-100-op70;
+      border-left: 5px solid $color-dark--op30;
       padding: 12px 16px;
       background-color: $color-primary-50;
     }
@@ -261,16 +260,16 @@ $background-color-set-management: $color-sidebar-bg;
 
   &--only-opened-set &__items-view {
     /* make only items scrollable when set is opened */
-    flex: auto;
     overflow-y: auto;
-    height: 0;
+    height: auto;
+    background-color: $color-primary-50;
   }
 
   &__set-items {
 
     padding: 0;
     display: flex;
-    background: $background-color-set-management;
+    background: $color-set-management-bg;
 
   }
 
@@ -289,7 +288,8 @@ $background-color-set-management: $color-sidebar-bg;
 
   &__reordered-item {
     background: $color-primary-10;
-    border: 1px dashed $color-primary-100;
+    border: 1px dashed $color-action;
+    border-radius: 2px;
     margin: 6px;
 
     &[data-dragged] {
@@ -435,24 +435,28 @@ $background-color-set-management: $color-sidebar-bg;
 
   &__back-to-contents {
     width: 100%;
+    color: $color-action;
     font-weight: bold;
     z-index: 10;
+    font-size: 13px;
+    padding: 0.5em 1.8em 0 1.8em;
 
-    .btn.btn-success .fa-chevron-left {
+    .fa {
       margin-right: 5px;
-      font-size: 12px;
     }
   }
 
   &__open-set {
 
-    background-color: $background-color-set-management;
     display: flex;
     align-items: center;
 
-    height: 25px;
+    height: 32px;
     background-color: $color-primary-50;
-    padding: 4px 8px 4px 4px;
+    padding: 0 8px;
+
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
 
     &:hover {
 
@@ -465,77 +469,89 @@ $background-color-set-management: $color-sidebar-bg;
     }
   }
 
-  &__footer {
+   &__toolbar {  
+    padding: 8px 20px;
+  } 
 
-    background-color: $color-sidebarFooter-bg;
-  }
-
-  &__footer-reorder-confirmation {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: flex-end;
-    padding: 10px 24px;
-
-    &:last-child {
-      border-top: $dark-border;
-    }
-    &:first-child {
-      border-bottom: 1px solid $color-primary-100;
-    }
-  }
-
-  &__footer-reorder-message {
-    flex: auto;
-    font-size: 13px;
-  }
-
-  &__footer-reorder-buttons {
-
-    display: flex;
-
-    .btn {
-      font-size: 12px;
-    }
-
-    .btn-xs {
-      padding: 7px 8px;
-    }
-  }
-
-  &__footer-reorder-cancel {
-    margin-right: 5px;
-  }
-
-  &__footer-buttons {
+  &__toolbar-buttons {
     display: flex;
     justify-content: space-between;
-    padding: 11px 24px;
-
-    & .btn-group-xs > .btn {
-      padding: 7px 5px 5px 5px;
-    }
 
     & .btn {
       border: none;
-      background: $color-primary-50;
+      border-radius: 3px;
+
+      display: flex;
+      align-items: center;
+
+      padding: 0 8px;
+
+      height: 28px;
+
+      .fa,
+      .iconmoon {
+        font-size: 1.25em;
+      }
+    }
+
+    & .btn-default {
+      color: $color-dark;
     }
   
     & .btn-default:hover,
     & .btn-default:focus,
     & .btn-default.active,
     & .btn-default.active:focus {
-      background-color: $color-white;
+     background-color: $color-primary-50--op50;
     }
   }
 
-  &__toggle-reorder-items {
-    margin-left: 5px;
+  &__item-view-mode {
+
+    display: flex;
+    align-items: center;
+
+    & .btn {
+
+      margin-right: 3px;
+    }
+  }
+
+  &__toolbar-spacer {
+    flex: auto;
+  }
+
+  &__toolbar-reorder-confirmation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0px;
+    margin-top: 8px;
+    border-top: 1px solid $color-border-separator;
+    border-bottom: 1px solid $color-border-separator;
+  }
+
+  &__toolbar-reorder-message {
+
+    padding-right: 20px;
+  }
+
+  &__toolbar-reorder-buttons {
+
+    display: flex;
+
+    .btn {
+      font-size: 13px;
+      padding: 5px 8px;
+    }
+  }
+
+  &__toolbar-reorder-cancel {
     margin-right: 5px;
   }
 
-  &__footer-spacer {
-    flex: auto;
+  &__toggle-reorder-items {
+
   }
 
   &__item-actions {
@@ -560,25 +576,20 @@ $background-color-set-management: $color-sidebar-bg;
     }
 
     .remove-set-confirmation {
-      min-width: 140px;
+
       display: flex;
-      flex-direction: column;
+      gap: 5px;
       align-items: center;
-      justify-content: center;
-      padding: $padding-base-vertical $padding-base-horizontal;
+      justify-content: space-between;
+      padding: 10px 12px;
       cursor: initial;
-      border-top: 1px solid #e4e2e2;
+      border-top: 1px solid $color-border-separator;
 
-      button,
-      .btn + .btn {
-        margin-left: $padding-base-horizontal/2;
+      .btn-toolbar {
+
+        display: flex;
       }
 
-      & .btn-default {
-        background-color: $color-dark;
-        border-color: $color-dark;
-        color: $color-white;
-      }
     }
   }
 
@@ -587,23 +598,36 @@ $background-color-set-management: $color-sidebar-bg;
     display: flex;
     flex-direction: column;
 
-    padding: 16px 24px;
+    padding: 1em 1.3em 1em 1.7em;
+
+    & .set-management__items-view {
+
+      padding: 0;
+
+      & .set-management__set-items {
+
+        padding: 8px 0;
+        background-color: $color-primary-50;
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+      }
+    }
   }
 
   &__single-set-header-top {
     display: flex;
+    align-items: baseline;
     padding: 10px;
   }
 
   &__single-set-header-bottom {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
-    border-top: $dark-border;
+    padding: 0 10px;
   }
 
   &__single-set-caption {
-    align-self: flex-start;
+
     display: flex;
     align-items: center;
 
@@ -616,22 +640,22 @@ $background-color-set-management: $color-sidebar-bg;
   }
 
   &__single-set-icon {
-    margin: 10px;
-    font-size: 20px;
+    margin: 0 10px;
+    font-size: 19px;
   }
 
   &__single-set-label {
-    font-size: 20px;
+    font-size: 19px;
   }
 
   &__single-set-rename-button {
-    margin: 10px;
+    margin: 0 10px;
     border: none;
     background: transparent;
     outline: none;
-    color: gray;
+    color: $color-dark--op75;
     &:hover {
-      color: black;
+      color: $color-dark;
     }
   }
 
@@ -640,33 +664,19 @@ $background-color-set-management: $color-sidebar-bg;
   }
 
   .remove-set-confirmation {
-    padding: $padding-base-vertical $padding-base-horizontal;
+
     span {
-      padding: 0 0 $padding-base-vertical 0;
+      white-space: nowrap;
     }
+
     .btn {
       padding: 2px 6px;
-      margin: 0 4px;
-      font-size: 13px;
     }
   }
 }
 
 .set-management.set-management--list-view,
 .set-management.set-management--grid-view {
-
-  .set-management__search-and-filters {
-      border-bottom: 1px solid $color-primary-50;
-      padding-left: 24px;
-      padding-right: 24px;
-      padding-bottom: 16px;
-
-      .Select-control {
-        border: none;
-        border-bottom: 1px solid $input-border-color;
-        background-color: transparent;
-      }
-  }
 
   .set-management__single-set-header-top {
 
@@ -676,7 +686,7 @@ $background-color-set-management: $color-sidebar-bg;
   }
 
   .ReorderableList--component:not(.ReorderableList--dragging) .ReorderableList--item:hover {
-    background: $color-primary-50;
+    background: $color-action-dragHover;
   }
 
   .ReorderableList--item-body {

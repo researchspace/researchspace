@@ -1,0 +1,31 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "http://www.researchspace.org/resource/system/vocab/authority_manager_config_types"}'
+               new-subject-template='{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  has_navigation_entry="http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry"
+                  entity_type="http://www.researchspace.org/resource/system/entity_manager/related_entity_config"
+                  broader="http://www.researchspace.org/resource/system/entity_manager/broader_navigation_menu"
+                  is_related_by_kp="http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp"
+               ]]'
+               >
+
+  <div class="form-scroll-area">
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.researchspace.org/resource/system/EntityNavigationConfig"]'></semantic-form-hidden-input>
+
+    <semantic-form-hidden-input for="has_navigation_entry" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+
+    <semantic-form-tree-picker-input for="entity_type"></semantic-form-tree-picker-input>
+    
+    <semantic-form-tree-picker-input for="broader" placeholder="drag from tree" 
+                                     default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                     tree-patterns='{"scheme": "{{scheme}}"}'
+    ></semantic-form-tree-picker-input>
+
+    <semantic-form-autocomplete-input for="is_related_by_kp"></semantic-form-autocomplete-input>
+    
+    <semantic-form-errors></semantic-form-errors>
+  </div>
+ [[> rsp:FormDefaultActions]] 
+</semantic-form>

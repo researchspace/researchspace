@@ -270,7 +270,7 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
 
     const isSearchCollapsed = this.state.isSearchCollapsed;
     return (
-      <div>
+      <div style={{ width: '100%'}}>
         {isNested ? null : this.searchSummary(search)}
         <div className={styles.searchArea} style={{ display: isSearchCollapsed ? 'none' : null }}>
           {existingClauses}
@@ -435,7 +435,7 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
         trigger({ eventType: SearchEvents.SearchOrDisjunctSelected, source: this.props.id });
       }}
     >
-      or
+      <span>or</span>
     </div>
   );
 
@@ -447,22 +447,22 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
         trigger({ eventType: SearchEvents.SearchAndConjunctSelected, source: this.props.id });
       }}
     >
-      and
+      <span>and</span>
     </div>
   );
 
   private removeConjunctionButton = (conjunct: Model.Conjunct) => (
     <button
-      className={classnames('btn', 'btn-link', styles.removeConjunctButton)}
+      className={classnames('btn', styles.removeConjunctButton)}
       onClick={(e) => this.state.store.removeConjunction(conjunct)}
     >
-      remove
+      <span>remove</span>
     </button>
   );
 
   private removeActiveConjunctionButton = () => (
     <button
-      className={classnames('btn', 'btn-link', styles.removeConjunctButton)}
+      className={classnames('btn', styles.removeConjunctButton)}
       onClick={(e) => this.state.store.resetEditMode()}
     >
       cancel
@@ -942,8 +942,14 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
           className={classnames('btn btn-default', styles.nestedSearchButton)}
           onClick={this.state.store.selectSubSearchTerm}
         >
-          <span style={{ position: category.thumbnail ? 'absolute' : 'relative' }} className={styles.magnifierIcon} />
-          {category.thumbnail ? <img src={category.thumbnail} /> : null}
+          {/* <span style={{ position: category.thumbnail ? 'absolute' : 'relative' }} className={styles.magnifierIcon}>
+            <i className='rs-icon rs-icon-search' />
+          </span>
+           {category.thumbnail ? <img src={category.thumbnail} /> : null} */}
+           <span className={styles.magnifierIcon}>
+            <i className='rs-icon rs-icon-search' />
+          </span>
+          
         </button>
       </OverlayTrigger>
     );

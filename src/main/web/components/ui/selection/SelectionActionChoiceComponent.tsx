@@ -110,7 +110,7 @@ export class SelectionActionChoiceComponent extends Component<Props, State> {
     const selection = (_.toPairs(this.state.values) as [string, boolean][])
       .filter((pair) => pair[1])
       .map(([key, value]) => key);
-    const { style, title, children } = this.props;
+    const { style, className, title, children } = this.props;
     return (
       <DropdownButton
         id={this.props.id}
@@ -119,6 +119,7 @@ export class SelectionActionChoiceComponent extends Component<Props, State> {
         onToggle={this.onDropdownToggle}
         style={style}
         title={title}
+        className={className}
       >
         {Children.map(children, (child: ReactElement<any>) =>
           cloneElement(child, { selection, closeMenu: this.closeMenu })

@@ -76,6 +76,7 @@ export class MainAppComponent extends Component<
   {
     headerHTML?: Data.Maybe<ReactNode>;
     footerHTML?: Data.Maybe<ReactNode>;
+    sidebarHTML?: Data.Maybe<ReactNode>;
     route?: ComponentClass<any> | SFC<any>;
   }
 > {
@@ -86,6 +87,7 @@ export class MainAppComponent extends Component<
     this.state = {
       headerHTML: maybe.Nothing<ReactNode>(),
       footerHTML: maybe.Nothing<ReactNode>(),
+      sidebarHTML: maybe.Nothing<ReactNode>(),
       route: this.getRoute(getCurrentUrl()),
     };
   }
@@ -138,6 +140,14 @@ export class MainAppComponent extends Component<
       ModuleRegistry.parseHtmlToReact(html).then((components) =>
         this.setState({
           footerHTML: maybe.Just(components),
+        })
+      )
+    );
+
+    TemplateService.getSidebar((html) =>
+      ModuleRegistry.parseHtmlToReact(html).then((components) =>
+        this.setState({
+          sidebarHTML: maybe.Just(components),
         })
       )
     );
@@ -290,14 +300,23 @@ export class MainAppComponent extends Component<
   public render() {
     return D.div(
       {},
-      ...this.getHeader(),
-      renderNotificationSystem(),
-      renderOverlaySystem(),
-      // we need to assign key to route component here because the component is created
-      // when header is loading, in the beginning it is one null element. But after loading
-      // we have two header elements, because number of elements changes react can't properly
-      // unify components and fully recreate route component.
-      createElement(this.state.route, { key: 'page-holder' }),
+      this.getHeader(),
+      D.div({className:'page-container'},
+        D.div(
+          {className:'pageSidebar-container'},
+          this.state.sidebarHTML.isNothing ? null : this.state.sidebarHTML.get(),
+        ),
+        D.div(
+          {className:'page-holder-container'},
+          renderNotificationSystem(),
+          renderOverlaySystem(),
+          // we need to assign key to route component here because the component is created
+          // when header is loading, in the beginning it is one null element. But after loading
+          // we have two header elements, because number of elements changes react can't properly
+          // unify components and fully recreate route component.
+          createElement(this.state.route, { key: 'page-holder' }),
+        )
+      ),
       this.state.footerHTML.isNothing ? null : this.state.footerHTML.get()
     );
   }

@@ -215,45 +215,53 @@ export class Toolbar extends React.Component<ToolbarProps> {
     const { saving } = this.props;
     return (
       <ButtonToolbar className={styles.toolbar}>
+
+        <div>
+          <ButtonGroup>
+            {
+              this.props.anchorBlock?.type === Block.embed ?
+                <ResourceDropdown
+                  options={this.props.options[this.props.anchorBlock.data.get('attributes').src]}
+                  anchorBlock={this.props.anchorBlock}
+                  onSelect={this.onResourceTemplateSelected}
+                />
+                :
+                <BlockDropdown {...this.props} sidebar={false} />
+            }
+          </ButtonGroup>
+        </div>
+
+        <div className={styles.toolbarBtnGroup}>
+          <ButtonGroup>
+            {this.markButton(MARK.strong)}
+            {this.markButton(MARK.em)}
+            {this.markButton(MARK.u)}
+            {this.markButton(MARK.s)}
+          </ButtonGroup>
+
+          <ButtonGroup>
+            {this.alignTextButton(TextAlignment.left)}
+            {this.alignTextButton(TextAlignment.center)}
+            {this.alignTextButton(TextAlignment.right)}
+            {this.alignTextButton(TextAlignment.justify)}
+          </ButtonGroup>
+          
+          <ButtonGroup>
+            {this.internalLinkButton()}
+            {this.externalLinkButton()}
+          </ButtonGroup>
+        </div>
+        
+        <div>
         <ButtonGroup>
-          <Button bsStyle='success' onClick={this.props.onDocumentSave} disabled={saving}>
+          <Button bsStyle='' className='btn btn-action' onClick={this.props.onDocumentSave} disabled={saving}>
             <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : 'fa fa-floppy-o' }
               aria-hidden='true'></i>
             &nbsp; Save
           </Button>
         </ButtonGroup>
+        </div>
 
-        <ButtonGroup>
-          {
-            this.props.anchorBlock?.type === Block.embed ?
-              <ResourceDropdown
-                options={this.props.options[this.props.anchorBlock.data.get('attributes').src]}
-                anchorBlock={this.props.anchorBlock}
-                onSelect={this.onResourceTemplateSelected}
-              />
-              :
-              <BlockDropdown {...this.props} sidebar={false} />
-          }
-        </ButtonGroup>
-
-        <ButtonGroup>
-          {this.markButton(MARK.strong)}
-          {this.markButton(MARK.em)}
-          {this.markButton(MARK.u)}
-          {this.markButton(MARK.s)}
-        </ButtonGroup>
-
-        <ButtonGroup>
-          {this.alignTextButton(TextAlignment.left)}
-          {this.alignTextButton(TextAlignment.center)}
-          {this.alignTextButton(TextAlignment.right)}
-          {this.alignTextButton(TextAlignment.justify)}
-        </ButtonGroup>
-
-        <ButtonGroup>
-          {this.internalLinkButton()}
-          {this.externalLinkButton()}
-        </ButtonGroup>
       </ButtonToolbar>
     );
   }

@@ -34,7 +34,8 @@
     }
 
     .window {
-    z-index: 0 !important;
+        z-index: 0 !important;
+        background-color: $mirador-main-color-bg;
     }
 
     .mirador-viewer,
@@ -47,10 +48,9 @@
 
     .mirador-main-menu-bar {
 
-        background-color: $mirador-main-color;
-        font-size: 15px;
+        background-color: $mirador-main-color-bg;
         border-bottom: 0.1px solid $mirador-main-color;
-        height: 40px;
+        height: 32px;
 
         display: flex;
         justify-content: center;
@@ -59,7 +59,7 @@
 
     .manifest-info {
 
-        background: #f9f9f9;
+        background: $mirador-topBar-color-bg;
 
         .mirador-btn {
             font-size: .85em;
@@ -77,25 +77,28 @@
         padding: 0;
 
         a {
-
+            color: $mirador-mainMenu-color;
             opacity: 0.8;
+            font-size: 13px;
+
+            .fa {
+                font-size: 13px; 
+            }
     
             &:hover {
-    
                 background-color: transparent;
             }
     
             &:active,
             &.active {
-    
-                border-bottom: 2px solid $color-white;
+                border-bottom: 2px solid $mirador-mainMenu-color;
             }
         }
     }
 
     .hud-control {
-        opacity: .5;
-        text-shadow: 0px 0px 8px #000;
+        opacity: .8;
+        text-shadow: 0px 0px 6px $color-white;
     }
 
     .mirador-osd,
@@ -104,7 +107,13 @@
     .scroll-view,
     .thumbnail-view {
 
-        background-color: $mirador-main-color;
+        background-color: $mirador-window-color-bg;
+        box-shadow: inset 1px 2px 5px 1px #80808063;
+
+        .material-icons,
+        .fa {
+            color: $color-imageIcons;
+        }
     }
 
     #workspace-select-menu {
@@ -133,13 +142,12 @@
     .mirador-viewer {
 
         background-color: $color-miradorViewer-bg;
-        top: 40px;
+        top: 27px;
 
         .window-manifest-title {
 
             margin: 10px 0 0;
             font-size: 15px;
-            // color: $mirador-main-color;
             color: $color-dark;
             letter-spacing: .3px;
             font-weight: 600;
@@ -212,31 +220,32 @@
 
         .dropdown li {
     
-            border-left: 3px solid transparent;
+            border-left: none;
             color: $mirador-main-color;
-            background: #f9f9f9;
-            font-weight: 600;
+            background: $mirador-dropdown-color-bg;
+            font-weight: normal;
 
             &:hover {
 
-                border-left: 3px solid $color-dark;
+                border-left: none;
                 color: $mirador-main-color;
-                background-color: $color-primary-10;
+                background-color: $color-primary-50;
+                font-weight: normal;
+                padding: 10px;
             }
-    }
+        }
 
-    .content-container {
+        .content-container {
 
-            margin-top: 37px;
+            margin-top: 41px;
         }
 
         .overlay {
-    
             color: $mirador-main-color;
             background: #f9f9f9f7;
-    }
+        }
 
-    .sub-title {
+        .sub-title {
 
             border-bottom: 1px solid #bbb;
             color: $mirador-main-color;
@@ -312,18 +321,18 @@
 
             img.thumbnail-image.highlight {
 
-                border: none;
+                border: 2px solid $color-info;
             }
 
             img:hover {
-        
-                box-shadow: 0 0 6px 3px rgba(218, 218, 218, 0.73);
+
                 transform: scale(1.05);
+                border: 2px solid $color-info;
             }
 
             .thumb-label {
 
-                color: $color-white;
+                color: $mirador-main-color;
                 white-space: normal;
                 padding-top: 11px;
                 font-size: 13px;
@@ -337,7 +346,7 @@
             .thumb-label {
 
             //   max-width: 270px;
-                color: $color-white;
+                color: $mirador-main-color;
                 padding-top: 10px;
                 font-size: 14px;
             }
@@ -354,6 +363,7 @@
             ul.dropdown {
 
                 color: $mirador-main-color;
+                background-color: $mirador-dropdown-color-bg;
             }
         }
 
@@ -361,15 +371,20 @@
             margin-right: 10px;
         }
 
+        .layout-slot {
+
+            box-shadow: 0px 0px 3px $color-miradorSlot-shadow;
+        }
+
         .slot {
 
-            box-shadow: inset 0 0 10px $color-miradorSlot-shadow;
-
+            box-shadow: none;
+          
             &.draggedOver,
             &.focused,
             &:hover {
     
-                box-shadow: inset 0 0 10px #60616d;
+              //  box-shadow: inset 0 0 5px $color-miradorSlot-shadow-darker;
             }
 
             .remove-slot-option {
@@ -407,17 +422,22 @@
         
     }
 
-    #manifest-select-menu .container {
+    #manifest-select-menu {
 
-        padding: 12px 23px 12px 19px;
-        background-color: $color-miradorSlot-bg;
+        background-color: $mirador-main-color-bg;
+        box-shadow: 0 0 4px $color-box-shadow;
+
+        & .container {
+            padding: 2em;
+            background-color: $color-miradorSlot-bg;
+        }
     }
 
     #manifest-search-form input:focus,
     #url-load-form input:focus,
     #url-load-form input[type=submit]:hover {
 
-    border-color: #b9b9b9;
+        border-color: #b9b9b9;
     }
 
     #load-controls input {
@@ -440,7 +460,7 @@
     }
 
     .items-listing li:hover {
-        background-color: $color-primary-10;
+        background-color: $color-primary-50;
     }
 
     .items-listing h3,
@@ -474,6 +494,7 @@
     .bottomPanel {
 
         background-color: $color-miradorBottomPanel-bg;
+        border-top: 1px solid $color-frame-borders;
         height: 140px;
 
         .panel-thumbnail-view {
@@ -491,15 +512,20 @@
     
                     .thumb-label {
             
-                        color: $color-white;
+                        color: $mirador-main-color;
                         padding-top: 3px;
                     }
-            
-                    img:hover {
-            
-                        box-shadow: 0 0 3px 1px rgba(218, 218, 218, 0.32);
-                        transform: scale(1.05);
+
+                    img.thumbnail-image.highlight {
+        
+                        border: 2px solid $color-info;
                     }
+        
+                    img:hover {
+        
+                        transform: scale(1.05);
+                        border: 2px solid $color-info;
+                    } 
                 }
             }
         }
@@ -508,7 +534,6 @@
     .mirador-osd-previous .fa-chevron-left,
     .mirador-osd-next .fa-chevron-right {
 
-        color: $color-white;
         font-size: 2em;
     }
 

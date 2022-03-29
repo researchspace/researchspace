@@ -1,0 +1,71 @@
+<entity-view entity-iri='http://conservation.nationalarchives.gov.uk/id/collection/188765'>
+  <template id='template'>
+    <div>
+      <div>
+      <semantic-tree query='{{navigationQuery}}' tuple-template='{{> nodeTemplate}}'>
+        <template id='nodeTemplate'>
+          <mp-event-trigger id='event-trigger' type='Component.TemplateUpdate' targets='["entity-viewes"]'
+data='{"navigationEntry": "{{node.value}}"}'><span>{{nodeLabel.value}} ({{count.value}})</span></mp-event-trigger>
+        </template>  
+      </semantic-tree>
+      </div>
+      <div>
+
+      <mp-event-target-template-render id='entity-viewes' template='{{> entityViewes}}'>
+        <template id='entityViewes'>
+          <div>
+          {{#if navigationEntry}}
+            <entity-view-search-results entity-iri='{{entityIri}}' entity-view-config-iri='{{entityViewConfigIri}}' navigation-entry-iri='{{navigationEntry}}'>
+              <template id='template'>
+                <semantic-search config='{{searchConfig}}'>
+     <semantic-search-query-constant 
+        domain='<{{entityDomain}}>'
+        query='{{searchQuery}}'
+      ></semantic-search-query-constant>
+ 
+  <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+        
+  <div data-flex-self="size-1of3" style="flex: 0 0 0;" class='search-border'>
+      <semantic-search-facet id='semantic-search-facet'></semantic-search-facet>
+  </div>
+
+  <semantic-search-result-holder>
+    <div data-flex-self="md-full">
+      <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+      <semantic-search-result id='semantic-search-result'>
+          <mp-sparql-result-counts id='semantic-search-result-count' query="SELECT DISTINCT ?subject {}"
+                                  template='{{> template}}'
+          >
+            <template id='template'>
+              <div>
+                <span class="num-results">Found <span class="num-results-color">{{#if hasLimit}}{{totalNumberOfResults}}{{else}}{{numberOfResults}}{{/if}}</span> results</span>
+              </div>
+            </template>
+        </mp-sparql-result-counts>
+      </semantic-search-result>
+      
+      {{log this}}
+      <bs-tabs default-active-key='0' unmount-on-exit=true id='search-results' animation=false class='tabs-right'>
+         {{#each viewes}}
+          <bs-tab event-key="{{order}}" title="{{label}}">
+            <inline-template template-iri='{{templateIri}}'></inline-template>
+          </bs-tab>
+        {{/each}}
+      </bs-tabs>
+      
+    </div>
+    </semantic-search-result-holder>
+                  </div>
+
+                  
+    </semantic-search>
+              </template>
+            </entity-view-search-results>
+          {{/if}}
+          </div>
+        </template>
+      </mp-event-target-template-render>
+      </div>
+    </div>
+  </template>
+</entity-view>

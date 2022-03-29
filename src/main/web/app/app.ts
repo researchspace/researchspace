@@ -42,6 +42,7 @@ import {
 import { renderOverlaySystem, registerOverlaySystem, getOverlaySystem } from 'platform/components/ui/overlay';
 import { listen, init as initNavigation, getCurrentUrl, getCurrentResource } from 'platform/api/navigation';
 import { ConfigHolder } from 'platform/api/services/config-holder';
+import { initEntityConfig } from 'platform/api/services/EntityViewConfig';
 import { getRegisteredPrefixes } from 'platform/api/services/namespace';
 import * as TemplateService from 'platform/api/services/template';
 import * as SecurityService from 'platform/api/services/security';
@@ -361,6 +362,9 @@ window.addEventListener('DOMContentLoaded', function () {
         return Kefir.constantError<any>(e);
       }
       return Kefir.constant(url);
+    })
+    .flatMap(() => {
+      return initEntityConfig();
     })
     .onValue(() => {
       render(createElement(MainAppComponent), document.getElementById('application'));

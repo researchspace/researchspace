@@ -149,9 +149,9 @@ export class DashboardComponent extends Component<Props, State> {
     this.state = {
       items: [],
       layout: FlexLayout.Model.fromJson({
-        icons: {
+/*         icons: {
           close: () => <i className="iconmoon iconmoon-download2"></i>
-        },
+        }, */
         global: { 
           "borderBarSize": 37,
           "tabSetTabStripHeight": 36,

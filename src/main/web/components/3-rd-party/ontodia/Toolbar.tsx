@@ -98,7 +98,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
     if (onSaveDiagram && canSaveDiagram) {
       return (
         <Dropdown id="save-diagram-button">
-          <Button onClick={onSaveDiagram} bsStyle=''
+          <Button onClick={onSaveDiagram}
                   className="btn btn-action"
                   bsStyle=''
                   >
@@ -210,7 +210,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
       return null;
     }
     return (
-      <ButtonGroup bsSize="small" className={classnames(styles.group, styles.languageSelector)}>
+      <ButtonGroup bsSize="small" className={classnames(styles.groupButtons, styles.languageSelector)}>
         <label>
           <span>Data Language&nbsp;-&nbsp;</span>
           <select value={selectedLanguage} onChange={this.onChangeLanguage}>

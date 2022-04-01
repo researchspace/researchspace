@@ -103,7 +103,8 @@ export class LdpService {
   }
 
   public deleteResource(resourceIri: Rdf.Iri) {
-    const req = request.del(this.getServiceUrl()).query({ uri: resourceIri.value });
+    // @gspinaci Add container when removing the element
+    const req = request.del(this.getServiceUrl()).query({ uri: resourceIri.value + '/container' });
     return Kefir.fromNodeCallback((cb) => req.end((err, res) => cb(err, res ? res.text : null))).toProperty();
   }
 

@@ -54,10 +54,18 @@ export class EntityView extends Component<Props, State> {
       SparqlUtil.parseQuery(
         `
 SELECT DISTINCT ?config WHERE {
-  ?entity a ?rdfType .
-  ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
-    <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
-}
+  {
+    ?entity a ?rdfType .
+    ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+      <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
+    BIND(1 as ?order)
+  } UNION {
+    ?entity crm:P2_has_type ?p2 .
+    ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+      <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?p2 .
+    BIND(0 as ?order)
+  }
+} ORDER BY ASC(?order)
         `
       );
 
@@ -68,6 +76,7 @@ SELECT DISTINCT ?config WHERE {
         if (SparqlUtil.isSelectResultEmpty(res)) {
           // if there are no direct entity configs for exact type then we should try to find config for most specific type
         } else {
+
           // TODO for first POC we assume that we always have only one hit:
           const configIri = res.results.bindings[0]['config'].value;
           const entityConfig = entityConfigs[configIri];

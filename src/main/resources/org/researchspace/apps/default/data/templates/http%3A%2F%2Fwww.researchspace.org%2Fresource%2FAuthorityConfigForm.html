@@ -25,6 +25,9 @@
                   label_sparql_pattern="http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern"
                   restriction_sparql_pattern="http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern"
                   uses_form="http://www.researchspace.org/resource/system/authority_manager/uses_form"
+                  entity_has_navigation="http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation"
+                  has_facet_kp="http://www.researchspace.org/resource/system/entity_manager/has_facet_kp"
+                  entity_has_view="http://www.researchspace.org/resource/system/entity_manager/entity_has_view"
                ]]'
                >
 
@@ -44,6 +47,66 @@
     <semantic-form-text-input for="order_by_pattern"> </semantic-form-text-input>
 
     <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/"></semantic-form-text-input>
+    
+    <hr/>
+    [[!--
+    <h3>Table View Config</h3>
+    <semantic-form-composite-input for='has_table_view_config'>
+      <semantic-form-composite-input for='table_view_column'>
+        <semantic-form-text-input for="table_view_column_order"></semantic-form-text-input>
+        <semantic-form-text-input for="table_view_column_kp"></semantic-form-text-input>
+        <semantic-form-text-input for="table_view_column_template"></semantic-form-text-input>
+      </semantic-form-composite-input>  
+    </semantic-form-composite-input>
+    --]]
+
+    <hr/>
+    <h3>Viewes</h3>
+    <semantic-form-composite-input for='entity_has_view' 
+                                   new-subject-template='view/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                                    fields='[[
+                fieldDefinitions
+                  view_has_label="http://www.researchspace.org/resource/system/entity_manager/view_has_label"
+                  view_has_order="http://www.researchspace.org/resource/system/entity_manager/view_has_order"
+                  view_has_template="http://www.researchspace.org/resource/system/entity_manager/view_has_template"
+               ]]'
+>
+      <semantic-form-text-input for="view_has_label"></semantic-form-text-input>
+      <semantic-form-text-input for="view_has_order"></semantic-form-text-input>
+      <semantic-form-text-input for="view_has_template"></semantic-form-text-input>
+    </semantic-form-composite-input>
+
+    <hr/>
+    <h3>Facet KPs</h3>
+    <semantic-form-autocomplete-input for="has_facet_kp"></semantic-form-autocomplete-input>
+   
+    <hr/>
+    
+    <semantic-form-checkbox-input for='entity_has_navigation'></semantic-form-checkbox-input>
+    
+    {{#if node}}
+      <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation> ?form}'>
+        <template id='then'>
+          <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
+                           options='{
+                                    "collection": "{{node}}/navigation",
+                                    "membershipProperty": "http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry",
+                                    "itemLabel": "Navigation Menu",
+                                    "resourceForm": "[[resolvePrefix "rsp:EntityNavigationConfigForm"]]",
+                                    "broaderProperty": "http://www.researchspace.org/resource/system/entity_manager/broader_navigation_menu",
+                                    "labelSparqlPattern": "?item <http://www.researchspace.org/resource/system/entity_manager/related_entity_config>/<http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .",
+                                    "frameId": "entity-navigation-config",
+                                    "editable": true
+                                    }'
+           ></inline-template>
+
+          
+          <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
+              <div style="margin: 10px 0;" class="text-underline"><i class="fa fa-pencil btn-icon-left"></i>Edit form template</div>
+          </semantic-link-container>
+        </template>
+      </semantic-if>
+    {{/if}}
     
     <semantic-form-errors></semantic-form-errors>
   </div>

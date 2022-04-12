@@ -265,7 +265,7 @@ public class FieldDefinitionSource {
         }
 
         TemplateContext context = TemplateContext.fromHandlebars(options.context);
-        Map<String, Object> result = this.fieldsBasedSearch.generateSearchConfig(relations, context);
+        Map<String, Object> result = this.fieldsBasedSearch.generateSearchConfig(relations, context.getPreferredLanguage().orElse(null));
 
         String searchConfigJson = JsonUtil.prettyPrintJson(result);
         return HelperUtil.escapeIfRequested(searchConfigJson, options);

@@ -28,7 +28,6 @@ export class HybridTimeline extends Component<HybridTimelineProps, HybridTimelin
     constructor(props: HybridTimelineConfig, context: ComponentContext) {
         super(props, context);
         this.state = {items: new DataSet([]), yearSidebar: [], parsedDates: [], timeline: null};
-
     }
 
     public componentDidMount() {

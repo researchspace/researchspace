@@ -28,7 +28,7 @@ import { FieldDefinitionProp } from 'platform/components/forms/FieldDefinition';
 
 export interface EntityViewConfig {
   label: string;
-  rdfType: Rdf.Iri;
+  rdfType?: Rdf.Iri;
   p2HasType?: Rdf.Iri;
   restrictionPattern?: string;
   navigationEntries?: Array<EntityNavigationEntry>;
@@ -75,8 +75,12 @@ CONSTRUCT {
   ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp> ?navigationEntryRelatedKp  .
 } WHERE {
   ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
-    <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType ;
     <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .
+
+  OPTIONAL {
+
+  ?config <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
+  }
 
   OPTIONAL {
     ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
@@ -93,7 +97,10 @@ CONSTRUCT {
     ?config <http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation> ?navigation .
     ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry> ?navigation .
     ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/related_entity_config> ?navigationEntryEntityConfig .
-    ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp> ?navigationEntryRelatedKp  .
+
+    OPTIONAL {
+     ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp> ?navigationEntryRelatedKp  .
+    }
   }
 
   OPTIONAL {
@@ -124,7 +131,7 @@ CONSTRUCT {
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/item_label')], pg).map(l => l.value).get();
 
             const rdfType =
-              Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/for_type')], pg).get();
+              Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/for_type')], pg).getOrElse(undefined);
 
             const p2HasType =
               Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type')], pg).getOrElse(undefined);

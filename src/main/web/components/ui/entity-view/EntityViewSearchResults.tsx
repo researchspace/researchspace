@@ -30,7 +30,7 @@ import { TemplateItem } from '../template';
 import { generateSearchConfigForFields } from 'platform/api/services/ldp-field';
 
 interface Props extends ComponentProps {
-  entityIri: string
+  entityIri?: string
   entityViewConfigIri: string
   navigationEntryIri: string
 }
@@ -56,7 +56,8 @@ export class EntityViewSearchResults extends Component<Props, State> {
 
       const navigationEntry = entityConfig.navigationEntries.find(n => n.iri.value == this.props.navigationEntryIri);
       const relatedEntityConfig = entityConfigs[navigationEntry.relatedEntityConfig.value];
-      let kpPatterns;
+      let kpPatterns = [];
+      let basePatterns;
       if (navigationEntry.relatedKps.length == 1) {
             kpPatterns =
                 SparqlClient.setBindings(
@@ -65,9 +66,47 @@ export class EntityViewSearchResults extends Component<Props, State> {
                     ),
                     { 'subject': Rdf.iri(this.props.entityIri) }
                 ).where;
+      } else if (navigationEntry.relatedKps.length == 0) {
+        if (relatedEntityConfig.p2HasType) {
+          basePatterns = [{
+            type: 'bgp',
+            triples: [{
+              subject: '?value',
+              predicate: 'http://www.cidoc-crm.org/cidoc-crm/P2_has_type',
+              object: relatedEntityConfig.p2HasType.value,
+            }]
+          }]
         } else {
-            kpPatterns =
-                navigationEntry.relatedKps.map(kp => {
+          basePatterns = [{
+            type: 'bgp',
+            triples: [{
+              subject: '?value',
+              predicate: {
+                type: 'path',
+                pathType: '/',
+                items: [
+                  'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+                  {
+                    type: 'path',
+                    pathType: '*',
+                    items: ['http://www.w3.org/2000/01/rdf-schema#subClassOf']
+                  }
+                ]
+              },
+              object: entityConfigs[navigationEntry.relatedEntityConfig.value].rdfType.value
+            }]
+          }] as any;
+        }
+
+        if (relatedEntityConfig.restrictionPattern) {
+          basePatterns = basePatterns.concat(
+            SparqlUtil.parsePatterns(relatedEntityConfig.restrictionPattern)
+          );
+        }
+
+      } else {
+        kpPatterns =
+          navigationEntry.relatedKps.map(kp => {
                     const patterns =
                         SparqlClient.setBindings(
                             SparqlUtil.parseQuery<SparqlJs.SelectQuery>(
@@ -83,7 +122,8 @@ export class EntityViewSearchResults extends Component<Props, State> {
                 });
         }
 
-      const basePatterns = {
+      if (!basePatterns) {
+      basePatterns = {
         'type': 'group',
         patterns: [{
           type: 'bgp',
@@ -104,6 +144,7 @@ export class EntityViewSearchResults extends Component<Props, State> {
             object: entityConfigs[navigationEntry.relatedEntityConfig.value].rdfType.value
           }]
         }]
+      }
       }
 
 

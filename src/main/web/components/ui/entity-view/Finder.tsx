@@ -138,12 +138,12 @@ export class Finder extends Component<any, any> {
                   type: 'aggregate'
                 }
               }
-            ],
-            where: entryPatterns,
-            group: [
-              {expression: '?node'},
-              {expression: '?nodeLabel'}
-            ]
+      ],
+      where: [{type: 'union', patterns: entryPatterns}],
+      group: [
+        {expression: '?node'},
+        {expression: '?nodeLabel'}
+      ]
     };
 
 

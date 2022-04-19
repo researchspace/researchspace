@@ -37,7 +37,7 @@ table {
         .fa.fa-sort-alpha-asc,
         .fa.fa-sort-alpha-desc {
             margin-left: 7px;
-            color: $color-primary-100;
+            color: $color-secondary;
         }
     }
 
@@ -56,6 +56,8 @@ table {
 .table {
 
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0 5px;
 
     & > thead > tr > td, 
     & > tbody > tr > th, 
@@ -68,10 +70,17 @@ table {
 
     & > thead > tr > th {
 
-        border-bottom: 2px solid $color-dark;
-        padding: 12px 8px;
-        /*font h3 */
-        @include font-common($color-dark, 16px, $h-line);
+        border: none;
+        padding: 8px 8px 0;
+
+        @include font-common($color-base, $font-size-xsmall, $h-line);
+        font-weight: 600;
+        text-transform: uppercase;
+
+        &:first-of-type {
+
+            padding-left: 0;
+        }
     }
 
     //table bottom line
@@ -79,35 +88,54 @@ table {
         border-top: none;
     }
 
+    & > tbody > tr.standard-row {      
+
+        &:hover {
+            background-color: $color-lighter;
+        }
+    }
+
     & > tbody > tr > td {
-        @include font-common($color-dark, 13px, 1.4);
+        @include font-common($color-secondary, $font-size-small, 1.4);
     
         padding: 12px 8px;
-        border-bottom: 0.5px solid $color-dark--op50;
+        background-color: $color-white;
+        border-top: 1px solid $color-border;
+        border-bottom: 1px solid $color-border;
+
+        &:first-of-type {
+            border-left: 1px solid $color-border;
+            border-top-left-radius: $border-radius;
+            border-bottom-left-radius: $border-radius;
+        }
+
+        &:last-of-type {
+            border-right: 1px solid $color-border;
+            border-top-right-radius: $border-radius;
+            border-bottom-right-radius: $border-radius;
+        }
     
         .rs-page__field-value {
             white-space: unset;
         }
 
-        & > a {
-            @include font-common($color-dark, 14px, $b-line);
+        & > a,
+        & > span a {
+            @include font-common(inherit, $font-size-small, $line-height-body);
             text-decoration: underline;
         }
     }
 
-    & > tbody > tr.standard-row:hover {
-        background-color: $color-primary-10;
-    }
-
     & > tbody > tr > td.footer-container {
-        border-bottom: none !important;
-        padding: 20px 0px;
+        border: none;
+        background-color: transparent;
+        padding: 5px 0 0;
     }
 }
 
-.table-hover > tbody > tr:hover {
-    background-color: $color-primary-10;
-}
+/* .table-hover > tbody > tr:hover {
+    background-color: $color-lighter;
+} */
 
 .pagination, 
 .griddle-footer .pagination {
@@ -117,15 +145,17 @@ table {
 
     & > li > a,
     & > li > span {
-        @include font-common($color-dark, 12px, $b-line);
-        text-decoration: none ;
+        @include font-common($color-secondary, 12px, $line-height-body);
+        text-decoration: none;
         font-style: italic;
         border: none;
         padding: 3px 8px;
+        font-weight: 600;
+        border-radius: $border-radius;
 
         &:hover,
         &:focus {
-            color: $color-dark;
+            color: $color-secondary;
             background-color: $color-paginationHover-bg;
         }
     }
@@ -136,7 +166,7 @@ table {
     & > .active > span,
     & > .active > span:hover,
     & > .active > span:focus {
-        background-color: $color-dark;
+        background-color: $color-secondary;
         color: $color-white;
     }
 
@@ -148,7 +178,7 @@ table {
 .table-striped {
 
     & > tbody > tr:nth-of-type(odd) {
-        background-color: $color-primary-10;
+        background-color: $color-lighter;
     }
 }
 
@@ -182,20 +212,6 @@ table {
 
     .griddle-filter .filter-container {
         width: 100%;
-        
-        margin-bottom: 20px;
-
-        /* display: flex;
-        justify-content: flex-end;
-        align-items: center;
-
-        &::before {
-
-            content: 'Filter results:';
-            padding: 0 10px;
-            font-size: 14.5px;
-            letter-spacing: .2px;
-        } */
 
         .form-control {
 

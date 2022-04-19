@@ -102,7 +102,7 @@ export class RemoveSetAction extends Component<Props, State> {
         <div className="remove-set-confirmation" ref={(node) => (this.confirmationRef = node)}>
           <span>Delete set?</span>
           <ButtonToolbar>
-            <Button className="btn-cancel" bsStyle="" bsSize="xsmall" onClick={this.onNoClick}>
+            <Button className="btn-default" bsStyle="" bsSize="xsmall" onClick={this.onNoClick}>
               no
             </Button>
             <Button className="btn-action" bsStyle="" bsSize="xsmall" onClick={this.onYesClick}>

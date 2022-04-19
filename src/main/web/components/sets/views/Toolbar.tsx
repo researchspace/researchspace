@@ -107,7 +107,7 @@ export class ReorderConfirmation extends React.Component<ReorderingProps, {}> {
           <button
             type="button"
             title="Cancel reordering items"
-            className={`btn btn-cancel ${baseClass}__toolbar-reorder-cancel`}
+            className={`btn btn-default ${baseClass}__toolbar-reorder-cancel`}
             onClick={onPressReorder}
           >
             Cancel

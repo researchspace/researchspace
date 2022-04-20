@@ -61,8 +61,8 @@
                 <div><p>Color light</p><p>#E6E6EA</p></div>
             </div>
             <div style="display: flex; gap:10px">
-                <div style="height: 40px; width:120px; background-color: #F0F0F2;"></div>
-                <div><p>Color lighter</p><p>#F0F0F2</p></div>
+                <div style="height: 40px; width:120px; background-color: #f0f0f5;"></div>
+                <div><p>Color lighter</p><p>#f0f0f5</p></div>
             </div>
             <div style="display: flex; gap:10px">
                 <div style="height: 40px; width:120px; background-color: #FFFFFF; border: 1px solid #86868C;"></div>
@@ -398,6 +398,345 @@
       </semantic-form>
 
       <hr>
+
+      <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+        post-action='redirect'
+        browser-persistence=true
+        form-id='example-2'
+        fields='[
+          {
+            "id": "type",
+            "label": "Type",
+            "description": "The type of the created instance",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "valueSetPattern": "
+              SELECT $value $label WHERE {
+                VALUES ($value $label) {
+                  (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> \"Man Made Object\")
+                  (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
+                }
+              }
+            ",
+            "selectPattern": "SELECT $value WHERE { $subject a $value }",
+            "insertPattern": "INSERT { $subject a $value } WHERE {}",
+            "deletePattern": "DELETE { $subject a $value } WHERE {}"
+          },
+          {
+            "id": "label",
+            "label": "Label",
+            "description": "The label used to display the instance",
+            "xsdDatatype": "xsd:string",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+            "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+            "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+          },
+          {
+            "id": "acquisitionBeginDate",
+            "label": "Acquisition begin date",
+            "description": "The acquisition start date refers to the date that the current owning body acquired the object",
+            "xsdDatatype": "xsd:dateTime",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              SELECT ?value WHERE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_begin_of_the_begin ?value
+              }
+            ",
+            "insertPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              INSERT {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_begin_of_the_begin $value
+              } WHERE {
+                BIND(IRI(CONCAT(STR(?subject), \"/acquisition\")) as ?acquisition).
+                BIND(IRI(CONCAT(STR(?subject), \"/acquisition/date\")) as ?acquisitionDate).
+              }
+            ",
+            "deletePattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              DELETE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_begin_of_the_begin ?date
+              } WHERE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_begin_of_the_begin $value.
+                ?acquisitionDate crm:P82a_begin_of_the_begin ?date.
+              }
+            "
+          },
+          {
+            "id": "acquisitionEndDate",
+            "label": "Acquisition end date",
+            "description": "The acquisition end date refers to the date that the current owning body acquired the object",
+            "xsdDatatype": "xsd:dateTime",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              SELECT ?value WHERE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_end_of_the_end ?value
+              }
+            ",
+            "insertPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              INSERT {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_end_of_the_end  $value
+              } WHERE {
+                BIND(IRI(CONCAT(STR(?subject), \"/acquisition\")) as ?acquisition).
+                BIND(IRI(CONCAT(STR(?subject), \"/acquisition/date\")) as ?acquisitionDate).
+              }
+            ",
+            "deletePattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              DELETE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_end_of_the_end ?date
+              } WHERE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P4_has_time-span ?acquisitionDate.
+                ?acquisitionDate crm:P82a_end_of_the_end $value.
+                ?acquisitionDate crm:P82a_end_of_the_end  ?date.
+              }
+            "
+          },
+          {
+            "id": "acquisitionType",
+            "label": "Acquistion Type",
+            "description": "The type of acquisition refers to how the thing was transferred to the owning organisation. For example, donation, purchase, etc.",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              SELECT $value ?label WHERE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P2_has_type $value.
+                $value skos:prefLabel $label
+              }
+            ",
+            "valueSetPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              SELECT DISTINCT $value $label WHERE {
+                VALUES ($value $label) {
+                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/B> \"Bequeathed\")
+                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/D> \"Donated\")
+                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/FU> \"Funded\")
+                  (<http://collection.britishmuseum.org/id/thesauri/acquisition/P> \"Purchased\")
+                }
+              }
+            ",
+            "insertPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              INSERT {
+                ?acquisition a crm:E8_Acquisition .
+                ?acquisitionType a crm:E55_Type .
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P2_has_type $value.
+              } WHERE {
+                BIND(uri(concat(str($subject),\"/acquisition\")) as ?acquisition) .
+              }
+            "
+          },
+          {
+            "id": "acquisitionFromActor",
+            "label": "Acquisition from Actor",
+            "xsdDatatype": "xsd:anyURI",
+            "minOccurs": "1",
+            "maxOccurs": "1",
+            "selectPattern": "
+              PREFIX rso: <http://www.researchspace.org/ontology/>
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              SELECT ?value ?label WHERE {
+                $subject crm:P24i_changed_ownership_through ?acquisition.
+                ?acquisition crm:P23_transferred_title_from $value.
+                $value rso:displayLabel ?label
+              }
+            ",
+            "autosuggestionPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              SELECT $value $label WHERE {
+                VALUES ($value $label) {
+                  (<http://collection.britishmuseum.org/id/person-institution/104636> \"The British Museum\")
+                  (<http://collection.britishmuseum.org/id/person-institution/170898> \"British Consulate General, Atlanta\")
+                  (<http://collection.britishmuseum.org/id/person-institution/188537> \"British Association for the Advancement of Science\")
+                }
+                FILTER REGEX($label, \"?token\", \"i\")
+              }
+            ",
+            "insertPattern": "
+              PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+              INSERT {
+                ?acquisitionActor a crm:E39_Actor .
+                ?acqusition a crm:E8_Acquisition .
+                $subject crm:P24i_changed_ownership_through ?acquisition .
+                ?acquisition crm:P23_transferred_title_from $value .
+              } WHERE {
+                BIND(uri(concat(str(?subject),\"/acquisition\")) as ?acquisition)
+              }
+            "
+          }
+        ]'>
+        <bs-panel>
+          <h4>Create CRM Instance </h4>
+          <semantic-form-recover-notification></semantic-form-recover-notification>
+          <bs-tabs fixed-key="form">
+            <bs-tab event-key="1" title="General Information">
+              <semantic-form-text-input for='label'></semantic-form-text-input>
+              <semantic-form-select-input for='type'></semantic-form-select-input>
+            </bs-tab>
+            <bs-tab event-key="2" title="Acquisition">
+              <semantic-form-datetime-input for="acquisitionBeginDate"></semantic-form-datetime-input>
+              <semantic-form-datetime-input for="acquisitionEndDate"></semantic-form-datetime-input>
+              <semantic-form-select-input for='acquisitionType'></semantic-form-select-input>
+              <semantic-form-autocomplete-input for='acquisitionFromActor' placeholder='Search for an actor. Type e.g. "British"'></semantic-form-autocomplete-input>
+            </bs-tab>
+          </bs-tabs>
+          <semantic-form-errors></semantic-form-errors>
+          <!-- save and reset button for form -->
+
+          <button name="reset" class="btn btn-default">Reset</button>
+          <button name="submit" class="btn btn-action">Save</button>
+        </bs-panel>
+      </semantic-form>
+
+      <hr>
+      <h2>Alert</h2>
+
+      <bs-alert bs-style='info'>
+        <strong>Info!</strong>
+        Besides the generic events and components, the platform provides specialized ones for different use cases that will be documented here in the future.
+      </bs-alert>
+
+      <bs-alert bs-style='success'>
+        <strong>Success!</strong>
+        Besides the generic events and components, the platform provides specialized ones for different use cases that will be documented here in the future.
+      </bs-alert>
+
+        <bs-alert bs-style="warning">
+            <strong>Holy guacamole!</strong> Best check yo self, you're not looking too good.
+        </bs-alert>
+
+        <bs-alert bs-style='danger'>
+            <strong>Attention!</strong>
+            Besides the generic events and components, the platform provides specialized ones for different use cases that will be documented here in the future.
+        </bs-alert>
+
+      <hr>
+      <h2>Code block</h2>
+      <mp-code-block mode='text/html' show-copy-button=false>
+        <![CDATA[
+        <semantic-form
+          fields='[{
+            "id": "name",
+            "label": "Name",
+            "insertPattern": "INSERT { $subject foaf:name $value } WHERE {}"
+            }]'
+        >
+          ... children ...
         
+        </semantic-form>
+        ]]></mp-code-block>
+        
+      <hr>
+      <h2>Chart</h2>
+        <mp-component-toolbar>
+            <mp-component-toolbar-actions>
+              <semantic-chart-type-selector default="bar" types='["line", "bar", "radar", "pie", "donut"]' />
+            </mp-component-toolbar-actions>
+            <mp-component-toolbar-component>
+              <semantic-chart
+                provider='highcharts'
+                query='
+                  PREFIX semanticPerson: <http://data.semanticweb.org/person/>
+                  SELECT * WHERE {
+                    VALUES (?person ?foafName ?articleCount)
+                    {
+                      (semanticPerson:abraham-bernstein "Abraham Bernstein" 22)
+                      (semanticPerson:bijan-parsia "Bijan Parsia" 35)
+                      (semanticPerson:enrico-motta "Enrico Motta" 22)
+                      (semanticPerson:ian-horrocks "Ian Horrocks" 27)
+                      (semanticPerson:stefan-decker "Stefan Decker" 23)
+                    }
+                  } ORDER BY DESC(?articleCount)'
+                sets='[{"dataSetName": "Articles per person", "category": "person", "value": "articleCount"}]'
+                tooltip-template='{{> tooltip}}'>
+                <template id='tooltip'>
+                  <div>
+                    {{#*inline "@marker"}}
+                      {{#ifCond style "||" class}}
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                          style="display: inline-block; margin-right: 10px;"
+                          width="10" height="10">
+                          <circle cx="5" cy="5" r="5"
+                            style="{{style}}"
+                            class="{{class}}" />
+                        </svg>
+                      {{/ifCond}}
+                    {{/inline}}
+                    {{#if category}}
+                      <div>
+                        <h5>
+                            {{> @marker style=category.markerStyle class=category.markerClass}}
+                          {{#if category.iri}}
+                            <semantic-link iri='{{category.iri}}'>
+                              {{category.label}}
+                            </semantic-link>
+                          {{else}}
+                            {{category.label}}
+                          {{/if}}
+                        </h5>
+                      </div>
+                    {{/if}}
+                    <ul class="list-unstyled">
+                      {{#each points}}
+                        <li>
+                          {{> @marker style=markerStyle class=markerClass}}
+                          {{#if iri}}
+                            <semantic-link iri="{{iri}}">{{label}}</semantic-link>: {{value}}
+                          {{else}}
+                            {{label}}: {{value}}
+                          {{/if}}
+                        </li>
+                      {{/each}}
+                    </ul>
+                  </div>
+                </template>
+              </semantic-chart>
+            </mp-component-toolbar-component>
+          </mp-component-toolbar>
+
+          <hr>
+          <h2>Timeline</h2>
+
+          <semantic-timeline query='PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            SELECT ?start ?end ?subject WHERE {
+            VALUES (?start ?end ?subject) {
+              ("1899-07-21"^^xsd:date "1961-07-02"^^xsd:date "Ernest Hemingway")
+              ("1890-01-29"^^xsd:date "1960-05-30"^^xsd:date "Boris Pasternak")
+              ("1905-06-21"^^xsd:date "1980-04-15"^^xsd:date "Jean-Paul Sartre")
+              ("1927-03-06"^^xsd:date "2014-04-17"^^xsd:date "Gabriel García Márquez")
+            }
+          }
+          ' tuple-template="{{> template}}" tuple-template-height="42">
+                      <template id="template">
+                          <b>{{subject.value}}</b>
+                          <div>{{start.value}} - {{end.value}}</div>
+                      </template>
+          </semantic-timeline>
     </div>
 </div>

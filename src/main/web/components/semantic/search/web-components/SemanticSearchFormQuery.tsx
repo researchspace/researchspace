@@ -146,7 +146,7 @@ const PLACEHOLDER_SUBJECT = Rdf.iri(vocabularies.VocabPlatform._NAMESPACE + 'For
  *    ]'>
  *      <semantic-form-select-input for="type"></semantic-form-select-input>
  *      <semantic-form-text-input for="label"></semantic-form-text-input>
- *      <button type='button' name='submit' className='btn btn-default'>Search</button>
+ *      <button type='button' name='submit' className='btn btn-action'>Search</button>
  *  </semantic-search-form-query>
  */
 export class FormQuery extends React.Component<SemanticFormBasedQueryConfig> {

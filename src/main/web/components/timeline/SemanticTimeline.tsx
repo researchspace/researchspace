@@ -735,7 +735,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
     }
 
     return (
-      <button className={`btn btn-default ${styles.fitButton}`} onClick={() => this.timeline.fit()}>
+      <button className={`btn btn-primary ${styles.fitButton}`} onClick={() => this.timeline.fit()}>
         <i className="fa fa-expand" />
       </button>
     );

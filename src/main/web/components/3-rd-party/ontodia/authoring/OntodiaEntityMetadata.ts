@@ -86,8 +86,8 @@ export interface OntodiaEntityMetadataProps {
  *   </semantic-form-composite-input>
  *
  *   <semantic-form-errors></semantic-form-errors>
- *   <button name="submit" class="btn btn-default">Save</button>
  *   <button name="reset" class="btn btn-default">Reset</button>
+ *   <button name="submit" class="btn btn-action">Save</button>
  * </ontodia-entity-metadata>
  */
 export class OntodiaEntityMetadata extends React.Component<OntodiaEntityMetadataProps, {}> {

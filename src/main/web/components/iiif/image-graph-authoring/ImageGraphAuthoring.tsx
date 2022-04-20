@@ -178,9 +178,9 @@ export interface State {
  *          <semantic-form-hidden-input for="viewport"></semantic-form-hidden-input>
  *          <semantic-form-hidden-input for="boundingBox"></semantic-form-hidden-input>
  *
- *          <button name="submit" class="btn btn-sm btn-success">Save</button>
  *          <button name="reset" class="btn btn-sm btn-default">Reset</button>
  *          <button name="cancel" class="btn btn-sm pull-right">Cancel</button>
+ *          <button name="submit" class="btn btn-sm btn-action">Save</button>
  *        </semantic-form>
  *      </ontodia>
  *    </div>

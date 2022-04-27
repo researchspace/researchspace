@@ -20,54 +20,39 @@
       <mp-splitpane-toggle-on>
         <button class="btn-toggle-on">
           <div class="btn-toggle-on-content">
-            <div style='text-align: left;
-            min-height: 30px;
-            display: flex;
-            align-items: center;
-            padding-bottom: 3px;'>{{itemLabel}}s</div>
-            <div class="btn btn-default">
-              <i class='iconmoon iconmoon-arrow-right2'></i>
-            </div>
+            <h4 style="width: 120px; text-align: left;">
+              <mp-text-truncate truncate="..">
+                {{itemLabel}}s
+              </mp-text-truncate>
+            </h4>
+            <span class="material-icons-round">chevron_right</span>
           </div>
-          
         </button>
       </mp-splitpane-toggle-on>
       <mp-splitpane-toggle-off>
         <div class="split-pane__leftsidebar-header">
           <button data-flex-layout='row center-left' class="btn-toggle-off">
-            <div style='text-align: left;
-            min-height: 30px;
-            display: flex;
-            align-items: center;'>
-              {{#if collection}}<mp-label iri='{{collection}}'></mp-label> - {{/if}}{{itemLabel}}s
-            </div>
-            <div class="page__main-top-actions">
-              {{#if editable}}
-                <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["{{frameId}}-term-forms"]'>
-                  <button class="btn btn-default">
-                    <i class='fa fa-plus btn-icon-left'></i>
-                    <span>Add New</span>
-                  </button>
-                </mp-event-trigger>
-              {{/if}}
-                <mp-event-trigger id='set-action__search-add-add-frame' type='Dashboard.AddFrame' 
-                                  data='{"viewId": "entity-search","resourceIri":"{{config}}"}' 
-                                  targets='["thinking-frames"]'>
-                  <button type="button" class='btn btn-default' title="Entity Search">
-                    <i class='rs-icon rs-icon-search btn-icon-left'></i>
-                          Search all
-                  </button>
-              </mp-event-trigger>
-              <button class="btn btn-default">
-                <i class='iconmoon iconmoon-arrow-left2'></i>
-              </button>
-            </div>
+            <h4 style="min-width: 120px; width: 100%; text-align: left;">
+              <mp-text-truncate truncate="..">
+         [[!--       {{#if collection}}<mp-label iri='{{collection}}'></mp-label> -  {{/if}}--]]
+                {{itemLabel}}s
+              </mp-text-truncate>
+            </h4>
+            <span class="material-icons-round">chevron_left</span>
           </button>
         </div>
       </mp-splitpane-toggle-off>
       <mp-splitpane-sidebar-open style="flex: 1;">
         <div class="split-pane__sidebar-open">
           <div class="rs-vocabulary-terms-area">
+            {{#if editable}}
+                <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["{{frameId}}-term-forms"]'>
+                  <button class="btn btn-default btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
+                    <i class="material-icons-round btn-icon-left">add_box</i>
+                    <span>Add New</span>
+                  </button>
+                </mp-event-trigger>
+            {{/if}}
             <mp-event-target-template-render id='{{frameId}}-mytree'  template='{{> treeTemplate}}'>
               <template id='treeTemplate'>
                 <semantic-lazy-tree id='{{frameId}}-scheme-tree' info-template='{{> template}}' type='simple'  focused='{{iri}}' page-size='10000'
@@ -88,7 +73,9 @@
                       {{#if editable}}
                         <mp-event-trigger id='{{frameId}}-form-edit-trigger--{{iri}}' type='Component.TemplateUpdate'
                                           data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' targets='["{{frameId}}-term-forms"]'>
-                          <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-pencil' title="Edit {{itemLabel}}"></i></span>
+                          <span class='tree-item-action' style="margin-right: 7px;">
+                            <i class='fa fa-pencil' title="Edit {{itemLabel}}"></i>
+                          </span>
                         </mp-event-trigger>
                         <mp-event-proxy id='{{frameId}}-focus-tree-element' on-event-source='{{frameId}}-form-edit-trigger--{{iri}}' proxy-event-type='LazyTree.Focus' proxy-targets='["{{frameId}}-scheme-tree"]' data='{"iri":"{{iri}}"}'></mp-event-proxy>
                         {{#if broaderProperty}}

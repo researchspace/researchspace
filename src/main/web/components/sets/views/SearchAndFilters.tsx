@@ -82,6 +82,7 @@ export class SearchAndFilters extends React.Component<Props, {}> {
           placeholder={this.props.setIsOpen ? placeholderInSet : placeholder}
           onChange={(e) => this.props.onSearchTextChanged(e.currentTarget.value)}
           onClear={() => this.props.onSearchTextChanged('')}
+          showPlaceholderIcon
         />
         <button
           className={classnames({

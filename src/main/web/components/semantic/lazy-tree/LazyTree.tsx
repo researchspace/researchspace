@@ -52,6 +52,7 @@ import { ItemSelected, Focus } from './LazyTreeEvents';
 
 import * as styles from './LazyTree.scss';
 import { Rdf } from 'platform/api/rdf';
+import { node } from 'platform-tests/common/ts/components/tree-selector/Forests';
 
 interface BaseLazyTreeProps {
   /**
@@ -75,6 +76,11 @@ interface BaseLazyTreeProps {
    * IRI of the element that should be focused by default.
    */
   focused?: string;
+
+  /**
+   * Placeholder string used in the input search
+   */
+  inputPlaceholder?: string
 }
 
 export type LazyTreeProps =
@@ -92,7 +98,7 @@ interface State {
 }
 
 /**
- *   <semantic-lazy-tree id='scheme-tree' info-template='{{> template}}' type='simple' config='{"scheme": "[[this]]"}'>
+ *   <semantic-lazy-tree id='scheme-tree' input-placeholder='Select' info-template='{{> template}}' type='simple' config='{"scheme": "[[this]]"}'>
  *     <template id='template'>
  *      Some additional info or actions to show together with the node
  *    </template>
@@ -186,6 +192,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       <div className={styles.component}>
         <SemanticTreeInput
           {...patterns}
+          placeholder={this.props.inputPlaceholder}
           ref={this.onSelectionReady}
           multipleSelection={true}
           onSelectionClick={this.onSearchBadgeClick}
@@ -201,7 +208,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
   }
 
   private renderTreeNodeRow(node: Node, highlightedNodes: ReadonlyArray<Node>) {
-    const decoratorsClass = this.computeDecoratorsClass(node, highlightedNodes);
+    const decoratorsClass = this.computeDecoratorsClass(node, highlightedNodes); 
     return (
       <span className={styles.alignmentNodeRow}>
         <Draggable iri={node.iri.value}>
@@ -250,7 +257,7 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   private computeDecoratorsClass(item: Node, highlightedNodes: ReadonlyArray<Node>): string {
     const classes: string[] = [styles.decoratedNodeBody];
-
+    
     const pathIndex = highlightedNodes.indexOf(item);
     if (pathIndex >= 0) {
       const isTarget = pathIndex === highlightedNodes.length - 1;

@@ -271,7 +271,7 @@ function toSetOfIris(values: Immutable.List<FieldValue>) {
 
 function createDefaultPlaceholder(definition: FieldDefinition): string {
   const entityLabel = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();
-  return `Search or browse for values of ${entityLabel} here...`;
+  return `Select ${entityLabel}`;
 }
 
 MultipleValuesInput.assertStatic(TreePickerInput);

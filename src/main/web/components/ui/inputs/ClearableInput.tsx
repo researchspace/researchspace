@@ -29,6 +29,7 @@ export interface ClearableInputProps extends InputHTMLAttributes<HTMLInputElemen
   inputStyle?: CSSProperties;
   clearTitle?: string;
   onClear: () => void;
+  showPlaceholderIcon?: boolean;
 }
 
 interface State {
@@ -50,7 +51,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
   }
 
   render() {
-    const { className, style, inputClassName, inputStyle, onClear, clearTitle, children, ...inputProps } = this.props;
+    const { className, style, inputClassName, inputStyle, onClear, clearTitle, children, showPlaceholderIcon, ...inputProps } = this.props;
 
     const hasNonEmptyAddon = Children.count(children) > 0;
 
@@ -60,14 +61,16 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
       className
     );
     const controlClass = classnames(`${CLASS_NAME}__input form-control`, inputClassName);
-
+      
     return (
       <div className={groupClass} style={style} onClick={this.onClickSelf}>
         {hasNonEmptyAddon ? children : null}
         <div className={`${CLASS_NAME}__input-with-clear`}>
-{/*           <div className={`${CLASS_NAME}__icon`}>
-            <i className="material-icons-round">search</i>
-          </div> */}
+          {showPlaceholderIcon && 
+            <div className={`${CLASS_NAME}__icon`}>
+              <i className="material-icons-round">search</i>
+            </div>
+          }
           <input
             type="text"
             {...inputProps}

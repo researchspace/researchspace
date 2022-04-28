@@ -57,7 +57,7 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
             </div>
             {!isRequired ? (
               <Button className="field-editor__delete-label-button" onClick={() => onDeleteLabel()}>
-                <i className="fa fa-times" />
+                <i className="material-icons-round">close</i>
               </Button>
             ) : null}
           </div>

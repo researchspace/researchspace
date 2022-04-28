@@ -504,10 +504,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
             }
           },
         },
-        D.span({
-          className: 'fa fa-sitemap fa-lg',
-          ['aria-hidden' as any]: true,
-        })
+ 
+/*           D.span({}, 'Filter'), */
+          D.span({
+            className: 'material-icons-round',
+            ['aria-hidden' as any]: true,
+          }, 'expand_more')
+        
       )
     );
   }

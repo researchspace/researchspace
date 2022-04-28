@@ -127,7 +127,7 @@ export class InlineValuesEditor extends Component<InlineValuesEditorProps, State
                     this.setState({ targetValues });
                   }}
                 >
-                  <span className="fa fa-times" />
+                  <i className="material-icons-round">close</i>
                 </Button>
               </div>
             ))}

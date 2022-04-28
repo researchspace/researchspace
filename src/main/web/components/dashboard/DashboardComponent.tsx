@@ -368,7 +368,7 @@ export class DashboardComponent extends Component<Props, State> {
             className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
             onClick={() => this.onRemoveItem(item)}
           >
-            <i className="fa fa-times" />
+            <i className="material-icons-round">close</i>
           </button>
         </span>
       );
@@ -381,7 +381,7 @@ export class DashboardComponent extends Component<Props, State> {
           className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
           onClick={() => this.onRemoveItem(item)}
         >
-          <i className="fa fa-times" />
+          <i className="material-icons-round">close</i>
         </button>
       </span>
     );

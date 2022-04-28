@@ -56,7 +56,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
             className="btn btn-icon"
             onClick={this.props.onPressCreateNewSet}
           >
-            <i className="iconmoon iconmoon-folder-plus"></i>
+            <i className="material-icons-round">create_new_folder</i>
           </button>
         )}
       </div>
@@ -139,11 +139,12 @@ export class ItemViewModeSwitch extends React.Component<
     const className = `${baseClass}__item-view-mode`;
     return (
       <div className={className} role="group">
-        {this.renderModeButton('grid', 'Switch to grid view', <span className="fa fa-th" />)}
-        {this.renderModeButton('list', 'Switch to list view', <span className="fa fa-th-list" />)}
+        {this.renderModeButton('grid', 'Switch to grid view', <span className="material-icons-round">view_module</span>)}
+        {this.renderModeButton('list', 'Switch to list view', <span className="material-icons-round">view_list</span>)}
       </div>
     );
   }
+
 
   private renderModeButton(mode: ItemViewMode, title: string, children: React.ReactNode) {
     const isPressed = mode === this.props.mode;

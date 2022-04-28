@@ -223,7 +223,8 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
               namePredicateIri={this.props.namePredicateIri}
               mediaTypePredicateIri={this.props.mediaTypePredicateIri}
             ></FileVisualizer>
-            <span className={`${styles.caRemoveFile} fa fa-times`} onClick={this.removeFile}></span>
+            
+            <span className={`${styles.caRemoveFile} material-icons-round`} onClick={this.removeFile}>close</span>
           </div>
         ) : (
           this.renderBody()

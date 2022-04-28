@@ -475,7 +475,7 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
     <div className={styles.itemHolder}>
       {element}
       <span
-        className={classnames('fa fa-times-circle fa-lg', styles.editButton)}
+        className={classnames('fa fa-times-circle', styles.editButton)}
         onClick={() => this.state.store.edit(editKind, conjunct as any, disjunct)}
       />
     </div>

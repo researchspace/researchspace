@@ -203,7 +203,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
     return (
       <div className={`${CLASS_NAME}__criterion-remove ontodia-btn-group ontodia-btn-group-xs`}>
         <button type="button" className="ontodia-btn ontodia-btn-default" title="Remove criteria" onClick={onClick}>
-          <span className="fa fa-times" aria-hidden="true"></span>
+          <i className="material-icons-round" aria-hidden="true">close</i>
         </button>
       </div>
     );

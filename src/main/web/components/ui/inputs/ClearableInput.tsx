@@ -65,6 +65,9 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
       <div className={groupClass} style={style} onClick={this.onClickSelf}>
         {hasNonEmptyAddon ? children : null}
         <div className={`${CLASS_NAME}__input-with-clear`}>
+{/*           <div className={`${CLASS_NAME}__icon`}>
+            <i className="material-icons-round">search</i>
+          </div> */}
           <input
             type="text"
             {...inputProps}
@@ -76,7 +79,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
             onBlur={this.onBlur}
           />
           <div className={`${CLASS_NAME}__clear`} title={clearTitle} onClick={onClear}>
-            <span className="fa fa-times" aria-hidden="true"></span>
+            <i className="material-icons-round" aria-hidden="true">close</i>
           </div>
         </div>
       </div>

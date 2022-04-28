@@ -182,7 +182,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
                 className: COMPONENT_NAME + '__remove-value',
                 onClick: () => this.removeValue(index),
               },
-              D.span({ className: 'fa fa-times' })
+              D.span({className: 'material-icons-round'}, 'close')
             )
           : undefined
       )

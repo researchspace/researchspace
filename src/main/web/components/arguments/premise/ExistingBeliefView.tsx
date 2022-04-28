@@ -45,7 +45,7 @@ export class ExistingBeliefView extends Component<ExistingBeliefViewProps, {}> {
       <div className={styles.evidenceCustom}>
         {onCancel ? (
           <div className={styles.evidenceCustomDeleteButton}>
-            <i className="fa fa-times" onClick={onCancel} />
+            <i className='material-icons-round' onClick={onCancel}>close</i>
           </div>
         ) : null}
         <TemplateItem
@@ -60,7 +60,7 @@ export class ExistingBeliefView extends Component<ExistingBeliefViewProps, {}> {
 
   render() {
     const { belief, onCancel, assertionBasedBeliefTemplate, fieldBasedBeliefTemplate } = this.props;
-    const close = onCancel ? <i className="fa fa-times pull-right" onClick={onCancel} /> : null;
+    const close = onCancel ? <i className='material-icons-round pull-right' onClick={onCancel}>close</i> : null;
     if (belief.argumentBeliefType === ArgumentsBeliefTypeAssertionKind) {
       if (assertionBasedBeliefTemplate) {
         return this.renderCustomBeliefTemplate(belief, assertionBasedBeliefTemplate);

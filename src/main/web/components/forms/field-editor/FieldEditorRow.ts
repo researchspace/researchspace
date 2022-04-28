@@ -84,7 +84,7 @@ export class FieldEditorRow extends Component<Props, {}> {
             bsSize: 'sm',
             onClick: () => this.toggle({ expand: false }),
           },
-          D.span({ className: 'fa fa-times' })
+          D.span({className: 'material-icons-round'}, 'close')
         )
       )
     );

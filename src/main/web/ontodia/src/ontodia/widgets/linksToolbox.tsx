@@ -75,7 +75,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
             title="Hide links and labels"
             onClick={() => this.changeState('invisible')}
           >
-            <span className="fa fa-times" aria-hidden="true" />
+            <span className="material-icons-round" aria-hidden="true">close</span>
           </label>
           <label
             className={'ontodia-btn ontodia-btn-default' + (this.isChecked('withoutLabels') ? ' active' : '')}
@@ -185,7 +185,7 @@ class LinkTypesToolboxView extends React.Component<LinkTypesToolboxViewProps, { 
     if (this.state.filterKey) {
       dropButton = (
         <button type="button" className={`${className}__clearSearch`} onClick={this.onDropFilter}>
-          <span className="fa fa-times" aria-hidden="true"></span>
+          <span className="material-icons-round" aria-hidden="true">close</span>
         </button>
       );
     }
@@ -210,7 +210,7 @@ class LinkTypesToolboxView extends React.Component<LinkTypesToolboxViewProps, { 
                 title="Hide links and labels"
                 onClick={() => changeLinkTypeState(history, 'invisible', links)}
               >
-                <span className="fa fa-times" aria-hidden="true" />
+                <span className="material-icons-round" aria-hidden="true">close</span>
               </label>
               <label
                 className="ontodia-btn ontodia-btn-primary"

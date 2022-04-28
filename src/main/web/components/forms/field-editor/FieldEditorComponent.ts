@@ -619,7 +619,7 @@ class FieldEditorComponent extends Component<Props, State> {
                 className: block('delete-default').toString(),
                 onClick: () => onDelete(index),
               },
-              D.span({ className: 'fa fa-times' })
+              D.span({className: 'material-icons-round'}, 'close')
             )
           ),
           error ? bsrow({ className: block('error').toString() }, bscol({ md: 12 }, error.message)) : null,

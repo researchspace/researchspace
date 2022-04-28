@@ -86,7 +86,7 @@ export class SearchAndFilters extends React.Component<Props, {}> {
         <button
           className={classnames({
             [`${baseClass}__show-filters`]: true,
-            'btn btn-icon': true,
+            'btn btn-default': true,
             active: this.showAdditionalFilters(),
           })}
           aria-pressed={this.showAdditionalFilters()}
@@ -99,7 +99,7 @@ export class SearchAndFilters extends React.Component<Props, {}> {
             }
           }}
         >
-          <span className="fa fa-ellipsis-v" title="Show additional filters"></span>
+          <i className="material-icons-round" title="Show additional filters">filter_alt</i>
         </button>
       </div>
     );

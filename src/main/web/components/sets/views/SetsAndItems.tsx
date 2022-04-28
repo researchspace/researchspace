@@ -70,7 +70,7 @@ export class OpenedSetView extends React.Component<SetViewProps, {}> {
         <SetCaption
           {...this.props}
           className={`${baseClass}__open-set`}
-          icon={<span className="iconmoon iconmoon-folder-open" />}
+          icon={<span className="material-icons-round">folder_open</span>}
         ></SetCaption>
         <ItemsView key="opened-set-items" {...this.props} />
       </div>
@@ -107,7 +107,7 @@ export class SetWithItems extends React.Component<SetWithItemsProps, {}> {
           set={set}
           onCaptionClick={this.handleOnClick}
           onEditCompleted={onEditCompleted}
-          icon={<span className={showItems ? 'iconmoon iconmoon-folder-open' : 'iconmoon iconmoon-folder'} />}
+          icon={<span className="material-icons-round">{showItems ? 'folder_open' : 'folder'}</span>  }
         ></SetCaption>
         {showItems ? <ItemsView {...otherProps} /> : undefined}
       </li>

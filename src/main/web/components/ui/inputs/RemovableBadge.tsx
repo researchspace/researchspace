@@ -58,7 +58,7 @@ export class RemovableBadge extends Component<RemovableBadgeProps, {}> {
           disabled: this.props.disableRemove,
           onClick: this.props.onRemove,
         },
-        D.span({ className: 'fa fa-times' })
+        D.span({className: 'material-icons-round'}, 'close')
       )
     );
   }

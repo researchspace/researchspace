@@ -349,8 +349,8 @@ export class QueryTemplateEditArgument extends Component<Props, State> {
           </Col>
         </FormGroup>
         <div className="text-right">
-          <Button bsStyle="danger" bsSize="xsmall" onClick={onDelete}>
-            <span className="fa fa-times"> Delete</span>
+          <Button bsStyle="default" bsSize="xsmall" onClick={onDelete}>
+            <span> Delete</span>
           </Button>
         </div>
       </div>

@@ -149,7 +149,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         />
         {showCreateNewButton ? (
           <Button className={`${CLASS_NAME}__create-button`} onClick={this.toggleNestedForm}>
-            {value === undefined ? <span className="fa fa-plus btn-icon-left" /> : null}
+            {value === undefined ? <i className="material-icons-round btn-icon-left">add_box</i> : null}
             {value === undefined ? <span> Create new</span> : <span>Edit</span>}
           </Button>
         ) : null}

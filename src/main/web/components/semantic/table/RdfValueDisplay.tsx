@@ -120,7 +120,7 @@ function renderRdfNode(props: RdfValueDisplayProps, label: string | undefined): 
         {resourceLink}
         <CopyToClipboardComponent text={data.value}>
           <button className="btn btn-link btn-xs" title="Copy IRI">
-            <i className="fa fa-clipboard text-muted"></i>
+            <span className="material-icons-round text-muted">content_copy</span>
           </button>
         </CopyToClipboardComponent>
       </span>
@@ -141,3 +141,4 @@ function renderRdfNode(props: RdfValueDisplayProps, label: string | undefined): 
     return null;
   }
 }
+

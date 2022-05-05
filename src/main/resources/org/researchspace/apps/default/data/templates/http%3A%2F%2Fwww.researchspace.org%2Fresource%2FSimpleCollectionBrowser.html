@@ -20,10 +20,9 @@
       <mp-splitpane-toggle-on>
         <button class="btn-toggle-on">
           <div class="btn-toggle-on-content">
-            <h4 style="width: 120px; text-align: left;">
+            <h4 style="width: 120px; text-align: left; margin-top: 7px;">
               <mp-text-truncate truncate="..">
                 <mp-label iri='{{collection}}'></mp-label>
-                {{itemLabel}}s
               </mp-text-truncate>
             </h4>
             <span class="material-icons-round">chevron_right</span>
@@ -34,10 +33,7 @@
         <div class="split-pane__leftsidebar-header">
           <button data-flex-layout='row center-left' class="btn-toggle-off">
             <h4 style="min-width: 120px; width: 100%; text-align: left;">
-              <mp-text-truncate truncate="..">
-         [[!--       {{#if collection}}<mp-label iri='{{collection}}'></mp-label> -  {{/if}}--]]
-                {{itemLabel}}s
-              </mp-text-truncate>
+                <mp-label iri='{{collection}}'></mp-label>
             </h4>
             <span class="material-icons-round">chevron_left</span>
           </button>
@@ -50,7 +46,7 @@
                 <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["{{frameId}}-term-forms"]'>
                   <button class="btn btn-default btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                     <i class="material-icons-round btn-icon-left">add_box</i>
-                    <span>Add New</span>
+                    <span>New {{itemLabel}}</span>
                   </button>
                 </mp-event-trigger>
             {{/if}}
@@ -75,13 +71,17 @@
                         <mp-event-trigger id='{{frameId}}-form-edit-trigger--{{iri}}' type='Component.TemplateUpdate'
                                           data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' targets='["{{frameId}}-term-forms"]'>
                           <span class='tree-item-action'>
-                            <i class='fa fa-pencil' title="Edit {{itemLabel}}"></i>
+                            <i class="material-icons-round" title="Edit {{itemLabel}}">edit</i>
+                            <!-- <i class='fa fa-pencil' title="Edit {{itemLabel}}"></i> -->
                           </span>
                         </mp-event-trigger>
                         <mp-event-proxy id='{{frameId}}-focus-tree-element' on-event-source='{{frameId}}-form-edit-trigger--{{iri}}' proxy-event-type='LazyTree.Focus' proxy-targets='["{{frameId}}-scheme-tree"]' data='{"iri":"{{iri}}"}'></mp-event-proxy>
                         {{#if broaderProperty}}
                         <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"broader": "{{iri}}", "mode": "new" }' targets='["{{frameId}}-term-forms"]'>
-                          <span class='tree-item-action'><i class='fa fa-plus' title="Add narrower {{itemLabel}}"></i></span>
+                          <span class='tree-item-action'>
+                            <i class="material-icons-round" title="Add narrower {{itemLabel}}">add</i>
+                       <!--      <i class='fa fa-plus' title="Add narrower {{itemLabel}}"></i> -->
+                          </span>
                         </mp-event-trigger>
                         {{/if}}
                       {{else}}
@@ -109,38 +109,30 @@
 
                 {{#case "new" break=true}}
                   {{#if broader}}
-                    <h3>Adding: <div class="rs-vocabulary-terms-form-label">new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></div></h3>
+                    <h2 style="margin-top: 0;">Create new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></h2>
                   {{else}}
-                    <h3>Adding: <div class="rs-vocabulary-terms-form-label">new {{itemLabel}}</div></h3>
+                    <h2 style="margin-top: 0;">Create new {{itemLabel}}</h2>
                   {{/if}}
                 {{/case}}
 
                 {{#case "edit" break=true}}
-                <div class="rs-vocabulary-terms-form-label-container">
-                  <h2><mp-label iri='{{iri}}'></mp-label></h2>
-                  <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard!'>
-                    <button class="btn btn-default" title="Copy IRI">
-                      <span class="material-icons-round btn-icon-left">content_copy</span>
-                      Copy IRI
-                    </button>
-                  </mp-copy-to-clipboard>
-                </div>
+                  <h2 class="rs-vocabulary-terms-form-title"><mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label></h2>
                 {{/case}}
 
                 {{#case "view" break=true}}
-                <div class="rs-vocabulary-terms-form-label-container">
-                  <h2><mp-label iri='{{iri}}'></mp-label></h2>
-                  <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard!'>
+     
+                  <h2 class="rs-vocabulary-terms-form-title"><mp-label iri='{{iri}}'></mp-label></h2>
+                  <!-- <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard!'>
                     <button class="btn btn-default" title="Copy IRI">
                       <span class="material-icons-round btn-icon-left">content_copy</span>
                       Copy IRI
                     </button>
-                  </mp-copy-to-clipboard>
-                </div>
+                  </mp-copy-to-clipboard> -->
+  
                 {{/case}}
               
                 {{#case "deleted" break=true}}
-                   <h3>Deleted {{itemLabel}}: <div class="rs-vocabulary-terms-form-label">{{label}}</div></h3>
+                  <h2 style="margin-top: 0;">Deleted {{itemLabel}}: {{label}}</h2>
                 {{/case}}
               {{/switch}}
     
@@ -160,20 +152,21 @@
                               proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
                               additional-data='{"mode": "deleted", "label": "{{label}}"}'
                               ></mp-event-proxy>
+
               
               <inline-template template-iri='{{resourceForm}}' 
-                                  options='{
-                                            "scheme": "{{collection}}", 
-                                            {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
-                                            {{#if broader}}"broader": "{{broader}}",{{/if}}
-                                            {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
-                                            "editable": {{editable}},
-                                            "mode": "{{mode}}",
-                                            "viewId": "{{frameId}}",
-                                            "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
-                                           	
-                                  }'>
+                              options='{
+                                        "scheme": "{{collection}}", 
+                                        {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
+                                        {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                        {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
+                                        "editable": {{editable}},
+                                        "mode": "{{mode}}",
+                                        "viewId": "{{frameId}}",
+                                        "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
+                              }'>
               </inline-template>
+              
               {{else}}
                 <div></div>
               {{/if}}

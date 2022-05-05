@@ -1,13 +1,3 @@
-{{#if node}}
-<semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
-  <template id='template'>
-    <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
-        <div style="margin: 10px 0;" class="text-underline"><i class="fa fa-pencil btn-icon-left"></i>Edit form template</div>
-    </semantic-link-container>
-  </template>
-</semantic-query>
-{{/if}}
-
 <semantic-form [[> rsp:FormDefaults]] 
                persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
                new-subject-template='{{scheme}}/data/{{{{raw}}}}{{item_label}}{{{{/raw}}}}'
@@ -31,24 +21,131 @@
                ]]'
                >
 
-  <div class="form-scroll-area">
-    <semantic-form-hidden-input for="classtype" default-values='["http://www.researchspace.org/resource/system/FormConfig"]'></semantic-form-hidden-input>
+    <bs-tabs id="tabs">
+    <bs-tab event-key="1" title="Details">
 
-    <semantic-form-hidden-input for="P71i_is_listed_in" default-value="http://www.researchspace.org/resource/system/vocab/authority_manager_config_types"> </semantic-form-hidden-input>  
-    <semantic-form-text-input for="item_label"> </semantic-form-text-input>
 
-    <semantic-form-tree-picker-input for="for_type"></semantic-form-tree-picker-input>
-    <semantic-form-tree-picker-input for="for_P2_has_type"></semantic-form-tree-picker-input>
-    <semantic-form-text-input for="restriction_sparql_pattern"> </semantic-form-text-input>
-    <semantic-form-text-input for="label_sparql_pattern"> </semantic-form-text-input>
+        <semantic-form-hidden-input for="classtype" default-values='["http://www.researchspace.org/resource/system/FormConfig"]'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="P71i_is_listed_in" default-value="http://www.researchspace.org/resource/system/vocab/authority_manager_config_types"> </semantic-form-hidden-input>  
+
+        <div class="two-columns-container">
+          <div class="column1">
+            <div class="form-section-header">Resource</div>
+            <div class="form-section-content">
+              <semantic-form-text-input for="item_label" placeholder="Enter the resource label (e.g. Place, Actor, Collection item, Concept, etc.)" label="Resource label"></semantic-form-text-input>
+              <div style="display:flex; gap:5px; align-items: end; margin-top: 21px;">
+                <div style="flex: 1;">
+                  <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/" label="Resource Form"
+                  placeholder="Enter IRI of the form that should be used to edit the resource"></semantic-form-text-input>
+                </div>
+                {{#if node}}
+                    <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
+                      <template id='template'>
+                        <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
+                            <button class="btn btn-default" style="min-height: 40px;">
+                              <i class="material-icons-round btn-icon-left" title="Edit form">edit</i>
+                              Edit form
+                            </button>
+                        </semantic-link-container>
+                      </template>
+                    </semantic-query>
+                {{/if}}
+              </div>
+  
+            </div>
+            
+            <div class="form-section-header">SPARQL Patterns</div>
+            <div class="form-section-content">
+              <semantic-form-text-input for="restriction_sparql_pattern" label="Restriction (SPARQL pattern)" placeholder="Enter SPARQL pattern" > </semantic-form-text-input>
+              <semantic-form-text-input for="label_sparql_pattern" label="Label (SPARQL pattern)" placeholder="Enter SPARQL pattern" > </semantic-form-text-input>
+              <semantic-form-text-input for="order_by_pattern" label="Order By (SPARQL pattern)" placeholder="Enter SPARQL pattern to get the order"> </semantic-form-text-input>
+            </div>
+          </div>
+
+          <div class="column2">
+
+          <div class="form-section-header">Resource types</div>
+          <div class="form-section-content">
+            <semantic-form-tree-picker-input for="for_type" placeholder="Select the resource CIDOC-CRM type (e.g. Man-Made object, Place, etc.)" label="Resource CIDOC-CRM type"></semantic-form-tree-picker-input>
+            <semantic-form-tree-picker-input for="for_P2_has_type" placeholder="Select an additional CIDOC-CRM E55_Type to be associated to the Resource" label="Resource type"></semantic-form-tree-picker-input>
+          </div>
+
+          <div class="form-section-header">Resource properties</div>
+          <div class="form-section-content">
+              <semantic-form-tree-picker-input for="membership_property" label="Membership Property" placeholder="Enter a property that connects the resource to the collection (e.g. skos:inScheme, crm:P71i_is_listed_in)"></semantic-form-tree-picker-input>
+              <semantic-form-tree-picker-input for="broader_property" label="Broader Property" placeholder="Enter property used to refer to a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"></semantic-form-tree-picker-input>
+            </div>
+          </div>
+        </div>
+        
+    </bs-tab>
+
+    <bs-tab event-key="2" title="Navigation menu">
+
+        <div class="alert alert-info">Define the <b>navigation menu</b> displayed in the Resource page.</div>
+
+          <style>
+          .menu-toggle .semantic-form-input-decorator.semantic-form-input-decorator--with-header {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            align-items: center;
+          }
+          .menu-toggle .semantic-form-input-decorator__header {
+            margin: 0;
+            font-weight: normal;
+          }
+          </style>
+
+        <div class="menu-toggle" style="margin-top: 30px;">
+            <semantic-form-checkbox-input class="toggle" for='entity_has_navigation' label="Enable navigation menu"></semantic-form-checkbox-input>
+        </div>
     
-    <semantic-form-tree-picker-input for="membership_property"></semantic-form-tree-picker-input>
-    <semantic-form-tree-picker-input for="broader_property"></semantic-form-tree-picker-input>
-    <semantic-form-text-input for="order_by_pattern"> </semantic-form-text-input>
+        {{#if node}}
+          <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation> ?form}'>
+            <template id='then'>
+              <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
+                              options='{
+                                        "collection": "{{node}}/navigation menu",
+                                        "membershipProperty": "http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry",
+                                        "itemLabel": "Navigation Menu",
+                                        "resourceView": "[[resolvePrefix "rsp:EntityNavigationConfigForm"]]",
+                                        "broaderProperty": "http://www.researchspace.org/resource/system/entity_manager/broader_navigation_menu",
+                                        "labelSparqlPattern": "?item <http://www.researchspace.org/resource/system/entity_manager/related_entity_config>/<http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .",
+                                        "frameId": "entity-navigation-config",
+                                        "editable": true
+                                        }'
+              ></inline-template>
+          </semantic-if>
+        {{/if}}
 
-    <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/"></semantic-form-text-input>
-    
-    <hr/>
+    </bs-tab>
+
+    <bs-tab event-key="3" title="Viewes">
+      <div class="alert alert-info" style="margin: 0;">Define the <b>views (eg. thumbnail, table, timeline, chart, etc.)</b>
+      used to display the entities associated to the Resource.</div>
+      <semantic-form-composite-input for='entity_has_view' label="Resource view"
+                                    new-subject-template='view/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                                    fields='[[
+                                      fieldDefinitions
+                                      view_has_label="http://www.researchspace.org/resource/system/entity_manager/view_has_label"
+                                      view_has_order="http://www.researchspace.org/resource/system/entity_manager/view_has_order"
+                                      view_has_template="http://www.researchspace.org/resource/system/entity_manager/view_has_template"
+                                      ]]'
+                                      >
+                            <semantic-form-text-input for="view_has_label" placeholder="Enter label" label="View label"></semantic-form-text-input>
+                            <semantic-form-text-input for="view_has_order" placeholder="Enter order (eg. 0, 1, 2)" label="View order for navigation dropdown"></semantic-form-text-input>
+                            <semantic-form-text-input for="view_has_template" placeholder="Enter template IRI" label="View template"></semantic-form-text-input>
+      </semantic-form-composite-input>
+    </bs-tab>
+
+    <bs-tab event-key="4" title="Facets">
+      <div class="alert alert-info" style="margin: 0;">Define the <b>facets</b> applied in the Resource page to filter the results.</div>
+      <semantic-form-autocomplete-input for="has_facet_kp" placeholder="Select knowledge pattern" label="Facet knowledge pattern"></semantic-form-autocomplete-input>
+    </bs-tab>
+
+  </bs-tabs>
+
     [[!--
     <h3>Table View Config</h3>
     <semantic-form-composite-input for='has_table_view_config'>
@@ -60,55 +157,8 @@
     </semantic-form-composite-input>
     --]]
 
-    <hr/>
-    <h3>Viewes</h3>
-    <semantic-form-composite-input for='entity_has_view' 
-                                   new-subject-template='view/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-                                    fields='[[
-                fieldDefinitions
-                  view_has_label="http://www.researchspace.org/resource/system/entity_manager/view_has_label"
-                  view_has_order="http://www.researchspace.org/resource/system/entity_manager/view_has_order"
-                  view_has_template="http://www.researchspace.org/resource/system/entity_manager/view_has_template"
-               ]]'
->
-      <semantic-form-text-input for="view_has_label"></semantic-form-text-input>
-      <semantic-form-text-input for="view_has_order"></semantic-form-text-input>
-      <semantic-form-text-input for="view_has_template"></semantic-form-text-input>
-    </semantic-form-composite-input>
-
-    <hr/>
-    <h3>Facet KPs</h3>
-    <semantic-form-autocomplete-input for="has_facet_kp"></semantic-form-autocomplete-input>
-   
-    <hr/>
-    
-    <semantic-form-checkbox-input for='entity_has_navigation'></semantic-form-checkbox-input>
-    
-    {{#if node}}
-      <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation> ?form}'>
-        <template id='then'>
-          <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
-                           options='{
-                                    "collection": "{{node}}/navigation",
-                                    "membershipProperty": "http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry",
-                                    "itemLabel": "Navigation Menu",
-                                    "resourceForm": "[[resolvePrefix "rsp:EntityNavigationConfigForm"]]",
-                                    "broaderProperty": "http://www.researchspace.org/resource/system/entity_manager/broader_navigation_menu",
-                                    "labelSparqlPattern": "?item <http://www.researchspace.org/resource/system/entity_manager/related_entity_config>/<http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .",
-                                    "frameId": "entity-navigation-config",
-                                    "editable": true
-                                    }'
-           ></inline-template>
-
-          
-          <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
-              <div style="margin: 10px 0;" class="text-underline"><i class="fa fa-pencil btn-icon-left"></i>Edit form template</div>
-          </semantic-link-container>
-        </template>
-      </semantic-if>
-    {{/if}}
     
     <semantic-form-errors></semantic-form-errors>
-  </div>
+
  [[> rsp:FormDefaultActions]] 
 </semantic-form>

@@ -16,26 +16,35 @@
 >
 
   <div class="form-scroll-area">
+  
     <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.w3.org/2004/02/skos/core#Concept"]'></semantic-form-hidden-input>
     <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
     
-    <semantic-form-text-input for="prefLabel"> </semantic-form-text-input>
-    <semantic-form-text-input for="altLabel"> </semantic-form-text-input>
-   
-    <semantic-form-tree-picker-input for="broader" placeholder="drag from tree" 
+    <div class="two-columns-container">
+      <div class="column1">
+        <semantic-form-text-input for="prefLabel" placeholder="Enter preferred label"> </semantic-form-text-input>
+        <semantic-form-text-input for="altLabel" placeholder="Enter alternative label"> </semantic-form-text-input>
+        <semantic-form-text-input for="scopeNote" placeholder="Enter description" multiline=true> </semantic-form-text-input>
+        <semantic-form-autocomplete-input for="P138i_has_representation" placeholder="Select image(s)"></semantic-form-autocomplete-input>
+      </div>
+
+      <div class="column2">
+        <semantic-form-tree-picker-input for="broader" placeholder="Select broader term(s)" 
                                      default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
                                      tree-patterns='{"scheme": "{{scheme}}"}'
-    ></semantic-form-tree-picker-input>
-    <semantic-form-tree-picker-input for="narrower" 
-                                     placeholder="drag from tree" 
-                                     tree-patterns='{"scheme": "{{scheme}}"}'
-    ></semantic-form-tree-picker-input>
-    
-    <semantic-form-text-input for="scopeNote" multiline=true> </semantic-form-text-input>
-    <semantic-form-autocomplete-input for="P138i_has_representation"></semantic-form-autocomplete-input>
-    <semantic-form-autocomplete-input for="related"> </semantic-form-autocomplete-input>
-
-    <semantic-form-errors></semantic-form-errors>
+        ></semantic-form-tree-picker-input>
+        <semantic-form-tree-picker-input for="narrower" 
+                                        placeholder="Select narrower term(s)" 
+                                        tree-patterns='{"scheme": "{{scheme}}"}'
+        ></semantic-form-tree-picker-input>
+        <semantic-form-tree-picker-input for="related" 
+                placeholder="Select related term(s)" 
+                tree-patterns='{"scheme": "{{scheme}}"}'
+        ></semantic-form-tree-picker-input>
+       <!--  <semantic-form-autocomplete-input for="related" placeholder="Select related term(s)" > </semantic-form-autocomplete-input> -->
+      </div>
+    </div>
+       <semantic-form-errors></semantic-form-errors>
   </div>
   
   [[> rsp:FormDefaultActions]] 

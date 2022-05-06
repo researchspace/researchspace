@@ -250,7 +250,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.RIGHT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': 'xxxxx' }
         )
       );
     }
@@ -327,7 +327,7 @@ export class DashboardComponent extends Component<Props, State> {
         },
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
-            {'type': 'tab', 'name': item.id, 'component': "item", 'config': item.id }
+            {'type': 'tab', 'name': item.id, 'component': "item", 'config': item.id, className:'empty-frame-button' }
           );
           this.onSelectView({
             itemId: item.id,
@@ -576,14 +576,14 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private onRenderTabSet = (node: TabSetNode, renderValues: {buttons: React.ReactNode[]}) => {
-    renderValues.buttons.push(
+  private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
+    renderValues.stickyButtons.push(
       <button className='flexlayout__tab_toolbar_button'
         onMouseDown={event=> event.stopPropagation()}
         onClick={(event) => {
           this.onAddNewItem();
         }}>
-        <i className="fa fa-plus-square"/>
+        <span className="material-icons-round">add</span>
       </button>
     );
   }
@@ -595,6 +595,14 @@ export class DashboardComponent extends Component<Props, State> {
         model={this.state.layout}
         factory={this.factory}
         onRenderTabSet={this.onRenderTabSet}
+        icons={
+          {
+            'close': <i className="material-icons-round">close</i>,
+            'maximize': <i className="material-icons-round">fullscreen</i>,
+            'restore': <i className="material-icons-round">close_fullscreen</i>,
+            'more': <i className="material-icons-round">arrow_drop_down</i>,
+          }
+        }
       />
     );
   }

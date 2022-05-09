@@ -50,7 +50,7 @@ export interface Item {
 let itemCount = 0;
 export function emptyItem() {
   itemCount = itemCount + 1;
-  return { id: uniqueId('frame'), index: itemCount };
+  return { id: uniqueId('Frame'), index: itemCount };
 }
 
 export interface DashboardLinkedViewConfig {
@@ -125,8 +125,8 @@ export interface Props {
     data: {};
   };
 
-  leftPanels?: {template: string, label: string}[];
-  rightPanels?: {template: string, label: string}[];
+  leftPanels?: {template: string, label: string, class?: string}[];
+  rightPanels?: {template: string, label: string, class?: string}[];
 }
 
 export interface State {
@@ -237,7 +237,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.LEFT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -250,7 +250,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.RIGHT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': 'xxxxx' }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -578,12 +578,12 @@ export class DashboardComponent extends Component<Props, State> {
 
   private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
     renderValues.stickyButtons.push(
-      <button className='flexlayout__tab_toolbar_button'
+      <button className='flexlayout__tab_toolbar_sticky_button'
         onMouseDown={event=> event.stopPropagation()}
         onClick={(event) => {
           this.onAddNewItem();
         }}>
-        <span className="material-icons-round">add</span>
+        <i className="material-icons-round">add</i>
       </button>
     );
   }

@@ -87,7 +87,7 @@ export class SearchAndFilters extends React.Component<Props, {}> {
         <button
           className={classnames({
             [`${baseClass}__show-filters`]: true,
-            'btn btn-default': true,
+            'btn btn-default btn-default-icon': true,
             active: this.showAdditionalFilters(),
           })}
           aria-pressed={this.showAdditionalFilters()}

@@ -320,7 +320,7 @@ export class SetManagement extends Component<Props, ViewState> {
           })
         }
       >
-        <span className="fa fa-angle-left"></span> Back to contents
+        <i className="material-icons-round">arrow_back</i>Back
       </div>
     );
   }

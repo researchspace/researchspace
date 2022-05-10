@@ -53,7 +53,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
           <button
             type="button"
             title="Create new set"
-            className="btn btn-icon"
+            className="btn btn-default btn-default-icon"
             onClick={this.props.onPressCreateNewSet}
           >
             <i className="material-icons-round">create_new_folder</i>
@@ -87,10 +87,10 @@ export class ReorderItemsButton extends React.Component<ReorderingProps, {}> {
           type="button"
           title="Reorder items"
           aria-pressed={isReordering}
-          className={classnames({ 'btn btn-icon': true, active: isReordering })}
+          className={classnames({ 'btn btn-default btn-default-icon': true, active: isReordering })}
           onClick={onPressReorder}
         >
-          <i className="fa fa-random"></i>
+          <i className="material-icons-round">low_priority</i>
         </button>
       </div>
     );
@@ -118,7 +118,7 @@ export class ReorderConfirmation extends React.Component<ReorderingProps, {}> {
             className="btn btn-action"
             onClick={onPressReorderApply}
           >
-            Save
+            Save order
           </button>
         </div>
       </div>
@@ -139,7 +139,7 @@ export class ItemViewModeSwitch extends React.Component<
     const className = `${baseClass}__item-view-mode`;
     return (
       <div className={className} role="group">
-        {this.renderModeButton('grid', 'Switch to grid view', <span className="material-icons-round">view_module</span>)}
+        {this.renderModeButton('grid', 'Switch to grid view', <span className="material-icons-sharp">view_module</span>)}
         {this.renderModeButton('list', 'Switch to list view', <span className="material-icons-round">view_list</span>)}
       </div>
     );
@@ -153,7 +153,7 @@ export class ItemViewModeSwitch extends React.Component<
         key={mode}
         type="button"
         title={title}
-        className={classnames({ 'btn btn-icon': true, active: isPressed })}
+        className={classnames({ 'btn btn-default btn-default-icon': true, active: isPressed })}
         aria-pressed={isPressed}
         onClick={isPressed ? undefined : () => this.props.onModeChanged(mode)}
       >

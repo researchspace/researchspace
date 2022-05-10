@@ -217,7 +217,7 @@ export class FileUploader extends Component<FileUploaderProps, FileUploaderState
           <div className={`${styles.mpDropZonePlaceHolder}`}>
             {this.props.children || (
               <div className={styles.mpDropZonePlaceHolder}>
-                {this.props.placeholder || 'Please drag&drop your file here.'}
+                {this.props.placeholder || 'Please drag&drop your file here'}
               </div>
             )}
           </div>

@@ -1,0 +1,106 @@
+<div class="page__grid-container">
+  <div class='page__content-container'>
+    <div class="page__main-title-row">
+      <h1 class="rs-main-title">Semantic narratives</h1>
+      <div class="page__main-top-actions">
+        [[#if (hasPermission "forms:ldp:*")]]
+          <mp-resource-link-container 
+                                      uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                      urlqueryparam-view='semantic-narrative'
+                                      urlqueryparam-previous-page='[[this]]'
+                                      urlqueryparam-previous-page-title='Project - Semantic Narratives'
+                                      >
+
+            <button class="btn btn-grey" title="New Semantic Narrative">
+              <i class="fa fa-plus btn-icon-left"></i>
+              <span>New Semantic Narrative</span>
+            </button>
+          </mp-resource-link-container>
+        [[/if]]
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <semantic-context repository='assets'>
+          
+          <semantic-table config='{
+
+          "query": "SELECT * WHERE {
+                    ?page a rso:Semantic_Narrative ;
+                        rdfs:label ?label ;
+                        <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
+
+                      [[#if (hasPermission "forms:ldp:*")]]
+                        ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                      [[else]]
+                        ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                        FILTER(?user = <http://www.researchspace.org/resource/system/anonymousUser> )
+
+                      [[/if]]
+                    } ORDER BY DESC(?modified)",
+                    
+          "columnConfiguration": [{
+                                    "variableName": "page",
+                                    "displayName": "Semantic Narrative - Title",
+                                    "cellTemplate": "{{> view}}"
+                                  },
+                                  
+                                    {"variableName": "user", 
+                                    "displayName": "Author", 
+                                    "cellTemplate": "{{> user}}"
+                                  },
+                                  
+                                  {
+                                    "variableName": "modified",
+                                    "displayName": "Last Update",
+                                    "cellTemplate":"{{> modifiedAt}}"
+                                  },
+                                  
+                                  {
+                                    "displayName":"Actions", 
+                                    "cellTemplate": "{{> actions}}"
+                                  } 
+                                ]}'>
+            
+            <template id='view'>
+              <div style="display: flex; align-items: center;">
+                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <semantic-link iri='{{page.value}}' 
+                                class='a-draggable'
+                                urlqueryparam-previous-page='[[this]]'
+                                urlqueryparam-previous-page-title='Project - Semantic Narratives'
+                                >
+                  <div style="display: flex; align-items: center;">
+                    <span>{{label.value}}</span>
+                  </div>
+                </semantic-link>
+
+              </div>
+              
+            </template>
+            <template id='user'>
+              <div>
+                <i class="fa fa-user" style="margin-right: 10px"></i>
+                <semantic-link class="rs-dashboard--a\" uri="{{user.value}}" target="_blank"></semantic-link>
+              </div>
+            </template>
+            <template id='modifiedAt'>
+                {{dateTimeFormat modified.value "LLL"}}
+            </template>
+           <template id='actions'>
+             <div class="btn-grey-container">
+                <mp-ldp-duplicate-resource-action iri="{{page.value}}">
+                  <button class="btn-grey">Duplicate</button>
+                </mp-ldp-duplicate-resource-action>
+            
+                <mp-anonymous-hidden>
+                  <mp-ldp-remove-from-container-action data-iri="{{page.value}}" data-container="http://www.researchspace.org/ontology/UserDefinedPage">
+                    <button class="btn-grey">Delete</button>
+                  </mp-ldp-remove-from-container-action>
+                </mp-anonymous-hidden>
+                </div>
+           </template>
+          </semantic-table>
+      </semantic-context>
+    </div>
+  </div>
+</div>

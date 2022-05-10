@@ -636,23 +636,23 @@ public class TemplateEndpoint extends ResourceConfig {
     @Path("header")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication
-    public String getHeader() throws IOException {
-        return st.renderPageLayoutTemplate(TEMPLATES.HEADER);
+    public String getHeader(@QueryParam("preferredLanguage") Optional<String> preferredLanguage) throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.HEADER, preferredLanguage.orElse(null));
     }
 
     @GET()
     @Path("footer")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication
-    public String getFooter() throws IOException {
-        return st.renderPageLayoutTemplate(TEMPLATES.FOOTER);
+    public String getFooter(@QueryParam("preferredLanguage") Optional<String> preferredLanguage) throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.FOOTER, preferredLanguage.orElse(null));
     }
 
     @GET()
     @Path("noPermissionsPage")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication
-    public String getNoPermissionsPage() throws IOException {
-        return st.renderPageLayoutTemplate(TEMPLATES.NO_PERMISSIONS_PAGE);
+    public String getNoPermissionsPage(@QueryParam("preferredLanguage") Optional<String> preferredLanguage) throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.NO_PERMISSIONS_PAGE, preferredLanguage.orElse(null));
     }
 }

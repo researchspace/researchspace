@@ -169,7 +169,7 @@ export class FileUpload extends React.Component<FileUploadProps, FileUploadState
   render() {
     const description =
       _.isEmpty(this.props) || _.isEmpty(this.props.description)
-        ? 'Please drag&drop your image file(s) here.'
+        ? 'Please drag&drop your image file(s) here'
         : this.props.description;
 
     return (

@@ -1,0 +1,138 @@
+<div class="page__grid-container">
+  <div class="rs-latest-activity page__content-container">
+    <h1 class="rs-main-title">Latest Activities</h1>
+    <div class="table-responsive rs-dashboard-table">
+      <semantic-table query='prefix ontodia: <http://ontodia.org/schema/v1#>
+                SELECT * WHERE {
+                  {
+                    ?page a rso:Semantic_Narrative .
+                     OPTIONAL {
+                      ?page rdfs:label ?title .
+                     }
+                      BIND("Semantic Narrative" as ?content_type) .
+                      BIND("rs-btn-dashboard--narrative" as ?tag_cssClass) 								  
+                  } 
+                  UNION 
+                  {
+                        ?page a <http://ontodia.org/schema/v1#Diagram> ;
+                          rdfs:label ?title .
+                        BIND("Knowledge Map" as ?content_type) .
+                        BIND("rs-btn-dashboard--km" as ?tag_cssClass) 	
+                  }
+
+                  UNION
+                  {
+                        ?page a crmdig:D9_Data_Object .
+                          BIND("image" as ?content_type) .
+                          BIND("rs-btn-dashboard--img" as ?tag_cssClass) 
+                    }
+                    UNION 
+                    {
+                        ?page a crmdig:D35_Area .
+                        BIND("image" as ?content_type) .
+                        BIND("rs-btn-dashboard--img" as ?tag_cssClass) 
+                    }
+                    ?page  <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                    [[#if (hasPermission "forms:ldp:*")]]
+                      ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                    [[else]]
+                      ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user.
+                      FILTER(?user = <http://www.researchspace.org/resource/system/anonymousUser> )
+                    [[/if]]
+
+                }
+                
+                ORDER BY DESC(?time)' number-of-displayed-rows=10 options='{"showFilter": true}'
+                                column-configuration='[
+                                {"variableName": "title", "displayName": "title", "cellTemplate":"{{> title}}" },
+
+                                {"variableName": "user", "displayName": "user", "cellTemplate": "{{> user}}" },
+
+                                {"variableName": "type", "displayName": "type", "cellTemplate": "{{> type}}"},
+                                
+                                {"variableName": "time", "displayName": "time", "cellTemplate": "{{> time}}"},
+
+                                {"displayName": "Export", "cellTemplate": "{{> data_download}}"}
+                                ]'>
+
+        <template id='title'>
+          {{#ifCond content_type.value "===" "Knowledge Map"}} 
+          <div style="display: flex; align-items: center;">
+                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                    data='{"resourceIri": "{{page.value}}", "viewId": "knowledge-map"}' 
+                    targets='["thinking-frames"]'>
+                   <div style="display: flex; align-items: center;">
+                      <span>{{title.value}}</span>
+                   </div>
+              </mp-event-trigger>
+              </div>
+         {{/ifCond}}
+          {{#ifCond content_type.value "===" "Semantic Narrative"}} 
+            <div style="display: flex; align-items: center;">
+                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                    data='{"resourceIri": "{{page.value}}", "viewId": "semantic-narrative"}' 
+                    targets='["thinking-frames"]'>
+                   <div style="display: flex; align-items: center;">
+                      <span>{{title.value}}</span>
+                   </div>
+              </mp-event-trigger>
+              </div>
+             {{/ifCond}}
+        </template>
+
+        <template id='user'>
+          <div class="text-truncate">
+            <i class="fa fa-user"></i>
+            <semantic-link class="rs-dashboard--a" uri="{{user.value}}"></semantic-link>
+          </div>
+        </template>
+
+        <template id='time'>
+          <div class="rs-dashboard-tableDate">
+              <span>Last modified: </span>
+              <span class="rs-dashboard-tableDateValue">{{dateTimeFormat time.value "LLL"}}</span>
+          </div>
+        </template>
+
+        <template id='type'>
+            <span class="rs-tag {{tag_cssClass.value}} rs-dashboard-tag">{{content_type.value}}</span>
+        </template>
+
+        <template id="data_download">
+         	{{#ifCond content_type.value "!==" "Semantic Narrative"}} 
+         	<mp-sparql-download
+            	query="prefix ontodia: <http://ontodia.org/schema/v1#>
+                   select distinct ?source ?property ?target ?sourceLabel ?propertyLabel ?targetLabel where {
+                      BIND(IRI('{{page.value}}') as ?diagramContainer)
+                      BIND(CONCAT(?diagramContainer,'/','context') as ?graph)
+                      {select * 
+                        {graph ?g { 
+
+                            ?link ontodia:property ?property.
+                            ?link ontodia:source/ontodia:resource ?source .
+                            ?link ontodia:target/ontodia:resource ?target .
+
+                          }
+                          optional {?property rdfs:label ?propertyLabel . FILTER(LANG(?propertyLabel)='en')}
+                          optional {?source rdfs:label ?sourceLabel .}
+                          optional {?target rdfs:label ?targetLabel .}
+                        }
+                      }
+                     }"
+                header="text/csv" filename="myDiagramEntities.csv">
+                <div>
+                  <a href="#" title="Download data" class="rs-dashboard--a">
+                    <i class="fa fa-download"></i></a>
+                </div>
+              </mp-sparql-download>
+          {{/ifCond}}
+          </template>
+
+      </semantic-table>
+
+    </div>
+  </div>
+</div>
+

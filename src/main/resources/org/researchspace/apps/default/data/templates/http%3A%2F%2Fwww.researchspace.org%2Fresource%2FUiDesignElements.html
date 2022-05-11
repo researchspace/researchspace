@@ -374,6 +374,8 @@
 
         <hr>
         <h2>Table</h2>
+
+        <h5>Basic table</h5>
         <semantic-table query="
                             prefix person: <http://example.com/person/> 
                             prefix org: <http://example.com/org/> 
@@ -391,6 +393,28 @@
                         number-of-displayed-rows=4
                         options='{"showFilter": true}'
         ></semantic-table>
+
+        <h5>Table expanded</h5>
+        <div class="table-expanded">
+          <semantic-table query="
+                            prefix person: <http://example.com/person/> 
+                            prefix org: <http://example.com/org/> 
+                            prefix foaf: <http://xmlns.com/foaf/0.1/>
+                            SELECT * WHERE {                    
+                                VALUES (?person ?prop ?value) { 
+                                (person:alice foaf:knows person:carol)
+                                (person:carol foaf:knows person:mike)
+                                (person:mike foaf:knows person:carol)
+                                (person:bob foaf:knows person:carol)
+                                (person:alice foaf:member org:W3C)
+                                (person:mike foaf:member org:W3C)
+                                }
+                            }"
+                        number-of-displayed-rows=4
+                        options='{"showFilter": true}'
+          ></semantic-table>
+        </div>
+        
 
         <hr>
         <h2>Tabs</h2>

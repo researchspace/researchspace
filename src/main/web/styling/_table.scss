@@ -32,7 +32,7 @@ table {
     th {
         font-weight: 600;
         letter-spacing: 0.2px;
-        padding: 12px 8px;
+        padding: 11px 8px;
 
         .fa.fa-sort-alpha-asc,
         .fa.fa-sort-alpha-desc {
@@ -42,7 +42,7 @@ table {
     }
 
     td {
-        padding: 12px 8px;
+        padding: 11px 8px;
     }
 
     td,
@@ -56,8 +56,9 @@ table {
 .table {
 
     margin-bottom: 0;
-    border-collapse: separate;
-    border-spacing: 0 5px;
+
+    border-spacing: 0;
+    border-collapse: collapse;
 
     & > thead > tr > td, 
     & > tbody > tr > th, 
@@ -71,7 +72,7 @@ table {
     & > thead > tr > th {
 
         border: none;
-        padding: 8px 8px 0;
+        padding: 11px 8px;
 
         @include font-common($color-secondary, $font-size-xsmall, $h-line);
         font-weight: 700;
@@ -79,7 +80,7 @@ table {
 
         &:first-of-type {
 
-            padding-left: 0;
+         //   padding-left: 0;
         }
     }
 
@@ -95,25 +96,27 @@ table {
         }
     }
 
+    .sort-ascending,
+    .sort-descending {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+
+        i {
+            font-size: 14px;
+        }
+    }
+
+    .table-hover > tbody > tr:hover {
+
+        background-color: $color-lighter;
+    }
+
     & > tbody > tr > td {
         @include font-common($color-secondary, $font-size-small, 1.4);
     
-        padding: 12px 8px;
-        background-color: $color-white;
+        padding: 11px 8px;
         border-top: 1px solid $color-border;
-        border-bottom: 1px solid $color-border;
-
-        &:first-of-type {
-            border-left: 1px solid $color-border;
-            border-top-left-radius: $border-radius;
-            border-bottom-left-radius: $border-radius;
-        }
-
-        &:last-of-type {
-            border-right: 1px solid $color-border;
-            border-top-right-radius: $border-radius;
-            border-bottom-right-radius: $border-radius;
-        }
     
         .rs-page__field-value {
             white-space: unset;
@@ -133,9 +136,43 @@ table {
     }
 }
 
-/* .table-hover > tbody > tr:hover {
-    background-color: $color-lighter;
-} */
+.table-expanded {
+
+    .table {
+
+        border-collapse: separate;
+        border-spacing: 0 5px;
+
+        & > thead > tr > th {
+
+            padding: 11px 8px 2px;
+        }
+
+        & > tbody > tr > td {
+            
+            background-color: $color-white;
+            border-top: 1px solid $color-border;
+            border-bottom: 1px solid $color-border;
+    
+            &:first-of-type {
+                border-left: 1px solid $color-border;
+                border-top-left-radius: $border-radius;
+                border-bottom-left-radius: $border-radius;
+            }
+    
+            &:last-of-type {
+                border-right: 1px solid $color-border;
+                border-top-right-radius: $border-radius;
+                border-bottom-right-radius: $border-radius;
+            }
+        }
+
+        & > tbody > tr > td.footer-container {
+            border: none;
+            background-color: transparent;
+        }
+    }
+}
 
 .pagination, 
 .griddle-footer .pagination {
@@ -184,7 +221,7 @@ table {
 
 .table-bordered {
 
-    border-color: $color-dark--op20;
+    border-color: $color-border;
 }
 
 .rs-resource-data-table,
@@ -210,15 +247,37 @@ table {
  /* table widget styling */
  .researchspace-table-widget-holder {
 
+    .top-section {
+
+        margin-bottom: 10px;
+    }
+
     .griddle-filter .filter-container {
         width: 100%;
+        display: flex;
+
+        &::before {
+
+            content: '\f02f';
+            font-size: 20px;
+            font-family: 'Material Icons';
+            height: 38px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px 0 10px;
+            background: $input-color-bg;
+            border: 1px solid $input-border-color;
+            border-right: none;
+            color: $input-placeholder-color;
+        }
 
         .form-control {
 
-            background-image: url(/assets/images/icons/search.svg);
-            background-repeat: no-repeat;
-            background-size: 14px 14px;
-            background-position: right 8px center;
+            border-left: none;
+            padding-left: 0;
+            flex: 1;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
         }
     }
 

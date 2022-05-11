@@ -139,8 +139,8 @@ export class ItemViewModeSwitch extends React.Component<
     const className = `${baseClass}__item-view-mode`;
     return (
       <div className={className} role="group">
-        {this.renderModeButton('grid', 'Switch to grid view', <span className="material-icons-sharp">view_module</span>)}
-        {this.renderModeButton('list', 'Switch to list view', <span className="material-icons-round">view_list</span>)}
+        {this.renderModeButton('grid', 'Switch to grid view', <i className="material-icons-sharp">view_module</i>)}
+        {this.renderModeButton('list', 'Switch to list view', <i className="material-icons-round">view_list</i>)}
       </div>
     );
   }

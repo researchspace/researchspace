@@ -100,12 +100,12 @@ export class RemoveSetAction extends Component<Props, State> {
     if (this.state.showConfirmation) {
       return (
         <div className="remove-set-confirmation" ref={(node) => (this.confirmationRef = node)}>
-          <span>Delete set?</span>
+          <span>Remove set?</span>
           <ButtonToolbar>
-            <Button className="btn-default" bsStyle="" bsSize="xsmall" onClick={this.onNoClick}>
+            <Button onClick={this.onNoClick}>
               no
             </Button>
-            <Button className="btn-action" bsStyle="" bsSize="xsmall" onClick={this.onYesClick}>
+            <Button onClick={this.onYesClick}>
               {this.state.isRemoving ? '...' : 'yes'}
             </Button>
           </ButtonToolbar>

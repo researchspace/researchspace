@@ -76,7 +76,7 @@ export const ItemListTemplate = `
 `;
 
 export const KeywordSearch: KeywordFilter = {
-  placeholder: 'Search...',
+  placeholder: 'Search in clipboard...',
   placeholderInSet: 'Search in the set...',
   queryPattern: `
     ?itemHolder ?__preferredLabel__ ?itemLabel .

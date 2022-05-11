@@ -223,7 +223,7 @@ export class SingleSet extends Component<Props, ViewState> {
     return (
       <div className={`${CLASS_NAME}__single-set-caption`}>
         <div className={`${CLASS_NAME}__single-set-icon`}>
-          <span className="material-icons-round">folder_open</span>
+          <i className="material-icons-round">folder_open</i>
         </div>
         {isEditing ? (
           <EditableLabel

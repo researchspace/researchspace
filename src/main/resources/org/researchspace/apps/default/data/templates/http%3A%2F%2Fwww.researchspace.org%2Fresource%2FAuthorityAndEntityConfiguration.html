@@ -1,3 +1,9 @@
+<style>
+  .resource-editDetails-container .collection-terms-area .LazyTree--alignmentTreeContainer .LazyTree--decoratedNodeBody {
+    max-width: calc(100% - 48px);
+  }
+</style>
+
 <div class="resource-editDetails-container">
 
     <mp-splitpane min-size=140 default-size=400 default-open='true' class="frame-split-pane">
@@ -7,7 +13,7 @@
             <div class="btn-toggle-on-content">
               <h4 style="width: 120px; text-align: left; margin-top: 7px;">
                 <mp-text-truncate truncate="..">
-                  Authority manager configuration
+                  Authority and entity configuration
                 </mp-text-truncate>
               </h4>
               <span class="material-icons-round">chevron_right</span>
@@ -18,7 +24,7 @@
           <div class="split-pane__leftsidebar-header">
             <button data-flex-layout='row center-left' class="btn-toggle-off">
               <h4 style="min-width: 120px; width: 100%; text-align: left;">
-                Authority manager configuration
+                Authority and entity configuration
               </h4>
               <span class="material-icons-round">chevron_left</span>
             </button>
@@ -57,7 +63,7 @@
                           <mp-event-trigger id='authority-config-form-edit-trigger--{{iri}}' type='Component.TemplateUpdate'
                                             data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' targets='["authority-config-term-forms"]'>
                             <span class='tree-item-action'>
-                              <i class="material-icons-round" title="Edit authority and entity type">edit</i>
+                              <i class="material-icons-round" title="Edit configuration">edit</i>
                             </span>
                           </mp-event-trigger>
                           <mp-event-proxy id='authority-config-focus-tree-element' on-event-source='authority-config-form-edit-trigger--{{iri}}' proxy-event-type='LazyTree.Focus' proxy-targets='["authority-config-scheme-tree"]' data='{"iri":"{{iri}}"}'></mp-event-proxy>
@@ -83,11 +89,11 @@
                   {{/case}}
   
                   {{#case "edit" break=true}}
-                    <h2 class="resource-editDetails-form-title"><mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label></h2>
+                    <h2 class="resource-editDetails-form-title"><mp-label iri='{{iri}}'></mp-label></h2>
                   {{/case}}
                 
                   {{#case "deleted" break=true}}
-                    <h2 class="resource-editDetails-form-title">Deleted Authority and entity type: {{label}}</h2>
+                    <h2 class="resource-editDetails-form-title">Deleted: {{label}}</h2>
                   {{/case}}
                 {{/switch}}
       

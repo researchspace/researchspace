@@ -27,61 +27,63 @@
         <semantic-form-hidden-input for="classtype" default-values='["http://www.researchspace.org/resource/system/FormConfig"]'></semantic-form-hidden-input>
         <semantic-form-hidden-input for="P71i_is_listed_in" default-value="http://www.researchspace.org/resource/system/vocab/authority_manager_config_types"> </semantic-form-hidden-input>  
 
-        <div class="two-columns-container">
-          <div class="column1">
-            <div class="form-section-header">Resource</div>
-            <div class="form-section-content">
-              <semantic-form-text-input for="item_label" placeholder="Enter the resource label (e.g. Place, Actor, Collection item, Concept, etc.)" label="Resource label"></semantic-form-text-input>
-              <div style="display:flex; gap:5px; align-items: end; margin-top: 21px;">
-                <div style="flex: 1;">
-                  <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/" label="Resource Form"
-                  placeholder="Enter IRI of the form that should be used to edit the resource"></semantic-form-text-input>
-                </div>
-                {{#if node}}
-                    <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
-                      <template id='template'>
-                        <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
-                            <button class="btn btn-default" style="min-height: 40px;">
-                              <i class="material-icons-round btn-icon-left" title="Edit form">edit</i>
-                              Edit form
-                            </button>
-                        </semantic-link-container>
-                      </template>
-                    </semantic-query>
-                {{/if}}
-              </div>
-  
+        <div class="form-section-content">
+          <semantic-form-text-input for="item_label" placeholder="Enter the resource label (e.g. Place, Actor, Collection item, Concept, etc.)" label="Resource label"></semantic-form-text-input>
+          <div style="display:flex; gap:5px; align-items: end; margin-top: 21px;">
+            <div style="flex: 1;">
+              <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/" label="Resource Form"
+              placeholder="Enter IRI of the form that should be used to edit the resource"></semantic-form-text-input>
             </div>
-            
-            <div class="form-section-header">SPARQL Patterns</div>
-            <div class="form-section-content">
-              <semantic-form-text-input for="restriction_sparql_pattern" label="Restriction (SPARQL pattern)" placeholder="Enter SPARQL pattern" > </semantic-form-text-input>
-              <semantic-form-text-input for="label_sparql_pattern" label="Label (SPARQL pattern)" placeholder="Enter SPARQL pattern" > </semantic-form-text-input>
-              <semantic-form-text-input for="order_by_pattern" label="Order By (SPARQL pattern)" placeholder="Enter SPARQL pattern to get the order"> </semantic-form-text-input>
-            </div>
+            {{#if node}}
+                <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
+                  <template id='template'>
+                    <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
+                        <button class="btn btn-default" style="min-height: 40px;">
+                          <i class="material-icons-round btn-icon-left" title="Edit form">edit</i>
+                          Edit form
+                        </button>
+                    </semantic-link-container>
+                  </template>
+                </semantic-query>
+            {{/if}}
           </div>
 
-          <div class="column2">
+        </div>
 
-          <div class="form-section-header">Resource types</div>
-          <div class="form-section-content">
-            <semantic-form-tree-picker-input for="for_type" placeholder="Select the resource CIDOC-CRM type (e.g. Man-Made object, Place, etc.)" label="Resource CIDOC-CRM type"></semantic-form-tree-picker-input>
-            <semantic-form-tree-picker-input for="for_P2_has_type" placeholder="Select an additional CIDOC-CRM E55_Type to be associated to the Resource" label="Resource type"></semantic-form-tree-picker-input>
-          </div>
-
-          <div class="form-section-header">Resource properties</div>
-          <div class="form-section-content">
-              <semantic-form-tree-picker-input for="membership_property" label="Membership Property" placeholder="Enter a property that connects the resource to the collection (e.g. skos:inScheme, crm:P71i_is_listed_in)"></semantic-form-tree-picker-input>
-              <semantic-form-tree-picker-input for="broader_property" label="Broader Property" placeholder="Enter property used to refer to a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"></semantic-form-tree-picker-input>
-            </div>
-          </div>
+        <div class="form-section-header">
+          <h3>Resource types</h3>
+          <div>Fill in required CIDOC-CRM class. An additional type (CIDOC-CRM E55_Type) can also be associated to the resource.</div>
         </div>
         
+        <div class="form-section-content">
+            <semantic-form-tree-picker-input for="for_type" placeholder="Select the resource CIDOC-CRM class (e.g. Man-Made object, Place, etc.)" label="Resource CIDOC-CRM class"></semantic-form-tree-picker-input>
+            <semantic-form-tree-picker-input for="for_P2_has_type" placeholder="Select an additional CIDOC-CRM E55_Type to be associated to the resource" label="Resource type"></semantic-form-tree-picker-input>
+        </div>
+          
+        <div class="form-section-header">
+          <h3>Resource properties</h3>
+          <div>Define a Membership property, if the resource is part of a collection, and a Broader property to refer to a broader resource.</div>
+        </div>
+        <div class="form-section-content">
+          <semantic-form-tree-picker-input for="membership_property" label="Membership Property" placeholder="Enter a property that connects the resource to the collection (e.g. skos:inScheme, crm:P71i_is_listed_in)"></semantic-form-tree-picker-input>
+          <semantic-form-tree-picker-input for="broader_property" label="Broader Property" placeholder="Enter property used to refer to a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"></semantic-form-tree-picker-input>
+        </div>
+
+        <div class="form-section-header">
+          <h3>SPARQL Patterns</h3>
+          <div>Define specific SPARQL patterns to assign resource label, restriction and order.</div>
+        </div>
+        <div class="form-section-content">
+          <semantic-form-text-input for="label_sparql_pattern" label="Label (SPARQL pattern)" placeholder="Enter SPARQL pattern" > </semantic-form-text-input>
+          <semantic-form-text-input for="restriction_sparql_pattern" label="Restriction (SPARQL pattern)" placeholder="Enter SPARQL pattern" > </semantic-form-text-input>
+          <semantic-form-text-input for="order_by_pattern" label="Order By (SPARQL pattern)" placeholder="Enter SPARQL pattern to get the order"> </semantic-form-text-input>
+        </div>
+
     </bs-tab>
 
     <bs-tab event-key="2" title="Navigation menu">
 
-        <div class="alert alert-info">Define the <b>navigation menu</b> displayed in the Resource page.</div>
+        <div>Enable and customise a <b>navigation menu</b> to be displayed in the Resource page.</div>
 
           <style>
           .menu-toggle .semantic-form-input-decorator.semantic-form-input-decorator--with-header {
@@ -121,8 +123,8 @@
     </bs-tab>
 
     <bs-tab event-key="3" title="Viewes">
-      <div class="alert alert-info" style="margin: 0;">Define the <b>views (eg. thumbnail, table, timeline, chart, etc.)</b>
-      used to display the entities associated to the Resource.</div>
+      <div>Define the <b>views (eg. thumbnail, table, timeline, chart, etc.)</b>
+      used to display the entities associated to the Resource in the Resource page.</div>
       <semantic-form-composite-input for='entity_has_view' label="Resource view"
                                     new-subject-template='view/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                                     fields='[[
@@ -139,7 +141,7 @@
     </bs-tab>
 
     <bs-tab event-key="4" title="Facets">
-      <div class="alert alert-info" style="margin: 0;">Define the <b>facets</b> applied in the Resource page to filter the results.</div>
+      <div>Define the <b>facets</b> applied in the Resource page to filter the results.</div>
       <semantic-form-autocomplete-input for="has_facet_kp" placeholder="Select knowledge pattern" label="Facet knowledge pattern"></semantic-form-autocomplete-input>
     </bs-tab>
 

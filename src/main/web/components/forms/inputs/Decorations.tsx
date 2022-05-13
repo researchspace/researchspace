@@ -62,14 +62,18 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
   };
 
   render() {
-    const { renderHeader, errors } = this.props;
+    const { renderHeader, errors, definition } = this.props;
     const className = classnames(DECORATOR_CLASS, {
       [`${DECORATOR_CLASS}--with-header`]: renderHeader,
     });
     return (
       <div className={className}>
         {renderHeader ? this.renderHeader() : null}
-        {this.props.children}
+        <div className={`${DECORATOR_CLASS}__container`}>
+          <div className={`${DECORATOR_CLASS}__input`}>{this.props.children}</div>
+          {definition.description ? this.renderInfo() : null}
+        </div>
+        
         <ValidationMessages errors={errors} />
       </div>
     );
@@ -89,18 +93,35 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
             </span>
           </ResourceLink>
         ) : null}
-        {definition.description ? (
+        {/* {definition.description ? (
           <OverlayTrigger
             trigger={['hover', 'focus']}
             overlay={<Popover id="tooltip">{definition.description}</Popover>}
           >
-            <sup className={`${DECORATOR_CLASS}__description-icon`} />
+            <span className={`${DECORATOR_CLASS}__description-icon`}>
+              <i className="material-icons-round">question_mark</i>
+            </span>
           </OverlayTrigger>
-        ) : null}
+        ) : null} */}
         {isReady ? null : (
           <Spinner className={`${DECORATOR_CLASS}__spinner`} spinnerDelay={1000} messageDelay={30000} />
         )}
       </div>
+    );
+  }
+
+  private renderInfo() {
+    const { definition } = this.props;
+    return (
+      <OverlayTrigger
+            trigger={['click', 'hover', 'focus']}
+            placement="left"
+            overlay={<Popover id="tooltip">{definition.description}</Popover>}
+          >
+            <button className={`${DECORATOR_CLASS}__description-icon btn btn-default`}>
+              <i className="material-icons-round">question_mark</i>
+            </button>
+      </OverlayTrigger>
     );
   }
 }

@@ -15,14 +15,14 @@
       <button name="reset" class="btn btn-default">Reset</button>
       <button name="dry-run" class="btn btn-default">Debug</button>
       {{#ifCond mode "===" "edit"}}
-        <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='{{viewId}}-item-remove-confirmation-dialog' title="Remove {{itemLabel}}" type="modal" bs-size="large">
+        <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' id='{{viewId}}-item-remove-confirmation-dialog' title="Delete {{itemLabel}}" type="modal">
           <mp-overlay-dialog-trigger>
             <button name="delete" class="btn btn-default">Delete</button>
           </mp-overlay-dialog-trigger>
           <mp-overlay-dialog-content>
             <div>
               <div>
-                <p>Are you sure you want to remove the '<strong><mp-label iri='{{node}}'></mp-label></strong>' ?</p>
+                <p>Are you sure you want to delete <strong><mp-label iri='{{node}}'></mp-label></strong>?</p>
                 <semantic-query 
                                 query='
                                   SELECT DISTINCT ?resource ?label  
@@ -64,8 +64,8 @@
                   </template>
                 </semantic-query>
               </div>
-              <div class="form-btn-group">
-                <div style="display: flex; justify-content: flex-end; width: 100%;">
+              <div class="modal-btn-group">
+
                   <mp-event-trigger id='{{viewId}}-cancel-feature-removal' type='OverlayDialog.Close' targets='["{{viewId}}-item-remove-confirmation-dialog"]'>
                     <button class="btn btn-default" title="Cancel">Cancel</button>
                   </mp-event-trigger>
@@ -100,7 +100,7 @@
                   <mp-event-proxy id='{{viewId}}-close-form-removal-dialog' on-event-source='{{viewId}}-vocab-form' on-event-type='Form.ResourceRemoved'
                                   proxy-event-type='OverlayDialog.Close' data='{}' proxy-targets='["{{viewId}}-item-remove-confirmation-dialog"]'
                   ></mp-event-proxy>
-                </div>
+                
               </div>
             </div>
           </mp-overlay-dialog-content>
@@ -128,7 +128,7 @@
       <mp-event-target-template-render id='{{viewId}}-form-debug-info' template='{{> debugInfo}}'>
         <template id='debugInfo'>
           {{#if show}}
-            <mp-overlay-dialog show='true' id='{{viewId}}-form-debug-info-dialog' title="Form Debug" type="modal" bs-size="large">
+            <mp-overlay-dialog show='true' id='{{viewId}}-form-debug-info-dialog' title="Form Debug" type="modal" class="modal-xlSize">
               <mp-overlay-dialog-content>
                 <div>
                   <ul>

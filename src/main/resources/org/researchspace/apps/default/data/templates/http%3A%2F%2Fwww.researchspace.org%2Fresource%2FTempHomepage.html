@@ -43,7 +43,207 @@
       <h2>Projects summary</h2>
       <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
         <bs-tab event-key="ongoing" title="Ongoing">
-          Tab Content 1
+          <semantic-search id="ongoing-projects">
+            <div class="search-filters-container">
+              
+              <semantic-search-query-keyword 
+                  query='
+                    SELECT ?subject ?description WHERE { 
+                      ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+                      ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/closed> .
+                      ?subject crm:P67i_is_referred_to_by ?ref .
+                      ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                      ?ref crm:P190_has_symbolic_content ?description .
+                         ?description bds:search ?__token__ ;
+                                     bds:minRelevance "0.3" ;
+                                     bds:matchAllTerms "true"  .
+
+
+                   #   ?subject rdfs:label ?label .
+                   #   ?label bds:search ?__token__ ;
+                   #               bds:minRelevance "0.3" ;
+                   #               bds:matchAllTerms "true"  .
+                    }
+                  '
+                  default-query='
+                    SELECT ?subject WHERE {
+                      ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+                    }
+                  '
+                  debounce=500
+                  placeholder="Search ongoing projects"
+                ></semantic-search-query-keyword> 
+                <button class="btn btn-default btn-input-inline">
+                  <i class="material-icons-round">people_alt</i>
+                </button>
+                <button class="btn btn-default btn-input-inline">
+                  <i class="material-icons-round">calendar_month</i>
+                </button>
+                <semantic-search-result>
+                  <bs-dropdown id='Export'>
+                    <bs-dropdown-toggle class="btn-input-inline">
+                      <i class="material-icons-round">download</i> Export
+                    </bs-dropdown-toggle>
+                    <bs-dropdown-menu>
+                          <mp-sparql-download id='csv-result' query="SELECT ?subject WHERE { }"
+                                              header="text/csv"
+                                              filename="csv-result.csv"
+                          >
+                          <bs-menu-item>Export as CSV</bs-menu-item>
+                          </mp-sparql-download>
+                  
+                      
+                          <mp-sparql-download id='json-result' query="SELECT ?subject WHERE { }"
+                                              header="application/sparql-results+json"
+                                              filename="json-result.json"
+                          >
+                          <bs-menu-item>Export as JSON</bs-menu-item>
+                          </mp-sparql-download>
+                      
+                    </bs-dropdown-menu>
+                  </bs-dropdown>
+                </semantic-search-result>
+              
+            </div>
+            
+            <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+              <semantic-search-result-holder>
+                <div data-flex-self="md-full">
+                  
+                  <semantic-search-result id='ongoing-projects-result'>
+                      <div class="table-expanded table-projects">
+                        <semantic-table id='ongoing-projects-table'
+                                        query='
+                                        SELECT ?subject ?description ?startDateLabel (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?typeLabels) WHERE {
+                                            #  ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+                                              
+                                              ?subject crm:P67i_is_referred_to_by ?ref .
+                                              ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                              ?ref crm:P190_has_symbolic_content ?description .
+                                
+                                              ?subject crm:P2_has_type ?type .
+                                              ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                              ?type skos:prefLabel ?typeLabel .
+
+                                              BIND(<http://www.researchspace.org/resource/vocab/status/closed> as ?status)
+                                
+                                              ?subject crm:P2_has_type ?status .
+                                              ?status crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                            #  ?status skos:prefLabel ?statusLabel .
+
+                                            OPTIONAL {
+                                              ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDate .
+                                              ?startDate <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDateLabel
+                                            }
+                                        } 
+                                        group by ?subject ?description ?startDateLabel
+                                        ORDER BY ?description '
+                                    
+                                        options='{"showFilter":false}'
+
+                                        number-of-displayed-rows=6
+
+                                        column-configuration='[
+                                          {
+                                            "variableName": "subject",
+                                            "displayName": "Project details",
+                                            "cellTemplate": "{{> details}}"
+                                          },
+                                          
+                                          {
+                                            "variableName": "typeLabel",
+                                            "displayName": "Type",
+                                            "cellTemplate": "{{> type}}"
+                                          },
+
+                                          {
+                                            "variableName": "test",
+                                            "displayName": "Researchers",
+                                            "cellTemplate": "{{> researchers}}"
+                                          },
+
+                                          {
+                                            "variableName": "startDate",
+                                            "displayName": "Start date",
+                                            "cellTemplate": "{{> startDate}}"
+                                          },
+
+                                          {
+                                            "variableName": "endDate",
+                                            "displayName": "End date",
+                                            "cellTemplate": "{{> startDate}}"
+                                          },
+
+                                          {
+                                            "variableName": "priority",
+                                            "displayName": "Priority",
+                                            "cellTemplate": "{{> startDate}}"
+                                          },
+
+                                          {
+                                            "variableName": "progress",
+                                            "displayName": "Progress",
+                                            "cellTemplate": "{{> startDate}}"
+                                          }
+                                      
+                                        ]'
+
+                        >
+                          <template id='details'>  
+                            <div style="display: flex; align-items:center; gap: 10px;">
+                              <span style="height:auto; width:40px; border:1px solid lightgrey; align-self: stretch;">IMG</span>
+                              <div style="flex:1; padding-right: 5px;">
+                                <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
+                                            urlqueryparam-resource='{{subject.value}}' 
+                                            urlqueryparam-view='entity-editor' 
+                                              >
+
+                                <div class="table-title">{{description.value}}</div>
+                                </semantic-link>
+                                <mp-text-truncate truncate="..." lines=1 class="table-description">description description description description description description</mp-text-truncate>
+                              </div>
+                            </div>
+                            
+                          </template>
+              
+                          <template id='type'>
+                            <div class="badge badge--secondary">{{typeLabels.value}}</div>
+                          </template>
+
+                          <template id='researchers'>
+                            <span class="material-icons-round researcher-icon">people_alt</span>
+                          </template>
+
+                          <template id='startDate'>
+                            <div>{{dateTimeFormat startDateLabel.value "DD-MM-YYYY"}}</div>
+                          </template>
+              
+                        </semantic-table>   
+                      </div>
+                    </semantic-search-result>
+                </div>
+              </semantic-search-result-holder>
+            </div>
+          </semantic-search>
+<!--           <div class="table-expanded">
+            <semantic-table query="
+                              prefix person: <http://example.com/person/> 
+                              prefix org: <http://example.com/org/> 
+                              prefix foaf: <http://xmlns.com/foaf/0.1/>
+                              SELECT * WHERE {                    
+                                  VALUES (?person ?prop ?value) { 
+                                  (person:alice foaf:knows person:carol)
+                                  (person:carol foaf:knows person:mike)
+                                  (person:mike foaf:knows person:carol)
+                                  (person:bob foaf:knows person:carol)
+                                  (person:alice foaf:member org:W3C)
+                                  (person:mike foaf:member org:W3C)
+                                  }
+                              }"
+                          number-of-displayed-rows=4
+                          options='{"showFilter": true}'
+            ></semantic-table>
+          </div> -->
         </bs-tab>
         <bs-tab event-key="completed" title="Completed">
           Tab Content 2

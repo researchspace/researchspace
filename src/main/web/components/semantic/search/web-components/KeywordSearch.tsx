@@ -65,7 +65,7 @@ class KeywordSearch extends Component<KeywordSearchProps, {}> {
   render() {
     return (
       <div className='keyword-search-container'>
-        <i className='rs-icon rs-icon-search'></i>
+        <i className="material-icons-round">search</i>
         <SemanticSearchContext.Consumer>
           {(context) => <KeywordSearchInner {...this.props} context={context} />}
         </SemanticSearchContext.Consumer>

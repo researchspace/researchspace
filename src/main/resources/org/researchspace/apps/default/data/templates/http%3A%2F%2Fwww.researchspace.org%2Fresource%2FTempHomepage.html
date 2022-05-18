@@ -47,27 +47,27 @@
             <div class="search-filters-container">
               
               <semantic-search-query-keyword 
+                  domain='<http://www.cidoc-crm.org/cidoc-crm/E7_Activity>'
                   query='
-                    SELECT ?subject ?description WHERE { 
+                    SELECT ?subject WHERE { 
+                      ?subject a <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
                       ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
-                      ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/closed> .
-                      ?subject crm:P67i_is_referred_to_by ?ref .
-                      ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                      ?ref crm:P190_has_symbolic_content ?description .
-                         ?description bds:search ?__token__ ;
-                                     bds:minRelevance "0.3" ;
-                                     bds:matchAllTerms "true"  .
-
-
-                   #   ?subject rdfs:label ?label .
-                   #   ?label bds:search ?__token__ ;
-                   #               bds:minRelevance "0.3" ;
-                   #               bds:matchAllTerms "true"  .
+                      ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/open> .
+                      
+                      ?subject rdfs:label|crm:P67i_is_referred_to_by/crm:P190_has_symbolic_content|crm:P2_has_type/skos:prefLabel|crm:P4_has_time-span/crm:P82a_begin_of_the_begin ?label .
+                     
+                      SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                ?label bds:search ?__token__ ;
+                                bds:minRelevance "0.3" ;
+                                bds:matchAllTerms "true"  .
+                      }
                     }
                   '
                   default-query='
                     SELECT ?subject WHERE {
+                      ?subject a <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
                       ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+                      ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/open> .
                     }
                   '
                   debounce=500
@@ -85,7 +85,30 @@
                       <i class="material-icons-round">download</i> Export
                     </bs-dropdown-toggle>
                     <bs-dropdown-menu>
-                          <mp-sparql-download id='csv-result' query="SELECT ?subject WHERE { }"
+                          <mp-sparql-download id='csv-result' 
+                                              query='SELECT ?subject ?title ?status (GROUP_CONCAT(?type;SEPARATOR=", ") AS ?types) ?startDate WHERE {
+                                          
+                                                        ?subject crm:P67i_is_referred_to_by ?titleURI .
+                                                        ?titleURI crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                        ?titleURI crm:P190_has_symbolic_content ?title .
+                                          
+                                                        ?subject crm:P2_has_type ?typeURI .
+                                                        ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                                        ?typeURI skos:prefLabel ?type .
+          
+                                                        BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?statusURI)
+                                          
+                                                        ?subject crm:P2_has_type ?statusURI .
+                                                        ?statusURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                                        ?statusURI skos:prefLabel ?status .
+          
+                                                      OPTIONAL {
+                                                        ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDateURI .
+                                                        ?startDateURI <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDate
+                                                      }
+                                                  } 
+                                                  group by ?subject ?title ?status ?startDate
+                                                  ORDER BY ?title'
                                               header="text/csv"
                                               filename="csv-result.csv"
                           >
@@ -93,7 +116,29 @@
                           </mp-sparql-download>
                   
                       
-                          <mp-sparql-download id='json-result' query="SELECT ?subject WHERE { }"
+                          <mp-sparql-download id='json-result' 
+                                              query='SELECT ?subject ?title ?status (GROUP_CONCAT(?type;SEPARATOR=", ") AS ?types) ?startDate WHERE {
+                                                            ?subject crm:P67i_is_referred_to_by ?titleURI .
+                                                            ?titleURI crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                            ?titleURI crm:P190_has_symbolic_content ?title .
+                                              
+                                                            ?subject crm:P2_has_type ?typeURI .
+                                                            ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                                            ?typeURI skos:prefLabel ?type .
+              
+                                                            BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?statusURI)
+                                              
+                                                            ?subject crm:P2_has_type ?statusURI .
+                                                            ?statusURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                                            ?statusURI skos:prefLabel ?status .
+              
+                                                          OPTIONAL {
+                                                            ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDateURI .
+                                                            ?startDateURI <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDate
+                                                          }
+                                                      } 
+                                                      group by ?subject ?title ?status ?startDate
+                                                      ORDER BY ?title'
                                               header="application/sparql-results+json"
                                               filename="json-result.json"
                           >
@@ -125,7 +170,7 @@
                                               ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
                                               ?type skos:prefLabel ?typeLabel .
 
-                                              BIND(<http://www.researchspace.org/resource/vocab/status/closed> as ?status)
+                                              BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?status)
                                 
                                               ?subject crm:P2_has_type ?status .
                                               ?status crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
@@ -207,7 +252,10 @@
                           </template>
               
                           <template id='type'>
-                            <div class="badge badge--secondary">{{typeLabels.value}}</div>
+                            <div class="table-badge-container">
+                              <div class="badge badge--secondary">{{typeLabels.value}}</div>
+                            </div>
+                            
                           </template>
 
                           <template id='researchers'>

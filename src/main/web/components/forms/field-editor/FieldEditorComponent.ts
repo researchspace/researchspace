@@ -59,6 +59,7 @@ import * as Validation from './Validation';
 import { FieldEditorLabel } from './FieldEditorLabel';
 
 import './field-editor.scss';
+import { findLastIndex } from 'lodash';
 
 const btn = createFactory(ReactBootstrap.Button);
 const bsrow = createFactory(ReactBootstrap.Row);
@@ -514,22 +515,22 @@ class FieldEditorComponent extends Component<Props, State> {
         {},
         bscol({ md: 3 }),
         bscol(
-          { md: 9 },
+          { md: 9,
+            style: { display: 'flex', alignItems: 'center', justifyContent:'end', gap:'5px' }
+           },
           btn(
             {
               disabled: !this.state.isValid,
-              bsSize: 'small',
               onClick: () => this.onSaveOrUpdate(),
-              style: { marginLeft: '-15px' },
+             className: 'btn btn-action'
             },
             this.isEditMode() ? 'Update Field' : 'Create Field'
           ),
           btn(
             {
               disabled: !this.state.isValid,
-              bsSize: 'small',
               onClick: () => this.onSaveOrUpdate(this.props.navigateTo),
-              style: { marginLeft: 10 },
+              className: 'btn btn-action'
             },
             this.isEditMode() ? 'Update Field and Close' : 'Create Field and Close'
           )

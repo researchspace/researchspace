@@ -119,7 +119,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   }
 
   componentDidMount() {
-    tryExtractNestedForm(this.props.children, this.appliedTemplateScope, this.props.nestedFormTemplate)
+    tryExtractNestedForm(this.props.children, this.context, this.props.nestedFormTemplate)
       .then(nestedForm => {
         if (nestedForm != undefined) {
           this.setState({nestedForm});

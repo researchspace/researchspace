@@ -112,9 +112,10 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     dropAreaTemplate: '<span>Drop item here to add it</span>',
     placeholderItemTemplate: `
       <div class='DragAndDropInput--placeholderContainer'>
-        Drop item here
+        <i class="material-icons-round">upload_file</i>
+        <div>Drag and drop here</div>
         {{#if canCreateNew}}
-          or click to create a new item
+        <div>or click to Upload</div>
         {{/if}}
       </div>
     `,

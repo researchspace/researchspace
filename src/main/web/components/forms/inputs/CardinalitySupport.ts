@@ -124,7 +124,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
       this.renderChildren(canRemoveValue),
 
       canAddValue
-        ? D.a(
+        ? D.div(
             {
               className: classnames({
                 [`${COMPONENT_NAME}__add-value`]: true,
@@ -133,7 +133,10 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
               }),
               onClick: this.addNewValue,
             },
-            `+ Add ${fieldLabel}`
+            D.button ({className:'btn btn-default'},
+              D.i ({className: 'material-icons-round'}, 'add_box'),
+              fieldLabel
+            )
           )
         : null
     );

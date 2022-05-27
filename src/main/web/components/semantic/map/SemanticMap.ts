@@ -103,7 +103,8 @@ import {
   SemanticMapControlsSendFeaturesLabelToMap,
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
-  SemanticMapControlsSendToggle3d
+  SemanticMapControlsSendToggle3d,
+  SemanticMapControlsSendYear
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -368,10 +369,41 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           })
       )
       .onValue(this.toggle3d);
+
+    this.cancelation
+    .map(
+        listen({
+            eventType: SemanticMapControlsSendYear
+          })
+      )
+      .onValue(this.getYear);
   }
 
   private toggle3d = (event: Event<any>) => {
     this.ol3d.setEnabled(!this.ol3d.getEnabled())
+  }
+
+  private getYear = (event: Event<any>) => {
+    console.log("EVENT DATA")
+    console.log(event.data)
+    const coordinates = this.map.getView().calculateExtent(this.map.getSize());
+    this.BoundingBoxChanged({
+      date: {
+        value: event.data
+      },
+      southWestLat: {
+        value: String(coordinates[0]),
+      },
+      southWestLon: {
+        value: String(coordinates[1]),
+      },
+      northEstLat: {
+        value: String(coordinates[2]),
+      },
+      northEstLon: {
+        value: String(coordinates[3]),
+      },
+    });
   }
 
   private updateFeatureColorsByGroups = (event: Event<any>) => {
@@ -891,6 +923,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return new VectorLayer({
       source,
       style: (feature: Feature) => {
+        console.log("Feature...")
+        console.log(feature);
         const geometry = feature.getGeometry();
         let label = '';
         if(feature.get(this.state.featuresLabel) !== undefined){

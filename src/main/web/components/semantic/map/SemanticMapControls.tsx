@@ -15,6 +15,7 @@ import {
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
+  SemanticMapControlsSendYear,
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -88,7 +89,7 @@ export class SemanticMapControls extends Component<Props, State> {
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
-      year: 1500,
+      year: 1670,
     };
 
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -189,7 +190,7 @@ export class SemanticMapControls extends Component<Props, State> {
       }
     );
   }
-
+ 
   private triggerSendMaskIndexToMap(index: number) {
     trigger({
       eventType: SemanticMapControlsSendMaskIndexToMap,
@@ -199,6 +200,14 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   }
 
+  private triggerSendYearToMap(year: number) {
+    trigger({
+      eventType: SemanticMapControlsSendYear,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: year.toString() + "-01-01",
+    });
+  }
   public componentDidMount() {
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
     console.log('MONTO e setto color taxonomy');
@@ -310,14 +319,17 @@ export class SemanticMapControls extends Component<Props, State> {
       // <div className={'featuresOptionsContainer'}>
       //   {/* <h3 className={'mapOptionsSectionTitle'}>3D</h3> */}
       // </div>,
-      <div style={{ display: 'none' }} className={'timeSliderContainer'}>
+      <div className={'timeSliderContainer'}>
         <input
           type={'range'}
           className={'timelineSlider'}
           min={1500}
-          max={1800}
+          max={2022}
           step={1}
           value={this.state.year}
+          onMouseUp={(event) => {
+              this.triggerSendYearToMap(this.state.year);
+          }}
           onChange={(event) => {
             const input = event.target as HTMLInputElement;
             const value = parseInt(input.value);
@@ -327,7 +339,7 @@ export class SemanticMapControls extends Component<Props, State> {
             });
           }}
         ></input>
-        <div style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+        <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
       </div>,
       this.props.featuresOptionsEnabled && (
         <div className={'featuresOptionsContainer'}>

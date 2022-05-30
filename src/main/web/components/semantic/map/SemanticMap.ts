@@ -515,7 +515,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private triggerSendLayers() {
-    //TODOZZ: move them away!
+    //TODO: move them away
     let vectorLayers = this.getVectorLayersFromMap();
     vectorLayers.forEach((vectorLayer) => {
       vectorLayer.set('level', 'feature');
@@ -547,7 +547,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   initInteractions = () => {
     this.source = new VectorSource();
-    console.log("SOURCEEEEEEE");
+    console.log("SOURCE");
     console.log(this.source);
     this.vector = new VectorLayer({
       source: this.source,
@@ -923,7 +923,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return new VectorLayer({
       source,
       style: (feature: Feature) => {
-        console.log("Feature...")
+        console.log("Feature")
         console.log(feature);
         const geometry = feature.getGeometry();
         let label = '';

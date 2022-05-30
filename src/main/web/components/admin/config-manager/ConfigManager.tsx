@@ -153,11 +153,11 @@ export class ConfigManager extends Component<ConfigManagerProps, State> {
                     ))}
                   </div>
                   <Button
-                    className="btn-default"
+                    className="btn-default btn-textAndIcon"
                     disabled={!editable || savingProperty}
                     onClick={() => setEditedProperty(record.name)}
                   >
-                    <span className="fa fa-pencil btn-icon-left" /> Edit
+                    <span className="fa fa-pencil" /> Edit
                   </Button>
                 </div>
               )}

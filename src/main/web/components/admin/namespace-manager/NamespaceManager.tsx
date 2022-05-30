@@ -275,8 +275,8 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
         );
       } else {
         return (
-          <Button className="btn btn-default" onClick={this.onDeleteClick}>
-            <span className="fa fa-trash-o btn-icon-left" />
+          <Button className="btn btn-default btn-textAndIcon" onClick={this.onDeleteClick}>
+            <span className="fa fa-trash-o" />
             &nbsp;Delete
           </Button>
         );

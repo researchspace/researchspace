@@ -133,9 +133,9 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
               }),
               onClick: this.addNewValue,
             },
-            D.button ({className:'btn btn-default'},
+            D.button ({className:'btn btn-secondary btn-textAndIcon'},
               D.i ({className: 'material-icons-round'}, 'add_box'),
-              fieldLabel
+              D.span ({}, fieldLabel)
             )
           )
         : null

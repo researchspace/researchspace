@@ -165,7 +165,7 @@ SELECT DISTINCT ?config WHERE {
                         'type': 'bgp',
                         triples: [{
                           subject: '?node',
-                          predicate: 'http://www.researchspace.org/resource/system/entity_manager/broader_navigation_menu',
+                          predicate: 'http://www.researchspace.org/resource/system/authority_manager/menu_broader_item',
                           object: '?parent'
                         }]
                       }

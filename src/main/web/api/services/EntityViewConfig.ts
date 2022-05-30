@@ -60,54 +60,53 @@ CONSTRUCT {
   ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
   ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
 
+  ?config <http://www.researchspace.org/resource/system/authority_manager/has_facet_kp> ?facetKp .
 
-  ?config <http://www.researchspace.org/resource/system/entity_manager/has_facet_kp> ?facetKp .
+  ?config <http://www.researchspace.org/resource/system/authority_manager/has_view> ?view .
+  ?view <http://www.researchspace.org/resource/system/authority_manager/view_has_label> ?viewLabel .
+  ?view <http://www.researchspace.org/resource/system/authority_manager/view_has_order> ?viewOrder.
+  ?view <http://www.researchspace.org/resource/system/authority_manager/view_has_template> ?viewTemplate .
 
-
-?config <http://www.researchspace.org/resource/system/entity_manager/entity_has_view> ?view .
-?view <http://www.researchspace.org/resource/system/entity_manager/view_has_label> ?viewLabel .
-?view <http://www.researchspace.org/resource/system/entity_manager/view_has_order> ?viewOrder.
-?view <http://www.researchspace.org/resource/system/entity_manager/view_has_template> ?viewTemplate .
-
-  ?config <http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation> ?navigation .
-  ?navigation <http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry> ?navigationEntry .
-  ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/related_entity_config> ?navigationEntryEntityConfig .
-  ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp> ?navigationEntryRelatedKp  .
+  ?config <http://www.researchspace.org/resource/system/authority_manager/has_navigation_menu> ?navigation .
+  ?navigation <http://www.researchspace.org/resource/system/authority_manager/menu_item> ?navigationEntry .
+  ?navigationEntry <http://www.researchspace.org/resource/system/authority_manager/menu_item_config> ?navigationEntryEntityConfig .
+  ?navigationEntry <http://www.researchspace.org/resource/system/authority_manager/is_related_by_kp> ?navigationEntryRelatedKp  .
+  
 } WHERE {
   ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
     <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .
 
   OPTIONAL {
-
-  ?config <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
+    ?config <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
   }
 
   OPTIONAL {
     ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
   }
+
   OPTIONAL {
     ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
   }
 
   OPTIONAL {
-    ?config <http://www.researchspace.org/resource/system/entity_manager/has_facet_kp> ?facetKp .
+    ?config <http://www.researchspace.org/resource/system/authority_manager/has_facet_kp> ?facetKp .
   }
   
   OPTIONAL {
-    ?config <http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation> ?navigation .
-    ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry> ?navigation .
-    ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/related_entity_config> ?navigationEntryEntityConfig .
+    ?config <http://www.researchspace.org/resource/system/authority_manager/has_navigation_menu> ?navigation .
+    ?navigationEntry <http://www.researchspace.org/resource/system/authority_manager/menu_item> ?navigation .
+    ?navigationEntry <http://www.researchspace.org/resource/system/authority_manager/menu_item_config> ?navigationEntryEntityConfig .
 
     OPTIONAL {
-     ?navigationEntry <http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp> ?navigationEntryRelatedKp  .
+     ?navigationEntry <http://www.researchspace.org/resource/system/authority_manager/is_related_by_kp> ?navigationEntryRelatedKp  .
     }
   }
 
   OPTIONAL {
-?config <http://www.researchspace.org/resource/system/entity_manager/entity_has_view> ?view .
-?view <http://www.researchspace.org/resource/system/entity_manager/view_has_label> ?viewLabel .
-?view <http://www.researchspace.org/resource/system/entity_manager/view_has_order> ?viewOrder.
-?view <http://www.researchspace.org/resource/system/entity_manager/view_has_template> ?viewTemplate .
+    ?config <http://www.researchspace.org/resource/system/authority_manager/has_view> ?view .
+    ?view <http://www.researchspace.org/resource/system/authority_manager/view_has_label> ?viewLabel .
+    ?view <http://www.researchspace.org/resource/system/authority_manager/view_has_order> ?viewOrder.
+    ?view <http://www.researchspace.org/resource/system/authority_manager/view_has_template> ?viewTemplate .
   }
 }
       `
@@ -116,7 +115,7 @@ CONSTRUCT {
   const FormConfigType = Rdf.iri('http://www.researchspace.org/resource/system/FormConfig');
   return SparqlClient.construct(query).onValue(
     res => {
-      const relatedByKp = Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp');
+      const relatedByKp = Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/is_related_by_kp');
       const allRelatedKps = _.uniqBy(res.filter(t => t.p.equals(relatedByKp)).map(t => t.o as Rdf.Iri), node => node.value);
       FieldService.getGeneratedFieldDefinitions(allRelatedKps).onValue(
         allKps => {
@@ -140,34 +139,34 @@ CONSTRUCT {
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);
 
             const facetKps =
-              Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/has_facet_kp')], pg);
+              Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/has_facet_kp')], pg);
 
-            const viewIris = Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/entity_has_view')], pg);
+            const viewIris = Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/has_view')], pg);
 
             let viewes =
               viewIris.map(
                 viewIri => {
                   const viewPg = Rdf.pg(viewIri, configGraph);
 
-                  const label = Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/view_has_label')], viewPg).map(l => l.value).get();
-                  const order = Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/view_has_order')], viewPg).map(l => parseInt(l.value)).get();
-                  const templateIri = Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/view_has_template')], viewPg).map(l => l.value).get();
+                  const label = Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/view_has_label')], viewPg).map(l => l.value).get();
+                  const order = Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/view_has_order')], viewPg).map(l => parseInt(l.value)).get();
+                  const templateIri = Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/view_has_template')], viewPg).map(l => l.value).get();
 
                   return {label, order, templateIri};
                 }
               );
             viewes = _.orderBy(viewes, 'order');
 
-            const navigationEntryIris = Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation'), Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry')], pg);
+            const navigationEntryIris = Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/has_navigation_menu'), Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/menu_item')], pg);
 
             const navigationEntries =
               navigationEntryIris.map(navigationEntryIri => {
                 const navigationEntryPg = Rdf.pg(navigationEntryIri, configGraph);
                 const relatedEntityConfig =
-                  Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/related_entity_config')], navigationEntryPg).get();
+                  Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/menu_item_config')], navigationEntryPg).get();
 
                 const relatedKps =
-                  Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/entity_manager/is_related_by_kp')], navigationEntryPg).map(kpIri => kps[kpIri.value]);
+                  Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/resource/system/authority_manager/is_related_by_kp')], navigationEntryPg).map(kpIri => kps[kpIri.value]);
 
                 return { iri: navigationEntryIri, relatedEntityConfig, relatedKps };
               });

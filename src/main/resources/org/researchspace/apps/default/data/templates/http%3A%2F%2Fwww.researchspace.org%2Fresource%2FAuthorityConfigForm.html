@@ -15,9 +15,9 @@
                   label_sparql_pattern="http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern"
                   restriction_sparql_pattern="http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern"
                   uses_form="http://www.researchspace.org/resource/system/authority_manager/uses_form"
-                  entity_has_navigation="http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation"
-                  has_facet_kp="http://www.researchspace.org/resource/system/entity_manager/has_facet_kp"
-                  entity_has_view="http://www.researchspace.org/resource/system/entity_manager/entity_has_view"
+                  entity_has_navigation="http://www.researchspace.org/resource/system/authority_manager/has_navigation_menu"
+                  has_facet_kp="http://www.researchspace.org/resource/system/authority_manager/has_facet_kp"
+                  entity_has_view="http://www.researchspace.org/resource/system/authority_manager/has_view"
                ]]'
                >
 
@@ -31,15 +31,15 @@
           <semantic-form-text-input for="item_label" placeholder="Enter the resource label (e.g. Place, Actor, Collection item, Concept, etc.)" label="Resource label"></semantic-form-text-input>
           <div style="display:flex; gap:5px; align-items: end; margin-top: 21px;">
             <div style="flex: 1;">
-              <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/" label="Resource Form"
+              <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/" label="Resource form"
               placeholder="Enter IRI of the form that should be used to edit the resource"></semantic-form-text-input>
             </div>
             {{#if node}}
                 <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
                   <template id='template'>
                     <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
-                        <button class="btn btn-default btn-input-inline">
-                          <i class="material-icons-round btn-icon-left" title="Edit form">edit</i>
+                        <button class="btn btn-default btn-input-inline btn-textAndIcon">
+                          <i class="material-icons-round" title="Edit form">edit</i>
                           Edit form
                         </button>
                     </semantic-link-container>
@@ -66,8 +66,8 @@
           <div>Define a Membership property, if the resource is part of a collection, and a Broader property to refer to a broader resource.</div>
         </div>
         <div class="form-section-content">
-          <semantic-form-tree-picker-input for="membership_property" label="Membership Property" placeholder="Enter a property that connects the resource to the collection (e.g. skos:inScheme, crm:P71i_is_listed_in)"></semantic-form-tree-picker-input>
-          <semantic-form-tree-picker-input for="broader_property" label="Broader Property" placeholder="Enter property used to refer to a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"></semantic-form-tree-picker-input>
+          <semantic-form-tree-picker-input for="membership_property" label="Membership property" placeholder="Enter a property that connects the resource to the collection (e.g. skos:inScheme, crm:P71i_is_listed_in)"></semantic-form-tree-picker-input>
+          <semantic-form-tree-picker-input for="broader_property" label="Broader property" placeholder="Enter property used to refer to a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"></semantic-form-tree-picker-input>
         </div>
 
         <div class="form-section-header">
@@ -77,7 +77,7 @@
         <div class="form-section-content">
           <semantic-form-text-input for="label_sparql_pattern" label="Label (SPARQL pattern)" placeholder="Enter a SPARQL pattern for the resource label" > </semantic-form-text-input>
           <semantic-form-text-input for="restriction_sparql_pattern" label="Restriction (SPARQL pattern)" placeholder="Enter a SPARQL pattern to apply a restriction" > </semantic-form-text-input>
-          <semantic-form-text-input for="order_by_pattern" label="Order By (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order"> </semantic-form-text-input>
+          <semantic-form-text-input for="order_by_pattern" label="Order by (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order"> </semantic-form-text-input>
         </div>
 
     </bs-tab>
@@ -104,16 +104,16 @@
         </div>
     
         {{#if node}}
-          <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/resource/system/entity_manager/entity_has_navigation> ?form}'>
+          <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/has_navigation_menu> ?form}'>
             <template id='then'>
               <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
                               options='{
                                         "collection": "{{node}}/navigation menu",
-                                        "membershipProperty": "http://www.researchspace.org/resource/system/entity_manager/has_navigation_entry",
+                                        "membershipProperty": "http://www.researchspace.org/resource/system/authority_manager/menu_item",
                                         "itemLabel": "Navigation item",
                                         "resourceView": "[[resolvePrefix "rsp:EntityNavigationConfigForm"]]",
-                                        "broaderProperty": "http://www.researchspace.org/resource/system/entity_manager/broader_navigation_menu",
-                                        "labelSparqlPattern": "?item <http://www.researchspace.org/resource/system/entity_manager/related_entity_config>/<http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .",
+                                        "broaderProperty": "http://www.researchspace.org/resource/system/authority_manager/menu_broader_item",
+                                        "labelSparqlPattern": "?item <http://www.researchspace.org/resource/system/authority_manager/menu_item_config>/<http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .",
                                         "frameId": "entity-navigation-config",
                                         "editable": true
                                         }'
@@ -130,9 +130,9 @@
                                     new-subject-template='view/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                                     fields='[[
                                       fieldDefinitions
-                                      view_has_label="http://www.researchspace.org/resource/system/entity_manager/view_has_label"
-                                      view_has_order="http://www.researchspace.org/resource/system/entity_manager/view_has_order"
-                                      view_has_template="http://www.researchspace.org/resource/system/entity_manager/view_has_template"
+                                      view_has_label="http://www.researchspace.org/resource/system/authority_manager/view_has_label"
+                                      view_has_order="http://www.researchspace.org/resource/system/authority_manager/view_has_order"
+                                      view_has_template="http://www.researchspace.org/resource/system/authority_manager/view_has_template"
                                       ]]'
                                       >
                             <semantic-form-text-input for="view_has_label" placeholder="Enter label" label="View label"></semantic-form-text-input>

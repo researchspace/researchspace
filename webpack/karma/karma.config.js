@@ -56,10 +56,10 @@ module.exports = function (defaults) {
             noInfo: true,
             stats: 'minimal'
         },
-        browsers: ['ChromiumHeadlessNoSandbox'],
+        browsers: ['ChromeHeadlessNoSandbox'],
         customLaunchers: {
-          ChromiumHeadlessNoSandbox: {
-            base: 'ChromiumHeadless',
+            ChromeHeadlessNoSandbox: {
+            base: 'ChromeHeadless',
             flags: [
                 '--no-sandbox',
                 '--headless',

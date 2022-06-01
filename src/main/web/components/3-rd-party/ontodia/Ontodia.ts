@@ -959,7 +959,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
         });
       }
       if (hasChanges && !this.navigationListenerUnsubscribe) {
-        const message = 'Changes you made to the diagram will not be saved.';
+        const message = 'Changes you made to the map will not be saved.';
         this.navigationListenerUnsubscribe = navigationConfirmation(message);
       } else if (!hasChanges && this.navigationListenerUnsubscribe) {
         this.navigationListenerUnsubscribe();
@@ -1009,14 +1009,14 @@ export class Ontodia extends Component<OntodiaProps, State> {
             this.workspace.getModel().history.reset();
             addNotification({
               level: 'success',
-              message: `Saved diagram ${label}`,
+              message: `Saved map ${label}`,
             });
           },
           error: (error) =>
             addNotification(
               {
                 level: 'error',
-                message: `Error saving diagram ${label}`,
+                message: `Error saving map ${label}`,
               },
               error
             ),
@@ -1270,8 +1270,8 @@ export class Ontodia extends Component<OntodiaProps, State> {
         onSave: (label) => this.onSaveModalSubmit(label, layout),
         onHide: () => getOverlaySystem().hide(dialogRef),
         show: true,
-        title: this.props.saveDiagramLabel || 'Save Ontodia diagram',
-        placeholder: 'Enter diagram name',
+        title: this.props.saveDiagramLabel || 'Save knowledge map',
+        placeholder: 'Enter map name',
       })
     );
   };
@@ -1352,7 +1352,7 @@ export class Ontodia extends Component<OntodiaProps, State> {
         return results;
       })
       .mapErrors((error) => {
-        addNotification({ level: 'error', message: `Error saving diagram ${label}` }, error);
+        addNotification({ level: 'error', message: `Error saving map ${label}` }, error);
         return error;
       })
       .toProperty();

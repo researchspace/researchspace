@@ -94,12 +94,12 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
             />
             <span className="ontodia-input-group-btn">
               <button
-                className="ontodia-btn ontodia-btn-default"
+                className="btn btn-default btn-input-height"
                 type="button"
                 title="Search"
                 onClick={() => this.submitCriteriaUpdate()}
               >
-                <span className="fa fa-search" aria-hidden="true" />
+                Search
               </button>
             </span>
           </div>
@@ -116,12 +116,12 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
           <div className={`${CLASS_NAME}__rest-end`}>
             <button
               type="button"
-              className={`${CLASS_NAME}__load-more ontodia-btn ontodia-btn-primary`}
+              className={`${CLASS_NAME}__load-more btn btn-secondary btn-textAndIcon`}
               disabled={this.state.quering}
               style={{ display: this.state.moreItemsAvailable ? undefined : 'none' }}
               onClick={() => this.queryItems(true)}
             >
-              <span className="fa fa-chevron-down" aria-hidden="true" />
+              <span className="material-icons-round">expand_more</span>
               &nbsp;Show more
             </button>
           </div>

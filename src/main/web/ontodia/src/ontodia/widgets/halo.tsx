@@ -194,7 +194,7 @@ export class Halo extends React.Component<Props, State> {
       <div
         className={isNewElement ? `${CLASS_NAME}__delete` : `${CLASS_NAME}__remove`}
         role="button"
-        title={isNewElement ? 'Delete new element' : 'Remove an element from the diagram'}
+        title={isNewElement ? 'Delete new element' : 'Remove from the map'}
         onClick={onRemove}
       ></div>
     );
@@ -213,7 +213,7 @@ export class Halo extends React.Component<Props, State> {
         </div>
       );
     }
-    const title = canLink ? 'Establish connection' : 'Establishing connection is unavailable for the selected element';
+    const title = canLink ? 'Click or drag and drop to create a connection' : 'Connection is unavailable for the selected element';
     return (
       <button
         className={`${CLASS_NAME}__establish-connection`}

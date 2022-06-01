@@ -83,7 +83,7 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
         this.showMessage(),
         D.form(
           {
-            className: b('form'),
+            className: classNames('form-inline', b('form')),
           },
           D.input({
             className: classNames('form-control', b('form__collection-name')),
@@ -94,7 +94,7 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
           }),
           D.button(
             {
-              className: classNames('btn btn-primary', b('form__save-button')),
+              className: classNames('btn btn-action btn-input-height', b('form__save-button')),
               disabled: this.isLoading() || this.isSuccess(),
               onClick: this.onSaveBtn,
             },

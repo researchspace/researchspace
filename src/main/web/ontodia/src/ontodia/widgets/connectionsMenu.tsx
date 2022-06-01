@@ -655,7 +655,7 @@ class LinkInPopupMenu extends React.Component<LinkInPopupMenuProps, {}> {
           </div>
         ) : null}
         <div className="link-in-popup-menu__link-title">{textLine}</div>
-        <span className="ontodia-badge link-in-popup-menu__count">
+        <span className="badge link-in-popup-menu__count">
           {this.props.count <= MAX_LINK_COUNT ? this.props.count : '100+'}
         </span>
         <div
@@ -805,7 +805,7 @@ class ObjectsPanel extends React.Component<ObjectsPanelProps, ObjectsPanelState>
           {this.counter(active.length)}
           <button
             className={
-              'ontodia-btn ontodia-btn-primary pull-right ' +
+              'ontodia-btn ontodia-btn-action pull-right ' +
               'ontodia-connections-menu_objects-panel_bottom-panel__add-button'
             }
             disabled={this.props.loading || nonPresented.length === 0}

@@ -101,14 +101,14 @@ export class RemoveSetAction extends Component<Props, State> {
       return (
         <div className="remove-set-confirmation" ref={(node) => (this.confirmationRef = node)}>
           <span>Remove set?</span>
-          <ButtonToolbar>
+          <div>
             <Button onClick={this.onNoClick}>
               no
             </Button>
             <Button onClick={this.onYesClick}>
               {this.state.isRemoving ? '...' : 'yes'}
             </Button>
-          </ButtonToolbar>
+          </div>
         </div>
       );
     } else {

@@ -227,7 +227,7 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
             },
           }),
           this.getSyntaxChoices(),
-          ButtonToolbar(
+          D.div(
             { className: 'pull-right template-cancel-save' },
             Button(
               {
@@ -237,31 +237,34 @@ class PageEditorComponent extends Component<PageEditorProps, PageEditorState> {
               },
               'Cancel'
             ),
+            
             Button(
               {
-                bsStyle: 'danger',
+                bsStyle: 'default',
                 disabled: this.isDeleteBtnDisabled(),
                 onClick: this.onClickDeleteBtn,
               },
               'Delete Page'
             ),
+            
             Button(
               {
-                bsStyle: 'primary',
+                bsStyle: 'action',
+                onClick: () => this.onSave({ action: ResourceLinkAction[ResourceLinkAction.edit] }),
+                disabled: this.state.saving,
+              },
+              'Save'
+            ),
+
+            Button(
+              {
+                bsStyle: 'action',
                 onClick: () => this.onSave(),
                 disabled: this.state.saving,
               },
               this.state.saving
                 ? D.span({}, 'Saving', D.i({ className: 'fa fa-cog fa-spin' }))
                 : 'Save & View'
-            ),
-            Button(
-              {
-                bsStyle: 'success',
-                onClick: () => this.onSave({ action: ResourceLinkAction[ResourceLinkAction.edit] }),
-                disabled: this.state.saving,
-              },
-              'Save'
             )
           )
         )

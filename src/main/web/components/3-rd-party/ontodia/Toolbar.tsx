@@ -220,11 +220,11 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
         <ButtonGroup className={styles.groupButtons}>
 
-            <Button bsStyle='' className="btn-toolbar btn-textAndIcon" onClick={this.props.onZoomIn}>
+            <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomIn}>
               <i className="material-icons-round">add_circle_outline</i>
             </Button>
 
-            <Button bsStyle='' className="btn-toolbar btn-textAndIcon" onClick={this.props.onZoomOut}>
+            <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomOut}>
               <i className="material-icons-round">remove_circle_outline</i>
             </Button>
 
@@ -233,7 +233,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               placement="bottom"
               overlay={<Popover id="tooltip">Fit to screen</Popover>}
             >
-              <Button bsStyle='' className="btn-toolbar btn-textAndIcon" onClick={this.props.onZoomToFit}>
+              <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomToFit}>
                 <i className="material-icons-round">zoom_out_map</i>
               </Button>
             </OverlayTrigger>
@@ -243,7 +243,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               placement="bottom"
               overlay={<Popover id="tooltip">Force layout</Popover>}
             >
-              <Button bsStyle='' className="btn-toolbar btn-textAndIcon" onClick={this.props.onForceLayout}>
+              <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onForceLayout}>
                 <i className="material-icons-round">auto_awesome_mosaic</i>
               </Button>
             </OverlayTrigger>
@@ -254,7 +254,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               placement="bottom"
               overlay={<Popover id="tooltip">Clear All</Popover>}
               >
-              <Button onClick={this.props.onClearAll} bsStyle='' className="btn-toolbar btn-textAndIcon">
+              <Button onClick={this.props.onClearAll} bsStyle='' className="btn-icon btn-textAndIcon">
                 <i className="material-icons-round">delete</i>
               </Button>
             </OverlayTrigger>
@@ -265,13 +265,13 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         </div>
 
         <div className={styles.buttonsContainer}>
-         <Button bsStyle='' className="btn-toolbar btn-textAndIcon" onClick={this.props.onPrint}>
+         <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onPrint}>
             <i className="material-icons-round">print</i>
           </Button>
 
           <Dropdown id="export-diagram-button">
 
-            <Dropdown.Toggle bsStyle='' className="btn-textAndIcon btn-toolbar" style={{marginRight: 20}}>
+            <Dropdown.Toggle bsStyle='' className="btn-textAndIcon btn-icon" style={{marginRight: 20}}>
               <i className="material-icons-round">download</i>
             </Dropdown.Toggle>
             <Dropdown.Menu>

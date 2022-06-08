@@ -1,0 +1,76 @@
+<semantic-form post-action="event"
+               persistence='{"type": "sparql","targetGraphIri": "{{scheme}}"}' 
+                new-subject-template='/project/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                form-id='project-form'
+                fields='[[fieldDefinitions
+                                
+                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+
+                                project_title="http://www.researchspace.org/pattern/project/project_title"
+                                project_description="http://www.researchspace.org/pattern/project/project_description"
+                                project_research_question="http://www.researchspace.org/pattern/project/project_research_question"
+
+                                project_type="http://www.researchspace.org/pattern/project/project_type"
+
+                                
+
+
+                                project_type="http://www.researchspace.org/project_type/P2_has_type"
+                                
+                                project_status="http://www.researchspace.org/project/P2_has_type_status"
+                                
+                                is_component="http://www.researchspace.org/project/P148i_is_component_of"
+                                has_component="http://www.researchspace.org/project/P148_has_component"
+                                project_rate="http://www.cidoc-crm.org/cidoc-crm/P2_has_type_project_rate"
+                                
+
+                                add-object="http://www.researchspace.org/pattern/project/project_refers_to_objects"
+                                
+                                project_estimated_cost="http://www.researchspace.org/project_cost/crm:P181_has_amount"
+                                started="http://www.researchspace.org/project/P94i_was_created_by"
+                ]]'>
+
+[[!--
+subject='{{node}}'
+
+forP2="http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type"
+mainimage="http://www.researchspace.org/conservation/object/image/PX_has_main_representation"
+project_id="http://www.researchspace.org/pattern/project/project_id"
+description="http://www.researchspace.org/conservation/P67i_is_referred_to_by"
+project-description="http://www.researchspace.org/conservation/P67i_is_referred_to_by_composite"
+--]]
+  <div class="form-scroll-area">
+
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
+    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/conservation_entities/project'> </semantic-form-hidden-input>
+
+    <semantic-form-text-input for="project_title"  label="Project title" placeholder="Enter project title"> </semantic-form-text-input>
+
+    <semantic-form-tree-picker-input for='project_type' label="Project type" placeholder="Select project type" 
+                                     close-dropdown-on-selection='false'
+                                     tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/project_type>", 
+                                     "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/project_type>"}'>
+    </semantic-form-tree-picker-input>
+
+    <semantic-form-text-input for="project_description" multiline=true label="Project description" placeholder="Enter project description"> </semantic-form-text-input>
+
+    <semantic-form-text-input for="project_research_question" label="Project research question" placeholder="Enter research question"> </semantic-form-text-input>
+
+    [[!-- 
+
+    
+    <semantic-form-tree-picker-input for="project_research_question" label="Project research question" placeholder="Select research question" tree-patterns='{"schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/research_question> ."}' nested-form-template='{{> forms:research_question nested=true editable=true}}'></semantic-form-tree-picker-input>
+
+    <semantic-form-tree-picker-input for='project_status' label="Project Status" default-value="http://www.researchspace.org/resource/vocab/status/open" placeholder="Enter/Choose Project Status" tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/status>", "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/status>"}'></semantic-form-tree-picker-input>
+
+    <semantic-form-datetime-input for='started' label="Project start date" placeholder="Select start date"></semantic-form-datetime-input>
+    --]]
+
+    <semantic-form-errors></semantic-form-errors>
+
+    [[> rsp:FormDefaultActions]]
+
+
+  </div>
+</semantic-form>	

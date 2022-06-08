@@ -1,0 +1,49 @@
+
+<http://www.researchspace.org/pattern/project/project_description/context> {
+  <http://www.researchspace.org/pattern/project/project_description> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Project description"@en;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-822a10a8ac614885a41519215fe192ed-ebdqpi;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-822a10a8ac614885a41519215fe192ed-atf15;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-822a10a8ac614885a41519215fe192ed-jpem3;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2022-06-08T10:56:58.273+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-822a10a8ac614885a41519215fe192ed-ebdqpi a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+   $subject crm:P67i_is_referred_to_by $informationObject .
+   $informationObject a crm:E73_Information_Object .
+   $informationObject crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+  $informationObject crm:P190_has_symbolic_content ?value .
+}""" .
+  
+  _:genid-822a10a8ac614885a41519215fe192ed-atf15 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+   $subject crm:P67i_is_referred_to_by $informationObject .
+   $informationObject a crm:E73_Information_Object .
+   $informationObject crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+  $informationObject crm:P190_has_symbolic_content $value .  
+       }
+      where {
+  BIND(URI(concat(str($subject), \"/project_description\") ) as $informationObject)
+}""" .
+  
+  _:genid-822a10a8ac614885a41519215fe192ed-jpem3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P67i_is_referred_to_by $informationObject .
+   $informationObject a crm:E73_Information_Object .
+   $informationObject crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+  $informationObject crm:P190_has_symbolic_content $value .
+} WHERE {
+$subject crm:P67i_is_referred_to_by $informationObject .
+   $informationObject a crm:E73_Information_Object .
+   $informationObject crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+  $informationObject crm:P190_has_symbolic_content $value .}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/project/project_description> .
+}

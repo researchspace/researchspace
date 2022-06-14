@@ -361,7 +361,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
         })
       )
-      .onValue(this.updateFeatureColorsByGroups);
+      .onValue(this.triggerUpdateFeatureColorsByGroups);
 
     this.cancelation
       .map(
@@ -390,23 +390,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     const coordinates = this.map.getView().calculateExtent(this.map.getSize());
 
     let year = event.data;
-    /* this.BoundingBoxChanged({
-      date: {
-        value: event.data
-      },
-      southWestLat: {
-        value: String(coordinates[0]),
-      },
-      southWestLon: {
-        value: String(coordinates[1]),
-      },
-      northEstLat: {
-        value: String(coordinates[2]),
-      },
-      northEstLon: {
-        value: String(coordinates[3]),
-      },
-    }); */
 
     let vectorLayers = this.getVectorLayersFromMap();
     console.log(vectorLayers);
@@ -424,18 +407,42 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           feature_eoe = "2999";
         }
         if(this.dateInclusion(feature_bob, feature_eoe, year)){
-          feature.setStyle(new Style({
-            fill: new Fill({
-              color: feature.color,
-            }),
-            stroke: new Stroke({
-              color: feature.color,
-            }),
-          }));
+          //TODO: create function to remove repetition elsewhere of the following lines
+          //TODO: fix types
+          feature.setStyle(()=>{
+            console.log("Feature")
+            console.log(feature);
+            const geometry = feature.getGeometry();
+            let label = '';
+            if(feature.get(this.state.featuresLabel) !== undefined){
+              if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
+                label = feature.get(this.state.featuresLabel).value;
+              }
+            }
+            let color = this.defaultFeaturesColor;
+            //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
+            if(this.state.featuresColorTaxonomy
+              && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
+              && this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] !== this.defaultFeaturesColor){
+                if(typeof this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] === "string"){
+                   color = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value];
+                } else {
+                  let color_rgba = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].rgb;
+                  let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+                  color = rgba_string
+                }
+            }
+            let featureStyle = getFeatureStyle(geometry, color);
+            if (label) {
+              featureStyle.getText().setText(label);
+            }
+            return featureStyle;
+          })
         } else {
           feature.setStyle(new Style({}));
         }
       })})
+      //this.updateFeatureColorsByGroups(this.state.groupColorAssociations)
   }
 
   private dateInclusion(bob, eoe, year){
@@ -445,8 +452,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return (bob_year <= year && year <= eoe_year);
   }
 
-  private updateFeatureColorsByGroups = (event: Event<any>) => {
+  private triggerUpdateFeatureColorsByGroups = (event: Event<any>) => {
     const groupColorsAssociationsNew = event.data;
+    this.updateFeatureColorsByGroups(groupColorsAssociationsNew)
+  }
+
+  private updateFeatureColorsByGroups(groupColorsAssociationsNew){
     this.setState({
       groupColorAssociations: groupColorsAssociationsNew
     }, ()=>{
@@ -461,6 +472,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           feature.setStyle();
         })})
     })
+
   }
 
 

@@ -385,8 +385,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private getYear = (event: Event<any>) => {
-    console.log("EVENT DATA YEAR")
-    console.log(event.data)
     const coordinates = this.map.getView().calculateExtent(this.map.getSize());
 
     let year = event.data;
@@ -1108,7 +1106,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           //this.triggerSendLayers();
 
           /* Layer Spy functionality */
-
           //TODO: try to remove this
           node.addEventListener('mousemove', (event) => {
             this.mousePosition = map.getEventPixel(event);

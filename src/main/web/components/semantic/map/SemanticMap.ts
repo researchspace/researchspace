@@ -113,6 +113,7 @@ import { options } from 'superagent';
 import GeometryType from 'ol/geom/GeometryType';
 import { __values } from 'tslib';
 import { group } from 'platform/components/3-rd-party/ontodia/Toolbar.scss';
+import { year } from 'platform/components/search/date/SimpleDateInput.scss';
 
 enum Source {
   OSM = 'osm',
@@ -384,10 +385,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private getYear = (event: Event<any>) => {
-    console.log("EVENT DATA")
+    console.log("EVENT DATA YEAR")
     console.log(event.data)
     const coordinates = this.map.getView().calculateExtent(this.map.getSize());
-    this.BoundingBoxChanged({
+
+    let year = event.data;
+    /* this.BoundingBoxChanged({
       date: {
         value: event.data
       },
@@ -403,7 +406,43 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       northEstLon: {
         value: String(coordinates[3]),
       },
-    });
+    }); */
+
+    let vectorLayers = this.getVectorLayersFromMap();
+    console.log(vectorLayers);
+    vectorLayers.forEach((vectorLayer) => {
+    vectorLayer
+      .getSource()
+      .getFeatures()
+      .forEach((feature) => {
+        console.log("Feature for year")
+        let feature_bob = feature.get('bob').value;
+        let feature_eoe = "";
+        if (feature.get('eoe')){
+          feature_eoe = feature.get('eoe').value;
+        } else {
+          feature_eoe = "2999";
+        }
+        if(this.dateInclusion(feature_bob, feature_eoe, year)){
+          feature.setStyle(new Style({
+            fill: new Fill({
+              color: feature.color,
+            }),
+            stroke: new Stroke({
+              color: feature.color,
+            }),
+          }));
+        } else {
+          feature.setStyle(new Style({}));
+        }
+      })})
+  }
+
+  private dateInclusion(bob, eoe, year){
+    let bob_year = parseInt(bob.split("-")[0]);  
+    let eoe_year = parseInt(eoe.split("-")[0]);
+    year = parseInt(year);
+    return (bob_year <= year && year <= eoe_year);
   }
 
   private updateFeatureColorsByGroups = (event: Event<any>) => {

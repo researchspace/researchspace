@@ -256,12 +256,10 @@ export class SemanticMapControls extends Component<Props, State> {
     let newGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, newFeatures);
     let oldGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, oldFeatures);
     if (this.arraysMatch(newGroups, oldGroups)) {
-      console.log('I TAXONOMYGROUPS Sono UGUALI: ');
+      //console.log('I TAXONOMYGROUPS Sono UGUALI: ');
     } else {
       console.log('I TAXONOMYGROUPS Sono DIVERSI: ');
     }
-    console.log(newGroups);
-    console.log(oldGroups);
   }
 
   private arraysMatch(arr1, arr2) {
@@ -333,9 +331,10 @@ export class SemanticMapControls extends Component<Props, State> {
           onChange={(event) => {
             const input = event.target as HTMLInputElement;
             const value = parseInt(input.value);
-            console.log(value);
             this.setState({
               year: value,
+            }, () => {
+              this.triggerSendYearToMap(this.state.year);
             });
           }}
         ></input>

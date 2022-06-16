@@ -1,0 +1,20 @@
+#
+# Sesame configuration template for a native RDF repository
+#
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix rep: <http://www.openrdf.org/config/repository#>.
+@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+@prefix sail: <http://www.openrdf.org/config/sail#>.
+@prefix ns: <http://www.openrdf.org/config/sail/native#>.
+
+[] a rep:Repository ;
+   rep:repositoryID "default" ; # Replace with your repository ID or leave default if this is the main repository
+   rdfs:label "Native store" ; # Replace with a meaningful description for this repository
+   rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+         sail:sailType "openrdf:NativeStore" ;
+         sail:iterationCacheSyncThreshold "0"; # Threshold for syncing query evaluation iteration caches to disk, change if needed
+         ns:tripleIndexes "spoc,posc" # Triple indices (subject, predicate, object, context), modify as needed (add or remove indices)
+      ]
+   ].

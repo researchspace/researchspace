@@ -1,0 +1,19 @@
+<> Platform:hasUser {{{USER_IRI}}} .
+
+{{{USER_IRI}}} a foaf:Person, Platform:User ;
+    rdfs:label "{{USER_NAME}}" .
+
+{{#each USER_GROUPS}}
+{{{USER_IRI}}} foaf:member <http://www.researchspace.org/security/groups/{{this.dn_encoded}}> ;
+    Platform:hasGroup <http://www.researchspace.org/security/groups/{{this.dn_encoded}}> .
+    <http://www.researchspace.org/security/groups/{{this.dn_encoded}}> a Platform:Group ;
+      rdfs:comment "{{{this.dn}}}" ;
+      rdfs:label "{{{this.cn}}}" .
+{{/each}}
+
+{{#each USER_ROLES}}
+{{{USER_IRI}}} foaf:member <http://www.researchspace.org/security/roles/{{this}}> ;
+    Platform:hasRole <http://www.researchspace.org/security/roles/{{this}}> .
+<http://www.researchspace.org/security/roles/{{this}}> a Platform:Role ;
+    rdfs:label "{{{this}}}" .
+{{/each}}

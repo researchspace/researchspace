@@ -281,7 +281,7 @@ cp src/main/resources/org/researchspace/apps/default/config/shiro.ini $DOCKER_FO
 
 ```
 cd $DOCKER_FOLDER/platform
-docker build -t researchspace:VERSION_TAG .
+docker build -t swissartresearx/researchspace:VERSION_TAG .
 ```
 
 ## Setup IDE

@@ -81,11 +81,12 @@ export class RepositoryManager extends Component<{}, State> {
           {this.renderRepositories()}
           {repositoryToEdit && (
             <Button
-              bsStyle="primary"
+              bsStyle="action btn-textAndIcon"
               className={styles.RepositoryButton}
               onClick={() => this.setState({ repositoryToEdit: undefined })}
             >
-              Create New{' '}
+              <i className='material-icons-round'>add_box</i>
+              New repository
             </Button>
           )}
         </div>

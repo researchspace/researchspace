@@ -213,14 +213,16 @@ export class PageManager extends Component<{}, PageAdminState> {
 
       display: 'grid',
       gridTemplateColumns: '1fr 1.5fr fit-content(100px)',
-      alignItems: 'center',
-      marginTop: '10px',
+      alignItems: 'stretch',
+      marginTop: '5px',
+      marginBottom: '10px',
       width: '100%',
+      gap:'10px',
     };
     const colStyle: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
-      paddingRight: '20px',
+      gap:'5px',
     };
     const selectContainer: CSSProperties = {
       flexGrow: 1,
@@ -230,19 +232,11 @@ export class PageManager extends Component<{}, PageAdminState> {
     };
     const toolbarStyle: CSSProperties = {
       display: 'flex',
-      paddingLeft: '20px',
+      height: '100%',
     };
 
     return D.div(
       { className: 'mph-page-admin-widget', onChange: this.onChange.bind(this) },
-      createElement(Table, {
-        ref: 'table-ref',
-        key: 'table',
-        numberOfDisplayedRows: maybe.Just(10),
-        data: Either.Left<any[], SparqlClient.SparqlSelectResult>(this.state.data as any[]),
-        columnConfiguration: columnConfig,
-        layout: maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() }),
-      }),
       D.div(
         { style: rowStyle, key: 'selected-pages' },
         D.div({ style: colStyle }, 
@@ -261,26 +255,33 @@ export class PageManager extends Component<{}, PageAdminState> {
             Button(
               {
                 type: 'submit',
-                bsSize: 'small',
                 bsStyle: 'default',
                 onClick: this.onClickDeleteSelected,
                 disabled: this.state.selectedPages.length === this.state.data.length,
               },
-              'Delete Selected'
+              'Delete selected'
             ),
             Button(
               {
                 type: 'submit',
-                bsSize: 'small',
-                bsStyle: 'primary',
+                bsStyle: 'default',
                 onClick: this.onClickExportSelected,
               },
-              'Export Selected'
+              'Export selected'
             )
           ),
       ),
       createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
-      ) 
+      ),
+
+      createElement(Table, {
+        ref: 'table-ref',
+        key: 'table',
+        numberOfDisplayedRows: maybe.Just(10),
+        data: Either.Left<any[], SparqlClient.SparqlSelectResult>(this.state.data as any[]),
+        columnConfiguration: columnConfig,
+        layout: maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() }),
+      })
     );
   };
 

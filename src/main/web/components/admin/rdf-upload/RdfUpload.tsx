@@ -255,12 +255,7 @@ export class RdfUpload extends Component<Props, State> {
     );
     return (
       <div className={classnames(CLASS_NAME, className)} style={style}>
-        {this.props.showAdvancedOptions ?
-         <React.Fragment>
-           <a className={`${CLASS_NAME}__advance`} onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
-           { this.renderAdvancedOptions() }
-         </React.Fragment> : null
-        }
+
         {showLoadByUrlTab ?
          <Tabs id="rdf-upload-tabs" unmountOnExit={true}>
            <Tab eventKey={1} className={tabClass} title="File Upload" disabled={isInProcess}>
@@ -295,6 +290,13 @@ export class RdfUpload extends Component<Props, State> {
            </Tab>
          </Tabs>
         : fileUploadTab}
+
+        {this.props.showAdvancedOptions ?
+         <React.Fragment>
+           <a className={`${CLASS_NAME}__advance`} onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
+           { this.renderAdvancedOptions() }
+         </React.Fragment> : null
+        }
       </div>
     );
   }
@@ -302,12 +304,15 @@ export class RdfUpload extends Component<Props, State> {
   private renderAdvancedOptions() {
     return (
       <Panel collapsible expanded={this.state.showOptions}>
-        <FormControl
-          type="text"
-          label="Target NamedGraph"
-          placeholder="URI of the target NamedGraph. Will be generated automatically if empty."
-          onChange={this.onChangeTargetGraph}
-        />
+        <p><b>Target NamedGraph URI</b></p>
+        <p>
+          <FormControl
+            type="text"
+            label="Target NamedGraph"
+            placeholder="URI of the target NamedGraph. Will be generated automatically if empty."
+            onChange={this.onChangeTargetGraph}
+          />
+        </p>
         <Checkbox label="Keep source NamedGraphs" onChange={this.onChangeKeepSourceGraphs}>
           Keep source NamedGraphs
         </Checkbox>

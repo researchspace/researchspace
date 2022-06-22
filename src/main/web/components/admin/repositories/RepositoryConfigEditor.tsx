@@ -129,7 +129,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
     return (
       <div data-flex-layout="column top-left" className={styles.holder}>
         <div>
-          <h4>{this.isEditMode() ? `Edit Repository Config "${this.props.id}"` : `Create new Repository Config`}</h4>
+          <h2>{this.isEditMode() ? `Edit Repository Config "${this.props.id}"` : `Create new Repository Config`}</h2>
         </div>
         {!this.isEditMode() && (
           <div>
@@ -158,7 +158,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
             turtleString={source ? source : `#Please select a template to create a new repository configuration`}
           />
           <div>
-            <label>
+            <div style={{ marginTop: '10px' }}>
               <input
                 type="checkbox"
                 checked={this.state.validateConfiguration}
@@ -170,25 +170,31 @@ export class RepositoryConfigEditor extends Component<Props, State> {
                 disabled={this.props.id === 'default'}
               />{' '}
               Validate configuration
-            </label>
+            </div>
           </div>
-          <Button
-            bsStyle="primary"
-            className={styles.ActionButton}
-            disabled={!this.isEditMode() && this.getNewRepositoryIDValidation() !== 'success'}
-            onClick={this.onSubmitConfig}
-          >
-            {this.isEditMode() ? 'Update Config' : 'Create Config'}
-          </Button>
-          {this.isEditMode() && !initializerMode && (
+
+          <div style={{ display: 'flex', justifyContent: 'end' }}>
+          
+            {this.isEditMode() && !initializerMode && (
+              <Button
+                bsStyle="default"
+                className={styles.ActionButton}
+                onClick={() => this.onDeleteRepository(this.props.id)}
+              >
+                Delete Config
+              </Button>
+            )}
+
             <Button
-              bsStyle="danger"
+              bsStyle="action"
               className={styles.ActionButton}
-              onClick={() => this.onDeleteRepository(this.props.id)}
+              disabled={!this.isEditMode() && this.getNewRepositoryIDValidation() !== 'success'}
+              onClick={this.onSubmitConfig}
             >
-              Delete
+              {this.isEditMode() ? 'Update Config' : 'Create Config'}
             </Button>
-          )}
+          </div>
+
           {responseError && <Alert bsStyle="danger"> {responseError} </Alert>}
           {reloadPageOnSuccess && submittedSuccessfully && window.location.reload()}
           {showRestartPrompt && submittedSuccessfully && <Alert bsStyle="success"> {SUCCESS_MESSAGE} </Alert>}
@@ -257,6 +263,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
         title="From template ...."
         onSelect={this.onTemplateSelected}
         id="template-dropdown"
+        style={{ marginBottom: '5px'}}
       >
         {items}
       </DropdownButton>

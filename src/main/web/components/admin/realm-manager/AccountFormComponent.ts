@@ -209,9 +209,9 @@ class AccountFormComponent extends Component<Props, State> {
           },
           FormGroup(
             { controlId: 'principal' },
-            ControlLabel({}, 'Principal'),
+            ControlLabel({}, 'Username'),
             Input({
-              name: 'principal',
+              name: 'user',
               type: 'text',
               placeholder: 'Unique username',
               disabled: !create,
@@ -273,25 +273,26 @@ class AccountFormComponent extends Component<Props, State> {
             Btn(
               {
                 type: 'submit',
-                bsSize: 'small',
-                bsStyle: 'primary',
+                bsStyle: 'action',
                 disabled: this.submitDisabled(),
               },
-              create ? 'Create' : 'Update'
+              create ? 'Create account' : 'Update account'
             )
           )
         ), // end of form
         create
           ? null
-          : Btn(
-              {
-                key: 'delete-account-btn',
-                type: 'submit',
-                bsSize: 'small',
-                bsStyle: 'primary',
-                onClick: this.onClickDeleteAccount,
-              },
-              'Delete'
+          :  D.div(
+              {className: 'delete-account-btn'},
+              Btn(
+                {
+                  key: 'delete-account-btn',
+                  type: 'submit',
+                  bsStyle: 'action',
+                  onClick: this.onClickDeleteAccount,
+                },
+                'Delete account'
+              )
             )
       ) // end of panel
     );

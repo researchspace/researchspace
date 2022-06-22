@@ -72,23 +72,26 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
 
   private handleDeleteArgument = (index) => {
     const title = 'Delete Argument';
-    const body = D.div(
-      { style: { textAlign: 'center' } },
-      D.h5({ style: { margin: '0 0 20px' } }, 'Are You Sure?'),
+    const body = D.div({},
+/*       { style: { textAlign: 'center' } }, */
+      D.div({ style: { margin: '0 0 20px' } }, 'Do you want to delete Argument?'),
       ButtonToolbar(
         { style: { display: 'inline-block' } },
+
+        Button({ bsStyle: 'default', onClick: () => getOverlaySystem().hide(title) }, 'Cancel'),
+
         Button(
           {
-            bsStyle: 'success',
+            bsStyle: 'action',
             onClick: () => {
               getOverlaySystem().hide(title);
 
               this.props.onDelete(index);
             },
           },
-          'Yes'
-        ),
-        Button({ bsStyle: 'danger', onClick: () => getOverlaySystem().hide(title) }, 'No')
+          'Confirm'
+        )
+        
       )
     );
 
@@ -137,7 +140,7 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
         header: argument.label.length ? argument.label : 'No Label',
         eventKey: index,
         onSelect: (key) => this.setState({ activeKey: key }),
-        bsStyle: isValid ? 'default' : 'danger',
+ /*        bsStyle: isValid ? 'default' : 'danger', */
       },
       createElement(QueryTemplateEditArgument, {
         argument,
@@ -157,8 +160,7 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
   render() {
     const { activeKey } = this.state;
 
-    return FormGroup(
-      { style: { width: '50%' } },
+    return FormGroup({},
       ControlLabel({}, 'Arguments'),
       Well(
         {},
@@ -173,7 +175,7 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
               })
             )
           : null,
-        Button({ bsSize: 'small', bsStyle: 'primary', onClick: this.handleAddNewArgument }, 'Add New Argument')
+        Button({ bsStyle: 'default', onClick: this.handleAddNewArgument }, 'Add New Argument')
       )
     );
   }

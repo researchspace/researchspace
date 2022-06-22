@@ -46,7 +46,7 @@ export class NavigateToIRI extends React.Component<NavigateToIRIProps, State> {
 
   static defaultProps = {
     placeholder: 'Enter the full IRI to navigate to the resource page, e.g http://example.org/bob#me',
-    buttonCaption: 'Navigate',
+    buttonCaption: 'Search',
   };
 
   render() {
@@ -60,11 +60,11 @@ export class NavigateToIRI extends React.Component<NavigateToIRIProps, State> {
               value={this.state.value}
               onChange={this.onValueChange}
             />
-            <InputGroup.Button>
-              <Button bsStyle="success" disabled={this.isExploreDisabled()} onClick={this.onClick}>
+            <div>
+              <Button bsStyle="action" disabled={this.isExploreDisabled()} onClick={this.onClick}>
                 {this.props.buttonCaption}
               </Button>
-            </InputGroup.Button>
+            </div>
           </InputGroup>
           {this.state.error ? (
             <HelpBlock>Can't navigate to the resource? The value is not a valid IRI.</HelpBlock>

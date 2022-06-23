@@ -6,7 +6,6 @@ import { Cancellation } from 'platform/api/async';
 import {
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
-  SemanticMapControlsFeatureColor,
   SemanticMapSendMapLayers,
   SemanticMapControlsSyncFromMap,
   SemanticMapControlsSendMapLayersToMap,
@@ -85,7 +84,7 @@ export class SemanticMapControls extends Component<Props, State> {
       maskIndex: -1,
       filters: this.props.filtersInitialization,
       selectedFeaturesLabel: '',
-      featuresColorTaxonomy: this.featuresColorTaxonomies[0],
+      featuresColorTaxonomy: this.props.featuresTaxonomies.split(',')[0],
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
@@ -200,7 +199,9 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   }
 
-  private triggerSendYearToMap(year: number) {
+  private triggerSendYearToMap() {
+    const year = this.state.year;
+    console.log("sending " + year + " to map.")
     trigger({
       eventType: SemanticMapControlsSendYear,
       source: this.props.id,
@@ -326,7 +327,7 @@ export class SemanticMapControls extends Component<Props, State> {
           step={1}
           value={this.state.year}
           onMouseUp={(event) => {
-              this.triggerSendYearToMap(this.state.year);
+              //this.triggerSendYearToMap();
           }}
           onChange={(event) => {
             const input = event.target as HTMLInputElement;
@@ -334,7 +335,7 @@ export class SemanticMapControls extends Component<Props, State> {
             this.setState({
               year: value,
             }, () => {
-              this.triggerSendYearToMap(this.state.year);
+              this.triggerSendYearToMap();
             });
           }}
         ></input>
@@ -656,6 +657,9 @@ export class SemanticMapControls extends Component<Props, State> {
       () => {
         console.log("Controls '" + this.props.id + "': layers synced from map '" + this.props.targetMapId + "'");
         console.log(event.data);
+        this.triggerSendYearToMap();
+        this.triggerSendFeaturesColorTaxonomy();
+        this.setFeaturesColorTaxonomy();
       }
     );
   };
@@ -780,7 +784,7 @@ export class SemanticMapControls extends Component<Props, State> {
       _i++;
     }
     console.log('NEW ASSOCIATIONS BEFORE STATE:');
-    console.log(groupColorAssociationsClone);
+    console.log(this.state.groupColorAssociations);
     this.setState(
       {
         groupColorAssociations: groupColorAssociationsClone,
@@ -844,7 +848,9 @@ export class SemanticMapControls extends Component<Props, State> {
         displayColorPicker: displayColorPickerNew,
       },
       () => {
-        console.log('GroupColorassociations intialized.');
+        console.log('GroupColorassociations intialized. Here are the associations:');
+        console.log(this.state.groupColorAssociations);
+        this.generateColorPalette();
         this.triggerSendFeaturesColorsAssociationsToMap();
       }
     );
@@ -874,8 +880,8 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private triggerSendFeaturesColorsAssociationsToMap() {
-    //console.log('%cSENDING FEATURES COLORS ASSOCIATIONS', 'color: yellow; font-size: 15px');
-    //console.log(this.state.groupColorAssociations);
+    console.log('%cSENDING FEATURES COLORS ASSOCIATIONS', 'color: yellow; font-size: 15px');
+    console.log(this.state.groupColorAssociations);
     //console.log('%c*************************', 'color: yellow; font-size: 15px');
     trigger({
       eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,

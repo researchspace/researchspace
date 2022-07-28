@@ -166,7 +166,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         })
       ).observe({
         value: () => {
-          this.onSaveData();
+          this.onSave();
         }
       });
     }
@@ -362,7 +362,10 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   private onSubmit = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    this.onSave();
+  };
 
+  private onSave = () => {
     const validatedModel = this.form.validate(this.state.model);
     if (readyToSubmit(validatedModel, FieldError.isPreventSubmit)) {
       this.setState((state) => ({ model: validatedModel, submitting: true }));
@@ -405,7 +408,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     } else {
       this.setState((state) => ({ model: validatedModel, submitting: false }));
     }
-  };
+  }
 
   private onRemove = () => {
     const itemToRemove = this.initialState.model.subject;

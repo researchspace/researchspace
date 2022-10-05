@@ -87,7 +87,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
-            (subject ? `Create New ` : 'Edit ') +
+            (subject ? 'Create New ' : '') +
                         `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
           }</Modal.Title>
         </Modal.Header>

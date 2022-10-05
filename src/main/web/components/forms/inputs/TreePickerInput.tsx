@@ -248,7 +248,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     return (
       <Button className={`${CLASS_NAME}__create-button`} onClick={this.toggleNestedForm}>
         <span className="fa fa-plus btn-icon-left" />
-        <span>Create new</span>
+        <span>New</span>
       </Button>
     );
   }

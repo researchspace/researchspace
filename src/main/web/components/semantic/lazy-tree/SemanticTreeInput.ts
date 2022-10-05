@@ -511,7 +511,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           },
         },
         D.span({
-          className: 'fa fa-sitemap fa-lg',
+          className: 'fa fa-angle-down',
           ['aria-hidden' as any]: true,
         })
       )

@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Optional;
 
 import javax.ws.rs.HttpMethod;
@@ -76,6 +78,9 @@ import net.minidev.json.JSONObject;
  */
 public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RESTSailConfig> {
 
+    private static final String REGEX_JSON_ARRAY = "\\[[0-9*]\\]";
+    private static final Pattern REGEX_JSON_ARRAY_INDEX = Pattern.compile("\\[(\\d+)\\]");
+
     private static final Logger logger = LogManager.getLogger(RESTSailConnection.class);
     protected static final ValueFactory VF = SimpleValueFactory.getInstance();
 
@@ -107,17 +112,17 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
             logger.trace("REST Response type is {}", type);
             switch (type) {
-            case RESTSailConfig.JSON:
+                case RESTSailConfig.JSON:
 
-                // Get the root path
-                Optional<Parameter> param = getSail().getSubjectParameter();
-                String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
+                    // Get the root path
+                    Optional<Parameter> param = getSail().getSubjectParameter();
+                    String rootPath = param.isPresent() ? param.get().getJsonPath() : "$";
 
-                results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables());
-                break;
+                    results = executeJson(stringResponse, rootPath, parametersHolder.getOutputVariables());
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
 
             return results;
@@ -262,10 +267,23 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
     private WebTarget auth(WebTarget targetResource) {
         RestAuthorization auth = getSail().getConfig().getAuth();
-        if (auth != null && auth.getLocation() == AUTH_LOCATION.PARAMETER) {
-            return authQueryParams(targetResource);
+        if (auth != null && auth.getLocation() != null) {
+
+            // If the auth goes in the query parameters
+            if (auth.getLocation() == AUTH_LOCATION.PARAMETER)
+                return authQueryParams(targetResource);
+
+            // If the auth goes in the request headers
+            if (auth.getLocation() == AUTH_LOCATION.HEADER)
+                return authHeader(targetResource);
         }
 
+        return targetResource;
+    }
+
+    private WebTarget authHeader(WebTarget targetResource) {
+        RestAuthorization auth = getSail().getConfig().getAuth();
+        this.getSail().getConfig().getHttpHeaders().put(auth.getKey(), auth.getValue());
         return targetResource;
     }
 
@@ -301,6 +319,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             logger.trace("Submitting POST request");
             if (StringUtils.equals(mediaType, MediaType.APPLICATION_JSON)) {
                 Object body = getJsonBody(parametersHolder.getInputParameters());
+                logger.trace("Submitting the following body");
+                logger.trace(Entity.json(body));
                 return request.post(Entity.json(body));
             } else if (StringUtils.equals(mediaType, MediaType.APPLICATION_FORM_URLENCODED)) {
                 return request.post(Entity.form(getHashMapBody(parametersHolder.getInputParameters())));
@@ -395,6 +415,8 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
             // Create the body based on JSON object input strings
             if (Objects.nonNull(inputJsonPath)) {
+
+                // Split the path string by "." characters
                 String[] paths = inputJsonPath.split("\\.");
                 int i = 0;
 
@@ -402,12 +424,56 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
 
                 JSONObject parent = body;
 
+                // Iterate over each step from the root
                 while (i < paths.length - 1) {
                     String key = paths[i++];
-                    parent = (parent.containsKey(key)) ? (JSONObject) parent.get(key) : new JSONObject();
-                    body.put(key, parent);
+
+                    Object element;
+
+                    // If the parent element already contains the current key
+                    // The system must update it, not overwrite
+                    if (parent.containsKey(key.replaceAll(REGEX_JSON_ARRAY, ""))) {
+
+                        // Since the parent could be a JSONArray or JSONObject
+                        // The system should disambiguate the two behaviors
+                        String oldKey = key;
+                        key = key.replaceAll(REGEX_JSON_ARRAY, "");
+                        if (parent.get(key) instanceof JSONArray) {
+                            // TODO: The index should be used to access the right element
+                            int index = getIndexFromKey(oldKey);
+                            parent = (JSONObject) ((JSONArray) parent.get(key)).get(index);
+                        }
+                        if (parent.get(key) instanceof JSONObject)
+                            parent = (JSONObject) parent.get(key);
+                    }
+
+                    // If the current element isn't already contained in the element
+                    else {
+
+                        // If the current path step is an array
+                        // It should be converted into an array and add an empty JSONObject
+                        // That will become the parent
+                        if (key.contains("[") || key.contains("]")) {
+                            key = key.replaceAll(REGEX_JSON_ARRAY, "");
+                            element = new JSONArray();
+                            parent.put(key, element);
+
+                            parent = new JSONObject();
+                            ((JSONArray) element).add(parent);
+                        }
+
+                        // If the current path step is a JSONObject
+                        // Create only the empty JSONobject
+                        else {
+                            element = new JSONObject();
+                            parent.put(key, element);
+                            parent = (JSONObject) element;
+                        }
+                    }
+
                 }
 
+                // At the end, add the element
                 parent.put(paths[i], entry.getValue());
             } else {
                 logger.trace("JSON path: $");
@@ -418,6 +484,23 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
         }
         logger.trace("### [END] Creating input body JSON ###");
         return body;
+    }
+
+    private Integer getIndexFromKey(String key) {
+
+        Matcher m = REGEX_JSON_ARRAY_INDEX.matcher(key);
+        m.find();
+
+        String match = m.group(1).toString();
+
+        int index;
+        try {
+            index = Integer.parseInt(match);
+        } catch (NumberFormatException e) {
+            index = 0;
+        }
+
+        return index;
     }
 
     protected MultivaluedMap<String, String> getHashMapBody(Map<String, String> inputParameters) {

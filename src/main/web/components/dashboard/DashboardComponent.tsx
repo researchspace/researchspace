@@ -127,6 +127,9 @@ export interface Props {
 
   leftPanels?: {template: string, label: string}[];
   rightPanels?: {template: string, label: string}[];
+
+  homePageIri?: string;
+
 }
 
 export interface State {
@@ -499,7 +502,7 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private renderView(item: Item) {
-    const { views, linkedViews } = this.props;
+    const { views, linkedViews, homePageIri } = this.props;
     const allViews: Array<DashboardViewConfig> = [...views];
     linkedViews.forEach((linkedView) => {
       allViews.push({
@@ -529,7 +532,7 @@ export class DashboardComponent extends Component<Props, State> {
           id={item.id}
           views={allViews}
           viewId={item.viewId}
-          gridView
+          homePageIri={homePageIri}
           resourceIri={item.resourceIri}
           data={item.data}
           linkedFrames={linkedFrames}

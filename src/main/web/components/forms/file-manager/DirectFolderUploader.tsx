@@ -126,6 +126,7 @@ export class DirectFolderUploader extends Component<DirectFolderUploaderProps, D
         objectKind,
         name: undefined,
       },
+      files:[]
     };
   }
 
@@ -377,19 +378,11 @@ export class DirectFolderUploader extends Component<DirectFolderUploaderProps, D
         <div className={styles.row} style={{ flexDirection: 'column', marginTop: '30px' }}>
           <label>Target Path Preview</label>
           <div className={styles.storageInput} style={{ display: 'flex' }}>
-            
-            <input
-              disabled={true}
-              value={fileNotSelected ? '' : renderedPath}
-              style={{ marginRight: 15 }}
-              placeholder="Please use the file selector to select a file to upload..."
-              title={
-                fileNotSelected
-                  ? 'Please use the file selector to select a file to upload'
-                  : 'Target path: ' + renderedPath
-              }
-              className={`plain-text-field__text form-control ${styles.storageInput}`}
-            />
+
+            <ul
+              style={{ marginRight: 15 }}>
+              {this.state.files.map(file => <li key={file.name}>{file["path"]}</li>)}
+            </ul>
 
             <button
               title={

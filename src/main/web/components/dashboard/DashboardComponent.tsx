@@ -47,6 +47,7 @@ export interface Item {
   readonly isExpanded?: boolean;
   readonly linkedBy?: string;
   readonly data?: { [key: string]: any };
+  readonly label?: string;
 }
 
 
@@ -147,7 +148,12 @@ export class DashboardComponent extends Component<Props, State> {
 
   private frameLabel = (label?: string) => {
     this.itemLabelCount = this.itemLabelCount + 1;
-    return { id: label ?? 'New Tab', index: this.itemLabelCount }
+    const displayLabel = label ?? 'New Tab'
+    return { 
+      id: uniqueId(displayLabel),
+      index: this.itemLabelCount, 
+      label: displayLabel
+    }
   }
 
   private onAddNewItemHandler = (data: AddFrameEventData, label?: string) => {
@@ -211,7 +217,7 @@ export class DashboardComponent extends Component<Props, State> {
         )
         .observe({
           value: ({ data }) => {
-            const {viewId, resourceIri} = data as AddFrameEventData
+            const {viewId, resourceIri, entityEditorLabel} = data as AddFrameEventData
 
             if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
@@ -223,6 +229,8 @@ export class DashboardComponent extends Component<Props, State> {
                   this.onAddNewItemHandler(data)
                 },
               })
+            } else if (entityEditorLabel) { 
+              this.onAddNewItemHandler(data, entityEditorLabel)
             } else {
               const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
               this.onAddNewItemHandler(data, view?.label)
@@ -342,7 +350,7 @@ export class DashboardComponent extends Component<Props, State> {
         },
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
-            {'type': 'tab', 'name': item.id, 'component': "item", 'config': item.id }
+            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id }
           );
           this.onSelectView({
             itemId: item.id,

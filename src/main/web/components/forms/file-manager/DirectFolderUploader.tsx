@@ -126,7 +126,7 @@ export class DirectFolderUploader extends Component<DirectFolderUploaderProps, D
         objectKind,
         name: undefined,
       },
-      files:[]
+      files: [],
     };
   }
 
@@ -155,57 +155,69 @@ export class DirectFolderUploader extends Component<DirectFolderUploaderProps, D
   uploadFile() {
     //const file = this.state.file;
     const files = this.state.files;
-    for (const file of files) {
+    const len = this.state.files.length;
+    let progress = 0;
 
-      const pathFile = file["path"].split("/");
+    for (const file of files) {
+      const pathFile = file['path'].split('/');
       const filename = pathFile.pop();
 
       this.cancellation
         .map(
           this.getFileManager().uploadFileDirectlyToStorage({
             storage: this.state.storageId,
-            folder: this.getFolder(pathFile.join("/")),
+            folder: this.getFolder(pathFile.join('/')),
             fileName: filename,
             file: file,
             onProgress: (percent) => {
+              return null;
+
+              /*
               this.setState({
                 progress: percent,
                 progressText: 'Uploading ...',
               });
+              */
             },
           })
         )
-      .observe({
-        value: (resource) => {
-          addNotification({
-            message: 'File succesfully uploaded.',
-            level: 'success',
-          });
-          this.setState({
-            alertState: {
-              alert: AlertType.SUCCESS,
-              message:
-                `File "${resource}" has been successfully ` + `uploaded to the storage "${this.state.storageId}".`,
-            }
-          });
-        },
-        error: (error) => {
-          addNotification({
-            message: 'Failed to upload file.',
-            level: 'error',
-          });
-          this.setState({
-            alertState: {
-              alert: AlertType.WARNING,
-              message: `Failed to upload file "${file.name}": ${error} - ${error.response.text}`,
-            }
-            
-          });
-        },
-      });
+        .observe({
+          value: (resource) => {
+            addNotification({
+              message: 'File succesfully uploaded.',
+              level: 'success',
+            });
+
+            progress += 1;
+            const currentProgress = ~~((progress * 100) / len);
+            const progressText = `Files ${progress}/${len}`;
+
+            this.setState({
+              progress: currentProgress,
+              progressText: progressText,
+              /*
+              alertState: {
+                alert: AlertType.SUCCESS,
+                message:
+                  `File "${resource}" has been successfully ` + `uploaded to the storage "${this.state.storageId}".`,
+              },
+              */
+            });
+          },
+          error: (error) => {
+            addNotification({
+              message: 'Failed to upload file.',
+              level: 'error',
+            });
+            this.setState({
+              alertState: {
+                alert: AlertType.WARNING,
+                message: `Failed to upload file "${file.name}": ${error} - ${error.response.text}`,
+              },
+            });
+          },
+        });
     }
-
-
   }
 
   onDropAccepted(files: File[]) {
@@ -219,7 +231,7 @@ export class DirectFolderUploader extends Component<DirectFolderUploaderProps, D
         ...path,
         name: file.name,
       },
-      files: files
+      files: files,
     });
   }
 
@@ -260,8 +272,7 @@ export class DirectFolderUploader extends Component<DirectFolderUploaderProps, D
     const { objectKind } = this.state.path;
     let folder = this.state.path.folder;
 
-    if (path) 
-      folder += path;
+    if (path) folder += path;
 
     // filter following situations: some/path/////folder
     folder = folder
@@ -372,23 +383,24 @@ export class DirectFolderUploader extends Component<DirectFolderUploaderProps, D
                 className={`plain-text-field__text form-control ${styles.storageInput}`}
               />
             </div>
-
           </div>
         </div>
         <div className={styles.row} style={{ flexDirection: 'column', marginTop: '30px' }}>
           <label>Target Path Preview</label>
           <div className={styles.storageInput} style={{ display: 'flex' }}>
-
-            <ul
-              style={{ marginRight: 15 }}>
-              {this.state.files.map(file => <li key={file.name}>{file["path"]}</li>)}
+            <ul style={{ marginRight: 15 }}>
+              {this.state.files.map((file) => (
+                <li key={file.name}>{file['path']}</li>
+              ))}
             </ul>
 
             <button
               title={
                 fileNotSelected
                   ? 'Please use the file selector to select a file to upload'
-                  : `Upload file to storage "${this.state.storageId}" and location "${this.getFolder(undefined)}${path.name}"`
+                  : `Upload file to storage "${this.state.storageId}" and location "${this.getFolder(undefined)}${
+                      path.name
+                    }"`
               }
               className="btn btn-primary"
               disabled={fileNotSelected || !path.name}

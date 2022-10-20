@@ -123,8 +123,8 @@ export interface Props {
     data: {};
   };
 
-  leftPanels?: {template: string, label: string}[];
-  rightPanels?: {template: string, label: string}[];
+  leftPanels?: {template: string, label: string, class?: string}[];
+  rightPanels?: {template: string, label: string, class?: string}[];
 
   homePageIri?: string;
 }
@@ -169,7 +169,11 @@ export class DashboardComponent extends Component<Props, State> {
     this.state = {
       items: [],
       layout: FlexLayout.Model.fromJson({
-        global: {},
+        global: { 
+          "borderBarSize": 33,
+          "tabSetTabStripHeight": 36,
+          "splitterSize": 6 ,
+        },
         borders: [
           {
             type: 'border',
@@ -181,7 +185,13 @@ export class DashboardComponent extends Component<Props, State> {
 	          "type": "border",
 	 	      "location": "right",
 			      "children": []
-		      }
+		      },
+
+          {
+            "type": "border",
+            "location":"bottom",
+            "children": []
+          }
         ],
 	      layout:{
 		      "type": "row",
@@ -259,7 +269,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.LEFT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "leftItem", 'config': i, 'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -272,7 +282,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.RIGHT)
               .getId(),
-          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false }
+              {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -350,7 +360,7 @@ export class DashboardComponent extends Component<Props, State> {
         },
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
-            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id }
+            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id, 'className': viewConfig?.iconClass || 'empty-frame-button', 'icon': 'add'}
           );
           this.onSelectView({
             itemId: item.id,
@@ -599,14 +609,14 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private onRenderTabSet = (node: TabSetNode, renderValues: {buttons: React.ReactNode[]}) => {
-    renderValues.buttons.push(
-      <button
+  private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
+    renderValues.stickyButtons.push(
+      <button className='flexlayout__tab_toolbar_sticky_button'
         onMouseDown={event=> event.stopPropagation()}
         onClick={(event) => {
           this.onAddNewItem();
         }}>
-        Add
+        <i className="fa fa-plus" />
       </button>
     );
   }
@@ -618,6 +628,14 @@ export class DashboardComponent extends Component<Props, State> {
         model={this.state.layout}
         factory={this.factory}
         onRenderTabSet={this.onRenderTabSet}
+        icons={
+          {
+            'close': <i className="fa fa-times"></i>,
+            'maximize': <i className="fa fa-expand"></i>,
+            'restore': <i className="fa  fa-compress"></i>,
+            'more': <i className="fa fa-caret-down"></i>,
+          }
+        }
       />
     );
   }

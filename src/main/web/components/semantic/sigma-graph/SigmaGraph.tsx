@@ -1,8 +1,10 @@
 import * as React from 'react';
 import * as assign from 'object-assign';
+import { createElement } from 'react';
 import { Component } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
+import { Spinner } from 'platform/components/ui/spinner';
 
 import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
@@ -17,6 +19,7 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
     elements: Cy.ElementDefinition[];
     noResults?: boolean;
+    isLoading?: boolean;
     error?: any;
     warning?: string;
   }
@@ -56,6 +59,10 @@ export const LoadGraph = (data: any) => {
         const RED = "#FA4F40";
         const BLUE = "#727EE0";
         const GREEN = "#5DB346";
+
+
+        console.log("Hello")
+        console.log(data);
 
         graph.addNode("John", { size: 15, label: "John", color: RED });
         graph.addNode("Mary", { size: 15, label: "Mary", color: RED });
@@ -97,6 +104,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         this.state = {
           elements: [],
           noResults: false,
+          isLoading: true,
         };
     }
 
@@ -124,6 +132,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
             this.setState({
                 elements: elements,
                 noResults: !elements.length,
+                isLoading: false
             });
         })
         .onError((error) => this.setState({ error }))
@@ -162,13 +171,16 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
     render() {
         const width = this.props.width || 800;
         const height = this.props.height || 600;
-        
-        return (
-            <SigmaContainer style={{ height: `${height}px`, width: `${width}px` }}>
-                <LoadGraph data={ this.state.elements } />
-                <Fa2 />
-            </SigmaContainer>
-        );
+        if (this.state.isLoading) {
+          return createElement(Spinner);
+        } else {
+            return (
+                <SigmaContainer style={{ height: `${height}px`, width: `${width}px` }}>
+                    <LoadGraph data={ this.state.elements } />
+                    <Fa2 />
+                </SigmaContainer>
+            );
+        }
     }
 }
 

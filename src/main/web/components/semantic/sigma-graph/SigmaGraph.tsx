@@ -64,23 +64,28 @@ export const LoadGraph = (data: any) => {
         console.log("Hello")
         console.log(data);
 
-        graph.addNode("John", { size: 15, label: "John", color: RED });
-        graph.addNode("Mary", { size: 15, label: "Mary", color: RED });
-        graph.addNode("Suzan", { size: 15, label: "Suzan", color: RED });
-        graph.addNode("Nantes", { size: 15, label: "Nantes", color: BLUE });
-        graph.addNode("New-York", { size: 15, label: "New-York", color: BLUE });
-        graph.addNode("Sushis", { size: 7, label: "Sushis", color: GREEN });
-        graph.addNode("Falafels", { size: 7, label: "Falafels", color: GREEN });
-        graph.addNode("Kouign Amann", { size: 7, label: "Kouign Amann", color: GREEN });
+        for (const i in data.data) {
+            const element = data.data[i];
+            console.log(element);
+            if (element.group == "nodes") {
+                console.log("Node", element.data.id, element.data.label);
+                graph.addNode(element.data.id, {
+                    label: element.data.label,
+                    size: 15
+                })
+            }
+        }
 
-        graph.addEdge("John", "Mary", { type: "line", label: "works with", size: 5 });
-        graph.addEdge("Mary", "Suzan", { type: "line", label: "works with", size: 5 });
-        graph.addEdge("Mary", "Nantes", { type: "arrow", label: "lives in", size: 5 });
-        graph.addEdge("John", "New-York", { type: "arrow", label: "lives in", size: 5 });
-        graph.addEdge("Suzan", "New-York", { type: "arrow", label: "lives in", size: 5 });
-        graph.addEdge("John", "Falafels", { type: "arrow", label: "eats", size: 5 });
-        graph.addEdge("Mary", "Sushis", { type: "arrow", label: "eats", size: 5 });
-        graph.addEdge("Suzan", "Kouign Amann", { type: "arrow", label: "eats", size: 5 });
+        for (const i in data.data) {
+            const element = data.data[i];
+            if (element.group == "edges") {
+                graph.addEdge(element.data.source, element.data.target, {
+                    type: "line",
+                    labe: element.data.label,
+                    size: 5
+                })
+            }
+        }
 
         graph.nodes().forEach((node, i) => {
             const angle = (i * 2 * Math.PI) / graph.order;

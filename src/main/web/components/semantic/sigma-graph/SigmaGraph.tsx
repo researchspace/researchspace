@@ -60,15 +60,9 @@ export const LoadGraph = (data: any) => {
         const BLUE = "#727EE0";
         const GREEN = "#5DB346";
 
-
-        console.log("Hello")
-        console.log(data);
-
         for (const i in data.data) {
             const element = data.data[i];
-            console.log(element);
             if (element.group == "nodes") {
-                console.log("Node", element.data.id, element.data.label);
                 graph.addNode(element.data.id, {
                     label: element.data.label,
                     size: 15

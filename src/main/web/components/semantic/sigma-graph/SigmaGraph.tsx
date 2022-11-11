@@ -14,6 +14,12 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
+export interface State {
+    elements: Cy.ElementDefinition[];
+    noResults?: boolean;
+    error?: any;
+    warning?: string;
+  }
 export interface SigmaGraphConfig {
     id?: string;
 
@@ -42,9 +48,8 @@ export const Fa2: React.FC = () => {
     return null;
 }
 
-export const LoadGraph = () => {
+export const LoadGraph = (data: any) => {
     const loadGraph = useLoadGraph();
-  
     useEffect(() => {
         const graph = new Graph();
 
@@ -82,13 +87,17 @@ export const LoadGraph = () => {
     return null;
   };
 
-export class SigmaGraph extends Component<SigmaGraphConfig> {
+export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();
     private fetching = this.cancellation.derive();
 
     constructor(props: SigmaGraphConfig, context: any) {
         super(props, context);
+        this.state = {
+          elements: [],
+          noResults: false,
+        };
     }
 
     componentDidMount(): void {
@@ -153,9 +162,10 @@ export class SigmaGraph extends Component<SigmaGraphConfig> {
     render() {
         const width = this.props.width || 800;
         const height = this.props.height || 600;
+        
         return (
             <SigmaContainer style={{ height: `${height}px`, width: `${width}px` }}>
-                <LoadGraph />
+                <LoadGraph data={ this.state.elements } />
                 <Fa2 />
             </SigmaContainer>
         );

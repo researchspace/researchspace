@@ -1,5 +1,10 @@
 import * as React from 'react';
+import * as assign from 'object-assign';
 import { Component } from 'platform/api/components';
+import { BuiltInEvents, trigger } from 'platform/api/events';
+import { Cancellation } from 'platform/api/async';
+
+import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
 import { useEffect } from "react";
 import { Graph } from "graphology";
@@ -30,7 +35,6 @@ export const Fa2: React.FC = () => {
     const { start, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 10 }});
     
     useEffect(() => {
-        console.log("Hello");
         start();
         return () => kill();
     }, [start, kill]);
@@ -80,9 +84,71 @@ export const LoadGraph = () => {
 
 export class SigmaGraph extends Component<SigmaGraphConfig> {
 
+    private readonly cancellation = new Cancellation();
+    private fetching = this.cancellation.derive();
+
     constructor(props: SigmaGraphConfig, context: any) {
         super(props, context);
     }
+
+    componentDidMount(): void {
+        this.fetchAndSetData(this.props);
+    }
+    
+    private fetchAndSetData(props: SigmaGraphConfig): void {
+        this.setState({ error: undefined})
+
+        const config = assign(
+          {},
+          {
+            hidePredicates: false,
+          },
+          props
+        );
+
+        this.fetching = this.cancellation.deriveAndCancel(this.fetching)
+        
+        const context = this.context.semanticContext;
+        const graphDataWithLabels = this.fetching.map(GraphInternals.getGraphDataWithLabels(config, { context }));
+        graphDataWithLabels.onValue((elements) => {
+            this.catchCORSError(elements);
+            this.setState({
+                elements: elements,
+                noResults: !elements.length,
+            });
+        })
+        .onError((error) => this.setState({ error }))
+        .onEnd(() => {
+            if (this.props.id) {
+                trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
+            }
+        });
+    }
+
+    private catchCORSError(elements: Cy.ElementDefinition[]) {
+        const thumbnails = elements.map((element) => (element.data as any).thumbnail);
+    
+        const loadingImages = thumbnails.map(
+          (thumbnail) =>
+            new Promise((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                resolve();
+              };
+              img.onerror = () => {
+                reject(
+                  "Some images are not accessible or can't be rendered on canvas because of CORS or mixed content error (loading HTTP resource from HTTPS context)!"
+                );
+              };
+              img.crossOrigin = 'Anonymous';
+              img.src = thumbnail;
+            })
+        );
+    
+        Promise.all(loadingImages)
+          .then(() => this.setState({ warning: undefined }))
+          .catch((warning) => this.setState({ warning }));
+      }
 
     render() {
         const width = this.props.width || 800;

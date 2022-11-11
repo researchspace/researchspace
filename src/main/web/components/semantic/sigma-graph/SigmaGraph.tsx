@@ -4,6 +4,9 @@ import { Component } from 'platform/api/components';
 import { useEffect } from "react";
 import { Graph } from "graphology";
 import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
+
+import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
+
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 export interface SigmaGraphConfig {
@@ -21,6 +24,18 @@ export interface SigmaGraphConfig {
      */
 
     height?: number;
+}
+
+export const Fa2: React.FC = () => {
+    const { start, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 10 }});
+    
+    useEffect(() => {
+        console.log("Hello");
+        start();
+        return () => kill();
+    }, [start, kill]);
+
+    return null;
 }
 
 export const LoadGraph = () => {
@@ -75,6 +90,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig> {
         return (
             <SigmaContainer style={{ height: `${height}px`, width: `${width}px` }}>
                 <LoadGraph />
+                <Fa2 />
             </SigmaContainer>
         );
     }

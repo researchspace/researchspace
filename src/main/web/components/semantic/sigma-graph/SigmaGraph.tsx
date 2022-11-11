@@ -9,7 +9,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
 import { useEffect } from "react";
-import { Graph } from "graphology";
+import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
 
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
@@ -54,11 +54,7 @@ export const Fa2: React.FC = () => {
 export const LoadGraph = (data: any) => {
     const loadGraph = useLoadGraph();
     useEffect(() => {
-        const graph = new Graph();
-
-        const RED = "#FA4F40";
-        const BLUE = "#727EE0";
-        const GREEN = "#5DB346";
+        const graph = new MultiDirectedGraph();
 
         for (const i in data.data) {
             const element = data.data[i];
@@ -127,7 +123,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const context = this.context.semanticContext;
         const graphDataWithLabels = this.fetching.map(GraphInternals.getGraphDataWithLabels(config, { context }));
         graphDataWithLabels.onValue((elements) => {
-            this.catchCORSError(elements);
+            //this.catchCORSError(elements);
             this.setState({
                 elements: elements,
                 noResults: !elements.length,
@@ -174,7 +170,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
           return createElement(Spinner);
         } else {
             return (
-                <SigmaContainer style={{ height: `${height}px`, width: `${width}px` }}>
+                <SigmaContainer graph={MultiDirectedGraph} style={{ height: `${height}px`, width: `${width}px` }}>
                     <LoadGraph data={ this.state.elements } />
                     <Fa2 />
                 </SigmaContainer>

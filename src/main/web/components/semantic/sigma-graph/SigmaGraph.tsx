@@ -139,6 +139,12 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
     private readonly cancellation = new Cancellation();
     private fetching = this.cancellation.derive();
 
+    public static DEFAULT_HIDE_PREDICATES = [
+    '<http://schema.org/thumbnail>',
+    '<http://www.w3.org/2000/01/rdf-schema#label>',
+    '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'
+    ];
+
     constructor(props: SigmaGraphConfig, context: any) {
         super(props, context);
         this.state = {
@@ -158,7 +164,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const config = assign(
           {},
           {
-            hidePredicates: false,
+            hidePredicates: SigmaGraph.DEFAULT_HIDE_PREDICATES,
           },
           props
         );

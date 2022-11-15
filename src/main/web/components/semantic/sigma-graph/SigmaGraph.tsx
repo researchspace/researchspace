@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect } from "react";
 import * as assign from 'object-assign';
 import { createElement } from 'react';
 import { Component } from 'platform/api/components';
@@ -8,7 +9,6 @@ import { Spinner } from 'platform/components/ui/spinner';
 
 import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
-import { useEffect } from "react";
 import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
 
@@ -61,7 +61,7 @@ export const LoadGraph = (data: any) => {
             if (element.group == "nodes") {
                 graph.addNode(element.data.id, {
                     label: element.data.label,
-                    size: 15
+                    size: 10
                 })
             }
         }
@@ -69,10 +69,10 @@ export const LoadGraph = (data: any) => {
         for (const i in data.data) {
             const element = data.data[i];
             if (element.group == "edges") {
-                graph.addEdge(element.data.source, element.data.target, {
-                    type: "line",
-                    labe: element.data.label,
-                    size: 5
+                graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
+                    //type: "line",
+                    label: element.data.label,
+                    //size: 1
                 })
             }
         }
@@ -170,7 +170,11 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
           return createElement(Spinner);
         } else {
             return (
-                <SigmaContainer graph={MultiDirectedGraph} style={{ height: `${height}px`, width: `${width}px` }}>
+                <SigmaContainer 
+                    graph={MultiDirectedGraph} 
+                    style={{ height: `${height}px`, width: `${width}px` }}
+                    settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
+                >
                     <LoadGraph data={ this.state.elements } />
                     <Fa2 />
                 </SigmaContainer>

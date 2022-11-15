@@ -419,12 +419,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           && group_color !== this.defaultFeaturesColor){
             if(typeof group_color === "string"){
                color = group_color;
+            } else {
+              let color_rgba = group_color.rgb;
+              let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+              color = rgba_string
             }
-      } else {
-            //let color_rgba = group_color.rgb;
-            //let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-            //color = rgba_string
-          }
+        }
       }
       let featureStyle = getFeatureStyle(geometry, color);
       if (label) {
@@ -1025,7 +1025,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           feature_eoe = "2999";
         }
         if(this.state.registeredControls.length > 0){
-          console.log(this.props.targetControls)
           if(this.dateInclusion(feature_bob, feature_eoe, this.state.year)){
             return this.createFeatureStyle(feature)
           } else {

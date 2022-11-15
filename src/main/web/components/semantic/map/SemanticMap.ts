@@ -104,7 +104,8 @@ import {
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
-  SemanticMapControlsSendYear
+  SemanticMapControlsSendYear,
+  SemanticMapControlsRegister
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -218,6 +219,7 @@ interface MapState {
   featuresColorTaxonomy: string;
   groupColorAssociations: {};
   year: string;
+  registeredControls: Array<any>;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -253,6 +255,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       featuresLabel: '',
       featuresColorTaxonomy: '',
       groupColorAssociations: {},
+      registeredControls: [],
+      // TODO: move year to controls
       year: '01-01-1670',
     };
 
@@ -380,6 +384,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           })
       )
       .onValue(this.setYear);
+    this.cancelation
+    .map(
+        listen({
+            eventType: SemanticMapControlsRegister
+          })
+      )
+      .onValue(this.registerControls);
   }
 
   private toggle3d = (event: Event<any>) => {
@@ -400,16 +411,19 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       }
       let color = this.defaultFeaturesColor;
       //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
-      let group_color = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value]
-      if(this.state.featuresColorTaxonomy
-        && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
-        && group_color !== this.defaultFeaturesColor){
-          if(typeof group_color === "string"){
-             color = group_color;
-          } else {
-            let color_rgba = group_color.rgb;
-            let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-            color = rgba_string
+      
+      if(this.state.registeredControls.length > 0){
+        var group_color = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value]
+        if(this.state.featuresColorTaxonomy
+          && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
+          && group_color !== this.defaultFeaturesColor){
+            if(typeof group_color === "string"){
+               color = group_color;
+            }
+      } else {
+            //let color_rgba = group_color.rgb;
+            //let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+            //color = rgba_string
           }
       }
       let featureStyle = getFeatureStyle(geometry, color);
@@ -417,6 +431,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         featureStyle.getText().setText(label);
       }
       return featureStyle;
+  }
+
+  private registerControls = (event: Event<any>) => {
+    console.log("Registering controls...")
+    var newRegisteredControls = this.state.registeredControls.concat(event.source);
+    this.setState({
+      registeredControls: newRegisteredControls
+    }, ()=> {
+      console.log("Now registered Controls are:")
+      console.log(this.state.registeredControls)
+      this.updateFeaturesByYear();
+    })
   }
 
   private setYear = (event: Event<any>) => {
@@ -971,6 +997,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private createLayer = (features: Feature[], type: string): VectorLayer => {
+    console.log("Create Layer")
     const source = new Vector({ features });
     if (type === 'Point') {
       const clusterSource = new Cluster({ source, distance: 40 });
@@ -983,19 +1010,31 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     return new VectorLayer({
       source,
       style: (feature: Feature) => { 
-        let feature_bob = feature.get('bob').value;
+        // TODO SMAP: REMOVE GET BOB, GET EOE
         let feature_eoe = "";
-        console.log("check here");
+        let feature_bob = "";
+        
+        if (feature.get('bob')){
+          feature_bob = feature.get('bob').value;
+        } else {
+          feature_bob = "1499";
+        }
         if (feature.get('eoe')){
           feature_eoe = feature.get('eoe').value;
         } else {
           feature_eoe = "2999";
         }
-        if(this.dateInclusion(feature_bob, feature_eoe, this.state.year)){
-          return this.createFeatureStyle(feature)
+        if(this.state.registeredControls.length > 0){
+          console.log(this.props.targetControls)
+          if(this.dateInclusion(feature_bob, feature_eoe, this.state.year)){
+            return this.createFeatureStyle(feature)
+          } else {
+            return this.createHiddenFeatureStyle(feature)
+          }
         } else {
-          return this.createHiddenFeatureStyle(feature)
-        }},
+          return this.createFeatureStyle(feature)
+        }
+        },
       zIndex: 0,
       declutter: true,
     });
@@ -1152,6 +1191,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           view.setZoom(zoom);
 
           this.map.addInteraction(this.modify);
+          this.map.updateSize();
         }
       );
     }, 1000);
@@ -1213,7 +1253,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private updateLayers = (geometries: { [type: string]: Feature[] }) => {
     const mapLayersClone = this.state.mapLayers;
-
     _.forEach(geometries, (features, type) => {
       let layer = this.getVectorLayerByType(type);
       if (layer) {
@@ -1238,6 +1277,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       },
       () => {
         //TODO: IMPROVE SYNCING (CHANGING LAYERS WHILE FEATURES ARE LOADING GENERATES INCOSTINTENT STATES)
+        //this.updateVectorLayersStyle();
         this.syncControls();
       }
     );

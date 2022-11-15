@@ -61,6 +61,18 @@ export interface SigmaGraphConfig {
      * @default false
      */
     searchBox?: boolean;
+
+    /**
+     * Optional colour palette for nodes.
+     * Passed as JSON object with RDF types as keys and colours as values.
+     * @default {}
+     * @example
+     * {
+     *  "http://www.w3.org/2002/07/owl#Class": "#ff0000",
+     *  "http://www.w3.org/2002/07/owl#ObjectProperty": "#00ff00"
+     * }
+     */
+    colours?: { [key: string]: string };
 }
 
 export const Fa2: React.FC = () => {
@@ -74,23 +86,34 @@ export const Fa2: React.FC = () => {
     return null;
 }
 
-export const LoadGraph = (data: any) => {
+export const LoadGraph = (props: any) => {
     const loadGraph = useLoadGraph();
     useEffect(() => {
         const graph = new MultiDirectedGraph();
 
-        for (const i in data.data) {
-            const element = data.data[i];
+        for (const i in props.data) {
+            const element = props.data[i];
             if (element.group == "nodes") {
+                let color = "#000000";
+                if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
+                    const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
+                    for (const type of types) {
+                        if (props.colours[type.value]) {
+                            color = props.colours[type.value];
+                            break;
+                        }
+                    }
+                }
                 graph.addNode(element.data.id, {
                     label: element.data.label,
-                    size: 10
+                    size: 10,
+                    color: color
                 })
             }
         }
 
-        for (const i in data.data) {
-            const element = data.data[i];
+        for (const i in props.data) {
+            const element = props.data[i];
             if (element.group == "edges") {
                 graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
                     label: element.data.label,
@@ -189,6 +212,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const width = this.props.width || 800;
         const height = this.props.height || 600;
         const searchBox = this.props.searchBox || false;
+        const colours = this.props.colours || {};
         if (this.state.isLoading) {
           return createElement(Spinner);
         } else {
@@ -198,7 +222,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     style={{ height: `${height}px`, width: `${width}px` }}
                     settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
                 >
-                    <LoadGraph data={ this.state.elements } />
+                    <LoadGraph data={ this.state.elements } colours={ colours } />
                     <Fa2 /> 
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>

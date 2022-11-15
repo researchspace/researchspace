@@ -70,9 +70,8 @@ export const LoadGraph = (data: any) => {
             const element = data.data[i];
             if (element.group == "edges") {
                 graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
-                    //type: "line",
                     label: element.data.label,
-                    //size: 1
+                    size: 5
                 })
             }
         }

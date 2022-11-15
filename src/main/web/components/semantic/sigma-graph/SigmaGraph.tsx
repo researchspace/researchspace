@@ -10,7 +10,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
 import { MultiDirectedGraph } from "graphology";
-import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
+import { SigmaContainer, ControlsContainer, SearchControl, useLoadGraph } from "@react-sigma/core";
 
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 
@@ -38,6 +38,12 @@ export interface SigmaGraphConfig {
      */
 
     height?: number;
+
+    /**
+     * Display a search field.
+     * @default false
+     */
+    searchBox?: boolean;
 }
 
 export const Fa2: React.FC = () => {
@@ -165,6 +171,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
     render() {
         const width = this.props.width || 800;
         const height = this.props.height || 600;
+        const searchBox = this.props.searchBox || false;
         if (this.state.isLoading) {
           return createElement(Spinner);
         } else {
@@ -175,7 +182,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
                 >
                     <LoadGraph data={ this.state.elements } />
-                    <Fa2 />
+                    <Fa2 /> 
+                    {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>
             );
         }

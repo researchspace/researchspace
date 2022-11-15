@@ -27,12 +27,12 @@ import { Spinner } from 'platform/components/ui/spinner';
 import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
 import { MultiDirectedGraph } from "graphology";
-import { SigmaContainer, ControlsContainer, SearchControl, useLoadGraph } from "@react-sigma/core";
-
+import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 
-import "@react-sigma/core/lib/react-sigma.min.css";
+import { LoadGraph } from './LoadGraph';
 
+import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
     elements: Cy.ElementDefinition[];
     noResults?: boolean;
@@ -85,54 +85,6 @@ export const Fa2: React.FC = () => {
 
     return null;
 }
-
-export const LoadGraph = (props: any) => {
-    const loadGraph = useLoadGraph();
-    useEffect(() => {
-        const graph = new MultiDirectedGraph();
-
-        for (const i in props.data) {
-            const element = props.data[i];
-            if (element.group == "nodes") {
-                let color = "#000000";
-                if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
-                    const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
-                    for (const type of types) {
-                        if (props.colours[type.value]) {
-                            color = props.colours[type.value];
-                            break;
-                        }
-                    }
-                }
-                graph.addNode(element.data.id, {
-                    label: element.data.label,
-                    size: 10,
-                    color: color
-                })
-            }
-        }
-
-        for (const i in props.data) {
-            const element = props.data[i];
-            if (element.group == "edges") {
-                graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
-                    label: element.data.label,
-                    size: 5
-                })
-            }
-        }
-
-        graph.nodes().forEach((node, i) => {
-            const angle = (i * 2 * Math.PI) / graph.order;
-            graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
-            graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
-        });
-
-        loadGraph(graph);
-    }, [loadGraph]);
-  
-    return null;
-  };
 
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 

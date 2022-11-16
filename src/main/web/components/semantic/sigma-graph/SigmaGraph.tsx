@@ -16,21 +16,20 @@
  */
 
 import * as React from 'react';
-import { useEffect } from "react";
 import * as assign from 'object-assign';
 import { createElement } from 'react';
+
 import { Component } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { Spinner } from 'platform/components/ui/spinner';
-
 import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
 import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
-import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 
 import { LoadGraph } from './LoadGraph';
+import { LayoutForceAtlas } from './LayoutForceAtlas';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
@@ -41,8 +40,6 @@ export interface State {
     warning?: string;
   }
 export interface SigmaGraphConfig {
-    id?: string;
-
     /**
      *  Width of the graph in pixels.
      *  @default 800
@@ -53,8 +50,16 @@ export interface SigmaGraphConfig {
      * Height of the graph in pixels.
      * @default 600
      */
-
     height?: number;
+
+    /**
+     * Sizes of the nodes and edges in pixe;s
+     * Passed as a JSON object with the following properties:
+     * - nodes: size of the nodes
+     * - edges: size of the edges
+     * @default {"nodes": 10, "edges": 5}
+     */
+    sizes?: { "nodes": number, "edges": number };
 
     /**
      * Display a search field.
@@ -75,16 +80,6 @@ export interface SigmaGraphConfig {
     colours?: { [key: string]: string };
 }
 
-export const Fa2: React.FC = () => {
-    const { start, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 10 }});
-    
-    useEffect(() => {
-        start();
-        return () => kill();
-    }, [start, kill]);
-
-    return null;
-}
 
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
@@ -171,6 +166,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const height = this.props.height || 600;
         const searchBox = this.props.searchBox || false;
         const colours = this.props.colours || {};
+        const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
         if (this.state.isLoading) {
           return createElement(Spinner);
         } else {
@@ -180,8 +176,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     style={{ height: `${height}px`, width: `${width}px` }}
                     settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
                 >
-                    <LoadGraph data={ this.state.elements } colours={ colours } />
-                    <Fa2 /> 
+                    <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } />
+                    <LayoutForceAtlas /> 
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>
             );

@@ -39,7 +39,7 @@ export const LoadGraph = (props: any) => {
                 }
                 graph.addNode(element.data.id, {
                     label: element.data.label,
-                    size: 10,
+                    size: props.sizes.nodes,
                     color: color
                 })
             }
@@ -50,7 +50,7 @@ export const LoadGraph = (props: any) => {
             if (element.group == "edges") {
                 graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
                     label: element.data.label,
-                    size: 5
+                    size: props.sizes.edges
                 })
             }
         }

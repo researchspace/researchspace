@@ -412,8 +412,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       let color = this.defaultFeaturesColor;
       //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
       
-      if(this.state.registeredControls.length > 0){
-        var group_color = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value]
+      if(this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy){
+        console.log("this.state.featuresColorTaxonomy")
+        console.log(this.state.featuresColorTaxonomy)
+        console.log(feature.get(this.state.featuresColorTaxonomy));
+        let feature_group = feature.get(this.state.featuresColorTaxonomy).value
+        var group_color = this.state.groupColorAssociations[feature_group]
         if(this.state.featuresColorTaxonomy
           && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
           && group_color !== this.defaultFeaturesColor){
@@ -434,12 +438,11 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private registerControls = (event: Event<any>) => {
-    console.log("Registering controls...")
     var newRegisteredControls = this.state.registeredControls.concat(event.source);
     this.setState({
       registeredControls: newRegisteredControls
     }, ()=> {
-      console.log("Now registered Controls are:")
+      console.log("Registered. Now registered Controls are:")
       console.log(this.state.registeredControls)
       this.updateFeaturesByYear();
     })

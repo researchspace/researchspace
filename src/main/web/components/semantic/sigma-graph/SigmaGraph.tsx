@@ -80,7 +80,6 @@ export interface SigmaGraphConfig {
     colours?: { [key: string]: string };
 }
 
-
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();

@@ -66,6 +66,15 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
     ];
 
 
+    constructor(props: SigmaGraphConfig, context: any) {
+        super(props, context);
+        this.state = {
+          elements: [],
+          noResults: false,
+          isLoading: true,
+        };
+    }
+
     private fetchAndSetData(props: ForceGraphConfig): void {
         this.setState({ error: undefined})
 

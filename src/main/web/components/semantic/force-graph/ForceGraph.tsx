@@ -22,7 +22,7 @@ import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Spinner } from 'platform/components/ui/spinner';
 import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
 
-import { ForceGraph2D, ForceGraph3D, ForceGraphVR, ForceGraphAR } from 'react-force-graph';
+import { ForceGraph3D } from 'react-force-graph';
 
 export interface ForceGraphConfig {
 
@@ -111,8 +111,8 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
             converted.name = element.data.label;
             return converted
         }
-        const nodes = elements.filter(e => e.data && e.data.id).map(convertToGraphData);
-        const links = elements.filter(e => e.data && e.data.source && e.data.target).map(convertToGraphData);
+        const nodes = elements.filter(e => e.data && e.group == "nodes").map(convertToGraphData);
+        const links = elements.filter(e => e.data && e.group == "edges").map(convertToGraphData);
         return { nodes, links };
       }
 
@@ -127,6 +127,8 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
             return (
                 <ForceGraph3D 
                     graphData={this.generateGraphData( this.state.elements )}
+                    //nodeAutoColorBy="type"
+                    //linkDirectionalParticles={1}
                     linkDirectionalArrowLength={3.5}
                     linkDirectionalArrowRelPos={1}
                     linkCurvature={0.25}

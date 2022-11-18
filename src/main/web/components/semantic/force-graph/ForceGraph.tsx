@@ -53,7 +53,6 @@ export interface State {
     error?: any;
     warning?: string;
   }
-
 export class ForceGraph extends Component<ForceGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();
@@ -107,8 +106,13 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
     }
 
     private generateGraphData(elements: Cy.ElementDefinition[]): any {
-        const nodes = elements.filter(e => e.data && e.data.id).map(e => e.data);
-        const links = elements.filter(e => e.data && e.data.source && e.data.target).map(e => e.data);
+        const convertToGraphData = (element: any) => {
+            const converted = element.data;
+            converted.name = element.data.label;
+            return converted
+        }
+        const nodes = elements.filter(e => e.data && e.data.id).map(convertToGraphData);
+        const links = elements.filter(e => e.data && e.data.source && e.data.target).map(convertToGraphData);
         return { nodes, links };
       }
 

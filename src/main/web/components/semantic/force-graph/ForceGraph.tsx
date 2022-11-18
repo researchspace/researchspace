@@ -124,7 +124,14 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
         if (this.state.isLoading) {
             return React.createElement(Spinner)
         } else {
-            return (<ForceGraph3D graphData={this.generateGraphData( this.state.elements )}/>);
+            return (
+                <ForceGraph3D 
+                    graphData={this.generateGraphData( this.state.elements )}
+                    linkDirectionalArrowLength={3.5}
+                    linkDirectionalArrowRelPos={1}
+                    linkCurvature={0.25}
+                />
+            );
         }
     }
 

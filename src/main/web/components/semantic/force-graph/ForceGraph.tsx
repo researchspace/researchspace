@@ -33,16 +33,16 @@ export interface ForceGraphConfig {
     id?: string;
 
     /**
-     *  Width of the graph in pixels.
-     *  @default 800
+     * Optional colour palette for nodes.
+     * Passed as JSON object with RDF types as keys and colours as values.
+     * @default {}
+     * @example
+     * {
+     *  "http://www.w3.org/2002/07/owl#Class": "#ff0000",
+     *  "http://www.w3.org/2002/07/owl#ObjectProperty": "#00ff00"
+     * }
      */
-    width?: number;
-
-    /**
-     * Height of the graph in pixels.
-     * @default 600
-     */
-    height?: number;
+    colours?: { [key: string]: string };
 
 }
 
@@ -65,7 +65,7 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
     ];
 
 
-    constructor(props: SigmaGraphConfig, context: any) {
+    constructor(props: ForceGraphConfig, context: any) {
         super(props, context);
         this.state = {
           elements: [],
@@ -105,10 +105,20 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
         });
     }
 
-    private generateGraphData(elements: Cy.ElementDefinition[]): any {
+    private generateGraphData(elements: Cy.ElementDefinition[], colours: any): any {
         const convertToGraphData = (element: any) => {
             const converted = element.data;
             converted.name = element.data.label;
+            converted.color = "#CCCCFF";
+            if (colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
+                    const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
+                    for (const type of types) {
+                        if (colours[type.value]) {
+                            converted.color = colours[type.value];
+                            break;
+                        }
+                    }
+                }
             return converted
         }
         const nodes = elements.filter(e => e.data && e.group == "nodes").map(convertToGraphData);
@@ -124,11 +134,12 @@ export class ForceGraph extends Component<ForceGraphConfig, State> {
         if (this.state.isLoading) {
             return React.createElement(Spinner)
         } else {
+            document.elements = this.state.elements;
             return (
                 <ForceGraph3D 
-                    graphData={this.generateGraphData( this.state.elements )}
-                    //nodeAutoColorBy="type"
-                    //linkDirectionalParticles={1}
+                    graphData={this.generateGraphData( this.state.elements, this.props.colours )}
+                    nodeAutoColorBy={d => d.color}
+                    linkAutoColorBy={d => d.id}
                     linkDirectionalArrowLength={3.5}
                     linkDirectionalArrowRelPos={1}
                     linkCurvature={0.25}

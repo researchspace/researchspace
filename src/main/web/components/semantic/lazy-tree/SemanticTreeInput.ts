@@ -119,12 +119,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
   /**
    * Creates a custom button with a Semantic-link with the following parameters
    */
-  customButton?: {
-    iri: string;
-    view?: string;
-    resource?: string;
-    mode?: string;
-  };
+  customButton?: CustomButton;
 
   /**
    * 
@@ -166,6 +161,13 @@ interface SearchResult {
   error?: any;
   matchedCount?: number;
   matchLimit?: number;
+}
+
+export interface CustomButton {
+  iri: string;
+  view?: string;
+  resource?: string;
+  mode?: string;
 }
 
 /**

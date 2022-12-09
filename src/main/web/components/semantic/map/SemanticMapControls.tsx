@@ -6,7 +6,6 @@ import { Cancellation } from 'platform/api/async';
 import {
   SemanticMapControlsOverlayVisualization,
   SemanticMapControlsOverlaySwipe,
-  SemanticMapControlsFeatureColor,
   SemanticMapSendMapLayers,
   SemanticMapControlsSyncFromMap,
   SemanticMapControlsSendMapLayersToMap,
@@ -16,6 +15,7 @@ import {
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
   SemanticMapControlsSendYear,
+  SemanticMapControlsRegister
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
 import * as block from 'bem-cn';
@@ -85,7 +85,7 @@ export class SemanticMapControls extends Component<Props, State> {
       maskIndex: -1,
       filters: this.props.filtersInitialization,
       selectedFeaturesLabel: '',
-      featuresColorTaxonomy: this.featuresColorTaxonomies[0],
+      featuresColorTaxonomy: this.props.featuresTaxonomies.split(',')[0],
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
@@ -137,15 +137,15 @@ export class SemanticMapControls extends Component<Props, State> {
     let color_rgba = color.rgb;
     const rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
     console.log(rgba_string + ' set for Group: ' + group);
-    let groupColorAssociationsClone = this.state.groupColorAssociations;
-    groupColorAssociationsClone[group] = color;
+    let groupColorAssociationsClone = JSON.stringify(this.state.groupColorAssociations);
+    let groupColorAssociationsCloneObject = JSON.parse(groupColorAssociationsClone);
+    groupColorAssociationsCloneObject[group] = color;
     this.setState(
       {
-        groupColorAssociations: groupColorAssociationsClone,
+        groupColorAssociations: groupColorAssociationsCloneObject,
       },
       () => {
         console.log(this.state.groupColorAssociations);
-        this.triggerSendFeaturesColorsAssociationsToMap();
       }
     );
   }
@@ -200,7 +200,18 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   }
 
-  private triggerSendYearToMap(year: number) {
+  private triggerRegisterToMap() {
+    console.log("registering " + this.props.id + " to " + this.props.targetMapId);
+    trigger({
+      eventType: SemanticMapControlsRegister,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+    })
+  }
+
+  private triggerSendYearToMap() {
+    const year = this.state.year;
+    console.log("Sending year " + year + " to map.")
     trigger({
       eventType: SemanticMapControlsSendYear,
       source: this.props.id,
@@ -209,12 +220,9 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   }
   public componentDidMount() {
+    this.triggerRegisterToMap();
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
-    console.log('MONTO e setto color taxonomy');
-    this.setFeaturesColorTaxonomy();
-    this.initializeGroupColorAssociations(
-      this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, this.getAllVectorLayers(this.state.mapLayers))
-    );
+    console.log('MapControls' + this.props.id +' Mounted.');
   }
 
   public componentWillMount() {
@@ -225,7 +233,19 @@ export class SemanticMapControls extends Component<Props, State> {
 
   public componentWillUnmount() {}
 
-  public componentDidUpdate(PrevProps, prevState) {
+  public componentDidUpdate(prevProps, prevState) {
+    if (this.state.groupColorAssociations !== prevState.groupColorAssociations) {
+      console.log("Groupcolors CHANGED")
+      this.triggerSendFeaturesColorsAssociationsToMap();
+    } else {
+      console.log("Groupcolors NOT changed.")
+    }
+    }
+
+
+
+/*
+  public componentDidUpdate(prevProps, prevState) {
     //Group Color associations
     if (JSON.stringify(this.state.groupColorAssociations) !== JSON.stringify(prevState.groupColorAssociations)) {
       // console.log('%cGroupColors Associations  È Cambiato! Prima era:', 'color: green; font-size: 20px');
@@ -234,7 +254,7 @@ export class SemanticMapControls extends Component<Props, State> {
       // console.log(JSON.stringify(this.state.groupColorAssociations));
       // console.log('%c************************', 'color: green; font-size: 20px');
 
-      this.triggerSendFeaturesColorsAssociationsToMap();
+      //this.triggerSendFeaturesColorsAssociationsToMap();
     } else {
       // console.log('%cGroupColors Associations NON È Cambiato! Prima era:', 'color: red; font-size: 20px');
       // console.log(JSON.stringify(prevState.groupColorAssociations));
@@ -245,23 +265,26 @@ export class SemanticMapControls extends Component<Props, State> {
 
     //Color Taxonomy
     if (JSON.stringify(this.state.featuresColorTaxonomy) !== JSON.stringify(prevState.featuresColorTaxonomy)) {
-      console.log('%cÈ Cambiato! Prima era:', 'color: orange; font-size: 20px');
-      console.log(prevState.featuresColorTaxonomy);
-      this.triggerSendFeaturesColorTaxonomy();
+      //console.log('%cÈ Cambiato! Prima era:', 'color: orange; font-size: 20px');
+      //console.log(prevState.featuresColorTaxonomy);
+      //this.triggerSendFeaturesColorTaxonomy();
     }
 
     //Map Layers, check for taxonomyGroups updates
-    let newFeatures = this.getAllVectorLayers(this.state.mapLayers);
-    let oldFeatures = this.getAllVectorLayers(prevState.mapLayers);
-    let newGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, newFeatures);
-    let oldGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, oldFeatures);
+    //let newFeatures = this.getAllVectorLayers(this.state.mapLayers);
+    //let oldFeatures = this.getAllVectorLayers(prevState.mapLayers);
+    //let newGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, newFeatures);
+    //let oldGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, oldFeatures);
+    /*
     if (this.arraysMatch(newGroups, oldGroups)) {
       //console.log('I TAXONOMYGROUPS Sono UGUALI: ');
     } else {
-      console.log('I TAXONOMYGROUPS Sono DIVERSI: ');
+      //console.log('I TAXONOMYGROUPS Sono DIVERSI: ');
     }
   }
+  */
 
+  /*
   private arraysMatch(arr1, arr2) {
     // Check if the arrays are the same length
     if (arr1.length !== arr2.length) return false;
@@ -277,6 +300,7 @@ export class SemanticMapControls extends Component<Props, State> {
     // Otherwise, return true
     return true;
   }
+  */
 
   //COLOR PICKER
 
@@ -326,7 +350,7 @@ export class SemanticMapControls extends Component<Props, State> {
           step={1}
           value={this.state.year}
           onMouseUp={(event) => {
-              this.triggerSendYearToMap(this.state.year);
+              //this.triggerSendYearToMap();
           }}
           onChange={(event) => {
             const input = event.target as HTMLInputElement;
@@ -334,7 +358,7 @@ export class SemanticMapControls extends Component<Props, State> {
             this.setState({
               year: value,
             }, () => {
-              this.triggerSendYearToMap(this.state.year);
+              this.triggerSendYearToMap();
             });
           }}
         ></input>
@@ -656,6 +680,8 @@ export class SemanticMapControls extends Component<Props, State> {
       () => {
         console.log("Controls '" + this.props.id + "': layers synced from map '" + this.props.targetMapId + "'");
         console.log(event.data);
+        this.triggerSendYearToMap();
+        this.setFeaturesColorTaxonomy();
       }
     );
   };
@@ -667,6 +693,7 @@ export class SemanticMapControls extends Component<Props, State> {
         featuresColorGroups: groups,
       },
       () => {
+        this.triggerSendFeaturesColorTaxonomy();
         this.initializeGroupColorAssociations(this.state.featuresColorGroups);
       }
     );
@@ -771,24 +798,22 @@ export class SemanticMapControls extends Component<Props, State> {
     */
 
     //Update state with generated palette
-    let groupColorAssociationsClone = this.state.groupColorAssociations;
+    let groupColorAssociationsClone = JSON.stringify(this.state.groupColorAssociations);
+    let groupColroAssociationsCloneObject = JSON.parse(groupColorAssociationsClone)
     let _i = 0;
-    for (let association in groupColorAssociationsClone) {
+    for (let association in groupColroAssociationsCloneObject) {
       //groupColorAssociationsClone[association] = "hsv(" + palette[_i].h + ","+palette[_i].s+","+palette[_i].v+",0.4)";
       let rgbstring = palette[_i];
-      groupColorAssociationsClone[association] = rgbstring;
+      groupColroAssociationsCloneObject[association] = rgbstring;
       _i++;
     }
-    console.log('NEW ASSOCIATIONS BEFORE STATE:');
-    console.log(groupColorAssociationsClone);
     this.setState(
       {
-        groupColorAssociations: groupColorAssociationsClone,
+        groupColorAssociations: groupColroAssociationsCloneObject,
       },
       () => {
-        console.log('Ecco il nuovo associationsssssssss');
-        console.log(this.state.groupColorAssociations);
-        this.triggerSendFeaturesColorsAssociationsToMap();
+        //console.log('New GroupColorAssociations:');
+        //console.log(this.state.groupColorAssociations);
       }
     );
   }
@@ -844,8 +869,9 @@ export class SemanticMapControls extends Component<Props, State> {
         displayColorPicker: displayColorPickerNew,
       },
       () => {
-        console.log('GroupColorassociations intialized.');
-        this.triggerSendFeaturesColorsAssociationsToMap();
+        console.log('GroupColorassociations intialized. Here are the associations:');
+        console.log(this.state.groupColorAssociations);
+        this.generateColorPalette();
       }
     );
   }
@@ -874,9 +900,6 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private triggerSendFeaturesColorsAssociationsToMap() {
-    //console.log('%cSENDING FEATURES COLORS ASSOCIATIONS', 'color: yellow; font-size: 15px');
-    //console.log(this.state.groupColorAssociations);
-    //console.log('%c*************************', 'color: yellow; font-size: 15px');
     trigger({
       eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
       source: this.props.id,

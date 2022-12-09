@@ -104,7 +104,8 @@ import {
   SemanticMapControlsSendFeaturesColorTaxonomyToMap,
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
-  SemanticMapControlsSendYear
+  SemanticMapControlsSendYear,
+  SemanticMapControlsRegister
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -217,6 +218,8 @@ interface MapState {
   featuresLabel: string;
   featuresColorTaxonomy: string;
   groupColorAssociations: {};
+  year: string;
+  registeredControls: Array<any>;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -251,7 +254,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       maskIndex: 1,
       featuresLabel: '',
       featuresColorTaxonomy: '',
-      groupColorAssociations: {}
+      groupColorAssociations: {},
+      registeredControls: [],
+      // TODO: move year to controls
+      year: '01-01-1670',
     };
 
     this.initInteractions();
@@ -377,18 +383,81 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             eventType: SemanticMapControlsSendYear
           })
       )
-      .onValue(this.getYear);
+      .onValue(this.setYear);
+    this.cancelation
+    .map(
+        listen({
+            eventType: SemanticMapControlsRegister
+          })
+      )
+      .onValue(this.registerControls);
   }
 
   private toggle3d = (event: Event<any>) => {
     this.ol3d.setEnabled(!this.ol3d.getEnabled())
   }
 
-  private getYear = (event: Event<any>) => {
-    const coordinates = this.map.getView().calculateExtent(this.map.getSize());
+  private createHiddenFeatureStyle(feature){
+    return new Style({});
+  }
 
-    let year = event.data;
+  private createFeatureStyle(feature){
+      const geometry = feature.getGeometry();
+      let label = '';
+      if(feature.get(this.state.featuresLabel) !== undefined){
+        if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
+          label = feature.get(this.state.featuresLabel).value;
+        }
+      }
+      let color = this.defaultFeaturesColor;
+      //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
+      
+      if(this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy){
+        console.log("this.state.featuresColorTaxonomy")
+        console.log(this.state.featuresColorTaxonomy)
+        console.log(feature.get(this.state.featuresColorTaxonomy));
+        let feature_group = feature.get(this.state.featuresColorTaxonomy).value
+        var group_color = this.state.groupColorAssociations[feature_group]
+        if(this.state.featuresColorTaxonomy
+          && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
+          && group_color !== this.defaultFeaturesColor){
+            if(typeof group_color === "string"){
+               color = group_color;
+            } else {
+              let color_rgba = group_color.rgb;
+              let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+              color = rgba_string
+            }
+        }
+      }
+      let featureStyle = getFeatureStyle(geometry, color);
+      if (label) {
+        featureStyle.getText().setText(label);
+      }
+      return featureStyle;
+  }
 
+  private registerControls = (event: Event<any>) => {
+    var newRegisteredControls = this.state.registeredControls.concat(event.source);
+    this.setState({
+      registeredControls: newRegisteredControls
+    }, ()=> {
+      console.log("Registered. Now registered Controls are:")
+      console.log(this.state.registeredControls)
+      this.updateFeaturesByYear();
+    })
+  }
+
+  private setYear = (event: Event<any>) => {
+    this.setState({
+      year : event.data
+    }, () => {
+      this.updateFeaturesByYear();
+    })
+  }
+
+  private updateFeaturesByYear() {
+    let year = this.state.year;
     let vectorLayers = this.getVectorLayersFromMap();
     console.log(vectorLayers);
     vectorLayers.forEach((vectorLayer) => {
@@ -396,7 +465,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       .getSource()
       .getFeatures()
       .forEach((feature) => {
-        console.log("Feature for year")
         let feature_bob = feature.get('bob').value;
         let feature_eoe = "";
         if (feature.get('eoe')){
@@ -405,42 +473,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           feature_eoe = "2999";
         }
         if(this.dateInclusion(feature_bob, feature_eoe, year)){
-          //TODO: create function to remove repetition elsewhere of the following lines
           //TODO: fix types
-          feature.setStyle(()=>{
-            console.log("Feature")
-            console.log(feature);
-            const geometry = feature.getGeometry();
-            let label = '';
-            if(feature.get(this.state.featuresLabel) !== undefined){
-              if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
-                label = feature.get(this.state.featuresLabel).value;
-              }
-            }
-            let color = this.defaultFeaturesColor;
-            //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
-            if(this.state.featuresColorTaxonomy
-              && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
-              && this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] !== this.defaultFeaturesColor){
-                if(typeof this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] === "string"){
-                   color = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value];
-                } else {
-                  let color_rgba = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].rgb;
-                  let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-                  color = rgba_string
-                }
-            }
-            let featureStyle = getFeatureStyle(geometry, color);
-            if (label) {
-              featureStyle.getText().setText(label);
-            }
-            return featureStyle;
-          })
+          feature.setStyle(this.createFeatureStyle(feature));
         } else {
-          feature.setStyle(new Style({}));
+          feature.setStyle(this.createHiddenFeatureStyle(feature));
         }
       })})
-      //this.updateFeatureColorsByGroups(this.state.groupColorAssociations)
   }
 
   private dateInclusion(bob, eoe, year){
@@ -452,6 +490,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private triggerUpdateFeatureColorsByGroups = (event: Event<any>) => {
     const groupColorsAssociationsNew = event.data;
+    console.log("Map received groupcolorsassociations:")
+    console.log(event.data);
     this.updateFeatureColorsByGroups(groupColorsAssociationsNew)
   }
 
@@ -960,6 +1000,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   };
 
   private createLayer = (features: Feature[], type: string): VectorLayer => {
+    console.log("Create Layer")
     const source = new Vector({ features });
     if (type === 'Point') {
       const clusterSource = new Cluster({ source, distance: 40 });
@@ -971,35 +1012,31 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }
     return new VectorLayer({
       source,
-      style: (feature: Feature) => {
-        console.log("Feature")
-        console.log(feature);
-        const geometry = feature.getGeometry();
-        let label = '';
-        if(feature.get(this.state.featuresLabel) !== undefined){
-          if (this.state.featuresLabel && this.state.featuresLabel !== "none") {
-            label = feature.get(this.state.featuresLabel).value;
+      style: (feature: Feature) => { 
+        // TODO SMAP: REMOVE GET BOB, GET EOE
+        let feature_eoe = "";
+        let feature_bob = "";
+        
+        if (feature.get('bob')){
+          feature_bob = feature.get('bob').value;
+        } else {
+          feature_bob = "1499";
+        }
+        if (feature.get('eoe')){
+          feature_eoe = feature.get('eoe').value;
+        } else {
+          feature_eoe = "2999";
+        }
+        if(this.state.registeredControls.length > 0){
+          if(this.dateInclusion(feature_bob, feature_eoe, this.state.year)){
+            return this.createFeatureStyle(feature)
+          } else {
+            return this.createHiddenFeatureStyle(feature)
           }
+        } else {
+          return this.createFeatureStyle(feature)
         }
-        let color = this.defaultFeaturesColor;
-        //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
-        if(this.state.featuresColorTaxonomy
-          && feature.get(this.state.featuresColorTaxonomy).value in this.state.groupColorAssociations
-          && this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] !== this.defaultFeaturesColor){
-            if(typeof this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value] === "string"){
-               color = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value];
-            } else {
-              let color_rgba = this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].rgb;
-              let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-              color = rgba_string
-            }
-        }
-        let featureStyle = getFeatureStyle(geometry, color);
-        if (label) {
-          featureStyle.getText().setText(label);
-        }
-        return featureStyle;
-      },
+        },
       zIndex: 0,
       declutter: true,
     });
@@ -1156,6 +1193,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           view.setZoom(zoom);
 
           this.map.addInteraction(this.modify);
+          this.map.updateSize();
         }
       );
     }, 1000);
@@ -1217,7 +1255,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private updateLayers = (geometries: { [type: string]: Feature[] }) => {
     const mapLayersClone = this.state.mapLayers;
-
     _.forEach(geometries, (features, type) => {
       let layer = this.getVectorLayerByType(type);
       if (layer) {
@@ -1242,6 +1279,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       },
       () => {
         //TODO: IMPROVE SYNCING (CHANGING LAYERS WHILE FEATURES ARE LOADING GENERATES INCOSTINTENT STATES)
+        //this.updateVectorLayersStyle();
         this.syncControls();
       }
     );

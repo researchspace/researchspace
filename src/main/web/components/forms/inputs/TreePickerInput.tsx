@@ -73,6 +73,20 @@ export interface TreePickerInputProps extends MultipleValuesProps {
    * Form template that can be used to create new instance or edit existing one.
    */
   nestedFormTemplate?: string;
+
+  /**
+   * Custom button template
+   * 
+   */
+  customButton?: boolean;
+
+
+  /**
+   * 
+   * If present, this query is fired and requires ?item_label
+   * This will be the label viewed when the element is selected.
+   */
+  queryItemLabel?: string;
 }
 
 interface State {
@@ -179,7 +193,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   };
 
   private renderTreePicker() {
-    const { openDropdownOnFocus, closeDropdownOnSelection, definition } = this.props;
+    const { openDropdownOnFocus, closeDropdownOnSelection, definition, customButton, queryItemLabel } = this.props;
     const { treeVersionKey, treeQueries, treeSelection } = this.state;
     const { rootsQuery, childrenQuery, parentsQuery, searchQuery } = treeQueries;
 
@@ -223,6 +237,8 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
             () => this.onTreeSelectionChanged(selectionLeafs)
           );
         }}
+        customButton={customButton}
+        queryItemLabel={queryItemLabel}
       />
     );
   }

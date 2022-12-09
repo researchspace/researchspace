@@ -46,6 +46,7 @@ import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 import { ItemSelectionChanged } from './SemanticTreeInputEvents';
 
 import * as styles from './SemanticTreeInput.scss';
+import { ResourceLinkComponent } from 'platform/api/navigation/components';
 
 export interface ComplexTreePatterns {
   /*
@@ -114,6 +115,22 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * @default false
    */
   closeDropdownOnSelection?: boolean;
+
+  /**
+   * Creates a custom button with a Semantic-link with the following parameters
+   */
+  customButton?: {
+    iri: string;
+    view?: string;
+    resource?: string;
+    mode?: string;
+  };
+
+  /**
+   * 
+   * query to retrieve the item label that will be visualized
+   */
+  queryItemLabel?: string;
 }
 
 const ITEMS_LIMIT = 200;
@@ -305,14 +322,28 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         createElement(ErrorNotification, { errorMessage: this.state.loadError })
       );
     } else {
-      const result = D.div(
-        {
-          ref: (holder) => (this.overlayHolder = holder),
-          className: classnames(styles.holder, this.props.className),
-        },
-        D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderBrowseButton()),
-        this.renderOverlay()
-      );
+
+      let result;
+      if(this.props.customButton) {
+        result = D.div(
+          {
+            ref: (holder) => (this.overlayHolder = holder),
+            className: classnames(styles.holder, this.props.className),
+          },
+          D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderOpenNewFrameButton()),
+          this.renderOverlay()
+        );
+      } else {
+        result = D.div(
+          {
+            ref: (holder) => (this.overlayHolder = holder),
+            className: classnames(styles.holder, this.props.className),
+          },
+          D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderBrowseButton()),
+          this.renderOverlay()
+        );
+      }
+
       if (this.props.droppable) {
         return createElement(
           Droppable,
@@ -397,23 +428,24 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       ClearableInput,
       textFieldProps,
       selectedItems
-        .map((item) =>
-          createElement(
-            RemovableBadge,
-            {
-              key: item.iri.value,
-              title: item.iri.value,
-              onClick: onSelectionClick ? () => onSelectionClick(selection, item) : undefined,
-              onRemove: () => {
-                const previous = this.state.confirmedSelection;
-                const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));
-                this.setState({ confirmedSelection: newSelection }, () => {
-                  this.onSelectionChanged(newSelection)
-                });
+        .map((item) => {
+            return createElement(
+              RemovableBadge,
+              {
+                key: item.iri.value,
+                title: item.iri.value,
+                onClick: onSelectionClick ? () => onSelectionClick(selection, item) : undefined,
+                onRemove: () => {
+                  const previous = this.state.confirmedSelection;
+                  const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));
+                  this.setState({ confirmedSelection: newSelection }, () => {
+                    this.onSelectionChanged(newSelection)
+                  });
+                },
               },
-            },
-            item.label.value
-          )
+              item.label.value
+            )
+          }
         )
         .toArray()
     );
@@ -469,6 +501,51 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           matchLimit: parametrized.limit,
         }))
       );
+  }
+
+  renderOpenNewFrameButton() {
+    return createElement(
+      OverlayTrigger,
+      {
+        placement: 'bottom',
+        overlay: createElement(
+          Tooltip,
+          {
+            id: 'SemanticTreeInput__tooltip',
+          },
+          'Select containing archival unit'
+        ),
+      },
+      createElement(
+        ResourceLinkComponent,
+        {
+          className: styles.browseButton,
+          active: this.state.mode.type === 'full',
+          iri: this.props.customButton.iri,
+          "urlqueryparam-view": this.props.customButton.view ? this.props.customButton.view : '',
+          "urlqueryparam-resource": this.props.customButton.resource ? this.props.customButton.resource : '',
+          "urlqueryparam-mode": this.props.customButton.mode ? this.props.customButton.mode : '',
+          onClick: () => {
+            const modeType = this.state.mode.type;
+            if (modeType === 'collapsed' || modeType === 'search') {
+              this.search.cancelAll();
+              this.setState({
+                searchText: undefined,
+                searching: false,
+                searchResult: undefined,
+                mode: { type: 'full', selection: this.state.confirmedSelection },
+              });
+            } else if (modeType === 'full') {
+              this.closeDropdown({ saveSelection: false });
+            }
+          },
+        },
+        D.span({
+          className: 'fa fa-plus fa-lg',
+          ['aria-hidden' as any]: true,
+        })
+      )
+    ); 
   }
 
   renderBrowseButton() {

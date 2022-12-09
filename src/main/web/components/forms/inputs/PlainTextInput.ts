@@ -60,6 +60,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
   private hasFocus = false;
   private languages: string[];
   private readonly cancellation = new Cancellation();
+  private defaultValue: string;
 
   constructor(props: PlainTextInputProps, context: any) {
     super(props, context);
@@ -108,6 +109,10 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
   }
 
   render() {
+    // Set the default value only for the first time
+    if(this.state.text != "" && this.defaultValue === undefined)
+      this.defaultValue = this.state.text;
+
     return D.div(
       { className: 'plain-text-field' },
       D.div({ className: 'plain-text-field__inputs' }, this.renderElement(), this.renderLanguageSelect()),
@@ -123,7 +128,7 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
   }
 
   private concatValue(givenText: string, language = "en") {
-    const text = `${this.props.defaultValue}, ${givenText}`
+    const text = `${this.defaultValue}, ${givenText}`
     this.setState({ text: text, language:language });
     this.setAndValidate(this.createValue(text, language));
   }

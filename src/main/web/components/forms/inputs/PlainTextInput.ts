@@ -32,6 +32,9 @@ import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue, EmptyValue, FieldError, DataState } from '../FieldValues';
 import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
 import { ValidationMessages } from './Decorations';
+import { Cancellation } from 'platform/api/async';
+import { listen, trigger } from 'platform/api/events';
+import { FormInputUpdated, FormInputConcat } from '../FormEvents';
 
 interface Language {
   key: string;
@@ -45,6 +48,7 @@ export interface PlainTextInputProps extends AtomicValueInputProps {
   multiline?: boolean;
   languages?: string[];
   requireLanguage?: boolean;
+  id?: string;
 }
 
 interface State {
@@ -55,6 +59,7 @@ interface State {
 export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State> {
   private hasFocus = false;
   private languages: string[];
+  private readonly cancellation = new Cancellation();
 
   constructor(props: PlainTextInputProps, context: any) {
     super(props, context);
@@ -65,6 +70,34 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
   componentDidMount() {
     if (this.languages.length > 0 && this.props.requireLanguage) {
       this.setState({ language: this.languages[0] });
+    }
+
+    if (this.props.id) {
+      this.cancellation.map(
+        listen({
+          target: this.props.id,
+          eventType: FormInputConcat
+        })
+      ).observe({
+        value: (event) => {
+          const {type, text, language} = event.data;
+
+          switch(type) {
+
+            case "concat":
+              this.concatValue(text, language);
+              break;
+            
+            case "update":
+              this.updateValue(text, language)
+
+            /**
+             * @GSpinaci: Here, more other methods can be added.
+             */
+          }
+
+        }
+      })
     }
   }
 
@@ -87,6 +120,17 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
    */
   private isMultiline() {
     return this.props.multiline || false;
+  }
+
+  private concatValue(givenText: string, language = "en") {
+    const text = `${this.props.defaultValue}, ${givenText}`
+    this.setState({ text: text, language:language });
+    this.setAndValidate(this.createValue(text, language));
+  }
+
+  private updateValue(text: string, language = "en") {
+    this.setState({ text: text, language: language});
+    this.setAndValidate(this.createValue(text, language));
   }
 
   private getAvailableLanguages() {
@@ -118,6 +162,13 @@ export class PlainTextInput extends AtomicValueInput<PlainTextInputProps, State>
     const language = this.state.language;
     this.setState({ text, language });
     this.setAndValidate(this.createValue(text, language));
+    trigger({
+      source:this.props.id,
+      eventType: FormInputUpdated,
+      data: {
+        text: text,
+      }
+    })
   };
 
   private onLanguageChanged(language: Language): void {

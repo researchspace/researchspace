@@ -14,24 +14,12 @@ RUN echo "export PATH=${GRADLE_HOME}/bin:${PATH}" >> /etc/profile.d/gradle.sh
 RUN chmod +x /etc/profile.d/gradle.sh
 
 # Install Node.js v14x
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -nod
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get install -y nodejs
 
+# Copy package.json and run npm install
+COPY package.json /workdir
+RUN npm install
 
-#RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
-#RUN sh -c "echo deb https://deb.nodesource.com/node_13.x focal main > /etc/apt/sources.list.d/nodesource.list"
-#RUN apt update
-#RUN apt -y install nodejs
-# Fix npm install error related to node-sass and gyp
-#RUN npm install -g --unsafe-perm node-sass
-
-# Fix incompatibality with legacy nodejs
-#RUN rm -rf /usr/local/bin/node*
-#RUN rm -rf /usr/local/bin/npm*
-#RUN rm -rf /etc/apt/sources.list.d/nodesource.list
-#RUN apt -y install nodejs npm gcc g++ make software-properties-common python2
-
-
-
-#CMD ["./gradlew", "runAll"]
+CMD ["./gradlew", "runAll"]
 CMD ["tail", "-f", "/dev/null"]

@@ -28,6 +28,7 @@ module.exports = function() {
 
     config.output.publicPath = 'http://localhost:3000/assets/no_auth/';
     config.devServer = {
+        host: "0.0.0.0",
         port: 3000,
         contentBase: './src/main/webapp',
         headers: {

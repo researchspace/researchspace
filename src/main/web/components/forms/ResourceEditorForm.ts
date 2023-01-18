@@ -569,7 +569,7 @@ function getSubject(props: ResourceEditorFormProps): Rdf.Iri {
   return subjectIri || Rdf.iri('');
 }
 
-function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) {
+function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) { 
   return fields.filter((field) => !field.insertPattern || !field.deletePattern);
 }
 

@@ -41,6 +41,12 @@ export interface State {
   }
 export interface SigmaGraphConfig {
     /**
+     * Optional identifier
+     * @default undefined
+     */
+    id?: string;
+
+    /**
      *  Width of the graph in pixels.
      *  @default 800
      */

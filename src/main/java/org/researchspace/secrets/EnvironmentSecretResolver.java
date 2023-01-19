@@ -20,8 +20,17 @@ import java.util.Optional;
 
 public class EnvironmentSecretResolver extends AbstractSecretResolver {
 
+    // @GSpinaci add prefix "secret."
+    public EnvironmentSecretResolver() {
+      super("secret.");
+    }
+
     @Override
     protected Optional<String> lookup(String key) {
-        return Optional.ofNullable(System.getenv(key));
+      /**
+       * @GSpinaci Get JVM property by key 
+       * such as "secret.repo.username"
+       */
+      return Optional.ofNullable(System.getProperty(key));
     }
 }

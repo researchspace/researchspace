@@ -1,3 +1,5 @@
+## 4.0.2-beta
+- Added Sigma Graph component
 ## 4.0.1
 
 - Corrected wrong labels

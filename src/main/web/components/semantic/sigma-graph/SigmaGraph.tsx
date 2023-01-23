@@ -126,7 +126,6 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const context = this.context.semanticContext;
         const graphDataWithLabels = this.fetching.map(GraphInternals.getGraphDataWithLabels(config, { context }));
         graphDataWithLabels.onValue((elements) => {
-            //this.catchCORSError(elements);
             this.setState({
                 elements: elements,
                 noResults: !elements.length,
@@ -140,31 +139,6 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
             }
         });
     }
-
-    private catchCORSError(elements: Cy.ElementDefinition[]) {
-        const thumbnails = elements.map((element) => (element.data as any).thumbnail);
-    
-        const loadingImages = thumbnails.map(
-          (thumbnail) =>
-            new Promise((resolve, reject) => {
-              const img = new Image();
-              img.onload = () => {
-                resolve();
-              };
-              img.onerror = () => {
-                reject(
-                  "Some images are not accessible or can't be rendered on canvas because of CORS or mixed content error (loading HTTP resource from HTTPS context)!"
-                );
-              };
-              img.crossOrigin = 'Anonymous';
-              img.src = thumbnail;
-            })
-        );
-    
-        Promise.all(loadingImages)
-          .then(() => this.setState({ warning: undefined }))
-          .catch((warning) => this.setState({ warning }));
-      }
 
     render() {
         const width = this.props.width || 800;

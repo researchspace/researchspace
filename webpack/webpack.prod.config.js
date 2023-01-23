@@ -56,8 +56,9 @@ module.exports = function () {
     config.output.chunkFilename = "[name]-[contenthash].js";
 
     //enable assets optimizations
-    config.plugins.push(
-        defaults.tsTypeCheck(true),
-    );
+    // Skip due to issues with type checking of node modules
+    // config.plugins.push(
+    //     defaults.tsTypeCheck(true),
+    // );
     return config;
 };

@@ -17,6 +17,9 @@ RUN chmod +x /etc/profile.d/gradle.sh
 RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get install -y nodejs
 
+# Install Webpack
+RUN npm install -g -D webpack webpack-cli
+
 # Copy package.json and run npm install
 COPY package.json /workdir
 RUN npm install

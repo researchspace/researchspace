@@ -20,15 +20,6 @@ import { useLoadGraph } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
 
 function applyGrouping(graph: MultiDirectedGraph, props: any) {
-    // Print graph as JSON object, replacing < and > with empty strings
-    //console.log(JSON.stringify(graph).replace(/</g, '').replace(/>/g, ''))
-
-    // graph is a MultiDirectedGraph from graphology.
-    // This function returns a new MultiDirectedGraph where nodes that share a type (defined in types array) and
-    // the same predicate (defined in the attribute of the edges) are grouped together.
-    // The function removes the individual nodes and edges and replaces them with a single node and edge with a
-    // size that is the sum of the sizes of the nodes and edges that were grouped together.
-    // The function also adds a label to the new node that specifies the shared type.
     
     // Retrieve all predicate attributes that appear in the edges of the graph
     const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);

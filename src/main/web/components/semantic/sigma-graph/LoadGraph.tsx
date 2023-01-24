@@ -35,7 +35,6 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
         const typesString = types.map((type) => type.value).sort().join('');
-        console.log(typesString)
         // Iterate through predicates
         for (const predicate of predicates) {
             // Check if the node has a source edge with the current predicate
@@ -60,7 +59,16 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         }
     }
 
-    console.log(nodesByTypeCombinationAndPredicate)
+    // If an entry contains only one node, we dont need to group it
+    for (const key in nodesByTypeCombinationAndPredicate) {
+        if (nodesByTypeCombinationAndPredicate[key]['nodes'].length == 1) {
+            const node = nodesByTypeCombinationAndPredicate[key]['nodes'][0];
+            nodesByTypeCombinationAndPredicate[node] = nodesByTypeCombinationAndPredicate[key];
+            delete nodesByTypeCombinationAndPredicate[key];
+        }
+    }
+
+    // Create a new graph that will contain the grouped nodes
     const groupedGraph = new MultiDirectedGraph();
     
     // Add nodes to grouped graph

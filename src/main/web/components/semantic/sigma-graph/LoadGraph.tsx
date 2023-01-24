@@ -59,7 +59,9 @@ function applyGrouping(graph: MultiDirectedGraph) {
                     // Create a new entry in the map for the current type combination and predicate
                     nodesByTypeCombinationAndPredicate[key] = {
                         'nodes': [node],
-                        'sources': edges.map((edge) => graph.source(edge))
+                        'predicate': predicate,
+                        'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')),
+                        'sources': edges.map((edge) => graph.target(edge))
                     }
                 }
             }
@@ -67,6 +69,8 @@ function applyGrouping(graph: MultiDirectedGraph) {
     }
 
     const groupedGraph = new MultiDirectedGraph();
+    
+    // Add nodes to grouped graph
     for(const key in nodesByTypeCombinationAndPredicate) {
         const entry = nodesByTypeCombinationAndPredicate[key];
         
@@ -77,16 +81,42 @@ function applyGrouping(graph: MultiDirectedGraph) {
                 groupedGraph.addNode(source, graph.getNodeAttributes(source));
             }
         }
+
+        // Add grouped nodes individually to graph
+        for (const node of entry['nodes']) {
+            // Check if node already exists in the grouped graph
+            if (!groupedGraph.hasNode(node)) {
+                const attributes = graph.getNodeAttributes(node);
+                attributes['collapsed'] = true;
+                groupedGraph.addNode(node, attributes);
+            }
+        }
         
         // Add a new node that represents the group of nodes that share the current type combination and predicate
-        const groupNode = groupedGraph.addNode(key, {
-            label: key,
-            size: 10, //entry['nodes'].map((node) => graph.getNodeAttribute(node, 'size')).reduce((a, b) => a + b, 0),
-            color: '#000000'
-        });
+        if(!groupedGraph.hasNode(key)) {
+            groupedGraph.addNode(key, {
+                label: key,
+                size: entry['nodes'].length,
+                color: '#000000'
+            });
+        }
+    }
 
-
-
+    // Add edges to grouped graph
+    for(const key in nodesByTypeCombinationAndPredicate) {
+        const entry = nodesByTypeCombinationAndPredicate[key];
+        for (const source of entry['sources']) {
+            // Add an edge from the source node to the group node
+            groupedGraph.addEdgeWithKey(key, source, key, {
+                label: entry['labels'].join(' ')
+            })
+        }
+        //Add edges from the group node to the individual nodes
+        for (const node of entry['nodes']) {
+            groupedGraph.addEdgeWithKey(node+key, key, node, {
+                label: entry['predicate']
+            })
+        }
     }
     
     console.log(nodesByTypeCombinationAndPredicate)

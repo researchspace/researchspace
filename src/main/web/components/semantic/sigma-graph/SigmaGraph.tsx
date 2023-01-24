@@ -59,6 +59,12 @@ export interface SigmaGraphConfig {
     height?: number;
 
     /**
+     * Enable grouping of nodes by shared predicate and type
+     * @default false
+     */
+    groupNodes?: boolean;
+
+    /**
      * Sizes of the nodes and edges in pixe;s
      * Passed as a JSON object with the following properties:
      * - nodes: size of the nodes
@@ -146,6 +152,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const searchBox = this.props.searchBox || false;
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
+        const groupNodes = this.props.groupNodes || false;
         if (this.state.isLoading) {
           return createElement(Spinner);
         } else {
@@ -155,7 +162,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     style={{ height: `${height}px`, width: `${width}px` }}
                     settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
                 >
-                    <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } />
+                    <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } />
                     <LayoutForceAtlas /> 
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>

@@ -106,10 +106,12 @@ function applyGrouping(graph: MultiDirectedGraph) {
     for(const key in nodesByTypeCombinationAndPredicate) {
         const entry = nodesByTypeCombinationAndPredicate[key];
         for (const source of entry['sources']) {
-            // Add an edge from the source node to the group node
-            groupedGraph.addEdgeWithKey(key, source, key, {
-                label: entry['labels'].join(' ')
-            })
+            // Add an edge from the source node to the group node if it doesn't already exist
+            if (!groupedGraph.hasEdge(key)) {
+                groupedGraph.addEdgeWithKey(key, source, key, {
+                    label: entry['labels'].join(' ')
+                })
+            }
         }
         //Add edges from the group node to the individual nodes
         for (const node of entry['nodes']) {

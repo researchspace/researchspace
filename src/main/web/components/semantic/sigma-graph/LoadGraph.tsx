@@ -98,7 +98,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
             groupedGraph.addNode(key, {
                 label: entry['nodes'].length + ' ' + entry['types'].map((type) => type.value).join(' '),
                 size: props.sizes.nodes * 2,
-                color: '#000000'
+                color: graph.getNodeAttribute(entry['nodes'][0], 'color') // We just use the color of the first node
             });
         }
     }

@@ -52,7 +52,8 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
                         'nodes': [node],
                         'predicate': predicate,
                         'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')).filter((value, index, self) => self.indexOf(value) === index).sort(),
-                        'sources': edges.map((edge) => graph.source(edge))
+                        'sources': edges.map((edge) => graph.source(edge)),
+                        'types': types
                     }
                 }
             }
@@ -87,7 +88,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         // Add a new node that represents the group of nodes that share the current type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
-                label: key,
+                label: entry['nodes'].length + ' ' + entry['types'].map((type) => type.value).join(' '),
                 size: props.sizes.nodes * 2,
                 color: '#000000'
             });

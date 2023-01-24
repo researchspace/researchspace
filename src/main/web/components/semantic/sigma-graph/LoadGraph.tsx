@@ -38,30 +38,59 @@ function applyGrouping(graph: MultiDirectedGraph) {
     const typeCombinations = graph.nodes().map((node) => graph.getNodeAttribute(node, 'types')).map((types) => types.map((type) => type.value).sort()).map((types) => types.join('')).filter((value, index, self) => self.indexOf(value) === index);
 
     // Store nodes by shared type and predicate in a map
-    const nodesByTypeCombinationAndPredicate = new Map();
+    const nodesByTypeCombinationAndPredicate = {};
     
-    // Iterate through nodes of the graph and group nodes that share a type combination and a predicate
+    // Iterate through nodes of the graph and group nodes that share a type combination and a predicate based on the source node of the edge
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
         const typesString = types.map((type) => type.value).sort().join('');
 
         // Iterate through predicates
         for (const predicate of predicates) {
-            // Check if the node has an edge with the current predicate
-            if (graph.edges().filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate).filter((edge) => graph.source(edge) == node || graph.target(edge) == node).length > 0) {
+            // Check if the node has a sourceedge with the current predicate
+            const edges = graph.edges().filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate).filter((edge) => graph.source(edge) == node)
+            if (edges.length > 0) {
                 // Check if the map already contains an entry for the current type combination and predicate
-                if (nodesByTypeCombinationAndPredicate.has(typesString + predicate)) {
+                const key = typesString + predicate;
+                if (nodesByTypeCombinationAndPredicate[key]) {
                     // Add the current node to the array of nodes that share the current type combination and predicate
-                    nodesByTypeCombinationAndPredicate.get(typesString + predicate).push(node);
+                    nodesByTypeCombinationAndPredicate[key]['nodes'].push(node);
                 } else {
                     // Create a new entry in the map for the current type combination and predicate
-                    nodesByTypeCombinationAndPredicate.set(typesString + predicate, [node]);
+                    nodesByTypeCombinationAndPredicate[key] = {
+                        'nodes': [node],
+                        'sources': edges.map((edge) => graph.source(edge))
+                    }
                 }
             }
         }
     }
-    console.log(nodesByTypeCombinationAndPredicate)
 
+    const groupedGraph = new MultiDirectedGraph();
+    for(const key in nodesByTypeCombinationAndPredicate) {
+        const entry = nodesByTypeCombinationAndPredicate[key];
+        
+        // Add source nodes to graph
+        for (const source of entry['sources']) {
+            // Check if the source node already exists in the grouped graph
+            if (!groupedGraph.hasNode(source)) {
+                groupedGraph.addNode(source, graph.getNodeAttributes(source));
+            }
+        }
+        
+        // Add a new node that represents the group of nodes that share the current type combination and predicate
+        const groupNode = groupedGraph.addNode(key, {
+            label: key,
+            size: 10, //entry['nodes'].map((node) => graph.getNodeAttribute(node, 'size')).reduce((a, b) => a + b, 0),
+            color: '#000000'
+        });
+
+
+
+    }
+    
+    console.log(nodesByTypeCombinationAndPredicate)
+    return groupedGraph;
     return graph;      
 }
 
@@ -104,15 +133,15 @@ export const LoadGraph = (props: any) => {
             }
         }
 
+        if (props.groupNodes) {
+            graph = applyGrouping(graph);
+        }
+
         graph.nodes().forEach((node, i) => {
             const angle = (i * 2 * Math.PI) / graph.order;
             graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
             graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
         });
-
-        if (props.groupNodes) {
-            graph = applyGrouping(graph);
-        }
 
         loadGraph(graph);
     }, [loadGraph]);

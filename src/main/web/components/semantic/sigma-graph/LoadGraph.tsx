@@ -19,7 +19,7 @@ import { useEffect } from "react";
 import { useLoadGraph } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
 
-function applyGrouping(graph: MultiDirectedGraph) {
+function applyGrouping(graph: MultiDirectedGraph, props: any) {
     // Print graph as JSON object, replacing < and > with empty strings
     //console.log(JSON.stringify(graph).replace(/</g, '').replace(/>/g, ''))
 
@@ -60,13 +60,14 @@ function applyGrouping(graph: MultiDirectedGraph) {
                     nodesByTypeCombinationAndPredicate[key] = {
                         'nodes': [node],
                         'predicate': predicate,
-                        'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')),
+                        'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')).filter((value, index, self) => self.indexOf(value) === index).sort(),
                         'sources': edges.map((edge) => graph.target(edge))
                     }
                 }
             }
         }
     }
+
 
     const groupedGraph = new MultiDirectedGraph();
     
@@ -96,7 +97,7 @@ function applyGrouping(graph: MultiDirectedGraph) {
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
                 label: key,
-                size: entry['nodes'].length,
+                size: props.sizes.nodes * 2,
                 color: '#000000'
             });
         }
@@ -116,7 +117,7 @@ function applyGrouping(graph: MultiDirectedGraph) {
         //Add edges from the group node to the individual nodes
         for (const node of entry['nodes']) {
             groupedGraph.addEdgeWithKey(node+key, key, node, {
-                label: entry['predicate']
+                label: entry['labels'].join(' ')
             })
         }
     }
@@ -166,7 +167,7 @@ export const LoadGraph = (props: any) => {
         }
 
         if (props.groupNodes) {
-            graph = applyGrouping(graph);
+            graph = applyGrouping(graph, props);
         }
 
         graph.nodes().forEach((node, i) => {

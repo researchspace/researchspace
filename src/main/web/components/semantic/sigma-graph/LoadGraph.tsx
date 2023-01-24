@@ -107,8 +107,8 @@ function applyGrouping(graph: MultiDirectedGraph) {
         const entry = nodesByTypeCombinationAndPredicate[key];
         for (const source of entry['sources']) {
             // Add an edge from the source node to the group node if it doesn't already exist
-            if (!groupedGraph.hasEdge(key)) {
-                groupedGraph.addEdgeWithKey(key, source, key, {
+            if (!groupedGraph.hasEdge(source+key)) {
+                groupedGraph.addEdgeWithKey(source+key, source, key, {
                     label: entry['labels'].join(' ')
                 })
             }

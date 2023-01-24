@@ -18,6 +18,7 @@
 import { useEffect } from "react";
 import { useLoadGraph } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
+import { getLabels } from 'platform/api/services/resource-label';
 
 function applyGrouping(graph: MultiDirectedGraph, props: any) {
 
@@ -30,11 +31,16 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     
     // Store nodes by shared type and predicate in a map
     const nodesByTypeCombinationAndPredicate = {};
-    
+    const allTypes = [];
+
     // Iterate through nodes of the graph and group nodes that share a type combination and a predicate based on the source node of the edge
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
         const typesString = types.map((type) => type.value).sort().join('');
+
+        // Add the current node's types to the list of all types
+        allTypes.push(...types.map((type) => type.value));
+
         // Iterate through predicates
         for (const predicate of predicates) {
             // Check if the node has a source edge with the current predicate
@@ -59,6 +65,10 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         }
     }
 
+    // Keep only unique types
+    allTypes = allTypes.filter((value, index, self) => self.indexOf(value) === index);
+    // TODO: retrieve labels for all types using getLabels so we can then label the group nodes accordignly
+    
     // If an entry contains only one node, we dont need to group it
     for (const key in nodesByTypeCombinationAndPredicate) {
         if (nodesByTypeCombinationAndPredicate[key]['nodes'].length == 1) {

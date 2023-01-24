@@ -23,7 +23,7 @@ import { Component } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { Spinner } from 'platform/components/ui/spinner';
-import * as GraphInternals from 'platform/components/semantic/graph/GraphInternals';
+import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 
 import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
@@ -124,7 +124,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         this.fetching = this.cancellation.deriveAndCancel(this.fetching)
         
         const context = this.context.semanticContext;
-        const graphDataWithLabels = this.fetching.map(GraphInternals.getGraphDataWithLabels(config, { context }));
+        const graphDataWithLabels = this.fetching.map(getGraphDataWithLabels(config, { context }));
         graphDataWithLabels.onValue((elements) => {
             this.setState({
                 elements: elements,

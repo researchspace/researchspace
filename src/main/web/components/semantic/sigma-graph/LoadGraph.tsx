@@ -20,14 +20,14 @@ import { useLoadGraph } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
 
 function applyGrouping(graph: MultiDirectedGraph, props: any) {
-    
+
     // Retrieve all predicate attributes that appear in the edges of the graph
     const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);
 
     // Retrieve all type combinations that appear in the nodes' types array. A type combination is an array of types. For easier processing, the array is sorted alphabetically and flattened,
     // keeping only the value of the types.
-    const typeCombinations = graph.nodes().map((node) => graph.getNodeAttribute(node, 'types')).map((types) => types.map((type) => type.value).sort()).map((types) => types.join('')).filter((value, index, self) => self.indexOf(value) === index);
-
+    //const typeCombinations = graph.nodes().map((node) => graph.getNodeAttribute(node, 'types')).map((types) => types.map((type) => type.value).sort()).map((types) => types.join('')).filter((value, index, self) => self.indexOf(value) === index);
+    
     // Store nodes by shared type and predicate in a map
     const nodesByTypeCombinationAndPredicate = {};
     
@@ -35,11 +35,11 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
         const typesString = types.map((type) => type.value).sort().join('');
-
+        console.log(typesString)
         // Iterate through predicates
         for (const predicate of predicates) {
-            // Check if the node has a sourceedge with the current predicate
-            const edges = graph.edges().filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate).filter((edge) => graph.source(edge) == node)
+            // Check if the node has a source edge with the current predicate
+            const edges = graph.edges().filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate).filter((edge) => graph.target(edge) == node)
             if (edges.length > 0) {
                 // Check if the map already contains an entry for the current type combination and predicate
                 const key = typesString + predicate;
@@ -52,14 +52,14 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
                         'nodes': [node],
                         'predicate': predicate,
                         'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')).filter((value, index, self) => self.indexOf(value) === index).sort(),
-                        'sources': edges.map((edge) => graph.target(edge))
+                        'sources': edges.map((edge) => graph.source(edge))
                     }
                 }
             }
         }
     }
 
-
+    console.log(nodesByTypeCombinationAndPredicate)
     const groupedGraph = new MultiDirectedGraph();
     
     // Add nodes to grouped graph
@@ -113,7 +113,6 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         }
     }
     
-    console.log(nodesByTypeCombinationAndPredicate)
     return groupedGraph;
     return graph;      
 }

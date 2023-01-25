@@ -18,7 +18,6 @@
 import { useEffect } from "react";
 import { useLoadGraph } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
-import { getLabels } from 'platform/api/services/resource-label';
 
 function applyGrouping(graph: MultiDirectedGraph, props: any) {
 

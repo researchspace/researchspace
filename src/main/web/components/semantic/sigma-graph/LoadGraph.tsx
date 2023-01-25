@@ -36,10 +36,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
         const typesString = types.map((type) => type.value).sort().join('');
-
-        // Add the current node's types to the list of all types
-        allTypes.push(...types.map((type) => type.value));
-
+    
         // Iterate through predicates
         for (const predicate of predicates) {
             // Check if the node has a source edge with the current predicate

@@ -53,7 +53,8 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
                         'predicate': predicate,
                         'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')).filter((value, index, self) => self.indexOf(value) === index).sort(),
                         'sources': edges.map((edge) => graph.source(edge)),
-                        'types': types
+                        'types': types,
+                        'typeLabel': graph.getNodeAttributes(node)['typeLabel']
                     }
                 }
             }
@@ -76,7 +77,6 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     // Add nodes to grouped graph
     for(const key in nodesByTypeCombinationAndPredicate) {
         const entry = nodesByTypeCombinationAndPredicate[key];
-        
         // Add source nodes to graph
         for (const source of entry['sources']) {
             // Check if the source node already exists in the grouped graph
@@ -98,7 +98,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         // Add a new node that represents the group of nodes that share the current type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
-                label: entry['nodes'].length + ' ' + entry['types'].map((type) => type.value).join(' '),
+                label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabel') + ' (' + entry['nodes'].length + ')',
                 size: props.sizes.nodes * 2,
                 color: graph.getNodeAttribute(entry['nodes'][0], 'color') // We just use the color of the first node
             });
@@ -149,6 +149,7 @@ export const LoadGraph = (props: any) => {
                 }
                 graph.addNode(element.data.id, {
                     label: element.data.label,
+                    typeLabel: element.data.typeLabel,
                     size: props.sizes.nodes,
                     color: color,
                     types: types

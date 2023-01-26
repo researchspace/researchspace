@@ -42,8 +42,8 @@ interface ResourceDataDefinition {
   node: Rdf.Node;
   resource: string;
   label?: string;
-  typeLabel?: string;
   thumbnail?: string;
+  typeLabels?: string[];
 }
 
 interface ResourceNodeDataDefinition extends ResourceDataDefinition, Cy.NodeDataDefinition {
@@ -126,7 +126,7 @@ export function addLabelsToGraphData(
   return map(elements, (element) => {
     element.data.label = labels.get(element.data.node);
     element.data.thumbnail = thumbnails.get(element.data.node) || DEFAULT_THUMBNAIL;
-    element.data.typeLabel = element.group == 'nodes' ? labels.get(element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'][0]) : null;
+    element.data.typeLabels = element.group == 'nodes' && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'] ? element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'].map(e => labels.get(e)) : null;
     return element;
   });
 }

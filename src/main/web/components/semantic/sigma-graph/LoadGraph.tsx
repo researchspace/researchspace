@@ -54,7 +54,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
                         'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')).filter((value, index, self) => self.indexOf(value) === index).sort(),
                         'sources': edges.map((edge) => graph.source(edge)),
                         'types': types,
-                        'typeLabel': graph.getNodeAttributes(node)['typeLabel']
+                        'typeLabels': graph.getNodeAttributes(node)['typeLabels']
                     }
                 }
             }
@@ -98,7 +98,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         // Add a new node that represents the group of nodes that share the current type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
-                label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabel') + ' (' + entry['nodes'].length + ')',
+                label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 size: props.sizes.nodes * 2,
                 color: graph.getNodeAttribute(entry['nodes'][0], 'color') // We just use the color of the first node
             });
@@ -149,7 +149,7 @@ export const LoadGraph = (props: any) => {
                 }
                 graph.addNode(element.data.id, {
                     label: element.data.label,
-                    typeLabel: element.data.typeLabel,
+                    typeLabels: element.data.typeLabels,
                     size: props.sizes.nodes,
                     color: color,
                     types: types

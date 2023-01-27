@@ -25,60 +25,60 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);
 
     // Store nodes by shared type and predicate in a map
-    const nodesByTypeCombinationAndPredicate = {};
+    const nodesBySourceTypeAndPredicate = {};
 
-    // Iterate through nodes of the graph and group nodes that share a type combination and a predicate based on the source node of the edge
+    // Iterate through nodes of the graph and group nodes that share a source node, type and predicate
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
         const typesString = types.map((type) => type.value).sort().join('');
     
-        // Iterate through predicates
-        for (const predicate of predicates) {
-            // Check if the node has a source edge with the current predicate
-            const edges = graph.edges().filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate).filter((edge) => graph.target(edge) == node)
-            if (edges.length > 0) {
-                // Check if the map already contains an entry for the current type combination and predicate
-                const key = typesString + predicate;
-                if (nodesByTypeCombinationAndPredicate[key]) {
-                    // Add the current node to the array of nodes that share the current type combination and predicate
-                    nodesByTypeCombinationAndPredicate[key]['nodes'].push(node);
-                } else {
-                    // Create a new entry in the map for the current type combination and predicate
-                    nodesByTypeCombinationAndPredicate[key] = {
-                        'nodes': [node],
-                        'predicate': predicate,
-                        'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')).filter((value, index, self) => self.indexOf(value) === index).sort(),
-                        'sources': edges.map((edge) => graph.source(edge)),
-                        'types': types,
-                        'typeLabels': graph.getNodeAttributes(node)['typeLabels']
+        // Iterate through source nodes
+        for (const source of graph.inNeighbors(node)) {
+            // Iterate through predicates
+            for (const predicate of predicates) {
+                // Check if there is an edge from the source to the node with the given predicate
+                const edges = graph.edges().filter((edge) => graph.getEdgeAttribute(edge, 'predicate') == predicate).filter((edge) => graph.source(edge) == source && graph.target(edge) == node)
+                if (edges.length > 0) {
+                    // Check if the map already contains an entry for the current source node, type combination and predicate
+                    const key = source + typesString + predicate;
+                    if (nodesBySourceTypeAndPredicate[key]) {
+                        // Add the current node to the array of nodes that share the current source node, type combination and predicate
+                        nodesBySourceTypeAndPredicate[key]['nodes'].push(node);
+                    } else {
+                        // Create a new entry in the map for the current source node, type combination and predicate
+                        nodesBySourceTypeAndPredicate[key] = {
+                            'nodes': [node],
+                            'predicate': predicate,
+                            'labels': edges.map((edge) => graph.getEdgeAttribute(edge, 'label')),
+                            'source': source,
+                            'types': types,
+                            'typeLabels': graph.getNodeAttributes(node)['typeLabels']
+                        }
                     }
                 }
             }
         }
     }
 
-    
     // If an entry contains only one node, we dont need to group it
-    for (const key in nodesByTypeCombinationAndPredicate) {
-        if (nodesByTypeCombinationAndPredicate[key]['nodes'].length == 1) {
-            const node = nodesByTypeCombinationAndPredicate[key]['nodes'][0];
-            nodesByTypeCombinationAndPredicate[node] = nodesByTypeCombinationAndPredicate[key];
-            delete nodesByTypeCombinationAndPredicate[key];
+    for (const key in nodesBySourceTypeAndPredicate) {
+        if (nodesBySourceTypeAndPredicate[key]['nodes'].length == 1) {
+            const node = nodesBySourceTypeAndPredicate[key]['nodes'][0];
+            nodesBySourceTypeAndPredicate[node] = nodesBySourceTypeAndPredicate[key];
+            delete nodesBySourceTypeAndPredicate[key];
         }
     }
 
     // Create a new graph that will contain the grouped nodes
     const groupedGraph = new MultiDirectedGraph();
-    
-    // Add nodes to grouped graph
-    for(const key in nodesByTypeCombinationAndPredicate) {
-        const entry = nodesByTypeCombinationAndPredicate[key];
-        // Add source nodes to graph
-        for (const source of entry['sources']) {
-            // Check if the source node already exists in the grouped graph
-            if (!groupedGraph.hasNode(source)) {
-                groupedGraph.addNode(source, graph.getNodeAttributes(source));
-            }
+
+
+    // Add nodes to grouped grpah
+    for(const key in nodesBySourceTypeAndPredicate) {
+        const entry = nodesBySourceTypeAndPredicate[key];
+        // Add source node to graph
+        if (!groupedGraph.hasNode(entry['source'])) {
+            groupedGraph.addNode(entry['source'], graph.getNodeAttributes(entry['source']));
         }
 
         // Add grouped nodes individually to graph
@@ -90,33 +90,36 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
                 groupedGraph.addNode(node, attributes);
             }
         }
-        
-        // Add a new node that represents the group of nodes that share the current type combination and predicate
+
+        // Add a new node that represents the group of nodes that share the current source node, type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 size: props.sizes.nodes * 2,
                 color: graph.getNodeAttribute(entry['nodes'][0], 'color') // We just use the color of the first node
-            });
+            })
         }
     }
 
     // Add edges to grouped graph
-    for(const key in nodesByTypeCombinationAndPredicate) {
-        const entry = nodesByTypeCombinationAndPredicate[key];
-        for (const source of entry['sources']) {
-            // Add an edge from the source node to the group node if it doesn't already exist
-            if (!groupedGraph.hasEdge(source+key)) {
-                groupedGraph.addEdgeWithKey(source+key, source, key, {
-                    label: entry['labels'].join(' ')
+    for(const key in nodesBySourceTypeAndPredicate) {
+        const entry = nodesBySourceTypeAndPredicate[key];
+        // Add an edge from the source node to the group node if it doesn't already exist
+        if (!groupedGraph.hasEdge(entry['source']+key)) {
+            groupedGraph.addEdgeWithKey(entry['source']+key, entry['source'], key, {
+                label: entry['labels'].join(' '),
+                size: props.sizes.edges
+            })
+        }
+
+        // Add edges from the group node to the individual nodes
+        for (const node of entry['nodes']) {
+            if (!groupedGraph.hasEdge(node+key)) {
+                groupedGraph.addEdgeWithKey(node+key, key, node, {
+                    label: entry['labels'].join(' '),
+                    size: props.sizes.edges
                 })
             }
-        }
-        //Add edges from the group node to the individual nodes
-        for (const node of entry['nodes']) {
-            groupedGraph.addEdgeWithKey(node+key, key, node, {
-                label: entry['labels'].join(' ')
-            })
         }
     }
     

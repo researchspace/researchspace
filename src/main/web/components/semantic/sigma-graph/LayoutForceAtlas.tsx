@@ -19,7 +19,18 @@ import * as React from 'react';
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useEffect } from "react";
 
-export const LayoutForceAtlas: React.FC = () => {
+export interface LayoutForceAtlasConfig {
+    /**
+     * If this is set, the Layout will be stopped
+     * after the specified number of time in milliseconds.
+     * Set this if the layout is used in combination with 
+     * events such as drag & drop.
+     * @default null
+     */
+    runFor?: number;
+}
+
+export const LayoutForceAtlas: React.FC = (props: LayoutForceAtlasConfig) => {
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 100, strongGravityMode: true } });
     
     useEffect(() => {
@@ -27,10 +38,11 @@ export const LayoutForceAtlas: React.FC = () => {
         return () => kill();
     }, [start, kill]);
 
-    // Stop the layout after 2 seconds
-    // TODO: Ideally we would stop the layout only when necessary (e.g. a drag & drop event),
-    //       however, I haven't found a way to do this yet.
-    setTimeout(stop, 2000)
+    if (props.runFor) {
+        setTimeout(() => {
+            stop();
+        }, props.runFor);
+    }
 
     return null;
 }

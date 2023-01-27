@@ -185,7 +185,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
                 >
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } />
-                    <LayoutForceAtlas /> 
+                    <LayoutForceAtlas runFor={2000} /> 
                     <GraphEvents />
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>

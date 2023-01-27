@@ -30,7 +30,7 @@ export interface LayoutForceAtlasConfig {
     runFor?: number;
 }
 
-export const LayoutForceAtlas: React.FC = (props: LayoutForceAtlasConfig) => {
+export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 100, strongGravityMode: true } });
     
     useEffect(() => {

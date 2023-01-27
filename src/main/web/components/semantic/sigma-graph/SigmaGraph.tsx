@@ -24,6 +24,10 @@ import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
+
+// TODO: Implement own version of this function in order to not rely on the graph component
+// and to avoid side effects that might occur through sharing functions between components.
+// Also, some changes have already been made to the GraphInternals file in order to retrieve the type labels.
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 
 import { MultiDirectedGraph } from "graphology";

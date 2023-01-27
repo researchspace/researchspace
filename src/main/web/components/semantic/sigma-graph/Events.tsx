@@ -21,8 +21,11 @@ import { useEffect, useState } from 'react';
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
+export interface GraphEventsProps {
+    children?: any;
+}
 
-export const GraphEvents: React.FC = () => {
+export const GraphEvents: React.FC<GraphEventsProps> = (props: GraphEventsProps) => {
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
@@ -69,8 +72,7 @@ export const GraphEvents: React.FC = () => {
             }
         });
     }, [registerEvents, sigma, draggedNode]);
-
-    return null;
+    return props.children;
 }
 
 export default GraphEvents

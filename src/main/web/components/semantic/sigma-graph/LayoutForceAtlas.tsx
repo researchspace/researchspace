@@ -28,6 +28,8 @@ export const LayoutForceAtlas: React.FC = () => {
     }, [start, kill]);
 
     // Stop the layout after 2 seconds
+    // TODO: Ideally we would stop the layout only when necessary (e.g. a drag & drop event),
+    //       however, I haven't found a way to do this yet.
     setTimeout(stop, 2000)
 
     return null;

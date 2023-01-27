@@ -31,7 +31,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 
 import { MultiDirectedGraph } from "graphology";
-import { SigmaContainer, ControlsContainer, SearchControl, useRegisterEvents, useSigma } from "@react-sigma/core";
+import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
 
 import { LoadGraph } from './LoadGraph';
 import { LayoutForceAtlas } from './LayoutForceAtlas';

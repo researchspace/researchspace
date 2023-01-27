@@ -22,6 +22,7 @@ import { createElement } from 'react';
 import { Component } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
+import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 
@@ -132,6 +133,18 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const context = this.context.semanticContext;
         const graphDataWithLabels = this.fetching.map(getGraphDataWithLabels(config, { context }));
         graphDataWithLabels.onValue((elements) => {
+            if (props.groupNodes) {
+                // Group nodes relies on the type property being set
+                // Raise an error it not all nodes have a type
+                const nodesWithoutType = elements.filter((element) => element.group === 'nodes' && !element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']);
+                if (nodesWithoutType.length > 0) {
+                    this.setState({
+                        error: 'All IRIs must have a type to when group-nodes is enabled. IRIs missing types: ' + nodesWithoutType.map( e => e.data.node.value).join(', '),
+                        isLoading: false
+                    });
+                    return;
+                }
+            }
             this.setState({
                 elements: elements,
                 noResults: !elements.length,
@@ -153,8 +166,13 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
         const groupNodes = this.props.groupNodes || false;
+        // TODO: Add error handling
+        // if groupNodes is true, then all nodes need to have a type
+
         if (this.state.isLoading) {
           return createElement(Spinner);
+        } else if (this.state.error) {
+            return createElement(ErrorNotification, { errorMessage: this.state.error });
         } else {
             return (
                 <SigmaContainer 

@@ -17,7 +17,7 @@
 
 import * as React from 'react';
 import * as assign from 'object-assign';
-import { createElement, useEffect, useState } from 'react';
+import { createElement } from 'react';
 
 import { Component } from 'platform/api/components';
 import { BuiltInEvents, trigger } from 'platform/api/events';
@@ -35,6 +35,7 @@ import { SigmaContainer, ControlsContainer, SearchControl, useRegisterEvents, us
 
 import { LoadGraph } from './LoadGraph';
 import { LayoutForceAtlas } from './LayoutForceAtlas';
+import { GraphEvents } from './Events';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
@@ -96,58 +97,6 @@ export interface SigmaGraphConfig {
      */
     colours?: { [key: string]: string };
 }
-
-const GraphEvents: React.FC = () => {
-    const registerEvents = useRegisterEvents();
-    const sigma = useSigma();
-    const [draggedNode, setDraggedNode] = useState<string | null>(null);
-
-    useEffect(() => {
-        sigma.on("enterNode", (e) => {
-            sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);
-        });
-        sigma.on("leaveNode", (e) => {
-            sigma.getGraph().removeNodeAttribute(e.node, "highlighted");
-        });
-        sigma.on("downNode", (e) => {
-            setDraggedNode(e.node);
-        });
-
-        // Register the events
-        registerEvents({
-            mouseup: () => {
-                if (draggedNode) {
-                    setDraggedNode(null);
-                    sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
-                }
-            },
-            mousedown: () => {
-                // Disable the autoscale at the first down interaction
-                if (!sigma.getCustomBBox()) {
-                    sigma.setCustomBBox(sigma.getBBox()) 
-                }
-            },
-            mousemove: (e) => {
-                if (draggedNode) {
-                    // Get new position of node
-                    const pos = sigma.viewportToGraph(e);
-                    //console.log(draggedNode, pos)
-                    sigma.getGraph().setNodeAttribute(draggedNode, "x", pos.x);
-                    sigma.getGraph().setNodeAttribute(draggedNode, "y", pos.y);
-                    const attr = sigma.getGraph().getNodeAttributes(draggedNode);
-                    sigma.refresh();
-                    // Prevent sigma to move camera:
-                    e.preventSigmaDefault();
-                    //e.original.preventDefault();
-                    //e.original.stopPropagation();
-                }
-            }
-        });
-    }, [registerEvents, sigma, draggedNode]);
-
-    return null;
-}
-
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();

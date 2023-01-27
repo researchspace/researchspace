@@ -33,7 +33,6 @@ import { getGraphDataWithLabels } from 'platform/components/semantic/graph/Graph
 import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, ControlsContainer, SearchControl, useRegisterEvents, useSigma } from "@react-sigma/core";
 
-import { DragNDrop } from './DragNdrop';
 import { LoadGraph } from './LoadGraph';
 import { LayoutForceAtlas } from './LayoutForceAtlas';
 
@@ -96,7 +95,9 @@ export interface SigmaGraphConfig {
      * }
      */
     colours?: { [key: string]: string };
-}const DragNDrop: React.FC = () => {
+}
+
+const GraphEvents: React.FC = () => {
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
@@ -146,6 +147,7 @@ export interface SigmaGraphConfig {
 
     return null;
 }
+
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();
@@ -235,7 +237,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 >
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } />
                     <LayoutForceAtlas /> 
-                    <DragNDrop />
+                    <GraphEvents />
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>
             );

@@ -24,16 +24,13 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     // Retrieve all predicate attributes that appear in the edges of the graph
     const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);
 
-    // Retrieve all type combinations that appear in the nodes' types array. A type combination is an array of types. For easier processing, the array is sorted alphabetically and flattened,
-    // keeping only the value of the types.
-    //const typeCombinations = graph.nodes().map((node) => graph.getNodeAttribute(node, 'types')).map((types) => types.map((type) => type.value).sort()).map((types) => types.join('')).filter((value, index, self) => self.indexOf(value) === index);
-    
     // Store nodes by shared type and predicate in a map
     const nodesByTypeCombinationAndPredicate = {};
 
     // Iterate through nodes of the graph and group nodes that share a type combination and a predicate based on the source node of the edge
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
+        // TODO: Throw error if node does not have a type
         const typesString = types.map((type) => type.value).sort().join('');
     
         // Iterate through predicates

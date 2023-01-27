@@ -20,12 +20,15 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useEffect } from "react";
 
 export const LayoutForceAtlas: React.FC = () => {
-    const { start, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 100, strongGravityMode: true } });
+    const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 100, strongGravityMode: true } });
     
     useEffect(() => {
         start();
         return () => kill();
     }, [start, kill]);
+
+    // Stop the layout after 2 seconds
+    setTimeout(stop, 2000)
 
     return null;
 }

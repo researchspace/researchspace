@@ -30,7 +30,6 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     // Iterate through nodes of the graph and group nodes that share a type combination and a predicate based on the source node of the edge
     for (const node of graph.nodes()) {
         const types = graph.getNodeAttribute(node, 'types');
-        // TODO: Throw error if node does not have a type
         const typesString = types.map((type) => type.value).sort().join('');
     
         // Iterate through predicates
@@ -122,7 +121,6 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     }
     
     return groupedGraph;
-    return graph;      
 }
 
 export const LoadGraph = (props: any) => {

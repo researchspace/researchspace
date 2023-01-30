@@ -25,17 +25,17 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 export const GraphEvents: React.FC = () => {
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
+    const [activeNode, setActiveNode] = useState<string | null>(null);
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
     useEffect(() => {
         sigma.on("enterNode", (e) => {
+            setActiveNode(e.node);
             sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);
         });
-        sigma.on("leaveNode", (e) => {
+        sigma.on("leaveNode", (e) => { 
+            setActiveNode(null);
             sigma.getGraph().removeNodeAttribute(e.node, "highlighted");
-        });
-        sigma.on("downNode", (e) => {
-            setDraggedNode(e.node);
         });
 
         // Register the events
@@ -50,6 +50,9 @@ export const GraphEvents: React.FC = () => {
                 // Disable the autoscale at the first down interaction
                 if (!sigma.getCustomBBox()) {
                     sigma.setCustomBBox(sigma.getBBox()) 
+                }
+                if (activeNode) {
+                    setDraggedNode(activeNode);
                 }
             },
             mousemove: (e) => {
@@ -68,7 +71,7 @@ export const GraphEvents: React.FC = () => {
                 }
             }
         });
-    }, [registerEvents, sigma, draggedNode]);
+    }, [registerEvents, sigma, draggedNode, activeNode]);
     return null;
 }
 

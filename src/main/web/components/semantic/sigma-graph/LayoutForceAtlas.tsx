@@ -28,15 +28,26 @@ export interface LayoutForceAtlasConfig {
      * @default null
      */
     runFor?: number;
+
+    layoutRun?: boolean;
+
 }
 
 export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
-    const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 100, strongGravityMode: true } });
-    
+    const { isRunning, start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 100, strongGravityMode: true } });
+
     useEffect(() => {
         start();
         return () => kill();
     }, [start, kill]);
+
+    // If the layoutRun property changes, start or stop the layout
+    // This is to allow the layout to be controlled from outside
+    if (!props.layoutRun && isRunning) {
+        stop();
+    } else if (props.layoutRun && !isRunning) {
+        start();
+    }
 
     if (props.runFor) {
         setTimeout(() => {

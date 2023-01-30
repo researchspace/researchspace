@@ -16,7 +16,7 @@
  */
 
 import * as React from 'react';
-
+import { useState } from 'react';
 export interface GraphControllerProps {
     /**
      * HTML id
@@ -27,9 +27,35 @@ export interface GraphControllerProps {
 }
 
 export const GraphController: React.FC<GraphControllerProps> = ({id, children}: GraphControllerProps) => {
+    const [layoutRun, setLayoutRun] = useState(true)
+
+    const childrenWithProps = React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+            return React.cloneElement(child, { layoutRun: layoutRun, setLayoutRun: setLayoutRun });
+        }
+    });
+    
+    const toggleLayout = () => {
+        setLayoutRun(!layoutRun);
+        console.log("runLayout", layoutRun)
+    }
+
+    const runFor = React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+            return child.props.runFor;
+        }
+    })[0] || false;
+
+    if (runFor) {
+        setTimeout(() => {
+            setLayoutRun(false);
+        }, runFor);
+    }
+
     return (
         <div id={id}>
-            {children}
+            {childrenWithProps}
+            <button onClick={toggleLayout}>Toggle Layout</button>
         </div>
     );
 };

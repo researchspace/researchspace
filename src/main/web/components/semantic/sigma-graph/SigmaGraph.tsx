@@ -33,9 +33,10 @@ import { getGraphDataWithLabels } from 'platform/components/semantic/graph/Graph
 import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
 
+import { GraphEvents } from './Events';
+import { GraphController } from './GraphController';
 import { LoadGraph } from './LoadGraph';
 import { LayoutForceAtlas } from './LayoutForceAtlas';
-import { GraphEvents } from './Events';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
@@ -170,9 +171,6 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
         const groupNodes = this.props.groupNodes || false;
-        // TODO: Add error handling
-        // if groupNodes is true, then all nodes need to have a type
-
         if (this.state.isLoading) {
           return createElement(Spinner);
         } else if (this.state.error) {
@@ -185,9 +183,10 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
                 >
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } />
-                    <GraphEvents>
+                    <GraphController>
+                        <GraphEvents />
                         <LayoutForceAtlas runFor={2000} /> 
-                    </GraphEvents>
+                    </GraphController>
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>
             );

@@ -72,7 +72,6 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     // Create a new graph that will contain the grouped nodes
     const groupedGraph = new MultiDirectedGraph();
 
-
     // Add nodes to grouped grpah
     for(const key in nodesBySourceTypeAndPredicate) {
         const entry = nodesBySourceTypeAndPredicate[key];
@@ -86,7 +85,10 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
             // Check if node already exists in the grouped graph
             if (!groupedGraph.hasNode(node)) {
                 const attributes = graph.getNodeAttributes(node);
-                attributes.hidden = true;
+                // If node is a grouped node we hide it
+                if(entry['nodes'].length > 1) {
+                    attributes.hidden = true;
+                }
                 groupedGraph.addNode(node, attributes);
             }
         }

@@ -58,20 +58,20 @@ export const GraphEvents: React.FC = () => {
                     setDraggedNode(null);
                     sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
                 }
+                if (activeNode) {
+                    const childrenCollapsed = sigma.getGraph().getNodeAttribute(activeNode, "childrenCollapsed");
+                    if (childrenCollapsed) {
+                        expandNode(activeNode);
+                    }
+                }
             },
             mousedown: () => {
                 // Disable the autoscale at the first down interaction
                 if (!sigma.getCustomBBox()) {
                     sigma.setCustomBBox(sigma.getBBox()) 
                 }
-                if (activeNode) {
-                    const childrenCollapsed = sigma.getGraph().getNodeAttribute(activeNode, "childrenCollapsed");
-                    if (childrenCollapsed) {
-                        expandNode(activeNode);
-                    }
 
-                    setDraggedNode(activeNode);
-                }
+                setDraggedNode(activeNode);
             },
             mousemove: (e) => {
                 if (draggedNode) {

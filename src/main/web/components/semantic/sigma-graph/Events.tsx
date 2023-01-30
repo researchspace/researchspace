@@ -28,6 +28,21 @@ export const GraphEvents: React.FC = () => {
     const [activeNode, setActiveNode] = useState<string | null>(null);
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
+    const expandNode = (nodeId: string) => {
+        const attributes = sigma.getGraph().getNodeAttributes(nodeId);
+        console.log(attributes)
+        // Get the node and set the attribute childrenCollapsed to false.
+        sigma.getGraph().setNodeAttribute(nodeId, "childrenCollapsed", false);
+
+        // Get all the nodes connected to this node and set the attribute hidden to false.
+        const neighbors = sigma.getGraph().neighbors(nodeId);
+        neighbors.forEach((n) => {
+            sigma.getGraph().setNodeAttribute(n, "hidden", false);
+        });
+
+        sigma.refresh();
+    }
+    
     useEffect(() => {
         sigma.on("enterNode", (e) => {
             setActiveNode(e.node);
@@ -52,6 +67,11 @@ export const GraphEvents: React.FC = () => {
                     sigma.setCustomBBox(sigma.getBBox()) 
                 }
                 if (activeNode) {
+                    const childrenCollapsed = sigma.getGraph().getNodeAttribute(activeNode, "childrenCollapsed");
+                    if (childrenCollapsed) {
+                        expandNode(activeNode);
+                    }
+
                     setDraggedNode(activeNode);
                 }
             },

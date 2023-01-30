@@ -86,6 +86,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
             // Check if node already exists in the grouped graph
             if (!groupedGraph.hasNode(node)) {
                 const attributes = graph.getNodeAttributes(node);
+                attributes.hidden = true;
                 groupedGraph.addNode(node, attributes);
             }
         }
@@ -93,7 +94,8 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         // Add a new node that represents the group of nodes that share the current source node, type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
-                collapsed: true,
+                childrenCollapsed: true,
+                hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 size: props.sizes.nodes * 2,
                 color: graph.getNodeAttribute(entry['nodes'][0], 'color') // We just use the color of the first node
@@ -146,6 +148,8 @@ export const LoadGraph = (props: any) => {
                     }
                 }
                 graph.addNode(element.data.id, {
+                    childrenCollapsed: false,
+                    hidden: false,
                     label: element.data.label,
                     typeLabels: element.data.typeLabels,
                     size: props.sizes.nodes,

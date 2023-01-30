@@ -68,8 +68,6 @@ export const GraphEvents: React.FC = () => {
                     const childrenCollapsed = sigma.getGraph().getNodeAttribute(activeNode, "childrenCollapsed");
                     if (childrenCollapsed) {
                         expandNode(activeNode);
-                    } else {
-                        collapseNode(activeNode);
                     }
 
                     setDraggedNode(activeNode);

@@ -76,7 +76,7 @@ export default function getNodeImageProgram(): typeof AbstractNodeImageProgram {
     if (images[imageSource]) return;
 
     const image = new Image();
-    
+
     image.addEventListener("load", () => {
       images[imageSource] = {
         status: "pending",

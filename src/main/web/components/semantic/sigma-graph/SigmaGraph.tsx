@@ -37,6 +37,7 @@ import { GraphEvents } from './Events';
 import { GraphController } from './GraphController';
 import { LoadGraph } from './LoadGraph';
 import { LayoutForceAtlas } from './LayoutForceAtlas';
+import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
@@ -171,6 +172,14 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
         const groupNodes = this.props.groupNodes || false;
+
+        const sigmaSettings = { 
+            defaultEdgeType: "arrow",
+            defaultNodeType: "image",
+            nodeProgramClasses: { image: getNodeProgramImage() },
+            renderEdgeLabels: true,
+        };
+
         if (this.state.isLoading) {
           return createElement(Spinner);
         } else if (this.state.error) {
@@ -180,7 +189,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 <SigmaContainer 
                     graph={MultiDirectedGraph} 
                     style={{ height: `${height}px`, width: `${width}px` }}
-                    settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow"}}
+                    settings={sigmaSettings}
                 >
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } />
                     <GraphController>

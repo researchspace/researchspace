@@ -156,7 +156,8 @@ export const LoadGraph = (props: any) => {
                     typeLabels: element.data.typeLabels,
                     size: props.sizes.nodes,
                     color: color,
-                    types: types
+                    types: types,
+                    image: element.data.thumbnail
                 })
             }
         }

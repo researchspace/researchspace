@@ -29,6 +29,7 @@ export { DatePickerInput, DatePickerInputProps, DatePickerMode } from './DatePic
 export { FormSwitch, FormSwitchProps } from './FormSwitch';
 export { FormSwitchCase, FormSwitchCaseProps } from './FormSwitchCase';
 export { HiddenInput, HiddenInputProps } from './HiddenInput';
+export { EventInput, EventInputProps } from './EventInput';
 export { PlainTextInput, PlainTextInputProps } from './PlainTextInput';
 export { SelectInput, SelectInputProps } from './SelectInput';
 export { TreePickerInput, TreePickerInputProps } from './TreePickerInput';

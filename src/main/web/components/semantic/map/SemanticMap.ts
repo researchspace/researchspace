@@ -82,6 +82,7 @@ import {
   SemanticMapUpdateFeatureColor,
   SemanticMapReplaceBasemap,
   SemanticMapReplaceOverlay,
+  SemanticMapSendSelectedFeatures,
 } from './SemanticMapEvents';
 import { Dictionary } from 'platform/api/sparql/SparqlClient';
 import { QueryConstantParameter } from '../search/web-components/QueryConstant';
@@ -105,7 +106,7 @@ import {
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
   SemanticMapControlsSendYear,
-  SemanticMapControlsRegister
+  SemanticMapControlsRegister,
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -202,6 +203,11 @@ export interface SemanticMapConfig {
    * Optional array of strings containing IDs of SemanticMapControls component(s) the map should sync with.
    */
   targetControls?: Array<string>;
+
+  /**
+   * Optional array of strings containing IDs of targets for events of the features selection functionality (map as input)
+   */
+  featuresSelectionTargets?: Array<string>;
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -220,6 +226,7 @@ interface MapState {
   groupColorAssociations: {};
   year: string;
   registeredControls: Array<any>;
+  selectedFeatures: Array<string>;
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -256,6 +263,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       featuresColorTaxonomy: '',
       groupColorAssociations: {},
       registeredControls: [],
+      selectedFeatures: [],
       // TODO: move year to controls
       year: '01-01-1670',
     };
@@ -413,9 +421,6 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       //TODO: Manage object color (in groupcolorassociations there can be strings or a color objects)
       
       if(this.state.registeredControls.length > 0 && this.state.featuresColorTaxonomy){
-        console.log("this.state.featuresColorTaxonomy")
-        console.log(this.state.featuresColorTaxonomy)
-        console.log(feature.get(this.state.featuresColorTaxonomy));
         let feature_group = feature.get(this.state.featuresColorTaxonomy).value
         var group_color = this.state.groupColorAssociations[feature_group]
         if(this.state.featuresColorTaxonomy
@@ -617,10 +622,23 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     trigger({
       eventType: SemanticMapSendMapLayers,
-      //TODOZZ: sistemare layers in unicum
       data: [..._.values(this.state.mapLayers)],
       source: this.props.id,
       targets: this.props.targetControls,
+    });
+  }
+
+  private triggerSendSelectedFeatures() {
+    let targets = this.props.featuresSelectionTargets
+    console.log(typeof targets)
+    let features = JSON.stringify(this.state.selectedFeatures)
+    console.log("Sending " + features + " to " + targets);
+
+    trigger({
+      eventType: SemanticMapSendSelectedFeatures,
+      data: JSON.stringify(this.state.selectedFeatures),
+      source: this.props.id,
+      targets: targets,
     });
   }
 
@@ -723,6 +741,15 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     this.compileTemplatesInConfig(this.props);
   }
 
+  public componentDidUpdate(prevProps, prevState) {
+    if (this.state.selectedFeatures !== prevState.selectedFeatures) {
+      console.log("Selected features CHANGED. sending new")
+      this.triggerSendSelectedFeatures();
+    } else {
+      //console.log("Groupcolors NOT changed.")
+    }
+  }
+
   public render() {
     if (!this.state.errorMessage.isNothing) {
       return D.div(
@@ -774,6 +801,11 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       });
 
       if (feature) {
+        console.log("Clicked feature.")
+        console.log(feature)
+        this.setState({ selectedFeatures: [...this.state.selectedFeatures, feature.values_.subject.value] }, ()=>{
+          // console.log(this.state.selectedFeatures)
+        })
         const geometry = feature.getGeometry();
         const coord = getPopupCoordinate(geometry, evt.coordinate);
         const { features = [feature] } = feature.getProperties();
@@ -1395,23 +1427,25 @@ export class AnnotateControl extends Control {
   constructor() {
     super({});
 
+    
     // default editing mode
-    this.editingMode = false;
+    //this.editingMode = false;
 
     // Create edit button
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'ol-control editButton';
-    button.innerHTML = 'E';
+    //const button = document.createElement('button');
+    //button.type = 'button';
+    //button.className = 'ol-control editButton';
+    //button.innerHTML = 'E';
 
     //
     const element = document.createElement('div');
     element.className = 'ol-feature ol-control';
-    element.appendChild(button);
+    //element.appendChild(button);
     Control.call(this, {
       element: element,
     });
     //button.addEventListener('click', () => this.click());
+    
   }
   /*
   click() {

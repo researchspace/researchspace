@@ -234,12 +234,12 @@ export class SemanticMapControls extends Component<Props, State> {
   public componentWillUnmount() {}
 
   public componentDidUpdate(prevProps, prevState) {
-    if (this.state.groupColorAssociations !== prevState.groupColorAssociations) {
-      console.log("Groupcolors CHANGED")
-      this.triggerSendFeaturesColorsAssociationsToMap();
-    } else {
-      console.log("Groupcolors NOT changed.")
-    }
+      if (this.state.groupColorAssociations !== prevState.groupColorAssociations) {
+        console.log("Groupcolors CHANGED")
+        this.triggerSendFeaturesColorsAssociationsToMap();
+      } else {
+        console.log("Groupcolors NOT changed.")
+      }
     }
 
 

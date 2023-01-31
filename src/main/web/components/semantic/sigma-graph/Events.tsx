@@ -77,10 +77,8 @@ export const GraphEvents: React.FC = () => {
                 if (draggedNode) {
                     // Get new position of node
                     const pos = sigma.viewportToGraph(e);
-                    //console.log(draggedNode, pos)
                     sigma.getGraph().setNodeAttribute(draggedNode, "x", pos.x);
                     sigma.getGraph().setNodeAttribute(draggedNode, "y", pos.y);
-                    const attr = sigma.getGraph().getNodeAttributes(draggedNode);
                     sigma.refresh();
                     // Prevent sigma to move camera:
                     e.preventSigmaDefault();

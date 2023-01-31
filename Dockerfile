@@ -21,5 +21,4 @@ RUN apt-get install -y nodejs
 COPY package.json /workdir
 RUN npm install
 
-#CMD ["./gradlew", "run"]
 CMD ["tail", "-f", "/dev/null"]

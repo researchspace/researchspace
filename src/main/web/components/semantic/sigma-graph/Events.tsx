@@ -82,8 +82,6 @@ export const GraphEvents: React.FC = () => {
                     sigma.refresh();
                     // Prevent sigma to move camera:
                     e.preventSigmaDefault();
-                    //e.original.preventDefault();
-                    //e.original.stopPropagation();
                 }
             }
         });

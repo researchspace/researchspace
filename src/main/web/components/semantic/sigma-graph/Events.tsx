@@ -22,7 +22,20 @@ import { useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
-export const GraphEvents: React.FC = () => {
+export interface GraphEventsProps {
+    /**
+     * Boolean that indicates if the layout is running
+     **/
+    layoutRun?: boolean;
+
+    /**
+     * Function to set the layoutRun state
+     **/
+    setLayoutRun?: (layoutRun: boolean) => void;
+}
+
+
+export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
     const [activeNode, setActiveNode] = useState<string | null>(null);
@@ -32,13 +45,26 @@ export const GraphEvents: React.FC = () => {
         // Get the node and set the attribute childrenCollapsed to false.
         sigma.getGraph().setNodeAttribute(nodeId, "childrenCollapsed", false);
 
+        // Get the position of the node
+        const x = sigma.getGraph().getNodeAttribute(nodeId, "x");
+        const y = sigma.getGraph().getNodeAttribute(nodeId, "y");
+
         // Get all the nodes connected to this node and set the attribute hidden to false.
+        // Set the position of the nodes to the position of the parent node.
         const neighbors = sigma.getGraph().neighbors(nodeId);
-        neighbors.forEach((n) => {
+        neighbors.forEach((n, i) => {
+            const angle = (i * 2 * Math.PI) / sigma.getGraph().order;
             sigma.getGraph().setNodeAttribute(n, "hidden", false);
+            sigma.getGraph().setNodeAttribute(n, "x", x + 1 * Math.cos(angle));
+            sigma.getGraph().setNodeAttribute(n, "y", y + 1 * Math.sin(angle));
         });
 
+        // Restart the layout
+        if (props.setLayoutRun) {
+            props.setLayoutRun(true)
+        }
         sigma.refresh();
+        
     }
     
     useEffect(() => {

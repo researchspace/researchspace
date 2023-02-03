@@ -38,6 +38,11 @@ export interface FormEventData {
   'Form.ResourceRemoved': { iri: string };
 
   /**
+   * Semantic-*-input fires this event when its content is updated
+   */
+  'Form.InputUpdated': { text: string };
+
+  /**
    * Don't perform persistance, just run it without saving and send the output with event.
    */
   'Form.DryRunResults': Record<string, any>;
@@ -53,6 +58,16 @@ export interface FormEventData {
    * Triggers save action on the current form
    */
   'Form.Save': { }
+
+  /**
+   * Triggers concat text to selected text
+   * 
+   * type = 'concat' | 'update'
+   * 
+   * 'concat' => adds to the default value the text data
+   * 'update' => rewrites completely the value with the text data
+   */
+  'Form.UpdateInput': { text: string, language?: string, type: string }
 }
 const event: EventMaker<FormEventData> = EventMaker;
 
@@ -60,6 +75,8 @@ export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
 export const FormResourceRemoved = event('Form.ResourceRemoved');
 export const FormDryRunResults = event('Form.DryRunResults');
+export const FormInputUpdated = event('Form.InputUpdated');
 
 export const FormRemoveResource = event('Form.RemoveResource');
 export const FormSave = event('Form.Save');
+export const FormInputConcat = event('Form.UpdateInput')

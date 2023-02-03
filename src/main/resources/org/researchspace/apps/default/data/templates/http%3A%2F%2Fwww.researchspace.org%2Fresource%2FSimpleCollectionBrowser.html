@@ -133,7 +133,11 @@
                     <mp-draggable iri='{{iri}}'>
                       <div style="display: flex; align-items: center; cursor: grab;">
                         <i class="rs-icon rs-icon-drag_points" style="margin-right: 7px; margin-left: 10px;"></i>                
-                        <mp-label iri='{{iri}}'></mp-label>
+                        {{#if labelSparqlPattern}}
+                          <semantic-query query="select ?label where { {{labelSparqlPattern}} BIND(<{{iri}}> as ?item) }"></semantic-query>
+                        {{else}}
+                          <mp-label iri='{{iri}}'></mp-label>
+                        {{/if}}
                       </div>
                     </mp-draggable>
                   </div></h3>

@@ -197,9 +197,20 @@ You should see console output similar to:
 21:24:49 INFO  digilib runs at:
 21:24:49 INFO    http://localhost:10214/digilib
 ```
+*********************************************************************************************************************************************
+**********************************************************************************************************************************************
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+
 
 On the first run you need to import set of default ontologies and knowledge patterns for CIDOC-CRM, see [instance configuration repository](https://github.com/researchspace/researchspace-instance-configurations)
 
+You need to go to settings, LDP , An then ontology container and import 
+
+******************************************************************************************************************************************
+********************************************************************************************************************************************
 ### Run ResearchSpace with your own triplestore and IIIF server
 
 Adjust `sparqlEndpoint`, `iiifScaler` and `imageStorageRoot` properties in the `gradle.properties`.

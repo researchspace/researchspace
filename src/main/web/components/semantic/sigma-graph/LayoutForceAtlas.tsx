@@ -50,7 +50,6 @@ export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
         start();
         if (props.runFor) {
             setTimeout(() => {
-                console.log("Stopping layout after " + props.runFor + "ms")
                 if (props.setLayoutRun) {
                     props.setLayoutRun(false)
                 } else {

@@ -50,7 +50,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
         const y = sigma.getGraph().getNodeAttribute(nodeId, "y");
 
         // Get all the nodes connected to this node and set the attribute hidden to false.
-        // Set the position of the nodes to the position of the parent node.
+        // Set the position of the nodes to the position of the parent node and add a small offset.
         const neighbors = sigma.getGraph().neighbors(nodeId);
         neighbors.forEach((n, i) => {
             const angle = (i * 2 * Math.PI) / sigma.getGraph().order;

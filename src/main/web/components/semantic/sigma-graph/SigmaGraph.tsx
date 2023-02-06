@@ -73,6 +73,12 @@ export interface SigmaGraphConfig {
     groupNodes?: boolean;
 
     /**
+     * Run layout for a given number of milliseconds
+     * @default 2000
+     */
+    runLayoutFor?: number;
+
+    /**
      * Sizes of the nodes and edges in pixe;s
      * Passed as a JSON object with the following properties:
      * - nodes: size of the nodes
@@ -172,6 +178,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
         const groupNodes = this.props.groupNodes || false;
+        const runLayoutFor = this.props.runLayoutFor || 2000;
 
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
@@ -194,7 +201,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } />
                     <GraphController>
                         <GraphEvents />
-                        <LayoutForceAtlas runFor={2000} /> 
+                        <LayoutForceAtlas runFor={runLayoutFor} /> 
                     </GraphController>
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>

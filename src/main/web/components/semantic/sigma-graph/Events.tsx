@@ -46,7 +46,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
 
     const expandNode = (groupedNode: string) => {
 
-        const mode = MODE_REPLACE;
+        const mode = MODE_EXPAND;
 
         // Get the node and set the attribute childrenCollapsed to false.
         sigma.getGraph().setNodeAttribute(groupedNode, "childrenCollapsed", false);
@@ -66,6 +66,9 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
         });
 
         if (mode === MODE_REPLACE) {
+            // In Replace Mode, the grouped node is removed and instead edges
+            // that were connected to the grouped node are connected to the
+            // children nodes.
             const inNeighbours = sigma.getGraph().inNeighbors(groupedNode);
             const inEdges = sigma.getGraph().inEdges(groupedNode);
             for (const edge of inEdges) {

@@ -72,6 +72,13 @@ export interface SigmaGraphConfig {
      */
     groupNodes?: boolean;
 
+
+    /**
+     * Number of nodes above which they will be grouped together.
+     * @default 3
+     */
+    groupSize?: number;
+
     /**
      * Run layout for a given number of milliseconds
      * @default 2000
@@ -178,6 +185,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
         const groupNodes = this.props.groupNodes || false;
+        const groupSize = this.props.groupSize || 3;
         const runLayoutFor = this.props.runLayoutFor || 2000;
 
         const sigmaSettings = { 
@@ -198,7 +206,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     style={{ height: `${height}px`, width: `${width}px` }}
                     settings={sigmaSettings}
                 >
-                    <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } />
+                    <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } groupSize={ groupSize }/>
                     <GraphController>
                         <GraphEvents />
                         <LayoutForceAtlas runFor={runLayoutFor} /> 

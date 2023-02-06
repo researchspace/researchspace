@@ -19,7 +19,15 @@ import { useEffect } from "react";
 import { useLoadGraph } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
 
-function applyGrouping(graph: MultiDirectedGraph, props: any) {
+export interface LoadGraphConfig {
+    colours?: { [key: string]: string };
+    data: any;
+    groupNodes?: boolean;
+    groupSize?: number;
+    sizes?: { "nodes": number, "edges": number };
+}
+
+function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
 
     // Retrieve all predicate attributes that appear in the edges of the graph
     const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);
@@ -60,17 +68,41 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
         }
     }
 
-    // If an entry contains only one node, we dont need to group it
-    for (const key in nodesBySourceTypeAndPredicate) {
-        if (nodesBySourceTypeAndPredicate[key]['nodes'].length == 1) {
-            const node = nodesBySourceTypeAndPredicate[key]['nodes'][0];
-            nodesBySourceTypeAndPredicate[node] = nodesBySourceTypeAndPredicate[key];
+    // Create a new graph that will contain the grouped nodes
+    const groupedGraph = new MultiDirectedGraph();
+    
+    // If the number of nodes in entry contains less than the group size we remove the entry from the map
+    // and add the nodes and corresponding edges to the grouped graph
+    for(const key in nodesBySourceTypeAndPredicate) {
+        const entry = nodesBySourceTypeAndPredicate[key];
+        if (entry['nodes'].length < props.groupSize) {
+            // Add source node to graph
+            if (!groupedGraph.hasNode(entry['source'])) {
+                groupedGraph.addNode(entry['source'], graph.getNodeAttributes(entry['source']));
+            }
+
+            // Add nodes to graph
+            for (const node of entry['nodes']) {
+                // Check if node already exists in the grouped graph
+                if (!groupedGraph.hasNode(node)) {
+                    groupedGraph.addNode(node, graph.getNodeAttributes(node));
+                }
+            }
+
+            // Add edges to graph
+            for (const node of entry['nodes']) {
+                if(!groupedGraph.hasEdge(entry['source']+node)) {
+                    groupedGraph.addEdgeWithKey(entry['source']+node, entry['source'], node, {
+                        label: entry['labels'].join(' '),
+                        size: props.sizes.edges
+                    })
+                }
+            }
+
+            // Remove entry from map
             delete nodesBySourceTypeAndPredicate[key];
         }
     }
-
-    // Create a new graph that will contain the grouped nodes
-    const groupedGraph = new MultiDirectedGraph();
 
     // Add nodes to grouped grpah
     for(const key in nodesBySourceTypeAndPredicate) {
@@ -130,7 +162,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: any) {
     return groupedGraph;
 }
 
-export const LoadGraph = (props: any) => {
+export const LoadGraph = (props: LoadGraphConfig) => {
     const loadGraph = useLoadGraph();
     useEffect(() => {
         let graph = new MultiDirectedGraph();

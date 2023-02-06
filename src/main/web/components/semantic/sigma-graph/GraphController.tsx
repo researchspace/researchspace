@@ -46,12 +46,6 @@ export const GraphController: React.FC<GraphControllerProps> = ({id, children}: 
         }
     })[0] || false;
 
-    if (runFor) {
-        setTimeout(() => {
-            setLayoutRun(false);
-        }, runFor);
-    }
-
     return (
         <div id={id}>
             {childrenWithProps}

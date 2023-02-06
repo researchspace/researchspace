@@ -30,6 +30,7 @@ export interface LayoutForceAtlasConfig {
     runFor?: number;
 
     layoutRun?: boolean;
+    setLayoutRun?: (run: boolean) => void;
 
 }
 
@@ -47,9 +48,17 @@ export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
         stop();
     } else if (props.layoutRun && !isRunning) {
         start();
-    }
-
-    if (props.runFor) {
+        if (props.runFor) {
+            setTimeout(() => {
+                console.log("Stopping layout after " + props.runFor + "ms")
+                if (props.setLayoutRun) {
+                    props.setLayoutRun(false)
+                } else {
+                    stop();
+                }
+            }, props.runFor);
+        }
+    } else if (!props.setLayoutRun && props.runFor) {
         setTimeout(() => {
             stop();
         }, props.runFor);

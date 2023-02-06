@@ -22,6 +22,9 @@ import { useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
+const MODE_EXPAND = 1;
+const MODE_REPLACE = 2;
+
 export interface GraphEventsProps {
     /**
      * Boolean that indicates if the layout is running
@@ -41,23 +44,44 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     const [activeNode, setActiveNode] = useState<string | null>(null);
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
-    const expandNode = (nodeId: string) => {
+    const expandNode = (groupedNode: string) => {
+
+        const mode = MODE_REPLACE;
+
         // Get the node and set the attribute childrenCollapsed to false.
-        sigma.getGraph().setNodeAttribute(nodeId, "childrenCollapsed", false);
+        sigma.getGraph().setNodeAttribute(groupedNode, "childrenCollapsed", false);
 
         // Get the position of the node
-        const x = sigma.getGraph().getNodeAttribute(nodeId, "x");
-        const y = sigma.getGraph().getNodeAttribute(nodeId, "y");
+        const x = sigma.getGraph().getNodeAttribute(groupedNode, "x");
+        const y = sigma.getGraph().getNodeAttribute(groupedNode, "y");
 
         // Get all the nodes connected to this node and set the attribute hidden to false.
         // Set the position of the nodes to the position of the parent node and add a small offset.
-        const neighbors = sigma.getGraph().neighbors(nodeId);
-        neighbors.forEach((n, i) => {
+        const outNeighbors = sigma.getGraph().outNeighbors(groupedNode);
+        outNeighbors.forEach((n, i) => {
             const angle = (i * 2 * Math.PI) / sigma.getGraph().order;
             sigma.getGraph().setNodeAttribute(n, "hidden", false);
             sigma.getGraph().setNodeAttribute(n, "x", x + 1 * Math.cos(angle));
             sigma.getGraph().setNodeAttribute(n, "y", y + 1 * Math.sin(angle));
         });
+
+        if (mode === MODE_REPLACE) {
+            const inNeighbours = sigma.getGraph().inNeighbors(groupedNode);
+            const inEdges = sigma.getGraph().inEdges(groupedNode);
+            for (const edge of inEdges) {
+                const attributes = sigma.getGraph().getEdgeAttributes(edge);
+                for (const sourceNode of inNeighbours) {
+                    for (const targetNode of outNeighbors) {
+                        if(!sigma.getGraph().hasEdge(sourceNode+targetNode)) {
+                            sigma.getGraph().addEdgeWithKey(sourceNode+targetNode, sourceNode, targetNode, attributes);
+                        }
+                    }
+                }
+            }
+            sigma.getGraph().dropNode(groupedNode)
+            setActiveNode(null)
+            setDraggedNode(null)
+        }
 
         // Restart the layout
         if (props.setLayoutRun) {

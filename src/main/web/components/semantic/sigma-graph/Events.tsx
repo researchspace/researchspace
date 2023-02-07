@@ -26,11 +26,12 @@ import { useRegisterEvents, useSigma } from "@react-sigma/core";
 import { NodeClicked } from './EventTypes';
 
 import { GroupingConfig } from './LoadGraph'
+import { SigmaGraphConfig } from './SigmaGraph';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 
-export interface GraphEventsProps  {
+export interface GraphEventsProps extends SigmaGraphConfig {
     /**
      * Boolean that indicates if the layout is running
      **/
@@ -40,19 +41,6 @@ export interface GraphEventsProps  {
      * Function to set the layoutRun state
      **/
     setLayoutRun?: (layoutRun: boolean) => void;
-
-    /**
-    * Grouping configuration
-    * @see GroupingConfig
-    */
-   grouping?: GroupingConfig;
-
-   /**
-    * CONSTRUCT query to retrieve additional data for the graph.
-    * Is either a string or false
-    * @default false
-    */
-   nodeQuery?: string | false;
 
    context?: QueryContext;
 }
@@ -76,13 +64,21 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                 if (!graph.hasNode(element.data.id)) {
                     let color = "#000000";
                     const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
+                    if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
+                        for (const type of types) {
+                            if (props.colours[type.value]) {
+                                color = props.colours[type.value];
+                                break;
+                            }
+                        }
+                    }
                     const angle = (i * 2 * Math.PI) / sigma.getGraph().order;
                     graph.addNode(element.data.id, {
                         childrenCollapsed: false,
                         hidden: false,
                         label: element.data.label,
                         typeLabels: element.data.typeLabels,
-                        //size: props.sizes.nodes,
+                        size: props.sizes.nodes,
                         x: x + 1 * Math.cos(angle),
                         y: y + 1 * Math.sin(angle),
                         color: color,
@@ -98,7 +94,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                 if (!graph.hasEdge(element.data.id)) {
                     graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
                         label: element.data.label,
-                        //size: props.sizes.edges,
+                        size: props.sizes.edges,
                         predicate: element.data.resource
                     })
                 }
@@ -109,7 +105,6 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
             props.setLayoutRun(true)
         }
         sigma.refresh();
-        console.log("Updated with new elements", elements)
     }
 
     const handleGroupedNodeClicked = (groupedNode: string) => {
@@ -168,8 +163,6 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     
     const handleNodeClicked = (node: string) => {
 
-        const cancellation = new Cancellation();
-        const fetching = cancellation.derive();
         const nodeAttributes = sigma.getGraph().getNodeAttributes(node);
         
         // If node query is defined, load additional data

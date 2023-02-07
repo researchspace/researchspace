@@ -64,6 +64,54 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     const [activeNode, setActiveNode] = useState<string | null>(null);
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
+    const addElementsToGraph = (elements: any, parentNode: string) => {
+        const graph = sigma.getGraph();
+        const x = sigma.getGraph().getNodeAttribute(parentNode, "x");
+        const y = sigma.getGraph().getNodeAttribute(parentNode, "y");
+
+        for (const i in elements) {
+            const element = elements[i];
+            if (element.group == "nodes") {
+                // Check if node already exists
+                if (!graph.hasNode(element.data.id)) {
+                    let color = "#000000";
+                    const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
+                    const angle = (i * 2 * Math.PI) / sigma.getGraph().order;
+                    graph.addNode(element.data.id, {
+                        childrenCollapsed: false,
+                        hidden: false,
+                        label: element.data.label,
+                        typeLabels: element.data.typeLabels,
+                        //size: props.sizes.nodes,
+                        x: x + 1 * Math.cos(angle),
+                        y: y + 1 * Math.sin(angle),
+                        color: color,
+                        types: types,
+                        image: element.data.thumbnail
+                    })
+                }
+            }
+        }
+        for (const element of elements) {
+            if (element.group == "edges") {
+                // Check if edge already exists
+                if (!graph.hasEdge(element.data.id)) {
+                    graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
+                        label: element.data.label,
+                        //size: props.sizes.edges,
+                        predicate: element.data.resource
+                    })
+                }
+            }
+        }
+        // Restart the layout
+        if (props.setLayoutRun) {
+            props.setLayoutRun(true)
+        }
+        sigma.refresh();
+        console.log("Updated with new elements", elements)
+    }
+
     const handleGroupedNodeClicked = (groupedNode: string) => {
 
         const mode = props.grouping.behaviour || "expand";
@@ -128,7 +176,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
         if (props.nodeQuery && !nodeAttributes.grouped) {
             let query = props.nodeQuery
             query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
-            loadMoreData(query)
+            loadMoreData(query, node)
         }
 
         // Trigger external event
@@ -143,10 +191,12 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     }
 
 
-    const loadMoreData = (query: string) => {
+    const loadMoreData = (query: string, parentNode: string) => {
         const cancellation = new Cancellation();
         const fetching = cancellation.derive();
         const context = props.context;
+        const elements = []
+
         const config = {
             hidePredicates: [
                 '<http://schema.org/thumbnail>',
@@ -156,8 +206,10 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
             query: query
         }
         const graphDataWithLabels = fetching.map(getGraphDataWithLabels(config, { context }));
-        graphDataWithLabels.onValue((elements) => {
-            console.log(elements)
+        graphDataWithLabels.onValue((e) => {
+            elements = elements.concat(e)
+        }).onEnd(() => {
+            addElementsToGraph(elements, parentNode)
         })
     }
 

@@ -95,6 +95,18 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
         
     }
     
+    const handleNodeClicked = (node: string) => {
+        // Trigger external event
+        const nodeAttributes = sigma.getGraph().getNodeAttributes(node);
+        // Node IRIs are stored with < and > brackets, so we need to remove them
+        // when triggering the event
+        trigger({
+            eventType: NodeClicked,
+            source: node,
+            data: { nodes: nodeAttributes.children ? nodeAttributes.children.map( (childNode: string) => childNode.substring(1, childNode.length - 1)) : [ node.substring(1, node.length - 1) ]}
+        })
+    }
+
     useEffect(() => {
         sigma.on("enterNode", (e) => {
             setActiveNode(e.node);
@@ -117,14 +129,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                     if (nodeType === "group") {
                         handleGroupedNodeClicked(activeNode);
                     }
-                    handleGroupedNodeClicked(activeNode)
-                    // Trigger external event
-                    const nodeAttributes = sigma.getGraph().getNodeAttributes(activeNode);
-                    trigger({
-                        eventType: NodeClicked,
-                        source: activeNode,
-                        data: { nodes: nodeAttributes.children ? nodeAttributes.children.map( (childNode: string) => childNode.substring(1, childNode.length - 1)) : [ activeNode.substring(1, activeNode.length - 1) ]}
-                    })
+                    handleNodeClicked(activeNode)
                 }
             },
             mousedown: () => {

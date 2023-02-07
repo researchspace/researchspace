@@ -57,7 +57,7 @@ export interface SigmaGraphConfig {
     /** 
      * Grouping configuration
      * @default {
-     *  groupNodes: false
+     *  enabled: false
      * }
      * @see GroupingConfig
      */
@@ -73,16 +73,16 @@ export interface SigmaGraphConfig {
     layout?: LayoutConfig;
 
     /**
-     *  Width of the graph in pixels.
-     *  @default 800
+     *  Width of the graph.
+     *  @default "800px"
      */
-    width?: number;
+    width?: string;
 
     /**
-     * Height of the graph in pixels.
-     * @default 600
+     * Height of the graph.
+     * @default "600px"
      */
-    height?: number;
+    height?: string;
 
     /**
      * Sizes of the nodes and edges in pixe;s
@@ -152,7 +152,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const context = this.context.semanticContext;
         const graphDataWithLabels = this.fetching.map(getGraphDataWithLabels(config, { context }));
         graphDataWithLabels.onValue((elements) => {
-            if (props.grouping.groupNodes) {
+            if (props.grouping.enabled) {
                 // Group nodes relies on the type property being set
                 // Raise an error it not all nodes have a type
                 const nodesWithoutType = elements.filter((element) => element.group === 'nodes' && !element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']);
@@ -179,12 +179,12 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
     }
 
     render() {
-        const width = this.props.width || 800;
-        const height = this.props.height || 600;
+        const width = this.props.width || "800px";
+        const height = this.props.height || "600px";
         const searchBox = this.props.searchBox || false;
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
-        const grouping = this.props.grouping || { "groupNodes": false };
+        const grouping = this.props.grouping || { "enabled": false };
         const layout = this.props.layout || { "runFor": 2000 };
 
         const sigmaSettings = { 
@@ -202,7 +202,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
             return (
                 <SigmaContainer 
                     graph={MultiDirectedGraph} 
-                    style={{ height: `${height}px`, width: `${width}px` }}
+                    style={{ height: `${height}`, width: `${width}` }}
                     settings={sigmaSettings}
                 >
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } grouping={ grouping }/>

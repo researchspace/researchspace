@@ -108,10 +108,11 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
         const nodeAttributes = sigma.getGraph().getNodeAttributes(node);
         // Node IRIs are stored with < and > brackets, so we need to remove them
         // when triggering the event
+        const data = { nodes: nodeAttributes.children ? nodeAttributes.children.map( (childNode: string) => childNode.substring(1, childNode.length - 1)) : [ node.substring(1, node.length - 1) ]}
         trigger({
             eventType: NodeClicked,
             source: node,
-            data: { nodes: nodeAttributes.children ? nodeAttributes.children.map( (childNode: string) => childNode.substring(1, childNode.length - 1)) : [ node.substring(1, node.length - 1) ]}
+            data: data
         })
     }
 

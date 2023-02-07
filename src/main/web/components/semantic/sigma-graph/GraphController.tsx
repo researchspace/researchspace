@@ -49,7 +49,6 @@ export const GraphController: React.FC<GraphControllerProps> = ({id, children}: 
     return (
         <div id={id}>
             {childrenWithProps}
-            <button onClick={toggleLayout}>Toggle Layout</button>
         </div>
     );
 };

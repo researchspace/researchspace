@@ -23,10 +23,6 @@ import { useRegisterEvents, useSigma } from "@react-sigma/core";
 import { NodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
-
-const MODE_EXPAND = 1;
-const MODE_REPLACE = 2;
-
 export interface GraphEventsProps {
     /**
      * Boolean that indicates if the layout is running
@@ -45,9 +41,13 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     const [activeNode, setActiveNode] = useState<string | null>(null);
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
-    const expandNode = (groupedNode: string) => {
+    const handleGroupedNodeClicked = (groupedNode: string) => {
 
-        const mode = MODE_EXPAND;
+        const mode = props.grouping.groupBehaviour;
+
+        if (!mode || mode == "none") {
+            return;
+        }
 
         // Get the node and set the attribute childrenCollapsed to false.
         sigma.getGraph().setNodeAttribute(groupedNode, "childrenCollapsed", false);
@@ -66,7 +66,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
             sigma.getGraph().setNodeAttribute(n, "y", y + 1 * Math.sin(angle));
         });
 
-        if (mode === MODE_REPLACE) {
+        if (mode == "replace") {
             // In Replace Mode, the grouped node is removed and instead edges
             // that were connected to the grouped node are connected to the
             // children nodes.
@@ -113,10 +113,11 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                     sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
                 }
                 if (activeNode) {
-                    const childrenCollapsed = sigma.getGraph().getNodeAttribute(activeNode, "childrenCollapsed");
-                    if (childrenCollapsed) {
-                        expandNode(activeNode);
+                    const nodeType = sigma.getGraph().getNodeAttribute(activeNode, "type");
+                    if (nodeType === "group") {
+                        handleGroupedNodeClicked(activeNode);
                     }
+                    handleGroupedNodeClicked(activeNode)
                     // Trigger external event
                     const nodeAttributes = sigma.getGraph().getNodeAttributes(activeNode);
                     trigger({

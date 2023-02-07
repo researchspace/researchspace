@@ -18,13 +18,18 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+import { QueryContext } from 'platform/api/sparql/SparqlClient';
 import { trigger } from 'platform/api/events';
+import { Cancellation } from 'platform/api/async';
+import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
 import { NodeClicked } from './EventTypes';
 
 import { GroupingConfig } from './LoadGraph'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
+
+
 export interface GraphEventsProps  {
     /**
      * Boolean that indicates if the layout is running
@@ -41,9 +46,19 @@ export interface GraphEventsProps  {
     * @see GroupingConfig
     */
    grouping?: GroupingConfig;
+
+   /**
+    * CONSTRUCT query to retrieve additional data for the graph.
+    * Is either a string or false
+    * @default false
+    */
+   nodeQuery?: string | false;
+
+   context?: QueryContext;
 }
 
 export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
+
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
     const [activeNode, setActiveNode] = useState<string | null>(null);
@@ -104,8 +119,19 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     }
     
     const handleNodeClicked = (node: string) => {
-        // Trigger external event
+
+        const cancellation = new Cancellation();
+        const fetching = cancellation.derive();
         const nodeAttributes = sigma.getGraph().getNodeAttributes(node);
+        
+        // If node query is defined, load additional data
+        if (props.nodeQuery && !nodeAttributes.grouped) {
+            let query = props.nodeQuery
+            query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
+            loadMoreData(query)
+        }
+
+        // Trigger external event
         // Node IRIs are stored with < and > brackets, so we need to remove them
         // when triggering the event
         const data = { nodes: nodeAttributes.children ? nodeAttributes.children.map( (childNode: string) => childNode.substring(1, childNode.length - 1)) : [ node.substring(1, node.length - 1) ]}
@@ -113,6 +139,25 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
             eventType: NodeClicked,
             source: node,
             data: data
+        })
+    }
+
+
+    const loadMoreData = (query: string) => {
+        const cancellation = new Cancellation();
+        const fetching = cancellation.derive();
+        const context = props.context;
+        const config = {
+            hidePredicates: [
+                '<http://schema.org/thumbnail>',
+                '<http://www.w3.org/2000/01/rdf-schema#label>',
+                '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'
+                ],
+            query: query
+        }
+        const graphDataWithLabels = fetching.map(getGraphDataWithLabels(config, { context }));
+        graphDataWithLabels.onValue((elements) => {
+            console.log(elements)
         })
     }
 

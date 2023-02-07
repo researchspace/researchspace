@@ -85,6 +85,13 @@ export interface SigmaGraphConfig {
     height?: string;
 
     /**
+     * CONSTRUCT query to retrieve additional data for the graph.
+     * Is either a string or false
+     * @default false
+     */
+    nodeQuery?: string | false;
+
+    /**
      * Sizes of the nodes and edges in pixe;s
      * Passed as a JSON object with the following properties:
      * - nodes: size of the nodes
@@ -186,6 +193,9 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
         const grouping = this.props.grouping || { "enabled": false };
         const layout = this.props.layout || { "runFor": 2000 };
+        const nodeQuery = this.props.nodeQuery || false;
+
+        const context = this.context.semanticContext;
 
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
@@ -207,7 +217,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 >
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } grouping={ grouping }/>
                     <GraphController>
-                        <GraphEvents grouping={ grouping }/>
+                        <GraphEvents grouping={ grouping } nodeQuery={ nodeQuery } context={ context }/>
                         <LayoutForceAtlas config={layout} /> 
                     </GraphController>
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}

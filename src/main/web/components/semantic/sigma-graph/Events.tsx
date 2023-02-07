@@ -22,8 +22,10 @@ import { trigger } from 'platform/api/events';
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
 import { NodeClicked } from './EventTypes';
 
+import { GroupingConfig } from './LoadGraph'
+
 import "@react-sigma/core/lib/react-sigma.min.css";
-export interface GraphEventsProps {
+export interface GraphEventsProps  {
     /**
      * Boolean that indicates if the layout is running
      **/
@@ -33,6 +35,12 @@ export interface GraphEventsProps {
      * Function to set the layoutRun state
      **/
     setLayoutRun?: (layoutRun: boolean) => void;
+
+    /**
+    * Grouping configuration
+    * @see GroupingConfig
+    */
+   grouping?: GroupingConfig;
 }
 
 export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
@@ -43,7 +51,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
 
     const handleGroupedNodeClicked = (groupedNode: string) => {
 
-        const mode = props.grouping.groupBehaviour;
+        const mode = props.grouping.groupBehaviour || "expand";
 
         if (!mode || mode == "none") {
             return;
@@ -125,8 +133,8 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                     sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
                 }
                 if (activeNode) {
-                    const nodeType = sigma.getGraph().getNodeAttribute(activeNode, "type");
-                    if (nodeType === "group") {
+                    const grouped = sigma.getGraph().getNodeAttribute(activeNode, "grouped");
+                    if (grouped) {
                         handleGroupedNodeClicked(activeNode);
                     }
                     handleNodeClicked(activeNode)

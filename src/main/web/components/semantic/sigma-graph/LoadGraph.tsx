@@ -150,7 +150,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
         // Add a new node that represents the group of nodes that share the current source node, type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
-                type: 'group',
+                grouped: true,
                 children: entry['nodes'],
                 hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',

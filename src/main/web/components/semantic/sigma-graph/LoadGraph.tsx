@@ -30,13 +30,13 @@ export interface GroupingConfig {
      * Enable grouping of nodes by shared predicate and type
      * @default false
      */
-    groupNodes?: boolean;
+    enabled?: boolean;
 
     /**
      * Number of nodes above which they will be grouped together.
      * @default 3
      */
-    groupSize?: number;
+    threshold?: number;
 
     /**
      * Behaviour of grouped nodes when expanding.
@@ -46,7 +46,7 @@ export interface GroupingConfig {
      * node will neither be expanded nor replaced.
      * @default 'expand'
      */
-    groupBehaviour?: 'expand' | 'replace' | 'none';
+    behaviour?: 'expand' | 'replace' | 'none';
 }
 
 function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
@@ -97,7 +97,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
     // and add the nodes and corresponding edges to the grouped graph
     for(const key in nodesBySourceTypeAndPredicate) {
         const entry = nodesBySourceTypeAndPredicate[key];
-        if (entry['nodes'].length < props.grouping.groupSize) {
+        if (entry['nodes'].length < props.grouping.threshold) {
             // Add source node to graph
             if (!groupedGraph.hasNode(entry['source'])) {
                 groupedGraph.addNode(entry['source'], graph.getNodeAttributes(entry['source']));
@@ -228,7 +228,7 @@ export const LoadGraph = (props: LoadGraphConfig) => {
             }
         }
 
-        if (props.grouping.groupNodes) {
+        if (props.grouping.enabled) {
             graph = applyGrouping(graph, props);
         }
 

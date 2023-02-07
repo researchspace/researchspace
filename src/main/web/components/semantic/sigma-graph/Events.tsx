@@ -51,7 +51,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
 
     const handleGroupedNodeClicked = (groupedNode: string) => {
 
-        const mode = props.grouping.groupBehaviour || "expand";
+        const mode = props.grouping.behaviour || "expand";
 
         if (!mode || mode == "none") {
             return;
@@ -138,7 +138,11 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                     if (grouped) {
                         handleGroupedNodeClicked(activeNode);
                     }
-                    handleNodeClicked(activeNode)
+                    // Check if node still exists because it might have been removed
+                    // in the handleGroupedNodeClicked function
+                    if (sigma.getGraph().hasNode(activeNode)) {
+                        handleNodeClicked(activeNode);
+                    }
                 }
             },
             mousedown: () => {

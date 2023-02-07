@@ -42,10 +42,11 @@ export interface GroupingConfig {
      * Behaviour of grouped nodes when expanding.
      * In 'expand' mode, the children nodes will be attached to the
      * grouped node. In 'replace' mode, the grouped node will be
-     * replaced by the children nodes.
+     * replaced by the children nodes. If set to 'none', the grouped
+     * node will neither be expanded nor replaced.
      * @default 'expand'
      */
-    groupBehaviour?: 'expand' | 'replace';
+    groupBehaviour?: 'expand' | 'replace' | 'none';
 }
 
 function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
@@ -149,7 +150,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
         // Add a new node that represents the group of nodes that share the current source node, type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
-                childrenCollapsed: true,
+                type: 'group',
                 children: entry['nodes'],
                 hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',

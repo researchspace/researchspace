@@ -35,8 +35,8 @@ import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/c
 
 import { GraphEvents } from './Events';
 import { GraphController } from './GraphController';
-import { LoadGraph } from './LoadGraph';
-import { LayoutForceAtlas } from './LayoutForceAtlas';
+import { LoadGraph, GroupingConfig } from './LoadGraph';
+import { LayoutForceAtlas, LayoutConfig } from './LayoutForceAtlas';
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -54,6 +54,24 @@ export interface SigmaGraphConfig {
      */
     id?: string;
 
+    /** 
+     * Grouping configuration
+     * @default {
+     *  groupNodes: false
+     * }
+     * @see GroupingConfig
+     */
+    grouping?: GroupingConfig;
+
+    /**
+     * Layout configuration
+     * @default {
+     *  runFor: 2000
+     * }
+     * @see LayoutConfig
+     */
+    layout?: LayoutConfig;
+
     /**
      *  Width of the graph in pixels.
      *  @default 800
@@ -65,25 +83,6 @@ export interface SigmaGraphConfig {
      * @default 600
      */
     height?: number;
-
-    /**
-     * Enable grouping of nodes by shared predicate and type
-     * @default false
-     */
-    groupNodes?: boolean;
-
-
-    /**
-     * Number of nodes above which they will be grouped together.
-     * @default 3
-     */
-    groupSize?: number;
-
-    /**
-     * Run layout for a given number of milliseconds
-     * @default 2000
-     */
-    runLayoutFor?: number;
 
     /**
      * Sizes of the nodes and edges in pixe;s
@@ -112,6 +111,7 @@ export interface SigmaGraphConfig {
      */
     colours?: { [key: string]: string };
 }
+
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();
@@ -152,7 +152,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const context = this.context.semanticContext;
         const graphDataWithLabels = this.fetching.map(getGraphDataWithLabels(config, { context }));
         graphDataWithLabels.onValue((elements) => {
-            if (props.groupNodes) {
+            if (props.grouping.groupNodes) {
                 // Group nodes relies on the type property being set
                 // Raise an error it not all nodes have a type
                 const nodesWithoutType = elements.filter((element) => element.group === 'nodes' && !element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']);
@@ -184,9 +184,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const searchBox = this.props.searchBox || false;
         const colours = this.props.colours || {};
         const sizes = this.props.sizes || { "nodes": 10, "edges": 5 };
-        const groupNodes = this.props.groupNodes || false;
-        const groupSize = this.props.groupSize || 3;
-        const runLayoutFor = this.props.runLayoutFor || 2000;
+        const grouping = this.props.grouping || { "groupNodes": false };
+        const layout = this.props.layout || { "runFor": 2000 };
 
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
@@ -206,10 +205,10 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     style={{ height: `${height}px`, width: `${width}px` }}
                     settings={sigmaSettings}
                 >
-                    <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } groupNodes={ groupNodes } groupSize={ groupSize }/>
+                    <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } grouping={ grouping }/>
                     <GraphController>
                         <GraphEvents />
-                        <LayoutForceAtlas runFor={runLayoutFor} /> 
+                        <LayoutForceAtlas config={layout} /> 
                     </GraphController>
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>

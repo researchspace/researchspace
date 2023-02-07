@@ -19,9 +19,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 
 import { trigger } from 'platform/api/events';
-
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
-
 import { NodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -40,7 +38,6 @@ export interface GraphEventsProps {
      **/
     setLayoutRun?: (layoutRun: boolean) => void;
 }
-
 
 export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     const registerEvents = useRegisterEvents();
@@ -120,11 +117,12 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                     if (childrenCollapsed) {
                         expandNode(activeNode);
                     }
-                    // TODO: If node is a grouped node, it should return all children nodes
+                    // Trigger external event
+                    const nodeAttributes = sigma.getGraph().getNodeAttributes(activeNode);
                     trigger({
                         eventType: NodeClicked,
                         source: activeNode,
-                        data: { nodes: [ activeNode.substring(1, activeNode.length - 1) ]}
+                        data: { nodes: nodeAttributes.children ? nodeAttributes.children.map( (childNode: string) => childNode.substring(1, childNode.length - 1)) : [ activeNode.substring(1, activeNode.length - 1) ]}
                     })
                 }
             },

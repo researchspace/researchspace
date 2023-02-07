@@ -21,6 +21,18 @@ import { useEffect } from "react";
 
 export interface LayoutForceAtlasConfig {
     /**
+     * Configuration for the layout
+     * @default {}
+     * @see LayoutConfig
+     */
+    config?: LayoutConfig;
+
+    layoutRun?: boolean;
+    setLayoutRun?: (run: boolean) => void;
+
+}
+export interface LayoutConfig {
+    /**
      * If this is set, the Layout will be stopped
      * after the specified number of time in milliseconds.
      * Set this if the layout is used in combination with 
@@ -28,10 +40,6 @@ export interface LayoutForceAtlasConfig {
      * @default null
      */
     runFor?: number;
-
-    layoutRun?: boolean;
-    setLayoutRun?: (run: boolean) => void;
-
 }
 
 export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
@@ -48,19 +56,19 @@ export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
         stop();
     } else if (props.layoutRun && !isRunning) {
         start();
-        if (props.runFor) {
+        if (props.config.runFor) {
             setTimeout(() => {
                 if (props.setLayoutRun) {
                     props.setLayoutRun(false)
                 } else {
                     stop();
                 }
-            }, props.runFor);
+            }, props.config.runFor);
         }
-    } else if (!props.setLayoutRun && props.runFor) {
+    } else if (!props.setLayoutRun && props.config.runFor) {
         setTimeout(() => {
             stop();
-        }, props.runFor);
+        }, props.config.runFor);
     }
 
     return null;

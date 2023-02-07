@@ -22,9 +22,30 @@ import { MultiDirectedGraph } from "graphology";
 export interface LoadGraphConfig {
     colours?: { [key: string]: string };
     data: any;
-    groupNodes?: boolean;
-    groupSize?: number;
+    grouping: GroupingConfig;
     sizes?: { "nodes": number, "edges": number };
+}
+export interface GroupingConfig {
+    /**
+     * Enable grouping of nodes by shared predicate and type
+     * @default false
+     */
+    groupNodes?: boolean;
+
+    /**
+     * Number of nodes above which they will be grouped together.
+     * @default 3
+     */
+    groupSize?: number;
+
+    /**
+     * Behaviour of grouped nodes when expanding.
+     * In 'expand' mode, the children nodes will be attached to the
+     * grouped node. In 'replace' mode, the grouped node will be
+     * replaced by the children nodes.
+     * @default 'expand'
+     */
+    groupBehaviour?: 'expand' | 'replace';
 }
 
 function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
@@ -75,7 +96,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
     // and add the nodes and corresponding edges to the grouped graph
     for(const key in nodesBySourceTypeAndPredicate) {
         const entry = nodesBySourceTypeAndPredicate[key];
-        if (entry['nodes'].length < props.groupSize) {
+        if (entry['nodes'].length < props.grouping.groupSize) {
             // Add source node to graph
             if (!groupedGraph.hasNode(entry['source'])) {
                 groupedGraph.addNode(entry['source'], graph.getNodeAttributes(entry['source']));
@@ -129,6 +150,7 @@ function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
                 childrenCollapsed: true,
+                children: entry['nodes'],
                 hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 size: props.sizes.nodes * 2,
@@ -205,7 +227,7 @@ export const LoadGraph = (props: LoadGraphConfig) => {
             }
         }
 
-        if (props.groupNodes) {
+        if (props.grouping.groupNodes) {
             graph = applyGrouping(graph, props);
         }
 

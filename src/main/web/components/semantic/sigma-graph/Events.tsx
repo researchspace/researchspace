@@ -42,7 +42,7 @@ export interface GraphEventsProps extends SigmaGraphConfig {
      **/
     setLayoutRun?: (layoutRun: boolean) => void;
 
-   context?: QueryContext;
+    context?: QueryContext;
 }
 
 export const GraphEvents: React.FC<GraphEventsProps> = (props) => {

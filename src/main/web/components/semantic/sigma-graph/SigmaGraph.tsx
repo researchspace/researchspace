@@ -33,10 +33,11 @@ import { getGraphDataWithLabels } from 'platform/components/semantic/graph/Graph
 import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
 
+import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config'
 import { GraphEvents } from './Events';
 import { GraphController } from './GraphController';
-import { LoadGraph, GroupingConfig } from './LoadGraph';
-import { LayoutForceAtlas, LayoutConfig } from './LayoutForceAtlas';
+import { LoadGraph,  } from './LoadGraph';
+import { LayoutForceAtlas } from './LayoutForceAtlas';
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -47,88 +48,11 @@ export interface State {
     error?: any;
     warning?: string;
   }
-export interface SigmaGraphConfig {
-    /**
-     * Optional identifier
-     * @default undefined
-     */
-    id?: string;
-
-    /** 
-     * Grouping configuration
-     * @default {
-     *  enabled: false
-     * }
-     * @see GroupingConfig
-     */
-    grouping?: GroupingConfig;
-
-    /**
-     * Layout configuration
-     * @default {
-     *  runFor: 2000
-     * }
-     * @see LayoutConfig
-     */
-    layout?: LayoutConfig;
-
-    /**
-     *  Width of the graph.
-     *  @default "800px"
-     */
-    width?: string;
-
-    /**
-     * Height of the graph.
-     * @default "600px"
-     */
-    height?: string;
-
-    /**
-     * CONSTRUCT query to retrieve additional data for the graph.
-     * Is either a string or false
-     * @default false
-     */
-    nodeQuery?: string | false;
-
-    /**
-     * Sizes of the nodes and edges in pixe;s
-     * Passed as a JSON object with the following properties:
-     * - nodes: size of the nodes
-     * - edges: size of the edges
-     * @default {"nodes": 10, "edges": 5}
-     */
-    sizes?: { "nodes": number, "edges": number };
-
-    /**
-     * Display a search field.
-     * @default false
-     */
-    searchBox?: boolean;
-
-    /**
-     * Optional colour palette for nodes.
-     * Passed as JSON object with RDF types as keys and colours as values.
-     * @default {}
-     * @example
-     * {
-     *  "http://www.w3.org/2002/07/owl#Class": "#ff0000",
-     *  "http://www.w3.org/2002/07/owl#ObjectProperty": "#00ff00"
-     * }
-     */
-    colours?: { [key: string]: string };
-}
 
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();
     private fetching = this.cancellation.derive();
-
-    public static DEFAULT_HIDE_PREDICATES = [
-    '<http://schema.org/thumbnail>',
-    '<http://www.w3.org/2000/01/rdf-schema#label>',
-    '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'
-    ];
 
     constructor(props: SigmaGraphConfig, context: any) {
         super(props, context);
@@ -149,7 +73,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const config = assign(
           {},
           {
-            hidePredicates: SigmaGraph.DEFAULT_HIDE_PREDICATES,
+            hidePredicates: DEFAULT_HIDE_PREDICATES,
           },
           props
         );

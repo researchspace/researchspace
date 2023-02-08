@@ -19,6 +19,7 @@ import * as React from 'react';
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useEffect } from "react";
 
+import { LayoutConfig } from "./Config";
 export interface LayoutForceAtlasConfig {
     /**
      * Configuration for the layout
@@ -30,16 +31,6 @@ export interface LayoutForceAtlasConfig {
     layoutRun?: boolean;
     setLayoutRun?: (run: boolean) => void;
 
-}
-export interface LayoutConfig {
-    /**
-     * If this is set, the Layout will be stopped
-     * after the specified number of time in milliseconds.
-     * Set this if the layout is used in combination with 
-     * events such as drag & drop.
-     * @default null
-     */
-    runFor?: number;
 }
 
 export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {

@@ -94,9 +94,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         }
 
 
-        // if (props.grouping.enabled) {
-        //     newGraph = applyGrouping(newGraph, props);
-        // }
+        if (props.grouping.enabled) {
+             newGraph = applyGrouping(newGraph, props);
+        }
         // Merge new graph with sigma graph
         newGraph.forEachNode((node, attributes) => {
             if (!graph.hasNode(node)) {
@@ -198,7 +198,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         const cancellation = new Cancellation();
         const fetching = cancellation.derive();
         const context = props.context;
-        const elements = []
+        let elements = []
 
         const config = {
             hidePredicates: [

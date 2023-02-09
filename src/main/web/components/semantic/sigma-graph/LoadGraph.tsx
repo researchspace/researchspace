@@ -127,7 +127,9 @@ export function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig)
                 hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 size: props.sizes.nodes * 2,
-                color: graph.getNodeAttribute(entry['nodes'][0], 'color') // We just use the color of the first node
+                color: graph.getNodeAttribute(entry['nodes'][0], 'color'), // We just use the color of the first node
+                x: graph.getNodeAttribute(entry['nodes'][0], 'x'),
+                y: graph.getNodeAttribute(entry['nodes'][0], 'y')
             })
         }
     }

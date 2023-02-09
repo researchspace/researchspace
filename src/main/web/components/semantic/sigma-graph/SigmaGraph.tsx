@@ -142,7 +142,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 >
                     <LoadGraph data={ this.state.elements } colours={ colours } sizes={ sizes } grouping={ grouping }/>
                     <GraphController>
-                        <GraphEvents sizes={ sizes } colours={ colours } grouping={ grouping } nodeQuery={ nodeQuery } context={ context }/>
+                        <GraphEvents sizes={ sizes } colours={ colours } grouping={ grouping } query={ this.props.query } nodeQuery={ nodeQuery } context={ context }/>
                         <LayoutForceAtlas config={layout} /> 
                     </GraphController>
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}

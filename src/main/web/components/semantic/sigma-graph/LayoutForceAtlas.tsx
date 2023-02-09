@@ -35,8 +35,8 @@ export interface LayoutForceAtlasConfig {
 
 export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
     const layoutSettings = {
-        adjustSizes: true,
-        slowDown: 100,
+        adjustSizes: false,
+        slowDown: 10,
         strongGravityMode: true
     }
     const { isRunning, start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });

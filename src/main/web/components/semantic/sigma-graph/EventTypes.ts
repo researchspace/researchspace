@@ -27,7 +27,16 @@ export interface SigmaEventData {
      */
     nodes: string[];
   };
+
+  /**
+   * Event that listens to a external event that triggers a data update
+   * in the sigma graph.
+   */
+  'Sigma.AddData': {
+    query: string;
+  }
 }
 const event: EventMaker<SigmaEventData> = EventMaker;
 
 export const NodeClicked = event('Sigma.NodeClicked');
+export const AddData = event('Sigma.AddData');

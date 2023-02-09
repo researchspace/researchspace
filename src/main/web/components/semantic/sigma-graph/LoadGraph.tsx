@@ -114,6 +114,7 @@ export function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig)
                 // If node is a grouped node we hide it
                 if(entry['nodes'].length > 1) {
                     attributes.hidden = true;
+                    attributes.parent = key;
                 }
                 groupedGraph.addNode(node, attributes);
             }
@@ -126,6 +127,7 @@ export function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig)
                 children: entry['nodes'],
                 hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
+                typeLabels: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels'),
                 size: props.sizes.nodes * 2,
                 color: graph.getNodeAttribute(entry['nodes'][0], 'color'), // We just use the color of the first node
                 x: graph.getNodeAttribute(entry['nodes'][0], 'x'),

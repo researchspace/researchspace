@@ -18,12 +18,12 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
-import { trigger } from 'platform/api/events';
+import { listen, trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
-import { NodeClicked } from './EventTypes';
+import { NodeClicked, AddData } from './EventTypes';
 
 import { GraphEventsConfig } from './Config';
 import { applyGrouping } from './LoadGraph'
@@ -37,6 +37,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const sigma = useSigma();
     const [activeNode, setActiveNode] = useState<string | null>(null);
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
+    const cancellation = new Cancellation();
 
     const addElementsToGraph = (elements: any, parentNode: string) => {
         // TODO (Refactor):
@@ -178,7 +179,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         if (props.nodeQuery && !nodeAttributes.grouped) {
             let query = props.nodeQuery
             query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
-            console.log(query)
             loadMoreData(query, node)
         }
 
@@ -193,9 +193,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         })
     }
 
-
     const loadMoreData = (query: string, parentNode: string) => {
-        const cancellation = new Cancellation();
         const fetching = cancellation.derive();
         const context = props.context;
         let elements = []
@@ -216,7 +214,56 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         })
     }
 
+    const releaseNodeFromGroup = (node: string) => {
+        const graph = sigma.getGraph();
+        graph.setNodeAttribute(node, "hidden", false);
+        // Get parent node
+        const parentNode = graph.getNodeAttribute(node, "parent");
+        
+        // Remove edge from parentNode to node
+        graph.dropEdge(parentNode, node);
+
+        // Remove node from parent node children
+        const children = graph.getNodeAttribute(parentNode, "children");
+        const index = children.indexOf(node);
+        if (index > -1) {
+            children.splice(index, 1);
+        }
+        graph.setNodeAttribute(parentNode, "children", children);
+
+        // Update label of parent node
+        graph.setNodeAttribute(parentNode, "label", graph.getNodeAttribute(parentNode, "typeLabels") + ' (' + children.length + ')');
+        
+        // If parent node has no children, remove it from the graph
+        if (children.length == 0) {
+            graph.dropNode(parentNode);
+        }
+        
+        sigma.refresh();
+    }
+
     useEffect(() => {
+
+        // Listen to external events
+        cancellation.map(
+            listen({
+                eventType: AddData,
+                target: props.id
+            })).observe({
+            value: (event) => {
+                if (event.data.query && event.data.parentNode) {
+                    // If parent node is in a group, release the node from the group
+                    const parentNode = event.data.parentNode;
+                    const query = event.data.query;
+                    if (sigma.getGraph().getNodeAttribute(parentNode, "hidden")) {
+                        releaseNodeFromGroup(parentNode)
+                    }
+                    loadMoreData(query, parentNode)
+                } else {
+                    console.log("No query or parent node defined");
+                }
+            }
+        });
         sigma.on("enterNode", (e) => {
             setActiveNode(e.node);
             sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);

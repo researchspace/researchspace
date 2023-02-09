@@ -18,34 +18,20 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
-import { QueryContext } from 'platform/api/sparql/SparqlClient';
 import { trigger } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
+import { MultiDirectedGraph } from "graphology";
 import { NodeClicked } from './EventTypes';
 
-import { GroupingConfig } from './LoadGraph'
-import { SigmaGraphConfig } from './SigmaGraph';
+import { GraphEventsConfig } from './Config';
+import { applyGrouping } from './LoadGraph'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 
-export interface GraphEventsProps extends SigmaGraphConfig {
-    /**
-     * Boolean that indicates if the layout is running
-     **/
-    layoutRun?: boolean;
-
-    /**
-     * Function to set the layoutRun state
-     **/
-    setLayoutRun?: (layoutRun: boolean) => void;
-
-    context?: QueryContext;
-}
-
-export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
+export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
@@ -53,15 +39,21 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
 
     const addElementsToGraph = (elements: any, parentNode: string) => {
+        // TODO (Refactor):
+        // - Add nodes and edges to new graph
+        // - Apply grouping mechanism to new graph
+        // - Merge new graph with sigma graph
+        let newGraph = new MultiDirectedGraph();
+
         const graph = sigma.getGraph();
-        const x = sigma.getGraph().getNodeAttribute(parentNode, "x");
-        const y = sigma.getGraph().getNodeAttribute(parentNode, "y");
+        const x = graph.getNodeAttribute(parentNode, "x");
+        const y = graph.getNodeAttribute(parentNode, "y");
 
         for (const i in elements) {
             const element = elements[i];
             if (element.group == "nodes") {
                 // Check if node already exists
-                if (!graph.hasNode(element.data.id)) {
+                if (!newGraph.hasNode(element.data.id)) {
                     let color = "#000000";
                     const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
                     if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
@@ -73,7 +65,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                         }
                     }
                     const angle = (i * 2 * Math.PI) / sigma.getGraph().order;
-                    graph.addNode(element.data.id, {
+                    newGraph.addNode(element.data.id, {
                         childrenCollapsed: false,
                         hidden: false,
                         label: element.data.label,
@@ -91,8 +83,8 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
         for (const element of elements) {
             if (element.group == "edges") {
                 // Check if edge already exists
-                if (!graph.hasEdge(element.data.id)) {
-                    graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
+                if (!newGraph.hasEdge(element.data.id)) {
+                    newGraph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
                         label: element.data.label,
                         size: props.sizes.edges,
                         predicate: element.data.resource
@@ -100,6 +92,23 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
                 }
             }
         }
+
+
+        // if (props.grouping.enabled) {
+        //     newGraph = applyGrouping(newGraph, props);
+        // }
+        // Merge new graph with sigma graph
+        newGraph.forEachNode((node, attributes) => {
+            if (!graph.hasNode(node)) {
+                graph.addNode(node, attributes);
+            }
+        })
+        newGraph.forEachEdge((edge, attributes, source, target) => {
+            if (!graph.hasEdge(edge)) {
+                graph.addEdgeWithKey(edge, source, target, attributes);
+            }
+        })
+
         // Restart the layout
         if (props.setLayoutRun) {
             props.setLayoutRun(true)
@@ -169,6 +178,7 @@ export const GraphEvents: React.FC<GraphEventsProps> = (props) => {
         if (props.nodeQuery && !nodeAttributes.grouped) {
             let query = props.nodeQuery
             query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
+            console.log(query)
             loadMoreData(query, node)
         }
 

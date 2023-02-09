@@ -15,15 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Rdf } from 'platform/api/rdf';
+import { QueryContext } from 'platform/api/sparql/SparqlClient';
 
 export const DEFAULT_HIDE_PREDICATES = [
     '<http://schema.org/thumbnail>',
     '<http://www.w3.org/2000/01/rdf-schema#label>',
     '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'
-    ];
+];
 
 
+export interface GraphEventsConfig extends SigmaGraphConfig {
+    /**
+     * Boolean that indicates if the layout is running
+     **/
+    layoutRun?: boolean;
+
+    /**
+     * Function to set the layoutRun state
+     **/
+    setLayoutRun?: (layoutRun: boolean) => void;
+
+    context?: QueryContext;
+}
 export interface GroupingConfig {
     /**
      * Enable grouping of nodes by shared predicate and type
@@ -62,7 +75,7 @@ export interface LayoutConfig {
 export interface LoadGraphConfig {
     colours?: { [key: string]: string };
     data: any;
-    grouping: GroupingConfig;
+    grouping?: GroupingConfig;
     sizes?: { "nodes": number, "edges": number };
 }
 

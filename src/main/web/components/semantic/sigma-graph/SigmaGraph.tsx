@@ -48,7 +48,6 @@ export interface State {
     error?: any;
     warning?: string;
   }
-
 export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private readonly cancellation = new Cancellation();

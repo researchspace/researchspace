@@ -21,7 +21,7 @@ import { MultiDirectedGraph } from "graphology";
 
 import { LoadGraphConfig } from "./Config";
 
-function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
+export function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
 
     // Retrieve all predicate attributes that appear in the edges of the graph
     const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);

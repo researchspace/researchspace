@@ -109,14 +109,15 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
         }
 
         // Add grouped nodes individually to graph
+        const children = []
         for (const node of entry['nodes']) {
-            // Check if node already exists in the grouped graph
-            if (!groupedGraph.hasNode(node)) {
-                const attributes = graph.getNodeAttributes(node);
-                attributes.hidden = true;
-                attributes.parent = key;
-                groupedGraph.addNode(node, attributes);
-            }
+            const attributes = graph.getNodeAttributes(node);
+            attributes.hidden = true;
+            attributes.parent = key;
+            children.push({
+                node: node,
+                attributes: attributes
+            })
         }
 
         // Add a new node that represents the group of nodes that share the current source node, type combination and predicate
@@ -127,7 +128,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
                 hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 typeLabels: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels'),
-                size: props.sizes.nodes,
+                size: props.sizes.nodes * 2,
                 color: graph.getNodeAttribute(entry['nodes'][0], 'color'), // We just use the color of the first node
                 x: graph.getNodeAttribute(entry['nodes'][0], 'x'),
                 y: graph.getNodeAttribute(entry['nodes'][0], 'y')
@@ -144,16 +145,6 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
                 label: entry['labels'].join(' '),
                 size: props.sizes.edges
             })
-        }
-
-        // Add edges from the group node to the individual nodes
-        for (const node of entry['nodes']) {
-            if (!groupedGraph.hasEdge(node+key)) {
-                groupedGraph.addEdgeWithKey(node+key, key, node, {
-                    label: entry['labels'].join(' '),
-                    size: props.sizes.edges
-                })
-            }
         }
     }
     

@@ -16,18 +16,17 @@
  */
 
 import * as React from 'react';
-import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useEffect } from "react";
 
+import { inferSettings } from 'graphology-layout-forceatlas2'
+import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
+import { useSigma } from "@react-sigma/core";
+
+
 export const LayoutForceAtlas: React.FC<> = () => {
-    const layoutSettings = {
-        adjustSizes: false,
-        barnesHutOptimize: false,
-        slowDown: 10,
-        gravity: 0.05,
-        scalingRatio: 10,
-        strongGravityMode: true
-    }
+
+    const graph = useSigma().getGraph();
+    const layoutSettings = inferSettings(graph);
 
     const { start, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 

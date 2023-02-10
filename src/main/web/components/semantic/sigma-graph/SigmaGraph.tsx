@@ -24,7 +24,7 @@ import { ErrorNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
 
 import { MultiDirectedGraph } from "graphology";
-import { SigmaContainer } from "@react-sigma/core";
+import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
@@ -90,6 +90,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     style={{ height: `${height}`, width: `${width}` }}
                 >   
                     <GraphEvents />
+                    {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>
 
             )

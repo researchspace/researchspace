@@ -39,7 +39,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     const handleNodeClicked = (node: string) => {
+        const attributes = sigma.getGraph().getNodeAttributes(node);
         console.log("Node clicked: " + node);
+        console.log(attributes)
     }
 
     useEffect(() => {

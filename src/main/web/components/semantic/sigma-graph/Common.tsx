@@ -108,11 +108,10 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
             groupedGraph.addNode(entry['source'], graph.getNodeAttributes(entry['source']));
         }
 
-        // Add grouped nodes individually to graph
+        // Add grouped nodes to a list
         const children = []
         for (const node of entry['nodes']) {
             const attributes = graph.getNodeAttributes(node);
-            attributes.hidden = true;
             attributes.parent = key;
             children.push({
                 node: node,
@@ -125,7 +124,6 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
             groupedGraph.addNode(key, {
                 grouped: true,
                 children: entry['nodes'],
-                hidden: false,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 typeLabels: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels'),
                 size: props.sizes.nodes * 2,

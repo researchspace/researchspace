@@ -19,53 +19,22 @@ import * as React from 'react';
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useEffect } from "react";
 
-import { LayoutConfig } from "./Config";
-export interface LayoutForceAtlasConfig {
-    /**
-     * Configuration for the layout
-     * @default {}
-     * @see LayoutConfig
-     */
-    config?: LayoutConfig;
-
-    layoutRun?: boolean;
-    setLayoutRun?: (run: boolean) => void;
-
-}
-
-export const LayoutForceAtlas: React.FC<LayoutForceAtlasConfig> = (props) => {
+export const LayoutForceAtlas: React.FC<> = () => {
     const layoutSettings = {
         adjustSizes: false,
+        barnesHutOptimize: false,
         slowDown: 10,
+        gravity: 0.05,
+        scalingRatio: 10,
         strongGravityMode: true
     }
-    const { isRunning, start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+
+    const { start, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     useEffect(() => {
         start();
         return () => kill();
     }, [start, kill]);
-
-    // If the layoutRun property changes, start or stop the layout
-    // This is to allow the layout to be controlled from outside
-    if (!props.layoutRun && isRunning) {
-        stop();
-    } else if (props.layoutRun && !isRunning) {
-        start();
-        if (props.config.runFor) {
-            setTimeout(() => {
-                if (props.setLayoutRun) {
-                    props.setLayoutRun(false)
-                } else {
-                    stop();
-                }
-            }, props.config.runFor);
-        }
-    } else if (!props.setLayoutRun && props.config.runFor) {
-        setTimeout(() => {
-            stop();
-        }, props.config.runFor);
-    }
 
     return null;
 }

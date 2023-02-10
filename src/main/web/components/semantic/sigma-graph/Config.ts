@@ -20,6 +20,29 @@ export const DEFAULT_HIDE_PREDICATES = [
     '<http://www.w3.org/2000/01/rdf-schema#label>',
     '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'
 ];
+export interface GroupingConfig {
+    /**
+     * Enable grouping of nodes by shared predicate and type
+     * @default false
+     */
+    enabled?: boolean;
+
+    /**
+     * Number of nodes above which they will be grouped together.
+     * @default 3
+     */
+    threshold?: number;
+
+    /**
+     * Behaviour of grouped nodes when expanding.
+     * In 'expand' mode, the children nodes will be attached to the
+     * grouped node. In 'replace' mode, the grouped node will be
+     * replaced by the children nodes. If set to 'none', the grouped
+     * node will neither be expanded nor replaced.
+     * @default 'expand'
+     */
+    behaviour?: 'expand' | 'replace' | 'none';
+}
 export interface LoadGraphConfig {
     colours?: { [key: string]: string };
     data: any;
@@ -47,7 +70,15 @@ export interface SigmaGraphConfig {
      *  "http://www.w3.org/2002/07/owl#ObjectProperty": "#00ff00"
      * }
      */
-    colours?: { [key: string]: string };
+    colours?: { [key: string]: string }; /** 
+
+    * Grouping configuration
+    * @default {
+    *  enabled: false
+    * }
+    * @see GroupingConfig
+    */
+   grouping?: GroupingConfig;
 
     /**
      * Display a search field.

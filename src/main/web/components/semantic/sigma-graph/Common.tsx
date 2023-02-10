@@ -113,11 +113,8 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
             // Check if node already exists in the grouped graph
             if (!groupedGraph.hasNode(node)) {
                 const attributes = graph.getNodeAttributes(node);
-                // If node is a grouped node we hide it
-                if(entry['nodes'].length > 1) {
-                    attributes.hidden = true;
-                    attributes.parent = key;
-                }
+                attributes.hidden = true;
+                attributes.parent = key;
                 groupedGraph.addNode(node, attributes);
             }
         }

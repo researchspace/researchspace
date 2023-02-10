@@ -26,6 +26,11 @@ export interface LoadGraphConfig {
 }
 export interface SigmaGraphConfig {
     /**
+     * SPARQL CONSTRUCT query to retrieve the graph data.
+     */
+    query: string;
+
+    /**
      * Optional identifier. 
      * Required if component should be controlled via external events.
      * @default undefined
@@ -45,15 +50,19 @@ export interface SigmaGraphConfig {
     colours?: { [key: string]: string };
 
     /**
-     * SPARQL CONSTRUCT query to retrieve the graph data.
-     */
-    query: string;
-
-    /**
      * Display a search field.
      * @default false
      */
     searchBox?: boolean;
+
+    /**
+     * Sizes of the nodes and edges in pixe;s
+     * Passed as a JSON object with the following properties:
+     * - nodes: size of the nodes
+     * - edges: size of the edges
+     * @default {"nodes": 10, "edges": 5}
+     */
+    sizes?: { "nodes": number, "edges": number };
 
     /**
      *  Width of the graph.

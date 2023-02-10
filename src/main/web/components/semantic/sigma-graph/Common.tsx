@@ -21,18 +21,20 @@ import { QueryContext } from 'platform/api/sparql/SparqlClient';
 
 import { MultiDirectedGraph } from "graphology";
 
-import { DEFAULT_HIDE_PREDICATES } from './Config';
+import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config';
 
-export function createGraphFromElements(elements: ResourceCytoscapeElement[], colours: { [key: string]: string } | undefined) {
+export function createGraphFromElements(elements: ResourceCytoscapeElement[], props: SigmaGraphConfig) {
     const graph = new MultiDirectedGraph();
+    const nodeSize = props.sizes.nodes || 10;
+    const edgeSize = props.sizes.edges || 5;
     for (const element of elements) {
         if (element.group == "nodes") {
             let color = "#000000";
             const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
-            if (colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
+            if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
                 for (const type of types) {
-                    if (colours[type.value]) {
-                        color = colours[type.value];
+                    if (props.colours[type.value]) {
+                        color = props.colours[type.value];
                         break;
                     }
                 }
@@ -44,6 +46,7 @@ export function createGraphFromElements(elements: ResourceCytoscapeElement[], co
                 typeLabels: element.data.typeLabels,
                 color: color,
                 types: types,
+                size: nodeSize,
                 image: element.data.thumbnail
             })
         }
@@ -53,7 +56,8 @@ export function createGraphFromElements(elements: ResourceCytoscapeElement[], co
         if (element.group == "edges") {
             graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
                 label: element.data.label,
-                predicate: element.data.resource
+                predicate: element.data.resource,
+                size: edgeSize
             })
         }
     }

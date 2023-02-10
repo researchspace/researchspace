@@ -66,7 +66,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
             })
             .onError((error) => { this.setState({ error: error, isLoading: false }) })
             .onEnd(() => {
-                const graph = createGraphFromElements(this.state.elements)
+                const graph = createGraphFromElements(this.state.elements, this.props)
                 this.setState({ graph: graph})
                 if (this.props.id) {
                     trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
@@ -78,7 +78,6 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const width = this.props.width || "800px";
         const height = this.props.height || "600px";
         const searchBox = this.props.searchBox || false;
-        const colours = this.props.colours || false;
 
         if (this.state.isLoading) {
             return createElement(Spinner);

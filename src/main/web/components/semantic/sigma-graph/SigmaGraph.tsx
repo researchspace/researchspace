@@ -27,7 +27,7 @@ import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer } from "@react-sigma/core";
 
 import { SigmaGraphConfig } from './Config'
-import { LayoutForceAtlas } from './LayoutForceAtlas'
+import { GraphEvents } from './GraphEvents'
 import { createGraphFromElements, loadGraphDataFromQuery } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -88,8 +88,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 <SigmaContainer
                     graph={ this.state.graph } 
                     style={{ height: `${height}`, width: `${width}` }}
-                >
-                    <LayoutForceAtlas />
+                >   
+                    <GraphEvents />
                 </SigmaContainer>
 
             )

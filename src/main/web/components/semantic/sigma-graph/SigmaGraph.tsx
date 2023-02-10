@@ -28,7 +28,6 @@ import { SigmaContainer } from "@react-sigma/core";
 
 import { SigmaGraphConfig } from './Config'
 import { LayoutForceAtlas } from './LayoutForceAtlas'
-import { LoadGraph } from './LoadGraph'
 import { createGraphFromElements, loadGraphDataFromQuery } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -46,6 +45,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         super(props, context);
         this.state = {
           elements: [],
+          graph: undefined,
           noResults: false,
           isLoading: true
         };

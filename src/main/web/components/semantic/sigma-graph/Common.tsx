@@ -123,7 +123,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
                 grouped: true,
-                children: entry['nodes'],
+                children: children,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 typeLabels: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels'),
                 size: props.sizes.nodes * 2,

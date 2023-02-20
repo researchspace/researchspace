@@ -66,11 +66,47 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     }
 
     const handleGroupedNodeClicked = (node: string) => {
-        console.log("Grouped node clicked: " + node);
+        const mode = props.grouping.behaviour || null;
+        if (!mode) {
+            return
+        }
+        if (mode == "expand" || "replace") {
+            const graph = sigma.getGraph();
+            const children = graph.getNodeAttribute(node, "children");
+            const incomingEdges = graph.inEdges(node);
+            for (const child of children) {
+                // Add child node to graph if it is not already there
+                if (!graph.hasNode(child.node)) {
+                    graph.addNode(child.node, child.attributes);
+                }
+            }
+            for (const child of children) {
+                for (const edge of incomingEdges) {
+                    const edgeAttributes = graph.getEdgeAttributes(edge);
+                    if (mode == "replace") {
+                        // Add edge from source node to child node
+                        const edgeSource = graph.source(edge);
+                        if (!graph.hasEdge(edgeSource+child.node)) {
+                            graph.addEdgeWithKey(edgeSource+child.node, edgeSource, child.node, edgeAttributes);
+                        }
+                    } else if (mode == "expand") {
+                        // Add edge from grouped node to child node
+                        if (!graph.hasEdge(node, child.node)) {
+                            graph.addEdge(node, child.node, edgeAttributes);
+                        }
+                    }
+                }
+            }
+            if (mode == "replace") {
+                // Remove the grouped node
+                graph.dropNode(node);
+            }
+        }
     }
 
     const handleNodeClicked = (node: string) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
+        console.log(attributes)
         if (attributes.grouped) {
             handleGroupedNodeClicked(node);
         } else {     
@@ -118,25 +154,20 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 if (draggedNode) {
                     setDraggedNode(null);
                     sigma.getGraph().removeNodeAttribute(draggedNode.id, "highlighted");
-                } else if (activeNode) {
+                } 
+                if (activeNode) {
                     handleNodeClicked(activeNode.id);
                 }
             },
             mousedown: (e) => {
+                // Stop the layout
+                stop();
                 // Disable the autoscale at the first down interaction
                 if (!sigma.getCustomBBox()) {
                     sigma.setCustomBBox(sigma.getBBox()) 
                 }
-                // Stop the layout
-                stop();
                 if (activeNode) {
-                    // If the mouse moved beyond a threshold since clicking the node, we consider it as a drag
-                    const threshold = 20;
-                    const dx = activeNode.mouse.x - e.x;
-                    const dy = activeNode.mouse.y - e.y;
-                    if (dx * dx + dy * dy > threshold * threshold) {
-                        setDraggedNode(activeNode);
-                    }
+                    setDraggedNode(activeNode);
                 }
             },
             mousemove: (e) => {

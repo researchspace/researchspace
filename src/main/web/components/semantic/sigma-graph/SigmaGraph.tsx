@@ -89,7 +89,13 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     graph={ this.state.graph } 
                     style={{ height: `${height}`, width: `${width}` }}
                 >   
-                    <GraphEvents />
+                    <GraphEvents 
+                        context={ this.context.semanticContext} 
+                        colours={ this.props.colours }
+                        grouping={ this.props.grouping } 
+                        nodeQuery={ this.props.nodeQuery }
+                        sizes={ this.props.sizes } 
+                    />
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>
 

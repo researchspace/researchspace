@@ -195,7 +195,6 @@ export function createGraphFromElements(elements: ResourceCytoscapeElement[], pr
         graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
     });
 
-    console.log(props.grouping)
     if (props.grouping.enabled) {
         const groupedGraph = applyGroupingToGraph(graph, props);
         return groupedGraph;
@@ -203,6 +202,20 @@ export function createGraphFromElements(elements: ResourceCytoscapeElement[], pr
         return graph
     }
 
+}
+
+export function mergeGraphs(graph, newGraph) {
+     // Merge new graph with sigma graph
+     newGraph.forEachNode((node, attributes) => {
+        if (!graph.hasNode(node)) {
+            graph.addNode(node, attributes);
+        }
+    })
+    newGraph.forEachEdge((edge, attributes, source, target) => {
+        if (!graph.hasEdge(edge)) {
+            graph.addEdgeWithKey(edge, source, target, attributes);
+        }
+    })
 }
 
 export function loadGraphDataFromQuery(query: string, context: QueryContext) {

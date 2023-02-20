@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { QueryContext } from 'platform/api/sparql'
+
 export const DEFAULT_HIDE_PREDICATES = [
     '<http://schema.org/thumbnail>',
     '<http://www.w3.org/2000/01/rdf-schema#label>',
@@ -43,6 +45,10 @@ export interface GroupingConfig {
      */
     behaviour?: 'expand' | 'replace' | 'none';
 }
+
+export interface GraphEventsConfig extends SigmaGraphConfig {
+    context?: QueryContext;
+}
 export interface LoadGraphConfig {
     colours?: { [key: string]: string };
     data: any;
@@ -51,7 +57,7 @@ export interface SigmaGraphConfig {
     /**
      * SPARQL CONSTRUCT query to retrieve the graph data.
      */
-    query: string;
+    query?: string;
 
     /**
      * Optional identifier. 
@@ -79,6 +85,13 @@ export interface SigmaGraphConfig {
     * @see GroupingConfig
     */
    grouping?: GroupingConfig;
+
+   /**
+    * Query to retrieve additional graph data. ?subject will be replaced by the
+    * URI of the node that is clicked.
+    * @default undefined
+    */
+   nodeQuery?: string;
 
     /**
      * Display a search field.

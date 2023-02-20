@@ -20,9 +20,10 @@ import { useEffect, useState } from 'react';
 
 import { inferSettings } from 'graphology-layout-forceatlas2'
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
-import { useRegisterEvents, useSigma } from "@react-sigma/core";
+import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
-import { SigmaGraphConfig } from './Config';
+import { GraphEventsConfig } from './Config';
+import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 interface Node {
@@ -38,7 +39,7 @@ interface Node {
 }
 
 
-export const GraphEvents: React.FC<SigmaGraphConfig> = (props) => {
+export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const [ activeNode, setActiveNode ] = useState<Node | null>(null);
     const [ draggedNode, setDraggedNode ] = useState<Node | null>(null);
@@ -72,9 +73,29 @@ export const GraphEvents: React.FC<SigmaGraphConfig> = (props) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
         if (attributes.grouped) {
             handleGroupedNodeClicked(node);
+        } else {     
+            // If node query is defined, load additional data
+            if (props.nodeQuery) {
+                loadMoreDataForNode(node)
+            }
         }
-        console.log("Node clicked: " + node);
-        console.log(attributes)
+        // Restart the layout
+        start();
+    }
+
+    const loadMoreDataForNode = (node: string) => {
+        let query = props.nodeQuery
+        let newElements = []
+        query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
+        loadGraphDataFromQuery(query, props.context).onValue((elements) => {
+            newElements = elements
+        })
+        .onEnd(() => {
+            const graph = sigma.getGraph();
+            const newGraph = createGraphFromElements(newElements, props);
+            // Add new nodes and edges to the graph
+            mergeGraphs(graph, newGraph);            
+        })
     }
 
     useEffect(() => {

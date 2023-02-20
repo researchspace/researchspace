@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 
 import { inferSettings } from 'graphology-layout-forceatlas2'
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
-import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
+import { useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
 import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
@@ -70,7 +70,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         if (!mode) {
             return
         }
-        if (mode == "expand" || "replace") {
+        if (mode == "expand" || mode == "replace") {
             const graph = sigma.getGraph();
             const children = graph.getNodeAttribute(node, "children");
             const incomingEdges = graph.inEdges(node);
@@ -106,7 +106,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const handleNodeClicked = (node: string) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
-        console.log(attributes)
         if (attributes.grouped) {
             handleGroupedNodeClicked(node);
         } else {     

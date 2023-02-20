@@ -22,14 +22,26 @@ import { inferSettings } from 'graphology-layout-forceatlas2'
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
 
-import { GraphEventsConfig } from './Config';
+import { SigmaGraphConfig } from './Config';
 import "@react-sigma/core/lib/react-sigma.min.css";
 
+interface Node {
+    id: string,
+    position: {  
+        x: number,
+        y: number
+    },
+    mouse: {
+        x: number,
+        y: number
+    }
+}
 
-export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
-    const [ activeNode, setActiveNode ] = useState<string | null>(null);
-    const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
+export const GraphEvents: React.FC<SigmaGraphConfig> = (props) => {
+
+    const [ activeNode, setActiveNode ] = useState<Node | null>(null);
+    const [ draggedNode, setDraggedNode ] = useState<Node | null>(null);
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
 
@@ -38,8 +50,29 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
+
+    const getNodeFromEvent = (e: any) => {
+        const pos = sigma.viewportToGraph(e);
+        const mouse = {
+            x: e.x || e.event.x,
+            y: e.y || e.event.y
+        }
+        return {
+            id: e.node,
+            position: pos,
+            mouse: mouse
+        }
+    }
+
+    const handleGroupedNodeClicked = (node: string) => {
+        console.log("Grouped node clicked: " + node);
+    }
+
     const handleNodeClicked = (node: string) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
+        if (attributes.grouped) {
+            handleGroupedNodeClicked(node);
+        }
         console.log("Node clicked: " + node);
         console.log(attributes)
     }
@@ -52,7 +85,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     useEffect(() => {
 
         sigma.on("enterNode", (e) => {
-            setActiveNode(e.node);
+            setActiveNode(getNodeFromEvent(e));
         });
         sigma.on("leaveNode", () => { 
             setActiveNode(null);
@@ -63,28 +96,34 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             mouseup: () => {
                 if (draggedNode) {
                     setDraggedNode(null);
-                    sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
-                }
-                if (activeNode) {
-                    handleNodeClicked(activeNode);
+                    sigma.getGraph().removeNodeAttribute(draggedNode.id, "highlighted");
+                } else if (activeNode) {
+                    handleNodeClicked(activeNode.id);
                 }
             },
-            mousedown: () => {
+            mousedown: (e) => {
                 // Disable the autoscale at the first down interaction
                 if (!sigma.getCustomBBox()) {
                     sigma.setCustomBBox(sigma.getBBox()) 
                 }
                 // Stop the layout
                 stop();
-
-                setDraggedNode(activeNode);
+                if (activeNode) {
+                    // If the mouse moved beyond a threshold since clicking the node, we consider it as a drag
+                    const threshold = 20;
+                    const dx = activeNode.mouse.x - e.x;
+                    const dy = activeNode.mouse.y - e.y;
+                    if (dx * dx + dy * dy > threshold * threshold) {
+                        setDraggedNode(activeNode);
+                    }
+                }
             },
             mousemove: (e) => {
                 if (draggedNode) {
                     // Get new position of node
                     const pos = sigma.viewportToGraph(e);
-                    sigma.getGraph().setNodeAttribute(draggedNode, "x", pos.x);
-                    sigma.getGraph().setNodeAttribute(draggedNode, "y", pos.y);
+                    sigma.getGraph().setNodeAttribute(draggedNode.id, "x", pos.x);
+                    sigma.getGraph().setNodeAttribute(draggedNode.id, "y", pos.y);
                     sigma.refresh();
                     // Prevent sigma to move camera:
                     e.preventSigmaDefault();

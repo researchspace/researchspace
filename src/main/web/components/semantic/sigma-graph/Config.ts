@@ -49,10 +49,6 @@ export interface GroupingConfig {
 export interface GraphEventsConfig extends SigmaGraphConfig {
     context?: QueryContext;
 }
-export interface LoadGraphConfig {
-    colours?: { [key: string]: string };
-    data: any;
-}
 export interface SigmaGraphConfig {
     /**
      * SPARQL CONSTRUCT query to retrieve the graph data.

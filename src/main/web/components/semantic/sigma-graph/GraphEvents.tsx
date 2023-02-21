@@ -26,44 +26,19 @@ import { GraphEventsConfig } from './Config';
 import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
 import "@react-sigma/core/lib/react-sigma.min.css";
 
-interface Node {
-    id: string,
-    position: {  
-        x: number,
-        y: number
-    },
-    mouse: {
-        x: number,
-        y: number
-    }
-}
 
 
 export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
-    const [ activeNode, setActiveNode ] = useState<Node | null>(null);
-    const [ draggedNode, setDraggedNode ] = useState<Node | null>(null);
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
+    const [ activeNode, setActiveNode ] = useState<string | null>(null);
+    const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
 
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
 
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
-
-
-    const getNodeFromEvent = (e: any) => {
-        const pos = sigma.viewportToGraph(e);
-        const mouse = {
-            x: e.x || e.event.x,
-            y: e.y || e.event.y
-        }
-        return {
-            id: e.node,
-            position: pos,
-            mouse: mouse
-        }
-    }
 
     const handleGroupedNodeClicked = (node: string) => {
         const mode = props.grouping.behaviour || null;
@@ -141,10 +116,12 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     useEffect(() => {
 
         sigma.on("enterNode", (e) => {
-            setActiveNode(getNodeFromEvent(e));
+            setActiveNode(e.node);
+            sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);
         });
-        sigma.on("leaveNode", () => { 
+        sigma.on("leaveNode", (e) => { 
             setActiveNode(null);
+            sigma.getGraph().removeNodeAttribute(e.node, "highlighted");
         });
 
         // Register the events
@@ -152,13 +129,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             mouseup: () => {
                 if (draggedNode) {
                     setDraggedNode(null);
-                    sigma.getGraph().removeNodeAttribute(draggedNode.id, "highlighted");
+                    sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
                 } 
                 if (activeNode) {
-                    handleNodeClicked(activeNode.id);
+                    handleNodeClicked(activeNode);
                 }
             },
-            mousedown: (e) => {
+            mousedown: () => {
                 // Stop the layout
                 stop();
                 // Disable the autoscale at the first down interaction
@@ -173,8 +150,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 if (draggedNode) {
                     // Get new position of node
                     const pos = sigma.viewportToGraph(e);
-                    sigma.getGraph().setNodeAttribute(draggedNode.id, "x", pos.x);
-                    sigma.getGraph().setNodeAttribute(draggedNode.id, "y", pos.y);
+                    sigma.getGraph().setNodeAttribute(draggedNode, "x", pos.x);
+                    sigma.getGraph().setNodeAttribute(draggedNode, "y", pos.y);
                     sigma.refresh();
                     // Prevent sigma to move camera:
                     e.preventSigmaDefault();

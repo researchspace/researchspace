@@ -25,6 +25,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 
 import { MultiDirectedGraph } from "graphology";
 import { SigmaContainer, ControlsContainer, SearchControl } from "@react-sigma/core";
+import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
@@ -79,6 +80,15 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const height = this.props.height || "600px";
         const searchBox = this.props.searchBox || false;
 
+        const sigmaSettings = { 
+            defaultEdgeType: "arrow",
+            defaultNodeType: "image",
+            nodeProgramClasses: { image: getNodeProgramImage() },
+            renderEdgeLabels: true,
+            autoRescale: false,
+            maxEdgeSize: 2,
+        };
+
         if (this.state.isLoading) {
             return createElement(Spinner);
         } else if (this.state.error) {
@@ -88,6 +98,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 <SigmaContainer
                     graph={ this.state.graph } 
                     style={{ height: `${height}`, width: `${width}` }}
+                    settings={ sigmaSettings }
                 >   
                     <GraphEvents 
                         context={ this.context.semanticContext} 

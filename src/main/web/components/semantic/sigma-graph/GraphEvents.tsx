@@ -27,7 +27,7 @@ import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
 import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
-import { TriggerNodeClicked, NodeClicked } from './EventTypes';
+import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -44,6 +44,11 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+
+    const focusNode = (node: string) => {
+        sigma.getGraph().setNodeAttribute(node, "highlighted", true);
+        camera.gotoNode(node);
+    }
 
     const handleGroupedNodeClicked = (node: string, callback = () => { return undefined}) => {
         const mode = props.grouping.behaviour || null;
@@ -154,7 +159,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             listen({
                 eventType: TriggerNodeClicked,
                 target: props.id
-            })).observe({
+            })
+        ).observe({
                 value: ( event ) => {
                     if (event.data.node)  {
                         const node = event.data.node;
@@ -178,8 +184,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                         } 
                         if (sigma.getGraph().hasNode(node)) {
                             handleNodeClicked(node, true, () => {
-                                sigma.getGraph().setNodeAttribute(node, "highlighted", true);
-                                camera.gotoNode(node);
+                                focusNode(node)
                             })
                         }
                     } else {
@@ -187,6 +192,21 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                     }
                 }
             });
+        cancellation.map(
+            listen({
+                eventType: FocusNode,
+                target: props.id
+            })
+        ).observe({
+            value: ( event ) => {
+                if (event.data.node) {
+                    const node = event.data.node;
+                    if (sigma.getGraph().hasNode(node)) {
+                        focusNode(node);
+                    }
+                }
+            }
+        });
         return undefined;
     })
 

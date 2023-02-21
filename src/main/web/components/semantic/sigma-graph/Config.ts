@@ -15,28 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { QueryContext } from 'platform/api/sparql/SparqlClient';
+import { QueryContext } from 'platform/api/sparql'
 
 export const DEFAULT_HIDE_PREDICATES = [
     '<http://schema.org/thumbnail>',
     '<http://www.w3.org/2000/01/rdf-schema#label>',
     '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'
 ];
-
-
-export interface GraphEventsConfig extends SigmaGraphConfig {
-    /**
-     * Boolean that indicates if the layout is running
-     **/
-    layoutRun?: boolean;
-
-    /**
-     * Function to set the layoutRun state
-     **/
-    setLayoutRun?: (layoutRun: boolean) => void;
-
-    context?: QueryContext;
-}
 export interface GroupingConfig {
     /**
      * Enable grouping of nodes by shared predicate and type
@@ -61,53 +46,63 @@ export interface GroupingConfig {
     behaviour?: 'expand' | 'replace' | 'none';
 }
 
-export interface LayoutConfig {
-    /**
-     * If this is set, the Layout will be stopped
-     * after the specified number of time in milliseconds.
-     * Set this if the layout is used in combination with 
-     * events such as drag & drop.
-     * @default null
-     */
-    runFor?: number;
+export interface GraphEventsConfig extends SigmaGraphConfig {
+    context?: QueryContext;
 }
-
-export interface LoadGraphConfig {
-    colours?: { [key: string]: string };
-    data: any;
-    grouping?: GroupingConfig;
-    sizes?: { "nodes": number, "edges": number };
-}
-
 export interface SigmaGraphConfig {
     /**
-     * Optional identifier
+     * SPARQL CONSTRUCT query to retrieve the graph data.
+     */
+    query?: string;
+
+    /**
+     * Optional identifier. 
+     * Required if component should be controlled via external events.
      * @default undefined
      */
     id?: string;
 
     /**
-     * SPARQL CONSTRUCT query to retrieve the graph data.
-     */
-    query: string;
-
-    /** 
-     * Grouping configuration
-     * @default {
-     *  enabled: false
+     * Optional colour palette for nodes.
+     * Passed as JSON object with RDF types as keys and colours as values.
+     * @default {}
+     * @example
+     * {
+     *  "http://www.w3.org/2002/07/owl#Class": "#ff0000",
+     *  "http://www.w3.org/2002/07/owl#ObjectProperty": "#00ff00"
      * }
-     * @see GroupingConfig
      */
-    grouping?: GroupingConfig;
+    colours?: { [key: string]: string }; /** 
+
+    * Grouping configuration
+    * @default {
+    *  enabled: false
+    * }
+    * @see GroupingConfig
+    */
+   grouping?: GroupingConfig;
+
+   /**
+    * Query to retrieve additional graph data. ?subject will be replaced by the
+    * URI of the node that is clicked.
+    * @default undefined
+    */
+   nodeQuery?: string;
 
     /**
-     * Layout configuration
-     * @default {
-     *  runFor: 2000
-     * }
-     * @see LayoutConfig
+     * Display a search field.
+     * @default false
      */
-    layout?: LayoutConfig;
+    searchBox?: boolean;
+
+    /**
+     * Sizes of the nodes and edges in pixe;s
+     * Passed as a JSON object with the following properties:
+     * - nodes: size of the nodes
+     * - edges: size of the edges
+     * @default {"nodes": 10, "edges": 5}
+     */
+    sizes?: { "nodes": number, "edges": number };
 
     /**
      *  Width of the graph.
@@ -121,37 +116,4 @@ export interface SigmaGraphConfig {
      */
     height?: string;
 
-    /**
-     * CONSTRUCT query to retrieve additional data for the graph.
-     * Is either a string or false
-     * @default false
-     */
-    nodeQuery?: string | false;
-
-    /**
-     * Sizes of the nodes and edges in pixe;s
-     * Passed as a JSON object with the following properties:
-     * - nodes: size of the nodes
-     * - edges: size of the edges
-     * @default {"nodes": 10, "edges": 5}
-     */
-    sizes?: { "nodes": number, "edges": number };
-
-    /**
-     * Display a search field.
-     * @default false
-     */
-    searchBox?: boolean;
-
-    /**
-     * Optional colour palette for nodes.
-     * Passed as JSON object with RDF types as keys and colours as values.
-     * @default {}
-     * @example
-     * {
-     *  "http://www.w3.org/2002/07/owl#Class": "#ff0000",
-     *  "http://www.w3.org/2002/07/owl#ObjectProperty": "#00ff00"
-     * }
-     */
-    colours?: { [key: string]: string };
 }

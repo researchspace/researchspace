@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useEffect } from "react";
-import { useLoadGraph } from "@react-sigma/core";
+import { Cancellation } from 'platform/api/async';
+import { getGraphDataWithLabels, ResourceCytoscapeElement } from 'platform/components/semantic/graph/GraphInternals';
+import { QueryContext } from 'platform/api/sparql/SparqlClient';
+
 import { MultiDirectedGraph } from "graphology";
 
-import { LoadGraphConfig } from "./Config";
+import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config';
 
-export function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig) {
+export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
 
     // Retrieve all predicate attributes that appear in the edges of the graph
     const predicates = graph.edges().map((edge) => graph.getEdgeAttribute(edge, 'predicate')).filter((value, index, self) => self.indexOf(value) === index);
@@ -106,26 +108,22 @@ export function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig)
             groupedGraph.addNode(entry['source'], graph.getNodeAttributes(entry['source']));
         }
 
-        // Add grouped nodes individually to graph
+        // Add grouped nodes to a list
+        const children = []
         for (const node of entry['nodes']) {
-            // Check if node already exists in the grouped graph
-            if (!groupedGraph.hasNode(node)) {
-                const attributes = graph.getNodeAttributes(node);
-                // If node is a grouped node we hide it
-                if(entry['nodes'].length > 1) {
-                    attributes.hidden = true;
-                    attributes.parent = key;
-                }
-                groupedGraph.addNode(node, attributes);
-            }
+            const attributes = graph.getNodeAttributes(node);
+            attributes.parent = key;
+            children.push({
+                node: node,
+                attributes: attributes
+            })
         }
 
         // Add a new node that represents the group of nodes that share the current source node, type combination and predicate
         if(!groupedGraph.hasNode(key)) {
             groupedGraph.addNode(key, {
                 grouped: true,
-                children: entry['nodes'],
-                hidden: false,
+                children: children,
                 label: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels') + ' (' + entry['nodes'].length + ')',
                 typeLabels: graph.getNodeAttribute(entry['nodes'][0], 'typeLabels'),
                 size: props.sizes.nodes * 2,
@@ -146,78 +144,85 @@ export function applyGrouping(graph: MultiDirectedGraph, props: LoadGraphConfig)
                 size: props.sizes.edges
             })
         }
-
-        // Add edges from the group node to the individual nodes
-        for (const node of entry['nodes']) {
-            if (!groupedGraph.hasEdge(node+key)) {
-                groupedGraph.addEdgeWithKey(node+key, key, node, {
-                    label: entry['labels'].join(' '),
-                    size: props.sizes.edges
-                })
-            }
-        }
     }
     
     return groupedGraph;
 }
 
-export const LoadGraph = (props: LoadGraphConfig) => {
-    const loadGraph = useLoadGraph();
-    useEffect(() => {
-        let graph = new MultiDirectedGraph();
-        const data = props.data;
 
-        for (const i in data) {
-            const element = data[i];
-            if (element.group == "nodes") {
-                let color = "#000000";
-                const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
-                if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
-                    for (const type of types) {
-                        if (props.colours[type.value]) {
-                            color = props.colours[type.value];
-                            break;
-                        }
+export function createGraphFromElements(elements: ResourceCytoscapeElement[], props: SigmaGraphConfig) {
+    const graph = new MultiDirectedGraph();
+    const nodeSize = props.sizes.nodes || 10;
+    const edgeSize = props.sizes.edges || 5;
+    for (const element of elements) {
+        if (element.group == "nodes") {
+            let color = "#000000";
+            const types = element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
+            if (props.colours && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
+                for (const type of types) {
+                    if (props.colours[type.value]) {
+                        color = props.colours[type.value];
+                        break;
                     }
                 }
-                graph.addNode(element.data.id, {
-                    childrenCollapsed: false,
-                    hidden: false,
-                    label: element.data.label,
-                    typeLabels: element.data.typeLabels,
-                    size: props.sizes.nodes,
-                    color: color,
-                    types: types,
-                    image: element.data.thumbnail
-                })
             }
+            graph.addNode(element.data.id, {
+                childrenCollapsed: false,
+                hidden: false,
+                label: element.data.label,
+                typeLabels: element.data.typeLabels,
+                color: color,
+                types: types,
+                size: nodeSize,
+                image: element.data.thumbnail
+            })
         }
+    }
 
-        for (const i in data) {
-            const element = data[i];
-            if (element.group == "edges") {
-                graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
-                    label: element.data.label,
-                    size: props.sizes.edges,
-                    predicate: element.data.resource
-                })
-            }
+    for (const element of elements) {
+        if (element.group == "edges") {
+            graph.addEdgeWithKey(element.data.id, element.data.source, element.data.target, {
+                label: element.data.label,
+                predicate: element.data.resource,
+                size: edgeSize
+            })
         }
+    }
 
-        if (props.grouping.enabled) {
-            graph = applyGrouping(graph, props);
+    graph.nodes().forEach((node, i) => {
+        const angle = (i * 2 * Math.PI) / graph.order;
+        graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
+        graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
+    });
+
+    if (props.grouping.enabled) {
+        const groupedGraph = applyGroupingToGraph(graph, props);
+        return groupedGraph;
+    } else {
+        return graph
+    }
+
+}
+
+export function mergeGraphs(graph, newGraph) {
+     // Merge new graph with sigma graph
+     newGraph.forEachNode((node, attributes) => {
+        if (!graph.hasNode(node)) {
+            graph.addNode(node, attributes);
         }
+    })
+    newGraph.forEachEdge((edge, attributes, source, target) => {
+        if (!graph.hasEdge(edge)) {
+            graph.addEdgeWithKey(edge, source, target, attributes);
+        }
+    })
+}
 
-        graph.nodes().forEach((node, i) => {
-            const angle = (i * 2 * Math.PI) / graph.order;
-            graph.setNodeAttribute(node, "x", 100 * Math.cos(angle));
-            graph.setNodeAttribute(node, "y", 100 * Math.sin(angle));
-        });
-
-        loadGraph(graph);
-    }, [loadGraph]);
-  
-    return null;
-  };
-
-  export default LoadGraph;
+export function loadGraphDataFromQuery(query: string, context: QueryContext) {
+    const cancellation = new Cancellation();
+    const config = {
+        query: query,
+        hidePredicates: DEFAULT_HIDE_PREDICATES
+    }
+    return cancellation.map(getGraphDataWithLabels(config, { context }))
+}

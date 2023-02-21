@@ -43,6 +43,7 @@ interface ResourceDataDefinition {
   resource: string;
   label?: string;
   thumbnail?: string;
+  typeLabels?: string[];
 }
 
 interface ResourceNodeDataDefinition extends ResourceDataDefinition, Cy.NodeDataDefinition {
@@ -125,6 +126,7 @@ export function addLabelsToGraphData(
   return map(elements, (element) => {
     element.data.label = labels.get(element.data.node);
     element.data.thumbnail = thumbnails.get(element.data.node) || DEFAULT_THUMBNAIL;
+    element.data.typeLabels = element.group == 'nodes' && element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'] ? element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'].map(e => labels.get(e)) : null;
     return element;
   });
 }
@@ -153,7 +155,18 @@ function fetchLabelsForResources(
   context?: QueryContext
 ): Kefir.Property<Map<Rdf.Iri, string>> {
   const elementsWithIri = filter(elements, (e) => e.data.node.isIri());
-  const iris = map(elementsWithIri, (e) => e.data.node as Rdf.Iri);
+  const typeIris = elementsWithIri.reduce((acc, element) => {
+    if (element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']) {
+      element.data['<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'].forEach(typeIri => {
+        if (!acc.includes(typeIri.value)) {
+          acc.push(typeIri.value);
+        }
+      });
+    }
+    return acc;
+  }, []).map((typeIri) => Rdf.iri(typeIri));
+
+  const iris = map(elementsWithIri, (e) => e.data.node as Rdf.Iri).concat(typeIris);
   return getLabels(iris, { context });
 }
 

@@ -18,15 +18,17 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+import { listen, trigger } from 'platform/api/events';
+
 import { inferSettings } from 'graphology-layout-forceatlas2'
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
 import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
+import { NodeClicked } from './EventTypes';
+
 import "@react-sigma/core/lib/react-sigma.min.css";
-
-
 
 export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
@@ -35,9 +37,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const [ activeNode, setActiveNode ] = useState<string | null>(null);
     const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
 
+    // Configure layout
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
-
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     const handleGroupedNodeClicked = (node: string) => {
@@ -89,6 +91,15 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 loadMoreDataForNode(node)
             }
         }
+        // Fire event// Trigger external event
+        // Node IRIs are stored with < and > brackets, so we need to remove them
+        // when triggering the event
+        const data = { nodes: attributes.children ? attributes.children.map( (childNode: { "node": string, "attributes": any }) => childNode.node.substring(1, childNode.node.length - 1)) : [ node.substring(1, node.length - 1) ]}
+        trigger({
+            eventType: NodeClicked,
+            source: node,
+            data: data
+        })
         // Restart the layout
         start();
     }

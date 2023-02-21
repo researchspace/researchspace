@@ -23,7 +23,7 @@ import { Cancellation } from 'platform/api/async';
 
 import { inferSettings } from 'graphology-layout-forceatlas2'
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
-import { useRegisterEvents, useSigma } from "@react-sigma/core";
+import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
 import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
@@ -35,6 +35,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
+    const camera = useCamera();
     const [ activeNode, setActiveNode ] = useState<string | null>(null);
     const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
     const cancellation = new Cancellation();
@@ -44,7 +45,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const layoutSettings = inferSettings(graph);
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
-    const handleGroupedNodeClicked = (node: string) => {
+    const handleGroupedNodeClicked = (node: string, callback = () => { return undefined}) => {
         const mode = props.grouping.behaviour || null;
         if (!mode) {
             return
@@ -81,16 +82,17 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 graph.dropNode(node);
             }
         }
+        callback();
     }
 
-    const handleNodeClicked = (node: string, omitEvent = false) => {
+    const handleNodeClicked = (node: string, omitEvent = false, callback = () => { return undefined} ) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
         if (attributes.grouped) {
-            handleGroupedNodeClicked(node);
+            handleGroupedNodeClicked(node, callback);
         } else {     
             // If node query is defined, load additional data
             if (props.nodeQuery) {
-                loadMoreDataForNode(node)
+                loadMoreDataForNode(node, callback)
             }
         }
         if (!omitEvent) {
@@ -103,12 +105,12 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 source: node,
                 data: data
             })
-            // Restart the layout
-            start();
+            // Restart layout
+            start()
         }
     }
 
-    const loadMoreDataForNode = (node: string) => {
+    const loadMoreDataForNode = (node: string, callback = () => { return undefined; }) => {
         let query = props.nodeQuery
         let newElements = []
         query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
@@ -119,9 +121,11 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             const graph = sigma.getGraph();
             const newGraph = createGraphFromElements(newElements, props);
             // Add new nodes and edges to the graph
-            mergeGraphs(graph, newGraph);            
+            mergeGraphs(graph, newGraph);
+            callback();            
         })
     }
+
     const releaseNodeFromGroup = (childNode: string, groupNode: string) => {
         const graph = sigma.getGraph();
         const children = graph.getNodeAttribute(groupNode, "children");
@@ -173,7 +177,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             }
                         } 
                         if (sigma.getGraph().hasNode(node)) {
-                            handleNodeClicked(node)
+                            handleNodeClicked(node, true, () => {
+                                sigma.getGraph().setNodeAttribute(node, "highlighted", true);
+                                camera.gotoNode(node);
+                            })
                         }
                     } else {
                         console.log("No node defined");
@@ -181,7 +188,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 }
             });
         return undefined;
-    }, [cancellation])
+    })
 
     // Listen to mouse events
     useEffect(() => {

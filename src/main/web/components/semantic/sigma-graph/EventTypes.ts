@@ -29,11 +29,11 @@ export interface SigmaEventData {
   };
 
   /**
-   * Event that listens to a external event that triggers a data update
-   * in the sigma graph.
+   * Event that listens to a external event that triggers
+   * a click on a given node
    */
   'Sigma.TriggerNodeClicked': {
-    query: string;
+    node: string;
   }
 }
 const event: EventMaker<SigmaEventData> = EventMaker;

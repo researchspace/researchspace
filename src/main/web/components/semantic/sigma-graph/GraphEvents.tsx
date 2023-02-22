@@ -118,7 +118,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const loadMoreDataForNode = (node: string, callback = () => { return undefined; }) => {
         let query = props.nodeQuery
         let newElements = []
-        query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
+
+        // Use regex to replace all occurrences of $subject or ?subject with the node IRI
+        query = query.replace(/\$subject|\?subject/g, node)
+        
         loadGraphDataFromQuery(query, props.context).onValue((elements) => {
             newElements = elements
         })

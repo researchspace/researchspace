@@ -16,6 +16,7 @@
  */
 
 import * as React from 'react';
+import * as assign from 'object-assign';
 import { createElement } from 'react';
 
 import { Component } from 'platform/api/components';
@@ -67,7 +68,15 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
             })
             .onError((error) => { this.setState({ error: error, isLoading: false }) })
             .onEnd(() => {
-                const graph = createGraphFromElements(this.state.elements, this.props)
+
+                const config = assign({},
+                    {
+                        grouping: this.props.grouping || { enabled: false},
+                        sizes: this.props.sizes || { nodes: 10, edges: 5 },
+                    },
+                    this.props
+                );
+                const graph = createGraphFromElements(this.state.elements, config)
                 this.setState({ graph: graph})
                 if (this.props.id) {
                     trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
@@ -79,7 +88,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const width = this.props.width || "800px";
         const height = this.props.height || "600px";
         const searchBox = this.props.searchBox || false;
-
+        
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
             defaultNodeType: "image",
@@ -88,6 +97,11 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
             autoRescale: false,
             maxEdgeSize: 2,
         };
+        
+        const colours = this.props.colours || {};
+        const grouping = this.props.grouping || { enabled: false};
+        const nodeQuery = this.props.nodeQuery || "";
+        const sizes = this.props.sizes || { nodes: 10, edges: 5 };
 
         if (this.state.isLoading) {
             return createElement(Spinner);
@@ -102,10 +116,10 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 >   
                     <GraphEvents 
                         context={ this.context.semanticContext} 
-                        colours={ this.props.colours }
-                        grouping={ this.props.grouping } 
-                        nodeQuery={ this.props.nodeQuery }
-                        sizes={ this.props.sizes } 
+                        colours={ colours }
+                        grouping={ grouping } 
+                        nodeQuery={ nodeQuery }
+                        sizes={ sizes } 
                     />
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>

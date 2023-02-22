@@ -16,7 +16,7 @@
  */
 
 import { Cancellation } from 'platform/api/async';
-import { getGraphDataWithLabels, ResourceCytoscapeElement } from 'platform/components/semantic/graph/GraphInternals';
+import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 import { QueryContext } from 'platform/api/sparql/SparqlClient';
 
 import { MultiDirectedGraph } from "graphology";
@@ -150,7 +150,7 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
 }
 
 
-export function createGraphFromElements(elements: ResourceCytoscapeElement[], props: SigmaGraphConfig) {
+export function createGraphFromElements(elements: any[], props: SigmaGraphConfig) {
     const graph = new MultiDirectedGraph();
     const nodeSize = props.sizes.nodes || 10;
     const edgeSize = props.sizes.edges || 5;

@@ -186,6 +186,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             }
                         } 
                         if (sigma.getGraph().hasNode(node)) {
+                            if(activeNode) {
+                                sigma.getGraph().setNodeAttribute(activeNode, "highlighted", false);
+                            }
+                            setActiveNode(node);
                             handleNodeClicked(node, true, () => {
                                 focusNode(node)
                             })

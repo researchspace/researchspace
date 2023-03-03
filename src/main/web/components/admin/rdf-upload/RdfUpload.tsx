@@ -43,6 +43,9 @@ import { TemplateItem } from 'platform/components/ui/template';
 
 import { RdfUploadExtension } from './extensions';
 
+import * as RdfUploadEvents from './RdfUploadEvents';
+import { trigger } from 'platform/api/events';
+
 import './RdfUpload.scss';
 
 interface State {
@@ -180,7 +183,29 @@ export class RdfUpload extends Component<Props, State> {
     });
 
     this.cancellation.map(Kefir.combine(uploads)).observe({
-      value: () => setTimeout(() => refresh(), 2000),
+      value: (v) => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+        // FIRE EVENT
+        trigger({
+          eventType: RdfUploadEvents.RdfUploadSuccess,
+          source: Math.random().toString()
+        });
+      },
+      error: () => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+      },
+      end: () => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+      }
     });
   };
 

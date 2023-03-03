@@ -166,7 +166,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         ).observe({
                 value: ( event ) => {
                     if (event.data.node)  {
-                        const node = event.data.node;
+                        // Add < and > brackets to node IRI
+                        const node = "<" + event.data.node + ">";
                         // Check if parent node exists in graph
                         if (!sigma.getGraph().hasNode(node)) {
                             // Node might be in group

@@ -46,8 +46,12 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     const focusNode = (node: string) => {
-        sigma.getGraph().setNodeAttribute(node, "highlighted", true);
+        highlightNode(node);
         camera.gotoNode(node);
+    }
+
+    const highlightNode = (node: string) => {
+        sigma.getGraph().setNodeAttribute(node, "highlighted", true);
     }
 
     const handleGroupedNodeClicked = (node: string, callback = () => { return undefined}) => {
@@ -192,7 +196,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             }
                             setActiveNode(node);
                             handleNodeClicked(node, true, () => {
-                                focusNode(node)
+                                highlightNode(node);
                             })
                         }
                     } else {

@@ -145,7 +145,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             if (child.node == childNode) {
                 graph.addNode(childNode, child.attributes);
                 // Remove the child node from the children array
-                graph.setNodeAttribute(groupNode, "children", children.splice(children.indexOf(child), 1))
+                children.splice(children.indexOf(child), 1)
+                graph.setNodeAttribute(groupNode, "children", children)
                 // Update group node label
                 const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
                 graph.setNodeAttribute(groupNode, "label", typeLabels + ' (' + (children.length) + ')')

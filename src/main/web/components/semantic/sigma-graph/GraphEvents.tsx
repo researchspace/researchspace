@@ -26,7 +26,7 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
-import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
+import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -117,6 +117,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             // Restart layout
             start()
         }
+        sigma.refresh()
     }
 
     const loadMoreDataForNode = (node: string, callback = () => { return undefined; }) => {
@@ -137,27 +138,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             callback();            
         })
     }
-
-    const releaseNodeFromGroup = (childNode: string, groupNode: string) => {
-        const graph = sigma.getGraph();
-        const children = graph.getNodeAttribute(groupNode, "children");
-        for (const child of children) {
-            if (child.node == childNode) {
-                // If additional data has been retrieved and
-                // merged into the graph, the node might already exist
-                if (!graph.hasNode(childNode)) {
-                    graph.addNode(childNode, child.attributes);
-                }
-                // Remove the child node from the children array
-                children.splice(children.indexOf(child), 1)
-                graph.setNodeAttribute(groupNode, "children", children)
-                // Update group node label
-                const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
-                graph.setNodeAttribute(groupNode, "label", typeLabels + ' (' + (children.length) + ')')
-            }
-        }
-    }
-
     
     // Control layout
     useEffect(() => {
@@ -188,7 +168,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                                     for (const child of children) {
                                         if (child.node == node) {
                                             // Parent node is in group, so we need to release it
-                                            releaseNodeFromGroup(node, possibleGroupNode);
+                                            releaseNodeFromGroup(sigma.getGraph(), node, possibleGroupNode);
                                             break;
                                         }
                                     }

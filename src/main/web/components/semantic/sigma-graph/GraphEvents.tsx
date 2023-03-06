@@ -95,7 +95,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     }
 
     const handleNodeClicked = (node: string, omitEvent = false, callback = () => { return undefined} ) => {
-        console.log("clicked node: " + node);
         const attributes = sigma.getGraph().getNodeAttributes(node);
         const callbackWithCleaning = () => {
             cleanGraph(sigma.getGraph());

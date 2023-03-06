@@ -150,13 +150,11 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
 }
 
 export function cleanGraph(graph: MultiDirectedGraph) {
-    console.log("Cleaning graph...")
     // Check for groups that only contain one element
     const nodes = graph.nodes();
     for (const node of nodes) {
         if (graph.getNodeAttribute(node, 'children')) {
             const children = graph.getNodeAttribute(node, 'children');
-            console.log("Group " + graph.getNodeAttribute(node, 'label') + " contains " + children.length + " elements.");
             if (children.length == 1) {
                 releaseNodeFromGroup(graph, children[0].node, node);
                 graph.dropNode(node);

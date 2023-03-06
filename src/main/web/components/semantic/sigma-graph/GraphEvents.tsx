@@ -26,7 +26,7 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
-import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
+import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, cleanGraph } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -95,13 +95,18 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     }
 
     const handleNodeClicked = (node: string, omitEvent = false, callback = () => { return undefined} ) => {
+        console.log("clicked node: " + node);
         const attributes = sigma.getGraph().getNodeAttributes(node);
+        const callbackWithCleaning = () => {
+            cleanGraph(sigma.getGraph());
+            callback();
+        }
         if (attributes.grouped) {
-            handleGroupedNodeClicked(node, callback);
+            handleGroupedNodeClicked(node, callbackWithCleaning);
         } else {     
             // If node query is defined, load additional data
             if (props.nodeQuery) {
-                loadMoreDataForNode(node, callback)
+                loadMoreDataForNode(node, callbackWithCleaning)
             }
         }
         if (!omitEvent) {

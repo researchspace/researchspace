@@ -149,6 +149,23 @@ export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGrap
     return groupedGraph;
 }
 
+export function cleanGraph(graph: MultiDirectedGraph) {
+    console.log("Cleaning graph...")
+    // Check for groups that only contain one element
+    const nodes = graph.nodes();
+    for (const node of nodes) {
+        if (graph.getNodeAttribute(node, 'children')) {
+            const children = graph.getNodeAttribute(node, 'children');
+            console.log("Group " + graph.getNodeAttribute(node, 'label') + " contains " + children.length + " elements.");
+            if (children.length == 1) {
+                releaseNodeFromGroup(graph, children[0].node, node);
+                graph.dropNode(node);
+            } else if (children.length == 0) {
+                graph.dropNode(node);
+            }
+        }
+    }
+}
 
 export function createGraphFromElements(elements: any[], props: SigmaGraphConfig) {
     const graph = new MultiDirectedGraph();
@@ -221,16 +238,20 @@ export function mergeGraphs(graph, newGraph) {
     // In this case we need to remove the grouped node from its group and add a
     // corresponding edge from the groups source to the node.
     const nodes = graph.nodes();
+    const nodesToRelease = [];
     for (const node of nodes) {
         if (graph.getNodeAttribute(node, 'grouped')) {
             // Look at children of group and check if they are already present in the graph
             const children = graph.getNodeAttribute(node, 'children');
             for (const child of children) {
                 if (graph.hasNode(child.node)) {
-                    releaseNodeFromGroup(graph, child.node, node);
+                    nodesToRelease.push({group: node, child: child});
                 }
             }
         }
+    }
+    for (const node of nodesToRelease) {
+        releaseNodeFromGroup(graph, node.child.node, node.group);
     }
 }
 
@@ -258,7 +279,9 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
             graph.setNodeAttribute(groupNode, "children", children)
             // Update group node label
             const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
-            graph.setNodeAttribute(groupNode, "label", typeLabels + ' (' + (children.length) + ')')
+            // Get unique type  labels
+            const uniqueTypeLabels = [...new Set(typeLabels.split(', '))];
+            graph.setNodeAttribute(groupNode, "label", uniqueTypeLabels + ' (' + (children.length) + ')')
             // Add edges from group source node to child node
             for (const edge of edges) {
                 const sourceNode = graph.source(edge);
@@ -266,9 +289,5 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
                 graph.addEdgeWithKey(sourceNode+childNode, sourceNode, childNode, edgeAttributes)
             }
         }
-    }
-    // If the group has no children left, remove it from the graph
-    if (children.length == 0) {
-        graph.dropNode(groupNode);
     }
 }

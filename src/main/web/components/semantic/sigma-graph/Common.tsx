@@ -216,6 +216,22 @@ export function mergeGraphs(graph, newGraph) {
             graph.addEdgeWithKey(edge, source, target, attributes);
         }
     })
+    // If the new graph contains grouped nodes, it might be that a node that
+    // is part of a group is already present as an individual node in the graph. 
+    // In this case we need to remove the grouped node from its group and add a
+    // corresponding edge from the groups source to the node.
+    const nodes = graph.nodes();
+    for (const node of nodes) {
+        if (graph.getNodeAttribute(node, 'grouped')) {
+            // Look at children of group and check if they are already present in the graph
+            const children = graph.getNodeAttribute(node, 'children');
+            for (const child of children) {
+                if (graph.hasNode(child.node)) {
+                    releaseNodeFromGroup(graph, child.node, node);
+                }
+            }
+        }
+    }
 }
 
 export function loadGraphDataFromQuery(query: string, context: QueryContext) {
@@ -225,4 +241,34 @@ export function loadGraphDataFromQuery(query: string, context: QueryContext) {
         hidePredicates: DEFAULT_HIDE_PREDICATES
     }
     return cancellation.map(getGraphDataWithLabels(config, { context }))
+}
+
+export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: string, groupNode: string)  {
+    const children = graph.getNodeAttribute(groupNode, "children");
+    const edges = graph.inEdges(groupNode);
+    for (const child of children) {
+        if (child.node == childNode) {
+            // If additional data has been retrieved and
+            // merged into the graph, the node might already exist
+            if (!graph.hasNode(childNode)) {
+                graph.addNode(childNode, child.attributes);
+            }
+            // Remove the child node from the children array
+            children.splice(children.indexOf(child), 1)
+            graph.setNodeAttribute(groupNode, "children", children)
+            // Update group node label
+            const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
+            graph.setNodeAttribute(groupNode, "label", typeLabels + ' (' + (children.length) + ')')
+            // Add edges from group source node to child node
+            for (const edge of edges) {
+                const sourceNode = graph.source(edge);
+                const edgeAttributes = graph.getEdgeAttributes(edge);
+                graph.addEdgeWithKey(sourceNode+childNode, sourceNode, childNode, edgeAttributes)
+            }
+        }
+    }
+    // If the group has no children left, remove it from the graph
+    if (children.length == 0) {
+        graph.dropNode(groupNode);
+    }
 }

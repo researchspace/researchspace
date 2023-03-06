@@ -279,8 +279,7 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
             graph.setNodeAttribute(groupNode, "children", children)
             // Update group node label
             const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
-            // Get unique type  labels
-            const uniqueTypeLabels = [...new Set(typeLabels.split(', '))];
+            const uniqueTypeLabels = typeLabels.filter((value, index, array) => array.indexOf(value) === index);
             graph.setNodeAttribute(groupNode, "label", uniqueTypeLabels + ' (' + (children.length) + ')')
             // Add edges from group source node to child node
             for (const edge of edges) {

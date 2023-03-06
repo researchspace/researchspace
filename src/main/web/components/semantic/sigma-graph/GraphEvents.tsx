@@ -143,7 +143,11 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         const children = graph.getNodeAttribute(groupNode, "children");
         for (const child of children) {
             if (child.node == childNode) {
-                graph.addNode(childNode, child.attributes);
+                // If additional data has been retrieved and
+                // merged into the graph, the node might already exist
+                if (!graph.hasNode(childNode)) {
+                    graph.addNode(childNode, child.attributes);
+                }
                 // Remove the child node from the children array
                 children.splice(children.indexOf(child), 1)
                 graph.setNodeAttribute(groupNode, "children", children)
@@ -195,7 +199,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             if(activeNode) {
                                 sigma.getGraph().setNodeAttribute(activeNode, "highlighted", false);
                             }
-                            setActiveNode(node);
                             handleNodeClicked(node, true, () => {
                                 highlightNode(node);
                             })

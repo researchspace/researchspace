@@ -104,6 +104,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
         const callbackWithCleaning = () => {
             cleanGraph(sigma.getGraph());
+            start();
             callback();
         }
         if (attributes.grouped) {

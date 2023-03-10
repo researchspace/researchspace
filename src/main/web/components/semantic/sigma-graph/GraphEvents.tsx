@@ -43,9 +43,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     // Configure layout
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
-    layoutSettings.adjustSizes = false;
-    layoutSettings.edgeWeightInfluence = 0;
-    layoutSettings.gravity = 0;
+    
     const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     const focusNode = (node: string) => {

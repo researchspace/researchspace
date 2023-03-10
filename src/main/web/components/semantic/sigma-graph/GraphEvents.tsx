@@ -54,6 +54,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     }
 
     const highlightNode = (node: string) => {
+        for (const node of sigma.getGraph().nodes()) {
+            sigma.getGraph().setNodeAttribute(node, "highlighted", false);
+        }
         sigma.getGraph().setNodeAttribute(node, "highlighted", true);
     }
 
@@ -186,7 +189,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             if(activeNode) {
                                 sigma.getGraph().setNodeAttribute(activeNode, "highlighted", false);
                             }
-                            handleNodeClicked(node, true, () => {
+                            handleNodeClicked(node, true, () => {         
                                 highlightNode(node);
                             })
                         }

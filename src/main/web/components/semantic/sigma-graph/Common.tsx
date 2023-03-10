@@ -283,7 +283,10 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
             for (const edge of edges) {
                 const sourceNode = graph.source(edge);
                 const edgeAttributes = graph.getEdgeAttributes(edge);
-                graph.addEdgeWithKey(sourceNode+childNode, sourceNode, childNode, edgeAttributes)
+                // Check if edge already exists
+                if (!graph.hasEdge(sourceNode+childNode)) {
+                    graph.addEdgeWithKey(sourceNode+childNode, sourceNode, childNode, edgeAttributes)
+                }
             }
         }
     }

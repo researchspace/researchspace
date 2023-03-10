@@ -94,7 +94,6 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
             defaultNodeType: "image",
             nodeProgramClasses: { image: getNodeProgramImage() },
             renderEdgeLabels: true,
-            autoRescale: false,
             maxEdgeSize: 2,
         };
         

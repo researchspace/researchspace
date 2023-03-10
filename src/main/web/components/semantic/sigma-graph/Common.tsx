@@ -265,11 +265,14 @@ export function loadGraphDataFromQuery(query: string, context: QueryContext) {
 export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: string, groupNode: string)  {
     const children = graph.getNodeAttribute(groupNode, "children");
     const edges = graph.inEdges(groupNode);
+    const groupNodeAttributes = graph.getNodeAttributes(groupNode);
     for (const child of children) {
         if (child.node == childNode) {
             // If additional data has been retrieved and
             // merged into the graph, the node might already exist
             if (!graph.hasNode(childNode)) {
+                child.attributes.x = groupNodeAttributes.x;
+                child.attributes.y = groupNodeAttributes.y;
                 graph.addNode(childNode, child.attributes);
             }
             // Remove the child node from the children array

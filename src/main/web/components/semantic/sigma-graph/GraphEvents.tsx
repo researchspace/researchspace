@@ -44,7 +44,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
     
-    const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+    const { start, stop, kill, isRunning } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     const focusNode = (node: string) => {
         highlightNode(node);
@@ -102,7 +102,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
         const callbackWithCleaning = () => {
             cleanGraph(sigma.getGraph());
-            start();
+            if (isRunning()) {
+                start();
+            } 
             callback();
         }
         if (attributes.grouped) {

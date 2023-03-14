@@ -151,7 +151,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             const newGraph = createGraphFromElements(newElements, props);
             // Add new nodes and edges to the graph
             mergeGraphs(graph, newGraph);
-            saveStateIntoLocalStorage(sigma.getGraph());
+            if (props.persistGraph) {
+                saveStateIntoLocalStorage(sigma.getGraph());
+            }
             callback();            
         })
     }

@@ -15,13 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as Kefir from 'kefir';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import { Cancellation } from 'platform/api/async';
+import { getCurrentUrl } from 'platform/api/navigation';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 import { QueryContext } from 'platform/api/sparql/SparqlClient';
 
 import { MultiDirectedGraph } from "graphology";
 
 import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config';
+
+const SAVED_STATE_QUERY_KEY = 'sigmaGraph';
 
 export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
 
@@ -219,6 +224,20 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
 
 }
 
+export function getStateFromHistory() {
+    const compressed = getCurrentUrl().query(true)[SAVED_STATE_QUERY_KEY];
+    
+    if (!compressed) {
+        return null;
+    }
+
+    const jsonGraph = JSON.parse(decompressFromEncodedURIComponent(compressed));
+    console.log(jsonGraph)
+    const graph = new MultiDirectedGraph();
+    graph.import(jsonGraph);
+    return graph;
+}
+
 export function mergeGraphs(graph, newGraph) {
      // Merge new graph with sigma graph
      newGraph.forEachNode((node, attributes) => {
@@ -293,4 +312,16 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
             }
         }
     }
+}
+
+export function saveStateIntoHistory(graph: MultiDirectedGraph) {
+    const currentUrl = getCurrentUrl().clone();
+    const cancellation = new Cancellation();
+    const savingState = cancellation.derive()
+    const exportedGraph = graph.export();
+    const compressed = compressToEncodedURIComponent(JSON.stringify(exportedGraph));
+    currentUrl.removeSearch(SAVED_STATE_QUERY_KEY).addSearch({ [SAVED_STATE_QUERY_KEY]: compressed });
+    savingState.map(Kefir.constant(currentUrl)).onValue((url) => {
+        window.history.replaceState({}, '', url.toString());
+    });
 }

@@ -30,7 +30,7 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
-import { createGraphFromElements, loadGraphDataFromQuery } from './Common'
+import { createGraphFromElements, getStateFromHistory, loadGraphDataFromQuery } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
@@ -59,29 +59,37 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private loadInitialGraphData(props: SigmaGraphConfig) : void {
         this.setState({ error:undefined });
-        loadGraphDataFromQuery(props.query, this.context.semanticContext).onValue((elements) => {
-                this.setState({
-                    elements: elements,
-                    noResults: !elements.length,
-                    isLoading: false
+        const graphFromHistory = getStateFromHistory();
+        if (graphFromHistory) {
+            this.setState({
+                graph: graphFromHistory,
+                isLoading: false
+            })
+        } else {
+            loadGraphDataFromQuery(props.query, this.context.semanticContext).onValue((elements) => {
+                    this.setState({
+                        elements: elements,
+                        noResults: !elements.length,
+                        isLoading: false
+                    })
                 })
-            })
-            .onError((error) => { this.setState({ error: error, isLoading: false }) })
-            .onEnd(() => {
+                .onError((error) => { this.setState({ error: error, isLoading: false }) })
+                .onEnd(() => {
 
-                const config = assign({},
-                    {
-                        grouping: this.props.grouping || { enabled: false},
-                        sizes: this.props.sizes || { nodes: 10, edges: 5 },
-                    },
-                    this.props
-                );
-                const graph = createGraphFromElements(this.state.elements, config)
-                this.setState({ graph: graph})
-                if (this.props.id) {
-                    trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
-                }
-            })
+                    const config = assign({},
+                        {
+                            grouping: this.props.grouping || { enabled: false},
+                            sizes: this.props.sizes || { nodes: 10, edges: 5 },
+                        },
+                        this.props
+                    );
+                    const graph = createGraphFromElements(this.state.elements, config)
+                    this.setState({ graph: graph})
+                    if (this.props.id) {
+                        trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
+                    }
+                })
+        }
     }
 
     render() {

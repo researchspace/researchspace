@@ -26,7 +26,7 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
-import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, cleanGraph } from './Common';
+import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, saveStateIntoHistory } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -128,6 +128,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             // Restart layout
             start()
         }
+        saveStateIntoHistory(sigma.getGraph());
         sigma.refresh()
     }
 

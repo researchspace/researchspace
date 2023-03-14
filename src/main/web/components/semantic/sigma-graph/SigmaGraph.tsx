@@ -59,7 +59,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     private loadInitialGraphData(props: SigmaGraphConfig) : void {
         this.setState({ error:undefined });
-        const graphFromLocalStorage = getStateFromLocalStorage();
+        const graphFromLocalStorage = props.persistGraph ? getStateFromLocalStorage() : null;
         if (graphFromLocalStorage) {
             this.setState({
                 graph: graphFromLocalStorage,
@@ -109,6 +109,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const grouping = this.props.grouping || { enabled: false};
         const nodeQuery = this.props.nodeQuery || "";
         const sizes = this.props.sizes || { nodes: 10, edges: 5 };
+        const persistGraph = this.props.persistGraph || false;
 
         if (this.state.isLoading) {
             return createElement(Spinner);
@@ -126,6 +127,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                         colours={ colours }
                         grouping={ grouping } 
                         nodeQuery={ nodeQuery }
+                        persistGraph={ persistGraph }
                         sizes={ sizes } 
                     />
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}

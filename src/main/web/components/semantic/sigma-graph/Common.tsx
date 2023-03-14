@@ -224,9 +224,8 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
 
 }
 
-export function getStateFromLocalStorage() {
-    const currentUrl = getCurrentUrl().clone();
-    const query = currentUrl.query();
+export function getStateFromLocalStorage(props: SigmaGraphConfig) {
+    const query = props.query;
 
     if (localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_QUERY) == query) {
         const compressed = localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_GRAPH)
@@ -318,11 +317,10 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
     }
 }
 
-export function saveStateIntoLocalStorage(graph: MultiDirectedGraph) {
-    const currentUrl = getCurrentUrl().clone();
+export function saveStateIntoLocalStorage(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
     const exportedGraph = graph.export();
     const compressed = compressToEncodedURIComponent(JSON.stringify(exportedGraph));
-    const query = currentUrl.query();
+    const query = props.query
     localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_QUERY, query)
     localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_GRAPH, compressed)
 }

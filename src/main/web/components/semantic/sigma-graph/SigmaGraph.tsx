@@ -30,7 +30,7 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
-import { createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery } from './Common'
+import { createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
@@ -57,9 +57,15 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         this.loadInitialGraphData(this.props);
     }
 
+    componentWillUnmount() : void {
+        if (this.props.persistGraph) {
+            saveStateIntoLocalStorage(this.state.graph, this.props);
+        }
+    }
+
     private loadInitialGraphData(props: SigmaGraphConfig) : void {
         this.setState({ error:undefined });
-        const graphFromLocalStorage = props.persistGraph ? getStateFromLocalStorage() : null;
+        const graphFromLocalStorage = props.persistGraph ? getStateFromLocalStorage(props) : null;
         if (graphFromLocalStorage) {
             this.setState({
                 graph: graphFromLocalStorage,

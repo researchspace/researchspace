@@ -26,7 +26,7 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
-import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, saveStateIntoLocalStorage } from './Common';
+import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -150,9 +150,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             const newGraph = createGraphFromElements(newElements, props);
             // Add new nodes and edges to the graph
             mergeGraphs(graph, newGraph);
-            if (props.persistGraph) {
-                saveStateIntoLocalStorage(sigma.getGraph());
-            }
             callback();            
         })
     }

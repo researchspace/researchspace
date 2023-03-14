@@ -25,8 +25,6 @@ import { QueryContext } from 'platform/api/sparql/SparqlClient';
 import { MultiDirectedGraph } from "graphology";
 
 import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config';
-
-const SAVED_STATE_QUERY_KEY = 'savedState';
 const SAVED_STATE_LOCAL_STORAGE_QUERY = 'sigmaGraph-query';
 const SAVED_STATE_LOCAL_STORAGE_GRAPH = 'sigmaGraph-graph';
 

@@ -16,6 +16,7 @@
  */
 
 import * as React from 'react';
+import * as assign from 'object-assign';
 import { createElement } from 'react';
 
 import { Component } from 'platform/api/components';
@@ -29,7 +30,7 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
-import { createGraphFromElements, loadGraphDataFromQuery } from './Common'
+import { createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 export interface State {
@@ -56,38 +57,65 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         this.loadInitialGraphData(this.props);
     }
 
+    componentWillUnmount() : void {
+        if (this.props.persistGraph) {
+            saveStateIntoLocalStorage(this.state.graph, this.props);
+        }
+    }
+
     private loadInitialGraphData(props: SigmaGraphConfig) : void {
         this.setState({ error:undefined });
-        loadGraphDataFromQuery(props.query, this.context.semanticContext).onValue((elements) => {
-                this.setState({
-                    elements: elements,
-                    noResults: !elements.length,
-                    isLoading: false
+        const graphFromLocalStorage = props.persistGraph ? getStateFromLocalStorage(props) : null;
+        if (graphFromLocalStorage) {
+            this.setState({
+                graph: graphFromLocalStorage,
+                isLoading: false
+            })
+        } else {
+            loadGraphDataFromQuery(props.query, this.context.semanticContext).onValue((elements) => {
+                    this.setState({
+                        elements: elements,
+                        noResults: !elements.length,
+                        isLoading: false
+                    })
                 })
-            })
-            .onError((error) => { this.setState({ error: error, isLoading: false }) })
-            .onEnd(() => {
-                const graph = createGraphFromElements(this.state.elements, this.props)
-                this.setState({ graph: graph})
-                if (this.props.id) {
-                    trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
-                }
-            })
+                .onError((error) => { this.setState({ error: error, isLoading: false }) })
+                .onEnd(() => {
+
+                    const config = assign({},
+                        {
+                            grouping: this.props.grouping || { enabled: false},
+                            sizes: this.props.sizes || { nodes: 10, edges: 5 },
+                        },
+                        this.props
+                    );
+                    const graph = createGraphFromElements(this.state.elements, config)
+                    this.setState({ graph: graph})
+                    if (this.props.id) {
+                        trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
+                    }
+                })
+        }
     }
 
     render() {
         const width = this.props.width || "800px";
         const height = this.props.height || "600px";
         const searchBox = this.props.searchBox || false;
-
+        
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
             defaultNodeType: "image",
             nodeProgramClasses: { image: getNodeProgramImage() },
             renderEdgeLabels: true,
-            autoRescale: false,
             maxEdgeSize: 2,
         };
+        
+        const colours = this.props.colours || {};
+        const grouping = this.props.grouping || { enabled: false};
+        const nodeQuery = this.props.nodeQuery || "";
+        const sizes = this.props.sizes || { nodes: 10, edges: 5 };
+        const persistGraph = this.props.persistGraph || false;
 
         if (this.state.isLoading) {
             return createElement(Spinner);
@@ -102,10 +130,11 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                 >   
                     <GraphEvents 
                         context={ this.context.semanticContext} 
-                        colours={ this.props.colours }
-                        grouping={ this.props.grouping } 
-                        nodeQuery={ this.props.nodeQuery }
-                        sizes={ this.props.sizes } 
+                        colours={ colours }
+                        grouping={ grouping } 
+                        nodeQuery={ nodeQuery }
+                        persistGraph={ persistGraph }
+                        sizes={ sizes } 
                     />
                     {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
                 </SigmaContainer>

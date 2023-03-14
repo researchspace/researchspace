@@ -1,0 +1,165 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Sigma Graph Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Sigma Graph Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        <p>Visualise graphs using <a href="https://www.sigmajs.org/">Sigma.js</a>. The component uses WebGL as a visualisation engine and is therefore able to also handle large graphs.</p>
+        <p>The configuration is similar to the <semantic-link iri="Help:SemanticGraph">Semantic Graph</semantic-link> component, so that the components are partially interchangeable.</p>
+      </div>
+      <div class="documentation__intro__demo" id='demo1'>
+         <semantic-sigma-graph height='500px' 
+            query='
+              prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+              prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+              prefix person: <http://example.com/person/> 
+              prefix org: <http://example.com/org/> 
+              prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+              CONSTRUCT {
+                ?s ?p ?o
+              } WHERE {
+                {
+                  SELECT ?s ?p ?o WHERE {
+                    VALUES (?s ?p ?o)
+                    {
+                      (person:alice foaf:knows person:bob)
+                      (person:alice foaf:knows person:carol)
+                      (person:carol foaf:knows person:mike)               
+                      (person:mike foaf:knows person:carol)
+                      (person:bob foaf:knows person:carol)               
+                      (person:alice foaf:knows person:mike)
+                      (person:alice foaf:member org:W3C)
+                      (person:mike foaf:member org:W3C)
+                      (person:alice rdf:type foaf:Person)
+                      (person:carol rdf:type foaf:Person)               
+                      (person:mike rdf:type foaf:Person)
+                      (person:bob rdf:type foaf:Person)               
+                    }
+                  }
+                }
+              }' 
+              colours='{
+                "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+                "http://xmlns.com/foaf/0.1/Organization": "#27ae60"
+              }'
+        >
+        </semantic-sigma-graph>
+        </div>
+    </div>
+    <div style="clear:both;"></div>
+
+    <h2>Configuration</h2>
+
+    <mp-documentation type="SigmaGraphConfig"></mp-documentation>
+
+    <h2>Examples </h2>
+
+    <h3>Colour Scheme</h3>
+    <div id='demo2'>
+      <mp-code-example>
+<![CDATA[
+
+<semantic-sigma-graph height='500px' 
+query='
+  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  prefix person: <http://example.com/person/> 
+  prefix org: <http://example.com/org/> 
+  prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+  CONSTRUCT {
+    ?s ?p ?o
+  } WHERE {
+    {
+      SELECT ?s ?p ?o WHERE {
+        VALUES (?s ?p ?o)
+        {
+          (person:alice foaf:knows person:bob)
+          (person:alice foaf:knows person:carol)
+          (person:carol foaf:knows person:mike)               
+          (person:mike foaf:knows person:carol)
+          (person:bob foaf:knows person:carol)               
+          (person:alice foaf:knows person:mike)
+          (person:alice foaf:member org:W3C)
+          (person:mike foaf:member org:W3C)
+          (person:alice rdf:type foaf:Person)
+          (person:carol rdf:type foaf:Person)               
+          (person:mike rdf:type foaf:Person)
+          (person:bob rdf:type foaf:Person)               
+        }
+      }
+    }
+  }' 
+  colours='{
+    "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+    "http://xmlns.com/foaf/0.1/Organization": "#27ae60"
+  }'
+>
+</semantic-sigma-graph>
+]]>
+      </mp-code-example>
+    </div>
+
+    <h3>Grouping</h3>
+    <div id='demo3'>
+      <mp-code-example>
+        <![CDATA[
+
+        <semantic-sigma-graph height='500px' 
+        query='
+          prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+          prefix person: <http://example.com/person/> 
+          prefix org: <http://example.com/org/> 
+          prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+          CONSTRUCT {
+            ?s ?p ?o
+          } WHERE {
+            {
+              SELECT ?s ?p ?o WHERE {
+                VALUES (?s ?p ?o)
+                {
+                  (person:alice foaf:knows person:bob)
+                  (person:alice foaf:knows person:carol)
+                  (person:alice foaf:knows person:derek)
+                  (person:alice rdf:type foaf:Person)
+                  (person:bob rdf:type foaf:Person)
+                  (person:carol rdf:type foaf:Person)
+                  (person:derek rdf:type foaf:Person)
+                }
+              }
+            }
+          }' 
+          grouping='{
+              "behaviour": "expand",
+              "enabled": true,
+              "threshold": 2
+          }'
+          colours='{
+            "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+            "http://xmlns.com/foaf/0.1/Organization": "#27ae60"
+          }'
+        >
+        </semantic-sigma-graph>
+        ]]>
+      </mp-code-example>
+    </div>
+
+    <h3>Events</h3>
+    The components implements a number of events that can be used to interact with the graph. The events are documented below.
+    <mp-documentation type="SigmaGraphEventData" disable-transform-attributes=true hide-required-label=true></mp-documentation>
+</div>

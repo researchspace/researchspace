@@ -90,6 +90,14 @@ export interface SigmaGraphConfig {
    nodeQuery?: string;
 
     /**
+     * If true, the graph will be persisted in the browser's local storage.
+     * This allows the graph to be restored when the page is reloaded.
+     * If the URL of the page changes, the graph will be cleared.
+     * @default false
+     */
+    persistGraph?: boolean;
+
+    /**
      * Display a search field.
      * @default false
      */

@@ -26,7 +26,7 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
-import { createGraphFromElements, loadGraphDataFromQuery, mergeGraphs } from './Common';
+import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -43,11 +43,19 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     // Configure layout
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
-    const { start, stop, kill } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+    
+    const { start, stop, kill, isRunning } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     const focusNode = (node: string) => {
-        sigma.getGraph().setNodeAttribute(node, "highlighted", true);
+        highlightNode(node);
         camera.gotoNode(node);
+    }
+
+    const highlightNode = (node: string) => {
+        for (const node of sigma.getGraph().nodes()) {
+            sigma.getGraph().setNodeAttribute(node, "highlighted", false);
+        }
+        sigma.getGraph().setNodeAttribute(node, "highlighted", true);
     }
 
     const handleGroupedNodeClicked = (node: string, callback = () => { return undefined}) => {
@@ -92,12 +100,23 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const handleNodeClicked = (node: string, omitEvent = false, callback = () => { return undefined} ) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
+        const callbackWithCleaning = () => {
+            cleanGraph(sigma.getGraph());
+            if (!isRunning) {
+                try {
+                    start();
+                } catch (e) {
+                    const error = e;
+                }
+            }
+            callback();
+        }
         if (attributes.grouped) {
-            handleGroupedNodeClicked(node, callback);
+            handleGroupedNodeClicked(node, callbackWithCleaning);
         } else {     
             // If node query is defined, load additional data
             if (props.nodeQuery) {
-                loadMoreDataForNode(node, callback)
+                loadMoreDataForNode(node, callbackWithCleaning)
             }
         }
         if (!omitEvent) {
@@ -113,12 +132,16 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             // Restart layout
             start()
         }
+        sigma.refresh()
     }
 
     const loadMoreDataForNode = (node: string, callback = () => { return undefined; }) => {
         let query = props.nodeQuery
         let newElements = []
-        query = query.replaceAll("$subject", "?subject").replaceAll("?subject", node);
+
+        // Use regex to replace all occurrences of $subject or ?subject with the node IRI
+        query = query.replace(/\$subject|\?subject/g, node)
+        
         loadGraphDataFromQuery(query, props.context).onValue((elements) => {
             newElements = elements
         })
@@ -130,22 +153,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             callback();            
         })
     }
-
-    const releaseNodeFromGroup = (childNode: string, groupNode: string) => {
-        const graph = sigma.getGraph();
-        const children = graph.getNodeAttribute(groupNode, "children");
-        for (const child of children) {
-            if (child.node == childNode) {
-                graph.addNode(childNode, child.attributes);
-                // Remove the child node from the children array
-                graph.setNodeAttribute(groupNode, "children", children.splice(children.indexOf(child), 1))
-                // Update group node label
-                const typeLabels = graph.getNodeAttribute(groupNode, "typeLabels")
-                graph.setNodeAttribute(groupNode, "label", typeLabels + ' (' + (children.length) + ')')
-            }
-        }
-    }
-
     
     // Control layout
     useEffect(() => {
@@ -163,7 +170,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         ).observe({
                 value: ( event ) => {
                     if (event.data.node)  {
-                        const node = event.data.node;
+                        // Add < and > brackets to node IRI
+                        const node = "<" + event.data.node + ">";
                         // Check if parent node exists in graph
                         if (!sigma.getGraph().hasNode(node)) {
                             // Node might be in group
@@ -175,7 +183,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                                     for (const child of children) {
                                         if (child.node == node) {
                                             // Parent node is in group, so we need to release it
-                                            releaseNodeFromGroup(node, possibleGroupNode);
+                                            releaseNodeFromGroup(sigma.getGraph(), node, possibleGroupNode);
                                             break;
                                         }
                                     }
@@ -183,8 +191,11 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                             }
                         } 
                         if (sigma.getGraph().hasNode(node)) {
-                            handleNodeClicked(node, true, () => {
-                                focusNode(node)
+                            if(activeNode) {
+                                sigma.getGraph().setNodeAttribute(activeNode, "highlighted", false);
+                            }
+                            handleNodeClicked(node, true, () => {         
+                                highlightNode(node);
                             })
                         }
                     } else {

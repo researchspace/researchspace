@@ -1,0 +1,141 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "anyOf": [
+        {
+            "$ref": "#/definitions/SigmaGraphConfig"
+        }
+    ],
+    "definitions": {
+        "SigmaGraphConfig": {
+            "description": "The component requires at least a SPARQL CONSTRUCT query that should return a graph to be visualised",
+            "properties": {
+                "colours": {
+                    "description": "Optional colour palette for nodes.",
+                    "$ref": "#/definitions/Colours"
+                }, 
+                "query": {
+                    "description": "SPARQL CONSTRUCT query string.",
+                    "type": "string"
+                },
+                "grouping": {
+                    "description": "Grouping of nodes by a predicate and type",
+                    "$ref": "#/definitions/Grouping"
+                },
+                "nodeQuery": {
+                    "description":  "Query to retrieve additional graph data. ?subject will be replaced by the URI of the node that is clicked.",
+                    "type": "string"
+                },
+                "persistGraph": {
+                    "description": "If set to true, the graph will be persisted in the browser's local storage. This allows the graph to be restored when the user returns to the page.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "searchBox": {
+                    "description": "If set to true, a search box will be displayed. The user can search for nodes by label.",
+                    "type": "boolean",
+                    "default": false
+                },"sizes": {
+                    "description": "Sizes of the nodes and edges in pixels",
+                    "type": "object",
+                    "properties": {
+                        "node": {
+                            "description": "Size of the node in pixels",
+                            "type": "number",
+                            "default": 10
+                        },
+                        "edge": {
+                            "description": "Size of the edge in pixels",
+                            "type": "number",
+                            "default": 5
+                        }
+                    },
+                    "required": [
+                        "node",
+                        "edge"
+                    ],
+                    "propertyOrder": [
+                        "node",
+                        "edge"
+                    ]
+                },
+                "height": {
+                    "default": "600px",
+                    "description": "Height of the graph component canvas as css property value",
+                    "type": "string"
+                },
+                "width": {
+                    "default": "800px",
+                    "description": "Width of the graph component canvas as css property value",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID for issuing component events.",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "id",
+                "query",
+                "nodeQuery",
+                "grouping",
+                "sizes",
+                "colours",
+                "searchBox",
+                "persistGraph",
+                "width",
+                "height"
+            ],
+            "required": [
+                "query"
+            ],
+            "type": "object"
+        },
+        "Colours": {
+            "description": "Optional colour palette for nodes.",
+            "example": {
+                "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+                "http://xmlns.com/foaf/0.1/Organization": "#27ae60"
+              },
+            "properties": {
+                "key": {
+                    "description": "An RDF Type URI and the corresponding colour in HEX",
+                    "type": "string"
+                }
+            },
+            "propertyOrder": [
+                "key"
+            ]
+        },
+        "Grouping": {
+            "description": "Grouping of nodes by a predicate and type",
+            "properties": {
+                "enabled": {
+                    "description": "Enable grouping of nodes by shared predicate and type",
+                    "type": "boolean",
+                    "default": false
+                },
+                "threshold": {
+                    "description": "Number of nodes above which they will be grouped together.",
+                    "type": "number",
+                    "default": 3
+                },
+                "behaviour": {
+                    "description": "Behaviour of grouped nodes when expanding. In 'expand' mode, the children nodes will be attached to the grouped node. In 'replace' mode, the grouped node will be replaced by the children nodes. If set to 'none', the grouped node will neither be expanded nor replaced.",
+                    "type": "string",
+                    "enum": [
+                        "expand",
+                        "replace",
+                        "none"
+                    ],
+                    "default": "expand"
+                }
+            },
+            "propertyOrder": [
+                "enabled",
+                "threshold",
+                "behaviour"
+            ]
+        }
+    }
+}
+

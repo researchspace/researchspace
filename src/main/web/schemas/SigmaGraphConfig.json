@@ -11,7 +11,6 @@
             "properties": {
                 "colours": {
                     "description": "Optional colour palette for nodes.",
-                    "type": "object",
                     "$ref": "#/definitions/Colours"
                 }, 
                 "query": {
@@ -20,7 +19,6 @@
                 },
                 "grouping": {
                     "description": "Grouping of nodes by a predicate and type",
-                    "type": "object",
                     "$ref": "#/definitions/Grouping"
                 },
                 "nodeQuery": {
@@ -93,12 +91,20 @@
             "type": "object"
         },
         "Colours": {
+            "description": "Optional colour palette for nodes.",
+            "example": {
+                "http://xmlns.com/foaf/0.1/Person": "#2980b9",
+                "http://xmlns.com/foaf/0.1/Organization": "#27ae60"
+              },
             "properties": {
                 "key": {
                     "description": "An RDF Type URI and the corresponding colour in HEX",
                     "type": "string"
                 }
-            }
+            },
+            "propertyOrder": [
+                "key"
+            ]
         },
         "Grouping": {
             "description": "Grouping of nodes by a predicate and type",
@@ -123,7 +129,12 @@
                     ],
                     "default": "expand"
                 }
-            }
+            },
+            "propertyOrder": [
+                "enabled",
+                "threshold",
+                "behaviour"
+            ]
         }
     }
 }

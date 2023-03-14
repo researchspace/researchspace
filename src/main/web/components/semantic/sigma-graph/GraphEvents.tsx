@@ -103,6 +103,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         const callbackWithCleaning = () => {
             cleanGraph(sigma.getGraph());
             if (isRunning()) {
+            if (isRunning) {
                 start();
             } 
             callback();

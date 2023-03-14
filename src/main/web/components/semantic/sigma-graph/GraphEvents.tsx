@@ -105,9 +105,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             if (!isRunning) {
                 try {
                     start();
-                }
-                catch (e) {
-                    console.log(e);
+                } catch (e) {
+                    const error = e;
                 }
             }
             callback();

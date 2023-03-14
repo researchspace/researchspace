@@ -319,7 +319,6 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
 }
 
 export function saveStateIntoLocalStorage(graph: MultiDirectedGraph) {
-    console.log("Saving state into local storage")
     const currentUrl = getCurrentUrl().clone();
     const exportedGraph = graph.export();
     const compressed = compressToEncodedURIComponent(JSON.stringify(exportedGraph));

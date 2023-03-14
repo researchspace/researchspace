@@ -26,7 +26,9 @@ import { MultiDirectedGraph } from "graphology";
 
 import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config';
 
-const SAVED_STATE_QUERY_KEY = 'sigmaGraph';
+const SAVED_STATE_QUERY_KEY = 'savedState';
+const SAVED_STATE_LOCAL_STORAGE_QUERY = 'sigmaGraph-query';
+const SAVED_STATE_LOCAL_STORAGE_GRAPH = 'sigmaGraph-graph';
 
 export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
 
@@ -224,18 +226,22 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
 
 }
 
-export function getStateFromHistory() {
-    const compressed = getCurrentUrl().query(true)[SAVED_STATE_QUERY_KEY];
-    
-    if (!compressed) {
-        return null;
+export function getStateFromLocalStorage() {
+    const currentUrl = getCurrentUrl().clone();
+    const query = currentUrl.query();
+
+    if (localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_QUERY) == query) {
+        const compressed = localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_GRAPH)
+        const jsonGraph = JSON.parse(decompressFromEncodedURIComponent(compressed));
+        const graph = new MultiDirectedGraph();
+        graph.import(jsonGraph);
+        return graph
     }
 
-    const jsonGraph = JSON.parse(decompressFromEncodedURIComponent(compressed));
-    console.log(jsonGraph)
-    const graph = new MultiDirectedGraph();
-    graph.import(jsonGraph);
-    return graph;
+    // If the query is not the same as the one in local storage, we clear the local storage
+    localStorage.removeItem(SAVED_STATE_LOCAL_STORAGE_QUERY);
+    localStorage.removeItem(SAVED_STATE_LOCAL_STORAGE_GRAPH);
+    return null;
 }
 
 export function mergeGraphs(graph, newGraph) {
@@ -314,14 +320,12 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
     }
 }
 
-export function saveStateIntoHistory(graph: MultiDirectedGraph) {
+export function saveStateIntoLocalStorage(graph: MultiDirectedGraph) {
+    console.log("Saving state into local storage")
     const currentUrl = getCurrentUrl().clone();
-    const cancellation = new Cancellation();
-    const savingState = cancellation.derive()
     const exportedGraph = graph.export();
     const compressed = compressToEncodedURIComponent(JSON.stringify(exportedGraph));
-    currentUrl.removeSearch(SAVED_STATE_QUERY_KEY).addSearch({ [SAVED_STATE_QUERY_KEY]: compressed });
-    savingState.map(Kefir.constant(currentUrl)).onValue((url) => {
-        window.history.replaceState({}, '', url.toString());
-    });
+    const query = currentUrl.query();
+    localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_QUERY, query)
+    localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_GRAPH, compressed)
 }

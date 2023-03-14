@@ -26,7 +26,7 @@ import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
 
 import { GraphEventsConfig } from './Config';
-import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, saveStateIntoHistory } from './Common';
+import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, saveStateIntoLocalStorage } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -102,9 +102,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         const attributes = sigma.getGraph().getNodeAttributes(node);
         const callbackWithCleaning = () => {
             cleanGraph(sigma.getGraph());
-            if (isRunning) {
-                start();
-            } 
             callback();
         }
         if (attributes.grouped) {
@@ -128,7 +125,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             // Restart layout
             start()
         }
-        saveStateIntoHistory(sigma.getGraph());
         sigma.refresh()
     }
 
@@ -147,6 +143,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             const newGraph = createGraphFromElements(newElements, props);
             // Add new nodes and edges to the graph
             mergeGraphs(graph, newGraph);
+            saveStateIntoLocalStorage(sigma.getGraph());
             callback();            
         })
     }

@@ -59,13 +59,13 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
 
     componentWillUnmount() : void {
         if (this.props.persistGraph) {
-            saveStateIntoLocalStorage(this.state.graph, this.props);
+            saveStateIntoLocalStorage(this.state.graph, this.props.query);
         }
     }
 
     private loadInitialGraphData(props: SigmaGraphConfig) : void {
         this.setState({ error:undefined });
-        const graphFromLocalStorage = props.persistGraph ? getStateFromLocalStorage(props) : null;
+        const graphFromLocalStorage = props.persistGraph ? getStateFromLocalStorage(props.query) : null;
         if (graphFromLocalStorage) {
             this.setState({
                 graph: graphFromLocalStorage,

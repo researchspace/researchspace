@@ -15,10 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as Kefir from 'kefir';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import { Cancellation } from 'platform/api/async';
-import { getCurrentUrl } from 'platform/api/navigation';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 import { QueryContext } from 'platform/api/sparql/SparqlClient';
 

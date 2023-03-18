@@ -30,6 +30,7 @@ import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraph
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
+import { EdgeDisplayData } from 'sigma/types';
 
 export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 

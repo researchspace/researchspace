@@ -15,17 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as Kefir from 'kefir';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import { Cancellation } from 'platform/api/async';
-import { getCurrentUrl } from 'platform/api/navigation';
 import { getGraphDataWithLabels } from 'platform/components/semantic/graph/GraphInternals';
 import { QueryContext } from 'platform/api/sparql/SparqlClient';
 
 import { MultiDirectedGraph } from "graphology";
 
 import { SigmaGraphConfig, DEFAULT_HIDE_PREDICATES } from './Config';
-const SAVED_STATE_LOCAL_STORAGE_QUERY = 'sigmaGraph-query';
+const SAVED_STATE_LOCAL_STORAGE_KEY = 'sigmaGraph-key';
 const SAVED_STATE_LOCAL_STORAGE_GRAPH = 'sigmaGraph-graph';
 
 export function applyGroupingToGraph(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
@@ -224,10 +222,8 @@ export function createGraphFromElements(elements: any[], props: SigmaGraphConfig
 
 }
 
-export function getStateFromLocalStorage(props: SigmaGraphConfig) {
-    const query = props.query;
-
-    if (localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_QUERY) == query) {
+export function getStateFromLocalStorage(key: string) {
+    if (localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_KEY) == key) {
         const compressed = localStorage.getItem(SAVED_STATE_LOCAL_STORAGE_GRAPH)
         const jsonGraph = JSON.parse(decompressFromEncodedURIComponent(compressed));
         const graph = new MultiDirectedGraph();
@@ -236,7 +232,7 @@ export function getStateFromLocalStorage(props: SigmaGraphConfig) {
     }
 
     // If the query is not the same as the one in local storage, we clear the local storage
-    localStorage.removeItem(SAVED_STATE_LOCAL_STORAGE_QUERY);
+    localStorage.removeItem(SAVED_STATE_LOCAL_STORAGE_KEY);
     localStorage.removeItem(SAVED_STATE_LOCAL_STORAGE_GRAPH);
     return null;
 }
@@ -317,10 +313,9 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
     }
 }
 
-export function saveStateIntoLocalStorage(graph: MultiDirectedGraph, props: SigmaGraphConfig) {
+export function saveStateIntoLocalStorage(graph: MultiDirectedGraph, key: string) {
     const exportedGraph = graph.export();
     const compressed = compressToEncodedURIComponent(JSON.stringify(exportedGraph));
-    const query = props.query
-    localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_QUERY, query)
+    localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_KEY, key)
     localStorage.setItem(SAVED_STATE_LOCAL_STORAGE_GRAPH, compressed)
 }

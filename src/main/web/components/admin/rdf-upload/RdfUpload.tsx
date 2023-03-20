@@ -268,10 +268,10 @@ export class RdfUpload extends Component<Props, State> {
     const fileUploadTab = (
       <React.Fragment>
         {progressBar}
-        <div className={noteClass}>
+        {/* <div className={noteClass}>
           RDF files can be uploaded using the drag&amp;drop field below. Clicking into the field will open the
           browser's default file selector.
-        </div>
+        </div> */}
         <Dropzone onDropAccepted={this.onDropAccepted} accept={this.props.accept}>
           {(options) => <TemplateItem template={{source: this.props.dropAreaTemplate, options}} />}
         </Dropzone>

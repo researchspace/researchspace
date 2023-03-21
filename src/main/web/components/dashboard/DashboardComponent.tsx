@@ -150,7 +150,8 @@ export class DashboardComponent extends Component<Props, State> {
     this.itemLabelCount = this.itemLabelCount + 1;
     const displayLabel = label ?? 'New Tab'
     return { 
-      id: uniqueId(displayLabel),
+      // id: uniqueId(displayLabel.replace(/\s/g, '')),
+      id: uniqueId('frame'),
       index: this.itemLabelCount, 
       label: displayLabel
     }

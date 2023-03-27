@@ -64,7 +64,7 @@ export interface Props {
   style?: CSSProperties;
 
   contentType?: string;
-
+  targetGraph?: string;
   /**
    * Specifies files that can be accepted for upload.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#Unique_file_type_specifiers
@@ -150,15 +150,22 @@ export class RdfUpload extends Component<Props, State> {
       messages: [],
       progress: maybe.Nothing<number>(),
     });
-
+    
     const uploads = files.map((file: File, fileNumber: number) => {
       const contentType = _.isEmpty(this.props.contentType)
         ? SparqlUtil.getMimeType(SparqlUtil.getFileEnding(file))
         : this.props.contentType;
-      const targetGraph = this.state.targetGraph.isJust
-        ? this.state.targetGraph.get()
-        : `file://${file.name}-${createTimestamp()}`;
-
+      
+      let targetGraph;
+      if (this.state.targetGraph.isJust) {
+        targetGraph = this.state.targetGraph.get()
+      } else {
+        if (this.props.targetGraph.length > 0) {
+          targetGraph = this.props.targetGraph;
+        } else {
+          targetGraph = `file://${file.name}-${createTimestamp()}`;
+        }
+      }
       const upload = RDFGraphStoreService.createGraphFromFile({
         targetGraph: Rdf.iri(encodeURI(targetGraph)),
         keepSourceGraphs: this.state.keepSourceGraphs,

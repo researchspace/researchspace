@@ -32,11 +32,14 @@ import { RDFGraphStoreService } from 'platform/api/services/rdf-graph-store';
 import { addNotification } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
 import { getOverlaySystem, OverlayDialog } from 'platform/components/ui/overlay';
+import * as GraphActionEvents from './GraphActionEvents';
+import { trigger } from 'platform/api/events';
 
 const Button = createFactory(ReactBootstrap.Button);
 const ButtonToolbar = createFactory(ReactBootstrap.ButtonToolbar);
 
 import './GraphActionLink.scss';
+import { overlayMode } from 'codemirror';
 
 const CLASS = 'mp-rdf-graph-action';
 
@@ -45,6 +48,8 @@ export interface Props extends ReactProps<GraphActionLink> {
   action: string;
   fileEnding?: string;
   className?: string;
+  graphDescription?: string;
+  eventOverlayId?: string;
 }
 
 export interface State {
@@ -107,6 +112,37 @@ export class GraphActionLink extends Component<Props, State> {
           ),
         })
       );
+    } else if (this.props.action === 'DELETE CUSTOM') {
+        const dialogRef = this.props.eventOverlayId;
+        const onHide = () => getOverlaySystem().hide(dialogRef);
+        const onSubmit = () => {
+          onHide();
+          this.deleteGraphWithoutRefresh();
+        };
+       
+        getOverlaySystem().show(
+          dialogRef,
+          createElement(OverlayDialog, {
+            id: this.props.eventOverlayId,
+            show: true,
+            title: `Delete ${this.props.graphDescription}`,
+            bsSize: 'lg',
+            onHide,
+            children: D.div(
+              { style: { textAlign: 'center' } },
+              D.p({}, `Are you sure that you want to delete the "${this.props.graphDescription}"?`),
+              D.p(
+                {},
+                `Please note that the deletion may typically take a few seconds (or even minutes) to be finally processed.`
+              ),
+              ButtonToolbar(
+                { style: { display: 'inline-block' } },
+                Button({ bsStyle: 'success', onClick: onSubmit }, 'Yes'),
+                Button({ bsStyle: 'danger', onClick: onHide }, 'No')
+              )
+            ),
+          })
+        );
     } else if (this.props.action === 'GET') {
       const { repository } = this.context.semanticContext;
       const acceptHeader = SparqlUtil.getMimeType(this.props.fileEnding);
@@ -123,6 +159,26 @@ export class GraphActionLink extends Component<Props, State> {
       }).onValue((v) => {});
     }
   };
+
+  private deleteGraphWithoutRefresh() {
+    this.setState({ isInProcess: false });
+    const { repository } = this.context.semanticContext;
+
+    RDFGraphStoreService.deleteGraph({ targetGraph: Rdf.iri(this.props.graphuri), repository })
+      .onValue((_) => {
+        // FIRE EVENT
+        trigger({
+          eventType: GraphActionEvents.GraphActionSuccess,
+          source: Math.random().toString()
+        }); })
+      .onError((error: string) => {
+        this.setState({ isInProcess: false });
+        addNotification({
+          level: 'error',
+          message: error,
+        });
+      });
+  }
 
   private deleteGraph() {
     this.setState({ isInProcess: true });

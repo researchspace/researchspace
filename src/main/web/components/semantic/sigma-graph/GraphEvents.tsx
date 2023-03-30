@@ -272,7 +272,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         });
     }, [registerEvents, sigma, draggedNode, activeNode]);
 
-    // Filter nodes and edges
+    // Highlight nodes and edges on hover
     useEffect(() => {
         setSettings({
           nodeReducer: (node, data) => {

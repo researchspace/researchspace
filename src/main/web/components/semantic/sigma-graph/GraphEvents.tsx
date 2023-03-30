@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 /**
  * Copyright (C) 2022, Swiss Art Research Infrastructure, University of Zurich
  *
@@ -23,22 +24,30 @@ import { Cancellation } from 'platform/api/async';
 
 import { inferSettings } from 'graphology-layout-forceatlas2'
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
-import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
+import { ControlsContainer, useCamera, useRegisterEvents, useSigma, useSetSettings } from "@react-sigma/core";
+import { Attributes } from "graphology-types";
 
 import { GraphEventsConfig } from './Config';
 import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
+import { EdgeFilterControl } from './EdgeFilterControl'
+import { Panel } from './ControlPanel'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
-import { EdgeDisplayData } from 'sigma/types';
 
 export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
+    const setSettings = useSetSettings();
     const camera = useCamera();
+
     const [ activeNode, setActiveNode ] = useState<string | null>(null);
     const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
+
+    const [ edgeLabels, setEdgeLabels ] = useState<{label: string, visible: boolean}[]>([]);
+    const [ edgeLabelsNeedUpdate, setEdgeLabelsNeedUpdate ] = useState<boolean>(false);
+    
     const cancellation = new Cancellation();
 
     // Configure layout
@@ -46,6 +55,15 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const layoutSettings = inferSettings(graph);
     
     const { start, stop, kill, isRunning } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+
+    const getEdgeLabelVisibilityString = () => {
+        const visibleEdgeLabels = edgeLabels.filter(d => d.visible);
+        if (visibleEdgeLabels.length === edgeLabels.length) {
+            return "";
+        } else {
+            return ` (${visibleEdgeLabels.length}/${edgeLabels.length})`;
+        }
+    }
 
     const focusNode = (node: string) => {
         highlightNode(node);
@@ -107,6 +125,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 try {
                     start();
                 } catch (e) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const error = e;
                 }
             }
@@ -151,6 +170,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             const newGraph = createGraphFromElements(newElements, props);
             // Add new nodes and edges to the graph
             mergeGraphs(graph, newGraph);
+            setEdgeLabelsNeedUpdate(true);
             callback();            
         })
     }
@@ -224,7 +244,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     // Listen to mouse events
     useEffect(() => {
-
         sigma.on("enterNode", (e) => {
             setActiveNode(e.node);
             sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);
@@ -269,6 +288,96 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             }
         });
     }, [registerEvents, sigma, draggedNode, activeNode]);
+
+    // Control visibility of edges and nodes
+    useEffect(() => {
+        setSettings({
+          nodeReducer: (node, data) => {
+            const graph = sigma.getGraph();
+            const newData: Attributes = { ...data, image: data.image || false};
+    
+            if (activeNode) {
+              if (node != activeNode &&  !graph.neighbors(activeNode).includes(node)) {
+                newData.color = "#E2E2E2";
+                newData.image = false;
+              }
+            }
+
+            if (props.edgeFilter) {
+                // Retrieve all edges for this node
+                const edges = sigma.getGraph().edges(node);
+
+                // Retrieve all labels for the visible edges
+                const visibleEdgeLabels = edgeLabels.filter(d => d.visible).map(d => d.label);
+
+                // Filter all edges whose label is not in visibleEdgeLabels
+                const visibleEdges = edges.filter((edge: string) => {
+                    const edgeAttributes = sigma.getGraph().getEdgeAttributes(edge);
+                    return visibleEdgeLabels.includes(edgeAttributes.label);
+                });
+
+                // If there are no visible edges, hide the node
+                if (visibleEdges.length === 0) {
+                    newData.hidden = true;
+                }     
+            }
+            return newData;
+          },
+          edgeReducer: (edge, data) => {
+            const graph = sigma.getGraph();
+            const newData = { ...data, color: data.color || false, hidden: data.hidden || false};
+    
+
+            if (activeNode && !graph.extremities(edge).includes(activeNode)) {
+              newData.color = "rgba(0,0,0,0.03)"
+            }
+
+            if (props.edgeFilter) {
+                const visibleEdgeLabels = edgeLabels.filter(d => d.visible).map(d => d.label);
+                if (! visibleEdgeLabels.includes(data.label)) {
+                    newData.hidden = true;
+                }
+            }
+
+            return newData;
+          },
+        });
+    }, [activeNode, edgeLabels, setSettings, sigma]);
+
+    // Retrieve initial set of labels
+    // TODO: needs to update when new labels appear
+    useEffect(() => {
+        const newEdgeLabels: string[] = [];
+        const existingEdgeLabels: string[] = edgeLabels.map((d) => d.label);
+        sigma.getGraph().forEachEdge((edge: string, attributes: Attributes) => {
+            if (attributes.label && !newEdgeLabels.includes(attributes.label) && !existingEdgeLabels.includes(attributes.label)) {
+                newEdgeLabels.push(attributes.label);
+            }
+        });
+        const combinedEdgeLabels = edgeLabels.concat(newEdgeLabels.map((label) => ({label, visible: true})));
+        // Order labels alphabetically
+        combinedEdgeLabels.sort((a, b) => a.label.localeCompare(b.label));
+        setEdgeLabels(combinedEdgeLabels);
+        setEdgeLabelsNeedUpdate(false);
+    }, [sigma, edgeLabelsNeedUpdate, activeNode]);
+
+    if ( props.edgeFilter ) {
+
+        // Generate a string based on how many of the edge labels are visible
+        // If all are visible, return an empty string
+        // If not all are visible but, for example, 4 out of 14, return 4/14
+        
+
+        return <ControlsContainer position="bottom-right">
+            <Panel title={"Filter" + getEdgeLabelVisibilityString()}>
+                <EdgeFilterControl 
+                    edgeLabels={edgeLabels}
+                    setEdgeLabels={setEdgeLabels}
+                />
+            </Panel>
+        </ControlsContainer>
+    }
+
     return null;
 }
 

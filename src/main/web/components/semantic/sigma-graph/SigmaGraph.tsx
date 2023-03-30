@@ -33,6 +33,7 @@ import { GraphEvents } from './GraphEvents'
 import { createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
+import "./styles.css"
 export interface State {
     elements: Cy.ElementDefinition[];
     graph: MultiDirectedGraph;
@@ -109,6 +110,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const width = this.props.width || "800px";
         const height = this.props.height || "600px";
         const searchBox = this.props.searchBox || false;
+        const edgeFilter = this.props.edgeFilter || false;
         
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
@@ -138,12 +140,13 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     <GraphEvents 
                         context={ this.context.semanticContext} 
                         colours={ colours }
+                        edgeFilter={ edgeFilter }
                         grouping={ grouping } 
                         nodeQuery={ nodeQuery }
                         persistGraph={ persistGraph }
                         sizes={ sizes } 
                     />
-                    {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
+                    {searchBox &&  <ControlsContainer position="bottom-left"><SearchControl /> </ControlsContainer>}
                 </SigmaContainer>
 
             )

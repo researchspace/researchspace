@@ -23,7 +23,8 @@ import { Cancellation } from 'platform/api/async';
 
 import { inferSettings } from 'graphology-layout-forceatlas2'
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
-import { useCamera, useRegisterEvents, useSigma } from "@react-sigma/core";
+import { useCamera, useRegisterEvents, useSigma, useSetSettings } from "@react-sigma/core";
+import { Attributes } from "graphology-types";
 
 import { GraphEventsConfig } from './Config';
 import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
@@ -36,6 +37,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     const registerEvents = useRegisterEvents();
     const sigma = useSigma();
+    const setSettings = useSetSettings();
     const camera = useCamera();
     const [ activeNode, setActiveNode ] = useState<string | null>(null);
     const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
@@ -269,6 +271,33 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             }
         });
     }, [registerEvents, sigma, draggedNode, activeNode]);
+
+    // Filter nodes and edges
+    useEffect(() => {
+        setSettings({
+          nodeReducer: (node, data) => {
+            const graph = sigma.getGraph();
+            const newData: Attributes = { ...data };
+    
+            if (activeNode) {
+              if (node != activeNode &&  !graph.neighbors(activeNode).includes(node)) {
+                newData.color = "#E2E2E2";
+              }
+            }
+            return newData;
+          },
+          edgeReducer: (edge, data) => {
+            const graph = sigma.getGraph();
+            const newData = { ...data, color: data.color || false };
+    
+            if (activeNode && !graph.extremities(edge).includes(activeNode)) {
+              newData.color = "rgba(0,0,0,0.03)"
+            }
+            return newData;
+          },
+        });
+      }, [activeNode, setSettings, sigma]);
+
     return null;
 }
 

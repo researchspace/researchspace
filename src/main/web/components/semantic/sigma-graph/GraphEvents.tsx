@@ -344,7 +344,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 newEdgeLabels.push(attributes.label);
             }
         });
-        setEdgeLabels(edgeLabels.concat(newEdgeLabels.map((label) => ({label, visible: true}))));
+        const combinedEdgeLabels = edgeLabels.concat(newEdgeLabels.map((label) => ({label, visible: true})));
+        // Order labels alphabetically
+        combinedEdgeLabels.sort((a, b) => a.label.localeCompare(b.label));
+        setEdgeLabels(combinedEdgeLabels);
         setEdgeLabelsNeedUpdate(false);
     }, [sigma, edgeLabelsNeedUpdate, activeNode]);
 

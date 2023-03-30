@@ -44,8 +44,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const [ activeNode, setActiveNode ] = useState<string | null>(null);
     const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
 
-    const [edgeLabels, setEdgeLabels] = useState<string[]>([]);
-    const [visibleEdgeLabels, setVisibleEdgeLabels] = useState<string[]>([]);
+    const [ edgeLabels, setEdgeLabels ] = useState<{label: string, visible: boolean}[]>([]);
     
     const cancellation = new Cancellation();
 
@@ -296,6 +295,9 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                 // Retrieve all edges for this node
                 const edges = sigma.getGraph().edges(node);
 
+                // Retrieve all labels for the visible edges
+                const visibleEdgeLabels = edgeLabels.filter(d => d.visible).map(d => d.label);
+
                 // Filter all edges whose label is not in visibleEdgeLabels
                 const visibleEdges = edges.filter((edge: string) => {
                     const edgeAttributes = sigma.getGraph().getEdgeAttributes(edge);
@@ -313,11 +315,13 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             const graph = sigma.getGraph();
             const newData = { ...data, color: data.color || false, hidden: data.hidden || false};
     
+
             if (activeNode && !graph.extremities(edge).includes(activeNode)) {
               newData.color = "rgba(0,0,0,0.03)"
             }
 
             if (props.edgeFilter) {
+                const visibleEdgeLabels = edgeLabels.filter(d => d.visible).map(d => d.label);
                 if (! visibleEdgeLabels.includes(data.label)) {
                     newData.hidden = true;
                 }
@@ -326,28 +330,27 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             return newData;
           },
         });
-    }, [activeNode, visibleEdgeLabels, setSettings, sigma]);
+    }, [activeNode, edgeLabels, setSettings, sigma]);
 
     // Retrieve initial set of labels
     // TODO: needs to update when new labels appear
     useEffect(() => {
         const newEdgeLabels: string[] = [];
+        const existingEdgeLabels: string[] = edgeLabels.map((d) => d.label);
         sigma.getGraph().forEachEdge((edge: string, attributes: Attributes) => {
-            if (attributes.label && !newEdgeLabels.includes(attributes.label)) {
+            if (attributes.label && !newEdgeLabels.includes(attributes.label) && !existingEdgeLabels.includes(attributes.label)) {
                 newEdgeLabels.push(attributes.label);
             }
-        })
-        setEdgeLabels(newEdgeLabels);
-        setVisibleEdgeLabels(newEdgeLabels);
-    }, [sigma]);
+        });
+        setEdgeLabels(edgeLabels.concat(newEdgeLabels.map((label) => ({label, visible: true}))));
+    }, [sigma, activeNode]);
 
     if ( props.edgeFilter ) {
 
         return <ControlsContainer position="bottom-right">
             <EdgeFilterControl 
                 edgeLabels={edgeLabels}
-                visibleEdgeLabels={visibleEdgeLabels}
-                setVisibleEdgeLabels={setVisibleEdgeLabels}
+                setEdgeLabels={setEdgeLabels}
             />
         </ControlsContainer>
     }

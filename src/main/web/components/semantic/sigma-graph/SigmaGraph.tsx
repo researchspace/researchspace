@@ -33,6 +33,7 @@ import { GraphEvents } from './GraphEvents'
 import { createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
+import "./styles.css"
 export interface State {
     elements: Cy.ElementDefinition[];
     graph: MultiDirectedGraph;

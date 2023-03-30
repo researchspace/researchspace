@@ -31,6 +31,7 @@ import { GraphEventsConfig } from './Config';
 import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 import { EdgeFilterControl } from './EdgeFilterControl'
+import { Panel } from './ControlPanel'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -54,6 +55,15 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const layoutSettings = inferSettings(graph);
     
     const { start, stop, kill, isRunning } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
+
+    const getEdgeLabelVisibilityString = () => {
+        const visibleEdgeLabels = edgeLabels.filter(d => d.visible);
+        if (visibleEdgeLabels.length === edgeLabels.length) {
+            return "";
+        } else {
+            return ` (${visibleEdgeLabels.length}/${edgeLabels.length})`;
+        }
+    }
 
     const focusNode = (node: string) => {
         highlightNode(node);
@@ -353,11 +363,18 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     if ( props.edgeFilter ) {
 
+        // Generate a string based on how many of the edge labels are visible
+        // If all are visible, return an empty string
+        // If not all are visible but, for example, 4 out of 14, return 4/14
+        
+
         return <ControlsContainer position="bottom-right">
-            <EdgeFilterControl 
-                edgeLabels={edgeLabels}
-                setEdgeLabels={setEdgeLabels}
-            />
+            <Panel title={"Filter" + getEdgeLabelVisibilityString()}>
+                <EdgeFilterControl 
+                    edgeLabels={edgeLabels}
+                    setEdgeLabels={setEdgeLabels}
+                />
+            </Panel>
         </ControlsContainer>
     }
 

@@ -24,7 +24,7 @@ export const EdgeFilterControl: FC<EdgeFilterControlProps> = (props) => {
     };
 
     return <div>
-        <ul>
+        <ul className="filter edgeLabels">
             {props.edgeLabels.map(d => (
                 <li key={"li-" + d.label}>
                     <input onChange={onEdgeFilterChange} type="checkbox" id={"edge-filter-" + d.label} value={d.label} 

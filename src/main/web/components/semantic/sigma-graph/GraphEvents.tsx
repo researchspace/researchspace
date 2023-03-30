@@ -45,6 +45,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
 
     const [ edgeLabels, setEdgeLabels ] = useState<{label: string, visible: boolean}[]>([]);
+    const [ edgeLabelsNeedUpdate, setEdgeLabelsNeedUpdate ] = useState<boolean>(false);
     
     const cancellation = new Cancellation();
 
@@ -159,6 +160,7 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             const newGraph = createGraphFromElements(newElements, props);
             // Add new nodes and edges to the graph
             mergeGraphs(graph, newGraph);
+            setEdgeLabelsNeedUpdate(true);
             callback();            
         })
     }
@@ -343,7 +345,8 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             }
         });
         setEdgeLabels(edgeLabels.concat(newEdgeLabels.map((label) => ({label, visible: true}))));
-    }, [sigma, activeNode]);
+        setEdgeLabelsNeedUpdate(false);
+    }, [sigma, edgeLabelsNeedUpdate, activeNode]);
 
     if ( props.edgeFilter ) {
 

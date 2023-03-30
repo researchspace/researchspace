@@ -74,6 +74,13 @@ export interface SigmaGraphConfig {
      */
     colours?: { [key: string]: string }; /** 
 
+    /**
+     * Display a filter box for the edges
+     * @default false
+     */
+    edgeFilter?: boolean;
+
+    /**
     * Grouping configuration
     * @default {
     *  enabled: false

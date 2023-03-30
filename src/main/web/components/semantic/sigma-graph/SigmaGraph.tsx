@@ -30,6 +30,7 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
+import { EdgeFilterControl } from './EdgeFilterControl'
 import { createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -109,6 +110,7 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
         const width = this.props.width || "800px";
         const height = this.props.height || "600px";
         const searchBox = this.props.searchBox || false;
+        const edgeFilter = this.props.edgeFilter || false;
         
         const sigmaSettings = { 
             defaultEdgeType: "arrow",
@@ -143,7 +145,8 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                         persistGraph={ persistGraph }
                         sizes={ sizes } 
                     />
-                    {searchBox && <ControlsContainer><SearchControl /></ControlsContainer>}
+                    {edgeFilter && <ControlsContainer position="bottom-right"><EdgeFilterControl /></ControlsContainer>}
+                    {searchBox &&  <ControlsContainer position="bottom-left"><SearchControl /> </ControlsContainer>}
                 </SigmaContainer>
 
             )

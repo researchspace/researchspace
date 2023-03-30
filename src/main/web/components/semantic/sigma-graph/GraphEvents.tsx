@@ -31,7 +31,6 @@ import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraph
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 
 import "@react-sigma/core/lib/react-sigma.min.css";
-import { EdgeDisplayData } from 'sigma/types';
 
 export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
@@ -39,8 +38,10 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     const sigma = useSigma();
     const setSettings = useSetSettings();
     const camera = useCamera();
+
     const [ activeNode, setActiveNode ] = useState<string | null>(null);
     const [ draggedNode, setDraggedNode ] = useState<string | null>(null);
+    
     const cancellation = new Cancellation();
 
     // Configure layout
@@ -226,7 +227,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
 
     // Listen to mouse events
     useEffect(() => {
-
         sigma.on("enterNode", (e) => {
             setActiveNode(e.node);
             sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);

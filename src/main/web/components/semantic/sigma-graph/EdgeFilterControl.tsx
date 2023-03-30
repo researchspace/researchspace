@@ -41,6 +41,21 @@ export const EdgeFilterControl: FC = () => {
         setSettings({
           nodeReducer: (node, data) => {
             const newData: Attributes = { ...data};
+
+            // Retrieve all edges for this node
+            const edges = sigma.getGraph().edges(node);
+
+            // Filter all edges whose label is not in visibleEdgeLabels
+            const visibleEdges = edges.filter((edge: string) => {
+                const edgeAttributes = sigma.getGraph().getEdgeAttributes(edge);
+                return visibleEdgeLabels.includes(edgeAttributes.label);
+            });
+
+            // If there are no visible edges, hide the node
+            if (visibleEdges.length === 0) {
+                newData.hidden = true;
+            }            
+
             return newData;
           },
           edgeReducer: (edge, data) => {
@@ -49,11 +64,10 @@ export const EdgeFilterControl: FC = () => {
             if (! visibleEdgeLabels.includes(data.label)) {
                 newData.hidden = true;
             }
-
             return newData;
           },
         });
-      }, [visibleEdgeLabels]);
+      }, [visibleEdgeLabels, setSettings, sigma]);
 
     return <div>
         <ul>

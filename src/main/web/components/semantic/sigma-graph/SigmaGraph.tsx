@@ -30,7 +30,6 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import { SigmaGraphConfig } from './Config'
 import { GraphEvents } from './GraphEvents'
-import { EdgeFilterControl } from './EdgeFilterControl'
 import { createGraphFromElements, getStateFromLocalStorage, loadGraphDataFromQuery, saveStateIntoLocalStorage } from './Common'
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -140,12 +139,12 @@ export class SigmaGraph extends Component<SigmaGraphConfig, State> {
                     <GraphEvents 
                         context={ this.context.semanticContext} 
                         colours={ colours }
+                        edgeFilter={ edgeFilter }
                         grouping={ grouping } 
                         nodeQuery={ nodeQuery }
                         persistGraph={ persistGraph }
                         sizes={ sizes } 
                     />
-                    {edgeFilter && <ControlsContainer position="bottom-right"><EdgeFilterControl /></ControlsContainer>}
                     {searchBox &&  <ControlsContainer position="bottom-left"><SearchControl /> </ControlsContainer>}
                 </SigmaContainer>
 

@@ -2,12 +2,13 @@
 import * as React from 'react';
 import { FC, useEffect, useState } from 'react';
 
-import { useSigma } from '@react-sigma/core';
+import { useSigma, useSetSettings } from '@react-sigma/core';
 import { Attributes } from 'graphology-types';
 
 export const EdgeFilterControl: FC = () => {
 
     const sigma = useSigma();
+    const setSettings = useSetSettings();
 
     const [edgeLabels, setEdgeLabels] = useState<string[]>([]);
     const [visibleEdgeLabels, setVisibleEdgeLabels] = useState<string[]>([]);
@@ -21,6 +22,8 @@ export const EdgeFilterControl: FC = () => {
         }
     };
 
+    // Retrieve initial set of labels
+    // TODO: needs to update when new labels appear
     useEffect(() => {
         const newEdgeLabels: string[] = [];
         sigma.getGraph().forEachEdge((edge: string, attributes: Attributes) => {
@@ -32,8 +35,27 @@ export const EdgeFilterControl: FC = () => {
         setVisibleEdgeLabels(newEdgeLabels);
     }, [sigma]);
 
+
+    // Filter visible edges
+    useEffect(() => {
+        setSettings({
+          nodeReducer: (node, data) => {
+            const newData: Attributes = { ...data};
+            return newData;
+          },
+          edgeReducer: (edge, data) => {
+            const newData = { ...data };
+
+            if (! visibleEdgeLabels.includes(data.label)) {
+                newData.hidden = true;
+            }
+
+            return newData;
+          },
+        });
+      }, [visibleEdgeLabels]);
+
     return <div>
-        <h1>Control</h1>
         <ul>
             {edgeLabels.map((label: string) => (
                 <li key={"li-" + label}>

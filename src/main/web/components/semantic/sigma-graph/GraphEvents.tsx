@@ -277,11 +277,12 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         setSettings({
           nodeReducer: (node, data) => {
             const graph = sigma.getGraph();
-            const newData: Attributes = { ...data };
+            const newData: Attributes = { ...data, image: data.image || false};
     
             if (activeNode) {
               if (node != activeNode &&  !graph.neighbors(activeNode).includes(node)) {
                 newData.color = "#E2E2E2";
+                newData.image = false;
               }
             }
             return newData;

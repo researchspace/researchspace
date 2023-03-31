@@ -46,6 +46,10 @@ import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 import { ItemSelectionChanged } from './SemanticTreeInputEvents';
 
 import * as styles from './SemanticTreeInput.scss';
+import { ResourceLinkComponent } from 'platform/api/navigation/components';
+
+const ITEM_INPUT_VARIABLE = 'query_item_iri';
+const ITEM_OUTPUT_VARIABLE = 'item_label';
 
 export interface ComplexTreePatterns {
   /*
@@ -114,6 +118,16 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * @default false
    */
   closeDropdownOnSelection?: boolean;
+
+  /**
+   * Creates a custom button with a Semantic-link with the following parameters
+   */
+  customButton?: CustomButton;
+
+  /**
+   * query to retrieve the item label that will be visualized
+   */
+  queryItemLabel?: string;
 }
 
 const ITEMS_LIMIT = 200;
@@ -149,6 +163,13 @@ interface SearchResult {
   error?: any;
   matchedCount?: number;
   matchLimit?: number;
+}
+
+export interface CustomButton {
+  iri: string;
+  view?: string;
+  resource?: string;
+  mode?: string;
 }
 
 /**
@@ -237,7 +258,9 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   componentDidMount() {
     const { initialSelection } = this.props;
     if (initialSelection && initialSelection.length !== 0) {
-      this.setInitialSelection(initialSelection).onValue(() => {/**/});
+      this.setInitialSelection(initialSelection).onValue(() => {
+        this.updateTextField();
+      });
     }
   }
 
@@ -285,13 +308,11 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         }));
         return this.restoreTreeFromLeafNodes(bindings);
       })
-      .map(
-        (forest) => {
-          const confirmedSelection = forest as TreeSelection<Node>;
-          this.setState({ confirmedSelection });
-          return confirmedSelection;
-        }
-      );
+      .map((forest) => {
+        const confirmedSelection = forest as TreeSelection<Node>;
+        this.setState({ confirmedSelection });
+        return confirmedSelection;
+      });
   };
 
   componentWillUnmount() {
@@ -305,14 +326,27 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         createElement(ErrorNotification, { errorMessage: this.state.loadError })
       );
     } else {
-      const result = D.div(
-        {
-          ref: (holder) => (this.overlayHolder = holder),
-          className: classnames(styles.holder, this.props.className),
-        },
-        D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderBrowseButton()),
-        this.renderOverlay()
-      );
+      let result;
+      if (this.props.customButton) {
+        result = D.div(
+          {
+            ref: (holder) => (this.overlayHolder = holder),
+            className: classnames(styles.holder, this.props.className),
+          },
+          D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderOpenNewFrameButton()),
+          this.renderOverlay()
+        );
+      } else {
+        result = D.div(
+          {
+            ref: (holder) => (this.overlayHolder = holder),
+            className: classnames(styles.holder, this.props.className),
+          },
+          D.div({ className: styles.inputAndButtons }, this.renderTextField(), this.renderBrowseButton()),
+          this.renderOverlay()
+        );
+      }
+
       if (this.props.droppable) {
         return createElement(
           Droppable,
@@ -334,6 +368,38 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     }
   }
 
+  /**
+   * If the attribute query_item_label is specified, and contains ?query_item_iri,
+   * For each of the selected items the query will be fired and
+   * and the label will be updated
+   */
+  private updateTextField() {
+    const { queryItemLabel } = this.props;
+    if (queryItemLabel) {
+      const selection = this.state.confirmedSelection;
+      const selectedItems = TreeSelection.leafs(selection);
+
+      if (queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
+        selectedItems.map((selectedItem) => {
+          SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.iri.value}>`)).onValue(
+            (result) => {
+              const label = Rdf.literal(result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value);
+              const node = TreeSelection.nodesFromKey(selection, selectedItem.iri.value).first();
+
+              selection.updateNode(selection.getKeyPath(node), (singleNode) => {
+                singleNode.label = label;
+                this.setState({ confirmedSelection: selection });
+                return singleNode;
+              });
+            }
+          );
+        });
+      }
+
+      // TODO: Raise exception here
+    }
+  }
+
   public setValue(iri: Rdf.Iri) {
     this.setInitialSelection([iri]).onValue(this.onSelectionChanged);
   }
@@ -341,18 +407,21 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   private onSelectionChanged = (selection: TreeSelection<Node>) => {
     if (this.props.onSelectionChanged) {
       this.props.onSelectionChanged(selection);
+      this.updateTextField();
     }
 
     /**
      * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
      */
-    if (this.props.id && selection.nodes.size <=2 ) {
+    if (this.props.id && selection.nodes.size <= 2) {
       const iri = selection.nodes.size == 1 ? undefined : selection.nodes.last().first().iri.value;
       trigger({
-        eventType: ItemSelectionChanged, source: this.props.id, data: {iri}
+        eventType: ItemSelectionChanged,
+        source: this.props.id,
+        data: { iri },
       });
     }
-  }
+  };
 
   private renderTextField() {
     const textFieldProps: ClearableInputProps & ReactProps<ClearableInput> = {
@@ -397,8 +466,8 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       ClearableInput,
       textFieldProps,
       selectedItems
-        .map((item) =>
-          createElement(
+        .map((item) => {
+          return createElement(
             RemovableBadge,
             {
               key: item.iri.value,
@@ -408,13 +477,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
                 const previous = this.state.confirmedSelection;
                 const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));
                 this.setState({ confirmedSelection: newSelection }, () => {
-                  this.onSelectionChanged(newSelection)
+                  this.onSelectionChanged(newSelection);
                 });
               },
             },
             item.label.value
-          )
-        )
+          );
+        })
         .toArray()
     );
   }
@@ -469,6 +538,51 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           matchLimit: parametrized.limit,
         }))
       );
+  }
+
+  renderOpenNewFrameButton() {
+    return createElement(
+      OverlayTrigger,
+      {
+        placement: 'bottom',
+        overlay: createElement(
+          Tooltip,
+          {
+            id: 'SemanticTreeInput__tooltip',
+          },
+          'Select containing archival unit'
+        ),
+      },
+      createElement(
+        ResourceLinkComponent,
+        {
+          className: styles.browseButton,
+          active: this.state.mode.type === 'full',
+          iri: this.props.customButton.iri,
+          'urlqueryparam-view': this.props.customButton.view ? this.props.customButton.view : '',
+          'urlqueryparam-resource': this.props.customButton.resource ? this.props.customButton.resource : '',
+          'urlqueryparam-mode': this.props.customButton.mode ? this.props.customButton.mode : '',
+          onClick: () => {
+            const modeType = this.state.mode.type;
+            if (modeType === 'collapsed' || modeType === 'search') {
+              this.search.cancelAll();
+              this.setState({
+                searchText: undefined,
+                searching: false,
+                searchResult: undefined,
+                mode: { type: 'full', selection: this.state.confirmedSelection },
+              });
+            } else if (modeType === 'full') {
+              this.closeDropdown({ saveSelection: false });
+            }
+          },
+        },
+        D.span({
+          className: 'fa fa-plus fa-lg',
+          ['aria-hidden' as any]: true,
+        })
+      )
+    );
   }
 
   renderBrowseButton() {
@@ -668,7 +782,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           },
           () => {
             if (this.props.closeDropdownOnSelection) {
-              this.closeDropdown({saveSelection: true});
+              this.closeDropdown({ saveSelection: true });
             }
           }
         );

@@ -366,19 +366,24 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
         });
     }, [activeNode, edgeLabels, setSettings, sigma]);
 
-    // Retrieve initial set of labels
+    // Retrieve set of labels
     useEffect(() => {
-        const newEdgeLabels: string[] = [];
-        const existingEdgeLabels: string[] = edgeLabels.map((d) => d.label);
+        const currentEdgeLabels: string[] = [];
         sigma.getGraph().forEachEdge((edge: string, attributes: Attributes) => {
-            if (attributes.label && !newEdgeLabels.includes(attributes.label) && !existingEdgeLabels.includes(attributes.label)) {
-                newEdgeLabels.push(attributes.label);
+            if (attributes.label && !currentEdgeLabels.includes(attributes.label)) {
+                currentEdgeLabels.push(attributes.label);
             }
         });
-        const combinedEdgeLabels = edgeLabels.concat(newEdgeLabels.map((label) => ({label, visible: true})));
+        const newEdgeLabels = currentEdgeLabels.map((label) => {
+            if (edgeLabels.find((d) => d.label === label)) {
+                return edgeLabels.find((d) => d.label === label);
+            } else {
+                return {label, visible: true};
+            }
+        })
         // Order labels alphabetically
-        combinedEdgeLabels.sort((a, b) => a.label.localeCompare(b.label));
-        setEdgeLabels(combinedEdgeLabels);
+        newEdgeLabels.sort((a, b) => a.label.localeCompare(b.label));
+        setEdgeLabels(newEdgeLabels);
         setEdgeLabelsNeedUpdate(false);
     }, [sigma, edgeLabelsNeedUpdate, activeNode]);
 

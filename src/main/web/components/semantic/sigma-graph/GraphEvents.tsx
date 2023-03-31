@@ -53,7 +53,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     // Configure layout
     const graph = useSigma().getGraph();
     const layoutSettings = inferSettings(graph);
-    
     const { start, stop, kill, isRunning } = useWorkerLayoutForceAtlas2({ settings: layoutSettings });
 
     const getEdgeLabelVisibilityString = () => {

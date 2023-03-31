@@ -345,7 +345,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
     }, [activeNode, edgeLabels, setSettings, sigma]);
 
     // Retrieve initial set of labels
-    // TODO: needs to update when new labels appear
     useEffect(() => {
         const newEdgeLabels: string[] = [];
         const existingEdgeLabels: string[] = edgeLabels.map((d) => d.label);

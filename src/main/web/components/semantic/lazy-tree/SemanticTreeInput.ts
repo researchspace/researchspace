@@ -170,6 +170,7 @@ export interface CustomButton {
   view?: string;
   resource?: string;
   mode?: string;
+  tooltip?: string;
 }
 
 /**
@@ -541,6 +542,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   renderOpenNewFrameButton() {
+    const { customButton } = this.props;
     return createElement(
       OverlayTrigger,
       {
@@ -550,7 +552,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           {
             id: 'SemanticTreeInput__tooltip',
           },
-          'Select containing archival unit'
+          customButton.tooltip ? customButton.tooltip : 'Open new frame'
         ),
       },
       createElement(
@@ -558,10 +560,10 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         {
           className: styles.browseButton,
           active: this.state.mode.type === 'full',
-          iri: this.props.customButton.iri,
-          'urlqueryparam-view': this.props.customButton.view ? this.props.customButton.view : '',
-          'urlqueryparam-resource': this.props.customButton.resource ? this.props.customButton.resource : '',
-          'urlqueryparam-mode': this.props.customButton.mode ? this.props.customButton.mode : '',
+          iri: customButton.iri,
+          'urlqueryparam-view': customButton.view ? customButton.view : '',
+          'urlqueryparam-resource': customButton.resource ? customButton.resource : '',
+          'urlqueryparam-mode': customButton.mode ? customButton.mode : '',
           onClick: () => {
             const modeType = this.state.mode.type;
             if (modeType === 'collapsed' || modeType === 'search') {

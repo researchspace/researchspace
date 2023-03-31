@@ -313,6 +313,19 @@ export function releaseNodeFromGroup(graph: MultiDirectedGraph, childNode: strin
     }
 }
 
+export function removeNodeFromGraph(graph: MultiDirectedGraph, node: string) {
+    const edges = graph.inEdges(node);
+    for (const edge of edges) {
+        const sourceNode = graph.source(edge);
+        graph.dropEdge(edge);
+        // If the source node has no more outgoing edges, we remove it
+        if (graph.outEdges(sourceNode).length == 0) {
+            graph.dropNode(sourceNode);
+        }
+    }
+    graph.dropNode(node);
+}
+
 export function saveStateIntoLocalStorage(graph: MultiDirectedGraph, key: string) {
     const exportedGraph = graph.export();
     const compressed = compressToEncodedURIComponent(JSON.stringify(exportedGraph));

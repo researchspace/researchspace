@@ -43,9 +43,18 @@ export interface SigmaEventData {
   'Sigma.FocusNode': {
     node: string;
   }
+
+  /**
+   * Event that listens to an external event that
+   * removes a given node
+   */
+  'Sigma.RemoveNode': {
+    node: string;
+  }
 }
 const event: EventMaker<SigmaEventData> = EventMaker;
 
 export const FocusNode = event('Sigma.FocusNode');
 export const NodeClicked = event('Sigma.NodeClicked');
 export const TriggerNodeClicked = event('Sigma.TriggerNodeClicked');
+export const RemoveNode = event('Sigma.RemoveNode');

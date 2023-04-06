@@ -160,7 +160,7 @@ export class RdfUpload extends Component<Props, State> {
       if (this.state.targetGraph.isJust) {
         targetGraph = this.state.targetGraph.get()
       } else {
-        if (this.props.targetGraph.length > 0) {
+        if (this.props.targetGraph?.length > 0) {
           targetGraph = this.props.targetGraph;
         } else {
           targetGraph = `file://${file.name}-${createTimestamp()}`;

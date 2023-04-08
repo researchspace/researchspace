@@ -98,16 +98,16 @@ export class GraphActionLink extends Component<Props, State> {
           bsSize: 'lg',
           onHide,
           children: D.div(
-            { style: { textAlign: 'center' } },
+            { style: { textAlign: 'left' } },
             D.p({}, `Are you sure that you want to delete the named graph "${this.props.graphuri}"?`),
             D.p(
               {},
               `Please note that for larger named graphs (> 1 million statements), the deletion may typically take a few seconds (or even minutes) to be finally processed by the database.`
             ),
             ButtonToolbar(
-              { style: { display: 'inline-block' } },
-              Button({ bsStyle: 'success', onClick: onSubmit }, 'Yes'),
-              Button({ bsStyle: 'danger', onClick: onHide }, 'No')
+              { style: { display: 'flex', paddingTop: '10px', justifyContent: 'end' } },
+              Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
+              Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete')
             )
           ),
         })
@@ -129,16 +129,16 @@ export class GraphActionLink extends Component<Props, State> {
             bsSize: 'lg',
             onHide,
             children: D.div(
-              { style: { textAlign: 'center' } },
+              { style: { textAlign: 'left' } },
               D.p({}, `Are you sure that you want to delete the "${this.props.graphDescription}"?`),
               D.p(
                 {},
                 `Please note that the deletion may typically take a few seconds (or even minutes) to be finally processed.`
               ),
               ButtonToolbar(
-                { style: { display: 'inline-block' } },
-                Button({ bsStyle: 'success', onClick: onSubmit }, 'Yes'),
-                Button({ bsStyle: 'danger', onClick: onHide }, 'No')
+                { style: { display: 'flex', paddingTop: '10px', justifyContent: 'end' } },
+                Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
+                Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete')
               )
             ),
           })

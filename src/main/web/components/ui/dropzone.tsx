@@ -28,29 +28,16 @@ export interface DropzoneProps extends DropzoneOptions {
   children?: JSX.Element | ReadonlyArray<JSX.Element> | ChildrenFunction;
 }
 
-const DEFAULT_STYLE: React.CSSProperties = {
-  width: '100%',
-  height: 200,
-  borderWidth: 1,
-  borderStyle: 'dashed',
-  borderRadius: 5,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  outline: 'none',
-  fontSize: 17,
-  letterSpacing: 0.2,
-};
+const BASE_CLASSNAME = 'dropzone-area'
 
 export class Dropzone extends React.Component<DropzoneProps, {}> {
   render() {
-    const { className, children, ...otherProps } = this.props;
-    const style = Object.assign({}, DEFAULT_STYLE, this.props.style);
+    const { className, children, style, ...otherProps } = this.props;
+    const classNames = [BASE_CLASSNAME, className].join(' ')
     return (
       <ReactDropzone {...otherProps}>
         {(state) => (
-          <div {...state.getRootProps()} className={className} style={style}>
+          <div {...state.getRootProps()} className={classNames} style={style}>
             {isFunction(children) ? children(state) : children}
             <input {...state.getInputProps()} />
           </div>

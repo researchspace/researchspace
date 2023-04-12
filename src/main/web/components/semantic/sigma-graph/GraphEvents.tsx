@@ -29,7 +29,7 @@ import { Attributes } from "graphology-types";
 
 import { GraphEventsConfig } from './Config';
 import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, removeNodeFromGraph } from './Common';
-import { FocusNode, NodeClicked, RemoveNode, TriggerNodeClicked } from './EventTypes';
+import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 import { EdgeFilterControl } from './EdgeFilterControl'
 import { Panel } from './ControlPanel'
 
@@ -173,13 +173,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
             callback();            
         })
     }
-
-    const removeNode = (node: string) => {
-        const graph = sigma.getGraph();
-        removeNodeFromGraph(graph, node);
-        setEdgeLabelsNeedUpdate(true);
-        sigma.refresh();
-    }
     
     // Control layout
     useEffect(() => {
@@ -242,21 +235,6 @@ export const GraphEvents: React.FC<GraphEventsConfig> = (props) => {
                     const node = "<" + event.data.node + ">";
                     if (sigma.getGraph().hasNode(node)) {
                         focusNode(node);
-                    }
-                }
-            }
-        });
-        cancellation.map(
-            listen({
-                eventType: RemoveNode,
-                target: props.id
-            })
-        ).observe({
-            value: ( event ) => {
-                if (event.data.node) {
-                    const node = "<" + event.data.node + ">";
-                    if (sigma.getGraph().hasNode(node)) {
-                        removeNode(node);
                     }
                 }
             }

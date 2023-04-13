@@ -44,9 +44,15 @@
         <h1 style="margin-top: 30px;">Data Export &amp; Deletion</h1>
         <hr style="margin-top:0px;" />
 
-        <mp-event-proxy id='{{viewId}}-data-import-proxy' 
+        <mp-event-proxy id='{{viewId}}-dataImport-upload-success-proxy' 
                         on-event-type='RdfUpload.Success'
                         proxy-event-type='Component.Refresh' 
+                        proxy-targets='["{{viewId}}-data-export-table"]'
+        ></mp-event-proxy>
+
+        <mp-event-proxy id='{{viewId}}-dataImport-graph-action-success-proxy' 
+                        on-event-type='GraphAction.Success'
+                        proxy-event-type='Component.Refresh'
                         proxy-targets='["{{viewId}}-data-export-table"]'
         ></mp-event-proxy>
 
@@ -81,7 +87,7 @@
               </template>
 
               <template id='delete'>
-                <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{graph.value}}"><i
+                <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}"><i
                     class="fa fa-trash-o"></i>
                 </mp-graph-store-action>
               </template>

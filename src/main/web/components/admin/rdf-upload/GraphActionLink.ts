@@ -130,7 +130,7 @@ export class GraphActionLink extends Component<Props, State> {
             onHide,
             children: D.div(
               { style: { textAlign: 'left' } },
-              D.p({}, `Are you sure that you want to delete the "${this.props.graphDescription}"?`),
+              D.p({}, `Are you sure that you want to delete "${this.props.graphDescription}"?`),
               D.p(
                 {},
                 `Please note that the deletion may typically take a few seconds (or even minutes) to be finally processed.`

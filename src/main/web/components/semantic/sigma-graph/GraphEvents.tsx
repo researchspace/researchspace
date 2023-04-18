@@ -28,7 +28,7 @@ import { ControlsContainer, useCamera, useRegisterEvents, useSigma, useSetSettin
 import { Attributes } from "graphology-types";
 
 import { GraphEventsConfig } from './Config';
-import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup, removeNodeFromGraph } from './Common';
+import { cleanGraph, createGraphFromElements, loadGraphDataFromQuery, mergeGraphs, releaseNodeFromGroup } from './Common';
 import { FocusNode, NodeClicked, TriggerNodeClicked } from './EventTypes';
 import { EdgeFilterControl } from './EdgeFilterControl'
 import { Panel } from './ControlPanel'

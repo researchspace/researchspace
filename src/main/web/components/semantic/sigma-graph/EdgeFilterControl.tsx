@@ -10,7 +10,6 @@ export interface EdgeFilterControlProps {
 
 export const EdgeFilterControl: FC<EdgeFilterControlProps> = (props) => {
 
-
     const onEdgeFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const label = event.target.value;
         const newEdgeLabels = props.edgeLabels.map(d => {
@@ -23,8 +22,26 @@ export const EdgeFilterControl: FC<EdgeFilterControlProps> = (props) => {
         props.setEdgeLabels(newEdgeLabels);
     };
 
+    const onEdgeFilterChangeAll = () => {
+        if (allChecked) {
+            const newEdgeLabels = props.edgeLabels.map(d => ({...d, visible: false}));
+            props.setEdgeLabels(newEdgeLabels);
+        } else {
+            const newEdgeLabels = props.edgeLabels.map(d => ({...d, visible: true}));
+            props.setEdgeLabels(newEdgeLabels);
+        }
+    };
+
+    const allChecked = props.edgeLabels.every(d => d.visible);
+
     return <div>
         <ul className="filter edgeLabels">
+            <li key="li-all">
+                <input onChange={onEdgeFilterChangeAll} type="checkbox" id="edge-filter-all"
+                    checked={allChecked}
+                />&nbsp;
+                <label htmlFor="edge-filter-all">(all)</label>
+            </li>
             {props.edgeLabels.map(d => (
                 <li key={"li-" + d.label}>
                     <input onChange={onEdgeFilterChange} type="checkbox" id={"edge-filter-" + d.label} value={d.label} 

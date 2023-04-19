@@ -73,6 +73,8 @@ export interface TreePickerInputProps extends MultipleValuesProps {
    * Form template that can be used to create new instance or edit existing one.
    */
   nestedFormTemplate?: string;
+
+  allowForceSuggestion?: boolean;
 }
 
 interface State {
@@ -188,6 +190,11 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
         ? this.props.placeholder
         : createDefaultPlaceholder(definition);
 
+    const allowForceSuggestion =
+      typeof this.props.allowForceSuggestion === 'boolean'
+        ? this.props.allowForceSuggestion
+        : false;
+
     return (
       <SemanticTreeInput
         key={treeVersionKey}
@@ -207,6 +214,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
         childrenQuery={childrenQuery}
         parentsQuery={parentsQuery}
         searchQuery={searchQuery}
+        allowForceSuggestion={allowForceSuggestion}
         initialSelection={treeSelection}
         multipleSelection={true}
         openDropdownOnFocus={openDropdownOnFocus}

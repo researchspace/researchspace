@@ -157,7 +157,26 @@ export class GraphActionLink extends Component<Props, State> {
         fileName,
         repository,
       }).onValue((v) => {});
-    }
+    } else if (this.props.action === 'UPDATE') {
+      const { repository } = this.context.semanticContext;
+      RDFGraphStoreService.updateGraphRequest({
+        targetGraph: Rdf.iri(this.props.graphuri),
+        turtleString: "<http://example.org/#spiderman> <http://www.perceive.net/schemas/relationship/enemyOf> <http://example.org/#green-goblin> .",
+        repository,
+      }).onValue((_) => {
+        // FIRE EVENT
+        trigger({
+          eventType: GraphActionEvents.GraphActionSuccess,
+          source: Math.random().toString()
+        }); })
+      .onError((error: string) => {
+        this.setState({ isInProcess: false });
+        addNotification({
+          level: 'error',
+          message: error,
+        });
+      });
+    };
   };
 
   private deleteGraphWithoutRefresh() {

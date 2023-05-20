@@ -201,7 +201,7 @@ export class GraphActionLink extends Component<Props, State> {
       .onValue((_) => {
         // FIRE EVENT
         trigger({
-          eventType: GraphActionEvents.GraphActionDelete,
+          eventType: GraphActionEvents.GraphActionSuccess,
           source: Math.random().toString()
         }); })
       .onError((error: string) => {

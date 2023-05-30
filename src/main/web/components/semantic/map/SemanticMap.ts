@@ -480,19 +480,30 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       .getSource()
       .getFeatures()
       .forEach((feature) => {
-        let feature_bob = feature.get('bob').value;
-        let feature_eoe = "";
-        if (feature.get('eoe')){
-          feature_eoe = feature.get('eoe').value;
-        } else {
-          feature_eoe = "2999";
+        
+        try {
+          console.log(feature)
+          let feature_bob = feature.values_.bob.value;
+          let feature_eoe = "";
+          if (feature.get('eoe')){
+            feature_eoe = feature.get('eoe').value;
+          } else {
+            feature_eoe = "2999";
+          }
+          if(this.dateInclusion(feature_bob, feature_eoe, year)){
+            //TODO: fix types
+            feature.setStyle(this.createFeatureStyle(feature));
+          }
+          else{
+            feature.setStyle(this.createHiddenFeatureStyle(feature)); 
+          }
         }
-        if(this.dateInclusion(feature_bob, feature_eoe, year)){
-          //TODO: fix types
-          feature.setStyle(this.createFeatureStyle(feature));
-        } else {
+        catch(ex)
+        {
+          console.log(ex)
           feature.setStyle(this.createHiddenFeatureStyle(feature));
         }
+        
       })})
   }
 

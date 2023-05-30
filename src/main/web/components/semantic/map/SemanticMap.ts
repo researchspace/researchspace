@@ -176,6 +176,7 @@ export interface SemanticMapConfig {
    */
   fixZoomLevel?: number;
 
+
   fixCenter?: Array<number>;
 
   /**
@@ -208,6 +209,12 @@ export interface SemanticMapConfig {
    * Optional array of strings containing IDs of targets for events of the features selection functionality (map as input)
    */
   featuresSelectionTargets?: Array<string>;
+
+  /**
+   * False by default. Set true to activate the filter by parameter "year" to use it with controls
+   */
+  yearFiltering?: boolean;
+
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -225,6 +232,7 @@ interface MapState {
   featuresColorTaxonomy: string;
   groupColorAssociations: {};
   year: string;
+  yearFiltering: boolean;
   registeredControls: Array<any>;
   selectedFeatures: Array<string>;
 }
@@ -264,8 +272,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       groupColorAssociations: {},
       registeredControls: [],
       selectedFeatures: [],
-      // TODO: move year to controls
-      year: '01-01-1670',
+      year: '',
+      yearFiltering: this.props.yearFiltering ? this.props.yearFiltering : false
     };
 
     this.initInteractions();
@@ -449,16 +457,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }, ()=> {
       console.log("Registered. Now registered Controls are:")
       console.log(this.state.registeredControls)
-      this.updateFeaturesByYear();
+      //this.updateFeaturesByYear();
     })
   }
 
   private setYear = (event: Event<any>) => {
-    this.setState({
-      year : event.data
-    }, () => {
-      this.updateFeaturesByYear();
-    })
+    if(this.state.yearFiltering){
+      this.setState({
+        year : event.data
+      }, () => {
+        this.updateFeaturesByYear();
+      })
+    }
   }
 
   private updateFeaturesByYear() {
@@ -601,15 +611,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   //TODO: improve sync (sometimes it's not ready)
   private syncControlsFromEvent = (event: Event<any>) => {
-    this.syncControls();
+      this.syncControls();
   };
 
   private syncControls(){
-    this.triggerSendLayers();
+    if(this.state.registeredControls.length > 0){
+      this.triggerSendLayers();
+    }
   }
 
   private triggerSendLayers() {
     //TODO: move them away
+    console.log("Triggering sending layers")
     let vectorLayers = this.getVectorLayersFromMap();
     vectorLayers.forEach((vectorLayer) => {
       vectorLayer.set('level', 'feature');
@@ -1059,7 +1072,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         } else {
           feature_eoe = "2999";
         }
-        if(this.state.registeredControls.length > 0){
+        if(this.state.registeredControls.length > 0 && this.state.yearFiltering){
           if(this.dateInclusion(feature_bob, feature_eoe, this.state.year)){
             return this.createFeatureStyle(feature)
           } else {
@@ -1126,7 +1139,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       let basemapLayers = [];
       const overlayLayers = [];
 
-      //TODO: IF tiles-layers ARE present in template
+      //TODO URGENT: IF tiles-layers ARE present in template
       this.state.mapLayers.forEach(function (tileslayer) {
         if (tileslayer.get('level') === 'basemap') {
           basemapLayers.push(tileslayer);
@@ -1157,12 +1170,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
             //TODO: check REMOVED EMPTY VECTOR: what was it for?
             //layers: [..._.values(this.state.mapLayers), ..._.values(layers), this.vector],
 
+
+            //TODO URGENT: MAKE EXTENT OPTIONAL (OR PREDEFINED WITH SOME EURISTIC)
             layers: [..._.values(this.state.mapLayers)],
             target: node,
             view: new View({
               center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
               zoom: 3,
-              extent: props.mapOptions.extent,
+              //extent: props.mapOptions.extent,
             }),
           });
 
@@ -1191,7 +1206,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
           // TODO: popup only on features
           this.initializeMarkerPopup(map);
-          map.getView().fit(props.mapOptions.extent);
+          //map.getView().fit(props.mapOptions.extent);
 
           window.addEventListener('resize', () => {
             map.updateSize();
@@ -1221,7 +1236,9 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           const zoom = this.props.fixZoomLevel ? this.props.fixZoomLevel : 12;
           const view = this.map.getView();
 
-          view.setCenter(this.props.fixCenter);
+          if (this.props.fixCenter){
+            view.setCenter(this.props.fixCenter);
+          }
           view.setZoom(zoom);
 
           this.map.addInteraction(this.modify);
@@ -1285,7 +1302,16 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }
   };
 
+  public combineExtentsFromLayers(layers){
+    var extent = createEmpty();
+    layers.forEach(function(layer) {
+      extend(extent, layer.getSource().getExtent());
+    });
+    return extent
+  }
+
   private updateLayers = (geometries: { [type: string]: Feature[] }) => {
+    console.log("Updating Layers:")
     const mapLayersClone = this.state.mapLayers;
     _.forEach(geometries, (features, type) => {
       let layer = this.getVectorLayerByType(type);
@@ -1312,7 +1338,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       () => {
         //TODO: IMPROVE SYNCING (CHANGING LAYERS WHILE FEATURES ARE LOADING GENERATES INCOSTINTENT STATES)
         //this.updateVectorLayersStyle();
-        this.syncControls();
+        //this.syncControls();
+        let vectorLayers = this.getVectorLayersFromMap();
+        let combinedExtents = this.combineExtentsFromLayers(vectorLayers);
+        console.log("combinedExtents");
+        console.log(combinedExtents);
+        this.map.getView().fit(combinedExtents, {padding: [100,100,100,100]});
       }
     );
   };
@@ -1337,12 +1368,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     });
     return foundVectorLayer;
   }
-  /*
+  
   private calculateExtent() {
     const viewExtent = createEmpty();
-
+    console.log("this.layers");
+    console.log(this.layers);
     _.forEach(this.layers, (layer) => {
       let source = layer.getSource();
+      console.log(source)
       if (source instanceof Cluster) {
         source = source.getSource();
       }
@@ -1351,7 +1384,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     return viewExtent;
   }
-  */
+  
 
   private createMap = () => {
     this.renderMap(

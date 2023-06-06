@@ -17,22 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataContextFunctions } from './DataContextFunctions';
-import { GenericFunctions } from './GenericFunctions';
-import { DateTimeFunctions } from './DateTimeFunctions';
-import { RdfFunctions } from './RdfFunctions';
-import { UriComponentFunctions } from './UriComponentFunctions';
-import { NumbersFunctions } from './NumbersFunctions';
-import { StringsFunctions } from './StringsFunctions';
-
-export const DefaultHelpers = {
-  ...DataContextFunctions,
-  ...GenericFunctions,
-  ...DateTimeFunctions,
-  ...RdfFunctions,
-  ...UriComponentFunctions,
-  ...NumbersFunctions,
-  ...StringsFunctions
+export const StringsFunctions = {
+  split: function(text: string, separator?: string) {
+    if (typeof text !== 'string') {
+      return [];
+    }
+    if (typeof separator !== 'string') {
+      separator = ' ';
+    }
+    return text.split(separator);
+  }
 };
-
-export { ContextCapturer, CapturedContext } from './DataContextFunctions';

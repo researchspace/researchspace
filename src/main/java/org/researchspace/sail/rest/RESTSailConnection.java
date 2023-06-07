@@ -91,7 +91,6 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
         this.jsonPathConfig = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
     }
 
-    @Override
     protected Collection<BindingSet> convertStream2BindingSets(InputStream inputStream,
             ServiceParametersHolder parametersHolder) throws SailException {
 

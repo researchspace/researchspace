@@ -1,0 +1,306 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+
+  <li class="active">SQL Sail integration</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>SQL Sail integration</h1>
+
+    <p>
+      This page explains how to setup repositories to query existing SQL databases. This guide assumes the developer already have created the database and have downloaded the <strong>JDBC driver required</strong>. 
+      For instance the PostgreSQL driver can be found <strong><a target="_blank" href="https://jdbc.postgresql.org/download.html">ON THIS WEBSITE</a></strong>. The driver must be located within the app, inside the <code>lib/</code> folder (for more information refer to App Mechanism).
+
+
+    </p>
+
+
+
+    <p>For this use case, we are keeping as example the following table called <strong>Artworks</strong>:</p>
+
+    <mp-code-block mode='terminal'>
++----+-----------------------------------------------------------------------------+-------------+-----------+-------+
+| id | title                                                                       | technique   | catalogue | Width |
++----+-----------------------------------------------------------------------------+-------------+-----------+-------+
+|  1 | Nude Baptist lightly seated, leaning on left elbow, with right hand held up | black chalk |       228 |   157 |
+|  2 | Mapping out of the lunette at Poggio a Cajano.                              | black chalk |      2151 |    79 |
+|  3 | Various "putti" for same work, or for the Lucca God the Father              | red chalk   |       361 |   126 |
++----+-----------------------------------------------------------------------------+-------------+-----------+-------+
+    </mp-code-block>
+
+    It contains three rows, and the following columns: <code>id</code> the identifier in string format, <code>title</code> the artworks title in string format, <code>technique</code> the technique used to draw the painting in string format, <code>catalogue</code> is the number used within the catalogue, <code>width</code> is the artwork width and it is a integer.
+
+    <h3>Configuration</h3>
+
+    Similarly to <strong>RESTSail</strong>, <strong>SQLSail</strong> must be implemented using a dedicated repository. 
+
+    <h3>Service descriptor</h3>
+
+
+    <mp-code-block mode='text/turtle'>
+      <![CDATA[
+
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX : <http://www.researchspace.org/resource/system/repository#>
+PREFIX rssqlsail: <http://www.researchspace.org/resource/system/sql#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+
+:artworks a ephedra:Service ;
+  <http://www.openrdf.org/config/sail#sailType> "researchspace:SQLSail" ;
+  rdfs:label "A wrapper for the SQL Artworks service." ;
+  ephedra:hasSPARQLPattern (
+      [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasQueryId ;
+      sp:object :_queryId
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasTitle ;
+      sp:object :_title
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasTechnique ;
+      sp:object :_technique
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasInputTechnique ;
+      sp:object :_inputTechnique
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasCatalogue ;
+      sp:object :_catalogue
+    ]
+    [
+      sp:subject :_results ;
+      sp:predicate rssqlsail:hasWidth ;
+      sp:object :_width
+    ]
+
+  ) ;
+  spin:constraint
+  [
+    a spl:Argument ;
+    rdfs:comment "query ID" ;
+    spl:predicate :_queryId ;
+    spl:valueType xsd:string
+    ] ;
+  spin:constraint
+  [
+    a spl:Argument ;
+    rdfs:comment "The technique parameter used as input" ;
+    spl:predicate :_inputTechnique ;
+    spl:valueType xsd:string
+    ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Row index: will be assigned a random blank node" ;
+    spl:predicate :_results ;
+    spl:valueType rdfs:Resource
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output title" ;
+    spl:predicate :_title ;
+    spl:valueType xsd:string
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output technique" ;
+    spl:predicate :_technique ;
+    spl:valueType xsd:string
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output catalogue" ;
+    spl:predicate :_catalogue ;
+    spl:valueType xsd:integer
+  ] ;
+  spin:column
+  [
+    a spin:Column ;
+    rdfs:comment "Output width" ;
+    spl:predicate :_width ;
+    spl:valueType xsd:integer
+  ] ;
+  rssqlsail:includesSQLQuery
+  [
+    rssqlsail:hasQueryId "default" ;
+    rssqlsail:text "SELECT * FROM Artworks;"
+  ] ;
+  rssqlsail:includesSQLQuery
+  [
+    rssqlsail:hasQueryId "getBySize" ;
+    rssqlsail:text "SELECT * FROM Artworks where technique = ?inputTechnique;"
+  ] .
+      ]]>
+      </mp-code-block>
+
+
+      <p>
+        The SQLSail service descriptor must contains the SQL queries pre-created. These are defined through the <code>rssqlsail:hasQueryId</code> property.
+        The contains the following properties: 1) <code>rssqlsail:hasQueryId</code> pointing to a literal in string format denoting the queryId, 2) <code>rssqlsail:text</code>  pointing to a literal in string format denoting the query body.
+
+        <br>
+
+        <strong>NOTE: the query body may contain parameters as for the case of <code>getBySize</code> query. In this case the parameters (e.g., <code>inputTechnique</code>) must prepend a question mark.</strong>
+      </p>
+
+      <p>
+        All the declared <code>spin:column</code> and <code>spin:constraint</code> must declare their types. The types currently supported are :
+
+        <ul>
+          <li>
+            xsd:string
+          </li>
+          <li>
+            xsd:integer or xsd:int
+          </li>
+          <li>
+            xsd:float
+          </li>
+        </ul>
+      </p>
+
+      <p>
+        The <code>ephedra:hasSPARQLPattern</code> parameter is an array of parameters denoting how conversion from SPARQL must be handled. 
+      </p>
+      
+    
+      <mp-code-block  mode='text/turtle'>
+        <![CDATA[
+[
+  sp:subject :_results ;
+  sp:predicate rssqlsail:hasTitle ;
+  sp:object :_title
+]
+      ]]>
+      </mp-code-block>
+      <p>
+        The previous code shows how the RDF triple must be formed. The predicate must be <code>rssqlsail:hasTitle</code>, 
+        where the prefix is defined in the same file, and hasTitle is an arbitrary predicate name. 
+        It means that the SPARQL subject is related to a element with <code>_title</code> as <code>spl:predicate</code>.
+      </p>
+
+
+      
+
+
+    <h3>Repository configuration file</h3>
+
+    <mp-code-block mode='text/turtle'>
+      <![CDATA[
+@prefix repo: <http://www.openrdf.org/config/repository#> .
+@prefix reposail: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix rsrepo: <http://www.researchspace.org/resource/system/repository#> .
+@prefix rssqlsail: <http://www.researchspace.org/resource/system/sql#> .
+@prefix : <http://www.researchspace.org/resource/system/repository#> .
+
+[] a repo:Repository ;
+  repo:repositoryID "artworks" ;
+  rdfs:label "A wrapper for the SQL test repository." ;
+  repo:repositoryImpl [
+    repo:repositoryType "openrdf:SailRepository" ;
+    reposail:sailImpl [
+      sail:sailType "researchspace:SQLSail" ;
+      ephedra:serviceURL "{URL here}" ;
+      rsrepo:username "{username here}" ;
+      rsrepo:password "{password here}" ;
+      ephedra:implementsService :artworks ;
+    ] ;
+  ] .
+
+      ]]>
+      </mp-code-block>
+
+      <p>
+        
+        The <code>ephedra:serviceURL</code> is generally composed as following:<code>jdbc:{dbms service}://{url}:{port}/{database_name}</code>. The DBMS service can be postgresql, mysql, or other services' name.
+      
+        <br>
+
+        For the purpose of this use case, the URL service is the following: <code>jdbc:mysql://127.0.0.1:3306/artworks_data</code>. 
+
+        <br><br>
+
+        <code>rsrepo:username</code> and <code>rsrepo:password</code> must be passed in plain text in the configuration file, otherwise it can be passed through the secret resolver (see Repository Manager).
+      
+      </p>
+
+
+
+    <h2>Querying the system</h2>
+
+    <p>
+      Once the repository, and its related descriptor are in the system, it is possible to query the SQL database. The SPARQL queries must always be performed against the right repository, in this case of this example "artworks".
+      <br> <br>
+      The service descriptor declared two different queries, the first one is called default and it is translated in a simple retrieve without any input parameters. The SPARQL query only needs to use the exact same properties declared within the descriptor. 
+      In this case, we just need to decleare the query id, i.e., the SQL query we want to perform, and the output parameters we want to retrieve.
+    </p>
+
+    <p>
+      <strong>NOTE: the name of SPARQL variables must be the same of the column names. This behavior will change in future updates.</strong>
+    </p>
+
+    <mp-code-block mode='SPARQL'>
+      <![CDATA[
+PREFIX rssqlsail: <http://www.researchspace.org/resource/system/sql#>
+
+SELECT ?title ?technique ?catalogue ?width WHERE {
+  ?subject rssqlsail:hasQueryId "default".
+  ?subject rssqlsail:hasTitle ?title.
+  ?subject rssqlsail:hasTechnique ?technique.
+  ?subject rssqlsail:hasCatalogue ?catalogue.
+  ?subject rssqlsail:hasWidth ?width.
+}
+      ]]>
+      </mp-code-block>
+
+      <p>
+        The descriptor also contains a more complex SQL query. The <code>getBySize</code> query requires an input parameter, i.e., the technique, to retrieve all the artworks created with that technique.
+      
+        <br>
+
+        The following SPARQL query shows how to pass a input parameter to perform complex queries
+
+      </p>
+      <mp-code-block mode='SPARQL'>
+        <![CDATA[
+  PREFIX rssqlsail: <http://www.researchspace.org/resource/system/sql#>
+  
+  SELECT ?title ?technique ?catalogue ?width WHERE {
+    ?subject rssqlsail:hasQueryId "getBySize".
+    ?subject rssqlsail:hasTitle ?title.
+    ?subject rssqlsail:hasTechnique ?technique.
+    ?subject rssqlsail:hasCatalogue ?catalogue.
+    ?subject rssqlsail:hasWidth ?width.
+    ?subject rssqlsail:hasInputTechnique "black chalk"
+  }
+        ]]>
+        </mp-code-block>
+
+
+    
+  </div>
+</div>

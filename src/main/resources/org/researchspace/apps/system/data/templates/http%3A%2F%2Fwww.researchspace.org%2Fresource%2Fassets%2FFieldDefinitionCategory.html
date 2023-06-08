@@ -1,0 +1,177 @@
+<div class="page">
+  
+  [[> rsp:adminPageHeader title="Knowledge pattern categories" icon="fa fa-tag fa-lg"]]
+ 
+  <div class="container-fluid">
+      <bs-row class="row-center">
+          <bs-col xs=12 sm=11 md=10 lg=9 class='rs-col-xl-8'>
+            <bs-tabs unmount-on-exit=true>
+              <bs-tab event-key="1" title="Tree View">
+        
+                <semantic-tree query="PREFIX Platform: <http://www.researchspace.org/resource/system/>
+                                      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                                      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                                      PREFIX rs: <http://www.researchspace.org/ontology/>
+                                      
+                                      SELECT DISTINCT ?node ?parent ?label WHERE {
+                                        
+                                        ?node skos:inScheme Platform:FieldCategories .
+                                        ?node rdfs:type <http://www.researchspace.org/resource/system/fields/category> .
+
+                                        ?node ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+
+                                        OPTIONAL { ?node skos:broader ?parent. }
+
+                                       # FILTER(NOT EXISTS { ?node skos:broader ?parent. })
+                                        
+                                      #  OPTIONAL { ?child skos:broader ?node. }
+                                      #  BIND(BOUND(?child) AS ?hasChildren)
+                                      #  OPTIONAL { BIND(?label AS ?order) }
+                                      }
+                                      ORDER BY ?label" 
+
+                                tuple-template='{{> category}}' 
+                                no-result-template='{{> empty-tree}}'>
+        
+                  <template id='empty-tree'>
+                    <div><strong>No categories found</strong></div>
+                  </template>
+        
+                  <template id="category">
+                    <span>
+                      <!-- Modal dialog -->
+                      <mp-overlay-dialog title="Edit category '{{label.value}}'" type="modal" bs-size="large">
+        
+                        <mp-overlay-dialog-trigger>
+                          <p style="text-decoration: underline; cursor: pointer;"><semantic-link uri="{{node.value}}"></semantic-link></p>
+                        </mp-overlay-dialog-trigger>
+        
+                        <mp-overlay-dialog-content>
+                          <semantic-form subject="{{node.value}}" post-action="reload" persistence="sparql"
+                            browser-persistence="false" form-id="edit category" fields='[
+                                {
+                                  "id": "label",
+                                  "label": "Label",
+                                  "description": "The name of the category",
+                                  "xsdDatatype": "xsd:string",
+                                  "minOccurs": "0",
+                                  "maxOccurs": "1",
+                                  "selectPattern": "SELECT $value WHERE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject rdfs:label $value }}",
+                                  "insertPattern": "INSERT { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject rdfs:label $value }} WHERE {}",
+                                  "deletePattern": "DELETE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject rdfs:label $value. $subject <http://www.w3.org/2004/02/skos/core#inScheme> <http://www.metaphacts.com/ontologies/platform/FieldCategories>}} WHERE {}"
+                                },
+                                                                                                    {
+                      "id": "parent",
+                      "label": "Parent Category",
+                      "description": "This will become the parent category",
+                      "xsdDatatype": "xsd:anyURI",
+                      "minOccurs": "0",
+                      "maxOccurs": "1",
+                      "selectPattern": "SELECT $value WHERE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject <http://www.w3.org/2004/02/skos/core#broader> $value }}",
+                      "insertPattern": "INSERT { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject <http://www.w3.org/2004/02/skos/core#broader> $value }} WHERE {}",
+                      "deletePattern": "DELETE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject <http://www.w3.org/2004/02/skos/core#broader> $value }} WHERE {}",
+                      "treePatterns": {
+                        "type": "simple",
+                        "schemePattern": " GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> {?item <http://www.w3.org/2004/02/skos/core#inScheme> <http://www.metaphacts.com/ontologies/platform/FieldCategories>}"
+                      }
+                    }
+                              ]'>
+                            <bs-panel>
+                              <semantic-form-recover-notification></semantic-form-recover-notification>
+                              <semantic-form-text-input for="label"></semantic-form-text-input>
+                              <semantic-form-tree-picker-input for="parent"></semantic-form-tree-picker-input>
+                              <semantic-form-errors></semantic-form-errors>
+        
+                              <button name="submit" class="btn btn-default">Save</button>
+                              <button name="reset" class="btn btn-default">Reset</button>
+                            </bs-panel>
+                            </semantic-form>
+                        </mp-overlay-dialog-content>
+        
+                      </mp-overlay-dialog>
+                    </span>
+                  </template>
+                </semantic-tree>
+        
+              </bs-tab>
+              <bs-tab event-key="2" title="Table View">
+                <semantic-table query="
+                PREFIX Platform: <http://www.researchspace.org/resource/system/>
+                PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                PREFIX rs: <http://www.researchspace.org/ontology/>
+                
+                SELECT DISTINCT ?category ?label ?hasChildren WHERE {
+                  ?category skos:inScheme Platform:FieldCategories.
+                  FILTER(NOT EXISTS { ?category skos:broader ?parent. })
+                  ?category ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                  OPTIONAL { ?child skos:broader ?category. }
+                  BIND(BOUND(?child) AS ?hasChildren)
+                  OPTIONAL { BIND(?label AS ?order) }
+                }
+                ORDER BY (?order) (?label)" 
+                    number-of-displayed-rows=2 
+                    options='{"showFilter": true}'>
+                  </semantic-table>
+        
+              </bs-tab>
+            </bs-tabs>
+
+            <semantic-form new-subject-template="http://www.metaphacts.com/ontologies/platform/formContainer/category/{{label}}"
+              post-action="reload" persistence="sparql" browser-persistence="false" form-id="category" fields='[
+                    {
+                      "id": "label",
+                      "label": "Label",
+                      "description": "The name of the category",
+                      "xsdDatatype": "xsd:string",
+                      "minOccurs": "1",
+                      "maxOccurs": "unbound",
+                      "selectPattern": "SELECT $value WHERE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject rdfs:label $value } }",
+                      "insertPattern": "INSERT { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject rdfs:label $value }} WHERE {}",
+                      "deletePattern": "DELETE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject rdfs:label $value }} WHERE {}"
+                    },
+                    {
+                      "id": "parent",
+                      "label": "Parent Category",
+                      "description": "This will become the parent category",
+                      "xsdDatatype": "xsd:anyURI",
+                      "minOccurs": "0",
+                      "maxOccurs": "1",
+                      "selectPattern": "SELECT $subject WHERE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> {$subject <http://www.w3.org/2004/02/skos/core#inScheme> <http://www.metaphacts.com/ontologies/platform/FieldCategories> }}",
+                      "insertPattern": "INSERT { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject <http://www.w3.org/2004/02/skos/core#broader> $value }} WHERE {}",
+                      "deletePattern": "DELETE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $category <http://www.w3.org/2004/02/skos/core#broader> $subject }} WHERE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { ?category <http://www.w3.org/2004/02/skos/core#broader> ?subject}}",
+                      "treePatterns": {
+                        "type": "simple",
+                        "schemePattern": "GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { ?item <http://www.w3.org/2004/02/skos/core#inScheme> <http://www.metaphacts.com/ontologies/platform/FieldCategories> }"
+                      }
+                    },                
+                    {
+                      "id": "type",
+                      "label": "Type",
+                      "description": "The type of the created instance",
+                      "xsdDatatype": "xsd:anyURI",
+                      "selectPattern": "SELECT $value WHERE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> {$subject a $value }}",
+                      "insertPattern": "INSERT { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject <http://www.w3.org/2004/02/skos/core#inScheme> $value }} WHERE {}",
+                      "deletePattern": "DELETE { GRAPH <http://www.metaphacts.com/ontologies/platform/FieldCategories> { $subject <http://www.w3.org/2004/02/skos/core#inScheme> $value }} WHERE {}"
+                    }
+                  ]'>
+              <h3>Create a new Category</h3>
+              <bs-panel>
+                <semantic-form-recover-notification></semantic-form-recover-notification>
+                <semantic-form-text-input for="label"></semantic-form-text-input>
+                <semantic-form-tree-picker-input for="parent"></semantic-form-tree-picker-input>
+                <semantic-form-hidden-input for="type"
+                  default-value="http://www.metaphacts.com/ontologies/platform/FieldCategories"></semantic-form-hidden-input>
+                <semantic-form-errors></semantic-form-errors>
+        
+                <button name="submit" class="btn btn-default">Save</button>
+                <button name="reset" class="btn btn-default">Reset</button>
+              </bs-panel>
+            </semantic-form>
+  				</bs-col>   
+      </bs-row>
+  </div>
+  
+</div>

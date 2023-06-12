@@ -26,6 +26,7 @@ import { TemplateItem } from 'platform/components/ui/template';
 import { DropArea } from 'platform/components/dnd/DropArea';
 import { Cancellation } from 'platform/api/async';
 import { listen } from 'platform/api/events';
+import PageLoaderComponent from 'platform/components/ui/page-loader';
 
 import * as styles from './Dashboard.scss';
 import * as DashboardEvents from './DashboardEvents';
@@ -148,6 +149,8 @@ export interface DashboardItemProps {
    * Render dashboard layout using css grid, instead of bootstrap row and columns.
    */
   gridView?: boolean;
+
+  homePageIri?: string;
 }
 
 export interface State {
@@ -337,28 +340,21 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
 
     return (
       <div className={styles.gridViewDashboard} onClick={this.onFocus}>
-        
-        {/* <div className={styles.help}>
-          <i className={'fa fa-question'}></i>
-          <div className={styles.text-underline}>What are the Thinking Frames?</div>
-        </div> */}
         <div className={styles.gridViewTitle1}>View</div>
         <div className={styles.gridViewItemsView}>{searchViewItems.map(this.renderItemCard)}</div>
       
         <div className={styles.gridViewTitle2}>Authoring</div>
         <div className={styles.gridViewItemsAuth}>{authItems.map(this.renderItemCard)}</div>
-        
-{/*         <div className={styles.dropResourceContainer}>
-          <div>
-            <div className={styles.dropResourceIcon}>
-              <i className={'rs-icon rs-icon-drop_resource'}></i>
-            </div>
-            <div className={styles.dropResourceText}>drop entity here</div>
-          </div>
-        </div> */}
-
       </div>
     );
+  };
+
+  private renderHomePage = () => {
+    const { homePageIri } = this.props;
+
+    return (<PageLoaderComponent
+            iri={homePageIri}>
+            </PageLoaderComponent>)
   };
 
   private renderEmptySelectedComponent = () => {
@@ -435,7 +431,7 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
   };
 
   render() {
-    const { views, viewId, gridView } = this.props;
+    const { views, viewId, gridView, homePageIri } = this.props;
     const { selectedView } = this.state;
     if (views.length === 0) {
       return null;
@@ -448,6 +444,9 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     }
     if (gridView) {
       return this.renderGridViewDashboard();
+    }
+    if (homePageIri) {
+      return this.renderHomePage();
     }
     return this.renderDefaultDashboard();
   }

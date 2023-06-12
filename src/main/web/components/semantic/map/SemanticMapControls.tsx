@@ -15,6 +15,7 @@ import {
   SemanticMapControlsSendGroupColorsAssociationsToMap,
   SemanticMapControlsSendToggle3d,
   SemanticMapControlsSendYear,
+  SemanticMapControlsSendVectorLevels,
   SemanticMapControlsRegister
 } from './SemanticMapControlsEvents';
 import * as D from 'react-dom-factories';
@@ -27,6 +28,7 @@ import reactCSS from 'reactcss';
 import _ = require('lodash');
 import VectorLayer from 'ol/layer/Vector';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { none } from 'ol/centerconstraint';
 
 const sliderbar: CSSProperties = {
   width: '100%',
@@ -54,6 +56,7 @@ interface State {
   groupColorAssociations: {};
   displayColorPicker: {};
   year: number;
+  vectorLevels: {};
 }
 
 interface Props {
@@ -65,6 +68,7 @@ interface Props {
   //TODO: optionals
   filtersInitialization: Filters;
   showFilters: boolean;
+  vectorLevels: string[];
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -90,6 +94,7 @@ export class SemanticMapControls extends Component<Props, State> {
       displayColorPicker: {},
       groupColorAssociations: {},
       year: 1670,
+      vectorLevels: this.props.vectorLevels ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {}) : {}
     };
 
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -219,6 +224,19 @@ export class SemanticMapControls extends Component<Props, State> {
       data: year.toString() + "-01-01",
     });
   }
+
+  private triggerSendVectorLevelsToMap() {
+    const vectorLevels = this.state.vectorLevels;
+    console.log("Sending vector levels to " + this.props.targetMapId + ". :")
+    console.log(vectorLevels)
+    trigger({
+      eventType: SemanticMapControlsSendVectorLevels,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: vectorLevels,
+    });
+  }
+
   public componentDidMount() {
     this.triggerRegisterToMap();
     trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
@@ -542,6 +560,37 @@ export class SemanticMapControls extends Component<Props, State> {
                                     this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
                                   }}
                                 ></input>
+                              </div>
+                              <div>
+                              {mapLayer instanceof VectorLayer && (
+                                console.log("ITISINSTANCE"),
+                                this.props.vectorLevels.map((vl) => {
+                                  return (
+                                    <div className={'vectorLevelsFilterContainer'}>
+                                      <label>{vl}</label>
+                                      <input
+                                        className="vectorLevelsFilters"
+                                        name={'overlay-visualization'}
+                                        type={'checkbox'}
+                                        checked={this.state.vectorLevels[vl].visible}
+                                        onChange={(event) => {
+                                          this.setState({ 
+                                            vectorLevels: { 
+                                              ...this.state.vectorLevels, 
+                                              [vl]: {
+                                                ...this.state.vectorLevels[vl],
+                                                visible: event.target.checked
+                                              }
+                                            }
+                                          }, () => {
+                                            this.triggerSendVectorLevelsToMap();
+                                          });
+                                        }}
+                                      ></input>
+                                    </div>
+                                  );
+                                })
+                            )}
                               </div>
                             </div>
                           </div>

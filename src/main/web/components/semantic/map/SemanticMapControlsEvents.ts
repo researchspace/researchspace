@@ -16,6 +16,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.SendGroupColorsAssociationsToMap': {};
   'SemanticMapControls.SendToggle3d': string;
   'SemanticMapControls.SendYear': string;
+  'SemanticMapControls.SendVectorLevels': {};
   'SemanticMapControls.Register': string;
 }
 
@@ -35,5 +36,6 @@ export const SemanticMapControlsSendFeaturesColorTaxonomyToMap = event('Semantic
 export const SemanticMapControlsSendGroupColorsAssociationsToMap = event('SemanticMapControls.SendGroupColorsAssociationsToMap');
 export const SemanticMapControlsSendToggle3d = event('SemanticMapControls.SendToggle3d');
 export const SemanticMapControlsSendYear = event('SemanticMapControls.SendYear');
+export const SemanticMapControlsSendVectorLevels = event('SemanticMapControls.SendVectorLevels');
 export const SemanticMapControlsRegister = event('SemanticMapControls.Register');
 

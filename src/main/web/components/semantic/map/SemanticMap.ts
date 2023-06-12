@@ -107,6 +107,7 @@ import {
   SemanticMapControlsSendToggle3d,
   SemanticMapControlsSendYear,
   SemanticMapControlsRegister,
+  SemanticMapControlsSendVectorLevels
 } from './SemanticMapControlsEvents';
 import { none } from 'ol/centerconstraint';
 import VectorSource from 'ol/source/Vector';
@@ -214,7 +215,10 @@ export interface SemanticMapConfig {
    * False by default. Set true to activate the filter by parameter "year" to use it with controls
    */
   yearFiltering?: boolean;
-
+/**
+ *  Lists the possible levels of features in the map (Eg. terrain, buildings, waterways, etc.)
+ */
+vectorLevels?: []
 }
 
 export type SemanticMapProps = SemanticMapConfig & Props<any>;
@@ -235,6 +239,7 @@ interface MapState {
   yearFiltering: boolean;
   registeredControls: Array<any>;
   selectedFeatures: Array<string>;
+  vectorLevels: {}
 }
 
 const MAP_REF = 'researchspace-map-widget';
@@ -273,7 +278,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       registeredControls: [],
       selectedFeatures: [],
       year: '',
-      yearFiltering: this.props.yearFiltering ? this.props.yearFiltering : false
+      yearFiltering: this.props.yearFiltering ? this.props.yearFiltering : false,
+      vectorLevels: this.props.vectorLevels ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {}) : {}
     };
 
     this.initInteractions();
@@ -400,6 +406,15 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           })
       )
       .onValue(this.setYear);
+
+    this.cancelation
+    .map(
+        listen({
+            eventType: SemanticMapControlsSendVectorLevels
+          })
+      )
+      .onValue(this.setVectorLevels);
+
     this.cancelation
     .map(
         listen({
@@ -457,7 +472,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     }, ()=> {
       console.log("Registered. Now registered Controls are:")
       console.log(this.state.registeredControls)
-      //this.updateFeaturesByYear();
+      this.updateFeaturesByYearOrLevel();
     })
   }
 
@@ -466,12 +481,25 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       this.setState({
         year : event.data
       }, () => {
-        this.updateFeaturesByYear();
+        this.updateFeaturesByYearOrLevel();
       })
+    } else {
+      //TODO: add possibility for levels too
+      console.log("Yearfiltering is set to false.")
     }
   }
 
-  private updateFeaturesByYear() {
+  private setVectorLevels = (event: Event<any>) => {
+    this.setState({
+      vectorLevels : event.data
+    }, () => {
+      this.updateFeaturesByYearOrLevel();
+    })
+}
+
+
+  private updateFeaturesByYearOrLevel() {
+    console.log("Setting year: " + this.state.year )
     let year = this.state.year;
     let vectorLayers = this.getVectorLayersFromMap();
     console.log(vectorLayers);
@@ -490,7 +518,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           } else {
             feature_eoe = "2999";
           }
-          if(this.dateInclusion(feature_bob, feature_eoe, year)){
+          // Check for level
+          let feature_t = feature.values_.t.value
+          if (!feature.get('t')){
+            feature_t = true;
+          }
+
+          if(this.state.vectorLevels[feature_t].visible && this.dateInclusion(feature_bob, feature_eoe, year)){
             //TODO: fix types
             feature.setStyle(this.createFeatureStyle(feature));
           }

@@ -510,21 +510,44 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       .forEach((feature) => {
         
         try {
-          console.log(feature)
-          let feature_bob = feature.values_.bob.value;
+          // console.log(feature)
           let feature_eoe = "";
+          let feature_eob = "";
+          let feature_boe = "";
+          let feature_bob = "";
+          
+          if (feature.get('bob')){
+            feature_bob = feature.get('bob').value;
+          } else {
+            feature_bob = "1499";
+          }
           if (feature.get('eoe')){
             feature_eoe = feature.get('eoe').value;
           } else {
             feature_eoe = "2999";
           }
+
+          if (feature.get('eob')){
+            feature_eob = feature.get('eob').value;
+          } else {
+            feature_eob = feature.get('bob').value;
+          }
+
+          if (feature.get('boe')){
+            feature_boe = feature.get('boe').value;
+          } else {
+            feature_boe = feature.get('eoe').value;
+          }
+
+
+
           // Check for level
           let feature_t = feature.values_.t.value
           if (!feature.get('t')){
             feature_t = true;
           }
 
-          if(this.state.vectorLevels[feature_t].visible && this.dateInclusion(feature_bob, feature_eoe, year)){
+          if(this.state.vectorLevels[feature_t].visible && this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, year)){
             //TODO: fix types
             feature.setStyle(this.createFeatureStyle(feature));
           }
@@ -534,6 +557,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         }
         catch(ex)
         {
+          console.log("Errore per feature: ");
+          console.log(feature)
           console.log(ex)
           feature.setStyle(this.createHiddenFeatureStyle(feature));
         }
@@ -541,11 +566,13 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       })})
   }
 
-  private dateInclusion(bob, eoe, year){
-    let bob_year = parseInt(bob.split("-")[0]);  
-    let eoe_year = parseInt(eoe.split("-")[0]);
+  private dateInclusion(bob, eob, boe, eoe, year){
+    let bob_year = parseInt(bob);  
+    let eoe_year = parseInt(eoe);
+    let eob_year = parseInt(eob);
+    let boe_year = parseInt(boe);
     year = parseInt(year);
-    return (bob_year <= year && year <= eoe_year);
+    return (eob_year <= year && year <= boe_year);
   }
 
   private triggerUpdateFeatureColorsByGroups = (event: Event<any>) => {
@@ -584,6 +611,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     );
   };
 
+  //TODO: update features layers
   private setFeaturesLabel = (event: Event<any>) => {
     this.setState(
       {
@@ -672,7 +700,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
     vectorLayers.forEach((vectorLayer) => {
       vectorLayer.set('level', 'feature');
       vectorLayer.set('identifier', vectorLayer.ol_uid);
-      vectorLayer.set('name', "Buildings");
+      vectorLayer.set('name', "Builtworks");
       vectorLayer.set('year', "");
       vectorLayer.set('location', "");
       vectorLayer.set('author', "");
@@ -1105,6 +1133,8 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       style: (feature: Feature) => { 
         // TODO SMAP: REMOVE GET BOB, GET EOE
         let feature_eoe = "";
+        let feature_eob = "";
+        let feature_boe = "";
         let feature_bob = "";
         
         if (feature.get('bob')){
@@ -1118,7 +1148,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           feature_eoe = "2999";
         }
         if(this.state.registeredControls.length > 0 && this.state.yearFiltering){
-          if(this.dateInclusion(feature_bob, feature_eoe, this.state.year)){
+          if(this.dateInclusion(feature_bob, feature_eob, feature_boe, feature_eoe, this.state.year)){
             return this.createFeatureStyle(feature)
           } else {
             return this.createHiddenFeatureStyle(feature)

@@ -756,9 +756,11 @@ export class SemanticMapControls extends Component<Props, State> {
           .getSource()
           .getFeatures()
           .forEach((feature) => {
-            let grouping = feature.get(taxonomy).value;
-            if (!groups.includes(grouping)) {
-              groups.push(grouping);
+            if(feature.get(taxonomy)){
+              let grouping = feature.get(taxonomy).value;
+              if (!groups.includes(grouping)) {
+                groups.push(grouping);
+              }
             }
           });
       });

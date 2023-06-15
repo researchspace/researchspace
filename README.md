@@ -28,7 +28,9 @@ The ResearchSpace system has been designed to allow researchers to connect quali
 alt="ResearchSpace Overview" width="640" border="1" /></a>
 
 # Knowledge Base 
-**To Be Added**
+see <a href="https://documentation.researchspace.org/resource/rsp:Start"> ResearchSpace Documentation Site</a>
+also see <a href="https://kartography.org">Kartography CIC</a>
+
 
 # Demo 
 Changing the methods of research in the humanities requires innovation in how we combine the qualitative with the quantitative through collaborative research, expressive structured data, and a human-centered and participatory approach to the ‘knowledge graph’.

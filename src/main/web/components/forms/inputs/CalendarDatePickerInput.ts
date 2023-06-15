@@ -66,6 +66,21 @@ export interface CalendarDatePickerInputState {
   calendar?: DatePickerCalendar;
 }
 
+/**
+ * Form component to select a date in a calendar system.
+ * The date is saved as xsd:date (gregorian calendar).
+ * 
+ * Optional properties:
+ * - mode: type of date picker, values 'day', 'year'
+ * - yearstart: set day to first day of year in year mode
+ * - yearend: set day to last day of year in year mode
+ * - calendar: calendar type, values 'gregorian', 'islamic', 'persian', 'jalali', 'indian', 'julian'
+ * - calendarselector: a calendar select box is presented to the user
+ * 
+ * @example
+ *   <semantic-form-calendardate-input for="date_from" yearstart="true"></semantic-form-calendardate-input>
+ *   <semantic-form-calendardate-input for="date_until" yearend="true"></semantic-form-calendardate-input>
+ */
 export class CalendarDatePickerInput extends AtomicValueInput<CalendarDatePickerInputProps, CalendarDatePickerInputState> {
   constructor(props: CalendarDatePickerInputProps, context: any) {
     super(props, context);

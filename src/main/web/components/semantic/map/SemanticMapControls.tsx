@@ -212,6 +212,7 @@ export class SemanticMapControls extends Component<Props, State> {
       source: this.props.id,
       targets: [this.props.targetMapId],
     })
+    this.triggerSendYearToMap()
   }
 
   private triggerSendYearToMap() {

@@ -466,14 +466,18 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
   }
 
   private registerControls = (event: Event<any>) => {
-    var newRegisteredControls = this.state.registeredControls.concat(event.source);
-    this.setState({
-      registeredControls: newRegisteredControls
-    }, ()=> {
-      console.log("Registered. Now registered Controls are:")
-      console.log(this.state.registeredControls)
-      this.updateFeaturesByYearOrLevel();
-    })
+    if (!this.state.registeredControls.includes(event.source)) {
+      var newRegisteredControls = this.state.registeredControls.concat(event.source);
+      this.setState({
+        registeredControls: newRegisteredControls
+      }, ()=> {
+        console.log("Registered. Now registered Controls are:")
+        console.log(this.state.registeredControls)
+        this.updateFeaturesByYearOrLevel();
+      });
+    } else {
+      console.log(event.source + "Controls is already registered.");
+    }
   }
 
   private setYear = (event: Event<any>) => {
@@ -596,6 +600,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           //console.log("Color: " + this.state.groupColorAssociations[feature.get(this.state.featuresColorTaxonomy).value].hex + " for " + feature.get(this.state.featuresColorTaxonomy).value);
           feature.setStyle();
         })})
+        this.updateFeaturesByYearOrLevel();
     })
 
   }
@@ -607,6 +612,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         featuresColorTaxonomy: event.data,
       },
       () => {
+        this.updateFeaturesByYearOrLevel();
       }
     );
   };
@@ -619,6 +625,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       },
       () => {
         this.updateVectorLayersStyle();
+        this.updateFeaturesByYearOrLevel();
       }
     );
   };

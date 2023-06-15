@@ -12,6 +12,7 @@ Incoming Parameters:
   title -- can be set to "Vocabulary/Project/Bibliography/etc."
 --]]
 
+{{#bind viewId=dashboardId}}
   <div class="page__grid-container">
     
     <div class="page__content-container rs-vocabulary-scheme-content">
@@ -19,8 +20,8 @@ Incoming Parameters:
       <div class="page__main-title-row">
         <h1 class="rs-main-title">[[title]]</h1>
         <div class='page__main-top-actions'>
-          
-          <mp-overlay-dialog id='new-hierarchy-dialog' title="New [[addTitle]]" type="modal" bs-size="large">
+
+          <mp-overlay-dialog id='{{viewId}}-new-hierarchy-dialog' title="New [[addTitle]]" type="modal" bs-size="large">
             <mp-overlay-dialog-trigger>
               <button class="btn btn-grey" title="New [[addTitle]]">
                 <i class="fa fa-plus btn-icon-left"></i>
@@ -28,12 +29,15 @@ Incoming Parameters:
               </button>
             </mp-overlay-dialog-trigger>
             <mp-overlay-dialog-content style="padding: 20px 40px 40px;">
-              [[!-- The code for this inline template is defined in the application page using the rsp:HierarchyManagerTemplate --]]
-              [[#> addNewStructureForm]] [[/addNewStructureForm]]
+              {{#bind viewId=viewId}}
+                [[!-- The code for this inline template is defined in the application page using the rsp:HierarchyManagerTemplate --]]
+                [[#> addNewStructureForm]] [[/addNewStructureForm]]
+              {{/bind}}
             </mp-overlay-dialog-content>
           </mp-overlay-dialog>
 
-          <mp-overlay-dialog title="Import [[addTitle]]" type="modal" bs-size="large">
+          <mp-overlay-dialog id='{{viewId}}-import-authority-dialog'
+          title="Import [[addTitle]]" type="modal" bs-size="large">
             <mp-overlay-dialog-trigger>
               <button class="btn btn-grey" title="Import [[addTitle]]">
                 <i class="fa fa-upload btn-icon-left"></i>
@@ -58,6 +62,18 @@ Incoming Parameters:
               </mp-rdf-upload>
             </mp-overlay-dialog-content>
           </mp-overlay-dialog>
+
+          <mp-event-proxy id='{{viewId}}-authority-import-closeModal-proxy' 
+                          on-event-type='RdfUpload.Success'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{viewId}}-import-authority-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-authority-uploadSuccess-refreshTable-proxy' 
+                          on-event-type='RdfUpload.Success'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{viewId}}-authority-table"]'>
+          ></mp-event-proxy>
 
           <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
                 urlqueryparam-view='authority-entity-configuration'> 
@@ -84,7 +100,32 @@ Incoming Parameters:
       </div>
       
       [[#> exceptionsStructureList]] [[/exceptionsStructureList]]
-      
-      [[#> searchResults]][[/searchResults]]
+
+      <mp-event-proxy id='{{viewId}}-authority-graphActionSuccess-refreshTable-proxy' 
+                      on-event-type='GraphAction.Success'
+                      proxy-event-type='Component.TemplateUpdate'
+                      proxy-targets='["{{viewId}}-authority-table"]'
+      ></mp-event-proxy>
+
+     <mp-event-proxy id='{{viewId}}-newSchemeCreated-refreshTable-proxy'
+                      on-event-source='{{viewId}}-new-scheme-form'
+                      on-event-type='Form.ResourceCreated'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-authority-table"]'>
+      </mp-event-proxy> 
+
+      <mp-event-proxy id='{{viewId}}-newSchemeCreated-closeModal-proxy' 
+                      on-event-source='{{viewId}}-new-scheme-form'
+                      on-event-type='Form.ResourceCreated'
+                      proxy-event-type='OverlayDialog.Close' 
+                      proxy-targets='["{{viewId}}-new-hierarchy-dialog"]'
+      ></mp-event-proxy>
+
+      <mp-event-target-template-render id='{{viewId}}-authority-table' template='{{> template}}'>
+        <template id='template'>
+          [[#> searchResults]][[/searchResults]]
+        </template>
+      </mp-event-target-template-render>
     </div>  
   </div>
+{{/bind}}

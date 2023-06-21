@@ -59,6 +59,7 @@ import * as Validation from './Validation';
 import { FieldEditorLabel } from './FieldEditorLabel';
 
 import './field-editor.scss';
+import { ResourceLinkComponent } from 'platform/api/navigation/components';
 
 const btn = createFactory(ReactBootstrap.Button);
 const bsrow = createFactory(ReactBootstrap.Row);
@@ -238,7 +239,8 @@ class FieldEditorComponent extends Component<Props, State> {
                     title: 'Generate IRI',
                     onClick: (e) => this.generateIRI(),
                   },
-                  D.i({ className: 'fa fa-refresh' })
+                  D.i({ className: 'fa fa-refresh' }),
+                  D.span({ className: '' }, 'Generate IRI')
                 )
           ),
         ]),
@@ -259,17 +261,31 @@ class FieldEditorComponent extends Component<Props, State> {
       row({
         label: 'Categories',
         expanded: true,
-        element: createElement(SemanticTreeInput, {
-          ...this.state.categoryQueries,
-          initialSelection: this.state.categories,
-          multipleSelection: true,
-          onSelectionChanged: (selection) => {
-            const categories = TreeSelection.leafs(selection)
-              .map((node) => node.iri)
-              .toArray();
-            this.updateState({ categories });
-          },
-        } as SemanticTreeInputProps),
+        element: D.div({ className: 'input-group' }, [
+         createElement(SemanticTreeInput, {
+            ...this.state.categoryQueries,
+            initialSelection: this.state.categories,
+            multipleSelection: true,
+            onSelectionChanged: (selection) => {
+              const categories = TreeSelection.leafs(selection)
+                .map((node) => node.iri)
+                .toArray();
+              this.updateState({ categories });
+            },
+          } as SemanticTreeInputProps),
+          createElement(ResourceLinkComponent, {iri: 'http://www.researchspace.org/resource/assets/FieldDefinitionCategory'}, D.div(
+            { className: 'input-group-btn' },
+            D.button(
+              {
+                className: `btn btn-default`,
+                title: 'Categories',
+                style: {display:'flex', alignItems: 'center', gap: '8px'}
+              },
+              D.i({ className: 'fa fa-tag' }),
+              D.span({ className: '' }, 'Categories'),
+            )
+          ))
+        ]),
       }),
       this.renderMultipleValuesInput({
         values: this.state.domain,

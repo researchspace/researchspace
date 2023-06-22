@@ -1,0 +1,52 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "http://www.researchspace.org/resource/system/FieldCategories"}'
+               new-subject-template='http://www.researchspace.org/KPcategory/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  rdfsType="http://www.w3.org/2000/01/rdf-schema#type"
+
+                  inScheme="http://www.w3.org/2004/02/skos/core#inScheme"
+                  prefLabel="http://www.researchspace.org/pattern/vocabulary_manager/skos:prefLabel"
+                  broader="http://www.researchspace.org/pattern/vocabulary_manager/crm:broader"
+                  narrower="http://www.researchspace.org/pattern/vocabulary_manager/crm:narrower"
+
+                  scopeNote="http://www.w3.org/2004/02/skos/core#scopeNote"
+                  
+               ]]'
+>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-value="http://www.w3.org/2004/02/skos/core#Concept"></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="rdfsType" default-value="http://www.researchspace.org/resource/system/fields/category"></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="inScheme" default-value="http://www.researchspace.org/resource/system/FieldCategories"></semantic-form-hidden-input>  
+    
+    <semantic-form-text-input for="prefLabel" label="{{#if entityType}}{{entityType}}{{else}}Category{{/if}} name" placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} name"> </semantic-form-text-input> 
+   
+    <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
+                                    placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
+                                    close-dropdown-on-selection='false'
+                                    default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                    tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/FieldCategories",
+                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/FieldCategories>",
+                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                    "labelPattern": "?item skos:prefLabel ?label ."}'
+    ></semantic-form-tree-picker-input>
+
+    <semantic-form-tree-picker-input for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}category{{/if}}" 
+                                        placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}category{{/if}}"
+                                        close-dropdown-on-selection='false'
+                                    tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/FieldCategories",
+                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/FieldCategories>",
+                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                        "labelPattern": "?item skos:prefLabel ?label ."}'
+    ></semantic-form-tree-picker-input>
+    
+    <semantic-form-text-input for="scopeNote" multiline=true label="Category description/comment" placeholder="Enter {{#if entityType}}{{entityType}}{{else}}category{{/if}} description"> </semantic-form-text-input>
+
+
+  </div>
+  
+  <semantic-form-errors></semantic-form-errors>
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}category{{/if}}']] 
+</semantic-form>

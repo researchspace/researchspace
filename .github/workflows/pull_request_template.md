@@ -1,6 +1,6 @@
 # Why
 
-What is the motive for these changes, to give reviewers some context. 📚
+What is the reason for these changes, to give reviewers some context. 📚
 
 # What
 

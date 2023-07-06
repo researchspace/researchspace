@@ -30,7 +30,7 @@ import {
   ComplexTreePatterns,
   createDefaultTreeQueries,
   LightwightTreePatterns,
-  CustomButton,
+  NewFrameButton,
 } from 'platform/components/semantic/lazy-tree';
 
 import { FieldDefinition, getPreferredLabel, TreeQueriesConfig, SimpleTreeConfig } from '../FieldDefinition';
@@ -79,7 +79,7 @@ export interface TreePickerInputProps extends MultipleValuesProps {
    * Custom button template
    * 
    */
-  customButton?: CustomButton;
+  newFrameButton?: NewFrameButton;
 
 
   /**
@@ -194,7 +194,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   };
 
   private renderTreePicker() {
-    const { openDropdownOnFocus, closeDropdownOnSelection, definition, customButton, queryItemLabel } = this.props;
+    const { openDropdownOnFocus, closeDropdownOnSelection, definition, newFrameButton, queryItemLabel } = this.props;
     const { treeVersionKey, treeQueries, treeSelection } = this.state;
     const { rootsQuery, childrenQuery, parentsQuery, searchQuery } = treeQueries;
 
@@ -238,7 +238,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
             () => this.onTreeSelectionChanged(selectionLeafs)
           );
         }}
-        customButton={customButton}
+        newFrameButton={newFrameButton}
         queryItemLabel={queryItemLabel}
       />
     );

@@ -122,7 +122,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
   /**
    * Creates a custom button with a Semantic-link with the following parameters
    */
-  customButton?: CustomButton;
+  newFrameButton?: NewFrameButton;
 
   /**
    * query to retrieve the item label that will be visualized
@@ -165,7 +165,7 @@ interface SearchResult {
   matchLimit?: number;
 }
 
-export interface CustomButton {
+export interface NewFrameButton {
   iri: string;
   view?: string;
   resource?: string;
@@ -328,7 +328,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       );
     } else {
       let result;
-      if (this.props.customButton) {
+      if (this.props.newFrameButton) {
         result = D.div(
           {
             ref: (holder) => (this.overlayHolder = holder),
@@ -542,7 +542,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   renderOpenNewFrameButton() {
-    const { customButton } = this.props;
+    const { newFrameButton } = this.props;
     return createElement(
       OverlayTrigger,
       {
@@ -552,18 +552,18 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           {
             id: 'SemanticTreeInput__tooltip',
           },
-          customButton.tooltip ? customButton.tooltip : 'Open new frame'
+          newFrameButton.tooltip ? newFrameButton.tooltip : 'Open new frame'
         ),
       },
       createElement(
         ResourceLinkComponent,
         {
-          className: styles.browseButton,
+          className: `${styles.browseButton} btn btn-default`,
           active: this.state.mode.type === 'full',
-          iri: customButton.iri,
-          'urlqueryparam-view': customButton.view ? customButton.view : '',
-          'urlqueryparam-resource': customButton.resource ? customButton.resource : '',
-          'urlqueryparam-mode': customButton.mode ? customButton.mode : '',
+          iri: newFrameButton.iri,
+          'urlqueryparam-view': newFrameButton.view ? newFrameButton.view : '',
+          'urlqueryparam-resource': newFrameButton.resource ? newFrameButton.resource : '',
+          'urlqueryparam-mode': newFrameButton.mode ? newFrameButton.mode : '',
           onClick: () => {
             const modeType = this.state.mode.type;
             if (modeType === 'collapsed' || modeType === 'search') {
@@ -668,6 +668,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           : D.div({ className: styles.dropdown }, this.renderDropdownContent(mode), this.renderDropdownFooter(mode))
       )
     );
+    
   }
 
   private updateForest(

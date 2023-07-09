@@ -32,8 +32,14 @@ uses client-side template:
                                           "label": "Entity Type",
                                           "xsdDatatype": "xsd:anyURI",
                                           "valueSetPattern": "SELECT $value $label WHERE { 
-                                              ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
-                                              ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .
+                                              {
+                                                ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                                                ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label . 
+                                              } 
+                                              UNION {
+                                                ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/default_authority_manager_config_types> .
+                                                ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label . 
+                                              }
                                             }"
                                           }
                                       ]'>
@@ -271,8 +277,14 @@ uses client-side template:
                                                         "insertPattern": "INSERT { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value } WHERE {}",
                                                         "deletePattern": "DELETE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value . } WHERE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value. }",
                                                         "valueSetPattern": "SELECT $value $label WHERE { 
-                                                            ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
-                                                            ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .
+                                                            {
+                                                              ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                                                              ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label . 
+                                                            } 
+                                                            UNION {
+                                                              ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/default_authority_manager_config_types> .
+                                                              ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label . 
+                                                            }
                                                           }"
                                                         }
                                                       ]'

@@ -24,10 +24,10 @@ plugins {
     id 'java-library'
 
     // To run app in the development mode with jetty container
-    id 'org.gretty' version '3.0.6'
+    id 'org.gretty' version '4.0.3'
 
     // To run webpack-dev-server in the background
-    id 'com.github.psxpaul.execfork' version '0.1.13'
+    id 'com.github.psxpaul.execfork' version '0.2.2'
 
     // To generate eclipse project files
     id 'eclipse'
@@ -36,12 +36,11 @@ plugins {
     id "com.dorongold.task-tree" version "1.5"
 }
 
-
 version = findProperty('buildVersion') ?: '4.0-SNAPSHOT'
 
 // currently we use Java 11 for development
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 
 clean {
@@ -82,9 +81,10 @@ war {
 farms {
     farm 'researchspace', {
         // setup blazegraph for local development
-        webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6',
-            contextPath: '/blazegraph',
-            overlays: [':blazegraph-vocabularies']
+        //webapp 'com.blazegraph:blazegraph-war:2.2.0-20160908.003514-6',
+        //webapp 'com.blazegraph:blazegraph-war:2.1.5',
+        //    contextPath: '/blazegraph',
+        //    overlays: [':blazegraph-vocabularies']
 
         // setup digilib for local development
         webapp 'digilib:digilib-webapp:2.9.1',
@@ -135,7 +135,7 @@ def defaultJvmArgs = [
 // configuration for local jetty container
 gretty {
     // see actual jetty version in gradle.properties
-    servletContainer = 'jetty9.4'
+    servletContainer = 'jetty11'
     httpPort = 10214
     contextPath = '/'
 
@@ -153,7 +153,7 @@ gretty {
     fileLogEnabled = false
 
     // use custom jetty-env.xml to disable websocket support
-    contextConfigFile = "${projectDir}/jetty-env.xml"
+    // contextConfigFile = "${projectDir}/jetty-env.xml"
 
     if (project.gradle.startParameter.taskNames.contains('buildZip')) {
         jvmArgs = defaultJvmArgs + [
@@ -245,9 +245,9 @@ project.afterEvaluate {
 
 
     // for some reason overlay explode task that is needed for farm overlays is not added as a dependency
-    tasks.farmRunresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
-    tasks.farmRunDebugresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
-    tasks.buildProductresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
+    // tasks.farmRunresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
+    // tasks.farmRunDebugresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
+    // tasks.buildProductresearchspace.dependsOn tasks['farmOverlayArchiveresearchspaceblazegraph-war-2.2.0-20160908.003514-6.war']
 
     // connect our custom tasks with tasks from gretty
     tasks.debugAll.dependsOn tasks.farmRunDebugresearchspace
@@ -289,7 +289,7 @@ repositories {
 
 ext {
     RDF4J_VERSION = '3.5.1'
-    LOG4J_VERSION = '2.15.0'
+    LOG4J_VERSION = '2.17.0'
     JERSEY_VERSION = '2.30.1'
     JACKSON_VERSION = '2.10.3'
     GUICE_VERSION = '4.2.3'
@@ -313,8 +313,8 @@ dependencies {
         "javax.servlet:javax.servlet-api:3.1.0",
 
         // add jetty as compile dependency so we get sources and javadocs and can debug it locally
-        "org.eclipse.jetty:jetty-server:${jetty94_version}",
-        "org.eclipse.jetty:jetty-servlet:${jetty94_version}"
+        "org.eclipse.jetty:jetty-server:${jetty11Version}",
+        "org.eclipse.jetty:jetty-servlet:${jetty11Version}"
     )
 
     api (

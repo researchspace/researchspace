@@ -281,7 +281,7 @@ public class RESTSailConnection extends AbstractServiceWrappingSailConnection<RE
             }
 
             targetResource = auth(targetResource);
-
+            logger.trace("Submitting GETGET request");
             Invocation.Builder request = targetResource.request();
             return this.addHTTPHeaders(request).get();
         } catch (Exception e) {

@@ -1,0 +1,43 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononline/>
+
+:METCollectionSearchService a ephedra:Service ;    
+    sail:sailType "researchspace:RESTSail" ;
+    rdfs:label "A wrapper for the MET museum API service." ;
+
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject :_results ;
+            sp:predicate :q ;
+            sp:object :_q
+        ]
+        [
+            sp:subject :_results ;
+            sp:predicate :geoLocation ;
+            sp:object :_geoLocation
+        ]
+        [
+           sp:subject :_results ;
+           sp:predicate :objectIDs ;
+           sp:object :_objectIDs
+        ]
+    );
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search term" ;
+        spl:predicate :_q ;
+        spl:valueType xsd:string ;
+        ] ;
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Object IDs" ;
+        spl:predicate :_objectIDs ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.objectIDs.[*]"
+    ] .
+

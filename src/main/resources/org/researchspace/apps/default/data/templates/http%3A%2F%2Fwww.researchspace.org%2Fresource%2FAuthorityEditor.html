@@ -18,51 +18,52 @@ uses client-side template:
     [[#*inline "addNewStructureForm"]]
       <div class="modal-content-form">
         <semantic-search id="scheme-iri-selector">
-                <semantic-search-form-query 
-                                            query-template='{
-                                              "queryString": "SELECT $schemeLabel ?entityTypeURI  { 
-                                                BIND($label as ?schemeLabel).
-                                                BIND(?entitytype as ?entityTypeURI )}",
-                                              "arguments": {
-                                                "label": {"type": "xsd:string"},
-                                                "entitytype":{"type":"xsd:anyURI"}
-                                              }
-                                            }'
+          <semantic-search-form-query 
+                                      query-template='{
+                                        "queryString": "SELECT $schemeLabel ?entityTypeURI  { 
+                                          BIND($label as ?schemeLabel).
+                                          BIND(?entitytype as ?entityTypeURI )}",
+                                        "arguments": {
+                                          "label": {"type": "xsd:string"},
+                                          "entitytype":{"type":"xsd:anyURI"}
+                                        }
+                                      }'
 
-                                            fields='[{"id": "label", "label": "Authority label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
-                                                     {
-                                                      "id": "entitytype",
-                                                      "label": "Authority Type",
-                                                      "xsdDatatype": "xsd:anyURI",
-                                                      "minOccurs": "1",
-                                                      "maxOccurs": "1",
-                                                      "valueSetPattern": "SELECT $value $label WHERE { 
-                                                          ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
-                                                          ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .
-                                                        }"
-                                                      }
-                                                    ]'>
-                  
-                  <semantic-form-text-input for="label" placeholder="Enter new authority label" label="Authority label" ></semantic-form-text-input>   
-              
-              
-                  <div style="overflow: auto; margin-top: 15px;">
-                    <semantic-form-checklist-input for='entitytype' type="checkbox" label="Authority type" ></semantic-form-checklist-input>
-                  </div>
+                                      fields='[{"id": "label", "label": "Authority label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
+                                                {
+                                                "id": "entitytype",
+                                                "label": "Authority Type",
+                                                "xsdDatatype": "xsd:anyURI",
+                                                "minOccurs": "1",
+                                                "maxOccurs": "1",
+                                                "valueSetPattern": "SELECT $value $label WHERE { 
+                                                    ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/authority_manager_config_types> .
+                                                    ?value <http://www.researchspace.org/resource/system/authority_manager/item_label> ?label .
+                                                  }"
+                                                }
+                                              ]'>
+            
+            <semantic-form-text-input for="label" placeholder="Enter new authority label" label="Authority label" ></semantic-form-text-input>   
+        
+            <div style="overflow: auto; margin-top: 15px;">
+              <semantic-form-checklist-input for='entitytype' type="checkbox" label="Authority type" ></semantic-form-checklist-input>
+            </div>
 
-                  <semantic-form-errors></semantic-form-errors>
-                  
-                  <div class="btn-group">
-                    <div class="btn-form-actions">
-                      <button type='button' name='submit' className='btn btn-action'>Create authority</button>
-                    </div>
-                  </div>
-                  
-                </semantic-search-form-query>
-                <semantic-search-result-holder>
+            <semantic-form-errors></semantic-form-errors>
+            
+            <div class="btn-group">
+              <div class="btn-form-actions">
+                <button type='button' name='submit' className='btn btn-action'>Create authority</button>
+              </div>
+            </div>
+            
+          </semantic-search-form-query>
+
+          <semantic-search-result-holder>
                   <semantic-search-result>
                     <semantic-query id='new-scheme-form' query='
-                                      SELECT ?schemeLabel ?scheme ?entityType ?exists WHERE {
+                                      SELECT ?schemeLabel ?scheme ?entityType ?exists ?viewId WHERE {
+                                        BIND("{{viewId}}" as ?viewId)
                                         BIND(IRI(CONCAT(STR(Default:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?schemeLabel), "\\s", "_")))) AS ?scheme) .
                                         BIND(?entityTypeURI as ?entityType)
                                         OPTIONAL {
@@ -82,11 +83,12 @@ uses client-side template:
                     {{#if bindings.0.exists}}
                       <div>Authority with label &nbsp;<b>{{bindings.0.schemeLabel.value}}{{bindings.0.entityType.value}} </b>&nbsp; and IRI &nbsp;<b>{{bindings.0.scheme.value}}</b> <br> already exists!</div> 
                     {{else}}
-                      <div>Are you sure you want to create new authority with IRI: <b>{{bindings.0.scheme.value}}</b> ?</div>                       
-                      <semantic-form id='new-scheme-form' 
+                      <div>Are you sure you want to create new authority with IRI: <b>{{bindings.0.scheme.value}}</b> ?</div>   
+                      
+                      <semantic-form id='{{bindings.0.viewId.value}}-new-scheme-form' 
                                     persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.scheme.value}}"}'
                                     new-subject-template='{{bindings.0.scheme.value}}'
-                                    post-action="redirect"
+                                    post-action="event"
                                     fields='[[
                                       fieldDefinitions
                                         prefLabel="http://www.w3.org/2004/02/skos/core#prefLabel"
@@ -101,18 +103,22 @@ uses client-side template:
                         <semantic-form-hidden-input for="rdfsLabel" default-value='{{bindings.0.schemeLabel.value}}'></semantic-form-hidden-input>                       
                         <semantic-form-errors></semantic-form-errors>
                         <!-- save and reset button for form -->
-                        <mp-event-trigger id='cancel-new-authority-trigger' type='OverlayDialog.Close' targets='["new-hierarchy-dialog"]'>
+                        <mp-event-trigger id='{{bindings.0.viewId.value}}-cancel-new-authority-trigger' 
+                                          type='OverlayDialog.Close' 
+                                          targets='["{{bindings.0.viewId.value}}-new-hierarchy-dialog"]'>
                           <button name="cancel" class="btn btn-default" style="margin-right: 5px;">Cancel</button>
                         </mp-event-trigger>
+
                         <button name="submit" class="btn btn-action">Confirm</button>
+
                       </semantic-form>
                     {{/if}}
                   </div>
-                  
                 </template>
               </semantic-query>
             </semantic-search-result>
           </semantic-search-result-holder>
+
         </semantic-search>
       </div>
     [[/inline]]
@@ -272,7 +278,6 @@ uses client-side template:
                                             <semantic-form-text-input for="rdfsLabel"> </semantic-form-text-input>
                                             <semantic-form-text-input for="prefLabel"> </semantic-form-text-input>
 
-
                                             <semantic-form-errors></semantic-form-errors>
 
                                             <button name="reset" class="btn btn-default">Reset</button>
@@ -329,7 +334,7 @@ uses client-side template:
                                     </button>
                                   </mp-graph-store-action>
                              
-                                  <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{scheme.value}}">
+                                  <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{scheme.value}}" graph-description="{{schemeLabel.value}}">
                                     <button class="btn btn-icon" title="Delete">
                                       <i class="material-icons-round">delete</i>
                                     </button>

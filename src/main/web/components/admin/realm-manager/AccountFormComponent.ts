@@ -209,11 +209,11 @@ class AccountFormComponent extends Component<Props, State> {
           },
           FormGroup(
             { controlId: 'principal' },
-            ControlLabel({}, 'Username'),
+            ControlLabel({}, 'Email'),
             Input({
-              name: 'user',
+              name: 'principal',
               type: 'text',
-              placeholder: 'Unique username',
+              placeholder: 'Enter email',
               disabled: !create,
               value: this.state.principal,
               onChange: this.onChangeAccount,

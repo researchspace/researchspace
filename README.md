@@ -28,7 +28,9 @@ The ResearchSpace system has been designed to allow researchers to connect quali
 alt="ResearchSpace Overview" width="640" border="1" /></a>
 
 # Knowledge Base 
-**To Be Added**
+see <a href="https://documentation.researchspace.org/resource/rsp:Start"> ResearchSpace Documentation Site</a>
+also see <a href="https://kartography.org">Kartography CIC</a>
+
 
 # Demo 
 Changing the methods of research in the humanities requires innovation in how we combine the qualitative with the quantitative through collaborative research, expressive structured data, and a human-centered and participatory approach to the ‘knowledge graph’.
@@ -199,9 +201,20 @@ You should see console output similar to:
 21:24:49 INFO  digilib runs at:
 21:24:49 INFO    http://localhost:10214/digilib
 ```
+*********************************************************************************************************************************************
+**********************************************************************************************************************************************
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+
 
 On the first run you need to import set of default ontologies and knowledge patterns for CIDOC-CRM, see [instance configuration repository](https://github.com/researchspace/researchspace-instance-configurations)
 
+You need to go to settings, LDP , An then ontology container and import 
+
+******************************************************************************************************************************************
+********************************************************************************************************************************************
 ### Run ResearchSpace with your own triplestore and IIIF server
 
 Adjust `sparqlEndpoint`, `iiifScaler` and `imageStorageRoot` properties in the `gradle.properties`.

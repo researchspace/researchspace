@@ -43,6 +43,9 @@ import { TemplateItem } from 'platform/components/ui/template';
 
 import { RdfUploadExtension } from './extensions';
 
+import * as RdfUploadEvents from './RdfUploadEvents';
+import { trigger } from 'platform/api/events';
+
 import './RdfUpload.scss';
 
 interface State {
@@ -61,7 +64,7 @@ export interface Props {
   style?: CSSProperties;
 
   contentType?: string;
-
+  targetGraph?: string;
   /**
    * Specifies files that can be accepted for upload.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#Unique_file_type_specifiers
@@ -147,15 +150,22 @@ export class RdfUpload extends Component<Props, State> {
       messages: [],
       progress: maybe.Nothing<number>(),
     });
-
+    
     const uploads = files.map((file: File, fileNumber: number) => {
       const contentType = _.isEmpty(this.props.contentType)
         ? SparqlUtil.getMimeType(SparqlUtil.getFileEnding(file))
         : this.props.contentType;
-      const targetGraph = this.state.targetGraph.isJust
-        ? this.state.targetGraph.get()
-        : `file://${file.name}-${createTimestamp()}`;
-
+      
+      let targetGraph;
+      if (this.state.targetGraph.isJust) {
+        targetGraph = this.state.targetGraph.get()
+      } else {
+        if (this.props.targetGraph) {
+          targetGraph = this.props.targetGraph;
+        } else {
+          targetGraph = `file://${file.name}-${createTimestamp()}`;
+        }
+      }
       const upload = RDFGraphStoreService.createGraphFromFile({
         targetGraph: Rdf.iri(encodeURI(targetGraph)),
         keepSourceGraphs: this.state.keepSourceGraphs,
@@ -180,7 +190,29 @@ export class RdfUpload extends Component<Props, State> {
     });
 
     this.cancellation.map(Kefir.combine(uploads)).observe({
-      value: () => setTimeout(() => refresh(), 2000),
+      value: (v) => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+        // FIRE EVENT
+        trigger({
+          eventType: RdfUploadEvents.RdfUploadSuccess,
+          source: Math.random().toString()
+        });
+      },
+      error: () => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+      },
+      end: () => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+      }
     });
   };
 
@@ -243,10 +275,10 @@ export class RdfUpload extends Component<Props, State> {
     const fileUploadTab = (
       <React.Fragment>
         {progressBar}
-        <div className={noteClass}>
+        {/* <div className={noteClass}>
           RDF files can be uploaded using the drag&amp;drop field below. Clicking into the field will open the
           browser's default file selector.
-        </div>
+        </div> */}
         <Dropzone onDropAccepted={this.onDropAccepted} accept={this.props.accept}>
           {(options) => <TemplateItem template={{source: this.props.dropAreaTemplate, options}} />}
         </Dropzone>

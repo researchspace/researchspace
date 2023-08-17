@@ -43,75 +43,97 @@
 
         <h1 style="margin-top: 30px;">Data Export &amp; Deletion</h1>
         <hr style="margin-top:0px;" />
-        <semantic-query
-          query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
-          template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <bs-alert bs-style="info"> The repository contains <strong>{{number.value}}</strong> distinct named graphs.</bs-alert> {{/ifCond}}{{/each}}'>
-        </semantic-query>
-        <semantic-table query='
-            SELECT ?graph WHERE {
-                {
-                  SELECT DISTINCT ?graph WHERE {
-                    { GRAPH ?graph { ?subject ?predicate ?object. } }
-                  } LIMIT 1000
-                }
-            }
-        ' column-configuration='[
-          {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
-          {"displayName":"Triples", "cellTemplate":"{{> count}}"}
-          [[#if (hasPermission "sparql:graphstore:get")]]
-            ,{"displayName":"Export", "cellTemplate": "{{> export}}" }
-          [[/if]]
-          [[#if (hasPermission "sparql:graphstore:delete")]]
-            ,{"displayName":"Delete", "cellTemplate": "{{> delete}}" }
-          [[/if]]
-        ]'>
-          <template id='link'>
-            <semantic-link iri="[[resolvePrefix "Admin:NamedGraphs"]]" urlqueryparam-graph="{{graph.value}}">
-              {{graph.value}}</semantic-link>
-          </template>
-          <template id='delete'>
-            <mp-graph-store-action title="Delete" action="DELETE" graphuri="{{graph.value}}"><i
-                class="fa fa-trash-o"></i>
-            </mp-graph-store-action>
-          </template>
-          <template id='count'>
-            <semantic-query query='
-              SELECT ?size WHERE {
-                {
-                  SELECT (COUNT(*) as ?number) WHERE {
-                    GRAPH <{{graph.value}}> { { SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000 } }
-                  } LIMIT 1
-                }
-                BIND(IF(?number>=1000, &apos;>=1000&apos;, ?number) as ?size)
-              }
-            '></semantic-query>
-          </template>
-          <template id='export'>
-            <bs-dropdown-button id="download" bs-size="xsmall" title="" class="mp-rdf-graph-action__download-dropdown"
-              no-caret="true">
-              <bs-menu-item event-key=1>
-                <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig"
-                  class="mp-rdf-graph-action__download-dropdown-item">TRIG</mp-graph-store-action>
-              </bs-menu-item>
-              <bs-menu-item event-key=2>
-                <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl"
-                  class="mp-rdf-graph-action__download-dropdown-item">TURTLE</mp-graph-store-action>
-              </bs-menu-item>
-              <bs-menu-item event-key=3>
-                <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt"
-                  class="mp-rdf-graph-action__download-dropdown-item">NTRIPLES</mp-graph-store-action>
-              </bs-menu-item>
-              <bs-menu-item event-key=4>
-                <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf"
-                  class="mp-rdf-graph-action__download-dropdown-item">RDF/XML</mp-graph-store-action>
-              </bs-menu-item>
-              <bs-menu-item event-key=4>
-                <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl"
-                  class="mp-rdf-graph-action__download-dropdown-item">OWL</mp-graph-store-action>
-              </bs-menu-item>
-            </bs-dropdown-button>
-          </template>
-        </semantic-table>
+
+        <mp-event-proxy id='{{viewId}}-dataImport-upload-success-proxy' 
+                        on-event-type='RdfUpload.Success'
+                        proxy-event-type='Component.Refresh' 
+                        proxy-targets='["{{viewId}}-data-export-table"]'
+        ></mp-event-proxy>
+
+        <mp-event-proxy id='{{viewId}}-dataImport-graph-action-success-proxy' 
+                        on-event-type='GraphAction.Success'
+                        proxy-event-type='Component.Refresh'
+                        proxy-targets='["{{viewId}}-data-export-table"]'
+        ></mp-event-proxy>
+
+        <mp-event-target-refresh id='{{viewId}}-data-export-table'>
+          <div>
+            <semantic-query
+              query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
+              template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <bs-alert bs-style="info"> The repository contains <strong>{{number.value}}</strong> distinct named graphs.</bs-alert> {{/ifCond}}{{/each}}'>
+            </semantic-query>
+            
+            <semantic-table query='SELECT ?graph WHERE {
+                                      {
+                                        SELECT DISTINCT ?graph WHERE {
+                                          { GRAPH ?graph { ?subject ?predicate ?object. } }
+                                        } LIMIT 1000
+                                      }
+                                  }' 
+                            column-configuration='[
+                                {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
+                                {"displayName":"Triples", "cellTemplate":"{{> count}}"}
+                                [[#if (hasPermission "sparql:graphstore:get")]]
+                                  ,{"displayName":"Export", "cellTemplate": "{{> export}}" }
+                                [[/if]]
+                                [[#if (hasPermission "sparql:graphstore:delete")]]
+                                  ,{"displayName":"Delete", "cellTemplate": "{{> delete}}" }
+                                [[/if]]
+                              ]'>
+
+              <template id='link'>
+                <semantic-link iri='[[resolvePrefix "Admin:NamedGraphs"]]' urlqueryparam-graph="{{graph.value}}">
+                  {{graph.value}}</semantic-link>
+              </template>
+
+              <template id='delete'>
+                <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}"><i
+                    class="fa fa-trash-o"></i>
+                </mp-graph-store-action>
+              </template>
+
+              <template id='count'>
+                <semantic-query query='
+                  SELECT ?size WHERE {
+                    {
+                      SELECT (COUNT(*) as ?number) WHERE {
+                        GRAPH <{{graph.value}}> { { SELECT * WHERE{ ?s ?p ?o}  LIMIT 1000 } }
+                      } LIMIT 1
+                    }
+                    BIND(IF(?number>=1000, &apos;>=1000&apos;, ?number) as ?size)
+                  }
+                '></semantic-query>
+              </template>
+
+              <template id='export'>
+                <bs-dropdown-button id="download" bs-size="xsmall" title="" class="mp-rdf-graph-action__download-dropdown"
+                  no-caret="true">
+                  <bs-menu-item event-key=1>
+                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig"
+                      class="mp-rdf-graph-action__download-dropdown-item">TRIG</mp-graph-store-action>
+                  </bs-menu-item>
+                  <bs-menu-item event-key=2>
+                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl"
+                      class="mp-rdf-graph-action__download-dropdown-item">TURTLE</mp-graph-store-action>
+                  </bs-menu-item>
+                  <bs-menu-item event-key=3>
+                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt"
+                      class="mp-rdf-graph-action__download-dropdown-item">NTRIPLES</mp-graph-store-action>
+                  </bs-menu-item>
+                  <bs-menu-item event-key=4>
+                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf"
+                      class="mp-rdf-graph-action__download-dropdown-item">RDF/XML</mp-graph-store-action>
+                  </bs-menu-item>
+                  <bs-menu-item event-key=4>
+                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl"
+                      class="mp-rdf-graph-action__download-dropdown-item">OWL</mp-graph-store-action>
+                  </bs-menu-item>
+                </bs-dropdown-button>
+              </template>
+
+            </semantic-table>
+          </div>
+        </mp-event-target-refresh>
       </bs-col>
     </bs-row> <!--  close row -->
   </div>

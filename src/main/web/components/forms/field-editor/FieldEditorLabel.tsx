@@ -21,6 +21,7 @@ import { FormGroup, InputGroup, FormControl, Button, Row, Col } from 'react-boot
 import ReactSelect from 'react-select';
 
 import { LocalizedValue } from './FieldEditorState';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface Props {
   label: LocalizedValue;

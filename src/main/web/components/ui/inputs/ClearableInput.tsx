@@ -21,6 +21,7 @@ import { InputHTMLAttributes, CSSProperties, Children } from 'react';
 import * as classnames from 'classnames';
 
 import './clearable-input.scss';
+import Icon from '../icon/Icon';
 
 export interface ClearableInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
@@ -68,7 +69,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
         <div className={`${CLASS_NAME}__input-with-clear`}>
           {showPlaceholderIcon && 
             <div className={`${CLASS_NAME}__icon`}>
-              <i className="material-icons-round">search</i>
+              <Icon iconType='round' iconName='search'/>
             </div>
           }
           <input
@@ -82,7 +83,7 @@ export class ClearableInput extends React.Component<ClearableInputProps, State> 
             onBlur={this.onBlur}
           />
           <div className={`${CLASS_NAME}__clear`} title={clearTitle} onClick={onClear}>
-            <i className="material-icons-round" aria-hidden="true">close</i>
+            <Icon iconType='round' iconName='close'/>
           </div>
         </div>
       </div>

@@ -35,6 +35,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { InlineValuesEditor, ConfigRecord } from './InlineValuesEditor';
 
 import * as styles from './ConfigManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ConfigManagerProps {
   group?: string;
@@ -157,7 +158,8 @@ export class ConfigManager extends Component<ConfigManagerProps, State> {
                     disabled={!editable || savingProperty}
                     onClick={() => setEditedProperty(record.name)}
                   >
-                    <span className="fa fa-pencil" /> Edit
+                    <Icon iconType='round' iconName='edit' />
+                    Edit
                   </Button>
                 </div>
               )}

@@ -27,6 +27,7 @@ import {
 } from './EditorSchema';
 import { ResourceTemplateConfig } from './Config';
 import * as styles from './TextEditor.scss';
+import Icon from '../ui/icon/Icon';
 
 export const BLOCK_TO_ICON: { [block in Block]: string } = {
   [Block.empty]: 'fa-font',
@@ -90,7 +91,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     const iconName = `${MARK_TO_ICON[markType]}`;
     return <Button active={isActive} disabled={this.isTextSelectionActionDisabled()} className='btn-default-icon'
       onMouseDown={event => this.onMarkClick(event, markType)}>
-      <i className={'material-icons-round'} aria-hidden={true}>{iconName}</i>
+      <Icon iconType='round' iconName={iconName}/>
     </Button>;
   }
 
@@ -104,7 +105,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     const iconName = `${TEXT_ALIGNMENT_TO_ICON[alignment]}`;
     return <Button active={isActive} disabled={!isTextBlock(this.props.anchorBlock)} className='btn-default-icon'
       onMouseDown={event => this.onAlignClick(event, alignment)}>
-      <i className={'material-icons-round'} aria-hidden={true}>{iconName}</i>
+      <Icon iconType='round' iconName={iconName}/>
     </Button>;
   }
 
@@ -252,14 +253,17 @@ export class Toolbar extends React.Component<ToolbarProps> {
 
           <Dropdown id='links' disabled={this.isTextSelectionActionDisabled()}>
             <Dropdown.Toggle>
-            <i className="material-icons-round icon-left">add_link</i>Links
+              <Icon iconType='round' iconName='add_link' className='icon-left'/>
+              Links
             </Dropdown.Toggle>
             <Dropdown.Menu>
             <MenuItem href="#" onMouseDown={this.onInternalLinkClick}>
-              <i className="material-icons-round icon-left">insert_link</i>Resource link
+              <Icon iconType='round' iconName='insert_link' className='icon-left'/>
+              Resource link
             </MenuItem>
             <MenuItem href="#" onMouseDown={this.onExternalLinkClick}>
-              <i className="material-icons-round icon-left">public</i>External link
+              <Icon iconType='round' iconName='public' className='icon-left'/>
+              External link
             </MenuItem>
               
             </Dropdown.Menu>

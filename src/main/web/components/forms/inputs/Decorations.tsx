@@ -29,6 +29,7 @@ import { Spinner } from 'platform/components/ui/spinner';
 import { getPreferredLabel } from '../FieldDefinition';
 import { DataState, FieldError } from '../FieldValues';
 import { MultipleValuesProps } from './MultipleValuesInput';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ValidationMessagesProps {
   errors: Immutable.List<FieldError>;
@@ -99,7 +100,7 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
             overlay={<Popover id="tooltip">{definition.description}</Popover>}
           >
             <span className={`${DECORATOR_CLASS}__description-icon`}>
-              <i className="material-icons-round">question_mark</i>
+              <Icon iconType='round' iconName='question_mark'/>
             </span>
           </OverlayTrigger>
         ) : null} */}
@@ -119,7 +120,7 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
             overlay={<Popover id="tooltip">{definition.description}</Popover>}
           >
             <div className={`${DECORATOR_CLASS}__description-icon icon-container icon-container-default btn-input-inline`}>
-              <i className="material-icons-round">question_mark</i>
+              <Icon iconType='round' iconName='question_mark'/>
             </div>
       </OverlayTrigger>
     );

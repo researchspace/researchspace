@@ -39,6 +39,7 @@ import { EmptyValue, CompositeValue, AtomicValue, FieldValue, ErrorKind } from '
 import FileVisualizer from './FileVisualizer';
 
 import * as styles from './FileManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface FileInputConfig {
   /** Target storage ID. */
@@ -223,8 +224,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
               namePredicateIri={this.props.namePredicateIri}
               mediaTypePredicateIri={this.props.mediaTypePredicateIri}
             ></FileVisualizer>
-            
-            <span className={`${styles.caRemoveFile} material-icons-round`} onClick={this.removeFile}>close</span>
+            <Icon iconType='round' iconName='close' onClick={this.removeFile} className={`${styles.caRemoveFile}`}/>
           </div>
         ) : (
           this.renderBody()

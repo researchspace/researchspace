@@ -25,6 +25,7 @@ import { SparqlUtil, QueryContext } from 'platform/api/sparql';
 import { getLabel } from 'platform/api/services/resource-label';
 
 import { CopyToClipboardComponent } from 'platform/components/copy-to-clipboard';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface RdfValueDisplayProps {
   data: Rdf.Node;
@@ -120,7 +121,7 @@ function renderRdfNode(props: RdfValueDisplayProps, label: string | undefined): 
         {resourceLink}
         <CopyToClipboardComponent text={data.value}>
           <button className="btn btn-link btn-xs" title="Copy IRI">
-            <span className="material-icons-round text-muted">content_copy</span>
+            <Icon iconType='round' iconName='content_copy' className='text-muted'/>
           </button>
         </CopyToClipboardComponent>
       </span>

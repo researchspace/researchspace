@@ -31,6 +31,7 @@ import {
 } from './SingleValueInput';
 import { createDropAskQueryForField } from '../ValidationHelpers';
 import { ValidationMessages } from './Decorations';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface AutocompleteInputProps extends AtomicValueInputProps {
   template?: string;
@@ -150,7 +151,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         />
         {showCreateNewButton ? (
           <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={this.toggleNestedForm}>
-            {value === undefined ? <i className="material-icons-round">add_box</i> : null}
+            {value === undefined ? <Icon iconType='round' iconName='add_box'/> : null}
             {value === undefined ? <span> Create new</span> : <span>Edit</span>}
           </Button>
         ) : null}

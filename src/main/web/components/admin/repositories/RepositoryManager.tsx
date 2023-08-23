@@ -31,6 +31,7 @@ import * as styles from './RepositoryManager.scss';
 
 import { RepositoryConfigEditor } from './RepositoryConfigEditor';
 import { ErrorNotification, addNotification } from 'platform/components/ui/notification';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface State {
   readonly repositories?: Immutable.Map<string, boolean>;
@@ -85,7 +86,7 @@ export class RepositoryManager extends Component<{}, State> {
               className={styles.RepositoryButton}
               onClick={() => this.setState({ repositoryToEdit: undefined })}
             >
-              <i className='material-icons-round'>add_box</i>
+              <Icon iconType='round' iconName='add_box' />
               New repository
             </Button>
           )}

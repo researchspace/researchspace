@@ -48,6 +48,7 @@ import { ItemsView, EditableLabel } from './views/SetsAndItems';
 import { ReorderingProps, ReorderItemsButton, ReorderConfirmation, ItemViewModeSwitch } from './views/Toolbar';
 
 import { CLASS_NAME } from './SetManagement';
+import Icon from '../ui/icon/Icon';
 
 export interface SingleSetProps extends SetManagementProps {
   /**
@@ -223,7 +224,7 @@ export class SingleSet extends Component<Props, ViewState> {
     return (
       <div className={`${CLASS_NAME}__single-set-caption`}>
         <div className={`${CLASS_NAME}__single-set-icon`}>
-          <i className="material-icons-round">folder_open</i>
+          <Icon iconType='round' iconName='folder_open'/>
         </div>
         {isEditing ? (
           <EditableLabel
@@ -241,7 +242,7 @@ export class SingleSet extends Component<Props, ViewState> {
             className={`${CLASS_NAME}__single-set-rename-button`}
             onClick={() => this.model.startRenamingSet(set.iri)}
           >
-            <span className="fa fa-pencil" />
+            <Icon iconType='round' iconName='edit' />
           </button>
         ) : null}
       </div>

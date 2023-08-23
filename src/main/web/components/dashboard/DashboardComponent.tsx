@@ -37,6 +37,7 @@ import { Rdf } from 'platform/api/rdf';
 const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
 import * as LabelsService from 'platform/api/services/resource-label';
 import * as Kefir from 'kefir';
+import Icon from '../ui/icon/Icon';
 
 export interface Item {
   readonly id: string;
@@ -401,7 +402,7 @@ export class DashboardComponent extends Component<Props, State> {
             className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
             onClick={() => this.onRemoveItem(item)}
           >
-            <i className="material-icons-round">close</i>
+            <Icon iconType='round' iconName='close'/>
           </button>
         </span>
       );
@@ -414,7 +415,7 @@ export class DashboardComponent extends Component<Props, State> {
           className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
           onClick={() => this.onRemoveItem(item)}
         >
-          <i className="material-icons-round">close</i>
+          <Icon iconType='round' iconName='close'/>
         </button>
       </span>
     );
@@ -616,7 +617,7 @@ export class DashboardComponent extends Component<Props, State> {
         onClick={(event) => {
           this.onAddNewItem();
         }}>
-        <i className="material-icons-round">add</i>
+        <Icon iconType='round' iconName='add'/>
       </button>
     );
   }
@@ -630,10 +631,10 @@ export class DashboardComponent extends Component<Props, State> {
         onRenderTabSet={this.onRenderTabSet}
         icons={
           {
-            'close': <i className="material-icons-round">close</i>,
-            'maximize': <i className="material-icons-round">fullscreen</i>,
-            'restore': <i className="material-icons-round">close_fullscreen</i>,
-            'more': <i className="material-icons-round">arrow_drop_down</i>,
+            'close': <Icon iconType='round' iconName='close'/>,
+            'maximize': <Icon iconType='round' iconName='fullscreen'/>,
+            'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
+            'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
             
 /*          'close': <i className="fa fa-times"></i>,
             'maximize': <i className="fa fa-expand"></i>,

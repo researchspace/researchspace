@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { WorkspaceLanguage } from './workspace';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ToolbarProps {
   canSaveDiagram?: boolean;
@@ -105,7 +106,7 @@ export class DefaultToolbar extends React.Component<ToolbarProps, {}> {
               title="Clear All"
               onClick={this.props.onClearAll}
             >
-              <span className="fa fa-trash" aria-hidden="true" />
+              <Icon iconType='round' iconName='layers_clear'/>
               &nbsp;Clear All
             </button>
           ) : null}

@@ -28,6 +28,7 @@ import { Permissions } from 'platform/api/services/security';
 import { HasPermission } from 'platform/components/security/HasPermission';
 
 import * as styles from './Toolbar.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 export const ToolbarStyles = styles;
 
 export interface ToolbarProps extends BaseProps {
@@ -142,7 +143,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         <Dropdown.Toggle bsStyle='' className="btn btn-action" />
         <Dropdown.Menu >
           <MenuItem href="#" onClick={onPersistChangesAndSaveDiagram}>
-            <i className="material-icons-round icon-left">save</i>
+            <Icon iconType='round' iconName='save' className='icon-left' />
             {persistChangesLabel} and map
           </MenuItem>
         </Dropdown.Menu>
@@ -167,8 +168,8 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
                     onClick={onSaveDiagram}
                     bsStyle='action btn-split'>
         <MenuItem href="#" onClick={onSaveDiagramAs}>
-          <i className="material-icons-round icon-left">save</i>
-            {saveDiagramLabel} as...
+          <Icon iconType='round' iconName='save' className='icon-left' />
+          {saveDiagramLabel} as...
         </MenuItem>
       </SplitButton>
 
@@ -221,11 +222,11 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
         <ButtonGroup className={styles.groupButtons}>
 
             <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomIn}>
-              <i className="material-icons-round">add_circle_outline</i>
+              <Icon iconType='round' iconName='add_circle_outline'/>
             </Button>
 
             <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomOut}>
-              <i className="material-icons-round">remove_circle_outline</i>
+              <Icon iconType='round' iconName='remove_circle_outline'/>
             </Button>
 
             <OverlayTrigger
@@ -234,7 +235,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               overlay={<Popover id="tooltip">Fit to screen</Popover>}
             >
               <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onZoomToFit}>
-                <i className="material-icons-round">zoom_out_map</i>
+                <Icon iconType='round' iconName='zoom_out_map'/>
               </Button>
             </OverlayTrigger>
 
@@ -244,7 +245,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               overlay={<Popover id="tooltip">Force layout</Popover>}
             >
               <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onForceLayout}>
-                <i className="material-icons-round">auto_awesome_mosaic</i>
+                <Icon iconType='round' iconName='auto_awesome_mosaic'/>
               </Button>
             </OverlayTrigger>
 
@@ -255,7 +256,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               overlay={<Popover id="tooltip">Clear All</Popover>}
               >
               <Button onClick={this.props.onClearAll} bsStyle='' className="btn-icon btn-textAndIcon">
-                <i className="material-icons-round">delete</i>
+                <Icon iconType='round' iconName='delete'/>
               </Button>
             </OverlayTrigger>
             ) : null}
@@ -266,21 +267,21 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
 
         <div className={styles.buttonsContainer}>
          <Button bsStyle='' className="btn-icon btn-textAndIcon" onClick={this.props.onPrint}>
-            <i className="material-icons-round">print</i>
+            <Icon iconType='round' iconName='print'/>
           </Button>
 
           <Dropdown id="export-diagram-button">
 
             <Dropdown.Toggle bsStyle='' className="btn-textAndIcon btn-icon" style={{marginRight: 20}}>
-              <i className="material-icons-round">download</i>
+              <Icon iconType='round' iconName='download'/>
             </Dropdown.Toggle>
             <Dropdown.Menu>
               <MenuItem href="#" title="Export map as PNG" onClick={this.onExportPng}>
-                <i className="material-icons-round icon-left">image</i>
+                <Icon iconType='round' iconName='image' className='icon-left' />
                 Export as PNG
               </MenuItem>
               <MenuItem href="#" title="Export map as SVG" onClick={this.onExportSvg}>
-                <i className="material-icons-round icon-left">image</i>
+                <Icon iconType='round' iconName='image' className='icon-left' />
                 Export as SVG
               </MenuItem>
             </Dropdown.Menu>

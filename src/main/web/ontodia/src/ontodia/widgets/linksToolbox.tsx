@@ -12,6 +12,7 @@ import { Debouncer } from '../viewUtils/async';
 import { EventObserver } from '../viewUtils/events';
 import { highlightSubstring } from '../widgets/listElementView';
 import { ProgressBar, ProgressState } from '../widgets/progressBar';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface LinkInToolBoxProps {
   view: DiagramView;
@@ -76,7 +77,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
               title="Hide links and labels"
               onClick={() => this.changeState('invisible')}
             >
-              <i className="material-icons-round" aria-hidden="true">hide_source</i>
+              <Icon iconType='round' iconName='hide_source' />
             </button>
             <button
               className={'btn btn-default btn-default-icon' + (this.isChecked('withoutLabels') ? ' active' : '')}
@@ -84,7 +85,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
               title="Show links without labels"
               onClick={() => this.changeState('withoutLabels')}
             >
-              <i className="material-icons-round" aria-hidden="true">keyboard_return</i>
+              <Icon iconType='round' iconName='keyboard_return' />
             </button>
             <button
               className={'btn btn-default btn-default-icon' + (this.isChecked('allVisible') ? ' active' : '')}
@@ -92,7 +93,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
               title="Show links with labels"
               onClick={() => this.changeState('allVisible')}
             >
-              <i className="material-icons-round" aria-hidden="true">text_rotation_none</i>
+              <Icon iconType='round' iconName='text_rotation_none' />
             </button>
           </span>
           <span className="link-title">{this.getText()}</span>
@@ -101,7 +102,7 @@ class LinkInToolBox extends React.Component<LinkInToolBoxProps, {}> {
         <div>
           <span>{badgeContainer}</span>
           <span className="linkInToolBox__filter-button" onClick={this.onPressFilter} >
-            <i className="material-icons-round" aria-hidden="true">filter_alt</i>
+            <Icon iconType='round' iconName='filter_alt' />
           </span>
         </div>
         
@@ -191,7 +192,7 @@ class LinkTypesToolboxView extends React.Component<LinkTypesToolboxViewProps, { 
     if (this.state.filterKey) {
       dropButton = (
         <button type="button" className={`${className}__clearSearch`} onClick={this.onDropFilter}>
-          <span className="material-icons-round" aria-hidden="true">close</span>
+          <Icon iconType='round' iconName='close' />
         </button>
       );
     }
@@ -215,21 +216,21 @@ class LinkTypesToolboxView extends React.Component<LinkTypesToolboxViewProps, { 
                 title="Hide links and labels"
                 onClick={() => changeLinkTypeState(history, 'invisible', links)}
               >
-                <i className="material-icons-round" aria-hidden="true">hide_source</i>
+                <Icon iconType='round' iconName='hide_source' />
               </button>
               <button
                 className="btn btn-default btn-default-icon"
                 title="Show links without labels"
                 onClick={() => changeLinkTypeState(history, 'withoutLabels', links)}
               >
-                <i className="material-icons-round" aria-hidden="true">keyboard_return</i>
+                <Icon iconType='round' iconName='keyboard_return' />
               </button>
               <button
                 className="btn btn-default btn-default-icon"
                 title="Show links with labels"
                 onClick={() => changeLinkTypeState(history, 'allVisible', links)}
               >
-                <i className="material-icons-round" aria-hidden="true">text_rotation_none</i>
+                <Icon iconType='round' iconName='text_rotation_none' />
               </button>
               <span>&nbsp;Switch all</span>
           </div>

@@ -20,6 +20,7 @@ import * as React from 'react';
 import * as classnames from 'classnames';
 
 import { ItemViewMode } from '../Configuration';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ToolbarProps extends ReorderingProps {
   baseClass: string;
@@ -56,7 +57,7 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
             className="btn btn-default btn-default-icon"
             onClick={this.props.onPressCreateNewSet}
           >
-            <i className="material-icons-round">create_new_folder</i>
+            <Icon iconType='round' iconName='create_new_folder'/>
           </button>
         )}
       </div>
@@ -90,7 +91,7 @@ export class ReorderItemsButton extends React.Component<ReorderingProps, {}> {
           className={classnames({ 'btn btn-default btn-default-icon': true, active: isReordering })}
           onClick={onPressReorder}
         >
-          <i className="material-icons-round">low_priority</i>
+          <Icon iconType='round' iconName='low_priority'/>
         </button>
       </div>
     );
@@ -139,8 +140,8 @@ export class ItemViewModeSwitch extends React.Component<
     const className = `${baseClass}__item-view-mode`;
     return (
       <div className={className} role="group">
-        {this.renderModeButton('grid', 'Switch to grid view', <i className="material-icons-sharp">view_module</i>)}
-        {this.renderModeButton('list', 'Switch to list view', <i className="material-icons-round">view_list</i>)}
+        {this.renderModeButton('grid', 'Switch to grid view', <Icon iconType='sharp' iconName='view_module'/>)}
+        {this.renderModeButton('list', 'Switch to list view', <Icon iconType='round' iconName='view_list'/>)}
       </div>
     );
   }

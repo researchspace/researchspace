@@ -57,7 +57,7 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
             </div>
             {!isRequired ? (
               <Button className="field-editor__delete-label-button" onClick={() => onDeleteLabel()}>
-                <i className="material-icons-round">close</i>
+                <Icon iconType='round' iconName='close'/>
               </Button>
             ) : null}
           </div>

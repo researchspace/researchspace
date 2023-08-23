@@ -31,6 +31,7 @@ import { ReorderableList, Ordering } from 'platform/components/ui/reorderable-li
 import { StorageSelector, chooseDefaultTargetApp } from './StorageSelector';
 
 import * as styles from './InlineValuesEditor.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface InlineValuesEditorProps {
   className?: string;
@@ -127,7 +128,7 @@ export class InlineValuesEditor extends Component<InlineValuesEditorProps, State
                     this.setState({ targetValues });
                   }}
                 >
-                  <i className="material-icons-round">close</i>
+                  <Icon iconType='round' iconName='close'/>
                 </Button>
               </div>
             ))}

@@ -25,6 +25,7 @@ import { Overlay, Popover, FormControl, ButtonGroup, Button } from 'react-bootst
 import { Inline } from './EditorSchema';
 
 import * as styles from './TextEditor.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface ExternalLinkProps extends RenderNodeProps {
   editor: Slate.Editor
@@ -134,7 +135,7 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
                     </Button>
                     :
                     <Button bsClass='btn-default' onMouseDown={this.onEdit}>
-                      <i className='fa fa-pencil' aria-hidden='true'></i>
+                      <Icon iconType='round' iconName='edit' />
                     </Button>
                 }
                 <Button bsClass='btn-default' onMouseDown={this.onUnlink}>

@@ -5,6 +5,7 @@ import { DiagramView } from '../../diagram/view';
 import { highlightSubstring } from '../listElementView';
 
 import { TreeNode } from './treeModel';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const EXPAND_ICON = 'arrow_right';
 const COLLAPSE_ICON = 'arrow_drop_down';
@@ -66,7 +67,7 @@ export class Leaf extends React.Component<LeafProps, State> {
       <div className={LEAF_CLASS} role="tree-item">
         <div className={`${LEAF_CLASS}__row`}>
           <div className={`${LEAF_CLASS}__toggle`} onClick={this.toggle} role="button">
-            {toggleIcon ? <span className={`${LEAF_CLASS}__toggle-icon`}><i className={'material-icons-round'}>{toggleIcon}</i></span> : null}
+            {toggleIcon ? <span className={`${LEAF_CLASS}__toggle-icon`}><Icon iconType='round' iconName={toggleIcon}/></span> : null}
           </div>
           <a className={bodyClass} href={node.model.id} onClick={this.onClick}>
             <span className={`${LEAF_CLASS}__label`}>{label}</span>
@@ -81,7 +82,7 @@ export class Leaf extends React.Component<LeafProps, State> {
                 onClick={this.onClickCreate}
                 onDragStart={this.onDragCreate}
               >
-                <i className='material-icons-round'>add_box</i>
+                <Icon iconType='round' iconName='add_box' />
               </button>
             </div>
           ) : null}

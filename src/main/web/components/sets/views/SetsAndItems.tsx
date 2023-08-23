@@ -30,6 +30,7 @@ import { TemplateItem } from 'platform/components/ui/template';
 
 import { PlatformSet, SetItem, EditState, EditType } from '../SetsModel';
 import { SetViewContext, SetViewContextTypes, SetItemViewContext, SetItemViewContextTypes } from '../SetManagementApi';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const ESCAPE_KEY_CODE = 27;
 const ENTER_KEY_CODE = 13;
@@ -70,7 +71,7 @@ export class OpenedSetView extends React.Component<SetViewProps, {}> {
         <SetCaption
           {...this.props}
           className={`${baseClass}__open-set`}
-          icon={<i className="material-icons-round">folder_open</i>}
+          icon={<Icon iconType='round' iconName='folder_open'/>}
         ></SetCaption>
         <ItemsView key="opened-set-items" {...this.props} />
       </div>

@@ -39,6 +39,7 @@ import { ErrorNotification, ErrorPresenter } from 'platform/components/ui/notifi
 import { Spinner } from 'platform/components/ui/spinner';
 
 import * as styles from './NamespaceManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface State {
   isLoading?: boolean;
@@ -276,8 +277,8 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
       } else {
         return (
           <Button className="btn btn-default btn-textAndIcon" onClick={this.onDeleteClick}>
-            <span className="fa fa-trash-o" />
-            &nbsp;Delete
+            <Icon iconType='round' iconName='delete'/>
+            Delete
           </Button>
         );
       }

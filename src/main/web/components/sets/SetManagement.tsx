@@ -42,6 +42,7 @@ import { SetWithItems, ItemsView, OpenedSetView } from './views/SetsAndItems';
 import { Toolbar } from './views/Toolbar';
 
 import './set-management.scss';
+import Icon from '../ui/icon/Icon';
 
 export const CLASS_NAME = 'set-management';
 
@@ -320,7 +321,8 @@ export class SetManagement extends Component<Props, ViewState> {
           })
         }
       >
-        <i className="material-icons-round">arrow_back</i>Back
+        <Icon iconType='round' iconName='arrow_back'/>
+        Back
       </div>
     );
   }

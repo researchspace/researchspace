@@ -42,6 +42,7 @@ import {
 } from './MultipleValuesInput';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
 import { createDropAskQueryForField } from '../ValidationHelpers';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface TreePickerInputProps extends MultipleValuesProps {
   placeholder?: string;
@@ -255,7 +256,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   private renderCreateNewButton() {
     return (
       <Button className={`${CLASS_NAME}__create-button btn-textAndIcon`} onClick={this.toggleNestedForm}>
-        <span className="material-icons-round">add_box</span>
+        <Icon iconType='round' iconName='add_box'/>
         <span>New</span>
       </Button>
     );

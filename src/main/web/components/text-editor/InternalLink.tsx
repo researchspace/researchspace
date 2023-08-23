@@ -29,6 +29,7 @@ import { DropArea } from 'platform/components/dnd/DropArea';
 import { Inline, RESOURCE_MIME_TYPE } from './EditorSchema';
 
 import * as styles from './TextEditor.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface InternalLinkProps extends RenderNodeProps {
   editor: Slate.Editor
@@ -117,7 +118,7 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
                   }
                 </DropArea>
                 <Button bsClass='btn-default' className='btn-default-icon' onMouseDown={this.onUnlink}>
-                  <i className='material-icons-round' aria-hidden='true'>link_off</i>
+                  <Icon iconType='round' iconName='link_off'/>
                 </Button>
               </div>
             </Popover>

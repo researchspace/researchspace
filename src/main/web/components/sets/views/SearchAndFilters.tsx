@@ -25,6 +25,7 @@ import { ClearableInput, AutoCompletionInput } from 'platform/components/ui/inpu
 
 import { KeywordFilter, SetFilter } from '../Configuration';
 import { FilterValue } from '../SetsModel';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface Props {
   baseClass: string;
@@ -100,7 +101,7 @@ export class SearchAndFilters extends React.Component<Props, {}> {
             }
           }}
         >
-          <i className="material-icons-round" title="Show additional filters">filter_alt</i>
+          <Icon iconType='round' iconName='filter_alt' title="Show additional filters"/>
         </button>
       </div>
     );

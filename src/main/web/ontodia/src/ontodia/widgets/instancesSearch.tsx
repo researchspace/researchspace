@@ -12,6 +12,7 @@ import { ProgressBar, ProgressState } from '../widgets/progressBar';
 import { SearchResults } from './searchResults';
 
 import { WorkspaceContextTypes, WorkspaceContextWrapper, WorkspaceEventKey } from '../workspace/workspaceContext';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const DirectionInImage = require('../../../images/direction-in.png');
 const DirectionOutImage = require('../../../images/direction-out.png');
@@ -121,7 +122,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
               style={{ display: this.state.moreItemsAvailable ? undefined : 'none' }}
               onClick={() => this.queryItems(true)}
             >
-              <span className="material-icons-round">expand_more</span>
+              <Icon iconType='round' iconName='expand_more' />
               &nbsp;Show more
             </button>
           </div>
@@ -203,7 +204,7 @@ export class InstancesSearch extends React.Component<InstancesSearchProps, State
     return (
       <div className={`${CLASS_NAME}__criterion-remove ontodia-btn-group ontodia-btn-group-xs`}>
         <button type="button" className="ontodia-btn ontodia-btn-default" title="Remove criteria" onClick={onClick}>
-          <i className="material-icons-round" aria-hidden="true">close</i>
+          <Icon iconType='round' iconName='close' />
         </button>
       </div>
     );

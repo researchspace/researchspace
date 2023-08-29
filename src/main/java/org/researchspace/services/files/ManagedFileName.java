@@ -19,12 +19,13 @@
 
 package org.researchspace.services.files;
 
-import org.researchspace.services.storage.api.StoragePath;
-
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.researchspace.services.storage.api.StoragePath;
 
 public final class ManagedFileName {
     private static final Pattern DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9_.\\-\\p{L}]");
@@ -61,9 +62,10 @@ public final class ManagedFileName {
     }
 
     public static ManagedFileName validate(StoragePath prefix, String name) {
-        if (DISALLOWED_CHARACTERS.matcher(name).find()) {
-            throw new IllegalArgumentException("Invalid managed file name \"" + name + "\"");
-        }
+        // if (DISALLOWED_CHARACTERS.matcher(name).find()) {
+        // throw new IllegalArgumentException("Invalid managed file name \"" + name +
+        // "\"");
+        // }
         return new ManagedFileName(prefix, name);
     }
 

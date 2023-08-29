@@ -19,7 +19,7 @@
 
 import * as Kefir from 'kefir';
 
-import { Component } from 'platform/api/components';
+import { Component, ComponentProps } from 'platform/api/components';
 import { Rdf, vocabularies, XsdDataTypeValidation } from 'platform/api/rdf';
 
 import { FieldDefinition } from '../FieldDefinition';
@@ -36,7 +36,7 @@ import {
 
 import { InputKind } from './InputCommpons';
 
-export interface SingleValueInputProps {
+export interface SingleValueInputProps extends ComponentProps {
   /** Key to associate with FieldDefinition by name */
   for?: string;
   handler?: SingleValueHandler;

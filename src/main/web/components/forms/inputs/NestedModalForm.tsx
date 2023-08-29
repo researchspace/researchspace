@@ -35,7 +35,8 @@ import {
 } from '../ResourceEditorFormConfig';
 import { elementHasInputType, InputKind } from './InputCommpons';
 import { ModuleRegistry } from 'platform/api/module-loader';
-import { TemplateScope } from 'platform/api/services/template';
+import { TemplateContext } from 'platform/api/components';
+import { CapturedContext } from 'platform/api/services/template';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
@@ -86,7 +87,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
-            (subject ? `Create New ` : 'Edit ') +
+            (subject ? 'Create New ' : '') +
                         `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
           }</Modal.Title>
         </Modal.Header>
@@ -97,13 +98,15 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
 }
 
 export async function tryExtractNestedForm(
-  children: ReactNode, templateScope: TemplateScope, nestedFormTemplate?: string
+  children: ReactNode, templateContext: TemplateContext, nestedFormTemplate?: string
 ): Promise<ReactElement<ResourceEditorFormProps> | undefined> {
   if (React.Children.count(children) === 1) {
     return Promise.resolve(getNestedForm(children));
   } else if (nestedFormTemplate) {
-    const template = await templateScope.compile(nestedFormTemplate);
-    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template({"viewId": uuid.v4()}));
+    const template = await templateContext.templateScope.compile(nestedFormTemplate);
+    // see TemplateItem#compileTemplate, here we need to do the same to make sure that we propagate the context properly
+    const capturer = CapturedContext.inheritAndCapture(templateContext.templateDataContext);
+    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template({"viewId": uuid.v4()}, { capturer, parentContext: templateContext.templateDataContext }));
     return getNestedForm(parsedTemplate);
   } else {
     return Promise.resolve(undefined);

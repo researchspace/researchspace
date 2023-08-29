@@ -82,7 +82,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * This component is an uncontrolled component, but this property can be used to specify
    * array of nodes that should be initially selected.
    */
-  initialSelection?: ReadonlyArray<Rdf.Iri>;
+  initialSelection?: ReadonlyArray<Rdf.Iri | String>;
 
   /** Allows to drop entity if it satisfies ASK-query */
   droppable?: {
@@ -236,8 +236,14 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   componentDidMount() {
     const { initialSelection } = this.props;
+    let selection: ReadonlyArray<Rdf.Iri>;
     if (initialSelection && initialSelection.length !== 0) {
-      this.setInitialSelection(initialSelection).onValue(() => {/**/});
+      if (typeof initialSelection[0] == 'string') {
+        selection = (initialSelection as ReadonlyArray<string>).map(s => Rdf.iri(s));
+      } else {
+        selection = initialSelection as ReadonlyArray<Rdf.Iri>;
+      }
+      this.setInitialSelection(selection).onValue(this.onSelectionChanged);
     }
   }
 
@@ -505,7 +511,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           },
         },
         D.span({
-          className: 'fa fa-sitemap fa-lg',
+          className: 'fa fa-angle-down',
           ['aria-hidden' as any]: true,
         })
       )

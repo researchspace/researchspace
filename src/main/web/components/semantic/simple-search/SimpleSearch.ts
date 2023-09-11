@@ -35,6 +35,7 @@ export interface SimpleSearchProps extends SemanticSimpleSearchConfig {
   onSelected?: (value: SparqlClient.Binding | SparqlClient.Binding[]) => void;
   defaultQuery?: string;
   multi?: boolean;
+  autofocus?: boolean;
 }
 
 interface BackwardCompatibilityProps extends SimpleSearchProps {
@@ -58,6 +59,7 @@ export class SimpleSearch extends Component<SimpleSearchProps, SimpleSearchState
     minSearchTermLength: 3,
     resourceBindingName: 'resource',
     template: '<mp-label iri="{{resource.value}}"></mp-label>',
+    autofocus: true,
   };
 
   public render() {
@@ -103,6 +105,7 @@ export class SimpleSearch extends Component<SimpleSearchProps, SimpleSearchState
       templates: {
         suggestion: this.props.template,
       },
+      autofocus: this.props.autofocus,
     };
 
     return createElement(

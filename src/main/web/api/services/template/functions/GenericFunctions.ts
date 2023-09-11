@@ -157,6 +157,10 @@ export const GenericFunctions = {
     return JSON.stringify(options);
   },
 
+  parse(options) {
+    return JSON.parse(options);
+  },
+
   /**
    * generate uuid
    */

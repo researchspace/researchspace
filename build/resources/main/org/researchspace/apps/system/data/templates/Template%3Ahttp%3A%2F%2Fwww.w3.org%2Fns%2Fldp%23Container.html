@@ -1,0 +1,139 @@
+<ol class="page-breadcrumb">
+  <li>
+      <mp-link title="Home" url="resource/Start">Home</mp-link>
+  </li>
+
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li class="active">LDP - [[label]]</li>
+</ol>
+
+[[#if (hasPermission "api:ldp:*")]]
+
+<div class="page rs-fields">
+  <style>
+
+    .page {
+      padding-bottom: 50px;
+    }
+
+    .alert {
+      padding: 30px;
+      margin-bottom: 26px;
+    }
+
+    .tree-view_item {
+
+      display: flex;
+      align-items: baseline;
+    }
+    
+  </style>
+  
+  <div class="container-fluid adminPage-header-container">
+  <bs-row class="row-center">
+    <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 adminPage-header--col pr-0">
+      <div class="adminPage-header--content">
+        <div class='adminPage-header--thumbnail'>
+          <i class="fa fa-archive fa-lg"></i>
+        </div>
+        <div class='adminPage-header--body'>
+          <h2>LDP - [[label]]</h2>
+        </div>
+      </div>
+    </bs-col>   
+  </bs-row> <!--  close row -->
+</div>
+  
+  
+  <div class="container-fluid">
+      <bs-row class="row-center">
+        <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 pr-0">
+  
+            <div>
+              <bs-alert bs-style="info">
+                Using this interface, you can export and import selected individual LDP resources as well as whole containers. Note that:
+              <ul>
+                <li>Exporting a resource does not include exporting of related resources. For example, when exporting a query template, the resulting file will contain the link from the exported template resource (instance of <code>spin:Template</code>) to the query body (instance of <code>sp:Query</code>), but will not contain the query body resource itself. This will need to be exported separately from its own container.</li>
+                <li>When importing a resource with a URI that already exists among LDP assets, the existing resource will not get updated. Instead, the URI of the imported resource will be replaced with a randomly generated one. Thus, exporting and re-importing the same asset will result in a duplicate of the same resource.</li>
+                <li>The latter applies also when exporting and importing whole containers. For example, exporting the whole Query Template Container and importing it on a different system will not add the included templates into the list of existing ones, but instead create another Query Template Container parallel to the existing one.</li>
+              </ul>
+              </bs-alert>
+            </div>
+            <div style='position: absolute; right: 0;'>
+              [[#if isRoot]]
+                <mp-ldp-import-resource container="http://www.researchspace.org/resource/system/rootContainer">
+                  <button class="btn btn-primary" style='margin-left: 10px' title='Should be only used to import existing containers into the new installation!'>
+                    <i class="fa fa-download" aria-hidden="true"></i> Import Container</button>
+                </mp-ldp-import-resource>
+              [[else]]
+                [[> http://www.researchspace.org/resource/assets/LdpContainerGenericAction container=(this)]]
+              [[/if]]
+            </div>
+
+            [[#if (ask "PREFIX ldp: <http://www.w3.org/ns/ldp#> ASK {?? ldp:contains ?c. ?c a ldp:Container .}")]]
+              <h2> Child containers hierarchy </h2>
+              <semantic-context repository='assets'>
+                <semantic-tree
+                  collapsed=true
+                  keys-opened='["[[this]]"]'
+                  query='
+                    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                    PREFIX ldp: <http://www.w3.org/ns/ldp#>
+                    SELECT DISTINCT ?parent ?node WHERE {
+                      {
+                        ?? ldp:contains+ ?node .
+                        ?node a ldp:Container .
+                        ?parent ldp:contains ?node .
+                      } UNION {
+                        BIND(?? as ?node) .
+                      }
+                    }
+                  '
+                  tuple-template='
+                   <div>
+                     {{> actions }}
+                   </div>
+                  '
+                >
+                  <template id='actions'>
+                    <div style='padding: 0 5px 5px 5px; display: flex; align-items: center;'>
+                      <semantic-link uri="{{data.node.value}}" style='margin-right: 10px;'></semantic-link>
+
+                      <mp-ldp-export-resource iri="{{data.node.value}}">
+                        <button class="btn btn-grey" title="Export" style="margin-right: 5px;">
+                          <i class="fa fa-upload btn-icon-left" aria-hidden=true></i>
+                          <span>Export</span>
+                        </button>
+                      </mp-ldp-export-resource>
+                      {{#ifCond data.node.value "!==" "http://www.researchspace.org/resource/system/rootContainer"}}
+                        <mp-ldp-remove-from-container-action iri="{{data.node.value}}" container="{{data.parent.value}}">
+                          <button class="btn btn-grey" title="Delete">
+                            <i class="fa fa-trash btn-icon-left" aria-hidden=true></i>
+                            <span>Delete</span>
+                          </button>
+                        </mp-ldp-remove-from-container-action>
+                      {{/ifCond}}
+                    </div>
+                  </template>
+                </semantic-tree>
+              </semantic-context>
+            [[/if]]
+
+            [[#if (ask "PREFIX ldp: <http://www.w3.org/ns/ldp#> ASK {?? ldp:contains ?c. MINUS { ?c a ldp:Container .} }")]]
+          [[!--    <h2> Resources </h2> --]]
+              <div style='position: absolute; right: 280px;'>
+                [[> http://www.researchspace.org/resource/assets/LdpContainerActionExport]]
+              </div>
+              <semantic-context repository='assets'>
+                [[> http://www.researchspace.org/resource/assets/LdpResources container=(this) query='SELECT DISTINCT ?subject ?ModificationDate ?attribution ?label WHERE { ?? <http://www.w3.org/ns/ldp#contains> ?subject . ?subject <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate ; <http://www.w3.org/ns/prov#wasAttributedTo> ?attribution. OPTIONAL { ?subject rdfs:label ?label . }}']]
+              </semantic-context>
+            [[/if]]
+            
+    		</bs-col>
+      </bs-row>
+  </div>
+ </div>
+
+[[/if]]

@@ -1,0 +1,209 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Semantic Search" uri="http://help.researchspace.org/resource/SemanticSearch">Semantic Search</semantic-link>
+  </li>
+  <li class="active">Form-Based Search Component</li>
+</ol>
+
+<div class="page">
+  <div class="page__body">
+  <h1> Form-Based Search Component </h1>
+  <div class="documentation__intro">
+    <div class="documentation__intro__description">
+      Search input component for the <semantic-link iri="[[resolvePrefix "Help:SemanticSearch"]]">semantic search framework</semantic-link> based on the <semantic-link iri="[[resolvePrefix "Help:SemanticForm"]]">semantic form</semantic-link> component.  <br><br>
+      <p>
+        The component allows to flexibly compose form input components in order to serve as search definition input for the semantic search framework. Input values as provided by end-users will dynamically be injected as values into SPARQL query templates. This way forms can be used to let end-users execute pre-defined information requests aka SPARQL query templates, including SPARQL hybrid queries, i.e. for external (compute) service invocation.
+      </p>
+      <p>
+        Due to the integration with the <semantic-link iri="[[resolvePrefix "Help:SemanticSearch"]]">semantic search framework</semantic-link>, the form-based search input can effectively be used to configure interactive result visualizations allowing end-users, for example: 
+      </p>
+      <ul>
+        <li>
+          To constraint or change the visualization context, i.e. to filter pre-defined information needs / results sets.
+        </li>
+        <li>
+          To explore the context of user selected instances, e.g. to show possible connections between two user selected instances in a graph. 
+        </li>
+        <li>
+          To invoke queries including external hybrid services and to render respective results.
+        </li>
+      </ul>
+      
+      <h4>Features</h4>
+      <ul>
+        <li>
+          <b>Supports all atomic form input components</b>: text input, date input, autocomplete input, select input, tree input.
+        </li>
+        <li>
+          <b>Can be comined with all standard result visualization components</b>: semantic-query, -table, -tree, -graph, -carousel, -map, -chart.
+        </li>
+      </ul>
+      <h4>Limitations</h4>
+      <ul>
+        <li><b>Optional Values</b>: Due to the pattern matching nature of the SPARQL query language, it can be difficult to treat certain form inputs transparently as optional or non-optional parameters, i.e. if the user does not provide certain input values in the form-based search component, the respective query variables will simply not be injected (replaced) into the main query. However, the respective BGP (basic graph pattern) in the SPARQL query  will still exist and be most likely non-optional. </li>
+        <li><b>Multi Value Parameterization</b>: Multi-value selection and parameterization for a single query variable is supported but it should be used with caution. Within SPARQL multi value injection is only possible through the VALUES clause. It has effectively a FILTER semantics and can either lead to very inefficient queries or even return unexpected results (in particular, in combination with service calls, subqueries, unions etc.). By default, multi-value selection is disabled but can be enabled by setting <code>multi=true</code>. It's possible to disable multi-value parameterization for particular variables by setting <code>"maxOccurs": "1"</code> for corresponding fields.</li>
+      	<li><b>Input Dependencies</b>: It is currently not supported to make inputs dependent on other inputs during runtime, i.e. one select dropdown input can not be used to restrict the valueset of another dropdown or autosuggestion input. </li>
+      </ul>
+
+    </div>
+
+  </div>
+     
+  <div style="clear:both;"></div>
+  <h2>Configuration </h2>
+    Please refer to the <semantic-link iri="[[resolvePrefix "Help:SemanticForm"]]">semantic form help</semantic-link> for details about field definitions and configuration of respective HTML form input components.
+    <mp-documentation type="SemanticFormBasedQueryConfig"></mp-documentation>
+    
+    <mp-code-block>
+<![CDATA[
+<semantic-search>
+  <!-- 1. form-based search as search definition -->
+	<semantic-search-form-query
+     query-template='{
+       "queryString": "SELECT ?subject WHERE { 
+                        ?subject a ?class.
+                      }",
+       "arguments": {
+         "class": {"type": "xsd:anyURI"}
+       }
+     }'
+     fields='[
+       {
+         "id": "class",
+         "label": "Type",
+         "xsdDatatype": "xsd:anyURI",
+         "valueSetPattern": "SELECT $value $label WHERE { VALUES ($value $label)
+         { (<http://xmlns.com/foaf/0.1/Person> \"Person\")
+         (<http://xmlns.com/foaf/0.1/Agent> \"Agent\") } }"
+       }
+     ]'>
+       <semantic-form-select-input for="class"></semantic-form-select-input>
+       <button type='button' name='submit' className='btn btn-default'>Search</button>
+  </semantic-search-form-query>
+  
+	<!-- 2. faceting is optional -->
+  <!-- <semantic-search-facet></semantic-search-facet> -->
+  <semantic-search-result-holder>
+			<!-- 	3. result visualization
+						it is possible to use any semantic-* visualization component 
+						to visualize the search results, e.g semantic-graph 
+			-->
+    <semantic-search-result> 
+      <semantic-table id='table'></semantic-table> 
+    </semantic-search-result>
+  </semantic-search-result-holder>
+</semantic-search>
+]]>
+  </mp-code-block>
+  <h2> Example: Graph visualization with user-selected nodes</h2>
+  <p>
+    The following example returns all person that know the user selected person.
+    </p>
+    
+    <p>
+      [[> Help:StructuredSearchSampleDataCheck]]
+    </p>
+    <mp-code-example>
+<![CDATA[
+<semantic-search>
+  <!-- 1. search definition -->
+  <semantic-search-form-query
+     query-template='{
+       "queryString": "SELECT ?subject WHERE {
+                     ?subject <http://xmlns.com/foaf/0.1/knows> ?person .
+                     }",
+     "arguments": {
+         "person": {"type": "xsd:anyURI"}
+       }
+     }'
+     fields='[
+       {
+         "id": "person",
+         "label": "Person name",
+         "xsdDatatype": "xsd:anyURI",
+         "valueSetPattern": "SELECT $value $label WHERE { VALUES ($value $label)
+         { ( <http://example.org/alice#me> \"Alice\")
+         (<http://example.org/bob#me> \"Bob\") } }"
+       }
+     ]'>
+	<semantic-form-select-input for="person" placeholder='Select, for example, "Alice"'></semantic-form-select-input>
+       <button type='button' name='submit' className='btn btn-default'>Visualize Graph</button>
+   </semantic-search-form-query>
+ 
+  <!-- 2. facet is optional -->
+  <!-- <semantic-search-facet></semantic-search-facet> -->
+  <semantic-search-result-holder>
+    <semantic-search-result> <!-- 3. result visualization -->
+      <semantic-graph id='graph' query='CONSTRUCT {} WHERE{}'></semantic-graph>
+    </semantic-search-result>
+  </semantic-search-result-holder>
+</semantic-search>
+]]>
+  </mp-code-example>
+    
+  <h2> Example: Search with a simple table result </h2>
+    <p>
+      [[> Help:StructuredSearchSampleDataCheck]]
+    </p>
+    
+    <mp-code-example>
+<![CDATA[
+<semantic-search>
+  <!-- 1. search definition -->
+  <semantic-search-form-query
+     query-template='{
+       "queryString": "SELECT ?subject WHERE { 
+                        ?subject a ?class; 
+                            rdfs:label ?stringLabel.
+                        FILTER(REGEX(?stringLabel,?label,\"i\"))
+                      }",
+       "arguments": {
+         "class": {"type": "xsd:anyURI", "optional": true},
+         "label": {"type": "xsd:string"}
+       }
+     }'
+     fields='[
+       {
+         "id": "class",
+         "label": "Type",
+         "description": "The type, i.e. class of the instance. Setting the minOccurs to 0 makes the form input optional, however, due to the rdf:type BGP pattern in the main query instances will need to have at least some type statement.",
+         "xsdDatatype": "xsd:anyURI",
+         "minOccurs": "0",
+         "valueSetPattern": "SELECT $value $label WHERE { VALUES ($value $label)
+         { (<http://xmlns.com/foaf/0.1/Person> \"Person\")
+         (<http://dbpedia.org/ontology/Artwork> \"Artwork\") } }",
+         "selectPattern": "SELECT $value WHERE { $subject a $value }"
+       },
+       {
+				"id": "label",
+				"label": "Label",
+				"description": "Will match with regex on all rdfs:labels.",
+				"minOccurs": "1",
+				"xsdDatatype":"xsd:string"
+				}
+     ]'>
+       <semantic-form-select-input placeholder='Please select a class to search instances of' for="class"></semantic-form-select-input>
+       <semantic-form-text-input for="label" placeholder='Type "li" to find , for example, "mona lisa" or "alice"'></semantic-form-text-input>
+       <button type='button' name='submit' className='btn btn-default'>Search</button>
+   </semantic-search-form-query>
+  <!-- 2. facet is optional -->
+	<!-- <semantic-search-facet></semantic-search-facet> -->
+  <semantic-search-result-holder>
+    <semantic-search-result> <!-- 3. result visualization -->
+      <semantic-table id='table' query='SELECT ?subject WHERE{}'></semantic-table>
+    </semantic-search-result>
+  </semantic-search-result-holder>
+</semantic-search>
+]]>
+  </mp-code-example>
+  </div>  
+</div>

@@ -1,0 +1,195 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">
+    Semantic Context
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Semantic Context</h1>
+    <p>
+      The <code><semantic-context/></code> component can be used to selectively wrap individual <b>visualization components</b> in order to change their execution context, i.e. to instruct components to execute queries against particular repositories (other than the default), named graphs (as far as supported by the database) or to inject binding values into queries.
+    </p>
+    <mp-documentation type="SemanticConfigProps"></mp-documentation>
+    <h2>Context Inheritance</h2>
+    The <code><semantic-context/></code> is automatically inherited to all child HTML nodes.  
+<pre>
+<code>
+<div> <!-- the root page-div has a default semantic context -->
+  <semantic-context repository='assets'> <!-- overwrite page context for all child nodes -->
+    <semantic-table 
+      query="SELECT ?s {?s a ?type} LIMIT 10"
+    	column-configuration='[
+      	{"variableName": "s", "cellTemplate": " {{> myNestedInclude}}" }
+      ]'
+  	>
+    	<template id="myNestedInclude">
+      	<div>
+      		<semantic-context repository="default"> <!-- setting context back to default -->
+          	<semantic-link iri="{{s.value}}"></semantic-link>
+          </semantic-context>
+        </div>
+    	</template>
+    </semantic-table>
+  </semantic-context>
+</div>
+</code>
+</pre>
+
+    <h2>Supported Components</h2>
+    For the time being only the components below support listening to the semantic-context. This is rather a well-informed design constraint (c.f. section below), than an inherent technical limitation. 
+    <ul>
+      <li> 
+        <semantic-link iri="[[resolvePrefix "Help:SemanticQuery"]]">semantic-query</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:SemanticTable"]]">semantic-table</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:SemanticTree"]]">semantic-tree</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:SemanticTimeline"]]">semantic-timeline</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:SemanticGraph"]]">semantic-graph</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:SemanticMap"]]">semantic-map</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:SemanticSimpleSearch"]]">semantic-simple-search</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:Ontodia"]]">ontodia</semantic-link>
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:MPComponents"]]">semantic-link</semantic-link>
+      </li>   
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:MPComponents"]]">mp-label</semantic-link>
+      </li>
+    </ul>
+    <b>Currently, the following components explicitly do not support the semantic-context:</b>
+    <ul>
+      <li> 
+        <semantic-link iri="[[resolvePrefix "Help:SemanticSearch"]]">semantic-search</semantic-link> (Search Framework)
+      </li>
+      <li>
+         <semantic-link iri="[[resolvePrefix "Help:SemanticForm"]]">semantic-form</semantic-link>
+      </li>
+    </ul>
+    
+   	<h2>Constraints</h2>
+    <p>
+      By design, the <code><semantic-context/></code> component currently only works for simple, read-only visualization and result rendering components (c.f. list of supported components above).
+    </p>
+    <p>
+      Changing the context of individual components is a very powerful and complex endeavor.
+      At the end of the day, the challenge of integrated data access is moved from the database or middleware (for example, through <semantic-link iri="[[resolvePrefix "Help:Epehdra"]]">Ephedra</semantic-link>) to the UI level. This poses various challenges, which can become hard to control and maintain for application developers:
+    </p>
+		<ul>
+    	<li>
+         The context is inherited and navigation links will be automatically rewritten, i.e. if you follow a link within a semantic-context with a different repository other than the default, subsequent pages will be rewritten to execute against this repository. As a application developer you have to decide whether, when and how the user can navigate back "into" the default repository. 
+        There is no magic. Same applies to labels, i.e. all resource labels will be computed within the label service for the repository as specified in the context.
+      </li>
+      <li>
+         Defining the semantics and behavior of the semantic-context on inherently nested authoring or search-framework components is far from trival, i.e. what is the semantic-context supposed to modify? The context from which existing form values would be fetched from? The auto-suggestion, value selection or validation queries would perform against? Or would it be the context to which the result is supposed to be saved to? The answer will be very different depending on the various use-cases.
+      </li>
+    </ul>
+    
+    <h2>Examples</h2>
+    
+    <h3>Example: Inheritance of semantic-context</h3>
+    <p>
+      The query from the table below will execute against the <code>repository=assets</code> and also all children components like the <code><semantic-link/></code> will inherit the context. 
+    </p>
+   	This means:
+    <ul>
+    	<li>
+         labels for the semantic link will be fetched from the "assets" repository as specified in the parent semantic-context
+      </li>
+      <li>
+         navigation links will be re-written to the "assets" repository as specified in the parent semantic-context, i.e. you will notice the url param <code>?repository=assets</code>, if you click on one of the links within the table
+      </li>
+    </ul>
+    <mp-code-example>
+<![CDATA[
+<semantic-context repository='assets'>
+  <semantic-table 
+    query="[[>Help:SemanticTableSampleQuery]]"
+  ></semantic-table>
+</semantic-context>
+]]>
+
+        </mp-code-example>
+    <h3>Example: Overwriting semantic-context in child components</h3>
+    <p>
+      The query from the table below will execute against the <code>repository=assets</code>. <b>However</b>, the semantic-context is again overwritten by wrapping the content of the table cell into <code><semantic-context repository="default"/></code>.
+    </p>
+   	This means:
+    <ul>
+    	<li>
+         labels for the semantic link will be fetched from the "default" repository as usual and not from the "assets" repository
+      </li>
+      <li>
+         navigation links will not be re-written, i.e. will navigate on the "default" repository as usual
+      </li>
+    </ul>
+    <mp-code-example>
+<![CDATA[
+<semantic-context repository='assets'>
+  <semantic-table 
+    query="[[>Help:SemanticTableSampleQuery]]"
+    column-configuration='[
+      {"variableName": "s", "displayName": "Subject", "cellTemplate": "<semantic-context repository=\"default\"><semantic-link iri=\"{{s.value}}\"></semantic-link></semantic-context></div>" }
+    ]'
+  ></semantic-table>
+</semantic-context>
+]]>
+        </mp-code-example>
+    
+
+<h3>Example: Default Graphs, Named Graphs and Query Bindings</h3>
+    <p>
+      The query from the table below:
+    </p>
+
+    <ul>
+    	<li>
+         will be execute against the <code>repository=assets</code>
+      </li>
+      <li>
+        will be limited to a default graph, which is a merge graph of <code>http://graph1</code> , <code>http://graph2</code> and <code>http://graph3</code>, i.e. only statements from these graphs will be matched
+      </li>
+      <li>
+        additionally, all <code>GRAPH ?var{}</code> clauses will be limited to the named graphs <code>http://graph1</code> and <code>http://graph2</code>
+      </li>
+    </ul>
+    <p>
+      <b>Please note</b> that the semantics of named graphs and default graphs can be challenging to understand and also may vary across database implementations (for example, what is defined as default graph, if no default graphs are explicitly enumerated). Please refer to the <a href='https://www.w3.org/TR/rdf-sparql-query/#unnamedGraph' target='_blank'> official SPARQL 1.1 specification </a> for further details and explanation. Additionally, the interface and implementation for the <code>bindings</code> injection <b>is not yet stable</b>, i.e. may change or might be removed at any point in time without notice.
+    </p>
+    <mp-code-example>
+<![CDATA[
+<semantic-context repository='assets'
+    named-graphs='["http://graph1", "http://graph2"]'
+    default-graphs='["http://graph1", "http://graph2", "http://graph3"]'
+    bindings='{"var1": "http://some-iri","var2": "\"42\"^^http://www.w3.org/2001/XMLSchema#integer"}'>
+	<semantic-table query="SELECT * WHERE { GRAPH ?g {?a a ?b} BIND(?var1 as ?binding1) BIND(?var2 as ?binding2) }" no-result-template='No result: Most likely you do not have graphs as specified in your repository.'></semantic-table>
+</semantic-context>
+]]>
+    </mp-code-example>
+  </div>
+
+</div>
+
+

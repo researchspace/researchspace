@@ -1,0 +1,313 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Chart Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Highcharts Examples </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+          Examples how to use the features and styles specific to Highcharts.
+      </div>
+    </div>
+
+    <br>
+
+    <h3>Error bar chart</h3>
+    <mp-code-example>
+<![CDATA[
+<semantic-chart provider="highcharts"
+  type='line'
+  query="
+    SELECT ?x ?value ?low ?high WHERE {
+      VALUES (?x ?value ?low ?high) {
+        ('a' 1.1 0.1 2)
+        ('b' 2.1 1.2 3)
+        ('c' 3.1 2 4)
+        ('d' 4.1 3 5)
+        ('e' 5.1 4 6)
+      }
+    }
+  "
+  sets='[
+    {"dataSetName": "Value", "category": "x", "y": "value"},
+    {"dataSetName": "Value", "category": "x", "y": "value"},
+    {"dataSetName": "Error", "category": "x", "x": "low", "y": "high"}
+  ]'
+  styles='[{
+    "provider": "highcharts",
+    "style": {
+      "series": [
+        {"type": "column"},
+        {"type": "line", "showInLegend": false},
+        {"type": "errorbar"}
+      ]
+    }
+  }]'
+></semantic-chart>
+]]>
+    </mp-code-example>
+
+    <h3>Bubble chart with labels</h3>
+    <mp-code-example>
+<![CDATA[
+<semantic-chart 
+  provider='highcharts'
+  type='bubble'
+  query='
+    PREFIX person: <http://example.com/person/>
+    SELECT ?person ?publications ?organizations (abs(?publications - ?organizations) as ?sum) WHERE {
+      VALUES (?person ?publications ?organizations) {
+        (person:alice 5 2)
+        (person:bob 14 5)
+        (person:carol 2 10)
+        (person:mike 12 0)
+        (person:eve 3 1)
+        (person:mallory 8 7)
+      }
+    }
+  '
+  sets='[{"dataSetName": "Persons", "category": "person", "x": "publications", "y": "organizations", "z": "sum"}]'
+>
+</semantic-chart>
+]]>
+    </mp-code-example>
+
+    <h3>Line chart with multiple series</h3>
+    <mp-code-example>
+<![CDATA[
+<semantic-chart 
+  type='line' 
+  provider='highcharts' 
+  query='
+    PREFIX person: <http://example.com/person/>
+    PREFIX org: <http://example.com/org/>
+    SELECT ?one (COUNT(distinct ?someone) as ?renown) (COUNT(distinct ?org) as ?memberships) WHERE {
+      {
+        SELECT * WHERE {
+          VALUES (?someone ?one)
+          {
+            (person:alice person:bob)
+            (person:alice person:carol)
+            (person:carol person:bob)
+            (person:carol person:mike)
+            (person:mike person:carol)
+            (person:mike person:alice)
+            (person:bob person:carol)
+            (person:bob person:mike)
+          }
+        }
+      }
+      {
+        SELECT * WHERE {
+          VALUES (?one ?org)
+          {
+            (person:alice org:W3C)
+            (person:alice org:IEEE)
+            (person:alice org:IETF)
+            (person:carol org:W3C)
+            (person:mike org:IEEE)
+            (person:mike org:IETF)
+          }
+        }
+      }
+    }
+    GROUP BY ?one
+    ORDER BY ?one
+  '
+  sets='[
+    {"dataSetName": "Renown", "category": "one", "value": "renown"},
+    {"dataSetName": "Memberships", "category": "one", "value": "memberships"}
+  ]'
+></semantic-chart>
+]]>
+    </mp-code-example>
+
+    <h3>Pivot example</h3>
+    <mp-code-example>
+<![CDATA[
+<semantic-chart provider='highcharts' type='radar'
+  query='
+    PREFIX person: <http://example.com/person/>
+    PREFIX org: <http://example.com/org/>
+    SELECT ?someone ?org ?involvement WHERE {
+      VALUES (?someone ?org ?involvement)
+      {
+        (person:alice org:W3C 20)
+        (person:alice org:IEEE 10)
+        (person:alice org:IETF 30)
+        (person:carol org:W3C 80)
+        (person:carol org:IEEE 20)
+        (person:mike org:IEEE 50)
+        (person:mike org:IETF 50)
+      }
+    }
+    ORDER BY ?someone
+  ' 
+  multi-data-set='{"dataSetVariable": "someone", "category": "org", "value": "involvement"}'
+></semantic-chart>
+]]>
+    </mp-code-example>
+
+    <h3>Toggleable Chart Type</h3>
+    <mp-code-example>
+<![CDATA[
+<semantic-chart 
+  type='line' 
+  provider='highcharts'
+  types='["line", "bar", "radar", "pie", "donut"]'
+  query='
+    PREFIX semanticPerson: <http://data.semanticweb.org/person/>
+    SELECT ?person ?articleCount (strlen(?foafName) as ?nameLength) WHERE {
+      VALUES (?person ?foafName ?articleCount)
+      {
+        (semanticPerson:abraham-bernstein "Abraham Bernstein" 22)
+        (semanticPerson:bijan-parsia "Bijan Parsia" 35)
+        (semanticPerson:enrico-motta "Enrico Motta" 22)
+        (semanticPerson:ian-horrocks "Ian Horrocks" 27)
+        (semanticPerson:stefan-decker "Stefan Decker" 23)
+      }
+    } ORDER BY DESC(?articleCount)
+  '
+  sets='[{"dataSetName": "Articles per person", "category": "person", "y": "articleCount"}]'
+></semantic-chart>
+]]>
+    </mp-code-example>
+
+    <h3>Custom tooltip</h3>
+    <mp-code-example>
+<![CDATA[
+  <mp-component-toolbar>
+    <mp-component-toolbar-actions>
+      <semantic-chart-type-selector default="bar" types='["line", "bar", "radar", "pie", "donut"]' />
+    </mp-component-toolbar-actions>
+    <mp-component-toolbar-component>
+      <semantic-chart
+        provider='highcharts'
+        query='
+          PREFIX semanticPerson: <http://data.semanticweb.org/person/>
+          SELECT * WHERE {
+            VALUES (?person ?foafName ?articleCount)
+            {
+              (semanticPerson:abraham-bernstein "Abraham Bernstein" 22)
+              (semanticPerson:bijan-parsia "Bijan Parsia" 35)
+              (semanticPerson:enrico-motta "Enrico Motta" 22)
+              (semanticPerson:ian-horrocks "Ian Horrocks" 27)
+              (semanticPerson:stefan-decker "Stefan Decker" 23)
+            }
+          } ORDER BY DESC(?articleCount)'
+        sets='[{"dataSetName": "Articles per person", "category": "person", "value": "articleCount"}]'
+        tooltip-template='{{> tooltip}}'>
+        <template id='tooltip'>
+          <div style="border: 1px solid white; border-radius: 5px; padding: 5px">
+            {{#*inline "@marker"}}
+              {{#ifCond style "||" class}}
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  style="display: inline-block; margin-right: 10px;"
+                  width="10" height="10">
+                  <circle cx="5" cy="5" r="5"
+                    style="{{style}}"
+                    class="{{class}}" />
+                </svg>
+              {{/ifCond}}
+            {{/inline}}
+            {{#if category}}
+              <div>
+                <h3>
+                	{{> @marker style=category.markerStyle class=category.markerClass}}
+                  {{#if category.iri}}
+                    <semantic-link iri='{{category.iri}}'>
+                      {{category.label}}
+                    </semantic-link>
+                  {{else}}
+                    {{category.label}}
+                  {{/if}}
+                </h3>
+              </div>
+            {{/if}}
+            <ul class="list-unstyled">
+              {{#each points}}
+                <li>
+                  {{> @marker style=markerStyle class=markerClass}}
+                  {{#if iri}}
+                    <semantic-link iri="{{iri}}">{{label}}</semantic-link>: {{value}}
+                  {{else}}
+                    {{label}}: {{value}}
+                  {{/if}}
+                </li>
+              {{/each}}
+            </ul>
+          </div>
+        </template>
+      </semantic-chart>
+    </mp-component-toolbar-component>
+  </mp-component-toolbar>
+]]>
+    </mp-code-example>
+
+    <h3>Custom colors</h3>
+    <p>Highcharts allows customizing colors of datasets by specifying custom CSS classes for each datasets and applying CSS rules for these classes. For the time being, inline CSS styles, i.e. directly as part of the <code>styles</code> attribute are <b>not supported</b>.</p>
+    <mp-code-example>
+<![CDATA[
+<style>
+  .highcharts-demo-series-0 .highcharts-color-0 {
+    fill: #6E86F0;
+    stroke: #6E86F0;
+  }
+  .highcharts-demo-series-0.highcharts-color-0 {
+    fill: #6E86F0;
+    stroke: #6E86F0;
+  }
+
+  .highcharts-demo-series-1 .highcharts-color-1 {
+    fill: #F88E92;
+    stroke: #F88E92;
+  }
+  .highcharts-demo-series-1.highcharts-color-1 {
+    fill: #F88E92;
+    stroke: #F88E92;
+  }
+</style>
+<semantic-chart 
+  type='bar' 
+  provider='highcharts'
+  query='
+    PREFIX person: <http://example.com/person/>
+    SELECT ?person ?publications ?organizations (abs(?publications - ?organizations) as ?sum) WHERE {
+      VALUES (?person ?publications ?organizations) {
+        (person:alice 5 2)
+        (person:bob 14 5)
+        (person:carol 2 10)
+        (person:mike 12 0)
+        (person:eve 3 1)
+        (person:mallory 8 7)
+      }
+    }'
+  sets='[
+    {"dataSetName": "Publications", "category": "person", "value": "publications"},
+    {"dataSetName": "Organizations", "category": "person", "value": "organizations"}
+  ]'
+  styles='[{
+  	"provider": "highcharts",
+  	"style": {
+      "series": [
+      	{"type": "column", "className": "highcharts-demo-series-0"},
+      	{"type": "column", "className": "highcharts-demo-series-1"}
+      ]
+  	}
+	}]'
+></semantic-chart>
+]]>
+    </mp-code-example>
+
+  </div>
+</div>

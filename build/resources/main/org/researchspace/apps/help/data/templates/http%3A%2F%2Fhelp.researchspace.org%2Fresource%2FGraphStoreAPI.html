@@ -1,0 +1,216 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+
+  <li class="active">Graph Store API </li>
+</ol>
+
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Graph Store API </h1>
+
+    <blockquote>
+      <p>
+        [...] <br>
+        this interface is an alternative to the SPARQL 1.1 Update protocol. 
+        Most of the operations defined here can be performed using that interface, but for some clients or servers, this interface may be easier to implement or work with. <br>
+        [...]
+      </p>
+      <footer><a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">Abstract from the W3C "SPARQL 1.1 Graph Store HTTP Protocol" Recommendation </a></footer>
+    </blockquote>
+    <p>
+      The standard interface for querying and manipulating RDF data through the ResearchSpace platform is the standard <a href="/sparql">SPARQL interface</a> (<code>/sparql</code>) implementing the <a href="https://www.w3.org/TR/sparql11-query/" target="_blank">SPARQL 1.1 protocol</a>.
+    </p>
+    <p>
+     However, loading RDF statements through the SPARQL interface usually means that a client needs to parse or generate RDF statements from local files and need to translate them into SPARQL 1.1 Update commands in order to be execute against a SPARQL 1.1 endpoint.
+      Similarly, a client may need to translate and enumerate all statements in SPARQL 1.1 Update commands for modification or deletion.
+    </p>
+    <p>
+      To ease this process for some clients and specific use-cases, the ResearchSpace platform implements additionally the <a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">SPARQL 1.1 Graph Store HTTP Protocol</a> which is accessible via the context path <code>/rdf-graph-store</code> .
+    </p>
+
+    <p>
+      The most fundamental concept of this interface is the concept of <b>Named Graphs</b> i.e. the extension of RDF triples to quads. 
+      The "quad" is used for organization of triples into collections of triples, whereas each collection is formally treated as a sub-graph of the entire (repository) graph. 
+      Since URIs are used to identify the quads, every sub-graph can be identified uniquely. 
+      The idea of the Graph Store API is to provide a simple abstraction, whereas simple CRUD operations can be performed on individual Named Graphs by providing a simple REST interface. 
+    </p>
+
+    In summary, the <code>/rdf-graph-store</code> interface provides an ease to use REST interface to:
+    <ul>
+      <li>get RDF statements from within one Named Graph</li>
+      <li>load RDF statements from RDF files into a new or already existing Named Graph without the need to parse or read the RDF files beforehand i.e. from the client</li>
+      <li>update (i.e. replace) RDF statements within one existing Named Graph</li>
+      <li>delete a collection of RDF statements managed within a Named Graph</li>
+      <li>check the existence of a Named Graph</li>
+    </ul>
+    <h2>Operations</h2>
+
+    <p>
+      For the sake of demonstration, we provide small examples using the official <a href="http://xmlns.com/foaf/spec/index.rdf" blank="_target">FOAF vocabulary file</a> (serialized in RDF/XML). 
+      If you want to perform the examples on your own, you can simply download the RDF file in the browser (<code>"Save Link as .." -> "foaf.rdf"</code>) or using curl i.e. <code mode='text/x-sh'>curl http://xmlns.com/foaf/spec/index.rdf > foaf.rdf</code>
+    </p>
+
+    <p>
+      The interaction with the Graph Store API requires in many cases the specification of <b>MIME types</b> for 'accept' or 'content-type' headers. Supported RDF serialization and respective mime types are:
+    </p>
+    <ul>	
+      <li>N-Triples (mimeTypes=text/plain)</li>
+      <li>BinaryRDF (mimeTypes=application/x-binary-rdf)</li> 
+      <li>RDF/XML (mimeTypes=application/rdf+xml, application/xml)</li> 
+      <li>Turtle (mimeTypes=text/turtle, application/x-turtle)</li>
+      <li>N3 (mimeTypes=text/n3, text/rdf+n3)</li>
+      <li>RDF/JSON (mimeTypes=application/rdf+json)</li> 
+      <li>TriG (mimeTypes=application/x-trig)</li> 
+      <li>N-Quads (mimeTypes=text/x-nquads)</li> 
+      <li>TriX (mimeTypes=application/trix)</li> 
+      <li>JSON-LD (mimeTypes=application/ld+json)</li>
+    </ul>
+
+    <p>
+      All operations will return a <code>500</code> code if there is any server-side or database issue (e.g. locks etc.).
+    </p>
+    <h3>POST - Load RDF data into a Named Graph</h3>
+
+    <p>
+      Posting the content of a RDF file as binary body against the interface, asking to create the specified <code>?graph=</code> or merge the statements from the body if the graph already exists.
+      If no graph is specified, the server will create a graph URI.<br> If the operation was successful (in both cases - creation or merge), the server will send a <code>201 Created</code> code and will specify the graph URI being used in the <code>location</code> response header.
+    </p>
+    <p>
+      The client <b>SHOULD</b> specify the content type (see list of supported content types in the GET section) in the header, otherwise the ResearchSpace platform may not be able to guess and parse the request body and will respond with a  <code>406 Not Acceptable</code> code.
+    </p>
+    <b>Example:</b> Creating a new graph
+    <mp-code-block mode='text/x-sh'>
+curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@foaf.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+    </mp-code-block>
+    
+    <p>
+      We can check the number of triples with a simple SPARQL query:
+    </p>
+    <mp-code-block mode='text/x-sh'>
+curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHERE { GRAPH&lt;http://my.foaf.graph/&gt;{ ?s ?p ?o } }' -H 'Accept: text/csv' 'http://127.0.0.1:10214/sparql'
+    </mp-code-block>
+    <p>
+      which will reveal that the graph <code>&lt;http://my.foaf.graph/&gt;</code> contains <code>631</code> statements.
+    </p>
+
+    <b>Example:</b> Merging into an existing graph<br>
+    <p>
+      For the sake of demonstration, we are going to post a second RDF file using the same graph identifier. 
+      Therefore, we download the <a href="https://www.w3.org/ns/dcat.rdf" target="_blank">DCAT vocabulary file</a> (<code>curl https://www.w3.org/ns/dcat.rdf > dcat.rdf</code>) and post it against the  <code>/rdf-graph-store</code>  while specifying the previous <code>?graph=&lt;http://my.foaf.graph/&gt;</code> graph as target.
+    </p>
+    <mp-code-block mode='text/x-sh'>
+curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@dcat.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+    </mp-code-block>
+
+    <p>
+      If we now check again the numbers of triples within the graph:
+    </p>
+    <mp-code-block mode='text/x-sh'>
+      curl -u admin:admin --data-urlencode 'query=SELECT (COUNT(*) AS ?nrTriples) WHERE { GRAPH&lt;http://my.foaf.graph/&gt;{ ?s ?p ?o } }' -H 'Accept: text/csv' 'http://127.0.0.1:10214/sparql'
+    </mp-code-block>
+    <p>
+      we will see that the graph <code>&lt;http://my.foaf.graph/&gt;</code> contains now <code>1097</code> instead of <code>631</code> statements.
+    </p>
+
+    <h3>GET - Get RDF data from a Named Graph</h3>
+    <p>
+      To get all statements from within a particular Named Graph, a simple GET request can be performed. By specifying an accept header <code> -H 'Accept: text/turtle' </code>, the statements can be serialized into different RDF formats. Returns a <code>404 Not Found</code> code if the specified graph does not exist. If the specified accept header is unkown, the server will respond with a <code>406 Not Acceptable</code> code.
+    </p>
+    <b>Example: </b>
+    <mp-code-block mode='text/x-sh'>
+curl -u admin:admin -H 'Accept: text/turtle' -X GET http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+    </mp-code-block>
+    which will serialize the graph <code>&lt;http://my.foaf.graph/&gt;</code> as turtle statements:<br>
+    
+    <mp-code-block mode='text/turtle'>
+&lt;http://xmlns.com/foaf/0.1/Image&gt; owl:equivalentClass &lt;http://schema.org/ImageObject&gt; .
+
+&lt;http://xmlns.com/foaf/0.1/PersonalProfileDocument&gt; rdfs:label "PersonalProfileDocument" .
+
+&lt;http://xmlns.com/foaf/0.1/OnlineAccount&gt; rdfs:comment "An online account." .
+
+.....
+  </mp-code-block>  
+
+    <p>
+     Similarly, a client can ask for all other supported serialization formats and respective MIME types by sending a different accept header.
+    </p>
+
+    <h3>HEAD - Get information about a Named Graph</h3>
+      <p>
+        Call to quickly check whether a graph exist, while keeping server and client overhead small. Basically the same as <code>GET</code>, 
+        however, does not return a response body. Returns <code>200 Ok</code> code if the graph exists and a <code>404 Not Found</code> code if the specified graph does not exist.<br>
+
+        Please note, that we do not return any Content-Length, Content-MD5, 
+        ETag or Last-Modified in the response headers, since this information is usually not available (i.e. Last-Modified) or quite expensive to compute.
+      </p>
+
+      <b>Example: </b>
+      <mp-code-block mode='text/x-sh'>
+curl -v -u admin:admin -I http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+      </mp-code-block>
+
+
+    <h3>PUT - Replace RDF data within a Named Graph</h3>
+      <p>
+        PUT is almost equivalent to POST, however, put assumes the existence of a GRAPH which is to be <b>replaced</b> with the statements from the request body.
+
+        Effectively, the specified graph will be deleted and new statements as provided by the request body will be added to the graph in one transaction. 
+        Please note, that the deletion of the existing graph will be performed silently i.e. if the specified graph does not yet exist, 
+        it will simply be created and as such <code>PUT</code> on a non-existing graph is equivalent to a <code>POST</code>. As with <code>POST</code>, 
+        the server will send a <code>201 Created</code> code if the operation was successful and the <code>location</code> in the response header will specify the graph being update/created.
+      </p>
+
+      <b>Example: </b>
+      <mp-code-block mode='text/x-sh'>
+curl -v -u admin:admin -X PUT -H 'Content-Type: application/xml' --data-binary '@dcat.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+      </mp-code-block>
+
+    <h3>DELETE - Delete a Named Graph</h3>
+
+      <p>
+        Simple call to delete one entire graph from the repository. Returns a <code>404 Not Found</code> code if the specified graph does not exist.
+      </p>
+      <b>Example: </b>
+      <mp-code-block mode='text/x-sh'>
+curl -v -u admin:admin -X DELETE http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+      </mp-code-block>
+    
+    <h3>PATCH - Updating RDF data within a Named Graph</h3>
+      <code>Please note that for the time being PATCH is not supported.</code><br>
+      This section is informative within the official W3C documentation. Effectively, there are two options for updating RDF statements within one Named Graph without replacing the entire graph:
+      <ul>
+      <li>Using <code>POST</code> against the Graph Store API to add RDF statements to an existing Named Graph, which will result into a merge of statements.</li>
+      <li>Using SPARQL 1.1 Update commands executed against the <a href="/sparql">SPARQL interface</a> (<code>/sparql</code>), which would be more or less the same as the informative W3C proposal for the PATCH command.</li>
+      </ul>
+
+    <h3>Proprietary Extensions</h3>
+
+    <h3>Repository Support</h3>
+    <p>
+      All requests will operate by default on platform's <code>default</code> repository. However, the ResearchSpace platform enables to execute the requests against any repository registered within the repository manager (c.f. <semantic-link uri="http://help.researchspace.org/resource/RepositoryManager">Help Repository Manager</semantic-link>). The repository can be specified by simply adding a request parameter <code>repository={repositoryID}</code> to the request.
+    </p>
+    <b>Example: </b><br>
+    <mp-code-block mode='text/x-sh'>
+      curl -v -u admin:admin -I "http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F&repository=assets"
+    </mp-code-block>
+
+    <h3>Support for TRIG, TRIX and NQUADS</h3>
+    The SPARQL 1.1 Graph Store HTTP Protocol specification is not specific about cases where RDF based serialization are posted against the Graph Store API, which do support quad encodings (namely TRIG, TRIX and NQuads). By default, the ResearchSpace platform ignores the graphs as encoded in the serialization and loads all statements into the graph as specified in the request parameters. However, by appending the proprietary request parameter <code>keepSourceGraphs=true</code>, the <code>POST</code> operation can be instructed to preserve the named graphs as specified in the serialization. Please note, that this is only working for <code>POST</code>.
+
+    <h2>Security</h2>
+    Please refer to <semantic-link uri="http://help.researchspace.org/resource/BasicSystemConfiguration">Basic System Configuration</semantic-link>, where the basic <code>"sparql:graphstore:*"</code> permission strings are specified. For the time being, permissions can only be assigned to the operations in general, but not to individual graphs. However, it is possible to extend this mechanism.
+
+
+
+  </div>
+</div>

@@ -1,0 +1,124 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Semantic Form" iri="http://help.researchspace.org/resource/SemanticForm">Semantic Form</semantic-link>
+  </li>
+  <li class="active">Advanced Inputs</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Semantic Form: Advanced Inputs</h1>
+    
+    <style>
+      .inputs-table td:nth-child(1) {
+        font-weight: bold;
+        width: 10%;
+      }
+      .inputs-table td:nth-child(2) {
+        width: 50%;
+      }
+      .inputs-table td:nth-child(2) {
+        width: 40%;
+      }
+    </style>
+    <table class="table table-striped table-bordered inputs-table">
+      <tbody>
+        <tr>
+          <th>Field input name</th>
+          <th>Markup</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>File input</td>
+          <td>
+            <mp-code-block mode='text/html'><![CDATA[
+<semantic-form-file-input
+    for='{field-id}'
+    storage='{file-storage-id}'
+    temp-storage='{temp-file-storage-id}'>
+  <!-- custom placeholder when no file uploaded -->
+</semantic-form-file-input>
+            ]]></mp-code-block>
+            <mp-code-block mode='text/html'><![CDATA[
+<semantic-form-file-input
+    for='{field-id}'
+    placeholder='Please drag&drop your image here'
+    accept-pattern='image/*'
+    generate-iri-query='
+      SELECT ?resourceIri WHERE {
+        BIND(URI(CONCAT(
+          STR(<Default:>), "uploaded-file-", ?__fileName__)
+        ) as ?resourceIri)
+      }
+    '
+    resource-query='
+      PREFIX mp: <http://www.researchspace.org/resource/system/>
+      CONSTRUCT {
+        ?__resourceIri__ a mp:File.
+        ?__resourceIri__ mp:fileName ?__fileName__.
+        ?__resourceIri__ mp:mediaType ?__mediaType__.
+      } WHERE {}
+    '
+    name-predicate-iri='http://www.researchspace.org/resource/system/fileName'
+    media-type-predicate-iri='http://www.researchspace.org/resource/system/mediaType'
+    storage='{file-storage-id}'
+    temp-storage='{temp-file-storage-id}'
+></semantic-form-file-input>
+          ]]></mp-code-block>
+          </td>
+          <td>
+            <p>Component to attach files by uploading them into <semantic-link uri="http://help.researchspace.org/resource/Storage">storage</semantic-link> and linking to resulting metadata LDP resource.</p>
+            <p>To be able to upload files into a storage it's necessary to have the following <semantic-link uri="http://help.researchspace.org/resource/Security">permissions</semantic-link>.</p>
+            <mp-documentation type="FileInputConfig"></mp-documentation>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <h2>Examples</h2>
+    <h3>Example 1: File input</h3>
+    <mp-code-example>
+<![CDATA[
+      <semantic-form new-subject-template='http://www.example.com/id/{{UUID}}'
+        post-action='redirect'
+        browser-persistence=true
+        form-id='example-6'
+        fields='[
+          {
+            "id": "file",
+            "label": "File",
+            "description": "The attached file",
+            "xsdDatatype": "xsd:anyURI",
+            "selectPattern": "SELECT $value WHERE { $subject <http://www.example.com/hasAttachedFile> $value }",
+            "insertPattern": "INSERT { $subject <http://www.example.com/hasAttachedFile> $value } WHERE {}",
+            "deletePattern": "DELETE { $subject <http://www.example.com/hasAttachedFile> $value } WHERE {}"
+          }
+        ]'>
+        <bs-panel>
+          <h4>Create new document with attached file</h4>
+          <semantic-form-recover-notification></semantic-form-recover-notification>
+          <semantic-form-file-input
+              for='file'
+              context-uri='http://example.com'
+              storage='undefined-1'
+              temp-storage='undefined-2'
+          ></semantic-form-file-input>
+          <semantic-form-errors></semantic-form-errors>
+          <!-- save and reset button for form -->
+          <button name="submit" class="btn btn-default">Save</button>
+          <button name="reset" class="btn btn-default">Reset</button>
+        </bs-panel>
+      </semantic-form>
+]]>
+    </mp-code-example>
+  </div>
+</div>

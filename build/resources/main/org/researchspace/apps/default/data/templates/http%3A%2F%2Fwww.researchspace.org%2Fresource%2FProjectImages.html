@@ -1,0 +1,198 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link iri='http://www.researchspace.org/resource/ProjectDashboard'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li class="active">Project - Images</li>
+</ol>
+
+<div class="page system-assets">
+
+[[#>rsp:ClipboardSidebar]]
+[[#> rsp:DetailsSidebar]]
+
+  <div class='page__body--borderless page__body--borderless-pd'>
+
+  <div class="container-fluid adminPage-header-container">
+    <bs-row class="row-center">
+      <bs-col xs=12 sm=11 md=11 lg=11 class="rs-col-xl-10 adminPage-header--col">
+        <div class="adminPage-header--content">
+          <div class='adminPage-header--thumbnail'>
+            <i class="rs-icon rs-icon-images"></i>
+          </div>
+          <div class='adminPage-header--body'>
+            <h2>Project - Images 
+              
+              [[#if (hasPermission "forms:ldp:*")]]
+              <mp-overlay-dialog title="Image Upload" type="modal" bs-size="large">
+                <mp-overlay-dialog-trigger>
+                  <button class="btn btn-header-right pull-right">
+                   <i class="fa fa-upload"></i>
+                   <div>Upload image</div>
+                 </button>
+                </mp-overlay-dialog-trigger>
+                <mp-overlay-dialog-content>
+                  <div style="padding: 0px 30px 15px;">
+                    <semantic-context repository='assets'>
+                      <semantic-form new-subject-template='/EX_Digital_Image/{{UUID}}'
+                                     fields='[[fieldDefinitions
+                                 label="http://www.w3.org/2000/01/rdf-schema#label"
+                                 P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                                 P1_is_identified_by="http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by"
+                                 type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                               ]]'
+                                     >
+                        <semantic-form-hidden-input for='type' 
+                                                    default-values='["http://www.researchspace.org/ontology/EX_Digital_Image"]'
+                                                    > </semantic-form-hidden-input>
+         
+                        <semantic-form-file-input for='P1_is_identified_by' 
+                                                  accept-pattern='image/*' 
+                                                  storage='images'
+                                                  temp-storage='tmp'
+                                                  placeholder='Please drag&drop your image here'
+                                                  from-url-or-drop=true
+                                                  name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                                  media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                                  resource-query='
+                                                     PREFIX rso: <http://www.researchspace.org/ontology/>
+                                                     CONSTRUCT {
+                                                       ?__resourceIri__ a rso:EX_File.
+                                                       ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
+                                                       ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                                     } WHERE {}
+         
+                                                 '
+                                                  generate-iri-query='
+                                                   SELECT ?resourceIri {
+                                                     BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                   }
+         
+                                                  '
+                                                  ></semantic-form-file-input>
+                        <semantic-form-text-input for='label'></semantic-form-text-input>
+                        <semantic-form-text-input for='P3_has_note' multiline=true></semantic-form-text-input>
+         
+                        <div class='form-btn-group'>
+                          <button name="reset" class="btn btn-default">Reset</button>
+                          <button name="submit" class="btn btn-primary">Save</button>
+                        </div>
+                      </semantic-form>
+                    </semantic-context>
+                  </div>
+                </mp-overlay-dialog-content>
+             </mp-overlay-dialog>
+             [[/if]]
+             <div class='clearfix'></div>
+
+            </h2>
+        </div>
+      </bs-col>
+    </bs-row> <!--  close row -->
+  </div>
+
+  <div class="container-fluid system-assets__cards-container">
+    <bs-row class="row-center">
+        <bs-col xs=12 sm=11 md=11 lg=11 class='rs-col-xl-10'>
+          <semantic-search>
+            <div class="system-assets__filter-actions">
+              
+              <semantic-search-query-keyword 
+                  query='
+                    SELECT ?subject WHERE { 
+                      ?subject a rso:EX_Digital_Image .
+                      ?subject rdfs:label ?label .
+                      ?label bds:search ?__token__ ;
+                                  bds:minRelevance "0.3" ;
+                                  bds:matchAllTerms "true"  .
+                    }
+                  '
+                  default-query='
+                    SELECT ?subject WHERE {
+                      ?subject a rso:EX_Digital_Image .
+                    }
+                  '
+                  debounce=500
+                ></semantic-search-query-keyword>
+                <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+                  <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
+                  <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
+                   [[#if (hasPermission "forms:ldp:*")]]
+                  <mp-create-set-action></mp-create-set-action>
+                  [[/if]]
+                </mp-selection-action-choice>
+            </div>
+            
+            <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+              <semantic-search-result-holder>
+                <div data-flex-self="md-full">
+                  
+                  <semantic-search-result id='semantic-search-result'>
+                      <semantic-table id='image-grid'
+                                query='
+                                  SELECT DISTINCT ?subject ?container WHERE {
+                                    OPTIONAL {
+                                      ?subject crm:P1_is_identified_by/prov:generatedAtTime ?generated .
+                                    }
+                                    BIND(CONCAT(STR(?subject), "/container") AS ?container)
+                                  } ORDER BY DESC(?generated) ?subject
+                                  '
+                                tuple-template='{{> gridItem }}',
+                                options='{"showFilter":false, "resultsPerPage":30}'
+                      >
+                        <template id='gridItem'>
+                          <div class='card-select-container'>
+                            <div class='card-select-input'>
+                              <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                            </div>
+                          <mp-draggable iri='{{subject.value}}'>
+                            <div class="rs-card-container">
+                              {{#> rsp:itemCardTemplate iri=subject.value cardMargin=6}}
+                              
+                                {{#*inline "hoverContent"}}
+                                  <div>
+                                    <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                                  </div>
+                                {{/inline}}
+
+                                [[#if (hasPermission "forms:ldp:*")]]
+                                {{#*inline "additionalActions"}}
+                                
+                                  <div class="rs-default-card__hover-icon">
+                                    <mp-ldp-remove-from-container-action 
+                                      iri='{{container.value}}' 
+                                      container='http://www.researchspace.org/resource/system/formContainer'
+                                    >
+                                      <button type="button" name='delete' class="rs-button" title="Delete">
+                                        <i class="fa fa-trash-o" style="font-size: 23px;"></i>
+                                      </button>
+                                    </mp-ldp-remove-from-container-action>
+                                  </div>
+                                {{/inline}}
+                                [[/if]]
+                              {{/rsp:itemCardTemplate}}
+
+                            </div>
+                          </mp-draggable>
+
+                        </div>
+                        </template>
+                      </semantic-table>   
+                    </semantic-search-result>
+                </div>
+              </semantic-search-result-holder>
+            </div>
+          </semantic-search>
+        </bs-col>   
+      </bs-row> <!--  close row -->
+  </div>
+  
+  </div>
+  
+[[/rsp:DetailsSidebar]]
+[[/rsp:ClipboardSidebar]]
+</div>

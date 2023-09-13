@@ -1,0 +1,48 @@
+[[#*inline "pattern"]]
+  [[#if po]]
+    <[[this]]> ?property ?object .
+  [[else]]
+    ?subject ?property <[[this]]> .
+  [[/if]]
+[[/inline]]
+
+<semantic-table 
+    query='
+      SELECT ?property ?[[projection]] ?graph WHERE { 
+        { 
+          GRAPH ?graph { [[> pattern]] }
+        } UNION {
+          [[> pattern]]
+          OPTIONAL { GRAPH ?g { [[> pattern]] } }
+          FILTER(!BOUND(?g))
+        } 
+      } LIMIT 1000'
+    column-configuration='[
+      {"variableName":"property", "displayName":"Property"},
+      {"variableName":"[[projection]]", "displayName":"[[label]]"},
+      {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> template}}"}                                
+    ]'
+    no-result-template='Resource [[this]] is not used in a subject in any RDF statement.'
+    options='{
+      "resultsPerPage":10
+    }'
+    show-literal-datatype=true
+    link-params='[[#if (urlParam "showStatements")]]{"showStatements": [[urlParam "showStatements"]]}[[else]]{}[[/if]]'
+>
+    <template id='template'>
+      {{#if graph.value}}
+        <semantic-link uri="[[resolvePrefix "Admin:NamedGraphs"]]" urlqueryparam-graph='{{graph.value}}'>{{graph.value}}</semantic-link>
+      {{else}}
+        <semantic-link uri="[[resolvePrefix "Admin:NamedGraphs"]]">Default Graph</semantic-link>
+      {{/if}}
+    </template>
+</semantic-table>
+
+[[#if showLink]]
+  <mp-link url="/sparql" 
+          urlqueryparam-query='SELECT * WHERE { [[> pattern]] } LIMIT 100'
+          class-name='btn btn-success'>
+          Execute as SPARQL query
+  </mp-link>
+[[/if]]
+

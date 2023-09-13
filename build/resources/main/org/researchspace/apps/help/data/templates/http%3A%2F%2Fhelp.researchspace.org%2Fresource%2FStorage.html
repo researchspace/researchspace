@@ -1,0 +1,274 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Storage</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+   <h1>Storage</h1>
+    <p>
+      <i>
+        The concept of "storages" provides an abstraction from the low-level file system.
+        While previously the platform did heavily rely on file system pointers for persisting configuration changes,
+        the new storage layer provides an abstraction over the low-level file system.
+        The storage layer can connect to different storage implementations (local file-based, remote S3 object-based etc.)
+        in parallel, whereas every storage is identified by a storage ID.
+      </i>
+    </p>
+    <p>
+      <i>
+     		Lookups are be performed against individual storages or as delegation calls,
+        i.e. storages build a chain of responsibility and will be scanned sequentially. This greatly simplifies the development and lifecycle of platform apps (domain/customer specific customizations of the platform) as well as provides integration with (external) storage locations for accessing and storing binary or non-binary file collections like images, 3D models or documents.
+      </i>
+    </p>
+   <h2 id="configuration">Storage Types</h2>
+    <style>
+      .config-params dt { margin-left: 1em; }
+      .config-params dd { margin-left: 3em; }
+    </style>
+    (Mandatory parameters are marked with <code>*</code>.)
+    <table class="table table-striped table-bordered">
+      <tbody>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Parameters</th>
+        </tr>
+        <tr>
+          <td><code>nonVersionedFile</code></td>
+          <td>Reads and writes files from a local filesystem directory or any mounted remote path.</td>
+          <td>
+            <dl class="config-params">
+              <dt><code>root</code>*</dt>
+              <dd>Absolute filesystem path to attached directory, e.g. <code>/home/user/storage1</code> on Linux, <code>C:/Storage1/</code> on Windows.</dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td><code>classpath</code></td>
+          <td>Reads Java classpath resources as immutable storage objects.</td>
+          <td>
+            <dl class="config-params">
+              <dt><code>classpathLocation</code>*</dt>
+              <dd><p>Classpath location (prefix) to read resources from, e.g.: <code>com/example/resources</code></p>
+                <p>The location uses <code>/</code> as path separator and must not start or end with a separator.</p></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td><code>s3</code></td>
+          <td>Reads and writes objects from/to specified bucket on AWS S3 compatible storage.</td>
+          <td>
+            <dl class="config-params">
+              <dt><code>bucket</code>*</dt>
+              <dd>Source bucket to read onjects and version info.</dd>
+              <!--<dt><code>usingEmulator</code></dt>
+              <dd>Determines whether storage should ignore AWS sign configuration to test on an S3 emulator.</dd>-->
+              <dt><code>endpoint</code><sup>1</sup></dt>
+              <dd></dd>
+              <dt><code>region</code><sup>1</sup></dt>
+              <dd></dd>
+              <dt><code>access-key</code><sup>2</sup></dt>
+              <dd></dd>
+              <dt><code>secret-key</code><sup>2</sup></dt>
+              <dd></dd>
+              <!--
+              <dt><code>assumedRole</code></dt>
+              <dd></dd>
+              <dt><code>roleSessionName</code></dt>
+              <dd></dd>-->
+            </dl>
+            <p><sup>1</sup><code>endpoint</code> and <code>region</code> must be specified together.</p>
+            <p><sup>2</sup><code>access-key</code> and <code>secret-key</code> must be specified together.</p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>git</code></td>
+          <td>Reads and writes from/to a locally-cloned Git repository. Every change is translated into a single commit.</td>
+          <td>
+            <dl class="config-params">
+              <dt><code>localPath</code>*</dt>
+              <dd><p>Git repository directory on local file system, e.g.: <code>/var/myRepo</code> or <code>C:\MyRepo</code></p></dd>
+              <dt><code>branch</code></dt>
+              <dd><p>Name of a repository branch to check out when platform starts.</p></dd>
+              <dt><code>remoteUrl</code></dt>
+              <dd><p>Remote Git repository URL to push changes to.</p>
+                <p>Currently the repository is required to be manually cloned into local directory with Git remote <code>origin</code> set to this URL; otherwise an error will be thrown.</p>
+                <p>If the property is set, the storage is automatically attempts to push commited changes. The credentials for push are assumed to be configured externally with either default SHH private key based access or user/password embeded directly in the <code>remoteUrl</code>.</p></dd>
+              <dt><code>maxPushAttempts</code> (default: <code>3</code>)</dt>
+              <dd><p>Maximum count of attempts to automatically push changes when attempt fails due to commits in remote repository made outside the platform.</p></dd>
+            </dl>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    Furthermore, the following attributes can be configured for any storage type:
+    <dl class="config-params">
+      <dt><code>mutable</code></dt>
+      <dd><p>Default value: <code>false</code></p>
+        <p>Allows writes to the storage content, which includes creating, updating and deleting objects.</p></dd>
+      <dt><code>subroot</code></dt>
+      <dd><p>Redirects all read and write operations to the specified sub-directory location.</p>
+        <p>The location uses <code>/</code> as path separator and must not start or end with a separator.</p></dd>
+    </dl>
+
+    <h2 id="configuration">Storage configuration via CLI</h2>
+    For the time being, it is only possible to configure / connect to a storage during deployment by passing in environment parameters in this form:
+    <pre><code>
+    -Dconfig.[storage-id].[property-name]=[property-value]
+    </code></pre>
+
+    For instance, this set of parameters will configure writable non-versioned storage <code>my-storage</code> at local filesystem directory <code>/runtime-data</code>:
+    <pre><code>
+-Dconfig.storage.my-storage.type=nonVersionedFile \
+-Dconfig.storage.my-storage.mutable=true \
+-Dconfig.storage.my-storage.root=/runtime-data
+    </code></pre>
+
+    <h2>S3 Storage Configuration</h2>
+    If you wish to connect to AWS S3 storage, you have to pass in the respective connection parameters:
+    <pre><code>
+-Dconfig.storage.my-storage.type=s3 \
+-Dconfig.storage.my-storage.mutable=false \
+-Dconfig.storage.my-storage.endpoint=https://s3.amazonaws.com/ \
+-Dconfig.storage.my-storage.region=us-east-1 \
+-Dconfig.storage.my-storage.bucket=my-storage-bucket \
+-Dconfig.storage.my-storage.access-key=XXXAWSaccess-keyXXX \
+-Dconfig.storage.my-storage.secret-key=XXXAWSsecret-keyXXX
+    </code></pre>
+
+    <!--<p>Please note that specified S3 buckets will be created if they do not yet exist. This can be prevented with limited user permissions.</p>-->
+    <p>The minimum rights for the user, and these can be limited to relevant S3 buckets/resources, are:</p>
+    <pre>
+<code>
+s3:PutObject
+s3:GetObject
+s3:ListBucket
+s3:DeleteObject
+s3:GetBucketLocation
+</code>
+    </pre>
+    <h3 id="runtime-s3-example">Example: S3 as <code>runtime</code> Storage</h3>
+    Pass the following paramteres to the platform, i.e. by the setting <code>PLATFORM_OPTS</code> in docker:
+    <pre><code>
+-Dconfig.storage.runtime.type=s3 \
+-Dconfig.storage.runtime.mutable=true \
+-Dconfig.storage.runtime.endpoint=https://s3.amazonaws.com/ \
+-Dconfig.storage.runtime.signingRegion=us-east-1 \
+-Dconfig.storage.runtime.bucket=my-researchspace-app-bucket \
+-Dconfig.storage.runtime.access-key=XXXAWSaccess-keyXXX \
+-Dconfig.storage.runtime.secret-key=XXXAWSsecret-keyXXX \
+-Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini
+    </code></pre>
+
+    <h3>Assume role instead of using Keys for S3</h3>
+    <p>Instead of specifying an AWS access key and secret key, you can also specify a role name to be assumed:</p>
+    <pre><code>
+    -Dconfig.storage.runtime.assumedRole=arn:aws:iam::{aws-account-id}:role/{assume-role-name} -Dconfig.storage.runtime.roleSessionName={researchspace-name-for-session-log}
+    </code></pre>
+    <p>(replace <code>{}</code> respectively). This requires local AWS credentials configured in the environment, which have permissions for <code>sts:AssumeRole</code>.</p>
+    <p>The assumed role requires the same permissions as listed for users above.</p>
+
+    <h3>Assume role on EC2 instances</h3>
+    <p></p>EC2 instances which are setup with a role allow researchspace to directly utilize these roles. Please do not specify any of <code>access-key</code>, <code>secret-key</code> or <code>assumedRole</code> to utilize these instance profile credentials</p>
+
+    <h4>Troubleshooting</h4>
+   <p>The researchspace log will provide most relevant information, but in some cases (E.g. on 403 Access denied) the AWS CloudTrail will provide additional insights.</p>
+   <p>Check under <code>CloudTrail > Event Histroy</code> and filter by <code>Event Name > AssumeRole</code>.</p>
+
+
+
+   <h2 id="storage-and-apps">Storage and Apps</h2>
+   <p>
+     A storage is not equal to an app. A storage provides delegated access to non-binary app artefacts, but not every storage is an app. <br>
+     The following non-binary artefacts are currently managed through the storage layer:
+   </p>
+    <ul>
+      <li>HTML pages / templates (<code>data/templates/*.html</code>)</li>
+     	<li>Repository configurations (<code>config/repositories/*.ttl</code>)</li>
+      <li>Ephedra service configurations (<code>config/services/*.ttl</code>)</li>
+      <li>Query as a service configurations (<code>config/qaas/*.prop</code>)</li>
+      <li>SHACL rules and rule generators (<code>config/rdfunit/*.ttl</code>)</li>
+      <li>System configuration files(<code>config/{ui,global,dataQuality,namespaces,environment,proxy}.prop</code>)</li>
+      <li>Local user credentials and/or role definitions (<code>config/shiro.ini</code>).<br>
+        <b>Please note </b> that this requires to instruct the security module to read the shiro file explicitly from the storage and not from the default file system. This can be done by setting property <code>securityConfigStorageId</code>: <pre><code>-Dconfig.environment.securityConfigStorageId=[storage-id]</code></pre>
+      </li>
+    </ul>
+    <p>
+    	Furthermore, the following rules apply:
+    </p>
+   <ul>
+     <li>A storage can exist independently from an app.</li>
+     <li>Every app has exactly one associated storage.</li>
+     <li>A storage is associated to an app by its ID, i.e. the <code>plugin.id</code> must be equal to the storage ID.</li>
+     <li>If no storage is defined for an app, a default <code>nonVersionedFile</code> storage is defined. The root of the storage folder will be set to the root of the app folder.</li>
+     <li><b>Apps can not be deployed through a storage</b>, i.e. apps are file-based and may add binary/compiled library or service extensions.<br>
+       However, non-binary app artefacts including <i>templates</i>, <i>configuration properties</i>, <i>header/footer files</i> or <i>ldp knowledge assets</i>
+       can be served through a storage. As explained in the previous item, the default storage is file-based, but it can also be configured a remote, object-based storage like, for example, <i>AWS S3</i>.
+     </li>
+   </ul>
+   <h3 id="immutability">Immutability of App Storages</h3>
+    Except for the <code>runtime</code> app storage, <b>all apps and respective storages are immutable (read-only)</b>.
+    You can configure mutable storages, but these are not designed for apps.
+
+    <p>
+      By design all changes (additions or modifications of existing default settings) during runtime go to the <code>runtime</code> app and respective <code>runtime</code> storage.
+    </p>
+
+   <h3 id="delegation-order">Delegation/Access Order of App Storages</h3>
+    The order in which delegated access is provided to the app artefacts is determined by the app dependency order (c.f. <semantic-link iri="[[resolvePrefix "Help:Apps"]]">Apps Help</semantic-link>).
+    By default, the <code>runtime</code> app storage precedes / shadows the default <code>core</code> app storage, i.e. if the same template is provided in <code>runtime</code> as in  <code>core</code>, the storage will always serve the template from the <code>runtime</code> storage first, if it exists.
+
+    <h3 id="change-runtime-storage">Changing <code>runtime</code> Storage for (local) App Development</h3>
+    <p>
+      In particular for (local) development, it might be convenient to set the <b>runtime storage</b> (default location <code>/runtime-data</code>) to a different directory or even a different storage type.
+    </p>
+    <h4 id="runtime-git-example">Example: Local Git folder as <code>runtime</code> Storage</h4>
+    <p>Please refer to the <semantic-link iri="[[resolvePrefix "Help:GitStorageGuide"]]">step by step guide to setup git as runtime storage</semantic-link> for detailed configuration steps.</p>  <p></p>
+    <p>
+      With the new storage mechanism it is convenient to set the root of the <b>runtime storage</b> to, for example, a local git folder and all changes (modifications/additions) will be available in isolation to be managed by your git folder:
+    </p>
+    <pre><code>
+-Dconfig.storage.runtime.type=nonVersionedFile \
+-Dconfig.storage.runtime.mutable=true \
+-Dconfig.storage.runtime.root=/my-mounted-git-app-folder
+    </code></pre>
+    <p>It is also possible to use locally cloned Git repository as versioned storage directly by utilizing <code>git</code> storage type:</p>
+    <pre><code>
+-Dconfig.storage.runtime.type=git \
+-Dconfig.storage.runtime.mutable=true \
+-Dconfig.storage.runtime.localPath=/my-host-or-docker-volume-path/my-researchspace-git-apps \
+-Dconfig.storage.runtime.subroot=app1 \
+-Dconfig.storage.runtime.branch=my-branch
+    </code></pre>
+    <p>
+      For the docker distribution it is recommended to <i>docker mount</i> your local git app folder, for example, <code>/user/home/my-local-app-git-folder</code> into the container <code>-v /user/home/my-local-app-git-folder:/my-mounted-git-app-folder:rw</code>.
+    </p>
+    <p>
+      Depending on your OS and docker distribution you may also need to change the folder permissions from within the container (for example, <code>docker exec my-container sh -c "chown -R jetty:1001 /my-mounted-git-app-folder && chmod -R g+wx /my-mounted-git-app-folder"</code>).
+    </p>
+    <b>Please note: </b> If you decide to mount your local (git) folder directly into the <code>/runtime-data</code> folder of the docker container, you may need to provide your own <code>/runtime-data/config/shiro.ini</code> file or set <code>-Dconfig.environment.shiroConfig=/runtime-data/config/shiro.ini</code> to a different location, for example, mount your own, standard shiro.ini into a dedicated location.
+
+    <h3 id="implicit-apps">Implicit Apps</h3>
+    <bs-alert bs-style="info" style="width: 800px;margin-left:2%;">
+      <strong>Info!</strong><br/>
+      <p>
+        Please note that mechanism of <i>"Implicit Apps"</i> is experimental and may change or even be removed from future versions.
+      </p>
+    </bs-alert>
+    <ul>
+      <li>For every app there must exist exactly one <code>plugin.properties</code> file, i.e. through this file the app is properly instantiated and dependencies are being resolved.</li>
+      <li>Still, you can configure a storage to serve non-binary app artefacts <b>without</b> explicitly deploying an app, i.e. without providing an <code>plugin.properties</code> file. The storage must just serve the artefacts in the expected app directory and file structure. We call these "implicit apps" or "app by reference", since these are neither recognized by the platform as apps nor does it provide control, for example, the "delegation" order w.r.t. to other apps or storages.
+      </li>
+    </ul>
+
+	</div>
+</div>

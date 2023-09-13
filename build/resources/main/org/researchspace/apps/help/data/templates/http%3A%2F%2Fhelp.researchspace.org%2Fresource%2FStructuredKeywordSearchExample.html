@@ -1,0 +1,45 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Semantic Search" uri="http://help.researchspace.org/resource/SemanticSearch">Semantic Search</semantic-link>
+  </li>
+  <li class="active">Keyword Search with Facets</li>
+</ol>
+
+<div class="page">
+  <div class="page__body">
+  [[> Help:StructuredSearchSampleDataCheck]]
+  <p>
+    Try to type <i>alice</i> to search for all people that know her.
+  </p>
+  <div class="rs-help-search">
+    <div>
+<mp-code-example>
+<![CDATA[
+  [[#> Help:StructuredSearchExampleBase]]
+    <semantic-search-query-keyword 
+      domain='<http://xmlns.com/foaf/0.1/Person>'
+      query='
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        SELECT ?subject WHERE { 
+          ?subject foaf:knows ?friend. 
+          ?friend rdfs:label ?label .
+          FILTER REGEX(STR(?label), ?__token__, "i")
+        }
+      '
+    ></semantic-search-query-keyword>
+  [[/ Help:StructuredSearchExampleBase]]
+]]>
+</mp-code-example>
+    </div>
+  </div>
+</div>
+</div>

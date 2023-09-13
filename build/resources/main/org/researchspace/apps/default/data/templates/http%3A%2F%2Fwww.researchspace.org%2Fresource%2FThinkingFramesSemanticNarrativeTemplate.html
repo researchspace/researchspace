@@ -1,0 +1,153 @@
+<rs-text-editor
+                [[#if (hasPermission "forms:ldp:*")]]
+                readonly='false'
+                [[else]]
+                readonly='true'
+                [[/if]]
+  document-iri='{{iri}}'
+  resource-templates='[
+  {
+    "id": "image",
+    "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
+    "label": "Annotated Image",
+    "template": "{{> image}}",
+    "resizable": true,
+    "defaults": {
+      "height": "600px",
+      "width": "100%"
+    }
+  },
+  {
+    "id": "full-size-image",
+    "type": "http://www.researchspace.org/ontology/EX_Digital_Image",
+    "label": "Full Image",
+    "template": "{{> fullImage}}",
+    "resizable": true,
+    "defaults": {
+      "height": "600px",
+      "width": "100%"
+    }
+  },
+  {
+    "id": "knowledge-map",
+    "type": "http://ontodia.org/schema/v1#Diagram",
+    "label": "Knowledge Map",
+    "template": "{{> knowledgeMap diagram=iri.value}}",
+    "resizable": true,
+    "defaults": {
+      "height": "600px",
+      "width": "100%"
+    }
+  },
+  {
+    "id": "set-grid",
+    "type": "http://www.researchspace.org/resource/system/Set",
+    "label": "Set Grid",
+    "template": "{{> setGrid}}",
+    "resizable": true,
+    "defaults": {
+      "height": "300px",
+      "width": "100%"
+    }
+  },
+  {
+    "id": "chart",
+    "type": "http://www.researchspace.org/ontologies/persist/PersistedComponent",
+    "label": "chart",
+    "template": "{{> chart}}",
+    "resizable": false
+  },
+  {
+    "id": "card",
+    "type": "any",
+    "label": "card",
+    "template": "{{> itemCard}}",
+    "resizable": true,
+    "defaults": {
+      "height": "240px",
+      "width": "180px"
+    }
+  }                      
+  ]'
+>
+  <template id='chart'>
+    <div>
+       <mp-persisted-component iri='{{iri.value}}'></mp-persisted-component>
+    </div>
+  </template>
+  <template id='itemCard'>
+  {{#> rsp:itemCardTemplate iri=iri.value autosize=true}}
+    {{#*inline "additionalActions"}}
+      <mp-draggable iri='{{iri}}'>
+        <div class="rs-default-card__hover-icon">
+          <button type="button" class="rs-button" title="Drag and drop the Item">
+            <i class="rs-icon rs-icon-drag_arrow"></i>
+          </button>
+        </div>
+      </mp-draggable>
+     {{/inline}}
+   {{/rsp:itemCardTemplate}}
+  </template>
+  <template id='image'>
+    [[!-- We generating random id for all mirador instances, because otherwise openseadragon can't be initialized --]]
+    <rs-iiif-mirador id='mirador-{{uuid}}'
+    [[> rsp:IIIFConfig]]
+    image-or-region='{{iri.value}}'
+    use-details-sidebar=true></rs-iiif-mirador>
+  </template>
+  <template id='fullImage'>
+    <rs-iiif-image-thumbnail
+       [[> rsp:IIIFConfig]]
+         image-or-region='{{iri.value}}'
+         format='auto'
+    >
+    </rs-iiif-image-thumbnail>
+  </template>
+  <template id='knowledgeMap'>
+    <div>
+      <style>
+        .ontodia .Toolbar--component {
+          display: flex;
+          justify-content: center;
+        }
+      </style>
+      [[> rsp:KnowledgeMapOntodiaConfig standalone=true readonly=true]]
+    </div>
+  </template>
+  <template id='setGrid'>
+    <div>
+      <p>Set: <semantic-link iri="{{iri.value}}"></semantic-link><p>
+      <semantic-table
+                    number-of-displayed-rows=1000
+                    query='
+                      select ?iri where {
+                        <{{iri.value}}> a <http://www.researchspace.org/resource/system/Set> ;
+                        <http://www.w3.org/ns/ldp#contains> ?item .
+                        ?item <http://www.researchspace.org/resource/system/setItem> ?iri .
+                        OPTIONAL {
+                          ?item <http://www.researchspace.org/resource/system/setItemIndex> ?index .
+                          ?item prov:generatedAtTime ?modificationDate .
+                        }
+                      } ORDER BY ?index DESC(?modificationDate) 
+                    '
+                    tuple-template='{{> item}}'
+                    options='{"showFilter":false}'
+      >
+          <template id="item">
+              {{#> rsp:itemCardTemplate iri=iri.value cardMargin=5}}
+              {{#*inline "additionalActions"}}
+              <mp-draggable iri='{{iri}}'>
+                  <div class="rs-default-card__hover-icon">
+                      <button type="button" class="rs-button" title="Drag and drop the Item">
+                        <i class="rs-icon rs-icon-drag_arrow"></i>
+                      </button>
+                  </div>
+              </mp-draggable>
+              {{/inline}}
+              {{/rsp:itemCardTemplate}}
+
+          </template>
+      </semantic-table>
+    </div>
+  </template>
+</rs-text-editor>

@@ -1,0 +1,47 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Devops Tools</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Devops Tools</h1>
+    
+    <p>This page provides documentation, snippets and tooling for typical devops use-cases.</p>
+    
+    <h2>Using the logs API</h2>
+    
+    <p>The following CURL commands demonstrate the usage of the logs API for log profile management, as well as for retrieval of log files.</p>
+    
+    <p><i>Note: the configuration is not permanent and will be reset after restarting the service</i></p>
+    
+    <pre>
+    <code>
+# HTTP POST request to set the log profile (e.g. to log4j2-debug)
+curl -i -u admin:admin -d "logprofile=log4j2-debug" -X POST http://localhost:10214/rest/admin/logs/profile
+
+# HTTP GET request to retrieve the currently applied log profile
+curl -i -u admin:admin -X GET http://localhost:10214/rest/admin/logs/profile
+
+# HTTP GET request to retrieve the current log level for a given logger
+curl -i -u admin:admin -X GET http://localhost:10214/rest/admin/logs/loggerlevel?logger=org.researchspace.rest.endpoint
+
+# HTTP POST request to set the log level for a given logger
+curl -i -u admin:admin -d "logger=org.researchspace.rest.endpoint&level=TRACE" -X POST http://localhost:10214/rest/admin/logs/loggerlevel
+
+# HTTP POST request to reset the logging profile
+curl -i -u admin:admin -X POST http://localhost:10214/rest/admin/logs/profile/reset
+    </code>
+    </pre>
+    
+    
+  </div>
+</div>

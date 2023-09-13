@@ -1,0 +1,91 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Simple Search Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Simple Search Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        Simple keyword search with autosuggestion.<br/>
+        The search query is a fully customizable SPARQL query possibly including calls to external search indices such as Solr (depending on the availability) .
+      </div>
+      <div class="documentation__intro__demo" style="height:50px;width:400px;">
+        <semantic-simple-search
+          query='
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+            PREFIX person: <http://example.com/person/> 
+            SELECT ?resource ?label ?typelabel WHERE {
+              FILTER REGEX(?label, ?__token__, "i")
+              VALUES(?resource ?label ?typelabel){
+                ( person:alice "Alice" "Person" )
+                ( person:carola "Carola" "Person" )      
+                ( person:bob "Bob" "Person" )
+                ( person:mike "Mike" "Person" )
+              }
+            } LIMIT 10
+          '
+          template= '<span style="color: blue;" title="{{resource.value}}">{{label.value}} ({{typelabel.value}})</span>'
+          input-placeholder='Search for something e.g. "Bob"'
+        >
+        </semantic-simple-search>
+      </div>
+    </div>
+    <div style="clear:both;"></div>
+
+    <h2> Configuration </h2>
+
+    <mp-documentation type="SemanticSimpleSearchConfig"></mp-documentation>
+
+
+    <h3>Hybrid Search (Textindex)</h3><br>  
+    <p>
+    	Performance for displaying query results instantly (i.e. in one of two search modes) depends on several aspects such as client-side performance, complexity of the query as well as number of results to be rendered. 
+    </p>
+    <p>
+    	It is recommended to use vendor/graph database specific service extensions to invoke text search indicies for responsive auto-suggestions as well as for better scoring and ranking of the results.
+    </p>
+    <p>Furthermore, it is recommended to limit the number of results e.g. possibly exploiting a score to show only the top matches.</p>
+
+    <h2> Examples </h2>
+    <h3> Customizable Autosuggestion Entries </h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        The following example uses a custom html template to format the autosuggestion entries i.e. adds an additional icon in front of the entry.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<semantic-simple-search
+  query='
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/> 
+    PREFIX person: <http://example.com/person/> 
+    SELECT ?resource ?label ?typelabel WHERE {
+      FILTER REGEX(?label, ?__token__, "i")
+      VALUES(?resource ?label ?typelabel){
+        ( person:alice "Alice" "Person" )
+        ( person:carola "Carola" "Person" )      
+        ( person:bob "Bob" "Person" )
+        ( person:mike "Mike" "Person" )
+      }
+    } LIMIT 10
+  '
+  template='<span style="color: blue;" title="{{resource.value}}">{{label.value}} ({{typelabel.value}})</span>'
+  input-placeholder='Search for something e.g. "Bob"'
+></semantic-simple-search>
+]]>
+         </mp-code-example>
+       </div>
+    </div>
+  </div>
+</div>
+

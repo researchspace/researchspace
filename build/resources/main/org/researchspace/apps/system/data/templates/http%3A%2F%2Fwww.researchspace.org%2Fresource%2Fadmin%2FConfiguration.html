@@ -1,0 +1,70 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li class="active">System Settings</li>
+</ol>
+
+<div class="page rs-config-page"> 
+  
+  [[> rsp:adminPageHeader title="System Settings" icon="fa fa-cog fa-lg"]]
+  
+  <div class="container-fluid" style="margin-bottom: 40px;">
+        <bs-row class="row-center">
+          <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8" style="padding-top:20px;">
+            
+                [[#if (hasPermission "api:config:*:*:read")]]
+                Properties that are marked as <b>Shadowed</b> in the tables below have been overriden by system parameters
+                (by passing in "-Dconfig.&lt;GroupId&gt;.&lt;ParamId&gt;" when starting the server). Shadowed parameters cannot
+                be modified through the User Interface.
+                <hr/>
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>Environment Configuration</span>
+                  </mp-collapsible-div-trigger>
+                 <mp-collapsible-div-content>
+                   <mp-admin-config-manager editable=false group="environment"></mp-admin-config-manager>
+                 </mp-collapsible-div-content>
+                </mp-collapsible-div>
+
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>UI Configuration</span>
+                  </mp-collapsible-div-trigger>
+                 <mp-collapsible-div-content>
+                   <mp-admin-config-manager editable=true group="ui"></mp-admin-config-manager>
+                 </mp-collapsible-div-content>
+                </mp-collapsible-div>
+
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>Global Configuration</span>
+                  </mp-collapsible-div-trigger>
+                 <mp-collapsible-div-content>
+                   <div>
+                     <mp-admin-config-manager editable=true group="global"></mp-admin-config-manager>
+                   </div>
+                 </mp-collapsible-div-content>
+                </mp-collapsible-div>
+
+                <mp-collapsible-div expanded=false>
+                  <mp-collapsible-div-trigger>
+                    <span>Data Quality Configuration</span>
+                  </mp-collapsible-div-trigger>
+                 <mp-collapsible-div-content>
+                   <div>
+                     <mp-admin-config-manager editable=true group="dataQuality"></mp-admin-config-manager>
+                   </div>
+                 </mp-collapsible-div-content>
+                </mp-collapsible-div>
+
+                [[else]]
+                No permission to read or change configuration.
+                [[/if]]
+              </bs-col>   
+        </bs-row> <!--  close row -->
+  </div>           
+</div>

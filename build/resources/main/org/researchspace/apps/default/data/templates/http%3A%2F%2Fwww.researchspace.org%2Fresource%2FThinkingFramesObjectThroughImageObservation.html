@@ -1,0 +1,166 @@
+<div style='height: 100%;'>
+      <semantic-query query='
+        PREFIX ontodia: <http://ontodia.org/schema/v1#>
+        PREFIX ldp: <http://www.w3.org/ns/ldp#>
+
+        SELECT (CONCAT("[", GROUP_CONCAT(DISTINCT CONCAT("\"", STR(?o), "\"");separator=", "), "]") as ?items) {
+          {
+            <{{iri}}> a ontodia:Diagram .
+            <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o .
+            ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
+            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+          } UNION {
+            <{{iri}}> a Platform:Set .
+            <{{iri}}> ldp:contains / Platform:setItem ?o .
+            ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
+            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+          } UNION {
+            <{{iri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+            BIND(<{{iri}}> as ?o) .
+          }
+        }'
+        template='{{> template}}'>
+       <template id='template'>
+         {{#> rsp:ImageAnnotationWorkspace }}
+            <rs-iiif-viewer-panel
+              [[> rsp:IIIFConfig]]
+              id='image-editor'
+              use-details-sidebar=true
+              iris='{{bindings.0.items.value}}'
+              query='
+                SELECT DISTINCT ?image WHERE {
+                  ?subject (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
+                  ?image a ?type .
+                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+              }'
+              annotation-view-tooltip-template='
+                {{{{raw}}}}                                
+                <div class="all-annotations" id="annotation-viewer-{{windowId}}">
+                  <div class="text-viewer">Image Region(s)</div>
+                  {{#each annotations}}
+                    <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
+                      <div class="button-container">
+                        {{#if id}}
+                          <mp-template-item style="max-width: calc(100% - 80px);">
+                            <div>
+                              <semantic-link iri="{{id}}" style="display: block; width: 100%;">{{{annoText}}}</semantic-link>
+                            </div>
+                          </mp-template-item>
+                        {{/if}}
+                        <div>
+                          {{#if showUpdate}}
+                          <a href="#edit" class="edit">
+                            <i class="rs-icon rs-icon-annotation"></i>
+                            <!-- {{t "edit"}} -->
+                          </a>
+                        {{/if}}
+                        {{#if showDelete}}
+                          <a href="#delete" class="delete">
+                            <i class="iconmoon iconmoon-bin"></i>
+                            <!-- {{t "delete"}} -->
+                          </a>
+                        {{/if}}
+                          <a class="focus">
+                            <i class="rs-icon rs-icon-image"></i>
+                          </a>
+                        </div>
+                        
+                      </div>
+                      <br />
+                      <div>
+                        <mp-template-item>
+
+                          <semantic-query
+                            query="
+                              SELECT DISTINCT ?feature ?objectIri ?featureType {
+                                ?feature crm:P56i_is_found_on ?objectIri .
+                                ?feature crm:P138i_has_representation <{{id}}> .
+                                                    
+                                OPTIONAL {
+                                  ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark .
+                                  BIND (&#39;Mark&#39; as ?isMark) .
+                                }
+                                OPTIONAL {
+                                  ?feature crm:P65_shows_visual_item/rdf:type crm:E34_Inscription .
+                                  BIND (&#39;Inscription&#39; as ?isInscription) .
+                                }
+                                OPTIONAL {
+                                  ?feature crm:P65_shows_visual_item/rdf:type crm:E36_Visual_Item .
+                                  BIND (&#39;Visual Item&#39; as ?isVisualItem) .
+                                }
+                                BIND(COALESCE(?isMark, ?isInscription, ?isVisualItem) AS ?featureType)
+                              } 
+                            "
+                          >
+                            
+                            <template id="noResultTemplate">
+                              <semantic-query
+                                query="
+                                  SELECT DISTINCT ?region ?objectIri ?regionLabel {
+                                    <{{id}}> crmdig:L49_is_primary_area_of ?image .
+                                    ?objectIri crm:P138i_has_representation ?image .
+                                    <{{id}}> rso:displayLabel ?regionLabel .
+                                    BIND(<{{id}}> as ?region) .
+                                  } LIMIT 1 
+                                "
+                              >
+                              {{{{raw}}}}
+                                <template id="template">
+                                  <mp-event-trigger id="create-feature-from-region-mirador" 
+                                                                        type="TwoSidePanel.ShowBack" 
+                                                                        targets=&#39;["objects-panel"]&#39;
+                                                                        data=&#39;{ "regionIri": "{{bindings.0.region.value}}", "regionLabel": "{{bindings.0.regionLabel.value}}", "objectIri": "{{bindings.0.objectIri.value}}" }&#39;>
+                                    <span class="rs-icon rs-icon-annotation" style="cursor:pointer;">Associate feature</span>
+                                  </mp-event-trigger>
+                                </template>
+                              {{{{/raw}}}}
+                              </semantic-query>
+                            </template>
+                            {{{{raw}}}}
+                            <template id="template">
+                              <div>
+                                <div style="padding: 7px 0;">Associated Features</div>
+                                <div>
+                                {{#each bindings}}
+                                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <semantic-link iri="{{feature.value}}" 
+                                                  style="max-width: 150px;
+                                                  white-space: nowrap;
+                                                  overflow: hidden;
+                                                  text-overflow: ellipsis;
+                                                  padding-right: 6px;">
+                                    </semantic-link> 
+                                    <div>
+                                      <mp-event-trigger id="form-event-trigger" 
+                                                        type="TwoSidePanel.ShowBack" 
+                                                        targets=&#39;["objects-panel"]&#39;
+                                                        data=&#39;{"feature": "{{feature.value}}", "featureType": "{{featureType.value}}", "objectIri": "{{objectIri.value}}" }&#39;>
+                                         <span class="rs-icon rs-icon-annotation" style="cursor:pointer;">Edit</span>
+                                      </mp-event-trigger>
+                                      <mp-event-trigger id="details-view-trigger"
+                                                        type="Component.TemplateUpdate"
+                                                        data=&#39;{"iri": "{{feature.value}}"}&#39; targets=&#39;["details-view", "open-details-sidebar"]&#39;
+                                      >
+                                        <span class="iconmoon iconmoon-info" title="Explore Feature details" style="padding-left: 8px; cursor:pointer;">Details</span>
+                                      </mp-event-trigger>
+                                    </div>
+                                  </div>
+                                {{/each}}
+                                </div>
+                              </div>
+                            </template>
+                            {{{{/raw}}}}
+                          </semantic-query>
+                        </mp-template-item>
+                      </div>
+                    </div>
+                  {{/each}}
+                </div>
+                {{{{/raw}}}}
+              '
+            >
+            </rs-iiif-viewer-panel>
+         {{/rsp:ImageAnnotationWorkspace }}
+        </template>
+      </semantic-query>
+</div>

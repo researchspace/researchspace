@@ -1,0 +1,42 @@
+<mp-splitpane id='details-sidebar' nav-height=[[#if navHeight]][[navHeight]][[else]]92[[/if]] min-size=42 default-size=300 default-open='false' dock=true primary='second' always-render=true>
+  [[> @partial-block]]
+  <div data-flex-layout='column top-stretch' class="rightSidebar">
+    
+    [[!-- open sidebar when details view button is clicked in the card--]]
+    <mp-event-proxy id='open-details-sidebar'
+                    on-event-target='open-details-sidebar'
+                    on-event-type='Component.TemplateUpdate'
+                    proxy-event-type='SplitPane.Open' 
+                    proxy-targets='["details-sidebar"]'
+    ></mp-event-proxy>
+    
+    <mp-splitpane-toggle-on>
+      <button
+        style="border: none; outline: none; width: 100%; position:absolute; top:40%; left: -53px;"
+        class="rs-button rs-drawer-transparent">Details</button>
+    </mp-splitpane-toggle-on>
+    <mp-splitpane-toggle-off>
+      <div class="split-pane__leftsidebar-header">
+        <button data-flex-layout='layout="row center-left' class="rightSidebar-header-button">
+          <div class="fa fa-angle-right" aria-hidden="true"></div>
+          <h2>Details</h2>
+        </button>
+      </div>
+    </mp-splitpane-toggle-off>
+    <mp-splitpane-sidebar-open 
+    class='details-sidebar'
+    style='display: flex;'> [[!-- inline style required by the component --]]
+      <mp-event-target-template-render fixed-key='details-view' reparentable='true' id='details-view' template='{{> template}}'>
+        <template id='template'>
+          {{#if iri}}
+            <mp-event-target-refresh id='details-fields-view'>
+              <inline-template template-iri='[[resolvePrefix "rsp:EntityEditor"]]' options='{"iri": "{{iri}}"}'></inline-template>
+            </mp-event-target-refresh>
+          {{else}}
+          <div></div>
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
+    </mp-splitpane-sidebar-open>
+  </div>
+</mp-splitpane>

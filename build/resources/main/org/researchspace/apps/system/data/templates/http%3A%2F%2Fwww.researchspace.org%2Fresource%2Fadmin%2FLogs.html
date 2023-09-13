@@ -1,0 +1,95 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li class="active">Logs</li>
+</ol>
+
+<div class="page rs-logs">
+  [[> rsp:adminPageHeader title="Logs" icon="rs-icon rs-icon-terminal"]]
+
+  <div class="container-fluid" style="margin-top: 10px; margin-bottom: 3%;">
+    <bs-row class="row-center">
+      <bs-col xs="12" sm="11" md="10" lg="9" class="rs-col-xl-8">
+        <div id="rs-logs-tabs">
+          <bs-tabs unmount-on-exit="true">
+            <bs-tab event-key="1" title="Log Browser">
+              <p style="padding-top: 15px; padding-bottom: 10px;">
+                Select one of the available log files to view the logs in the log browser.
+              </p>
+              <div data-flex-layout="row top-top">
+                <div style="padding-right: 20px;">
+                  <mp-json-renderer get-url="/rest/admin/logs" template="{{> x}}">
+                    <template id="x">
+                      <div>
+                        <b>Available Logs</b>
+
+                        <div style="padding-left: 5px; padding-top: 5px;">
+                          {{#each this as |e|}}
+
+                          <mp-event-trigger
+                            id="event-trigger"
+                            type="Component.TemplateUpdate"
+                            data='{"relativePath": "{{e.relativePath}}"}'
+                            targets='["event-target"]'
+                          >
+                            <a>{{e.name}}</a>
+                          </mp-event-trigger>
+                          &nbsp;<a href="/rest/admin/logs/{{e.relativePath}}?download=true" target="_BLANK"
+                            ><i class="fa fa-download"></i
+                          ></a>
+                          <br />
+
+                          {{/each}}
+                        </div>
+                      </div>
+                    </template>
+                  </mp-json-renderer>
+                </div>
+
+                <div data-flex-self="size-x1">
+                  <mp-event-target-template-render id="event-target" template="{{> template}}">
+                    <template id="template">
+                      <div>
+                        <span>Log: <i>{{relativePath}}</i></span>
+                        <div style="width: 100%; height: calc(100vh - 370px);">
+                          <mp-admin-log-browser url="/rest/admin/logs/{{relativePath}}"></mp-admin-log-browser>
+                        </div>
+                      </div>
+                    </template>
+                  </mp-event-target-template-render>
+                </div>
+              </div>
+            </bs-tab>
+
+            <bs-tab event-key="2" title="Logging Configuration">
+              <div>
+                <p style="padding-top: 10px;">
+                  Use the following control to activate a different logging profile (e.g. for debugging purposes).
+                </p>
+
+                <p><i>Note: the configuration is not permanent and will be reset after restarting the service</i></p>
+
+                <p style="padding-top: 10px;">
+                  Current profile:&nbsp;
+                  <mp-json-renderer
+                    get-url="/rest/admin/logs/profile"
+                    template="{{this.logprofile}}"
+                  ></mp-json-renderer>
+                </p>
+
+                <div>
+                  <mp-logging-profile-selector></mp-logging-profile-selector>
+                </div>
+              </div>
+            </bs-tab>
+          </bs-tabs>
+        </div>
+      </bs-col>
+    </bs-row>
+    <!--  close row -->
+  </div>
+</div>

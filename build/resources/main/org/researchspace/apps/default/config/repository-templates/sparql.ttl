@@ -1,0 +1,20 @@
+#
+# platform configuration template for a public SPARQL repository
+# (with the possibility of enabling quad mode)
+#
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+
+
+[] a rep:Repository ;
+   rep:repositoryID "default" ; # Replace with your repository ID or leave default if this is the main repository
+   rdfs:label "SPARQL repository" ; # Replace with a meaningful description for this repository
+   rep:repositoryImpl [
+      rep:repositoryType "researchspace:SPARQLRepository" ;  
+      # sparqlr:update-endpoint <http://example.org/update> ; # (Optional) Uncomment and replace with the update endpoint (only if different from the query endpoint)
+      sparqlr:query-endpoint <http://example.org/query> # Replace with the URL of the SPARQL endpoint to submit queries to
+   ].

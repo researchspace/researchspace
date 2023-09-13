@@ -1,0 +1,227 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Dashboard</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+  	<h1>Dashboard</h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        <p>Allows different components on the same page to co-exist and interact. This means that users do not need to leave the context they are working in to visit other components, interactions and visualisations. The same resource can be viewed and worked on in different tools in a single workspace. The user adds a new frame and then decides on its purpose. The space that the frame receives is determined by the user depending on what they are doing.</p>
+      </div>
+      <div class="documentation__intro__demo">
+        <img src="/images/help/dashboard-structure.png" width='100%' />
+      </div>
+    </div>
+
+    <h2>1 Structure of Dashboard component</h2>
+    <p>Dashboard consists of the following sections:</p>
+
+    <h3>1.1 Frames controller</h3>
+    <p>Allows adding/deleting frames from the dashboard.</p>
+
+    <h3>1.2 Views</h3>
+    <p>Views can be seen as various tools applicable for either visualization or modification of the resource. Each view has the following properties:</p>
+    <mp-documentation type='DashboardViewConfig' disable-transform-attributes=true></mp-documentation>
+
+    <h3>1.3 Resources pane</h3>
+    <p>Provides resources to be used in the dashboard, it can be any UI component, e.g. mp-set-management, semantic-table, semantic-tree, etc. Resources can be dragged from the Resources pane and dropped onto a specific view to display it there. To do so, the <code><mp-draggable /></code> component can be used, it takes inner HTML, which it receives as a child element, and makes it automatically draggable. Child element could be any HTML-element but strictly not an text node.</p>
+
+    <h2>2 Events in Dashboard</h2>
+    <p>Dashboard provides the set of events (read more about the event system <semantic-link-container uri='[[resolvePrefix "Help:EventSystem"]]'><a>here</a></semantic-link-container>):</p>
+    <style>
+      dt { margin-left: 1em; }
+      dd { margin-left: 3em; }
+    </style>
+    <dl>
+      <dt><code>Dashboard.StatusChanged: { hasChanges: boolean }</code></dt>
+      <dd>Event which should be triggered when the data under the management of the component specified for particular View.</dd>
+      <dt><code>Dashboard.ResourceChanged: { resourceIri: string }</code></dt>
+      <dd>Event which should be triggered when the current resource has been changed.</dd>
+    </dl>
+
+    <h3>2.1 Dashboard.StatusChanged</h3>
+    <p>Can be used to highlight a frame if a child component has unsaved data. To do so, you can use the <code><mp-event-proxy /></code> component to propagate the event from the child component to the dashboard.</p>
+    <mp-code-block mode='text/html'>
+    <![CDATA[
+    <mp-event-proxy id='ontodia-is-dirty'
+        on-event-type='Ontodia.DiagramIsDirty'
+        on-event-source='{{dashboardId}}-ontodia'
+        proxy-event-type='Dashboard.StatusChanged'
+        proxy-targets='["{{dashboardId}}"]'>
+    </mp-event-proxy>
+    ]]></mp-code-block>
+
+    <h3>2.2 Dashboard.ResourceChanged</h3>
+    <p>Can be used to re-populate a component with a new resource. To do so, you can use the <code><mp-event-proxy /></code> component to propagate the event from the child component to the dashboard.</p>
+    <mp-code-block mode='text/html'>
+    <![CDATA[
+    <mp-event-proxy id='ontodia-saved'
+        on-event-type='Ontodia.DiagramSaved'
+        on-event-source='{{dashboardId}}-ontodia'
+        proxy-event-type='Dashboard.ResourceChanged'
+        proxy-targets='["{{dashboardId}}"]'>
+    </mp-event-proxy>
+    ]]></mp-code-block>
+
+    <h2>3 Example</h2>
+    Here is a simple demo of the dashboard.
+    <mp-code-example>
+    <![CDATA[
+    <div style='height: 500px'>
+      <rs-dashboard views='[{
+        "id": "view-1",
+        "label": "View 1",
+        "description": "Description",
+        "iconClass": "fa fa-circle",
+        "template": "{{> view1}}"
+      }, {
+        "id": "view-2",
+        "label": "View 2",
+        "description": "Description",
+        "iconClass": "fa fa-square",
+        "template": "{{> view2}}"
+      }, {
+        "id": "view-3",
+        "label": "View 3",
+        "description": "Description",
+        "iconClass": "fa fa-star",
+        "template": "{{> view3}}"
+      }]'>
+        <semantic-table
+          query="
+              prefix person: <http://example.com/person/> 
+              prefix org: <http://example.com/org/> 
+              prefix foaf: <http://xmlns.com/foaf/0.1/>
+              SELECT ?person WHERE {                    
+                VALUES (?person) { 
+                  (person:alice)
+                  (person:carol)
+                  (person:mike)
+                  (person:bob)
+                }
+              }"
+          options='{"showFilter": false}'
+        ></semantic-table>
+
+        <template id='view1'>
+          <div style='flex: 1; padding: 20px;'>
+            <h2><mp-label iri='{{iri}}'></mp-label></h2>
+            <hr />
+            <strong>IRI:</strong> {{iri}}
+            <br /><br />
+            <semantic-table options='{"showFilter": false}'
+                no-result-template='{{> noResultTemplate}}'
+                query='
+                  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                  SELECT ?friends WHERE {
+                    <{{iri}}> foaf:knows|^foaf:knows ?friends .
+                  }
+                '
+              >
+              <template id='noResultTemplate'>
+                <span><mp-label iri={{iri}}></mp-label> has no friends :( <br> Maybe you should try to load the sample.ttl dataset from the tutorial.</span>
+              </template>
+            </semantic-table>
+          </div>
+        </template>
+        <template id='view2'>
+					<div style='flex: 1; padding: 20px;'>
+          	<semantic-link iri='{{iri}}'></semantic-link>
+					</div>
+        </template>
+        <template id='view3'>
+					<div style='flex: 1; padding: 20px;'>
+          	<mp-label iri='{{iri}}'></mp-label>
+					</div>
+        </template>
+      </rs-dashboard>
+    </div>
+    ]]>
+    </mp-code-example>
+    
+    <h2>4 Linked Views</h2>
+    <p>Dashboard allows linking two or more views by defining the <code>linked-views</code> property of the Dashboard component. This will add a new item to the Dashboard Items. When one drops a resource on the item, linked views will be initiated in separated frames. Each linked view has the following properties:</p>
+    <mp-documentation type='DashboardLinkedViewConfig' disable-transform-attributes=true></mp-documentation>
+    
+    <h2>5 Example: Refresh one frame by an action in another frame</h2>
+    <mp-code-example>
+    <![CDATA[
+    <div style='height: 500px'>
+      <rs-dashboard views='[{
+        "id": "view-1",
+        "label": "View 1",
+        "description": "Description",
+        "iconClass": "fa fa-circle",
+        "template": "{{> view1}}",
+				"frameVariable": "view1Variable"
+      }, {
+        "id": "view-2",
+        "label": "View 2",
+        "description": "Description",
+        "iconClass": "fa fa-square",
+        "template": "{{> view2}}",
+				"frameVariable": "view2Variable"
+      }]'
+			linked-views='[{
+        "id": "view-3",
+        "label": "View 1 + View 2",
+        "description": "Description",
+        "iconClass": "fa fa-star",
+        "viewIds": ["view-1", "view-2"]
+      }]'>
+        <semantic-table
+          query="
+              prefix person: <http://example.com/person/> 
+              prefix org: <http://example.com/org/> 
+              prefix foaf: <http://xmlns.com/foaf/0.1/>
+              SELECT ?person WHERE {                    
+                VALUES (?person) { 
+                  (person:alice)
+                  (person:carol)
+                  (person:mike)
+                  (person:bob)
+                }
+              }"
+          options='{"showFilter": false}'
+        ></semantic-table>
+
+        <template id='view1'>
+					<div style='flex: 1; padding: 20px;'>
+            <mp-event-target-refresh id='{{view1Variable}}-component'>
+              <semantic-query query='SELECT * {BIND(NOW() as ?update)}'></semantic-query>
+            </mp-event-target-refresh>
+            {{#if view2Variable}}
+              <mp-event-trigger id='{{view1Variable}}-refresh' type='Component.Refresh' targets='["{{view2Variable}}-component"]'>
+                <button class='btn btn-default'>Refresh View 2</button>
+              </mp-event-trigger>
+            {{/if}}
+					</div>
+        </template>
+        <template id='view2'>
+					<div style='flex: 1; padding: 20px;'>
+          	<mp-event-target-refresh id='{{view2Variable}}-component'>
+              <semantic-query query='SELECT * {BIND(NOW() as ?update)}'></semantic-query>
+            </mp-event-target-refresh>
+						{{#if view1Variable}}
+              <mp-event-trigger id='{{view2Variable}}-refresh' type='Component.Refresh' targets='["{{view1Variable}}-component"]'>
+                <button class='btn btn-default'>Refresh View 1</button>
+              </mp-event-trigger>
+						{{/if}}
+					</div>
+        </template>
+      </rs-dashboard>
+    </div>
+    ]]>
+    </mp-code-example>
+  </div>
+</div>

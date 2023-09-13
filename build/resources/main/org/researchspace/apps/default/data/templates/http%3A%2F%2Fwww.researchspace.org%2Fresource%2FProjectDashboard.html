@@ -1,0 +1,249 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li class="active">
+    Project Dashboard
+  </li>
+</ol>
+
+<!-- [[#*inline "dashboardCard"]]
+<semantic-link-container [[#if title]] title="[[title]]" [[/if]] [[#if pageLink]] uri="[[pageLink]]" [[/if]] [[#if
+  view]]urlqueryparam-view='[[view]]' [[/if]]> <div class="rs-ds-card row-m0">
+  <div class="rs-ds-icon-col">
+    [[#if imgIcon]] <img class="rs-ds-icon" src="[[imgIcon]]">[[/if]]
+  </div>
+  <div class="rs-ds-text-col">
+    [[#if title]]<div class="rs-body-m-B rs-ds-card--header">[[title]]</div>[[/if]]
+    [[#if descr]]<div class="rs-body-s-M">[[descr]]</div>[[/if]]
+  </div>
+  </div>
+</semantic-link-container>
+[[/inline]] -->
+
+[[#*inline "dashboardCountCard"]]
+<mp-resource-link-container uri="[[iri]]">
+  <div class='rs-btn-dashboard' role='button'>
+    <div class="rs-btn-dashboard-icon">
+      <i class="rs-icon [[icon]]"></i>
+    </div>
+    <div class="rs-btn-dashboard-text">
+        <semantic-query query='
+                          SELECT (COUNT(DISTINCT ?resource) as ?count)
+                          WHERE {
+                            [[queryPattern]]
+                          }
+                        ' template='<div class="rs-btn-dashboard-count">{{bindings.0.count.value}}</div>'
+          no-result-template='<div class="rs-btn-dashboard-count">0</div>'>
+        </semantic-query>
+        <div class="rs-btn-dashboard-title">
+          [[title]]
+        </div>
+    </div>
+  </div>
+</mp-resource-link-container>
+[[/inline]]
+
+<div class='page rs-dashboard-bg'>
+  [[#> rsp:ClipboardSidebar]]
+  [[#> rsp:DetailsSidebar]]
+
+  <div class="page__body--borderless rs-dashboard-container">
+    
+    <div class="rs-dashboard-welcome">
+      <div class="welcome-title">Dashboard</div>
+      <mp-anonymous-hidden>
+    [[!--    <div class="welcome-hi">Hi,
+          <semantic-query query='SELECT ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+                            template='{{> template}}'>
+            <template id='template'>
+                <span class="welcome-user">{{bindings.0.userName.value}}</span>
+            </template>
+          </semantic-query>
+        </div> --]]
+      </mp-anonymous-hidden>
+    </div>
+
+   [[!--  <div class="rs-dashboard-icon-area">
+    <mp-anonymous-hidden><img src="/assets/images/icons/dashboard/notification.svg"></mp-anonymous-hidden>
+      <mp-anonymous-hidden><img src="/assets/images/icons/dashboard/user.svg"></mp-anonymous-hidden>
+     
+      <semantic-link-container uri='[[resolvePrefix "rsp:ProjectConfiguration"]]'>
+        <button class="btn rs-btn-dashboard rs-btn-dashboard-configuration">
+          <i class="fa fa-cog"></i><span>Configurations</span>
+        </button>
+      </semantic-link-container>
+      
+    </div> --]]
+
+    <div class="rs-dashboard-km">
+      [[> dashboardCountCard
+          iri=(resolvePrefix "rsp:ProjectKnowledgeMaps")
+          icon="rs-icon-diagram"
+          title='Knowledge Maps'
+          class='rs-btn-dashboard--km'
+          queryPattern='?resource a <http://ontodia.org/schema/v1#Diagram> .' 
+        ]] 
+    </div>
+
+    <div class="rs-dashboard-narrative">
+      [[> dashboardCountCard
+      iri=(resolvePrefix "rsp:ProjectNarratives")
+      icon="rs-icon rs-icon-page"
+      title='Semantic Narratives'
+      class='rs-btn-dashboard--narrative'
+      queryPattern='?resource a rso:Semantic_Narrative .'
+      ]]
+    </div>
+
+    <div class="rs-dashboard-image">
+      [[> dashboardCountCard
+      iri=(resolvePrefix "rsp:ProjectImages")
+      icon="rs-icon-images"
+      title='Images'
+      class='rs-btn-dashboard--img'
+      queryPattern='?resource a rso:EX_Digital_Image .'
+    ]]
+    </div>
+
+    <div class="rs-dashboard-activity page__section-container">
+      <div class='rs-dashboard-sectionTitle'>Activity</div>
+      <div class="table-responsive rs-dashboard-table">
+        <semantic-table query='prefix ontodia: <http://ontodia.org/schema/v1#>
+                  SELECT * WHERE {
+                    {
+                      ?page a rso:Semantic_Narrative .
+                       OPTIONAL {
+                        ?page rdfs:label ?title .
+                       }
+                        BIND("Semantic Narrative" as ?content_type) .
+                        BIND("rs-btn-dashboard--narrative" as ?tag_cssClass) 								  
+                    } 
+                    UNION 
+                    {
+                          ?page a <http://ontodia.org/schema/v1#Diagram> ;
+                            rdfs:label ?title .
+                          BIND("Knowledge Map" as ?content_type) .
+                          BIND("rs-btn-dashboard--km" as ?tag_cssClass) 	
+                    }
+
+                    UNION
+                    {
+                          ?page a crmdig:D9_Data_Object .
+                            BIND("image" as ?content_type) .
+                            BIND("rs-btn-dashboard--img" as ?tag_cssClass) 
+                      }
+                      UNION 
+                      {
+                          ?page a crmdig:D35_Area .
+                          BIND("image" as ?content_type) .
+                          BIND("rs-btn-dashboard--img" as ?tag_cssClass) 
+                      }
+                      ?page  <http://www.w3.org/ns/prov#generatedAtTime> ?time .
+                      [[#if (hasPermission "forms:ldp:*")]]
+                        ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                      [[else]]
+                        ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user.
+                        FILTER(?user = <http://www.researchspace.org/resource/system/anonymousUser> )
+                      [[/if]]
+
+                  }
+                  
+                  ORDER BY DESC(?time)' number-of-displayed-rows=10 options='{"showFilter": true}'
+                                  column-configuration='[
+                                  {"variableName": "title", "displayName": "title", "cellTemplate":"{{> title}}" },
+
+                                  {"variableName": "user", "displayName": "user", "cellTemplate": "{{> user}}" },
+
+                                  {"variableName": "type", "displayName": "type", "cellTemplate": "{{> type}}"},
+                                  
+                                  {"variableName": "time", "displayName": "time", "cellTemplate": "{{> time}}"},
+
+                                  {"displayName": "Export", "cellTemplate": "{{> data_download}}"}
+                                  ]'>
+
+          <template id='title'>
+              <semantic-link class='rs-dashboard--a-title a-draggable' iri='{{page.value}}'
+                            urlqueryparam-previous-page='[[this]]' 
+                            urlqueryparam-previous-page-title='Project Dashboard'
+              >
+                <div style="display: flex; align-items: center;">
+                  <span class="rs-icon rs-icon-drag_points"></span>
+                  <span>{{title.value}}</span>
+                </div>
+              </semantic-link>
+          </template>
+
+          <template id='user'>
+            <div class="text-truncate">
+              <i class="fa fa-user"></i>
+              <semantic-link class="rs-dashboard--a" uri="{{user.value}}"></semantic-link>
+            </div>
+          </template>
+
+          <template id='time'>
+            <div class="rs-dashboard-tableDate">
+                <span>Last modified: </span>
+                <span class="rs-dashboard-tableDateValue">{{dateTimeFormat time.value "LLL"}}</span>
+            </div>
+          </template>
+
+          <template id='type'>
+              <span class="rs-tag {{tag_cssClass.value}} rs-dashboard-tag">{{content_type.value}}</span>
+          </template>
+
+          <template id="data_download">
+              <mp-sparql-download
+                query="prefix ontodia: <http://ontodia.org/schema/v1#>
+                        select ?s ?p ?o where {
+                                         BIND(IRI('{{page.value}}') as ?diagramContainer)
+                              ?diagramContainer    ontodia:layoutData/ontodia:hasElement/ontodia:resource  ?diagramNode .
+                              BIND (IRI(CONCAT(STR(?diagramNode),'/container/context')) as ?g) 
+                              {select * where {graph ?g {?s ?p ?o. 
+                                                         MINUS {?s <http://www.w3.org/ns/ldp#contains> ?o .} 
+                                                         MINUS {?s rdf:type <http://www.w3.org/ns/ldp#Resource> .}
+                                                         MINUS {?s rdf:type <http://www.w3.org/ns/prov#Entity> .} } } } }"
+                header="text/csv" filename="myDiagramEntities.csv">
+                <div>
+                  <a href="#" title="Download data" class="rs-dashboard--a">
+                    <i class="fa fa-download"></i></a>
+                </div>
+              </mp-sparql-download>
+          </template>
+
+        </semantic-table>
+
+      </div>
+    </div>
+
+    <div class='rs-dashboard-team page__section-container'>
+      <div class='rs-dashboard-sectionTitle'>Team involved</div>
+      <div class="rs-dashboard-userCard_container">
+        [[> rsp:ProjectUsers]]
+      </div>
+    </div>
+        
+  </div>
+
+  [[/rsp:DetailsSidebar]]
+  [[/rsp:ClipboardSidebar]]
+</div>
+
+[[#*inline "userCard"]]
+<mp-resource-link-container [[#if name]] title="[[name]]" [[/if]] [[#if pageLink]] uri="[[pageLink]]"[[/if]] [[#if assets]]	urlqueryparam-repository="assets"[[/if]]>
+  
+  <div class="rs-dashboard-userCard">
+    <div class="rs-dashboard-userCard-img">
+        [[#if UserImg]] <img class="rs-userCard-img" src="[[UserImg]]">
+      	[[else]] <span class="rs-icon rs-icon-user_profile"><span class="path1"></span><span class="path2"></span></span> [[/if]]
+    </div>
+    <div class="rs-dashboard-userCard--text">
+        [[#if name]]<div class="rs-user-headerText">[[name]]</div>[[/if]]
+        [[#if institute]]<div class="rs-user-text">[[institute]]</div>[[/if]]
+        [[#if role]]<div class="rs-user-text">[[role]]</div>[[/if]]
+    </div>
+  </div>
+</mp-resource-link-container>
+
+[[/inline]]
+

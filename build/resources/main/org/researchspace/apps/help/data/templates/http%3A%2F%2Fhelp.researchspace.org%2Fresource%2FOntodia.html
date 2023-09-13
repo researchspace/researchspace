@@ -1,0 +1,595 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Ontodia Diagram Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Ontodia Diagram Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        <p>Diagrams can be printed, exported and saved to be referenced from other components within the platform.</p>
+      </div>
+      <div class="documentation__intro__demo" style="height: 500px">
+        <ontodia settings="nostats"></ontodia>
+      </div>
+    </div>
+
+    <h2> Configuration </h2>
+    <mp-documentation type="OntodiaConfig"></mp-documentation>
+
+    <h3> Use cases </h3>
+    This component supports different initialization options to cover different use cases.
+
+    <h4> Create empty diagram </h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        To create an empty diagram, use <code><ontodia></ontodia></code> tag without any parameters. After saving a diagram, the user will be forwarded to the resource specified by <code>navigate-to</code>.
+        When saving a diagram, only the diagram layout is stored - positions of nodes, shapes of the links, and corresponding IRIs in the original data source. When the diagram is loaded,
+        Ontodia reloads contents of all elements, keeping the diagram up-to-date with the data.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<div style="height: 500px">
+  <ontodia settings="nostats"></ontodia>
+</div>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h4> Display stored diagram </h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        To display stored diagram, specify it's ID. To prevent user from modifying a diagram, set <code>readonly</code> property to true.
+        In this example the diagram will not load, because it will need missing diagram layout.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<div style="height: 500px">
+  <ontodia settings="nostats" diagram='http://example.com/diagram1'></ontodia>
+</div>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h4> Display diagram with starting element </h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        You can specify a node to start a new diagram with. Use <code>iri</code> property.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<div style="height: 500px">
+  <ontodia settings="nostats" iri='http://example.com/node1'></ontodia>
+</div>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h4> Display diagram with graph created by construct query </h4>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        To initialize a diagram with some graph on it, you can specify a SPARQL Construct query with the <code>query</code> parameter.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<div style="height: 500px">
+  <ontodia
+    settings="nostats"
+    query='
+      prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      prefix person: <http://example.com/person/>
+      prefix org: <http://example.com/org/>
+      prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+      CONSTRUCT {
+        ?s ?p ?o
+      } WHERE {
+        {
+          SELECT ?s ?p ?o WHERE {
+            VALUES (?s ?p ?o)
+            {
+              (person:alice foaf:knows person:bob)
+              (person:alice foaf:knows person:carol)
+              (person:carol foaf:knows person:mike)
+              (person:mike foaf:knows person:carol)
+              (person:bob foaf:knows person:carol)
+              (person:alice foaf:knows person:mike)
+              (person:alice foaf:member org:W3C)
+              (person:mike foaf:member org:W3C)
+              (person:alice rdf:type foaf:Person)
+              (person:carol rdf:type foaf:Person)
+              (person:mike rdf:type foaf:Person)
+              (person:bob rdf:type foaf:Person)
+            }
+          }
+        }
+      }
+    '
+  ></ontodia>
+</div>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h2 id="authoring">Authoring Mode</h2>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <p>Authoring mode allows user to make changes to the database and requires additional setup of the component.
+          To specify the model of the data to be changed, Ontodia uses authoring metadata configuration that consist of entity metadata definitions and field definitions.
+          Entity definition defines an entity of particular type and it's properties as field definitions.
+          Entity definitions are configured in configuration templates in <code>ontodia-entity-metadata</code> blocks.
+          Ontodia shares field definitions concept with Semantic Forms and they can be specified either inline in the configuration or referenced from assets repository by providing field iri.
+          Fields are used for viewing the data and for modifying through the data. In viewing and navigation literal-typed fields are used as element properties, and resource-typed fields are used for navigation between elements.
+        </p>
+
+        <p>Entity metadata and fields are used for:</p>
+        <ul>
+          <li>presence of Entity metadata for a type means elements of this type could be modified - created, deleted, changed</li>
+          <li>domain/range of fields determine what links user could create</li>
+          <li>domain/range/cardinality of fields affect diagram validation, erroneous elements and links are marked on the diagram</li>
+          <li>fields are used to generate default semantic form for authoring literal data properties and for validation of those properties. Form markup is displayed inside Ontodia to edit actual values</li>
+          <li>to persist changes, Ontodia calls semantic forms APIs to create new version of the element and persist it against triplestore</li>
+        </ul>
+
+        <p>To enable the authoring mode developer need to:
+          <ol>
+            <li>Provide <code>ontodia-field-configuration</code> as child of Ontodia component with fields configuration</li>
+            <li>Provide <code>ontodia-entity-metadata</code>s inside of <code>ontodia-field-configuration</code></li>
+            <li>Semantic forms will be generated automatically, based on the order of literal fields and default association with input types</li>
+            <li>If developer wants to modify input types used for the form, <code>ontodia-field-input-override</code> should be provided within <code>ontodia-field-configuration</code> block</li>
+            <li>If autogenerated forms are not satisfactory, <code>semantic-form</code> as a child of <code>ontodia-entity-metadata</code> could be provided to specify custom form</li>
+          </ol>
+        </p>
+
+        <h3>Metadata configuration</h3>
+        Specifies configuration for authoring within Ontodia.
+        <code>ontodia-field-configuration</code> has following configuration options:
+        <mp-documentation type="OntodiaFieldConfigurationConfig"></mp-documentation>
+
+        <h3>Entity metadata configuration</h3>
+        Configures metadata for an entity of given type, collecting all information on entity schema together.
+        <code>ontodia-entity-metadata</code> has following configuration options:
+        <mp-documentation type="OntodiaEntityMetadataProps"></mp-documentation>
+
+        <h3>Input override configuration</h3>
+        Provides a way to gradually specify semantic form by overriding default inputs for fields.
+        <code>ontodia-field-input-override</code> has following configuration options:
+        <mp-documentation type="FieldInputOverrideConfig"></mp-documentation>
+
+    </p>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+          <div style="height: 500px">
+            <ontodia settings="nostats" provider-settings='{
+              "classTreeQuery": "
+                    SELECT ?class ?label ?parent
+                    WHERE {
+                        VALUES ?class {<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object>}
+                    }
+                "}'>
+              <ontodia-field-configuration authoring-mode="true"
+                                           default-subject-template='http://www.example.com/id/{{UUID}}'
+                                           type-iri='http://type'
+                                           default-label-iri='http://label'
+
+                                           fields='[
+                        {
+                          "iri": "http://type",
+                          "id": "type",
+                          "label": "Type",
+                          "description": "The type of the created instance",
+                          "xsdDatatype": "xsd:anyURI",
+                          "minOccurs": "1",
+                          "maxOccurs": "1",
+                          "valueSetPattern": "
+                            SELECT $value $label WHERE {
+                              VALUES ($value $label) {
+                                (<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object> \"Man Made Object\")
+                                (<http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> \"Information Object\")
+                              }
+                            }
+                          ",
+                          "selectPattern": "SELECT $value WHERE { $subject a $value }",
+                          "insertPattern": "INSERT { $subject a $value } WHERE {}",
+                          "deletePattern": "DELETE { $subject a $value } WHERE {}"
+                        },
+                        {
+                          "iri": "http://label",
+                          "id": "label",
+                          "label": "Label",
+                          "description": "The label used to display the instance",
+                          "xsdDatatype": "xsd:string",
+                          "minOccurs": "1",
+                          "maxOccurs": "1",
+                          "selectPattern": "SELECT $value WHERE { $subject rdfs:label $value }",
+                          "insertPattern": "INSERT { $subject rdfs:label $value } WHERE {}",
+                          "deletePattern": "DELETE { $subject rdfs:label $value } WHERE {}"
+                        },
+                        {
+                          "iri": "http://note",
+                          "id": "note",
+                          "label": "Note",
+                          "description": "The note used to describe the instance",
+                          "xsdDatatype": "xsd:string",
+                          "minOccurs": "1",
+                          "maxOccurs": "1",
+                          "selectPattern": "SELECT $value WHERE { $subject <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> $value }",
+                          "insertPattern": "INSERT { $subject <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> $value } WHERE {}",
+                          "deletePattern": "DELETE { $subject <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> $value } WHERE {}"
+                        },
+                        {
+                          "iri": "http://location",
+                          "id": "location",
+                          "label": "Location",
+                          "description": "The former or current location of an instance",
+                          "xsdDatatype": "xsd:anyURI",
+                          "minOccurs": "1",
+                          "maxOccurs": "3",
+                          "selectPattern": "
+                            PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                            SELECT $value WHERE { $subject crm:P53_has_former_or_current_location $value }
+                          ",
+                          "insertPattern": "
+                            PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                            INSERT { $subject crm:P53_has_former_or_current_location $value } WHERE {}
+                          ",
+                          "deletePattern": "
+                            PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                            DELETE { $subject crm:P53_has_former_or_current_location $value } WHERE {}
+                          ",
+                          "treePatterns": {
+                            "type": "simple",
+                            "schemePattern": "?item <http://www.w3.org/2004/02/skos/core#inScheme> <http://collection.britishmuseum.org/id/place>"
+                          }
+                        }
+                      ]'
+              >
+                  <ontodia-entity-metadata
+                    entity-type-iri="http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object"
+                    fields='["http://note"]'
+                  >
+                  </ontodia-entity-metadata>
+                <ontodia-field-input-override for-field='http://note'>
+                  <semantic-form-text-input multiline='true'></semantic-form-text-input>
+                </ontodia-field-input-override>
+              </ontodia-field-configuration>
+            </ontodia>
+          </div>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3> Customization </h3>
+    <p> Ontodia provides number of configuration options to tailor visual the representation of a diagram
+       to particular data set. Developers can alter both visual templates as well as how the data will
+        be fetched from data set. Currently visual templates for elements and link representation could be
+        specified only by customizing Ontodia component in code, but many options for modifying how
+        data will be fetched and processed could be specified through component configuration on the page.</p>
+    <h4> Accessing the data </h4>
+    Ontodia works by accessing all of the data provided by the SPARQL endpoint of the ResearchSpace platform. Ontodia will fetch ontology from this endpoint and will fetch data as elements start to appear in the diagram by user action or initialization options.
+    Ontodia component will listen for <code>SemanticContext</code> for loading and saving of the diagrams, but will use only default context for the ontology and for the data.
+        <h4>Settings preset</h4>
+    <p>Settings are pre-configured configuration of how Ontodia will fetch and process data from triplestore.
+       Affected parameters are option to gather additional statistics from data set, what language is used to
+      specify ontology, how class tree is constructed, how instance search is performed, etc. All of those features can be overriden by using advanced data provider configuration, described later.</p>
+
+    <p>Settings are controlled with <code>settings</code> parameter. Possible values are:</p>
+          <ol>
+              <li><code>default</code> - for basic rdfs/owl dataset. Statistics will be calculated, so the dataset should be of reasonable size for a nice user experience. This is the default setting.</li>
+              <li><code>nostats</code> - for large rdfs/owl dataset. Some statistics will be omitted to work on larger data sets.</li>
+              <li><code>dbpedia</code> - tailored for DBPedia. Uses owl ontology, virtuozo full text search, and filter out Yago classes to reduce clutter.</li>
+              <li><code>wikidata</code> - tailored for Wikidata. Non-owl ontology, blazegraph extensions for full text search, filters out unsupported dataset features.</li>
+          </ol>
+
+    <h4>Images</h4>
+    Images can be displayed in Ontodia along with the nodes. This behaviour can be specified in two ways: Either by specifying the <code>image</code> property or a specific SPARQL Query to create return the image URLs.
+
+    <p>To specify image property IRIs, pass <code>image-iris</code> parameter containing a list of image property iris to the component:
+    <code><ontodia
+       image-iris='["http://collection.britishmuseum.org/id/ontology/PX_has_main_representation"]'>
+     </ontodia>
+    </code>
+    </p>
+    <p>If you need more control on how image URL will be created, you can specify <code>image-query</code> parameter. It could be used to create image URL from metadata, to proxy image through local cache or to scale it, as in the following example:
+      <code>
+<![CDATA[
+          <ontodia image-query='
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            SELECT ?element ?image {
+              ?element wdt:P18|wdt:P41|wdt:P154 ?img.
+              BIND(CONCAT(
+                "https://commons.wikimedia.org/w/thumb.php?f=",
+                STRAFTER(STR(?img), "Special:FilePath/"),
+                "&w=200"
+              ) as ?image)
+            }' settings='wikidata'>
+          </ontodia>
+]]>
+      </code>
+    </p>
+
+    <h4>Advanced data provider configuration</h4>
+    <p>Specifying <code>provider-settings</code> parameters allows to override base configuration set by <code>settings</code> parameter. This configuration can be used to:
+        <ul>
+            <li>use Ontodia with non-OWL/RDFS ontology</li>
+            <li>limit amount of data available to the user</li>
+            <li>transform some data before displaying it to the user</li>
+            <li>implement usage of custom full text search extensions</li>
+        </ul>
+
+        Fields of provider settings are describen in the beginning of this document in Configuration section and they range from boolean fields to rdf patterns and full SPARQL queries.
+        You can specify only fields that you want to override in original configuration.
+        The most basic settings are below, for more configuration examples see ontodia repository at <a href="https://github.com/ontodia-org/ontodia/blob/master/src/ontodia/data/sparql/sparqlDataProviderSettings.ts">Github</a>:
+      <mp-code-block mode='application/json'>
+<![CDATA[
+          {
+            defaultPrefix:
+                `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+         PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+         PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+        `,
+            schemaLabelProperty: 'rdfs:label',
+            dataLabelProperty: 'rdfs:label',
+            linksInfoQuery: `SELECT ?source ?type ?target
+            WHERE {
+                ?source ?type ?target.
+                VALUES (?source) {\${ids}}
+                VALUES (?target) {\${ids}}
+            }`,
+            fullTextSearch: {
+                prefix: '',
+                queryPattern:
+                ` OPTIONAL {?inst \${dataLabelProperty} ?search1}
+                FILTER regex(COALESCE(str(?search1), str(?extractedLabel)), "\${text}", "i")
+                BIND(0 as ?score)
+        `,
+                extractLabel: true,
+            },
+            classTreeQuery: `
+                    SELECT ?class ?label ?parent
+                    WHERE {
+                        {
+                            ?class a rdfs:Class
+                        } UNION {
+                            ?class a owl:Class
+                        }
+                        FILTER ISIRI(?class)
+                        OPTIONAL {?class rdfs:label ?label}
+                        OPTIONAL {?class rdfs:subClassOf ?parent. FILTER ISIRI(?parent)}
+                    }
+                `,
+            linkTypesPattern: `{	?link a rdf:Property
+                            } UNION {
+                            ?link a owl:ObjectProperty
+                        }
+                        BIND('' as ?instcount)
+        `,
+            elementInfoQuery: `
+                    SELECT ?inst ?class ?label ?propType ?propValue
+                    WHERE {
+                        OPTIONAL {?inst rdf:type ?class . }
+                        OPTIONAL {?inst \${dataLabelProperty} ?label}
+                        OPTIONAL {?inst ?propType ?propValue.
+                        FILTER (isLiteral(?propValue)) }
+                    } VALUES (?inst) {\${ids}}
+                `,
+            imageQueryPattern: `{ ?inst ?linkType ?image } UNION { [] ?linkType ?inst. BIND(?inst as ?image) }`,
+            linkTypesOfQuery: `
+                SELECT ?link (count(distinct ?outObject) as ?outCount) (count(distinct ?inObject) as ?inCount)
+                WHERE {
+                    { \${elementIri} ?link ?outObject}
+                    UNION
+                    { ?inObject ?link \${elementIri}}
+                } GROUP BY ?link
+            `,
+            filterRefElementLinkPattern: '',
+            filterTypePattern: `?inst rdf:type \${elementTypeIri} . ${'\n'}`,
+            filterElementInfoPattern: `OPTIONAL {?inst rdf:type ?foundClass}
+                        BIND (coalesce(?foundClass, owl:Thing) as ?class)
+                        OPTIONAL {?inst \${dataLabelProperty} ?label}`,
+            filterAdditionalRestriction: '',
+        }
+]]>
+      </mp-code-block>
+
+
+      <h3>Style customization</h3>
+      <p>Ontodia provides an ability to change styles of nodes and edges. To customize nodes templates use <code>nodeTemplates</code> property which describes what template should be assigned to what type of node. To change edges styles use <code>edgeStyles</code> property which defines what style should be assigned to what type of edge. <code>defaultNodeTemplate</code> and <code>defaultEdgeStyle</code> properties allow to define default templates and styles for all nodes and edges respectively.</p>
+      <p>Inside a custom template, the following properties are available:</p>
+      <ul>
+      	<li><code>elementId</code> - ID of an element</li>
+        <li><code>iri</code> - IRI of en element</li>
+      	<li><code>types</code> - string of an element's types</li>
+      	<li><code>label</code> - label of an element</li>
+      	<li><code>color</code> - color generated by Ontodia</li>
+      	<li><code>icon</code> - name of a CSS class which is used to style the icon of an element</li>
+      	<li><code>imgUrl</code> - URL to an element's image</li>
+      	<li><code>isExpanded</code> - <code>true</code> if an element is expanded and <code>false</code> if collapsed</li>
+      	<li><code>props</code> and <code>propsAsList</code> - collections of an element's properties</li>
+        <li><code>data</code> - contains untransformed data of an element</li>
+      </ul>
+
+      <p>A custom edge style has the following properties:</p>
+      <ul>
+      	<li><code>markerSource</code> and <code>markerTarget</code> - determines styles of the source and target markers respectively</li>
+        <li><code>linkStyle</code> - defines styles and labels of a link</li>
+        <li><code>editable</code> - enables link label editing</li>
+      </ul>
+
+      <p>To make a template, that supports authoring, special buttons with the following names are needed:</p>
+      <ul>
+        <li><code>edit</code> - button to open properties editor panel</li>
+        <li><code>delete</code> - button to delete element from the data</li>
+      </ul>
+
+      <mp-code-example>
+<![CDATA[
+        <div style="height: 500px">
+          <ontodia
+            settings="nostats"
+            query='
+                prefix person: <http://example.com/person/>
+                prefix foaf: <http://xmlns.com/foaf/0.1/>
+                prefix org: <http://example.com/org/>
+
+                CONSTRUCT {
+                  ?s ?p ?o
+                } WHERE {
+                  {
+                    SELECT ?s ?p ?o WHERE {
+                      VALUES (?s ?p ?o)
+                      {
+                        (person:alice foaf:member org:W3C)
+                      }
+                    }
+                  }
+                }
+              '
+            provision-query='
+                prefix person: <http://example.com/person/>
+                prefix org: <http://example.com/org/>
+                prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+                CONSTRUCT {
+                  ?s ?p ?o
+                } WHERE {
+                  {
+                    SELECT ?s ?p ?o WHERE {
+                      VALUES (?s ?p ?o)
+                      {
+                        (person:alice rdf:type foaf:Person)
+                        (person:alice rdfs:label "Alice")
+                        (person:alice foaf:birthday "1990-01-01")
+                        (org:W3C rdf:type foaf:Organization)
+                        (person:alice foaf:member org:W3C)
+                      }
+                    }
+                  }
+                }
+              '
+            node-templates='{"http://xmlns.com/foaf/0.1/Person": "{{> person-template}}", "http://xmlns.com/foaf/0.1/Organization": "{{> org-template}}"}'
+            edge-styles='{"http://xmlns.com/foaf/0.1/member": {"markerTarget": {"fill": "#F26144", "stroke": "#F26144"}, "linkStyle": {"connection": {"stroke": "#F26144", "stroke-width": 2}}, "editable": true}}'
+          >
+            <template id="body-template">
+              <div class="panel-body"><span class="text-nowrap"><i>iri: {{iri}}</i></span></div>
+              <ul class="list-group">
+                {{#each propsAsList}}
+                  {{#ifCond name "!==" "DataProvider"}}
+                    <li class="list-group-item">
+                      <strong>{{name}}: </strong> {{#each property.values}}{{text}}{{/each}}
+                    </li>
+                  {{/ifCond}}
+                {{/each}}
+                <button name="edit" style="margin: 5px">Edit</button>
+                <button name="delete" style="margin: 5px">Delete</button>
+              </ul>
+            </template>
+            <template id="person-template">
+              <div class="panel panel-primary" style="margin: 0">
+                <div class="panel-heading">
+                  <h4 class="text-nowrap" style="margin: 0"><i class="fa fa-user"></i> {{label}}</h4>
+                </div>
+                {{#if isExpanded}}
+                  {{> body-template}}
+                {{/if}}
+              </div>
+            </template>
+            <template id="org-template">
+              <div class="panel panel-success" style="margin: 0">
+                <div class="panel-heading">
+                  <h4 class="text-nowrap" style="margin: 0"><i class="fa fa-building"></i> {{label}}</h4>
+                </div>
+                {{#if isExpanded}}
+                  {{> body-template}}
+                {{/if}}
+              </div>
+            </template>
+          </ontodia>
+        </div>
+]]>
+      </mp-code-example>
+
+    	<br/>
+    	<p>Ontodia allows overriding the default icons and colors without changing the templates. The <code>nodeStyles</code> property with the following two fields can be used to define custom icons and colors:</p>
+    	<ul>
+      	<li><code>image</code> - absolute or relative path to an image or a base64 encoded image</li>
+        <li><code>color</code> - accent color for the templates and other element representations in the Ontodia UI</li>
+      </ul>
+
+  	<mp-code-example>
+<![CDATA[
+        <div style="height: 500px">
+          <ontodia
+						settings="nostats"
+						query='
+              prefix person: <http://example.com/person/>
+              prefix foaf: <http://xmlns.com/foaf/0.1/>
+              prefix org: <http://example.com/org/>
+
+              CONSTRUCT {
+                ?s ?p ?o
+              } WHERE {
+                {
+                  SELECT ?s ?p ?o WHERE {
+                    VALUES (?s ?p ?o)
+                    {
+                      (person:alice foaf:member org:W3C)
+                    }
+                  }
+                }
+              }
+            '
+            provision-query='
+              prefix person: <http://example.com/person/>
+              prefix org: <http://example.com/org/>
+              prefix foaf: <http://xmlns.com/foaf/0.1/>
+
+              CONSTRUCT {
+                ?s ?p ?o
+              } WHERE {
+                {
+                  SELECT ?s ?p ?o WHERE {
+                    VALUES (?s ?p ?o)
+                    {
+                      (person:alice rdf:type foaf:Person)
+                      (person:alice rdfs:label "Alice")
+                      (person:alice foaf:birthday "1990-01-01")
+                      (org:W3C rdf:type foaf:Organization)
+                      (person:alice foaf:member org:W3C)
+                    }
+                  }
+                }
+              }
+            '
+            node-styles='{
+            	"http://xmlns.com/foaf/0.1/Person": {"image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NCAxMTMiIHg9IjBweCIgeT0iMHB4Ij48ZGVmcz48c3R5bGU+DQogICAgICAuY2xzLTEgew0KICAgICAgICBmaWxsLXJ1bGU6IGV2ZW5vZGQ7DQogICAgICB9DQogICAgPC9zdHlsZT48L2RlZnM+PHBhdGggZmlsbD0iIzAwOGNiYSIgY2xhc3M9ImNscy0xIiBkPSJNNDcuNSwxMTFDMjIuMzcxLDExMSwyLDk4LjQ0OSwyLDgyLjk2N1MyMi4zNzEsNTQuOTM1LDQ3LjUsNTQuOTM1LDkzLDY3LjQ4NSw5Myw4Mi45NjcsNzIuNjI5LDExMSw0Ny41LDExMVptMC01OS43NjVBMjQuNjE4LDI0LjYxOCwwLDEsMSw3Mi4xNzYsMjYuNjE4LDI0LjY0NywyNC42NDcsMCwwLDEsNDcuNSw1MS4yMzVaIj48L3BhdGg+PC9zdmc+", "color": "#008cba"},
+            	"http://xmlns.com/foaf/0.1/Organization": {"image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGJhc2VQcm9maWxlPSJ0aW55IiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iLTQ5NS41IDUwNC41IDI0IDI0IiB4bWw6c3BhY2U9InByZXNlcnZlIj48cGF0aCBmaWxsPSIjNDNhYzZhIiBkPSJNLTQ5MC41LDUwOC41djIwaDV2LTNoNXYzaDV2LTIwSC00OTAuNXogTS00ODYuNSw1MjEuNWgtMnYtMmgyVjUyMS41eiBNLTQ4Ni41LDUxOC41aC0ydi0yaDJWNTE4LjV6IE0tNDg2LjUsNTE1LjVoLTJ2LTJoMiAgVjUxNS41eiBNLTQ4Ni41LDUxMi41aC0ydi0yaDJWNTEyLjV6IE0tNDgzLjUsNTIxLjVoLTJ2LTJoMlY1MjEuNXogTS00ODMuNSw1MTguNWgtMnYtMmgyVjUxOC41eiBNLTQ4My41LDUxNS41aC0ydi0yaDJWNTE1LjV6ICAgTS00ODMuNSw1MTIuNWgtMnYtMmgyVjUxMi41eiBNLTQ4MC41LDUyMS41aC0ydi0yaDJWNTIxLjV6IE0tNDgwLjUsNTE4LjVoLTJ2LTJoMlY1MTguNXogTS00ODAuNSw1MTUuNWgtMnYtMmgyVjUxNS41eiAgIE0tNDgwLjUsNTEyLjVoLTJ2LTJoMlY1MTIuNXogTS00NzcuNSw1MjEuNWgtMnYtMmgyVjUyMS41eiBNLTQ3Ny41LDUxOC41aC0ydi0yaDJWNTE4LjV6IE0tNDc3LjUsNTE1LjVoLTJ2LTJoMlY1MTUuNXogICBNLTQ3Ny41LDUxMi41aC0ydi0yaDJWNTEyLjV6Ij48L3BhdGg+PC9zdmc+", "color": "#43ac6a"}
+            }'
+          >
+          </ontodia>
+        </div>
+]]>
+      </mp-code-example>
+  </div>
+</div>

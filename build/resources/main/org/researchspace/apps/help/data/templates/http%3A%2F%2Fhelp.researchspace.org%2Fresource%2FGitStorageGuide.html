@@ -1,0 +1,121 @@
+
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">GIT storage as runtime storage</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Step by step guide to setup GIT as runtime storage</h1>
+
+    <br/>
+
+    <p>In the following we describe how a GIT repository can be configured as <semantic-link title="Help" data-uri="http://help.researchspace.org/resource/Storage">runtime storage</semantic-link> for the platform. This allows for version control of modified application content such as templates or configuration. Optionally a remote GIT endpoint can be configured to automatically push changes to a shared repository.
+    </p>
+
+    <br/>
+    <h3>Step 1: Setup GIT SSH keys</h3>
+
+    <p>Create a folder 'git-keys' (e.g. in the docker-compose service template folder) containing 3 files:</p>
+
+    <ul>
+      <li><code>id_rsa</code> Your private SSH key (e.g. id_rsa) for the GIT repository
+        <ul>
+          <li>requires to be in the classic OPENSSH format. It should NOT start with <code>----- BEGIN OPENSSH PRIVATE KEY -----</code>, but with <code>----- BEGIN RSA PRIVATE KEY -----</code>
+          </li>
+          <li>the private key must not have a passphrase</li>
+          <li>see <a href="https://www.ssh.com/ssh/keygen/" target="_BLANK">here</a> for further documentation on using ssh-keygen</li>
+        </ul>
+      </li>
+      <li><code>config</code> A file providing GIT with the information to use the specific key file for your repo (<a href="https://medium.com/@czarpino/how-to-tell-git-which-ssh-key-to-use-c8574fb243fd" target="_BLANK">see this blog article</a>). See example content below</li>
+      <li><code>known_hosts</code> A file containing the key of the host of your repo.</li>
+    </ul>
+    
+    <p><b>Example to generate a new key-pair</b></p>
+    
+    <pre>
+<code>
+> cd git-keys
+> ssh-keygen -t rsa -N "" -m PEM -f id_rsa -C user@mymail.com
+</code>
+    </pre>
+    
+    <p><b>Converting openssh key to classic format</b> (only when key starts with <code>----- BEGIN OPENSSH PRIVATE KEY -----</code>)</p>
+     
+     <pre>
+<code>   
+# convert to old PEM format
+> ssh-keygen -p -m PEM -f id_rsa
+</code>
+    </pre>
+    
+    <p><b>Example for config</b></p>
+    
+    <pre>
+<code>
+Host github.com
+	IdentityFile ~/.ssh/id_rsa
+</code>
+</pre>
+    
+    <p><b>Example to generate known_hosts</b> (replace github.com with your repository host)</p>
+    
+    <pre>
+<code>
+> ssh-keyscan github.com >> known_hosts
+</code>
+		</pre>
+
+
+	<br/>
+    <h3>Step 2: Clone your GIT repository</h3>   
+
+    <p> Clone your GIT repo to the host machine, for example into the folder 'mylocalrepo' in your docker-compose service template:</p>
+
+    <code>git clone git@github.com:path/myrepo.git ./mylocalrepo </code>
+
+    <p>The folder 'mylocalrepo' will be used as runtime folder.</p>
+
+    <br/>
+    <h3>Step 3: Adjust the mount points in the docker-compose definitions</h3> 
+
+    <p>Mount the folder from the host into the platform container by adding the following lines to the <i>docker-compose.override.yml</i>.</p>
+
+    <pre>
+<code>   
+  researchspace:
+    # researchspace overwrites here
+    ports:
+      - "10214:8080"
+    volumes:
+      - ./mylocalrepo:/git-runtime-data # your checked out repo as runtime folder
+      - ./git-keys:/home/jetty/.ssh/  # your private key, known_hosts, and config file
+</code>
+</pre>  
+
+    <br/>
+    <h3>Step 4: Set environment parameters defining runtime as GIT storage</h3> 
+
+    <p> Set the following parameter in the '.env' file of the docker-compose environment with the appropriate values for your environment: </p>
+ 
+    <pre>     
+<code>researchspace_OPTS=-Dlog4j.configurationFile=file:///var/lib/jetty/webapps/etc/log4j2.xml -Dconfig.storage.runtime.type=git -Dconfig.storage.runtime.mutable=true -Dconfig.storage.runtime.localPath=/git-runtime-data -Dconfig.storage.runtime.branch=master -Dconfig.storage.runtime.remoteUrl=git@github.com:path/myrepo.git </code>
+</pre>
+    
+    <br/><br/>
+    <h3>Step 5: Set file permissions for the keys </h3> 
+
+    <p>After starting the platform <code>docker-compose up -d </code>, set the file permission for the keys within the platform container</p>
+    
+    <code>docker-compose exec -u root researchspace sh -c "chown -R jetty:root /home/jetty/.ssh/ && chmod -R go-rwx /home/jetty/.ssh/" </code>
+
+  </div>
+</div>

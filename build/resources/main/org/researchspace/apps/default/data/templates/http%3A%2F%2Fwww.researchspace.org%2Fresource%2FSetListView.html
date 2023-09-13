@@ -1,0 +1,135 @@
+<div style="display: flex; align-items: center; justify-content: space-between;">   
+    <div style="overflow: hidden;">
+      <semantic-link-container uri="{{iri.value}}" draggable=false>
+        <span style="display: flex; align-items: center; flex: 1;">
+          <with-types fixed-key='map-card-{{iri.value}}' iri='{{iri.value}}'
+            template='{{> template}}'
+            [[> rsp:TypeMappings]]
+          >
+            <template id='template'>
+              <span style="display: flex; align-items: center; flex: 1; width: 100%;">
+                <i class="rs-icon {{getValueByKey typeToIcon allTypes 'rs-icon-entity'}}" alt="{{directTypesLabels}}" title='{{directTypesLabels}}'></i>
+                <semantic-link style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" iri="{{iri.value}}"></semantic-link>
+              </span>
+            </template>
+          </with-types>          
+        </span>
+      </semantic-link-container>
+    </div>
+  
+    <!-- <div class="set-management__item-actions" style="margin-left: auto;">
+      <bs-dropdown-button pull-right=true bs-style=link title="" id="set-item-actions-{{iri.value}}">
+
+        <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
+                          data='{"iri": "{{iri.value}}"}' targets='["details-view"]'>
+          <bs-menu-item event-key=details>Resource Details</bs-menu-item>
+        </mp-event-trigger>
+
+        <mp-resource-link-container uri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                    urlqueryparam-view='knowledge-map' 
+                                    urlqueryparam-resource='{{iri.value}}'>
+          <bs-menu-item event-key=km>Explore Knowledge Map</bs-menu-item>
+        </mp-resource-link-container>
+
+        <semantic-link-container uri="{{iri.value}}">
+          <bs-menu-item event-key=resource>Explore Resource</bs-menu-item>
+        </semantic-link-container>
+
+        {{#if isSetItem}}
+        <mp-anonymous-hidden>
+          <mp-set-management-action-remove-set-item>
+            <bs-menu-item event-key=remove>Remove item</bs-menu-item>
+          </mp-set-management-action-remove-set-item>
+        </mp-anonymous-hidden>
+        {{/if}}
+      </bs-dropdown-button>
+    </div> -->
+
+    <mp-popover class="clipboard-listview-popover">
+      <mp-popover-trigger placement="right" trigger='["click"]' root-close='true'>
+        <div class='clipboard-popover-trigger'>
+          <i class="fa fa-caret-right" aria-hidden="true"></i>
+        </div>
+        
+      </mp-popover-trigger>
+
+      <mp-popover-content>
+        <div class="set-management__item-popover">
+          <mp-event-trigger id='details-view-trigger' type='Component.TemplateUpdate'
+                            data='{"iri": "{{iri.value}}"}' targets='["details-view"]'>
+            <div event-key=details class="set-management__item-popover-item">
+              <i class="iconmoon iconmoon-info"></i>
+              <span>Details</span>
+            </div>
+          </mp-event-trigger>
+
+          <semantic-link-container uri="{{iri.value}}">
+            <div event-key=resource class="set-management__item-popover-item">
+              <i class="iconmoon iconmoon-file-empty"></i>
+              <span>Resource</span>
+            </div>
+          </semantic-link-container>
+
+
+          [[!-- is shown only when we are not in the frames view, hidden by css --]]
+          <div class="rs-default-card-action__km-navigate">
+              <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                  urlqueryparam-view='knowledge-map' urlqueryparam-resource='{{iri.value}}'>
+                  <div event-key=km class="set-management__item-popover-item">
+                    <i class="rs-icon rs-icon-diagram"></i>
+                    <span>Knowledge Map</span>
+                  </div>
+              </semantic-link-container>
+          </div>
+
+          [[!-- is shown only when we are in the frames view, hidden by css --]]
+          <div class="rs-default-card-action__km-add-frame">
+              <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                                data='{"resourceIri": "{{iri.value}}", "viewId": "knowledge-map"}' 
+                                targets='["thinking-frames"]'>
+                <div event-key=km class="set-management__item-popover-item">
+                  <i class="rs-icon rs-icon-diagram"></i>
+                  <span>Knowledge Map</span>
+                </div>
+              </mp-event-trigger>
+          </div>
+
+
+          <!-- <mp-resource-link-container uri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                      urlqueryparam-view='knowledge-map' 
+                                      urlqueryparam-resource='{{iri.value}}'>
+            <div event-key=km class="set-management__item-popover-item">
+                <i class="rs-icon rs-icon-diagram"></i>
+                <span>Knowledge Map</span>
+            </div>
+          </mp-resource-link-container> -->
+
+          <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
+            <mp-overlay-dialog-trigger>
+              <div event-key=media class="set-management__item-popover-item">
+                <i class="rs-icon rs-icon-media"></i>
+                <span>Resource Media</span>
+              </div>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+              <mp-page-loader urlqueryparam-frame=true iri='http://www.researchspace.org/resource/ItemCardMedia' context='{{iri.value}}'>
+              </mp-page-loader>
+            </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+
+          {{#if isSetItem}}
+          <mp-anonymous-hidden>
+            <mp-set-management-action-remove-set-item>
+              <div event-key=remove class="set-management__item-popover-item">
+                <i class="rs-icon rs-icon-delete_round"></i>
+                <span>Remove</span>
+              </div>
+            </mp-set-management-action-remove-set-item>
+          </mp-anonymous-hidden>
+          {{/if}}
+        </div>
+      </mp-popover-content>
+
+  </mp-popover>
+
+</div>

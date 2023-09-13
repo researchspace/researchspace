@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+        
+  <appender name="cons" class="org.apache.log4j.ConsoleAppender">
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %p - %m%n"/>
+    </layout>
+  </appender>
+
+  <appender name="log" class="org.apache.log4j.FileAppender">
+    <param name="File" value="digilib-log.txt"/>
+    <param name="Append" value="true"/>
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %p - %m%n"/>
+    </layout>
+  </appender>
+
+  <appender name="account" class="org.apache.log4j.FileAppender">
+    <param name="File" value="dl-access-log.txt"/>
+    <param name="Append" value="true"/>
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %p - %m%n"/>
+    </layout>
+  </appender>
+
+  <logger name="account.request">
+    <level value ="debug"/>
+    <appender-ref ref="account"/>
+  </logger>  
+
+  <root>
+    <level value ="debug"/>
+    <appender-ref ref="cons"/>
+    <appender-ref ref="log"/>
+  </root>
+
+</log4j:configuration>

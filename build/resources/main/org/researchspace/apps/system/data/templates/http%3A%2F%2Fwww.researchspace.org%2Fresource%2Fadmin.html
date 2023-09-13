@@ -1,0 +1,197 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li class="active">Administration</li>
+</ol>
+
+<div class="page">
+  [[> rsp:adminPageHeader title="Administration" icon="fa fa-cog fa-lg"]]
+
+  <div class="container-fluid">
+    <bs-row class="row-center">
+      <bs-col xs="12" sm="11" md="10" lg="9" class="rs-col-xl-8" style="margin-bottom: 40px;">
+        <bs-row>
+
+          <bs-col xs="6">
+            <h2 class="admin-title" style="margin-top: 12px;">Import - Export</h2>
+            <bs-row>
+              <bs-col xs="12" md="6">
+                [[>Admin:IconPanelInclude title="File Upload" faIcon="rs-icon rs-icon-image_upload"
+                pageLink=(resolvePrefix "Admin:FileUpload")]]
+              </bs-col>
+              <bs-col xs="12" md="6">
+                [[>Admin:IconPanelInclude title="Data Import & Export" faIcon="fa fa-upload" pageLink=(resolvePrefix
+                "Admin:DataImportExport")]]
+              </bs-col>
+            </bs-row>
+          </bs-col>
+          
+          <bs-col xs="6">
+            <h2 class="admin-title" style="margin-top: 12px; padding:0 15px;">Authority - Entity configuration</h2>
+            <bs-row>
+              <bs-col xs="12" md="6">
+                <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                        urlqueryparam-view='entity-editor'>
+                  <div class="text-center panel panel-default admin-icon-panel">
+                    <div class="panel-body">
+                      <span class="rs-icon rs-icon-form_edit"></span>
+                    </div>
+                    <div class="panel-footer text-truncate" style="position: relative">
+                      <a>Entity Editor</a>
+                    </div>
+                  </div>
+                </semantic-link-container>
+              </bs-col>
+              <bs-col xs="12" md="6">
+                [[>Admin:IconPanelInclude title="Authority and entity configuration" faIcon="fa fa-cog"
+                pageLink="http://www.researchspace.org/resource/system/vocab/authority_manager_config_types"]]
+              </bs-col>
+            </bs-row>
+          </bs-col>
+        </bs-row>
+        <!--  close row -->
+
+        <bs-row>
+          <bs-col xs="12"><h2 class="admin-title">Knowledge Modelling</h2></bs-col>
+          [[#if (hasPermission
+          "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
+          <bs-col xs="6" md="3"
+            >[[>Admin:IconPanelInclude title="Knowledge Patterns Catalog" faIcon="fa fa-list-ul"
+            pageLink="http://www.researchspace.org/resource/system/fieldDefinitionContainer"]]
+          </bs-col>
+          [[/if]]
+          <bs-col xs="6" md="3"
+            >[[>Admin:IconPanelInclude title="Ontologies" faIcon="fa fa-sitemap"
+            pageLink="http://www.researchspace.org/resource/assets/Ontologies"]]
+          </bs-col>
+          <bs-col xs="6" md="3"
+            >[[>Admin:IconPanelInclude title="RDF Namespace Prefixes" faIcon="fa fa-code" pageLink=(resolvePrefix
+            "Admin:Namespaces")]]
+          </bs-col>
+          [[!-- TODO rename sparql endpoint and make it a proper link --]]
+          <bs-col xs="6" md="3">
+              <mp-link url="/sparql" class="rs-body-m-M">
+                  <div class="text-center panel panel-default admin-icon-panel">
+                      <div class="panel-body">
+                        <span class="rs-icon rs-icon-sparql"></span>
+                      </div>
+                      <div class="panel-footer text-truncate" style="position: relative">
+                          <a>SPARQL</a>
+                      </div>
+                  </div>
+              </mp-link>
+          </bs-col>
+        </bs-row>
+        <!--  close row -->
+
+        <bs-row>
+          <bs-col xs="12"><h2 class="admin-title">System Resources</h2></bs-col>
+          <bs-col xs="6" md="3"
+            >[[>Admin:IconPanelInclude title="Template & Application Pages" faIcon="fa fa-file-text-o"
+            pageLink=(resolvePrefix "Admin:Templates")]]
+          </bs-col>
+          <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Apps & Storages" faIcon="fa fa-th-large" pageLink=(resolvePrefix "Admin:Apps")]]
+          </bs-col>
+          <bs-col xs=6 md=3>
+            [[#if (hasPermission "api:ldp:*")]]
+              [[>Admin:IconPanelInclude title="LDP (Linked Data Platform)" faIcon="fa fa-archive" pageLink="http://www.researchspace.org/resource/system/rootContainer" assets="true"]]
+            [[/if]]
+          </bs-col>
+          
+          [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/queryTemplateContainer>:read:any")]]
+          <style>
+            .fa-stack-1x { top: 0em; }
+            .fa-stack {
+              font-size: 2.5em;
+              vertical-align: -16%;
+              height: 1.18em;
+            }
+            .filetype-text {
+              font-size: .4em;
+              font-weight: 800;
+            }
+          </style>
+          <bs-col xs=6 md=3>
+            <mp-resource-link-container title="Query Templates" uri="http://www.researchspace.org/resource/assets/QueryTemplates">
+              <div class="text-center panel panel-default admin-icon-panel">
+                <div class="panel-body">      
+                  <span class="fa-stack">
+                    <span class="fa-stack-1x filetype-text">SPIN</span>
+                    <i class="fa fa-file-o fa-stack-2x" style="font-size: 1.6em;"></i>
+                  </span>
+                </div>
+                <div class="panel-footer" style="position: relative">
+                    <a>
+                          Query Templates
+                    </a>
+                </div>
+              </div>
+            </mp-resource-link-container>
+          </bs-col>
+          [[/if]]
+          
+        </bs-row>
+        
+        <bs-row>
+          <bs-col xs="12"><h2 class="admin-title">Configurations</h2></bs-col>
+          <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="System Settings" faIcon="fa fa-cog" pageLink=(resolvePrefix "Admin:Configuration")]]
+          </bs-col>
+          <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Repositories" faIcon="fa fa-database" pageLink=(resolvePrefix "Admin:Repositories")]]
+          </bs-col>
+          <bs-col xs=6 md=3>[[>Admin:IconPanelInclude title="Security" faIcon="fa fa-users" pageLink=(resolvePrefix "Admin:Security")]]
+          </bs-col>
+        </bs-row> <!--  close row -->
+
+        <bs-row>
+          <bs-col xs="12"><h2 class="admin-title">System Management</h2></bs-col>
+
+          <bs-col xs="12" class="admin-system-manag_container">
+            <i class="rs-icon rs-icon-terminal"></i>
+            <semantic-link title="Logs" iri='[[resolvePrefix "Admin:Logs"]]'>
+                Logs
+            </semantic-link>
+          </bs-col>
+
+          <bs-col xs="12" class="admin-system-manag_container">
+            <mp-admin-cache-invalidation-button></mp-admin-cache-invalidation-button>
+            <mp-popover title="Cache Invalidation">
+              <mp-popover-trigger placement="right"  trigger='["hover"]'> 
+                <i class="fa fa-question-circle" aria-hidden="true" style="margin-left: 5px; font-size: 15px;"></i>
+              </mp-popover-trigger>
+              <mp-popover-content>
+                <div>
+                  <p>Certain system functionality relies heavily on caches such as for fetching resource labels or computing
+                    templates.</p>
+                  <p>Cache entries are usually automatically invalidated after a certain period of time.</p>
+                  <p>However, during development or system configuration i.e. when data is updated or system configuration such as
+                    the template include query changes, it might be required to manually invalidate the caches.</p>
+                </div>
+              </mp-popover-content>
+            </mp-popover>
+          </bs-col>
+
+          <bs-col xs="12" class="admin-system-manag_container danger">
+            [[#if (hasPermission "system:restart")]]
+            <mp-restart-wrapper>
+              <a style="display: flex; align-items: center;">
+                <i class="fa fa-power-off"></i>
+                <div>Restart Platform</div>
+              </a>
+            </mp-restart-wrapper>
+            [[else]]
+            <div class="restart-no-permission">
+              <i class="fa fa-power-off"></i>
+              <div>Restart Platform: No permission to restart the platform
+              </div>
+            </div>
+            [[/if]]
+          </bs-col>
+      
+        </bs-row>
+        <!--  close row -->
+      </bs-col>
+    </bs-row>
+    <!--  close row -->
+  </div>
+</div>

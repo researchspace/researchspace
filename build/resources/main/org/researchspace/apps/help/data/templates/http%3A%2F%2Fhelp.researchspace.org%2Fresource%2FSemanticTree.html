@@ -1,0 +1,166 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Tree Component</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Tree Component </h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+         Tree-based visualization, navigation and browsing through sub-tree structures with customizable node templates.
+      </div>
+      <div class="documentation__intro__demo" id='demo1'>
+         <semantic-tree query='[[>Help:SemanticTreeSampleQuery]]'></semantic-tree>
+      </div>
+    </div>
+    <div style="clear:both;"></div>
+    <h2>Configuration </h2>
+    <mp-documentation type="SemanticTreeConfig"></mp-documentation>
+    
+    <br />
+    <bs-alert bs-style="info">
+      <b>Deprecation note:</b>
+      Starting from platform versions <strong>>= 3.1</strong>, the legacy <code>{{data.bindingName}}</code> context in the <code>tupleTemplate</code> is deprecated. 
+      It will still work for downward compatiblity for some version, but bindings are now direclty accessible, i.e. via <code>{{bindingName}}</code>. 
+      Please make use of the new syntax and start to migrate your existing configurations.
+  	</bs-alert>
+
+    <h2>Examples </h2>
+    <h3>Basic Tree</h3>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <ul>
+          <li>No explicit root node defined in configuration (tree will search for nodes without parent).</li>
+          <li>No custom tuple-template defined (default template is applied, will create a simple link.</li>
+          <li>Tree is by default not collapsed and all subtrees are open.</li>
+        </ul>
+      </div>
+      <div class="documentation__example__demo" id='demo2'>
+        <mp-code-example>
+<![CDATA[
+<semantic-tree query="[[>Help:SemanticTreeSampleQuery]]"></semantic-tree>
+]]>
+  </mp-code-example>
+      </div>
+    </div>
+
+
+    <h3> Custom templates for tree nodes </h3>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        Specifies a custom <code>tuple-template</code> to format the rendering of each node element in the tree.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<semantic-tree
+  query="[[>Help:SemanticTreeSampleQuery]]"
+  tuple-template='{{> node}}'
+>
+  <template id='node'>
+    <span><semantic-link uri="{{node.value}}"></semantic-link> &nbsp; <i class="fa fa-question-circle" style="margin-right: 5px"></i></span>
+  </template>
+</semantic-tree>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3> All Nodes collapsed </h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <p>... except all nodes on the path to the nodes as specified in the <code>keys-opened</code> array.</p>
+        <p>Both <code>collapsed</code> and <code>keys-opened</code> options applicable only to <code>html</code>
+        and <code>d3-collapsible-tree</code> providers.</p>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<semantic-tree
+  query="[[>Help:SemanticTreeSampleQuery]]"
+  provider='d3-collapsible-tree'
+  collapsed=true
+  keys-opened='["http://help.researchspace.org/resource/Installation"]'
+>
+</semantic-tree>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3> Render only a subtree / explicit root node </h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <p>Uses the nodes as specified in the <code>roots</code> array to select the root nodes(s) for the tree rendering.</p>
+        <p>By default the tree will consider those nodes as roots nodes, which do not have a parent (i.e. parent is unbound/UNDEF).
+        However, in some situations it might be difficult to write a query leading to unbound parent node values.
+        In other situations it might be convenient to reuse the same tree, but (dynamically) render only subtrees.</p>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<semantic-tree
+  query="[[>Help:SemanticTreeSampleQuery]]"
+  provider='d3-dendrogram'
+  roots='["http://help.researchspace.org/resource/Components"]'
+></semantic-tree>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3> Sankey diagram </h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <p>Renders arbitrary direct acyclic graph (DAG) as sankey diagram.</p>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<semantic-tree
+  query="[[>Help:SemanticTreeDAGQuery]]"
+  provider='d3-sankey'
+></semantic-tree>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h3> Rendering direct acyclic graph (DAG) as tree</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <p>Tree component supports rendering directed graphs in a tree form. However, there are the following restrictions:
+          <ol>
+            <li>If the graph has any cycles, some edges will be removed to make it acyclic.</li>
+            <li>For providers other than <code>d3-sankey</code>, any node with multiple parents
+              will be rendered multiple times as a child of each one of them.</li>
+            <li>If node wasn't mentioned in query bindings as separate row but refered to
+              as parent by other nodes, it will be rendered without any additional bindings
+              (<code>{{something}}</code>).</li>
+          </ol>
+        </p>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+<![CDATA[
+<semantic-tree
+  query="[[>Help:SemanticTreeDAGQuery]]"
+  provider='d3-dendrogram'
+></semantic-tree>
+]]>
+        </mp-code-example>
+      </div>
+    </div>
+  </div>
+</div>

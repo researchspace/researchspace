@@ -1,0 +1,43 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li class="active">File Upload</li>
+</ol>
+
+<div class="page rs-fileUpload" style="  padding-bottom: 40px;">
+  
+  [[> rsp:adminPageHeader title="File Upload" icon="rs-icon rs-icon-image_upload"]]
+  
+  <div class="container-fluid">
+      <bs-row class="row-center">
+        <bs-col xs=12 sm=11 md=10 lg=9 class='rs-col-xl-8'>
+              <bs-alert bs-style="warning">
+                <b>Please note:</b>
+                  <ul>
+                    <li>Uploads may silently overwrite exiting files. For the time being, there is no additional warning or check. </li>
+                    <li>Uploads to any of these directories may change the system behaviour, i.e. if you upload / overwrite a config file, this may possibliy even break the system.</li>
+                    <li>It is recommended to limited the user group which may perform such low-level file operations, i.e. in the default configuration users with the "admin" role have access to the upload functionality. </li>
+                    <li>It is currently not possible to list existing files or delete files from the respective directories, i.e. after the a successful upload you should copy the relative upload path for your reference.</li>
+                  </ul>
+              </bs-alert>
+              <mp-direct-file-uploader
+                placeholder="Drag&drop a file for upload here or click into the field to open the browser's default file selector."
+                [[!-- 
+                Currently it is not easily possible to specify a pattern that is more restrictive but allows all required mime types such as x-handlebars-template, which is not detected by the browser.
+                Other formats are detected differently based on the platform, i.e. see https://github.com/react-dropzone/react-dropzone/issues/276
+                accept-pattern="application/pdf,image/*,text/*,application/rdf+xml,application/json,application/ld+json,application/n-triples,text/x-handlebars-template" 
+                --]]
+                default-storage-id="runtime"
+                default-folder="/"
+                default-object-kind="assets"
+              >
+              </mp-direct-file-uploader>
+    
+ 				 </bs-col>   
+      </bs-row> <!--  close row -->
+  </div>
+</div>

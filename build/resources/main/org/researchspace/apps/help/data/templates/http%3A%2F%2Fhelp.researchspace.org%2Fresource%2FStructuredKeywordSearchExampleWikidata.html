@@ -1,0 +1,44 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Semantic Search" uri="http://help.researchspace.org/resource/SemanticSearch">Semantic Search</semantic-link>
+  </li>
+  <li class="active">Keyword Search with Facets (Wikidata)</li>
+</ol>
+
+<div class="page">
+  <div class="page__body">
+  [[> Help:StructuredSearchSampleDataCheckWikidata]]
+  <p>
+    Try to type <i>pneumonia</i> to search for all <i>Drugs</i> that treat it.
+  </p>
+  <div class="rs-help-search">
+    <div>
+<mp-code-example>
+<![CDATA[
+  [[#> Help:StructuredSearchExampleBaseWikidata]]
+    <semantic-search-query-keyword 
+      domain='<http://www.wikidata.org/entity/Q12140>'
+      query='
+        SELECT ?subject WHERE { 
+          ?subject <http://www.wikidata.org/prop/direct/P2175> ?drug. 
+          ?drug rdfs:label ?label .
+          FILTER REGEX(STR(?label), ?__token__, "i")
+        }
+      '
+    ></semantic-search-query-keyword>
+  [[/ Help:StructuredSearchExampleBaseWikidata]]
+]]>
+</mp-code-example>
+    </div>
+  </div>
+</div>
+</div>

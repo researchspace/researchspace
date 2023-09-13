@@ -1,0 +1,118 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link iri='http://www.researchspace.org/resource/ProjectDashboard'>
+      Project Dashboard
+    </semantic-link>
+  </li>
+  <li class="active">Project - Semantic Narratives</li>
+</ol>
+
+<div class="page rs-project-narrative">
+
+[[#>rsp:ClipboardSidebar]]
+[[#>rsp:DetailsSidebar]]
+
+  <div class='page__body--borderless page__body--borderless-pd'>
+  [[#> rsp:adminPageHeader title="Project - Semantic Narratives" icon="rs-icon rs-icon-page" action=true]]
+  [[#if (hasPermission "forms:ldp:*")]]
+    <mp-resource-link-container 
+                                uri="http://www.researchspace.org/resource/ThinkingFrames"
+                                urlqueryparam-view='semantic-narrative'
+                                urlqueryparam-previous-page='[[this]]'
+                                urlqueryparam-previous-page-title='Project - Semantic Narratives'
+                                >
+
+      <button class="btn btn-header-right pull-right">
+        <i class="fa fa-plus"></i>
+        <div>Create Semantic Narrative</div>
+      </button>
+    </mp-resource-link-container>
+    [[/if]]
+    <div class='clearfix'></div>
+     
+  [[/rsp:adminPageHeader]]
+  
+  <div class="container-fluid">
+        <bs-row class="row-center">
+           <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+  
+          		<semantic-context repository='assets'>
+                
+                <semantic-table config='{
+
+                "query": "SELECT * WHERE {
+                          ?page a rso:Semantic_Narrative ;
+                             rdfs:label ?label ;
+                             <http://www.w3.org/ns/prov#generatedAtTime> ?modified .
+
+                           [[#if (hasPermission "forms:ldp:*")]]
+                              ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                           [[else]]
+                              ?page <http://www.w3.org/ns/prov#wasAttributedTo> ?user .
+                              FILTER(?user = <http://www.researchspace.org/resource/system/anonymousUser> )
+
+                           [[/if]]
+                          } ORDER BY DESC(?modified)",
+                          
+                "columnConfiguration": [{
+                                          "variableName": "page",
+                                          "displayName": "Semantic Narrative - title",
+                                          "cellTemplate": "{{> view}}"
+                                        },
+                                        
+                                         {"variableName": "user", 
+                                          "displayName": "Author", 
+                                          "cellTemplate": "<div><i class=\"fa fa-user\" style=\"margin-right: 10px\"></i>
+                                          <semantic-link class=\"rs-dashboard--a\" uri=\"{{user.value}}\" target=\"_blank\"></semantic-link></div>" 
+                                        },
+                                        
+                                        {
+                                          "variableName": "modified",
+                                          "displayName": "Last Update",
+                                          "cellTemplate":"{{dateTimeFormat modified.value \"LLL\"}}"
+                                        },
+                                        
+                                        {"displayName":"Actions", "cellTemplate": 
+                                        "<div style=\"display:flex;\">
+                                            <mp-ldp-duplicate-resource-action iri=\"{{page.value}}\">
+                                        			<i class=\"fa fa-files-o\" style=\"cursor:pointer; padding-right:12px;\" title=\"Duplicate\" aria-hidden=\"true\"></i>
+                                            </mp-ldp-duplicate-resource-action>
+                                        
+                                            <mp-anonymous-hidden>
+                                              <mp-ldp-remove-from-container-action data-iri=\"{{page.value}}\" data-container=\"http://www.researchspace.org/ontology/UserDefinedPage\">
+                                        
+                                        				<i class=\"fa fa-trash\" style=\"cursor:pointer;\" title=\"Delete\" aria-hidden=\"true\"></i>
+                                              </mp-ldp-remove-from-container-action>
+                                            </mp-anonymous-hidden>
+                                          </div>"} 
+                                     ]}'>
+                  
+                  <template id='view'>
+                    <div style="display: flex; align-items: center;">
+                      <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                      <semantic-link iri='{{page.value}}' 
+                                      class='a-draggable'
+                                      urlqueryparam-previous-page='[[this]]'
+                                      urlqueryparam-previous-page-title='Project - Semantic Narratives'
+                                      >
+                        <div style="display: flex; align-items: center;">
+                          <span>{{label.value}}</span>
+                        </div>
+                      </semantic-link>
+
+                    </div>
+                    
+                  </template>
+               </semantic-table>
+            </semantic-context>
+             </bs-col>   
+        </bs-row> <!--  close row -->
+    </div>
+  </div>
+  
+  [[/rsp:DetailsSidebar]]
+  [[/rsp:ClipboardSidebar]]
+</div>

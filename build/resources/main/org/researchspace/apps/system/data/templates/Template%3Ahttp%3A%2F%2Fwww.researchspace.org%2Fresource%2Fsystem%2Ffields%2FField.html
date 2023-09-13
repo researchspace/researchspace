@@ -1,0 +1,102 @@
+[[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
+
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li><semantic-link title="Assets" iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">Knowledge Patterns</semantic-link></li>
+  <li class="active"><mp-label iri='[[this]]'></mp-label></li>
+</ol>
+
+<div class="page">
+  <div class="container-fluid adminPage-header-container">
+    <bs-row class="row-center">
+      <bs-col xs=11 sm=10 md=10 lg=8 class="adminPage-header--col pr-0">
+        <div class="adminPage-header--content">
+          <div class='adminPage-header--thumbnail'>
+            <i class="fa fa-list-ul fa-lg"></i>
+          </div>
+          <div class='adminPage-header--body'>
+            <h2>Knowledge Pattern: <mp-label iri='[[this]]'></mp-label></h2>
+          </div>
+        </div>
+      </bs-col>
+    </bs-row> <!--  close row -->
+  </div>
+
+  <div class="container-fluid" style="margin-bottom:60px;">
+    <bs-row class="row-center">
+        <bs-col xs=11 sm=10 md=10 lg=8 class="pr-0">
+          <div class='pull-right' style="margin-bottom: 10px; display: flex;">
+            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:export:any")]]
+              <mp-ldp-export-resource iri='[[this]]'>
+                <button class="btn-grey" style='margin-right: 4px;'>
+                  <i class='fa fa-download btn-icon-left' aria-hidden='true'></i> Export
+                </button>
+              </mp-ldp-export-resource>
+            [[/if]]
+            
+            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:create:any")]]
+              <mp-ldp-duplicate-resource-action iri="[[this]]" container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" label="new Knowledge Pattern IRI">
+                <button class="btn-grey" style="margin-right:8px;"><i class="fa fa-files-o btn-icon-left" aria-hidden="true"></i> Duplicate</button>
+              </mp-ldp-duplicate-resource-action>
+            [[/if]]
+            
+            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:delete:any")]]
+              <mp-ldp-remove-from-container-action iri="[[this]]" container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" 
+                                                  post-action='http://www.researchspace.org/resource/assets/Fields'>
+                <button class="btn-grey"><i class="fa fa-trash btn-icon-left" aria-hidden="true"></i> Delete</button>
+              </mp-ldp-remove-from-container-action>
+            [[/if]]
+          </div>
+          <div style='clear: both;'></div>
+          
+          <field-editor field-iri='[[this]]' ></field-editor>
+          
+          <h2 style="margin-top: 20px; margin-bottom: 15px;">Knowledge Pattern Preview</h2>
+          <semantic-form 
+            debug='false' 
+            browser-persistence=false 
+            fields='[[fieldDefinitionsFromQuery "SELECT ?field { BIND(?? AS ?field) }"]]'
+          >
+            <bs-tabs>
+              <bs-tab event-key="1" title="Plain Input">
+                <semantic-form-text-input for='[[this]]' render-header=true></semantic-form-text-input>
+              </bs-tab>
+              <bs-tab event-key="2" title="Autocomplete Input">
+                <semantic-form-autocomplete-input for='[[this]]'></semantic-form-autocomplete-input>
+              </bs-tab>
+              <bs-tab event-key="3" title="Select Input">
+                <semantic-form-select-input data-for='[[this]]'></semantic-form-select-input>
+              </bs-tab>
+              <bs-tab event-key="4" title="Date Input">
+                <semantic-form-datetime-input for='[[this]]'></semantic-form-datetime-input>
+              </bs-tab>
+              <bs-tab event-key="5" title="Tree Input">
+                <semantic-form-tree-picker-input for="[[this]]"></semantic-form-tree-picker-input>
+              </bs-tab>
+            </bs-tabs>
+          </semantic-form>
+
+          <h2 style="margin-top: 40px;">JSON Configuration Example</h2>
+          <i style="color:red;font-size: 11px;">
+            Please be aware of that the "example" id needs to be replaced with the current IRI: "<b>[[this]]</b>"
+          </i>
+          <mp-code-block mode='application/json'>
+                      <![CDATA[
+                      [[fieldDefinitions example=(this)]]
+                      ]]>
+          </mp-code-block>
+  
+        </bs-col>   
+      </bs-row> <!--  close row -->
+  </div>
+</div>
+[[else]]
+
+<p>No Permission</p>
+
+[[/if]]

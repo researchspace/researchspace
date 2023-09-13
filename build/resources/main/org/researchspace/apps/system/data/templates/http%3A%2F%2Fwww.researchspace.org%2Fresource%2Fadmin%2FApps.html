@@ -1,0 +1,116 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="resource/Start">Home</mp-link>
+  </li>
+   <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li class="active">Apps and Storage Locations</li>
+</ol>
+
+<div class="page rs-app-storage" style="padding-bottom:50px;">
+
+  [[> rsp:adminPageHeader title="Apps and Storage Locations" icon="fa fa-th-large fa-lg"]]
+
+  <style>
+    .rs-app-storage a {
+      text-decoration: underline;
+    }
+  </style>
+  
+  <div class="container-fluid">
+    <bs-row class="row-center">
+      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+
+        <h1>Installed Apps</h1>
+
+        <p>
+          Every app has exactly one associated storage. The storage ID is equal to the app ID. <br>
+          If no explicit storage is defined for an <semantic-link title="Apps" uri='[[resolvePrefix "Help:Apps"]]'>app
+          </semantic-link>, the platform creates a standard, non-versioned file storage
+          within the root directory of the respective app.
+        </p>
+
+        <hr />
+        <mp-json-renderer get-url='/rest/admin/apps'></mp-json-renderer>
+
+        <br>
+        <mp-overlay-dialog title="Upload & Deploy App" type="modal" bs-size="large">
+          <mp-overlay-dialog-trigger><button type="button" class="btn btn-primary">Upload & Deploy App</button>
+          </mp-overlay-dialog-trigger>
+          <mp-overlay-dialog-content>
+            <div>
+              <p>
+                <strong>Please note</strong> that apps need a platform restart in order to be installed properly.
+              </p>
+              <p>
+                Please refer to the <semantic-link title="App Deployment" uri='[[resolvePrefix "Help:AppDeployment"]]'>
+                  app deployment</semantic-link> help for further details.
+              </p>
+              [[#if (hasPermission "app:upload")]]
+              <mp-app-upload></mp-app-upload>
+              [[else]]
+              <span style="color:red">You do not have the required permission to upload apps.</span>
+              [[/if]]
+            </div>
+          </mp-overlay-dialog-content>
+        </mp-overlay-dialog>
+
+        <h1 style="margin-top:40px;">Connected Storages</h1>
+        Storages in ascending order of priority (c.f. <semantic-link title="Apps"
+          uri='[[resolvePrefix "Help:Storage"]]'>Storage Help</semantic-link>):
+        <hr />
+        <mp-json-renderer get-url='/rest/admin/storages' template='{{> storages}}'>
+          <template id='storages'>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Storage Id</th>
+                  <th>Storage Kind</th>
+                  <th>Mutable Storage</th>
+                  <th>Export</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each this}}
+                <tr>
+                  <td>{{@index}}</td>
+                  <td>{{id}}</td>
+                  <td>{{storageKind}}</td>
+                  <td>{{mutableStorage}}</td>
+                  <td>
+                    <mp-overlay-dialog title="ZIP Export - App Artefacts" type="modal" bs-size="large">
+                      <mp-overlay-dialog-trigger><button
+                          class="btn btn-primary btn-sm active">Export ZIP</button></mp-overlay-dialog-trigger>
+                      <mp-overlay-dialog-content>
+                        <p>
+                          The export will generate a ZIP bundle of all non-binary app artefacts
+                          (templates, config files, ldp assets) only. If the storage does not contain any of such,
+                          the zip will be empty.
+                        </p>
+                        <p>
+                          Dependent on the underlying storage and
+                          the number and size of the app artefacts, generating the ZIP may take some time.
+                          Please be patient and <b>do not try</b> to re-start the download,
+                          i.e. by pressing the download button twice.<br>
+                        </p>
+                        <mp-file-download delay=2000 post-action="reload"
+                          download-url="/rest/admin/storages/{{id}}/zip">
+                          <button class="btn btn-primary btn-sm active">OK. Start Download.</button>
+                        </mp-file-download>
+                      </mp-overlay-dialog-content>
+                    </mp-overlay-dialog>
+                  </td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </template>
+        </mp-json-renderer>
+
+      </bs-col>
+    </bs-row> <!--  close row -->
+  </div>
+
+</div>

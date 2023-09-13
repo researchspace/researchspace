@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Debug log4j profile, logging to STDOUT and logs/platform.log       -->
+<!--                                                                    -->
+<!-- The logger is configured to                                        -->
+<!-- (a) log out everthing >= DEBUG for the platform,                   -->
+<!-- (b) log out everything >= WARNING for the key libraries, and       -->
+<!-- (c) log our everything >= WARNING for everything else.             -->
+<!--                                                                    -->
+<!-- This will result in a fair amount of log messages, suitable for    -->
+<!-- local debugging and early-stage deployments, where a reasonable    -->
+<!-- amount of logging information is required, in order to be able     -->
+<!-- to understand and trace down possible issues in the deployment.    -->
+<!--                                                                    -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      -->
+<!--     !!!!!!! ALTERNATIVE OPTION FOR PRODUCTION SYSTEMS !!!!!!!      -->
+<!--     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      -->
+<!--                                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<Configuration xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="log4j-xinclude-appenders.xml" />
+
+  <Loggers>
+
+    <Logger name="org.researchspace" level="debug" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    
+    <!-- additional platform specific loggers that can be switched on individually (INFO) -->
+    <Logger name="platform.logging" level="OFF" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    <Logger name="platform.logging.ephedra.QueryPlanLogger" level="OFF" additivity="true" />
+    
+    <!-- specifically exclude MpSPARQLProtocolSession as this spams the log
+         due to the same logger name being used by the RDF4J parent class
+    -->
+    <Logger name="org.researchspace.repository.sparql.MpSPARQLProtocolSession" level="warn" additivity="false" />
+
+    <Logger name="httpclient.wire" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="io.github.classgraph" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <!--
+      Apache library configuration: show ERRORs only.
+
+      The only exception is for beanutils, which we set to display errors only.
+      This is to avoid logging of errors in combination with apache configuration,
+      see https://issues.apache.org/jira/browse/BEANUTILS-477 (we may remove
+      th special handling for beanutils once the latter ticket has been resovled)
+    -->
+    <Logger name="org.apache.commons.beanutils" level="error" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.apache" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.eclipse" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="sun" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.glassfish.jersey" level="warn">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="org.apache.shiro" level="warn" additivity="false">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Root level="warn">
+      <AppenderRef ref="LOGFILE"/>
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+
+  </Loggers>
+
+</Configuration>

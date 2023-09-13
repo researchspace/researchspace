@@ -1,0 +1,430 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Working with Data</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Working with Data</h1>
+    <h2>Background: Semantic Data Formats</h2>
+    <div style="float:left;width:70%;">
+      <p> The ResearchSpace platform is based on open Linked Data standards for semantic data processing 
+        that have been created as part of the 
+        <a href="http://www.w3.org/standards/semanticweb/" target="_blank">W3C's Semantic Web initiative</a>. 
+        Designed to represent and process data published in the Web, in recent years these standards have
+        found entrance into <a href="http://www.w3.org/standards/semanticweb/applications" target="_blank">vertical applications in industry</a>. </p>
+      <p>By switching from the traditional, relational model to a graph structured data model, these semantic data
+        formats offer an intuitive, object-centric view on entities and, in particular, their relationships.
+        Bringing schema and instance level data closer together, they overcome the need for a complex schemata
+        definition upfront and clear the way for intelligent reasoning by scalable built-in inference mechanisms. </p>
+    </div>
+
+    <div style="float:left;width:5%;">&nbsp;</div>
+
+    <div style="float:left;width:25%;">
+      <img src="/images/help/w3c-semanticweb.png" />
+    </div>
+
+    <div style="clear:both;" />
+
+    <div>
+      If you want to learn more about the standards underlying the ResearchSpace platform, you may get started
+      by catching up with the latest W3C specs listed below:
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Standard</th>
+            <th>What</th>
+            <th>Links</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">RDF</th>
+            <th scope="row">The Resource Description Framework (RDF) is a W3C specification that allows us to represent data in the form of so-called <strong>triples of knowledge</strong>. A knowledge triple can be understood as a statement of the form <strong>subject predicate object</strong>, where the predicate describes the relationship between the subject and the object.</th>
+            <th scope="row"><a href="http://www.w3.org/RDF/" target="_blank">W3C RDF Overview</a>, <a href="http://www.w3.org/TR/rdf11-concepts/" target="_blank">RDF 1.1 Concepts and Abstract Syntax</a>, <a href="http://www.w3.org/standards/techs/rdf#w3c_all" target="_blank">Overview over RDF Standards</a>          
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">RDFS</th>
+            <th scope="row">While the RDF standard is barely a specification of the syntax for specifying triples (including very basic capabilities such as typing), <strong>RDF</strong> <strong>S</strong>chema (RDFS) extends RDF through a predefined vocabulary for basic modeling of the domain. As such, it offers constructs for subclassing,
+              the specification of domains and ranges, basic containers such as lists and bags, etc. RDFS also comes with a predefined semantics that enables simple reasoning.</th>
+            <th scope="row"><a href="http://www.w3.org/TR/rdf-schema/" target="_blank">W3C RDF Schema Recommendation</a></th>
+          </tr>
+          <tr>
+            <th scope="row">SPARQL</th>
+            <th scope="row">SPARQL is a declarative, query language for extracting data from RDF or RDFS graphs. While SPARQL 1.0 provides basic pattern matching capabilities over such graphs, version 1.1 extends these facilities with advanced constructs such as aggregation, flexible property path querying, and federation. SPARQL also provides a REST-style protocol for integrated querying of multiple SPARQL databases.
+            </th>
+            <th scope="row"><a href="http://www.w3.org/TR/rdf-sparql-query/" target="_blank">SPARQL Query Language (v1.0)</a>, <a href="http://www.w3.org/TR/sparql11-query/" target="_blank">SPARQL Query Language Extensions (v1.1)</a>, <a href="http://www.w3.org/TR/sparql11-update/" target="_blank">SPARQL 1.1 Update</a></th>
+          </tr>
+        </tbody>
+      </table> 
+    </div>
+
+
+    We provide some basic examples for RDF(S) data and SPARQL queries in our&nbsp;<semantic-link iri="[[resolvePrefix "Help:Tutorial"]]">Tutorial</semantic-link>.
+    Further, the <a href="http://euclid-project.eu/" target="_blank">EUCLID</a> project provides
+    a rich set of educational resources around the Linked Data technology stack and how to build
+    innovative applications based on these technologies.
+
+    <h2>Overview: Inferfaces for Data Handling</h2>  
+    <p>
+      The ResearchSpace platform provides three main APIs for data handling:
+    </p>
+    <ul>
+      <li><code>/sparql</code> Interface <br>Implements the <a href="http://www.w3.org/TR/sparql11-query/" target="_blank">SPARQL 1.1 Query</a> for querying data as well as the <a href="http://www.w3.org/TR/sparql11-update/" target="_blank">SPARQL 1.1 Update</a> standard for updating data. Most powerful and fexible, but also the steepest learning curve. Security permissions can be assigned on the granularity of SPARQL operation types (SELECT, ASK, CONSTRUCT, DESCRIBE, UPDATE). The interface can be used from any client software, for example, from command-line interfaces like CURL or other software libraries implementing the SPARQL protocol directly (RDF4J, Jena, RDFlib, SPARQL.js etc.). The <a href="/sparql">SPARQL editor</a> provides a convenient environment with  syntax highlighting and different output modes for constructing, testing, saving, and executing SPARQL queries manually from within the browser.</li> 
+      <li><code>/rdf-graph-store</code> Interface <br>Implements the <a href="https://www.w3.org/TR/sparql11-http-rdf-update/" target="_blank">SPARQL 1.1 Graph Store HTTP Protocol</a>. Provides an abstraction over certain SPARQL Query and Update operations, i.e., all operations will be translated into SPARQL Query and Update operations. Can be easily used, for example, to upload RDF files from CURL and to retrieve, update, and delete (sub)graphs with restful CRUD operations. Allows for different security permission assignments compared to what is possible with permissions on SPARQL operations: i.e., instead of granting permissions to execute any kind of SPARQL Update operation (which includes INSERT as well as DELETE), it is possible, for example, to allow for data upload but not for data deletion. The administration page for <semantic-link iri="[[resolvePrefix "Admin:DataImportExport"]]">data import and export</semantic-link> provides a convienent user-interface for accessing the graph store operations from the browser. </li>
+      <li><code>/ldp-container</code> Interface <br>Implements the operations as defined by the <a href="https://www.w3.org/TR/ldp/" target="_blank">Linked Data Platform 1.0</a> specification (with some minor differences). It provides essentially an abstraction over the SPARQL Graph Store interface with built-in support for cataloging features (nesting, provenance tracking etc.). In the end, all operations will be translated again to plain SPARQL Query and Update operations. For the time being, the LDP interface is only used from within domain-specific components and there exist no generic user interface for managing the LDP artefacts.</li>
+    </ul>
+
+    <p>  
+      Please note, that the ResearchSpace platform in principle can operate on any database implementing the SPARQL 1.1 and SPARQL 1.1 Update standard. While
+      the functionality as described here is mainly graph database independent (i.e. the ResearchSpace platform acts as a proxy in front of the underlying database), there might be still vendor specifics due to differences in the implementation and level of compliance with the standards.
+    </p>
+
+    <h2>Data Ingestion and Manipulation from a Client</h2>
+
+    <h3>Insertion and Deletion of Triples</h3>
+    At the lowest level, <a href="http://www.w3.org/TR/sparql11-update/" target="_blank">SPARQL Update</a> commands can be used to insert and delete triples (aka statements) individually or depending on matching constraints and projections as defined in the where clause of the SPARQL Update operation. <b>It is usually not recommended to use SPARQL INSERT with a huge number of inlined statements</b>, since parsing this as an operation AST may impose some pressure on the heap space (at least for most java-based databases).<br><br>
+
+    <h4>Example: SPARQL Update - Inserting Triples</h4>
+    The following example of an SPARQL update command will insert a fixed set of triples (RDF statements) into the database:
+<mp-code-block mode='application/sparql-query'>
+<![CDATA[
+BASE <http://example.org/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+INSERT {  
+  <JohnDoe> a foaf:Person.
+  <JohnDoe> rdfs:label "John Doe" .
+
+  <JaneDoe> a foaf:Person.
+  <JaneDoe>  rdfs:label "Jane Doe" .
+
+  <JaneDoe> foaf:knows <JohnDoe> .
+  <JohnDoe> foaf:knows <JaneDoe> .
+} WHERE {}
+]]>
+</mp-code-block>
+    It can be executed either from the from the SPARQL editor with "Run Query" button or using a different client, for example, by posting the query via CURL directly against the <code >/sparql</code> interface. Since the SPARQL Update query string needs to be encoded in the POST body of the HTTP(S) request, it is recommened to move the query to a file, for example, <code>insert.sq</code> and then post the file via CURL:
+<mp-code-block mode='text/x-sh'>
+curl 'http://127.0.0.1:10214/sparql' -u admin:admin -H 'Content-Type: application/sparql-update; charset=UTF-8' -H 'Accept: text/boolean' -d @insert.sq
+</mp-code-block>
+    <p>
+      Please note that according to the standard an Update operation with an empty WHERE clause, for example, <code mode='application/sparql-query'>INSERT { ... } WHERE {}</code> is equivalent to <code mode='application/sparql-query'>INSERT DATA { ... }</code>.
+    </p><br>
+    <h4>Example: SPARQL Update - Deleting Triples</h4>
+    Similarly the same triples can be deleted by explicit enumeration:
+<mp-code-block mode='application/sparql-query'>
+<![CDATA[
+BASE <http://example.org/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+DELETE {  
+  <JohnDoe> a foaf:Person.
+  <JohnDoe> rdfs:label "John Doe".
+
+  <JaneDoe> a foaf:Person.
+  <JaneDoe>  rdfs:label "Jane Doe".
+
+  <JaneDoe> foaf:knows <JohnDoe>.
+  <JohnDoe> foaf:knows <JaneDoe>.
+} WHERE {}
+]]>
+</mp-code-block>
+    ... or alternatively using a wildcard match in the where clause:
+<mp-code-block mode='application/sparql-query'>
+<![CDATA[
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+DELETE {  
+  ?person ?p1 ?o.
+  ?s ?p2 ?person.
+} WHERE {
+  ?person a foaf:Person.
+  ?person ?p1 ?o.
+  ?s ?p2 ?person.
+}
+]]>
+</mp-code-block>
+    <p>
+      Whereas the later may potentially delete more triples then being added in the previous example. 
+      Of course, this way one can submit any SPARQL UPDATE query, possibly also inserting triples or manipulating the existing
+      data by means of arbitrary complex SPARQL queries.
+    </p>
+
+    <h3>Managing Collections of Triples</h3>
+
+    The concept of extending the notion of RDF triples to quads is usually called <b>Named Graphs</b> (c.f. <a href="http://patterns.dataincubator.org/book/named-graphs.html" target="_blank">Linked Data Patterns book</a> ). The "quad" (the fourth element) is used for organization of triples into collections of triples, which formally can be treated as sub-graphs within the entire data repository. These sub-graphs can be identified and addressed using URIs and therefore are called Named Graphs. Named Graphs might come in handy for managing collection of triples, i.e. uploading, deleting or downloading an entire set of triples without the need to enumerate triples individually. While Named Graphs do not have any formal model theoretic interpretation, they can be useful for implementing solutions around challenges such as provenance management, replication, versioning or even access control on the application level.<br>
+    <p>
+      Two perform operation on Named Graphs, there are two options:
+    </p>
+    <ol>
+      <li>Using SPARQL Update operations scoped to Named Graphs and executed over the <code>/sparql</code> interface</li>
+      <li>Using restful CRUD operations (POST, PUT and DELETE) on the <code>/rdf-graph-store</code> interface</li>
+    </ol>
+
+    <br>
+
+    <h4>Example: SPARQL Update on Named Graphs</h4>
+    <p>
+      All SPARQL Update operations from the previous section can be scoped to particular Named Graphs i.e. it is possible to insert into or delete triples only from specified Named Graphs.
+    </p>  
+    For instance, a design decision could be to store every person entity into it's own Named Graph as well as maintain all relationships between the persons in a separate Named Graph:
+    <mp-code-block mode='application/sparql-query'>
+<![CDATA[
+BASE <http://example.org/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+INSERT { 
+  GRAPH <JohnDoeGraph> {
+    <JohnDoe> a foaf:Person.
+    <JohnDoe> rdfs:label "John Doe".
+  }
+  GRPAH <JaneDoeGraph> {
+    <JaneDoe> a foaf:Person.
+    <JaneDoe>  rdfs:label "Jane Doe".
+  }
+  GRPAH <RelationshipGraph> {
+    <JaneDoe> foaf:knows <JohnDoe>.
+    <JohnDoe> foaf:knows <JaneDoe>.
+  }
+} WHERE {}
+]]>
+    </mp-code-block>   
+    <p>
+      This way, it is possible, for example, to easily remove (or update) all relationsships without touching the graphs of the entities itself:
+    </p>  
+    <mp-code-block mode='application/sparql-query'>
+<![CDATA[
+DELETE { 
+  ?s ?p ?o.
+} WHERE {
+  GRPAH <RelationshipGraph> {
+    ?s ?p ?p.
+  }
+}
+]]>
+    </mp-code-block>
+    <br><br>
+
+    <h4>Example: RDF Graph Store - Uploading a RDF file </h4>
+    <p>
+      The <semantic-link iri="[[resolvePrefix "Help:GraphStoreAPI"]]">Graph Store API</semantic-link> is designed as a handy shortcut for certain SPARQL Update operations on Named Graphs and particularly useful for managing small to midsize datasets consisting of one or several RDF files, i.e. files can be simply posted against the API, which takes over the task of parsing and converting it to SPARQL Update operations.<br>
+    </p>
+    <p>
+      The administration page for <semantic-link iri="[[resolvePrefix "Admin:DataImportExport"]]">data import and export</semantic-link> provides a convenient way for performing the following operations from the user interface:
+    </p>
+    <ul>
+      <li> loading data from local RDF files into Named Graphs</li>
+      <li> exporting data from Named Graphs into RDF files</li>
+      <li> deletion of Named Graphs</li>
+    </ul>
+
+    <p> 
+      Instead of using the UI to post the data against the backend, it is also possible to communicate directly with the underlying <code>/rdf-graph-store</code> REST API using, for example, a command-line tool like <a href="https://curl.haxx.se/docs/manpage.html" target="_blank">CURL</a>. 
+    </p>
+    Assuming you have a local RDF file, for example, the <a href="http://xmlns.com/foaf/spec/index.rdf" target="_blank">FOAF vocabulary</a>, you can upload the file with a single CURL command into a Named Graph with the identifier <code mode='application/sparql-query'>&lt;http://my.foaf.graph/&gt;</code>:
+    <mp-code-block mode='text/x-sh'>
+curl -v -u admin:admin -X POST -H 'Content-Type: application/xml' --data-binary '@foaf.rdf' http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fmy.foaf.graph%2F
+    </mp-code-block>
+
+    Please, refer to the <semantic-link iri="[[resolvePrefix "Help:GraphStoreAPI"]]">Graph Store API documentation</semantic-link> for more extensive usage examples.
+
+    <h2>Data Loading from the Host Filesystem</h2>
+
+    Independently of whether you are using the SPARQL or the <semantic-link iri="[[resolvePrefix "Help:GraphStoreAPI"]]">Graph Store API</semantic-link> directly, all communication with the ResearchSpace platform and the database backend respectively is done over HTTP(S)/SPARQL. Depending on your scenario and deployment environment, there might be parameters that need to be adjusted: for instance, the maximum body size a client may post against the webserver is typically limited (e.g. the tomcat, jetty or nginx default configurations are usually around 2 MBs - c.f. <a href="http://www.eclipse.org/jetty/documentation/current/setting-form-size.html" target="_blank">Setting form size in Jetty</a>). However, <b>for ingesting larger datasets it is generally recommended to load the data from the filesystem</b>, e.g. using SPARQL Update or dedicated (but usually proprietary) graph database APIs. 
+
+    <h3>Data Loading via SPARQL Update</h3>
+
+    To load data directly from the filesystem into the database, the RDF files must be accessible from the database host system.
+    <mp-code-block mode='application/sparql-query'>
+<![CDATA[
+LOAD <file:///datasets/bio2rdf/drugbank/bio2rdf-drugbank.nq>
+INTO GRAPH <file:///datasets/bio2rdf/drugbank/bio2rdf-drugbank.nq>
+]]>
+    </mp-code-block>
+
+    Again, the same query can be executed using, for example, CURL:
+    <mp-code-block mode='text/x-sh'>
+curl 'http://127.0.0.1:10214/sparql' -u admin:admin -H 'Content-Type: application/sparql-update; charset=UTF-8' -H 'Accept: text/boolean' -d @load_into.sq
+    </mp-code-block>
+
+    <p>
+      This way it is possible, for example, to trigger nightly (re)loads of data from a mounted file system through a remote call. In principle, it is also possible to use several load commands within one Update operation (just enumerate several <code mode='application/sparql-query'>LOAD &lt;&gt; INTO GRAPH&lt;&gt;; </code> commands, separated by a semincolon). However, most triples stores will execute this in one transaction and as such may lead to higher memory presure. Moreover, most graph database vendors also support loading remote files from a HTTP location or to load (g)zip compressed files.
+    </p>
+    <h3>Data Loading via dedicated graph database APIs</h3>
+
+    Major graph database vendors provide dedicated, but usually proprietary (bulk) data loading tools and APIs. Compare, for example:
+    <ul>
+        <li>
+    		<a href="https://wiki.blazegraph.com/wiki/index.php/Bulk_Data_Load" target="_blank">Blazegraph DataLoader utility</a>
+    	</li>
+    	<li>
+    		 <a href="https://www.stardog.com/docs/man/db-create.html" target="_blank">Stardog DB creation</a>
+    	</li>
+    	<li>
+    		<a href="http://vos.openlinksw.com/owiki/wiki/VOS/VirtBulkRDFLoader" target="_blank">Virtuoso BulkRDFLoader</a>
+    	</li>
+    	<li>
+    		<a href="https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load.html" target="_blank">Amazon Neptune Loader</a>
+    	</li>
+    	<li>
+    		...
+    	</li>
+    </ul> 
+   The advantage of those tools is that they provide a much higher degree of flexibility in specifying the most performant configuration w.r.t to the environment and data anomalies (i.e. configuring the buffer size, flushing buffers, disabling expensive indicis etc.). 
+   However, at the same time they require a fairly high level of (technical) understanding, while being proprietary as well as environment specific.
+
+    <h2>Querying & Retrieving Data </h2>
+
+    <h3>Querying Data</h3>
+
+    <p>
+      <a href="https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#select" target="_blank">SPARQL Select queries</a> are the most common way to query your data. However, the result is not RDF data but a tuple projection of variables from a query solution, i.e. a table similar to the one returned by SQL SELECT queries in traditional relational databases.
+    </p>
+    <br>
+    <h4>Example: SPARQL Select Query</h4>
+    Similar to SPARQL Update operations, SPARQL Queries also can be submitted using <a href="/sparq">the SPARQL editor</a> or any other client like CURL. The following example returns a (tuple) list with all identifiers (variable ?person) matching the constraint of having a rdf:type foaf:Person statement:
+    <mp-code-block mode='application/sparql-query'>
+<![CDATA[
+SELECT * WHERE { ?person a <http://xmlns.com/foaf/0.1/Person>}
+]]>
+    </mp-code-block>
+    <p>The same query executed via CURL, asking for a result in CSV format:</p>
+    <mp-code-block mode='text/x-sh'>
+<![CDATA[
+curl 'http://127.0.0.1:10214/sparql' -u admin:admin -H 'Content-Type: application/sparql-query; charset=UTF-8' -H 'Accept: text/csv' --data-binary $'SELECT * WHERE { ?person a <http://xmlns.com/foaf/0.1/Person>}'
+]]>
+    </mp-code-block>
+
+    <h3>Retrieving  Data</h3>
+    <p>There are basically two options to retrieve or extract raw RDF data:</p>
+    <ol>
+      <li>Using SPARQL Construct queries executed over the <code>/sparql</code> interface.</li>
+      <li>Executing a simple HTTP GET operation on the <code>/rdf-graph-store</code> interface</li>
+    </ol><br>
+
+    <h4>Example: Data Retrieval using SPARQL Construct Query</h4>
+    Instead of returning simple results, the raw data also can be returned (and also transformed) as RDF using a CONSTRUCT query:
+    <mp-code-block mode='application/sparql-query'>
+<![CDATA[
+CONSTRUCT { ?person a <http://xmlns.com/foaf/0.1/Person>} WHERE { ?person a <http://xmlns.com/foaf/0.1/Person>}
+]]>
+    </mp-code-block>
+    <p>To execute the same query via CURL, it is important to specify a valid accept header, i.e. some MIME type of a standard RDF format:</p>
+    <mp-code-block mode='text/x-sh'>
+<![CDATA[
+curl 'http://127.0.0.1:10214/sparql' -u admin:admin -H 'Content-Type: application/sparql-query; charset=UTF-8' -H 'Accept: text/turtle' --data-binary $'CONSTRUCT { ?person a <http://xmlns.com/foaf/0.1/Person>} WHERE { ?person a <http://xmlns.com/foaf/0.1/Person>}'
+]]>
+     </mp-code-block>
+    Similarly, a CONSTRUCT can be used with a Named Graph to retrieve the content of a particular Named Graph in any RDF serialization format:
+    <mp-code-block mode='text/x-sh'>
+<![CDATA[
+curl 'http://127.0.0.1:10214/sparql' -u admin:admin -H 'Content-Type: application/sparql-query; charset=UTF-8' -H 'Accept: text/turtle' --data-binary $'BASE <http://example.org/> CONSTRUCT { ?a ?b ?c} WHERE { GRAPH <JaneDoeGraph> { ?a ?b ?c } }'
+]]>
+    </mp-code-block>
+    <br><br>
+
+    <h4>Example: Data Retrieval using RDF Graph Store</h4>
+    If your data is organized in Named Graphs and there is no need to transform the data, then probably the <semantic-link iri="[[resolvePrefix "Help:GraphStoreAPI"]]">Graph Store API</semantic-link> is most convenient, i.e. with a simple GET request you can retrieve the entire graph:
+    <mp-code-block mode='text/x-sh'>
+curl -u admin:admin -H 'Accept: text/turtle' -X GET http://127.0.0.1:10214/rdf-graph-store?graph=http%3A%2F%2Fexample.org%2FJaneDoeGraph
+    </mp-code-block>
+    <br>
+
+    <h2>Connecting from a Programming Library</h2>
+    The following code snippet provides an example on how to connect to the SPARQL interface via a programming library like <a href="http://rdf4j.org" target="_blank">RDF4j</a>. Examples in <a href="https://jena.apache.org/documentation/query/app_api.html">Jena</a> or other programming languages, for example, python-based libraries will look similar.
+    <mp-code-block mode="text/x-java">
+<![CDATA[
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.config.RepositoryConfig;
+import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
+import org.eclipse.rdf4j.repository.config.RepositoryFactory;
+import org.eclipse.rdf4j.repository.config.RepositoryRegistry;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
+
+/**
+ * @author Johannes Trame <jt@.com>
+ */
+public class researchspaceSparqlRepositoryConnection {
+
+  public static void main(String[] args) {
+    final ValueFactory vf = SimpleValueFactory.getInstance();
+    RepositoryConfig repConfig = new RepositoryConfig("researchspace","researchspace HTTP SPARQL Repository");
+    // important to use this constructor, since there is a bug in the other constructors missing to init the type
+    SPARQLRepositoryConfig repImplConfig = new SPARQLRepositoryConfig();
+    repImplConfig.setQueryEndpointUrl("http://127.0.0.1:10214/sparql");
+    repImplConfig.setUpdateEndpointUrl("http://127.0.0.1:10214/sparql");
+    repConfig.setRepositoryImplConfig(repImplConfig);
+    RepositoryFactory factory = RepositoryRegistry
+        .getInstance()
+        .get(repImplConfig.getType())
+        .orElseThrow(
+            () -> new RepositoryConfigException("Unsupported repository type: "+ repImplConfig.getType()));
+    SPARQLRepository repository = (SPARQLRepository) factory.getRepository(repImplConfig);
+    repository.enableQuadMode(true);
+    repository.setUsernameAndPassword("admin", "admin");
+    repository.initialize();
+
+    // instead of using the repository factory it is also possible for certain kinds of repositories to create instances directly
+    // repository = new SPARQLRepository("http://127.0.0.1:10214/sparql")
+
+    try (RepositoryConnection con = repository.getConnection()) {
+      // add a RDF statement/triple
+      con.add(vf.createStatement(
+            vf.createIRI("http://www.example.com/Joe"), RDF.TYPE, FOAF.PERSON
+          ));
+
+      // calling add on a connection is more or less equivalent to executing an Update operatin with INSERT 
+      // con.prepareUpdate(
+      //    QueryLanguage.SPARQL,
+      //    "INSERT DATA {<http://www.example.com/Joe> a <http://xmlns.com/foaf/0.1/Person>}"
+      // ).execute();
+
+      // executing a SPARQL Select Query (aka TupleQuery)  
+      try (TupleQueryResult tq = con.prepareTupleQuery(
+        QueryLanguage.SPARQL,
+        "SELECT ?person WHERE {?person a <http://xmlns.com/foaf/0.1/Person>}").evaluate()
+      ) {
+          while (tq.hasNext()) {
+            // will print as result person=http://www.example.com/Joe
+            System.out.println(tq.next().getBinding("person"));
+          }
+        }
+      }
+
+      // similarly it is possible to call getStatements with wildcards (null) to issue the same query
+      // try(RepositoryResult<Statement> rr = con.getStatements(null, RDF.TYPE, FOAF.PERSON)){
+      //    while(rr.hasNext()){
+      //      System.out.println(rr.next().getSubject());
+      //    }
+      //  }
+  }
+}
+]]>
+    </mp-code-block>
+
+    <h2>Security</h2>
+    Please see help page for <semantic-link iri="[[resolvePrefix "Help:BasicSystemConfiguration"]]"> basic system configuration</semantic-link>.
+  </div>
+</div>

@@ -1,0 +1,92 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Timeline Component</li>
+</ol>
+
+<div class="page documentation">
+  <div class='page__body'>
+    <h1>Timeline Component</h1>
+    <div class="documentation__intro">
+      <div class="documentation__intro__description">
+        Powerful component for visualizing data in time.
+      </div>
+      <div class="documentation__intro__demo">
+        <semantic-timeline query='[[>Help:SemanticTimelineSampleQuery]]'></semantic-timeline>
+      </div>
+    </div>
+
+    <h2>Configuration</h2>
+    <mp-documentation type="SemanticTimelineConfig"></mp-documentation>
+
+    <h2>Examples</h2>
+    <h3>Custom Tuple Template</h3>
+
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        Specifying a custom <code>tuple-template</code>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-timeline query='[[>Help:SemanticTimelineSampleQuery]]'
+                             tuple-template='{{> template}}'
+                             tuple-template-height=42>
+            <template id='template'>
+                <b>{{subject.value}}</b>
+                <div>{{start.value}} - {{end.value}}</div>
+            </template>
+          </semantic-timeline>
+        </mp-code-example>
+      </div>
+    </div>
+    
+    <h3>DateTime Format</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        If dates have type <code>xsd:dateTime</code> or <code>xsd:time</code>, the <code>Y-MM-DDTHH:mm:ss</code> and <code>HH:mm:ss</code> formats will be used respectively.
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-timeline query='PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+              SELECT ?start ?end ?subject WHERE {
+              VALUES (?start ?end ?subject) {
+                ("2019-07-01T10:30:00"^^xsd:dateTime "2019-07-01T20:00:00"^^xsd:dateTime "Activity A")
+                ("2019-07-01T08:00:00"^^xsd:dateTime "2019-07-02T10:20:00"^^xsd:dateTime "Activity B")
+                ("2019-07-01T16:40:00"^^xsd:dateTime "2019-07-02T08:00:00"^^xsd:dateTime "Activity C")
+              }
+            }'>
+          </semantic-timeline>
+        </mp-code-example>
+      </div>
+    </div>
+    
+    <h3>Custom Date Format</h3>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        Specifying a custom <code>date-format</code>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <semantic-timeline query='PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+              SELECT ?start ?end ?subject WHERE {
+              VALUES (?start ?end ?subject) {
+                ("07/21/1899"^^xsd:date "07/02/1961"^^xsd:date "Ernest Hemingway")
+                ("01/29/1890"^^xsd:date "05/30/1960"^^xsd:date "Boris Pasternak")
+                ("06/21/1905"^^xsd:date "04/15/1980"^^xsd:date "Jean-Paul Sartre")
+                ("03/06/1927"^^xsd:date "04/17/2014"^^xsd:date "Gabriel García Márquez")
+              }
+            }'
+            date-format='MM/DD/YYYY'>
+          </semantic-timeline>
+        </mp-code-example>
+      </div>
+    </div>
+  </div>
+</div>

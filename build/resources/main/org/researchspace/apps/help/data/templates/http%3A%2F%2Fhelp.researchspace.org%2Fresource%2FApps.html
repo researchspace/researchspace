@@ -1,0 +1,204 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">App Mechanism</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>App Mechanism</h1>
+        <p>
+          The platform offers simple extension points to build, bundle and deploy lightweight "apps" along with the platform without the need of changing the platform binary or re-compiling the platform. <br>
+          Sources of an "app" can be put under the source control and a packaged version of an "app" can be deployed as a docker container volume along with the platform.
+        </p>
+        <p>
+          An app is a customer or domain specific platform add-on and contain:
+        </p>
+          <ul>
+            <li>Application and template pages</li>
+            <li>Configuration: RDF namespaces, system settings, etc.</li>
+            <li>Customizations for the look and feel, like CSS files, images, header and footer resources</li>
+            <li>Custom backend JAVA components, like REST services and custom federation service implementations</li>
+            <li>Custom web components to be used in templates and application pages</li>
+            <li>Semantic resources: Queries, fields or diagrams</li>
+          </ul>
+        <p>
+          Building more advanced extensions requires usually access to the platform sources and include steps of compilation.
+         The steps below describe how such simple apps can be bundled and deployed on the file system or docker eco-system. 
+         
+        </p> 
+        
+        <p>See also <semantic-link title="App Deployment" uri="http://help.researchspace.org/resource/AppDeployment">here</semantic-link> for details on the deployment of apps.</p>
+    
+          <bs-alert bs-style="info"> 
+            <strong>Info!</strong><br/>
+            <p>
+              Please note that the app mechanism and respective app lifecycle is currently only beta and is subject to change in one of the next versions of platform. 
+              This may involve non-backward compatible changes!
+            </p>
+          </bs-alert>
+  <h2>Basic Folder Structure</h2>
+  
+  <p>
+    The tree below illustrates the basic folder structure of an app:
+  </p>
+  <ul>
+    <li>/apps </li>
+    <ul>
+      <li>my-app</li>
+      <ul>
+        <li>plugin.properties</li>
+        <li>/lib</li>
+        <li style="color:red;">/config</li>
+        <ul style="color:red;">
+          <li>/repositories  &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps</i></li>
+            <ul>
+              <li>/default.ttl</li>
+              <li>/ephedra.ttl</li>
+              <li>/neptune.ttl</li>
+              <li>/....ttl</li>
+          </ul>
+          <li>/services  &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps</i></li>
+            <ul>
+              <li>/my-sql-ephedra.ttl</li>
+              <li>/my-rest-ephedra.ttl</li>
+              <li>/my-custom-ephedra.ttl</li>
+              <li>/....ttl</li>
+          </ul>
+          <li>/page-layout &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps</i></li>
+          <ul>
+            <li>/html-head.hbs</li>
+            <li>/header.hbs</li>
+            <li>/footer.hbs</li>
+            <li>/login.hbs</li>
+          </ul>
+          <li>/ui.prop &nbsp; - <i style="color:black;">Properties will be read selectively or shadowed individually</i></li> 
+          <li>/environment.prop &nbsp; - <i style="color:black;">Properties will be read selectively or shadowed individually</i></li>
+          <li>/global.prop &nbsp; - <i style="color:black;">Properties will be read selectively or shadowed individually</i></li>
+          <li>/namespace.prop &nbsp; - <i style="color:black;">Properties will be read selectively or shadowed individually</i></li>
+          <li>/proxy.prop &nbsp; - <i style="color:black;">Properties will be read selectively or shadowed individually</i></li>
+          <li>/shiro.ini &nbsp; - <i style="color:black;">If configure via <code>-Dconfig.environment.securityConfigStorageId=</code>, the entire file will be read</i></li>
+        </ul>
+        <li style="color:red;"><s>/images</s> <i>&nbsp; DEPRECATED, please use /assets/images/</i></li>
+        <ul style="color:red;">
+           <li>/my-app-logo.png</li>
+           <li>...</li>
+        </ul>
+        <li style="color:red;">/assets  &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps. Files will become directly available under http://platform-url.com/assets/my-styles.css</i></li>
+        <ul style="color:red;">
+          <li>/my_script.js</li>
+          <li>/my_custom.css</li>
+          <li>/images     &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps. Files will become directly available under http://platform-url.com/images/my-image.png</i></li>
+          <ul style="color:red;">
+             <li>/my-app-logo.png</li>
+             <li>...</li>
+					</ul>
+          <li>/no_auth  &nbsp; - <i style="color:black;">These files are not protected, for example, images for the login pages. Files will become directly available under http://platform-url.com/no_auth/login-logo.png</i></li>
+          <li>...</li>
+        </ul>
+        <li style="color:red;">/data</li>
+        <ul  style="color:red;">
+          <li>/templates  &nbsp; - <i style="color:black;">Entire files will be read or shadowed by files from other apps.</i></li>
+          <ul>
+            <li>Template%3Ahttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2FPerson.html</li>
+            <li>...</li>
+          </ul>
+        </ul>
+        <li><s>/resources</s> <i>&nbsp; DEPRECATED, please use /config/page-layout</i></li>
+        <ul style="font-style:italic;text-decoration: line-through;">
+          <li>/org</li>
+          <ul>
+            <li>/researchspace</li>
+            <ul>
+              <li>/ui</li>
+              <ul>
+                <li>/templates</li>
+                <ul>
+                  <li>/html-head.hbs</li>
+                  <li>/header.hbs</li>
+                  <li>/footer.hbs</li>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </ul>
+      </ul>
+    </ul>
+    <ul>
+      <li>your-app</li>
+      <ul>
+        <li>plugin.properties</li>
+        <li>...</li>
+      </ul>
+    </ul>
+  </ul>
+ 
+  <p>
+   <b>Please note:</b>
+  </p>
+  <ul>
+    <li><code>plugin.properties</code> is the only <b>mandatory</b> file.</li>
+    <li>In the docker distribution the <code>/apps</code> is usually located in the absolute root of the runtime container i.e. <code>/</code>. In the ZIP distribution it is inside the root distribution folder.</li>
+    <li>Even though not recommended, it is possible to have several app folder within apps. One folder makes one app (storage). The <code>plugin.dependencies</code> can be used to define basic dependency order, i.e. order in which apps and respective java classes from the <code>/lib</code> folder will be loaded. It also influences the delegation order for the app storages (c.f. <semantic-link iri="[[resolvePrefix "Help:Storage"]]">Help:Storage</semantic-link>).</li>
+    <li>Files placed within <code>/data/templates/*.html</code>,<code>/config/**/*.prop|ttl</code> and <code>/assets</code> will be read from the <semantic-link iri="[[resolvePrefix "Help:Storage"]]">storage abstraction</semantic-link> and might be shadowed by the runtime storage or other apps (c.f. <semantic-link iri="[[resolvePrefix "Help:Storage"]]">Help:Storage</semantic-link>)</li>
+    <li>The <code>*.hbs</code> template files within <code>/config/page-layout</code> are being compiled and cached i.e. changes require a restart of the platform to take affect.</li>
+    <li>Changes in the configuration files (in particular service and repository configurations) will require a restart.</li>
+    <li>Files in <code>/data/templates/*.html</code> and <code>/assets</code>will be available immediately, all other files require a restart to be recognized/loaded. </li>
+    <li><code>*.jar</code> libraries from the <code>/lib</code> folder are loaded using an isolated class path loader and initialized using the service loaders of the respective plugin interface, e.g. to initialized additional REST endpoints, Ephedra services or to load JDBC drivers.  </li>
+  </ul>
+  
+  <p>
+   Creating a basic app folder structure:
+  </p>
+  <pre>  
+<code>
+mkdir my-app
+cd my-app
+mkdir -p /config/page-layout data/templates config/repositories config/services images assets
+</code>
+  </pre>  
+
+  
+  <h2>Plugin Properties</h2>
+  
+  <p>Every app needs a single <code>plugin.properties</code> file in the root of the app folder.</p>
+  
+  <pre>
+<code>
+plugin.id=my-app
+plugin.provider=ResearchSpace
+plugin.version=1.0.0
+#plugin.dependencies=other-app
+</code>
+  </pre>
+  
+  <p>
+   <b>Rules:</b>
+  </p>
+  <ul>
+    <li><code>plugin.id</code>,<code>plugin.provider</code> and <code>plugin.version</code> are mandatory.</li>
+    <li><code>plugin.id</code> needs to be the same as the name of the app folder.</li>
+    <li><code>plugin.version</code> needs to be a valid semantic version.</li>
+    <li><code>plugin.dependencies</code> optional, comma-separated list of app dependencies. If specified other apps will be loaded first and it influence the delegation order of <semantic-link iri="[[resolvePrefix "Help:Storage"]]">app storages</semantic-link>.</li>
+  </ul>
+   <h2>App Lifecycle</h2>
+   The ResearchSpace platform reads the apps artefacts (e.g., assets, templates, config files) from respective <semantic-link iri="[[resolvePrefix "Help:Storage"]]">app storages</semantic-link> and applies them according to the delegation order specified by the plugin dependencies with the runtime storage having the highest priority. 
+    
+   <h3>Repositories and Ephedra services</h3>
+   <p>Configurations of repositories and <semantic-link iri="[[resolvePrefix "Help:Ephedra"]]">Ephedra services</semantic-link> follow the same rules of priority when packaged in apps. The configuration Turtle files stored in <code>/config/repositories</code> and <code>/config/services</code> subfolders in the app distribution are accessed from the respective app storages and applied in the priority order of the apps. If two or more repository configs with the same file name are available in two different storages, only the one taken from the storage with a higher priority will be applied, thus "shadowing" completely the other ones. Thus, for example, if two apps define different ephedra federation repositories under the same name <code>ephedra</code> with different sets of federation members, only one of them gets created (instead of having a "joint" one with all federation members from both configs).</p>
+     
+     <p>The <semantic-link iri="[[resolvePrefix "Help:RepositoryManager"]]">repository manager</semantic-link> gets initialized only after reading all configs, so the repositories defined in all apps will appear in the <semantic-link iri="[[resolvePrefix "Admin:Repositories"]]">repository manager interface</semantic-link>. A user with appropriate security permission is able to edit any config, including those defined in apps. However, such edited configurations will NOT be replaced within corresponding app storages (which will remain immutable). Instead, the edited version of the config will be saved with the same name in the runtime storage, thus shadowing the original one defined in the app.</p>
+   <p>If any of the app storages or the runtime storage defines the default repository config in the <code>default.ttl</code> file, this configuration will be applied to initialize the default platform repository. If no <code>default.ttl</code> file is present, the SPARQL endpoint defined in the environment properties will be used.  </p>
+    
+   <h3 id='custom-java-implementations'>Custom Java implementations</h3>
+   An app may contain custom Java artefacts (e.g., custom Ephedra services, repositories, necessary external JDBC drivers). These artefacts must be maintained as <code>.jar</code> files in the app file storage (where the <code>plugin.properties</code> file is located) in the <code>/lib</code> subdirectory: they can not be loaded to the classpath from an arbitrary storage.
+    
+</div>
+</div>

@@ -1,0 +1,22 @@
+#
+# Sesame configuration template for a main-memory repository
+#
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix rep: <http://www.openrdf.org/config/repository#>.
+@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+@prefix sail: <http://www.openrdf.org/config/sail#>.
+@prefix ms: <http://www.openrdf.org/config/sail/memory#>.
+@prefix sb: <http://www.openrdf.org/config/sail/base#>.
+
+[] a rep:Repository ;
+   rep:repositoryID "default" ; # Replace with your repository ID or leave default if this is the main repository
+   rdfs:label "Memory store" ; # Replace with a meaningful description for this repository
+   rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+         sail:sailType "openrdf:MemoryStore" ;
+         sail:iterationCacheSyncThreshold "0" ; # Threshold for syncing query evaluation iteration caches to disk, change if needed
+         ms:persist "false" ; # Flag specifying whether the repository must be persisted on disk, change if needed
+         ms:syncDelay "0" # Delay for the memory store synchronization, change if needed
+      ]
+   ].

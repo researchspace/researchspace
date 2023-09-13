@@ -1,0 +1,88 @@
+ <semantic-form [[> rsp:FormDefaults]]
+                 new-subject-template='{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                 persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
+                 fields='[[
+                        fieldDefinitions
+                        rdfsLabel="http://www.researchspace.org/pattern/general/rdfs:label"
+                        P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                        periodtimespan="http://www.researchspace.org/pattern/ancientperiods/P4_has_time-span"
+                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        P2_has_type="http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+                        inScheme="http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in"
+                        broaderperiod="http://www.researchspace.org/pattern/crmbroaderterm"
+                        broader="http://www.researchspace.org/pattern/vocabulary_manager/crm:P10_falls_within"
+                        narrower="http://www.researchspace.org/pattern/vocabulary_manager/crm:P10i_contains"
+                        P119_meets_in_time_with="http://www.researchspace.org/pattern/ancientperiods/P119_meets_in_time_with"                    
+                        ]]'
+>
+   <div class="form-scroll-area">
+    <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+
+    <semantic-form-text-input for='rdfsLabel' label='Period Label'></semantic-form-text-input>
+
+    <semantic-form-text-input for='P3_has_note'></semantic-form-text-input>
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E4_Period","http://www.cidoc-crm.org/cidoc-crm/E55_Type"]'> </semantic-form-hidden-input>
+    
+    <semantic-form-tree-picker-input for="broader" placeholder="drag from tree" 
+                                     default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                     tree-patterns='{"scheme": "{{scheme}}"}'
+    ></semantic-form-tree-picker-input>
+    <semantic-form-tree-picker-input for="narrower" 
+                                     placeholder="drag from tree" 
+                                     tree-patterns='{"scheme": "{{scheme}}"}'
+    ></semantic-form-tree-picker-input>  
+    
+     <semantic-form-composite-input for="periodtimespan"
+                                 new-subject-template='/E52_Time-Span'
+                                 fields='[[
+                                           fieldDefinitions
+                                           periodends="http://www.researchspace.org/pattern/ancient_periods/P82b_end_of_the_end"
+                                           periodstarts="http://www.researchspace.org/pattern/ancient_periods/P82a_begin_of_the_begin"
+                                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                           timecertainty="http://www.researchspace.org/pattern/ancientperiods/attributecertaintytype"
+                                           P119_meets_in_time_with="http://www.researchspace.org/pattern/ancientperiods/P119_meets_in_time_with"
+                                        ]]'>
+
+
+        <semantic-form-text-input for='periodstarts'></semantic-form-text-input>
+        <semantic-form-text-input for='periodends'></semantic-form-text-input>
+        <semantic-form-select-input for="timecertainty"> </semantic-form-select-input>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'> </semantic-form-hidden-input>
+
+            <semantic-form-composite-input for="P119_meets_in_time_with" 
+                                        new-subject-template="http://www.researchspace.org/entity/PC14_carried_out_by/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                        fields='[[
+                                            fieldDefinitions
+                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                            P14_carried_out_by="http://www.researchspace.org/pattern/ancientperiods/PC02_has_range_person"
+                                            Role="http://www.researchspace.org/pattern/ancientperiods/Role"
+                                            ]]'>
+
+                <semantic-form-autocomplete-input for="P14_carried_out_by">
+                <semantic-form new-subject-template='http://www.researchspace.org/E21_Person/{{{{raw}}}}{{UUID}}{{{{/raw}}}}' 
+                                fields='[[
+                                    fieldDefinitions
+                                    ancientpersonlabel="http://www.researchspace.org/pattern/rdf-schema#ancientpersonlabel"
+                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                    ]]'>
+                
+                    <semantic-form-text-input for="ancientpersonlabel"> </semantic-form-text-input>
+                    <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E21_Person"> </semantic-form-hidden-input>     
+                    
+                    <button name="submit" class="btn btn-default">Save</button>
+                </semantic-form>
+
+                </semantic-form-autocomplete-input>
+            
+                <semantic-form-select-input for="Role"></semantic-form-select-input>
+                
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by'> </semantic-form-hidden-input>
+
+            </semantic-form-composite-input>    
+    </semantic-form-composite-input>
+
+    <semantic-form-errors></semantic-form-errors>
+  </div>
+  
+  [[> rsp:FormDefaultActions]] 
+</semantic-form>

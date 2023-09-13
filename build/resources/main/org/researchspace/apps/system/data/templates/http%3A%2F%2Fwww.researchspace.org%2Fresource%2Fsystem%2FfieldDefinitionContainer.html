@@ -1,0 +1,133 @@
+[[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:read:any")]]
+
+    <ol class="page-breadcrumb">
+        <li>
+            <mp-link title="Home" url="resource/Start">Home</mp-link>
+        </li>
+        <li>
+            <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+        </li>
+        <li class="active">Knowledge Patterns</li>
+    </ol>
+
+    <div class="page rs-fields">
+
+        <style>
+
+         input[type="checkbox"] {
+             margin: 2px 8px 0 0;
+         }
+         
+        </style>
+        
+        [[> rsp:adminPageHeader title="Knowledge Patterns" icon="fa fa-list-ul fa-lg"]]
+        
+        <div class="container-fluid" style="margin-bottom:40px;">
+            <bs-row class="row-center">
+                <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 pr-0">
+                    <bs-alert bs-style='info'>
+                        <p>Prefixes should be defined and resolved using the system-wide 
+                            <semantic-link uri="http://www.researchspace.org/resource/admin/Namespaces">namespace registry</semantic-link>.
+                        </p>
+                        <p>Please consult <semantic-link uri='[[resolvePrefix "Help:SemanticForm"]]'>Semantic Form</semantic-link> help page for further details.<br></p>
+                    </bs-alert>
+
+                    <div style="margin: 28px 0 20px 0">
+                        <semantic-link uri="http://www.researchspace.org/resource/assets/NewField" style="font-size: 16px;"><strong>Create New Knowledge Pattern ...</strong></semantic-link>
+                    </div>
+
+                    <mp-selection-group>
+                        <div>
+
+                            [[> http://www.researchspace.org/resource/assets/LdpContainerAction container='http://www.researchspace.org/resource/system/fieldDefinitionContainer' 
+                            parentContainer='http://www.researchspace.org/resource/system/rootContainer']]
+
+                            <semantic-context repository='assets'>
+                                <semantic-search optimizer='none'
+                                                 selector-mode='dropdown'
+                                                 search-profile='{
+                                                            "categories": [
+                                                            {"iri": "<http://www.researchspace.org/resource/system/fields/Field>", "label": "Field"},
+                                                            {"iri": "<http://www.w3.org/2000/01/rdf-schema#Class>", "label": "Type"}
+                                                            ],
+                                                            "relations": [
+                                                            {
+                                                            "iri": "<http://www.researchspace.org/resource/system/fields/domain>", 
+                                                            "label": "domain", 
+                                                            "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
+                                                            "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Class>"
+                                                            },
+                                                            {
+                                                            "iri": "<http://www.researchspace.org/resource/system/fields/range>", 
+                                                            "label": "range", 
+                                                            "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
+                                                            "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Class>"
+                                                            },
+                                                            {
+                                                            "iri": "<http://www.researchspace.org/resource/system/fields/xsdDatatype>", 
+                                                            "label": "datatype", 
+                                                            "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
+                                                            "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Class>"
+                                                            },
+                                                            {
+                                                            "iri": "<http://www.researchspace.org/resource/system/fields/category>", 
+                                                            "label": "category", 
+                                                            "hasDomain": "<http://www.researchspace.org/resource/system/fields/Field>", 
+                                                            "hasRange": "<http://www.w3.org/2000/01/rdf-schema#Class>"
+                                                            }                                              
+                                                            ]
+                                                            }'>
+                                    <semantic-search-query-constant
+                                        domain='<http://www.researchspace.org/resource/system/fields/Field>'
+                                        query='
+                                                select ?subject {
+                                                <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains> ?subject .
+                                                }
+                                                '
+                                    ></semantic-search-query-constant>
+                                    <div data-flex-layout="row stretch-stretch">
+                                        <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
+                                            <semantic-search-facet
+                                                value-relations='{
+                                                                 "<http://www.researchspace.org/resource/system/fields/xsdDatatype>": {
+                                                                 "kind": "resource",
+                                                                 "valuesQuery": "
+                                                                 SELECT ?value ?label (COUNT(DISTINCT $subject) AS ?count) WHERE {
+                                                                 ?subject <http://www.researchspace.org/resource/system/fields/xsdDatatype> ?value .
+                                                                 BIND(STRAFTER(STR(?value), \"#\") AS ?label) .
+                                                                 }
+                                                                 GROUP BY ?value ?label
+                                                                 ORDER BY ?label
+                                                                 ",
+                                                                 "tupleTemplate": "<span><mp-highlight highlight=\"{{highlight}}\">{{label.value}}</mp-highlight> ({{count.value}})</span>"
+                                                                 }
+                                                                 }'
+                                            ></semantic-search-facet>
+                                        </div>
+
+                                        <semantic-search-result-holder>
+                                            <div data-flex-self="md-full">
+                                                <semantic-search-result>
+                                                    [[> http://www.researchspace.org/resource/assets/LdpResources 
+                                                    container='http://www.researchspace.org/resource/system/fieldDefinitionContainer' 
+                                                    semantic-search=semanticSearch
+                                                    query='SELECT DISTINCT ?subject ?ModificationDate ?attribution WHERE { ?subject <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate ; <http://www.w3.org/ns/prov#wasAttributedTo> ?attribution . }']]
+                                                </semantic-search-result>
+                                            </div>
+                                        </semantic-search-result-holder>
+                                    </div>
+                                </semantic-search>
+                            </semantic-context>
+                        </div>
+                    </mp-selection-group>
+                </bs-col>   
+            </bs-row> <!--  close row -->
+        </div>
+        
+    </div>
+
+    [[else]]
+
+    <p>No Permission</p>
+
+    [[/if]]

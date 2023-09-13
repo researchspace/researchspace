@@ -1,0 +1,154 @@
+<style>
+  .grid-demo {
+    background: #e3e7ef;
+    border: 1px solid;
+    color: #8f9caf;
+    text-align: center;
+  }
+</style>
+
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">CSS Layout</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>CSS Layout</h1>
+    <p>The layout frameworks help to manage the layout of pages. They allow dividing HTML-elements into grids of rows and columns.</p>
+
+    <h2>Bootstrap Layout</h2>
+    <div class="documentation__example">
+      <div class="documentation__example__description">
+        <p>To create a basic grid system one need to use <code>bs-row</code> and <code>bs-col</code> components with <code>xs</code>, <code>sm</code>, <code>md</code>, <code>lg</code> attributes. See <a href="https://getbootstrap.com/docs/3.3/css/#grid" target="_blank">Bootstrap Grid</a> to learn more about grid system.</p>
+        <p>Use Bootstrap Layout to create a responsive layout based on the 12-columns grid system.</p>
+      </div>
+      <div class="documentation__example__demo">
+        <mp-code-example>
+          <![CDATA[
+          <bs-row>
+            <bs-col sm="6" md="3">
+              <div class="grid-demo">sm-6 md-3</div>
+            </bs-col>
+            <bs-col sm="6" md="3">
+              <div class="grid-demo">sm-6 md-3</div>
+            </bs-col>
+            <bs-col sm="6" md="3">
+              <div class="grid-demo">sm-6 md-3</div>
+            </bs-col>
+            <bs-col sm="6" md="3">
+              <div class="grid-demo">sm-6 md-3</div>
+            </bs-col>
+          </bs-row>
+          ]]>
+        </mp-code-example>
+      </div>
+    </div>
+
+    <h2>Flex Layout</h2>
+    <p>To use Flex Layout one need to add <code>data-flex-layout</code> and <code>data-flex-self</code> attributes to HTML-elements. See <a href="http://progressivered.com/fla" target="_blank">Flex Layout Attribute</a> for more details and configuration options.</p>
+    <p>Use Flex Layout to create a flexible responsive layout.</p>
+    <h3>Example 1</h3>
+    <mp-code-example>
+      <![CDATA[
+      <div data-flex-layout="row center-stretch">
+        <div class="grid-demo">1</div>
+        <div class="grid-demo">2</div>
+        <div class="grid-demo">3</div>
+      </div>
+      ]]>
+    </mp-code-example>
+    <h3>Example 2</h3>
+    <mp-code-example>
+      <![CDATA[
+      <div data-flex-layout="row stretch-stretch">
+        <div data-flex-layout="column top-stretch">
+          <div class="grid-demo">1</div>
+          <div class="grid-demo" data-flex-self="size-x1" data-flex-layout="column center-center">2</div>
+        </div>
+        <div class="grid-demo" data-flex-layout="column center-center" style="height: 70px;">3</div>
+      </div>
+      ]]>
+    </mp-code-example>
+
+    <h2>Mix of Bootstrap and Flex Layouts</h2>
+    <mp-code-example>
+      <![CDATA[
+      <bs-row>
+        <bs-col md="6">
+          <div data-flex-layout="row md-column center-stretch">
+            <div class="grid-demo">1</div>
+            <div class="grid-demo">2</div>
+            <div class="grid-demo">3</div>
+          </div>
+        </bs-col>
+        <bs-col md="6">
+          <div class="grid-demo">4</div>
+        </bs-col>
+      </bs-row>
+      ]]>
+    </mp-code-example>
+
+    <h2>Built-in CSS classes</h2>
+    <p>The platform provides a set of CSS classes that help to layout page header and body.</p>
+    <h3>Example 1</h3>
+    <mp-code-example>
+      <![CDATA[
+        <div class="page__header">
+          <div class="page__header-thumbnail">
+            <span class="rs-icon rs-icon-actor"></span>
+          </div>
+          <div class="page__header-body">
+            <h1>Alice</h1>
+            <p><b>URI</b>: <a href="http://example.com/person/alice"><i>http://example.com/person/alice</i></a></p>
+          </div>
+        </div>
+        <div class="page__body">Content</div>
+      ]]>
+    </mp-code-example>
+
+    <h3>Example 2</h3>
+    <mp-code-example>
+      <![CDATA[
+        <h2><i class="fa fa-user" style="margin-right:4px;"></i> Alice</h2>
+        <div class="page__body--borderless">Content</div>
+      ]]>
+    </mp-code-example>
+
+    <h2>Built-in CSS classes with Tabs</h2>
+    <p>These CSS classes can also be used with <semantic-link uri="http://help.researchspace.org/resource/ReactBootstrap">Horizontal Tabs</semantic-link>.</p>
+    <h3>Example 1</h3>
+    <mp-code-example>
+      <![CDATA[
+      <div>
+        <div class="page__header-navtabs">
+          <div class="page__header-thumbnail">
+            <span class="rs-icon rs-icon-actor"></span>
+          </div>
+          <div class="page__header-body">
+            <h1>Alice</h1>
+            <p><b>URI</b>: <a href="http://example.com/person/alice"><i>http://example.com/person/alice</i></a></p>
+          </div>
+        </div>
+        <bs-tabs class="page__body-navtabs--borderless" unmount-on-exit=true>
+          <bs-tab event-key="1" title="Tab 1">
+            Tab 1
+          </bs-tab>
+          <bs-tab event-key="2" title="Tab 2">
+            Tab 2
+          </bs-tab>
+        </bs-tabs>
+      </div>
+      ]]>
+    </mp-code-example>
+  
+  </div>
+</div>

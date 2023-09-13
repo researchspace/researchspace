@@ -1,0 +1,237 @@
+<div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+        
+  <div data-flex-self="size-1of3" style="flex: 0 0 0;" class='search-border'>
+      <semantic-search-facet id='semantic-search-facet'
+        value-categories='{
+          "<http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>": {
+              "kind": "date-range",
+              "valuesQuery": "
+                  SELECT ?dateBeginValue ?dateEndValue WHERE {
+                    FILTER(?__facetRelationPattern__).
+                    ?__value__ crm:P82a_begin_of_the_begin ?dateBeginValue ;
+                          crm:P82b_end_of_the_end     ?dateEndValue .
+                  } ORDER BY ?dateBeginValue
+              "
+          }
+        }'
+      ></semantic-search-facet>
+  </div>
+
+  <semantic-search-result-holder>
+    <div data-flex-self="md-full">
+      <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+      <semantic-search-result id='semantic-search-result'>
+          <mp-sparql-result-counts id='semantic-search-result-count' query="SELECT DISTINCT ?subject {}"
+                                  template='{{> template}}'
+          >
+            <template id='template'>
+              <div>
+                <span class="num-results">Found <span class="num-results-color">{{#if hasLimit}}{{totalNumberOfResults}}{{else}}{{numberOfResults}}{{/if}}</span> results</span>
+              </div>
+            </template>
+          </mp-sparql-result-counts>
+      </semantic-search-result>
+      <bs-tabs default-active-key='4' unmount-on-exit=true id='search-results' animation=false class='tabs-right'>
+         
+          [[#if (hasPermission "forms:ldp:*")]]
+          <bs-tab event-key="1" title="Timeline" class="search-tab-timeline">
+            <div>
+                <semantic-search-result>
+                <mp-sparql-result-counts id='timeline-search-result-count' query="SELECT DISTINCT ?subject {} LIMIT 100"
+                                            template='{{> template}}'
+                >
+                    <template id='template'>
+                    {{#if hasLimit}}
+                    <bs-alert bs-style="warning" class="search-results__alert">
+                        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                        <span class="num-results">
+                        There were {{totalNumberOfResults}} results. Only 100 can be visualised on the timeline at once!
+                    </span>
+                    </bs-alert>
+                    {{/if}}
+                    </template>
+                </mp-sparql-result-counts>
+                </semantic-search-result>
+
+                <semantic-search-result-context ranges='["http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span"]'>
+                <semantic-search-result  id='semantic-search-result-timeline'>
+                    <mp-component-toolbar>
+                    <mp-component-toolbar-actions>
+                        <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                    </mp-component-toolbar-actions>
+                    <mp-component-toolbar-component>
+                        <semantic-timeline
+                        id='search-result-timeline'
+                        query='PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+                                SELECT DISTINCT ?start ?end ?iri WHERE {
+                                FILTER(?__contextRelationPattern__).
+                                ?__value__ crm:P82a_begin_of_the_begin ?start ;
+                                        crm:P82b_end_of_the_end ?end .
+                                
+                                BIND(?subject as ?iri) .
+                                }
+                                ORDER BY ?subject
+                                LIMIT 100
+                        '
+                        tuple-template='{{> timelineItem}}'
+                        tuple-template-height=50>
+                        <template id='timelineItem'>
+                            <mp-popover>
+                            <mp-popover-trigger placement="top" trigger='["hover"]' root-close='false'>
+                                <div data-flex-layout='column top-left'>
+                                <p>{{start.value}} - {{end.value}}</p>
+                                <semantic-link uri='{{iri.value}}'></semantic-link>
+                                </div>
+                            </mp-popover-trigger>
+                            <mp-popover-content>{{> rsp:itemCardTemplate}}</mp-popover-content>
+                            </mp-popover>
+                        </template>
+                        </semantic-timeline>
+                    </mp-component-toolbar-component>
+                    </mp-component-toolbar>
+                </semantic-search-result>
+                </semantic-search-result-context>
+            </div>
+          </bs-tab>
+          [[/if]]
+
+          <bs-tab event-key="2" title="Chart" class="search-tab-chart">
+            <semantic-search-result-context ranges='["http://www.w3.org/2004/02/skos/core#Concept", "http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'>
+              <semantic-search-result id='semantic-search-result-chart'>
+              <mp-component-toolbar>
+                  <mp-component-toolbar-actions>
+                    <semantic-chart-type-selector id='search-result-chart-type-selector' default="bar" types='["line", "bar", "radar", "pie", "donut"]' style='margin-right: 10px;'></semantic-chart-type-selector>
+                    <mp-component-toolbar-action-download></mp-component-toolbar-action-download>
+                    <mp-component-toolbar-action-save id='persit-component-action' add-to-default-set=true></mp-component-toolbar-action-save>
+                  </mp-component-toolbar-actions>
+                  <mp-component-toolbar-component>
+                  <semantic-chart
+                      id='search-result-chart'
+                      query='
+                        SELECT ?__value__ (COUNT(DISTINCT ?subject) as ?count) WHERE {
+                          OPTIONAL { FILTER(?__contextRelationPattern__) }
+                          BIND(IF(BOUND(?__value__), ?__value__, "Unknown") as ?__value__)
+                        } GROUP BY ?__value__ ORDER BY DESC(?count)
+                      '
+                      sets='[{
+                        "category": "__value__",
+                        "value": "count"
+                      }]'>
+                  </semantic-chart>
+                  </mp-component-toolbar-component>
+              </mp-component-toolbar>
+              </semantic-search-result>
+            </semantic-search-result-context>
+          </bs-tab>
+
+          <bs-tab event-key="3" title="Table" class="search-tab-table">
+            <semantic-search-result> 
+                <semantic-table id='semantic-search-result-table'
+                                query='SELECT DISTINCT ?subject ?iri ?typeLabel WHERE {
+                                        BIND(?subject as ?iri) .
+                                        ?subject a ?type .
+                                        ?type rdfs:label ?typeLabel .
+                                        FILTER (lang(?typeLabel) = "en")
+                                      } ORDER BY ?subject'
+
+                                options='{"showFilter":false, "resultsPerPage":10}' 
+                                column-configuration='[
+                                      {"variableName": "typeLabel", "displayName": "Type", "cellTemplate": "{{> type}}" },
+                                      {"variableName": "subject", "displayName": "Label", "cellTemplate": "{{> label}}" }
+                                      ]'   
+                >
+
+                  <template id='type'>
+                    <div class="search-result-table__type" style="display: flex; align-items: center;">
+                      <i class="rs-icon rs-icon-drag_points"></i>
+                      <mp-draggable iri='{{iri.value}}'>
+                        <div class="search-result-table__type-value">{{typeLabel.value}}</div>
+                      </mp-draggable>
+                    </div>
+                    
+                  </template>
+
+                  <template id='label'>
+                    <mp-draggable iri='{{iri.value}}'>
+                      <div><mp-label iri='{{iri.value}}'></mp-label></div>
+                    </mp-draggable>
+                  </template>
+
+                </semantic-table>
+            </semantic-search-result>
+          </bs-tab>
+
+          <bs-tab event-key="4" title="Grid" class="search-tab-grid">
+            <semantic-search-result>
+                [[#if (hasPermission "forms:ldp:*")]]
+                  <mp-selection-action-choice id='Action' title='With selected ...' selection='item-selection-aggregator'>
+                    <mp-create-set-action></mp-create-set-action>
+                  </mp-selection-action-choice>
+                [[/if]]
+
+                <semantic-table
+                  id='semantic-search-result-grid'
+                  query='
+                  SELECT DISTINCT ?subject ?iri WHERE {
+                      BIND(?subject as ?iri) .
+                  } ORDER BY ?subject
+                  '
+                  tuple-template='{{> gridItem }}',
+                  options='{"showFilter":false, "resultsPerPage":12}'
+                >
+                <template id='gridItem'>
+                  <div class='card-select-container'> 
+                    [[#if (hasPermission "forms:ldp:*")]]
+                    <div class='card-select-input'>
+                      <mp-selection-toggle selection="item-selection-aggregator" tag="{{iri.value}}"></mp-selection-toggle>
+                    </div>
+                  [[/if]]
+                    <mp-draggable iri='{{iri.value}}'>
+                      <div class="rs-card-container">
+                      {{#bind iri=iri.value}}
+                        {{> rsp:itemCardTemplate}}
+                      {{/bind}}
+                      </div>
+                    </mp-draggable>
+                  </div>
+                </template>
+                </semantic-table>
+            </semantic-search-result>
+          </bs-tab>
+
+      </bs-tabs>
+
+      <hr>
+
+      <div class="semantic-search-results-actions pull-right" style="display: flex;">
+          <semantic-search-result>
+            <mp-sparql-download id='csv-result' query="SELECT ?subject WHERE { }"
+                                header="text/csv"
+                                filename="csv-result.csv"
+            >
+                <button class="rs-button rs-button-M1--dark" style="margin-right:10px">Download CSV</button>
+            </mp-sparql-download>
+          </semantic-search-result>
+          <semantic-search-result>
+            <mp-sparql-download id='json-result' query="SELECT ?subject WHERE { }"
+                                header="application/sparql-results+json"
+                                filename="json-result.json"
+            >
+                <button class="rs-button rs-button-M1--dark" style="margin-right:10px">Download JSON</button>
+            </mp-sparql-download>
+          </semantic-search-result>
+          <mp-anonymous-hidden>
+            <semantic-search-action-save-set-result id='save-set-result-action'>
+                <button class="rs-button rs-button-M1--dark" style="margin-right:10px">Save As Set</button>
+            </semantic-search-action-save-set-result>
+          </mp-anonymous-hidden>
+          <mp-anonymous-hidden>
+            <semantic-search-action-save-search-result id='save-search-result-action' add-to-default-set=true>
+                <button class="rs-button rs-button-M1--dark" style="margin-right:10px">Save As Search</button>
+            </semantic-search-action-save-search-result>
+          </mp-anonymous-hidden>
+      </div>
+    </div>
+  </semantic-search-result-holder>
+    
+</div>

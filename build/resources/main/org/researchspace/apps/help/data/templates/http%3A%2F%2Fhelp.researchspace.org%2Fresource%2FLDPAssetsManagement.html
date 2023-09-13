@@ -1,0 +1,37 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+
+  <li class="active">LDP Assets Management</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>LDP Assets Management</h1>
+    <p>The platform can store and manage many types of auxiliary meta-level resources that serve to ease the common knowledge graph management tasks and reuse and share the building blocks. Example of such auxiliary resources are queries, SPIN query templates, Ontodia diagrams, etc. To manage these resources, the ResearchSpace platform stores them in a special <code>assets</code> repository different from the default one containing the main knowledge graph and uses the W3C <a href="https://www.w3.org/TR/ldp/">Linked Data Platform</a> standard data format and APIs. On the <semantic-link iri="http://www.researchspace.org/resource/assets/">Assets</semantic-link> page you can see different types of available resources and access them as well as get the whole overview over all <semantic-link iri="[[resolvePrefix "Platform:rootContainer"]]">LDP assets tree</semantic-link>.</p>
+    
+    <h2>LDP Container Tree</h2>
+    <p>LDP assets are stored as a tree, in which some resources serve as containers for other ones. The root container serves as a high-level container for asset-specific containers. Each of those contains resources of its target type: e.g., queries (query bodies), parameterizable query templates, diagrams, fields, etc. From the <semantic-link iri="[[resolvePrefix "Platform:rootContainer"]]">root container page</semantic-link> you can export any available container together with its content or delete one. The container and its content will be exported as an RDF file in the <a href="https://www.w3.org/TR/trig/">TriG format</a>. If you only want to create a copy of some resource internally (e.g., to modify it and save a modified version alongside the original), then you can simply do it using the "Duplicate" button in the UI.</p>
+    
+    <h2>Exporting/Importing Assets</h2>
+    <p>You have two options for exporting LDP assets:</p>
+      <ul>
+        <li>Export the whole container together with all its assets.</li>
+        <li>Export one or several individual items from the container (you can select several items and choose the "Export" action in the "With selected..." dropdown).</li>
+    	</ul>
+    <p>When exporting resources, you should be aware that the export will contain the properties of exported resources, including the links to related resources, but not the related resources themselves. As an example, let us consider the case where our query catalogue contains a query template <code>my-query-template</code> (an instance of <code>spin:Template</code>) which refers to the base query resource <code>my-query</code> (instance of <code>sp:Query</code>). The query template <code>my-query-template</code> is stored as an LDP asset resource inside the Query Template Container, while the base query <code>my-query</code> is stored inside the Query Container. If you want to copy the query template to reuse it on another system, you would need to export both the query template LDP resource and the base query one.
+    </p>
+    <p>Exported LDP resources can be imported into the LDP assets tree on another system and reused there. For example, in our case after we exported our query template and the corresponding base query into two different files, we can import them on another system into their corresponding containers: <code>my-query-template</code> into the Query Template Container and <code>my-query</code> into the Query Container. An important thing to keep in mind is that when importing LDP resources or containers with URIs that already exist on the target system, the import does not replace the existing resources, but creates new ones alongside them. The URIs of imported resources in this case get replaced with artificially generated ones. The same applies if you export/import whole containers: for example, if you export the Query Container (which has the default URI <code>Platform:queryContainer</code>) on one system and re-import it under the root container on another system, it will neither replace the existing Query Container on the target system nor add its content to the existing one, but create a separate Query Container parallel to the existing one and add the imported queries as its children. This may lead to confusion and inconvenience, so it is usually not advised to export/import whole default containers. 
+    </p>
+    <h2>Saving/Loading Assets in Storage</h2>
+    <p>By default, LDP assets are maintained in the platform storage, either in the corresponding app or in the default runtime storage. In this way, LDP assets can be packaged and distributed into apps and loaded into the corresponding repository at startup. If the repository gets cleaned or corrupted, the LDP assets are preserved and can be reloaded at next system restart. LDP assets are stored in the <i>ldp/{repositoryID}</i> subfolder in their corresponding storage. When a new LDP asset gets created in the platform, the system saves it as an RDF file in the TriG format in the runtime storage. Similarly, this file gets deleted when the corresponding LDP assets is deleted via the LDP API. By default the LDP assets contained in the <i>assets</i> repository are maintained in the storage. You can also extend this logic for other repositories using configuration properties <code>repositoriesLDPSave</code> and <code>repositoriesLDPLoad</code> in the <semantic-link iri='[[resolvePrefix "Help:BasicSystemConfiguration"]]'>global configuration</semantic-link>. Note: when LDP assets are loaded from the platform storage into the repository at startup, their consistency is checked: i.e., if there is already an existing LDP resource in the same graph in the repository, but two LDP resources have different sets of triples, this is treated as an illegal system state and the platform does not start.
+    </p>
+  </div>
+</div>

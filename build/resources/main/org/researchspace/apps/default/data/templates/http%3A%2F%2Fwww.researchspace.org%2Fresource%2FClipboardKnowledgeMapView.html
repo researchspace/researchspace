@@ -1,0 +1,48 @@
+<div style='display: flex;'>
+  <div>
+    <span class="rs-icon rs-icon-diagram"></span>
+  </div>
+  
+  <div style='overflow: hidden;'>
+    <span style='display: flex;'>
+      <mp-label 	 iri='{{iri.value}}' highlight='{{highlight}}'
+                highlight-props='{"style": {"color": "#dc8a4b"}}'
+                style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+      ></mp-label>
+    </span>
+  </div>
+  
+  <div class='set-management__item-actions' style='margin-left: auto;'>
+    <bs-dropdown-button pull-right=true bs-style='link' title=''
+                        id='set-actions-{{iri.value}}'>
+      
+       [[!-- is shown only when we are not in the frames view, hidden by css --]]
+       <semantic-link-container 
+         uri="{{iri.value}}"
+         urlqueryparam-previous-page='http://www.researchspace.org/resource/ProjectKnowledgeMaps'
+         urlqueryparam-previous-page-title='Project - Knowledge Maps'
+         draggable=false
+       >
+         <bs-menu-item class='set-action__km-navigate' event-key='km-navigate'>
+           Open
+         </bs-menu-item>
+       </semantic-link-container>
+      
+       [[!-- is shown only when we are in the frames view, hidden by css --]]
+       <mp-event-trigger id='set-action__km-add-frame' type='Dashboard.AddFrame' 
+                         data='{"resourceIri": "{{iri.value}}", "viewId": "knowledge-map"}' 
+                         targets='["thinking-frames"]'>
+         <bs-menu-item class='set-action__km-add-frame' event-key='km-add-frame'>
+           Open
+         </bs-menu-item>
+       </mp-event-trigger>
+      
+      <mp-anonymous-hidden>
+        <mp-set-management-action-remove-set-item item='{{itemHolder.value}}'>
+          <bs-menu-item event-key=remove>Remove</bs-menu-item>
+        </mp-set-management-action-remove-set-item>
+      </mp-anonymous-hidden>
+
+    </bs-dropdown-button>
+  </div>
+</div>

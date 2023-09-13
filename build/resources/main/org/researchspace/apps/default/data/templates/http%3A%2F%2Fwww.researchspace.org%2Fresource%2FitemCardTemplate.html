@@ -1,0 +1,32 @@
+[[!--
+
+optional parameters:
+defaultImage -
+
+parameter includes:
+additionalActions -
+customFooter -
+--]]
+
+<div class="card rs-object-card rs-default-card" [[!-- when autosize is set we don't set any fixed height and width,
+    used in semantic narratives where user can resize the card --]]
+    style="{{#if autosize}}{{else}}width:{{#if width}}{{width}}{{else}}165{{/if}}px; height:{{#if height}}{{height}}{{else}}214{{/if}}px; margin:{{#if cardMargin}}{{cardMargin}}{{else}}10{{/if}}px;{{/if}}">
+            
+    <div class="rs-default-card__front">
+      <with-types fixed-key='card-{{iri}}' iri='{{iri}}' types='{{stringify data.types}}' template-context='{{stringify this}}'
+            template='{{> template}}'
+            [[> rsp:TypeMappings]]
+      >
+        <template id='template'>
+          [[> rsp:itemCardTemplateContent]]
+        </template>
+      </with-types>
+      
+      [[!-- additional actions like ontodia edit/remove can't be inside with-types component--]]
+      <div class="rs-default-card__hover rs-default-card__hover-additional">
+        <div class="rs-default-card__hover-options">
+          {{#> additionalActions}}{{/additionalActions}}
+        </div>
+      </div>
+  </div>
+</div>

@@ -1,0 +1,131 @@
+{{#bind frameId=dashboardId}}
+  <mp-event-target-template-render id='{{frameId}}-entity-editor-frame' template='{{> template}}'>
+    <template id='template'>
+      {{#if iri}}
+        <semantic-query 
+                      query='
+                              SELECT DISTINCT ?config ?formIRI ?restrictionPattern ?membershipProperty WHERE {
+                                {
+                                  <{{iri}}> a/rdfs:subClassOf* ?rdfType .
+                                  ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+                                            <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
+
+                                  FILTER NOT EXISTS {
+                                    ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+                                  }
+
+                                  OPTIONAL {
+                                    ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                                  }
+                                  OPTIONAL {
+                                    ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                                  }                              
+                                } UNION {
+                                  <{{iri}}> rdf:type ?rdfType ;
+                                              crm:P2_has_type ?P2_has_type .
+
+                                  ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+                                            <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType ;
+                                            <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+
+                                  OPTIONAL {
+                                    ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                                  }                              
+                                  OPTIONAL {
+                                    ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                                  }
+                                }
+                              }
+                            '
+        >
+          <template id='template'>
+            {{#ifCond bindings.length "==" "0"}}
+              <p>There is no form configuration for the given entity. See "Entity Manager".</p>
+            {{/ifCond}}
+
+            {{#ifCond bindings.length ">" "0"}}
+              <semantic-query 
+                              query='
+                                SELECT ?config ?collection WHERE {
+                                  {{#each bindings}}
+                                  { 
+                                    BIND(<{{../iri}}> as ?item) .
+                                    BIND(<{{config.value}}> as ?config) .
+                                    {{#if restrictionPattern.value}}
+                                      {{{restrictionPattern.value}}}
+                                    {{/if}} 
+
+                                    {{#if membershipProperty.value}}
+                                      ?item <{{{membershipProperty.value}}}> ?collection .
+                                    {{/if}}
+
+                                    OPTIONAL {
+                                      ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                                    }
+                                    OPTIONAL {
+                                      ?config <http://www.researchspace.org/resource/system/authority_manager/broader_property> ?broaderPropertyIRI .
+                                    }                                  
+                                  } {{#if @last}}{{else}}UNION{{/if}}  
+                                  {{/each}}
+                                }
+                              '
+                              template='{{> nested}}'
+              >
+                <template id='nested'>
+                  {{#ifCond bindings.length "==" "0"}}
+                    <p>There is no form configuration for the given entity. See "Entity Manager".</p>
+                  {{/ifCond}}
+
+                  {{#ifCond bindings.length "==" "1"}}
+                    {{> rsp:CollectionBrowserContent frameId=frameId configOrScheme=bindings.0.config.value iri=iri mode="edit"}}
+                  {{/ifCond}}
+
+                  {{#ifCond bindings.length ">" "1"}}
+                    <two-side-panel id='entity-editor-config-list-{{iri}}'>
+                      <template id='front'>
+                        <p>There is more than one form that can be applicable to the given entity, please choose the one to use for editing:</p>
+                        <ul>
+                          {{#each bindings}}
+                          <li>
+                            {{title.value}} Form 
+                            <mp-event-trigger id='form-event-trigger--{{../iri}}' 
+                                              type='TwoSidePanel.ShowBack' 
+                                              targets='["entity-editor-config-list-{{../iri}}"]'
+                                              data='{ 
+                                                      "node":"{{../iri}}",
+                                                      "formIRI": "{{formIRI.value}}"
+                                                    }'>
+                              <button class="btn btn-primary">Use</button>
+                            </mp-event-trigger>
+                          </li>
+                          {{/each}}
+                        </ul>
+                      </template>
+                      <template id='back'>
+                        {{> rsp:CollectionBrowserContent frameId=frameId configOrScheme=formIRI iri=node mode="edit"}}
+                      </template>
+                    </two-side-panel>
+                  {{/ifCond}}
+                </template>
+              </semantic-query>
+            {{/ifCond}}
+          </template>
+        </semantic-query>
+      {{else}}
+        {{#if data.entityTypeConfig}}
+        {{#if data.mode}}
+          {{#if data.additional_data}}
+            {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+          {{else}}
+            {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+          {{/if}}
+        {{else}}
+          {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig }}
+        {{/if}}
+      {{else}}
+        {{> rsp:EntityManagerContent}}
+      {{/if}}
+    {{/if}}
+    </template>
+  </mp-event-target-template-render>  
+{{/bind}}

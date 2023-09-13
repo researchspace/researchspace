@@ -1,0 +1,191 @@
+
+[[!--
+uses client-side templates:
+[[> rsp:KnowledgeMapItemCard]]
+--]]
+
+<[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]] id='{{ontodiaVariable}}-ontodia' metadata='
+<> a <http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object> ; 
+       <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/ontology/Knowledge_Map> .
+  '
+  image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
+  save-diagram-label="Save Knowledge Map" settings=nostats post-saving=none add-to-default-set=true
+  collapse-navigator=true
+  request-links-on-init='{{#if miradorVariable}}true{{else}}{{#if diagram}}false{{else}}true{{/if}}{{/if}}'
+  default-edge-style='{"editable": true}'
+  edge-styles='{
+    "http://www.researchspace.org/instances/fields/EntityhasConnection": {
+      "editable": true,
+      "linkStyle": {"connection": {"stroke-dasharray": "3"}}
+    }
+  }'
+
+
+  [[#if (hasPermission "forms:ldp:*")]]
+    [[#if readonly]]
+      readonly='true'
+    [[/if]]
+  [[else]]
+    readonly='true'
+  [[/if]]
+
+  diagram='{{#if diagram}}{{diagram}}{{/if}}' 
+  iri='{{#if iri}}{{iri}}{{/if}}' 
+  iris='{{#if iris}}{{iris}}{{/if}}'
+
+  left-panel-initially-open=false 
+  default-node-template="{{> default}}"    
+  additional-tree-item-template='{{> additionalTreeItemTemplate}}'
+  
+  provider-settings='{ 
+    "classTreeQuery": "
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+      SELECT ?class ?label ?parent WHERE {
+        GRAPH ?g {
+          ?ontology a owl:Ontology .
+          ?class a owl:Class .
+          OPTIONAL {
+          	?class rdfs:label ?label.
+          }
+
+          OPTIONAL {
+          	?class rdfs:subClassOf ?p.
+         	  ?p a owl:Class .
+          }
+          BIND(IF(BOUND(?p), ?p, ?ontology) AS ?parent)
+        }
+      }
+    "
+  }'>
+
+<ontodia-field-configuration 
+                            [[#if (hasPermission "forms:ldp:*")]]
+                              authoring-mode=true
+                            [[else]]
+                              authoring-mode=false
+                            [[/if]]
+                            
+                            type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
+                            default-label-iri='http://www.w3.org/2000/01/rdf-schema#label'
+                            default-image-iri='http://www.researchspace.org/ontology/PX_has_main_representation'
+                            default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                            force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
+>
+
+    <rs-ontodia-metadata-from-fields></rs-ontodia-metadata-from-fields>
+    
+    <ontodia-field-input-override for-field="http://www.researchspace.org/ontology/PX_has_main_representation">
+      <semantic-form-autocomplete-input for='http://www.researchspace.org/ontology/PX_has_main_representation'>
+          <semantic-form new-subject-template='/EX_Digital_Image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                        fields='[[fieldDefinitions
+                          label="http://www.w3.org/2000/01/rdf-schema#label"
+                          P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                          P1_is_identified_by="http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by"
+                          type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        ]]'
+                        >
+                          <semantic-form-hidden-input for='type'
+                            default-values='["http://www.researchspace.org/ontology/EX_Digital_Image"]'
+                          > </semantic-form-hidden-input>
+
+                          <semantic-form-file-input for='P1_is_identified_by'
+                                                    accept-pattern='image/*'
+                                                    storage='images'
+                                                    temp-storage='tmp'
+                                                    placeholder='Please drag&drop your image here'
+                                                    from-url-or-drop='true'
+                                                    name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                                    media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                                    resource-query='
+                                                        PREFIX rso: <http://www.researchspace.org/ontology/>
+                                                        CONSTRUCT {
+                                                        ?__resourceIri__ a rso:EX_File.
+                                                        ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
+                                                        ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                                        } WHERE {}
+                                                        '
+                                                    generate-iri-query='
+                                                        SELECT ?resourceIri {
+                                                        BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                        }
+                                                        '
+                          ></semantic-form-file-input>
+                          <semantic-form-text-input for='label'></semantic-form-text-input>
+                          <semantic-form-text-input for='P3_has_note' multiline=true></semantic-form-text-input>
+
+                          <button name="submit" class="btn btn-sm btn-success pull-right">Save</button>
+                          <button name="reset" class="btn btn-sm btn-default pull-right">Reset</button>
+                          <div style="clear: both;"></div>
+          </semantic-form>
+      </semantic-form-autocomplete-input>
+    </ontodia-field-input-override>
+
+</ontodia-field-configuration>
+
+<template id="additionalTreeItemTemplate">
+  <semantic-query template='{{> scopeNote}}' query='SELECT ?note WHERE { <{{iri}}> rdfs:comment ?note } LIMIT 1'
+  >
+    <template id='scopeNote'>
+      <mp-popover title="Scope Note">
+        <mp-popover-trigger placement="right" trigger='["click"]'>
+          <i style='margin-left: 10px;' class="fa fa-question-circle" aria-hidden="true"></i>
+        </mp-popover-trigger>
+        <mp-popover-content>
+          <div style='height: 200px; width: 250px; overflow: auto;'>
+            <p>{{bindings.0.note.value}}</p>
+          </div>
+        </mp-popover-content>
+      </mp-popover>
+
+    </template>
+  </semantic-query>
+</template>
+
+<template id="default">
+  [[!-- Don't add any other explicit style here, only width and height, style is overriden by the resizable component in the KM --]]
+  <div class="rs-KM-card-container" style="width: 180px; height:230px">
+        {{#> rsp:itemCardTemplate autosize=true cardMargin=0}}
+          {{#*inline "customFooter"}}
+            <span class="rs-body-s-M">{{label}}</span>
+          {{/inline}}
+
+          {{#*inline "additionalActions"}}
+            <mp-draggable iri='{{iri}}'>
+              <div class="rs-default-card__hover-icon">
+                  <button type="button" class="rs-button" title="Drag and drop the Item">
+                    <i class="rs-icon rs-icon-drag_arrow"></i>
+                  </button>
+              </div>
+            </mp-draggable>
+
+            [[#if (hasPermission "forms:ldp:*")]]
+              <div class="rs-default-card__hover-icon">
+                <button type="button" name='edit' class="rs-button" title="Edit">
+                  <i class="fa fa-pencil"></i>
+                </button>
+              </div>
+              <div class="rs-default-card__hover-icon">
+                <button type="button" name='delete' class="rs-button" title="Delete">
+                  <i class="fa fa-trash-o"></i>
+                </button>
+              </div>
+            [[/if]]
+          {{/inline}}
+        {{/rsp:itemCardTemplate}}
+      {{#if isExpanded }}
+        {{#if props.[http://www.cidoc-crm.org/cidoc-crm/P3_has_note]}}
+            <div class="rs-card-note-container">
+              <div>
+                <span>Note: </span>
+                <span>{{props.[http://www.cidoc-crm.org/cidoc-crm/P3_has_note].values.0.value}}</span>
+              </div>
+            </div>
+        {{/if}}
+      {{/if}}
+  </div>
+</template>
+
+</[[#if standalone]]ontodia[[else]]rs-ontodia-panel[[/if]]>

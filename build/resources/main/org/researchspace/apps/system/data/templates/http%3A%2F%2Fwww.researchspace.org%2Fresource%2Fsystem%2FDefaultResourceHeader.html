@@ -1,0 +1,25 @@
+<div class='page__header-thumbnail'>
+  <mp-resource-thumbnail no-image-uri='/images/default-thumbnail.png' iri='[[this]]'></mp-resource-thumbnail>
+</div>
+<div class='page__header-body'>
+  <h1>
+    <mp-label iri='[[this]]'></mp-label>
+  </h1>
+
+  <!--Image -->
+  <p>
+    <b>URI</b>: <a href='[[this]]' style="font-size: 12px;" target='_blank'><i>[[this]]</i>&nbsp;<i class="fa fa-external-link" aria-hidden="true"></i></a>
+  </p>
+
+  <!--Types -->    
+  <p>
+    <b>Type</b>: <semantic-query query="SELECT DISTINCT ?type WHERE { ?? [[#if type]][[type]][[else]]a[[/if]] ?type }" style="display:inline;"></semantic-query>
+  </p>
+
+  <!--Description -->
+  <p>
+    <semantic-query query='SELECT ?description WHERE { ?? [[#if description]][[description]][[else]]rdfs:comment[[/if]] ?description } LIMIT 1' 
+                    template='{{#each bindings}}<span><b>Description</b>: {{description.value}}</span>{{/each}}'>
+    </semantic-query>
+  </p>
+</div>

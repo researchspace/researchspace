@@ -1,0 +1,182 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+
+  <li class="active">
+    Basic System Configuration
+  </li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1> Basic System Configuration </h1>
+    This page describes how to adjust general system behavior via configuration properties. 
+
+    <h2> Configuration Properties</h2>
+
+    Configuration properties are divided into three so called "configuration groups": 
+
+    <ul>
+      <li>  Environment Configuration Group </li> 
+      <li>  Global Configuration Group </li> 
+      <li>  UI Configuration Group </li> 
+    </ul>
+    <p>
+      Properties in these groups might be shadowed via JVM runtime parameters, for example, depending on the deployment mode one may particular supply environment specific groups via JVM runtime parameters. 
+      This can by done by supplying <span class="inline-code">"-Dconfig.{configGroup}.{propertyName}={propertyValue}"</span>, 
+      where "configGroup"" is the identifier of the configuration (either "environment", "global", or "ui" for the three groups, respectively) and "propertyName" is the name of the property in the given group.
+      Shadowed parameters can not be overwritten or changed during runtime.
+    </p>
+
+    <h3>Environment Configuration Group </h3>
+
+    The environment group (file "config/environment.prop") contains all deployment-specific configuration options such as server URLs, keys, etc. 
+    These parameters may influence how the platform is initialized and as such they can not be change during runtime, for example, through the &nbsp;<semantic-link uri="http://www.researchspace.org/resource/admin/Configuration" title="Configuration">configuration UI</semantic-link>.
+    <br><br>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>sparqlEndpoint</td>
+          <td>URL</td>
+          <td>URL to the remote SPARQL endpoint. <b> If the repository is running on a different machine and only accessible through HTTPS</b>, then it might be required to import certificates into your JVM's keystore.</td>
+        </tr>
+        <tr>
+          <td>shiroAuthenticationFilter</td>
+          <td>List of Strings (comma separated)</td>
+          <td>Authentication filter to apply. Any combination of "anon" (Anonymous User),"authc" (FormBasedAuthentication) ,"authcBasic" (HTTP Basic Authentication). Default: "authcBasic, authc" </td>
+        </tr>
+        <tr>
+          <td>shiroSessionTimeoutSecs</td>
+          <td>Integer</td>
+          <td>The time after which sessions will be closed in case of inactivity Default: 1800. </td>
+        </tr>
+        <tr>
+        	<td>allowedCrossOrigin</td>
+          <td>String</td>
+          <td>Specifies the <code>Access-Control-Allow-Origin</code>. <code>*</code> can be used as a wildcard, thereby allowing any origin to access the resource. Please note that by default this property is set to <code>null</code> and thereby does set any CORS headers at all. Default: null. </td>
+        </tr>
+        <tr>
+        	<td>sparqlHttpConnectionTimeout</td>
+          <td>Integer</td>
+          <td>SPARQL HTTP connection timeout (in seconds). This value is used to set both <code>http.connection.timeout</code> (timeout for establishing the connection) and <code>http.socket.timeout</code> (timeout for waiting for the data) parameters of the Apache HttpClient. Default: null (infinite) </td>
+        </tr> 
+      </tbody>
+    </table>
+
+    <h3>Global Configuration Group </h3>
+    Global system configuration, affecting system functionality like global redirects etc.
+    <br><br>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>homePage</td>
+          <td>URI</td>
+          <td>Prefixed or full URI ( surround by &lt;&gt;) to specify the page the user should be redirect to after login or if she clicks on the home button. Default: "Start"</td>
+        </tr>
+        <tr>
+          <td>repositoriesLDPSave</td>
+          <td>Comma separated list of repository IDs</td>
+          <td>List of repository IDs, for which LDP assets will be saved in the runtime storage (see <semantic-link iri='[[resolvePrefix "Help:LDPAssetsManagement"]]'>LDP assets management</semantic-link>). Default: <code>assets</code>. To disable this functionality for all repositories, use <code>repositoriesLDPSave=,</code>.</td>
+        </tr>
+        <tr>
+          <td>repositoriesLDPLoad</td>
+          <td>Comma separated list of repository IDs</td>
+          <td>List of repository IDs, for which LDP assets will be loaded from the storage at startup (see <semantic-link iri='[[resolvePrefix "Help:LDPAssetsManagement"]]'>LDP assets management</semantic-link>). Default: <code>assets</code>. To disable this functionality for all repositories, use <code>repositoriesLDPLoad=,</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>UI Configuration Group </h3>
+    Configuration properties for options that affect how data is displayed in the UI.
+
+    <br><br>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>templateIncludeQuery</td>
+          <td>SPARQL SELECT Query</td>
+          <td>Specifies the SPARQL SELECT query according to which the template engine selects templates depending on the request resource / context (i.e. ??).								<br/> Query must have at least a "?type" projection variable. Default: "SELECT ?type WHERE{?? a ?type}" </td>
+        </tr>
+        <tr>
+          <td>preferredLabels</td>
+          <td>Comma separated list of strings.</td>
+          <td>
+            Ordered list of predicates, property paths and/or graph patterns, which are used to generate human readable labels for IRIs within the application:<br><ul style="list-style-type:none">
+              <li>(a) full ( surround by &lt;&gt;) or prefixed IRIs or/and </li> 
+              <li>(b) a SPARQL property path with full or prefixed IRIs or/and </li>
+              <li>(c) a full SPARQL pattern, which must have a <code>?subject</code> (will be used to inject the entity for which a label should be generated) and a <code>?value</code> (denoting the label value) variable. The entire pattern must be enclosed by curly braces (<code>{ ?subject ?predicate ?value }</code>) and <u>commas must be escaped</u> with a backslash (<code>\</code>).</li>
+            </ul>
+            <b>Example:</b><br>
+            <code>rdfs:label,&lt;http://www.w3.org/2004/02/skos/core#prefLabel&gt;,a/rdfs:subClassOf/rdfs:label, {OPTIONAL{?subject skos:altLabel ?altLabel.} BIND(COALESCE(?altLabel\,"No Label") as ?value)}</code><br>
+            <br>
+            <p>If multiple labels exists for an entity, order of preference is denoted through the order of predicates/patterns in the list. If no label is returned by any of the predicates or patterns, the label service will return the local name of the entity IRI as label. Labels may additionally be ranked by the <code>preferredLanguages</code> setting.</p>
+            <p>
+              Please note that the number and complexity of patterns may heavily influences the performance and load of the application/underlying database. 
+            </p>
+            Default: rdfs:label
+          </td>
+        </tr>
+        <tr>
+          <td>preferredLanguages</td>
+          <td>Comma separated list of language tags</td>
+          <td>
+            Language tag filter over potential <code>preferredLabels</code> candidates. Order of preference is denoted through the order of language tags in the list.
+            Default: null
+          </td>
+        </tr>
+        <tr>
+          <td>preferredThumbnails</td>
+          <td>Comma separated list of strings.</td>
+          <td>
+             Ordered list of predicates, property paths and/or graph patterns, which are used to generate thumbnails for IRIs within the application:<br><ul style="list-style-type:none">
+              <li>(a) full ( surround by ) or prefixed IRIs or/and </li> 
+              <li>(b) a SPARQL property path with full or prefixed IRIs or/and </li>
+              <li>(c) a full SPARQL pattern, which must have a <code>?subject</code> (will be used to inject the entity for which a thumbnail should be generated) and a <code>?value</code> (denoting the thumbnail value i.e. URL to the image) variable. The entire pattern must be enclosed by curly braces (<code>{ ?subject ?predicate ?value }</code>) and <u>commas must be escaped</u> with a backslash (<code>\</code>).</li>
+            </ul>
+            <b>Example:</b><br>
+            <i>Please refer to the example from the <code>preferredLabels</code> configuration.</i>
+           	<br><br>
+            <p>If multiple thumbnails exists for an entity, order of preference is denoted through order of predicates/patterns in the list.</p>
+             <p>
+              Please note that the number and complexity of patterns may heavily influences the performance and load of the application/underlying database.  
+            </p>
+            Default: &lt;http://schema.org/thumbnail&gt;
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+

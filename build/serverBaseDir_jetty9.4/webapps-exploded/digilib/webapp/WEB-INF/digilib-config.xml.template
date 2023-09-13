@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Digilib servlet config file -->
+<!-- rename this file to digilib-config.xml -->
+
+<digilib-config>
+  <!--  Image to be sent to indicate an error or general failure. -->
+  <parameter name="error-image" value="img/digilib-error.png" />
+
+  <!--  Image to be sent to indicate an authorization failure. -->
+  <parameter name="denied-image" value="img/digilib-denied.png" />
+
+  <!--  Image to be sent to indicate that the request was correct, but the specified image could not be found. -->
+  <parameter name="notfound-image" value="img/digilib-notfound.png" />
+
+  <!-- List of directories where images are searched.
+       Directories with low-resolution images are LAST!!! in list.
+	   Use OS-specific path separators (":" for Unix, ";" for Windows) --> 
+  <parameter name="basedir-list" value="/docuserver/images:/docuserver/scaled/small:/docuserver/scaled/thumb" />
+
+  <!-- Java class to use for image operations -->
+  <parameter name="docuimage-class" value="digilib.image.ImageLoaderDocuImage" />
+
+  <!-- mimimum amount of scaling done with antialiasing -->
+  <parameter name="subsample-minimum" value="2"/>
+  
+  <!-- default interpolation quality (0=worst) -->
+  <parameter name="default-quality" value="2"/>
+  
+  <!-- is sending whole image files with mo=file allowed? -->
+  <parameter name="sendfile-allowed" value="true" />
+
+  <!-- the a maximum size of any sent image. (0 means no limit) -->
+  <parameter name="max-image-size" value="0" />
+
+  <!-- number of working threads -->
+  <parameter name="worker-threads" value="2" />
+
+  <!-- number of waiting requests in queue -->
+  <parameter name="max-waiting-threads" value="20" />
+
+  <!-- timeout for asynchronous servlet worker (ms) -->
+  <parameter name="worker-timeout" value="60000" />
+
+  <!-- Java class to use for file metadata -->
+  <parameter name="filemeta-class" value="digilib.meta.IndexMetaFileMeta" />
+
+  <!-- Java class to use for directory metadata -->
+  <parameter name="dirmeta-class" value="digilib.meta.IndexMetaDirMeta" />
+
+  <!-- Restrict access to authorized users.
+       User authentication and roles are provided by the servlet container 
+       (see tomcat-users.xml).
+       Authorization for resources (directories) is evaluated by the servlet 
+       (see auth-file). -->
+  <parameter name="use-authorization" value="false" />
+
+  <!-- Java class to use for authentication -->
+  <parameter name="authnops-class" value="digilib.auth.IpAuthnOps" />
+
+  <!-- Java class to use for authorization -->
+  <parameter name="authzops-class" value="digilib.auth.PathAuthzOps" />
+
+  <!-- URL location of XML file with authorization requirements. -->
+  <parameter name="auth-file" value="digilib-auth.xml" />
+
+  <!-- use mapping of "virtual directories" to real directories on the server -->
+  <parameter name="use-mapping" value="false"/>
+  
+  <!-- location of XML mapping file -->
+  <parameter name="mapping-file" value="digilib-map.xml"/>
+  
+  <!-- location of logger config file -->
+  <parameter name="log-config-file" value="log4j-config.xml"/>
+
+  <!-- is the image toolkit allowed to use a disk cache -->
+  <parameter name="img-diskcache-allowed" value="false"/>
+  
+  <!-- IIIF image API path prefix -->
+  <parameter name="iiif-prefix" value="IIIF"/>
+  
+</digilib-config>

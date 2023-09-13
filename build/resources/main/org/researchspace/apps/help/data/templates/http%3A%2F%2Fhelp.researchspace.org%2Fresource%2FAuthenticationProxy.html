@@ -1,0 +1,56 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Authentication Proxy</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+  <h1>Authentication Proxy</h1>
+		Sometimes there appears a need to access from the ResearchSpace platform an external web source (e.g., a third-party REST API, images, files etc.), which imposes additional access restrictions like protection through HTTP basic authentication or strict Cross-Origin Resource Sharing (CORS) configurations. For this purpose, the platform provides a mechanism to proxy such requests including <i>basic authentication</i>. It is possible to configure a proxy servlet, which will forward all HTTP requests it receives to a specific remote target URL. Such a proxy servlet for accessing a remote URL <b>targetUri</b> requiring separate authentication transforms a request of the form <i>[platform URL]/proxy/[proxy ID]/path/to/resource</i> into <i>[targetUri]/path/to/resource</i> and adds the authentication header.
+ 
+    <h2>Proxy configuration parameters</h2>
+The <b>targetUri</b> and the login credentials are passed via properties in two ways:
+<ul>
+<li>Using the file <code>config/proxy.prop</code>.</li>
+<li>Using Java system properties.</li>
+</ul>
+The following properties are supported:
+<ul>
+<li><b>config.proxy.[proxy ID].targetUri</b>: the target URL to redirect the requests to.</li>
+<li><b>config.proxy.[proxy ID].preserveCookies</b>: preserve HTTP COOKIES as is. Default: false.</li>
+<li><b>config.proxy.[proxy ID].forwardip</b>: enable forwarding of the client IP using <i>X-Forwarded-For</i> and <i>X-Forwarded-Proto</i> HTTP headers. Default: true.</li>
+<li><b>config.proxy.[proxy ID].preserveHost</b>: preserve HTTP HOST parameter as-is. Default: false.</li>
+<li><b>config.proxy.[proxy ID].handleRedirects</b>: follow  HTTP redirects. Default: false.</li>
+<li><b>config.proxy.[proxy ID].socketTimeout</b>: the socket read timeout (millis). Default: -1.</li>
+  
+</ul>
+and two alternative options to pass the login credentials
+<ul>
+<li><b>config.proxy.[proxy ID].loginName</b> and</li>
+<li><b>config.proxy.[proxy ID].loginPassword</b>: login and password for basic authentication on
+the target web site.</li>
+</ul>
+OR
+<ul>
+<li><b>config.proxy.[proxy ID].loginBase64</b>: base64-encoded "login:password" pair. This option
+is only applied when login and password are not provided explicitly. Note: this option exists
+only to avoid defining login and password in the configuration file as plain text, but does not
+provide secure data interchange.</li>
+</ul>
+
+Instead of specifying the proxyTargetUri and credentials in the properties file, it is also possible to specify these variables using Java system properties (<code>-Dconfig.proxy.[proxy ID].targetUri=https://myservice/</code>), for example, during deployment time.
+    
+    <h2>Access control</h2>
+In the platform it is possible to configure multiple proxy servlets for different remote target URIs as well as for different access modes of the the same API: for example, the path <i>/proxy/[proxy ID]/path/to/resource</i> can be used to access the <b>targetUri</b> with the standard user login and password, while <i>/proxy/[proxy ID-admin]/path/to/resource</i> will access the same <b>targetUri</b> with the administrator credentials. 
+    
+In the ResearchSpace platform, access to a specific instance of the authentication proxy servlet with the ID <b>[proxy ID]</b> can be regulated using the standard Apache Shiro security mechanism (see <semantic-link title="Documentation" uri="Help:BasicSystemConfiguration">basic system configuration</semantic-link>). The ACL permission for each instance of the proxy servlet with the ID <b>[proxy ID]</b> is defined by the string <code>proxy:[proxy ID]</code>.
+</div>
+</div>

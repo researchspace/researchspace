@@ -1,0 +1,280 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">React Bootstrap</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>ResearchSpace Components</h1>
+
+    Beyond <semantic-link uri="http://help.researchspace.org/resource/ReactBootstrap">React Bootstrap</semantic-link>, the ResearchSpace platform exposes some additional 3rd party react components or own implementations of components for different purposes. <br>
+    All components provided directly or indirectly (e.g. by small wrappers) through the ResearchSpace platform are being prefixed with <code>mp-*</code>.
+
+    <h2>Semantic Link </h2>
+    <p><code><semantic-link></semantic-link></code> special component resolves links for navigation purpose within the platform i.e. even though a IRI might be different then the physical location of the ResearchSpace platform installation, the link component will route all navigation requests to stay within the platform.</p>
+    <h3>Example: Default</h3>
+    <mp-code-example>
+<![CDATA[
+<semantic-link uri="http://help.researchspace.org/resource/Start">Help Start</semantic-link>
+]]>
+    </mp-code-example>
+
+    <h3>Example: Automatic Label Fetching</h3>
+    If the semantic-link does not have any child node, the component will try to fetch a label for the specified IRI automatically using the central label service.
+    <mp-code-example>
+<![CDATA[
+  <semantic-link title="foaf:Person" uri="http://xmlns.com/foaf/0.1/Person"> </semantic-link>
+]]>
+    </mp-code-example>
+    Same if the child is equal to IRI as specified:
+    <mp-code-example>
+<![CDATA[
+<semantic-link uri="http://xmlns.com/foaf/0.1/Person">http://xmlns.com/foaf/0.1/Person</semantic-link>
+]]>
+    </mp-code-example>
+    Unless setting <code>getlabel</code> to <code>getlabel=false</code>.
+    <mp-code-example>
+<![CDATA[
+<semantic-link uri="http://xmlns.com/foaf/0.1/Person" getlabel=false>http://xmlns.com/foaf/0.1/Person</semantic-link>
+]]>
+    </mp-code-example>
+
+    <h3>Example: Open in a new window</h3>
+    <mp-code-example>
+      <semantic-link uri="http://xmlns.com/foaf/0.1/Person" target='_blank'></semantic-link>
+    </mp-code-example>
+
+    <h2>Semantic Link Container</h2>
+    <p>
+      <code><semantic-link-container></semantic-link-container></code> componen is very similar to the <code><semantic-link /></code>, but it can be used to make any HTML element as a triger for the navigation action. For example a <code><button /></code> or an <code><img /></code> or any <code><div /></code>.
+    </p>
+    <h3>Example: Default</h3>
+    <mp-code-example>
+       <semantic-link-container uri="http://help.researchspace.org/resource/Start">
+         <button class='btn btn-default'>Help Start</button>
+       </semantic-link-container>
+    </mp-code-example>
+
+    <h3>Example: Open in a new window</h3>
+    <mp-code-example>
+       <semantic-link-container uri="http://help.researchspace.org/resource/Start" target='_blank'>
+         <button class='btn btn-default'>Help Start</button>
+       </semantic-link-container>
+    </mp-code-example>
+    
+    <h2>Resource Thumbnail</h2>
+    <p>The <code><mp-resource-thumbnail></mp-resource-thumbnail></code> component queries and displays a thumbnail image for a specified resource. The component uses the global ThumbnailService, which can be configured using the UI configuration preferredThumbnails property (see <semantic-link title="Documentation" uri="Help:BasicSystemConfiguration">basic system configuration</semantic-link>).</p>
+    <h3>Example: Fallback Image</h3>
+    <p>The <code>noImageUri</code> property defines an image that the component will display if the resource does not have any thumbnail.</p>
+    <mp-code-example>
+      <![CDATA[
+      <mp-resource-thumbnail iri='http://example.com/person/alice' no-image-uri='/images/help/thenounproject/noun_1113333.svg' style="max-width: 100px;"  />
+      ]]>
+    </mp-code-example>
+    <h3>Example: Fallback Component</h3>
+    <p>The <code><mp-resource-thumbnail-fallback></mp-resource-thumbnail-fallback></code> component has the same purpose as the <code>noImageUri</code> property, but it defines a fallback HTML-element.</p>
+    <mp-code-example>
+      <![CDATA[
+      <mp-resource-thumbnail iri='http://example.com/person/alice'>
+        <mp-resource-thumbnail-fallback>
+          <span>Image not found!</span>
+        </mp-resource-thumbnail-fallback>
+      </mp-resource-thumbnail>
+      ]]>
+    </mp-code-example>
+
+    <h2>Modal Dialog / Overlay</h2>
+    The <code><mp-overlay-dialog></mp-overlay-dialog></code> to open some content in a modal dialog or overlay. A dialog is just a variant of on overlay. By default the attribute <code>type</code> is set to <code>type=modal</code>. Setting it to <code>type=lightbox</code> will create an lightbox overlay instead of modal dialog. Arbitrary elements can be wrapped into <code><mp-overlay-dialog-trigger></mp-overlay-dialog-trigger></code> element to open (trigger) the dialog/overlay showing any elements specified within <code><mp-overlay-dialog-content></mp-overlay-dialog-content></code> element.
+    <h3>Example: Modal with Link as Trigger</h3>
+    <mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="My Dialog">
+  <mp-overlay-dialog-trigger><a>Show in Dialog</a></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+  	Content of the Dialog
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
+]]>
+    </mp-code-example>
+
+    <h3>Example: Large Modal with Button as Trigger</h3>
+    <mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="My Dialog" type="modal" bs-size="large">
+  <mp-overlay-dialog-trigger><button class="btn btn-default">Show in Dialog</button></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+ 	 Content of the Dialog
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
+]]>
+    </mp-code-example>
+
+    <h3>Example: Overlay with Button as Trigger</h3>
+    <mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="My Dialog" type="lightbox">
+  <mp-overlay-dialog-trigger><button class="btn btn-default">Show in Overlay</button></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+  	Content of the Overlay
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
+]]>
+    </mp-code-example>
+
+    <h2>Page Loader</h2>
+    The <code><mp-page-loader></mp-page-loader></code> component behaves similar to a server-side page include with the difference that the loading and rendering is done asynchronously on client side. The requested page is compiled in backend with the context of the current resource (same as an include).
+    <h3>Example: Loading a page asynchronously in a modal dialog</h3>
+    <mp-code-example>
+<![CDATA[
+<mp-overlay-dialog title="Documentation" type="modal" bs-size="large">
+  <mp-overlay-dialog-trigger><a>Show documentation overview in Dialog</a></mp-overlay-dialog-trigger>
+  <mp-overlay-dialog-content>
+    <div width="800px"><mp-page-loader iri="http://help.researchspace.org/resource/Start"></mp-page-loader></div>
+  </mp-overlay-dialog-content>
+</mp-overlay-dialog>
+]]>
+    </mp-code-example>
+
+
+    <h2>Text Truncate Component</h2>
+    To automatically truncate long text snippets.
+    <h3>Example: Static Truncate</h3>
+    By default truncates to the size of the outer element, whereas the truncate element (e.g. ellipsis) can be defined:
+    <mp-code-example>
+<![CDATA[
+<div style="width:200px;">
+  <mp-text-truncate truncate="...">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Morbi vel mauris sollicitudin, i vel mauris sollicitudin, tristique mauris quis, tempor risus.
+    Maecenas id turpis eget nibh aliquet venenatis.
+  </mp-text-truncate>
+</div>
+]]>
+    </mp-code-example>
+    <h3>Example: Truncate with option to expand or collapse</h3>
+    Another example is to define the maximum number of lines and to define elements, which allow the user to dynamically expand or collapse the (truncated) text.
+    <mp-code-example>
+<![CDATA[
+<mp-text-truncate lines=3 expand='<span>...<a>read more</a></span>' collapse='<span>(<a>show less</a>)</span>'>
+	Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vel mauris sollicitudin, tristique mauris quis, tempor risus. Maecenas id turpis eget nibh aliquet venenatis. Duis in feugiat sapien, quis placerat enim. Pellentesque ac auctor risus. Sed placerat iaculis turpis in tristique. Proin dolor ex, malesuada nec purus a, viverra efficitur ex. Donec at augue ac urna fermentum cursus. Suspendisse quis feugiat nunc. Morbi ultrices, tellus vitae hendrerit dignissim, nisi leo efficitur ipsum, non varius sapien felis quis nunc. In eu risus aliquam, pellentesque purus in, imperdiet libero. Suspendisse sollicitudin ex a interdum interdum. Aenean nulla odio, pharetra et ligula quis, venenatis finibus mi. Quisque sit amet nisl nec lorem laoreet facilisis sed sed augue. Pellentesque varius consectetur gravida.
+</mp-text-truncate>
+]]>
+    </mp-code-example>
+
+     <h2>SPARQL Result Download</h2>
+    Offers results of SPARQL queries as download in different serialization format.
+    <h3>Example: Download tuple result as CSV</h3>
+    ... using a link.
+    <mp-code-example>
+<![CDATA[
+<mp-sparql-download
+  query="SELECT * WHERE {?a ?b ?c} LIMIT 10"
+  header="text/csv"
+  filename="mytupleresult.csv"
+>
+  <a href="#">Download CSV</a>
+</mp-sparql-download>
+]]>
+    </mp-code-example>
+    <h3>Example: Download graph result as JSON-LD</h3>
+    ... using a button.
+    <mp-code-example>
+<![CDATA[
+<mp-sparql-download
+  query="CONSTRUCT {?a ?b ?c} WHERE {?a ?b ?c} LIMIT 10"
+  header="application/ld+json"
+  filename="mygraphresult.json">
+  <button class="btn btn-default">Download JSON-LD</button>
+</mp-sparql-download>
+]]>
+    </mp-code-example>
+    
+    <h2>Copy To Clipboard Component</h2>
+    The <code><mp-copy-to-clipboard></mp-copy-to-clipboard></code> component copies text to clipboard
+    <h3>Example: Default</h3>
+    <mp-code-example>
+      <mp-copy-to-clipboard text='text'>
+        <button class='btn btn-default'><i class='fa fa-copy'></i></button>
+      </mp-copy-to-clipboard>
+    </mp-code-example>
+    <h3>Example: Custom notification message</h3>
+    <mp-code-example>
+      <mp-copy-to-clipboard text='text' message='Custom message'>
+        <button class='btn btn-default'><i class='fa fa-copy'></i></button>
+      </mp-copy-to-clipboard>
+    </mp-code-example>
+    
+    <h2>Has Permission Component</h2>
+    The <code><mp-has-permission></mp-has-permission></code> component displays child component if user has the required permission, otherwise displays nothing.
+    <mp-code-example>
+      <mp-has-permission permission='sparql:update'>
+        <div>This will be rendered if the currently logged-in user has the permission "sparql:update"</div>
+      </mp-has-permission>
+    </mp-code-example>
+    
+    <h2><semantic-link iri="http://help.researchspace.org/resource/MPSplitPaneComponent">Split Pane Component</semantic-link></h2>
+    
+    <h2>Anchor Link</h2>
+    <p>The <code><mp-anchor /></code> component scrolls the page to the target element with smooth animation.</p>
+    <h3>Example: Default</h3>
+    <mp-code-block mode='text/html'><![CDATA[
+      <mp-anchor to='#target1'>anchor link</mp-anchor>
+      <div id='target1'>target element</div>
+    ]]></mp-code-block>
+    <h3>Example: Custom offset and duration</h3>
+    <mp-code-block mode='text/html'><![CDATA[
+      <mp-anchor to='#target2' animate='{"offset": -104, "duration": 100}'>anchor link</mp-anchor>
+      <div id='target2'>target element</div>
+    ]]></mp-code-block>
+    
+    <h2>Flip panel component</h2>
+    
+    <p>Panel with two sides that can be flipped to <code>front</code> or <code>back</code> side.</p>
+    <p>Additional values can be passed with <code>front-variables</code> ande <code>back-variables</code></p>
+    
+    <p>Trigger <code>TwoSidePanel.ShowBack</code> to show the back template and <code>TwoSidePanel.ShowFront</code> to switch to the front one. It is possible to send additional values with event payload and they will be available inside the template. Values that are send with event override the default template variables defined on the component.</p>
+    
+    <p>By default the template is fully re-rendered when panel is flipped, but it can be disabled with <code>refresh-on-change="false"</code> attribute.</p>
+
+    <mp-code-example>
+<two-side-panel id='first-flip-panel' 
+                front-variables='{"A": "A Value"}'
+                back-variables='{"B": "B Value"}'
+>
+  <template id='front'>
+    <p>Front Side. Variable A: {{A}}</p>
+    <mp-event-trigger id='first-flip-panel-front' 
+                      type='TwoSidePanel.ShowBack' 
+                      targets='["first-flip-panel"]'
+                      >
+      <button class="btn btn-default">Show Back</button>
+    </mp-event-trigger>
+    <mp-event-trigger id='first-flip-panel-front' 
+                      type='TwoSidePanel.ShowBack' 
+                      targets='["first-flip-panel"]'
+                      data='{"B": "Alternative B Value"}'
+                      >
+      <button class="btn btn-default">Show Back with Variable</button>
+    </mp-event-trigger>
+  </template>
+  <template id='back'>
+    <p>Back Side. Variable B: {{B}}</p>
+    <mp-event-trigger id='first-flip-panel-back' 
+                      type='TwoSidePanel.ShowFront' 
+                      targets='["first-flip-panel"]'
+                      >
+      <button class="btn btn-default">Show Front</button>
+    </mp-event-trigger>
+  </template>
+</two-side-panel>
+    </mp-code-example>
+  </div>
+</div>

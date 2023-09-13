@@ -1,0 +1,198 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Repository Manager</li>
+</ol>
+
+<div class="page">
+  <div class='page__body'>
+    <h1>Repository Manager</h1>
+    <p>The ResearchSpace platform works with the knowledge graph data stored in RDF repositories. By default, the platform works with one specific repository, but it is able to access data from as many repositories as needed. For example, while the main knowledge graph is stored in the default repository, it may be necessary to retrieve and display linked data from external public data sources or to maintain auxiliary internal information (such as saved user queries from the query catalog) separately from the main domain knowledge. For this reason, the ResearchSpace platform has to be able to connect to multiple data sources. The platform <semantic-link uri="[[resolvePrefix "Admin:Repositories"]]">Repository Manager</semantic-link> is used to configure and maintain these connections.</p>
+    
+    <h2>Repository Configurations</h2>
+    <p>The platform reuses the <a href='http://rdf4j.org/' target='_blank'>RDF4J framework</a> to configure the connections to RDF repositories. Each repository maintained by the Repository Manager is referenced by a string ID and its type and configuration parameters are described as an RDF graph using the <a href='http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced' target='_blank'>RDF4J repository configuration format</a> (see example below). Each configuration RDF graph must include an instance of type <i>rep:Repository</i> with the following mandatory properties:</p> 
+      <ul>
+        <li><code>rep:repositoryID</code>: the ID of the repository.</li>
+        <li><code>rdfs:label</code>: a human-readable description of the repository. </li>
+        <li><code>rep:repositoryImpl</code>: a link to the <i>repository implementation resource</i> defining the specific implementation of the concrete repository type.</li>
+    	</ul>
+    <p>The repository implementation resource, in turn, must have one mandatory property:</p>
+    <ul>
+      <li><code>rep:repositoryType</code>: A string identifier of the specific implementation type of the repository (e.g., a SPARQL endpoint or a native RDF4J repository storing data locally on disk).</li>
+    </ul>
+    <p>Each repository type determines which other configuration properties are required: for example, for a SPARQL endpoint one has to specify the URL of the query endpoint, for a native RDF4J repository one has to include the types of statement indices, etc.</p>
+    <mp-code-block mode="text/turtle"><![CDATA[
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+
+[] a rep:Repository ;
+  rep:repositoryID "default" ;
+	rdfs:label "Default HTTP SPARQL Repository" ;
+	rep:repositoryImpl [
+		rep:repositoryType "researchspace:SPARQLRepository" ;
+		sparqlr:query-endpoint <http://example.org/sparql> ;
+	] .
+]]>
+    </mp-code-block>
+    <p>The platform stores configurations of repositories in the <code>config/repositories</code> subdirectory of its installation location. Each repository configuration is stored in a separate file named <code>{Repository ID}.ttl</code> in the RDF/Turtle format. Note that the repository ID in the file name must match the one defined in the configuration graph. The configuration files can be edited either directly on the disk or using the platform <semantic-link uri="[[resolvePrefix "Admin:Repositories"]]">Repository Manager UI</semantic-link>. The platform reads the repository configuration files and initializes the repositories once at startup time. After adding or modifying a repository configuration, the system must be restarted for the changes to take effect.</p>
+    
+    <p>The platform has the following reserved repository IDs:</p>
+    <ul>
+      <li><i>default</i>: denotes the main repository. By default, all SPARQL queries are answered from this repository and all UI components are working with this repository.</li>
+      <li><i>assets</i>: auxiliary repository containing platform-internal metadata. This includes, for example, query templates stored in the query catalog, definition of fields, etc.</li>
+    </ul>
+    
+    <p>The configuration of these repositories can still be changed using the configuration Turtle files. However, in the absence of explicit configuration files the platform assumes that the default repository represents a SPARQL endpoint. Its URL is taken from the value of the <code>sparqlEndpoint</code> property in the <code>environment.prop</code> file. As the assets repository, the platform by default uses a native RDF4J repository storing its information locally in the subfolder <code>data/repositories/assets</code>.</p>
+    
+    <h2>Commonly Used Repository Types</h2>
+    <p>This section lists some of the commonly used repository types and provides example configurations.</p>
+    
+    <h3>SPARQL repository</h3>
+    <p>This is probably the most common type of the repository representing a SPARQL endpoint running separately from the platform. The platform communicates with such repositories via the HTTP protocol. In the ResearchSpace platform, such repositories are described using repository type <code>researchspace:SPARQLRepository</code>.</p>
+    <mp-code-block mode="text/turtle"><![CDATA[
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+
+[] a rep:Repository ;
+	rep:repositoryID "default" ;
+	rdfs:label "Default HTTP SPARQL Repository" ;
+	rep:repositoryImpl [
+		rep:repositoryType "researchspace:SPARQLRepository" ;
+		sparqlr:query-endpoint <http://example.org/sparql> ; # Endpoint to send SPARQL queries to.
+		sparqlr:update-endpoint <http://example.org/update> ; # Update endpoint (optional - only if different from the query endpoint)
+		mph:quadMode true ; # Flag determining whether the requests for statements should retrieve triples <subj, pred, obj> or quads <subj, pred, obj, named_graph>
+	] .
+]]>
+    </mp-code-block>
+    <p>Occasionally, a remote SPARQL repository can require authentication using, for example, basic authentication or digest access authentication. 
+      Such repositories should be configured using special modifications of the generic SPARQL repository: <code>researchspace:SPARQLBasicAuthRepository</code> and <code>researchspace:SPARQLDigestAuthRepository</code>. These repository implementations accept the following additional configuration parameters:</p>
+    <ul>
+      <li><code>mph:username</code></li>
+      <li><code>mph:password</code></li>
+      <li><code>mph:realm</code> (only for <i>researchspace:SPARQLDigestAuthRepository</i>)</li>
+    </ul>
+    
+    <p>
+    Credentials can be provided directly (i.e. in clear text) or in externalized form using placeholders which are replaced by so-called <code>SecretResolvers</code>. 
+    The key names used in the placeholders can be chosen freely.<br/> 
+    Example:
+    </p>
+    <ul>
+      <li><code>mph:username=${repository.username:admin}</code></li>
+      <li><code>mph:password=${repository.password}</code></li>
+      <li><code>mph:realm=${repository.realm}</code></li>
+    </ul>
+    
+    <h3>RDF4J native repository</h3>
+    <p>The RDF4J native repository is a special RDF4J implementation of a local triple store, which runs in the same process as the user application and stores the data on disk. The platform keeps the storage files of the repository in the subfolder <code>data/repositories/{repository ID}</code>.</p>
+    
+    <mp-code-block mode="text/turtle"><![CDATA[
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix rep: <http://www.openrdf.org/config/repository#>.
+@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+@prefix sail: <http://www.openrdf.org/config/sail#>.
+@prefix ns: <http://www.openrdf.org/config/sail/native#>.
+
+[] a rep:Repository ;
+  rep:repositoryID "default" ; # Replace with your repository ID
+  rdfs:label "Native store" ; 
+  rep:repositoryImpl [
+    rep:repositoryType "openrdf:SailRepository" ;
+    sr:sailImpl [
+      sail:sailType "openrdf:NativeStore" ;
+      sail:iterationCacheSyncThreshold "0"; # Threshold for syncing query evaluation iteration caches to disk
+      ns:tripleIndexes "spoc,posc" # Triple indices
+    ]
+  ].
+]]>
+    </mp-code-block>
+    
+    <p>Most of the state-of-the-art triple stores available on the market now outperform the RDF4J native repository. For this reason, RDF4J native repository should only be used in scenarios involving small amount of data.</p>
+    
+    <h3>Neptune SPARQL repository</h3>
+    <p>The recently introduced <a href='https://aws.amazon.com/neptune/' target='_blank'>Amazon Neptune database</a> provides a graph database solution optimized for running in a cluster environment. While it is a special case of a SPARQL repository, it requires its own special handling for data loading operations. </p>
+    <mp-code-block mode="text/turtle"><![CDATA[
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+
+[] a rep:Repository ;
+  rep:repositoryID "default" ; # Replace with your repository ID
+  rdfs:label "Amazon Neptune repository" ;
+  rep:repositoryImpl [
+    rep:repositoryType "researchspace:NeptuneSPARQLRepository" ;
+    sparqlr:query-endpoint <http://example.org/query> ;
+    mph:neptuneDataLoaderUrl <http://example.org/loader>; # Data loader endpoint to be used for bulk loading of the data from an S3 bucket.
+    mph:quadMode "true"
+  ].
+]]>
+    </mp-code-block>
+    
+    <h3>Ephedra federation repository</h3>
+    <semantic-link uri="[[resolvePrefix "Help:Ephedra"]]">Ephedra</semantic-link> is a SPARQL query federation architecture that is able to send federated queries over several repositories registered in the Repository Manager.
+    <mp-code-block mode='text/turtle'>
+      <![CDATA[
+      @prefix rep: <http://www.openrdf.org/config/repository#> .
+      @prefix sail: <http://www.openrdf.org/config/sail#> .
+      @prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+      @prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+      @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+      @prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+      @prefix mps: <http://www.researchspace.org/resource/system/service#> .
+      @prefix mpf: <http://www.researchspace.org/resource/system/repository/federation#> .
+      @prefix fedsail: <http://www.openrdf.org/config/sail/federation#> .
+
+      [] a rep:Repository ;
+         rep:repositoryID "ephedra" ;
+         rdfs:label "Local Ephedra federation" ;
+         rep:repositoryImpl [
+            rep:repositoryType "researchspace:FederationSailRepository" ;
+            sr:sailImpl [
+                sail:sailType "researchspace:Federation" ;
+                mph:defaultMember "default" # Repository ID of the default member of the federation
+                fedsail:member [
+                  mph:delegateRepositoryID "{%Repository ID of the federation member|wikidata-text%}" ;
+                  mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:wikidata-text%}
+                ] ;
+                fedsail:member [
+                  mph:delegateRepositoryID "{%Repository ID of the federation member|assets%}" ;
+                  mph:serviceReference {%URI to reference this federation member in a SERVICE clause|mpf:assets%}
+                ] 
+            ] 
+         ] .
+      ]]>
+    </mp-code-block> 
+    
+    <h3>Virtuoso repository</h3>
+    <p><a href='https://virtuoso.openlinksw.com/'>Virtuoso</a> is a popular state of the art triple store used in many use case scenarios. To use a Virtuoso repository with the platform, a standard configuration for SPARQL repositories can be used. However, Virtuoso triple stores have certain distinctions in the way they support SPARQL queries. Most notably, Virtuoso does not process correctly SPARQL 1.1 ASK queries sent via the endpoint. To overcome this, in the platform repository manager a special Virtuoso Wrapper repository should be configured. This wrapper repository does not provide a standalone repository instance, but must be used as a proxy to a separately configured SPARQL repository representing the Virtuoso triple store. This proxy will adapt the queries sent to it to transform them into the format accepted by Virtuoso. An example configuration of a wrapper repository is provided below.</p>
+    
+    <mp-code-block mode="text/turtle"><![CDATA[
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sparqlr: <http://www.openrdf.org/config/repository/sparql#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mph: <http://www.researchspace.org/resource/system/repository#> .
+
+[] a rep:Repository ;
+  rep:repositoryID "default" ;
+  rdfs:label "Test Virtuoso SPARQL repository wrapper" ;
+  rep:repositoryImpl [ 
+    rep:repositoryType "researchspace:VirtuosoWrapperRepository" ;
+    mph:delegateRepositoryID "{Virtuoso Repository ID}" ;
+  ] .
+]]>
+    </mp-code-block>
+    <p>This configuration defines a wrapper repository which serves as a proxy to another one: a SPARQL repository denoted by <code>{Virtuoso Repository ID}</code>.</p>
+  </div>
+</div>

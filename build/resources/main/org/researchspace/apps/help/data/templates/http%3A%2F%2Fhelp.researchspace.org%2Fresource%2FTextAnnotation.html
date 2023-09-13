@@ -1,0 +1,163 @@
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Documentation" iri='[[resolvePrefix "rsp:Documentation"]]'>Documentation</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Developer Documentation" iri="http://help.researchspace.org/resource/Start">Developer Documentation</semantic-link>
+  </li>
+  <li class="active">Text Annotation Components</li>
+</ol>
+
+<div class="page documentation">
+  <div class='page__body'>
+    <h1>Text Annotation Components</h1>
+    <p>Text annotation component loads the document from the storage and provides UI for viewing/changing/removing annotations of different types.</p>
+    <p>Text annotation workspace uses <code>&lt;semantic-context&gt;</code> declaration to determine repository to read metadata about the document, fetch annotation data and post new annotations. Other data usage like auto-suggestion for annotation editor inherits this semantic context but may be overridden in user-provided markup.</p>
+    <p>The documents are identified by IRI and expected to follow the structure for files uplodaded through file manager. An uploaded document consists of:</p>
+    <ul>
+      <li>LDP resource with associated metadata and a file name.</li>
+      <li>HTML-file with the same file name in the storage (specified in the workspace attributes). The file may have an arbitrary nesting structure with the following limitations:
+        <ul>
+          <li>Block tags: <code>div/p/section/blockquote/pre</code> <code>h*</code> <code>table/tbody/thead/tr/th/td</code></li>
+          <li>Inline tags: <code>span</code></li>
+          <li>Mark tags: <code>b/i/u/strong/em</code> <code>a</code> <code>code</code></li>
+          <li>Block tags may contain either only other block tags or only inline/mark tags but not both at the same time.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>Workspace Component: <code>&lt;rs-text-annotation-workspace&gt;</code></h2>
+    <p>Workspace component is configured through the following attributes:</p>
+    <mp-documentation type="TextAnnotationWorkspaceProps"></mp-documentation>
+    <p>Body of the workspace component should include annotation type declarations (<code>&lt;rs-text-annotation-type&gt;</code>).</p>
+
+    <h2>Annotation type declaration: <code>&lt;rs-text-annotation-type&gt;</code></h2>
+    <p>Annotation type is configured by using both attributes and component body:</p>
+    <mp-documentation type="TextAnnotationTypeOptions"></mp-documentation>
+    <p>Component body should consist of a single <semantic-link iri='http://help.researchspace.org/resource/SemanticForm'>form component</semantic-link>
+      for creating/editing annotation (<code>&lt;semantic-form-composite-input&gt;</code>).</p>
+
+    <h3>Annotation type template bindings:</h3>
+    <p>Rendering template is used for read-only rendering of the annotation and providing edit and delete buttons. It is specified as Handlebars template and the following variables will be available inside of the template:</p>
+    <mp-documentation type="TextAnnotationTemplateBindings"></mp-documentation>
+
+    <h2>Workspace Example</h2>
+    <mp-code-block mode='text/html'>
+<![CDATA[
+<semantic-context repository='default'>
+  <rs-text-annotation-workspace
+    document-iri='[[{{documentation}}]][[this]][[{{/documentation}}]]'
+    storage='runtime'
+    annotation-subject-template='http://example.com/data/annotation/{{UUID}}'
+    fallback-template='{{> fallback-template}}'
+    annotation-tooltip='{{> annotation-tooltip}}'>
+
+    <template id='fallback-template'>
+      <div>
+      	Missing type for annotation <semantic-link iri='{{iri.value}}'></semantic-link>
+      </div>
+    </template>
+
+    <template id='annotation-tooltip'>
+      <div>
+        {{#if allowEdit}}
+          <button name='edit' class='btn btn-xs btn-default'
+            data-annotation='{{iri.value}}'
+            title='Edit annotation'>
+            <span class='fa fa-pencil' style='pointer-events: none;'></span>
+          </button>
+        {{else}}
+          <button name='edit' class='btn btn-xs btn-default' disabled
+            title='Edit annotation'>
+            <span class='fa fa-pencil' style='pointer-events: none;'></span>
+          </button>
+        {{/if}}
+        {{#if allowDelete}}
+          <button name='delete' class='btn btn-xs btn-default'
+            data-annotation='{{iri.value}}'
+            title='Delete annotation'>
+            <span class='fa fa-trash' style='pointer-events: none;'></span>
+          </button>
+        {{else}}
+          <button name='delete' class='btn btn-xs btn-default' disabled
+            title='Delete annotation'>
+            <span class='fa fa-trash' style='pointer-events: none;'></span>
+          </button>
+        {{/if}}
+      </div>
+    </template>
+
+    <rs-text-annotation-type label="Note"
+      rdf-type='https://example.com/schema/Note'
+      icon-url='/images/argument.svg'>
+
+      <template id='annotation'>
+        <semantic-query query='
+          SELECT ?iri ?text WHERE {
+            BIND({{iri}} as ?iri)
+            ?iri <http://www.w3.org/ns/oa#hasBody>/<https://example.com/schema/noteText> ?text
+          }' template='{{> display-note}}'>
+          <template id='display-note'>
+            <div>
+              {{bindings.0.text.value}}
+              <semantic-link iri='{{iri.value}}'>Open</semantic-link>
+              <div class='btn-group'>
+                {{#if allowEdit}}
+                <button name='edit'
+                  class='btn btn-xs btn-default dpub-ctrl-buttons-style'
+                  data-annotation='{{iri.value}}'
+                  title='Edit annotation'>
+                  <span class='fa fa-pencil' style='pointer-events: none;'></span>
+                </button>
+                {{/if}}
+                {{#if allowDelete}}
+                <button name='delete'
+                  class='btn btn-xs btn-default dpub-ctrl-buttons-style'
+                  data-annotation='{{iri.value}}'
+                  title='Delete annotation'>
+                  <span class='fa fa-trash' style='pointer-events: none;'></span>
+                </button>
+                {{/if}}
+              </div>
+            </div>
+          </template>
+        </semantic-query>
+      </template>
+      
+   <semantic-form-composite-input for='oaHasBody'
+        new-subject-template='body'
+        fields='[
+          {
+            "id": "type",
+            "label": "Type",
+            "xsdDatatype": "xsd:anyURI",
+            "selectPattern": "SELECT $value WHERE { $subject rdf:type $value }",
+            "insertPattern": "INSERT { $subject rdf:type $value } WHERE {}",
+            "deletePattern": "DELETE { $subject rdf:type $value } WHERE {}"
+          },
+          {
+            "id": "text",
+            "label": "Note Text",
+            "xsdDatatype": "xsd:string",
+            "maxOccurs": "1",
+            "selectPattern": "SELECT $value WHERE { $subject <https://example.com/schema/noteText> $value }",
+            "insertPattern": "INSERT { $subject <https://example.com/schema/noteText> $value } WHERE {}",
+            "deletePattern": "DELETE { $subject <https://example.com/schema/noteText> $value } WHERE {}"
+          }
+        ]'>
+        <semantic-form-hidden-input for='type'
+          default-value='https://example.com/schema/Note'>
+        </semantic-form-hidden-input>
+        <semantic-form-text-input for='text'></semantic-form-text-input>
+      </semantic-form-composite-input>
+    </rs-text-annotation-type>
+
+  </rs-text-annotation-workspace>
+</semantic-context>
+]]>
+    </mp-code-block>
+  </div>
+</div>

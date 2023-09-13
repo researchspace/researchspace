@@ -18,7 +18,8 @@
 
 import * as classnames from 'classnames';
 import * as React from 'react';
-import { Badge, Nav, NavItem, Tab } from 'react-bootstrap';
+import { Badge, Nav, NavItem, Tab, Tabs } from 'react-bootstrap';
+import ImageThumbnail from 'platform/components/iiif/ImageThumbnail';
 
 import { Component, ComponentProps } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
@@ -44,6 +45,9 @@ export interface AnnotationSidebarProps {
   highlightedAnnotations: ReadonlySet<string>;
   permissions: WorkspacePermissions;
   handlers: WorkspaceHandlers;
+  imageIri?: string;
+  imageIdPattern?: string;
+  iiifServerUrl?: string;
 }
 
 interface State {
@@ -51,6 +55,8 @@ interface State {
 }
 
 const ALL_TYPES_TAB = 'all';
+const IMAGE_TAB = 'images';
+const NOTE_TAB = 'notes';
 
 export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> {
   private annotationList: HTMLElement | null;
@@ -72,39 +78,29 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
   render() {
     const { className, annotationTypes, annotations, focusedAnnotation, highlightedAnnotations } = this.props;
     const { selectedTab } = this.state;
+
     return (
       <div className={classnames(styles.component, className)}>
-        <Tab.Container
-          id="rs-text-annotation-types"
-          activeKey={selectedTab}
-          // type cast as workaround to wrong React Bootstrap typings
-          onSelect={this.onSelectTab as (e: any) => void}
-        >
-          <Nav bsStyle="tabs">
-            <NavItem eventKey={ALL_TYPES_TAB} title="All annotations">
-              all
-            </NavItem>
-            {Array.from(annotationTypes.values(), (type) => {
-              const count = countAnnotationForTab(annotations, type.iri.value);
-              return (
-                <NavItem key={type.iri.value} eventKey={type.iri.value} disabled={count === 0} title={type.label}>
-                  <div className={styles.tabHeader}>
-                    {type.iconUrl ? <img className={styles.tabIcon} src={type.iconUrl} /> : <span>{type.label}</span>}
-                  </div>
-                </NavItem>
-              );
-            })}
-          </Nav>
-        </Tab.Container>
-        <div className={styles.annotationList} ref={this.onAnnotationListMount}>
-          {annotations.map((anno) => {
-            return this.renderAnnotation(anno, {
-              hidden: !shouldRenderInTab(anno, selectedTab),
-              focused: Schema.sameIri(anno.iri, focusedAnnotation),
-              highlighted: highlightedAnnotations.size === 0 || highlightedAnnotations.has(anno.iri.value),
-            });
-          })}
-        </div>
+        <Tabs id="rs-text-annotation-types">
+          <Tab eventKey="images" title="Images">
+            <ImageThumbnail 
+              imageOrRegion={this.props.imageIri}
+              imageIdPattern={this.props.imageIdPattern}
+              iiifServerUrl={this.props.iiifServerUrl}
+            />
+          </Tab>
+          <Tab eventKey="notes" title='Notes'>
+            <div className={styles.annotationList} ref={this.onAnnotationListMount}>
+              {annotations.map((anno) => {
+                return this.renderAnnotation(anno, {
+                  hidden: !shouldRenderInTab(anno, selectedTab),
+                  focused: Schema.sameIri(anno.iri, focusedAnnotation),
+                  highlighted: highlightedAnnotations.size === 0 || highlightedAnnotations.has(anno.iri.value),
+                });
+              })}
+            </div>
+          </Tab>
+        </Tabs>
       </div>
     );
   }

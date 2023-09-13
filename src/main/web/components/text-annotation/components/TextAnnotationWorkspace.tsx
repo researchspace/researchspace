@@ -74,6 +74,13 @@ export interface TextAnnotationWorkspaceProps {
    * See `AnnotationTemplateBindings` for template bindings.
    */
   fallbackTemplate?: string;
+
+  /**
+   * IRI of the image to display in the sidebar.
+   */
+  imageIri?: string;
+  imageIdPattern?: string;
+  iiifServerUrl?: string;
 }
 
 interface State {
@@ -199,6 +206,9 @@ export class TextAnnotationWorkspace extends Component<TextAnnotationWorkspacePr
           focusedAnnotation={focusedAnnotation}
           permissions={permissions}
           handlers={this.handlers}
+          imageIri={this.props.imageIri}
+          imageIdPattern={this.props.imageIdPattern}
+          iiifServerUrl={this.props.iiifServerUrl}
         />
       </div>
     );

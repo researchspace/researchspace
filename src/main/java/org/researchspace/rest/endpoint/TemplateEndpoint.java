@@ -652,8 +652,9 @@ public class TemplateEndpoint extends ResourceConfig {
     @Path("sidebar")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication
-    public String getSidebar() throws IOException {
-        return st.renderPageLayoutTemplate(TEMPLATES.SIDEBAR);
+
+    public String getSidebar(@QueryParam("preferredLanguage") Optional<String> preferredLanguage) throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.SIDEBAR, preferredLanguage.orElse(null));
     }
 
     @GET()

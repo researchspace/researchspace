@@ -35,7 +35,8 @@
 
 <div class='page_100vh thinking-frames-page'>
   <rs-dashboard
-    home-page-iri="http://www.researchspace.org/resource/Start"
+  [[!-- home-page-iri="http://www.researchspace.org/resource/Start" --]]
+
     [[#if (urlParam "view")]]
       initial-view='{"view": "[[urlParam "view"]]", 
                     "resource": "[[urlParam "resource"]]" 
@@ -52,7 +53,7 @@
     {
     	"id": "simple-search",
       "label": "Search",
-      "iconClass": "fa fa-search",
+      "iconName": "search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> simpleSearchTemplate}}",
       "resourceNotRequired": true,
@@ -62,7 +63,7 @@
     {
     	"id": "entity-search",
       "label": "Entity search",
-      "iconClass": "fa fa-search",
+      "iconName": "search",
       "checkQuery": "ASK { ?value a rso:Semantic_Search . }",
       "template": "{{> entitySearchTemplate}}",
       "resourceNotRequired": true,
@@ -74,7 +75,7 @@
       "label": "Entity record",
       "description": "Drag and drop an entity here to display the entity record",
       "dropAreaDescription": "Drag and drop any entity here to display the entity record",
-      "iconClass": "iconmoon iconmoon-file-empty",
+      "iconName": "insert_drive_file",
       "template": "{{> resourceTemplate}}",
       "type": "view"
     },
@@ -84,7 +85,7 @@
       "label": "Image viewer",
       "description": "Drag and drop an entity here to view and compare related high-resolution images",
       "dropAreaDescription": "Drag and drop any entity here to view and compare related high-resolution images",
-      "iconClass": "fa fa-picture-o",
+      "iconName": "image",
       "template": "{{> iiifTemplate}}",
       "frameVariable": "miradorVariable",
       "type": "view"
@@ -95,7 +96,7 @@
       "label": "Map",
       "description": "Drag and drop a place here to explore related geographic information",
       "dropAreaDescription": "Drag and drop here any entity of type PLACE (with associated geographic coordinates) to explore related geographic information",
-      "iconClass": "fa fa-map-marker",
+      "iconClass": "rs-icon rs-icon-map_location_grouped",
       "checkQuery": "ASK { 
         ?value a crm:E53_Place . 
         ?value <http://www.cidoc-crm.org/cidoc-crm/P168_place_is_defined_by> ?coordinates . }",
@@ -105,9 +106,9 @@
 
     {
     	"id": "entity-editor",
-      "label": "Entities",
+      "label": "Entity editor",
       "description": "Creare and author an entity through custom forms",
-      "iconClass": "rs-icon rs-icon-form_edit",
+      "iconName": "edit_note",
       "template": "{{> entityEditor}}",
       "resourceNotRequired": true,
       "type": "authoring"
@@ -116,7 +117,6 @@
     {
     	"id": "authority-editor",
       "label": "Authorities",
-      "iconClass": "iconmoon iconmoon-books",
       "description": "Create, view and edit vocabulary lists and term authorities",
       "template": "{{> authorityEditor}}",
       "resourceNotRequired": true,
@@ -135,7 +135,7 @@
     	"id": "authority-entity-configuration",
       "label": "Authority and entity configuration",
       "template": "{{> authorityAndEntityConfiguration}}",
-      "iconClass": "fa fa-cog",
+      "iconName": "settings",
       "resourceNotRequired": true,
       "type": "configuration"
     },
@@ -144,7 +144,7 @@
     	"id": "knowledge-map",
       "label": "Knowledge map",
       "description": "Express research thinking and processes as networks of relations",
-      "iconClass": "fa fa-sitemap",
+      "iconName": "account_tree",
       "template": "{{> ontodiaTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
@@ -156,7 +156,7 @@
     	"id": "semantic-narrative",
       "label": "Semantic narrative",
       "description": "Compose and share your research through an evolving narrative",
-      "iconClass": "fa fa-file-text",
+      "iconName": "description",
       "template": "{{> semanticNarrativeTemplate}}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "resourceNotRequired": true,
@@ -167,10 +167,10 @@
 
     {
     	"id": "objectImageObservation",
-      "label": "Object observations through images",
+      "label": "Image annotations",
       "description": "Drag and drop an object here to combine image annotations with form authoring",
       "dropAreaDescription": "Drag and drop any entity of type MAN-MADE OBJECT here to combine image annotations with data authoring through forms",
-      "iconClass": "rs-icon rs-icon-area_annotation",
+      "iconName": "photo_size_select_large",
       "template": "{{> objectImageObservationTemplate}}",
       "checkQuery": "
         PREFIX ontodia: <http://ontodia.org/schema/v1#>
@@ -199,7 +199,6 @@
 [[!--     {
     	"id": "featureSimilarityKm",
       "label": "Exploring and comparing (visual) features",
-      "iconClass": "rs-icon rs-icon-diagram",
       "template": "{{> featureSimilarityKm }}",
       "itemBodyTemplate": "{{> itemBodyTemplate}}",
       "frameVariable": "ontodiaVariable",
@@ -209,7 +208,6 @@
     {
     	"id": "system-narrative",
       "label": "Semantic narratives",
-      "iconClass": "fa fa-files-o",
       "template": "{{> systemNarrativesTemplate}}",
       "resourceNotRequired": true,
       "type": "view-system"
@@ -218,7 +216,6 @@
     {
     	"id": "system-knowledge-maps",
       "label": "Knowledge maps",
-      "iconClass": "rs-icon rs-icon-diagram",
       "template": "{{> systemKnowledgeMapsTemplate}}",
       "resourceNotRequired": true,
       "type": "view-system"
@@ -228,7 +225,6 @@
     	"id": "system-assets",
       "label": "Assets",
       "template": "{{> systemDigitalAssetsTemplate}}",
-      "iconClass": "iconmoon iconmoon-file-picture",
       "resourceNotRequired": true,
       "type": "view-system"
     },
@@ -237,7 +233,6 @@
     	"id": "system-activity",
       "label": "Dashboard",
       "template": "{{> systemActivityTemplate}}",
-      "iconClass": "fa fa-th-large",
       "resourceNotRequired": true,
       "type": "view-system"
     },
@@ -245,7 +240,6 @@
     {
     	"id": "mapEntitySearch",
       "label": "Objects referred by place",
-      "iconClass": "rs-icon rs-icon-area_annotation",
       "template": "{{> mapEntitySearch}}",
       "type": "referred"
     }
@@ -257,7 +251,7 @@
       "label": "Image graph authoring",
       "description": "Drag and drop an entity here to combine image annotations with knowledge map authoring",
       "dropAreaDescription": "Drag and drop an entity here to combine image annotations with data authoring through the knowledge map system",
-      "iconClass": "rs-icon rs-icon-image_annotation_grouped",
+      "iconName": "wallpaper",
       "viewIds": ["knowledge-map", "iiif"],
       "resourceNotRequired": true,
       "type": "authoring"
@@ -265,8 +259,8 @@
     ]'
     [[/if]]
 
-    left-panels='[{"label": "Finder", "template": "{{> finder}}", "class": "flexlayout__border_button_finder"}]'
-    right-panels='[{"label": "Clipboard", "template": "{{> clipboard}}", "class": "flexlayout__border_button_clipboard"}]'
+    left-panels='[{"label": "Finder", "template": "{{> finder}}", "class": "search"}]'
+    right-panels='[{"label": "Clipboard", "template": "{{> clipboard}}", "class": "clipboard"}]'
 
   [[!--  
     right-panels='[{"label": "Details", "template": "{{> details}}"}]'
@@ -359,7 +353,7 @@
           </button>&nbsp;
           <mp-popover>
             <mp-popover-trigger placement="right" trigger='["click","hover","focus"]' root-close='false'>
-              <small><i class='fa fa-question-circle'></i></small>
+              <small><rs-icon icon-type="round" icon-name="help"></rs-icon></small>
             </mp-popover-trigger>
             <mp-popover-content>Only persisted data will be saved to a set</mp-popover-content>
           </mp-popover>

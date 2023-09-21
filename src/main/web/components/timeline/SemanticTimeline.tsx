@@ -44,6 +44,7 @@ import * as LabelsService from 'platform/api/services/resource-label';
 
 import 'vis/dist/vis-timeline-graph2d.min.css';
 import * as styles from './SemanticTimeline.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface TimelineFormatLabelsOption {
   millisecond?: string;
@@ -736,7 +737,7 @@ export class SemanticTimeline extends Component<SemanticTimelineProps, SemanticT
 
     return (
       <button className={`btn btn-primary ${styles.fitButton}`} onClick={() => this.timeline.fit()}>
-        <i className="fa fa-expand" />
+        <Icon iconType='round' iconName='open_in_full'/>
       </button>
     );
   };

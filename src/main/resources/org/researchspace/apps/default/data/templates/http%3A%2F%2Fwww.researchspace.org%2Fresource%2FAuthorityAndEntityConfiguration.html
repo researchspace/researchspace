@@ -6,24 +6,21 @@
 
 <div class="resource-editDetails-container">
 
-    <mp-splitpane min-size=140 default-size=400 default-open='true' class="frame-split-pane">
+    <mp-splitpane min-size=60 default-size=330 max-size=330 size=330 default-open='true' persist-resize=false snap-threshold=120 class="frame-split-pane" >
       <div data-flex-layout="column top-stretch">
         <mp-splitpane-toggle-on>
           <button class="btn-toggle-on">
             <div class="btn-toggle-on-content">
-              <h4 style="width: 120px; text-align: left; margin-top: 7px;">
-                <mp-text-truncate truncate="..">
-                  Authority and entity configuration
-                </mp-text-truncate>
+              <h4>
+                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
               </h4>
-              <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
             </div>
           </button>
         </mp-splitpane-toggle-on>
         <mp-splitpane-toggle-off>
           <div class="split-pane__leftsidebar-header">
             <button data-flex-layout='row center-left' class="btn-toggle-off">
-              <h4 style="min-width: 120px; width: 100%; text-align: left;">
+              <h4 style="width: 100%; text-align: left;">
                 Authority and entity configuration
               </h4>
               <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
@@ -34,12 +31,15 @@
           <div class="split-pane__sidebar-open">
             <div class="collection-terms-area">
              
-                  <mp-event-trigger id='authority-config-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["authority-config-term-forms"]'>
-                    <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
-                      <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                      <span>New configuration</span>
-                    </button>
-                  </mp-event-trigger>
+              <mp-event-trigger id='authority-config-form-new-trigger' 
+                                type='Component.TemplateUpdate' 
+                                data='{"mode": "new" }' 
+                                targets='["authority-config-term-forms"]'>
+                <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
+                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                  <span>New configuration</span>
+                </button>
+              </mp-event-trigger>
            
               <mp-event-target-template-render id='authority-config-mytree'  template='{{> treeTemplate}}'>
                 <template id='treeTemplate'>
@@ -83,7 +83,6 @@
             <mp-event-target-template-render id='authority-config-term-forms' template='{{> template}}'>
               <template id='template'>
                 {{#switch mode}}
-  
                   {{#case "new" break=true}}
                       <h2 class="resource-editDetails-form-title">New configuration</h2>
                   {{/case}}
@@ -93,39 +92,45 @@
                   {{/case}}
                 
                   {{#case "deleted" break=true}}
-                    <h2 class="resource-editDetails-form-title">Deleted: {{label}}</h2>
+                    <h2 class="resource-editDetails-form-title">Deleted configuration: {{label}}</h2>
                   {{/case}}
+
+                  {{#default}}
+                    <div></div>
+                  {{/default}}
                 {{/switch}}
       
                 {{#if (not (eq mode "deleted"))}}
-                <mp-event-proxy id='authority-config-tree-refresh-on-created' 
-                                on-event-source='authority-config-vocab-form' 
-                                on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                                proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["authority-config-mytree", "authority-config-term-forms"]'
-                                additional-data='{"mode": "edit"}'
-                                ></mp-event-proxy>
-      
-                <mp-event-proxy id='authority-config-tree-refresh-on-delete' 
-                                on-event-source='authority-config-vocab-form' 
-                                on-event-types='["Form.ResourceRemoved"]'
-                                proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["authority-config-mytree", "authority-config-term-forms"]'
-                                additional-data='{"mode": "deleted", "label": "{{label}}"}'
-                                ></mp-event-proxy>
-  
-                <inline-template template-iri='[[resolvePrefix "rsp:AuthorityConfigForm"]]' 
-                                options='{
-                                          "scheme": "http://www.researchspace.org/resource/system/vocab/authority_manager_config_types", 
-                                          {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
-                                          {{#if broader}}"broader": "{{broader}}",{{/if}}
-                                          {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
-                                          "editable": true,
-                                          "mode": "{{mode}}",
-                                          "viewId": "authority-config",
-                                          "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
-                                }'>
-                </inline-template>
+                  <mp-event-proxy id='authority-config-tree-refresh-on-created' 
+                                  on-event-source='authority-config-vocab-form' 
+                                  on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                                  proxy-event-type='Component.TemplateUpdate' 
+                                  proxy-targets='["authority-config-mytree", "authority-config-term-forms"]'
+                                  additional-data='{"mode": "edit"}'
+                  ></mp-event-proxy>
+        
+                  <mp-event-proxy id='authority-config-tree-refresh-on-delete' 
+                                  on-event-source='authority-config-vocab-form' 
+                                  on-event-types='["Form.ResourceRemoved"]'
+                                  proxy-event-type='Component.TemplateUpdate' 
+                                  proxy-targets='["authority-config-mytree", "authority-config-term-forms"]'
+                                  additional-data='{"mode": "deleted", "label": "{{label}}"}'
+                  ></mp-event-proxy>
+    
+                  {{#if mode}}
+                    <inline-template template-iri='[[resolvePrefix "rsp:AuthorityConfigForm"]]' 
+                                    options='{
+                                              "scheme": "http://www.researchspace.org/resource/system/vocab/authority_manager_config_types", 
+                                              {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
+                                              {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                              {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
+                                              "editable": true,
+                                              "mode": "{{mode}}",
+                                              "viewId": "authority-config",
+                                              "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
+                                    }'>
+                    </inline-template>
+                  {{/if}}
                 
                 {{else}}
                   <div></div>

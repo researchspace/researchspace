@@ -70,6 +70,7 @@ import { Belief } from './Belief';
 import * as AssertionEvents from './AssertionEvents';
 
 import * as styles from './AssertionComponent.scss';
+import Icon from '../ui/icon/Icon';
 
 const DEFAULT_VALUE_TEMPLATE = `<div>
   {{#ifCond field.xsdDatatype.value "=="  "http://www.w3.org/2001/XMLSchema#string"}}
@@ -552,7 +553,7 @@ export class AssertionComponent extends Component<Props, State> {
           {isSaving ? (
             <span>
               {assertionIri ? 'Updating' : 'Saving'}
-              <i className="fa fa-cog fa-spin" style={{ marginLeft: 5 }} />
+              <Icon iconType='round' iconName='settings' style={{ marginLeft: 5 }} className='fa-spin'/>
             </span>
           ) : assertionIri ? (
             'Update Assertion'

@@ -33,6 +33,7 @@ import {
 import { ResourceLinkComponent } from 'platform/api/navigation/components/ResourceLinkComponent';
 
 import './BrowseHistoryComponent.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface Props {}
 
@@ -152,7 +153,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             onClick={this.goBack}
             href="#"
           >
-            <i className="fa fa-caret-left"></i>
+            <Icon iconType='round' iconName='arrow_left' />
           </NavItem>
           <NavItem
             disabled={this.state.locIndex === this.state.links.length - 1}
@@ -160,7 +161,7 @@ export class BrowseHistoryComponent extends React.Component<Props, State> {
             onClick={this.goForward}
             href="#"
           >
-            <i className="fa fa-caret-right"></i>
+            <Icon iconType='round' iconName='arrow_right' />
           </NavItem>
         </Nav>
       </div>

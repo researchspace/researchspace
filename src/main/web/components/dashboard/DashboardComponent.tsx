@@ -74,7 +74,13 @@ export interface DashboardLinkedViewConfig {
    */
   image?: string;
   /**
-   * Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
+   * 
+   * Name of the material-design icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
+   */
+  iconName?: string;
+  /**
+   * 
+   * Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute and <code>iconName</code> attribute aren't specified.
    */
   iconClass?: string;
   /**
@@ -159,6 +165,7 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItemHandler = (data: AddFrameEventData, label?: string) => {
+    
     this.onAddNewItem({
       ...this.frameLabel(label),
       ...(data as AddFrameEventData),
@@ -361,7 +368,7 @@ export class DashboardComponent extends Component<Props, State> {
         },
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
-            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id, 'className': viewConfig?.iconClass || 'empty-frame-button', 'icon': 'add'}
+            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id, 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'}
           );
           this.onSelectView({
             itemId: item.id,
@@ -373,53 +380,52 @@ export class DashboardComponent extends Component<Props, State> {
     }
   };
 
-  private renderLabel(item: Item) {
-    const { focus } = this.state;
-    const isFocused = focus === item.id;
-    const focusedClassName = isFocused ? styles.itemLabelActive : '';
+  // private renderLabel(item: Item) {
+  //   const { focus } = this.state;
+  //   const isFocused = focus === item.id;
+  //   const focusedClassName = isFocused ? styles.itemLabelActive : '';
+  //   const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
+  //   if (view && item.resourceIri) {
+  //     let icon = <span>[{view.label}]&nbsp;</span>;
+  //     if (view.iconClass) {
+  //       icon =  <Icon iconType='round' iconName={view.iconClass} />;
+  //     } else if (view.image) {
+  //       icon = <img src={view.image} className={styles.itemImage} alt={view.label} />;
+  //     }
+  //     return (
+  //       <span className={`${styles.itemLabel} ${focusedClassName}`}>
+  //         <span className={styles.itemIcon}>{icon}</span>
+  //          <span>
+  //           <TemplateItem
+  //             key={item.id}
+  //             template={{
+  //               source: view.itemLabelTemplate || DEFAULT_ITEM_LABEL_TEMPLATE,
+  //               options: { iri: item.resourceIri, dashboardId: item.id },
+  //             }}
+  //           />
+  //         </span>
+  //         <button
+  //           className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
+  //           onClick={() => this.onRemoveItem(item)}
+  //         >
+  //           <Icon iconType='round' iconName='close'/>
+  //         </button>
+  //       </span>
+  //     );
+  //   }
 
-    const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
-    if (view && item.resourceIri) {
-      let icon = <span>[{view.label}]&nbsp;</span>;
-      if (view.iconClass) {
-        icon = <i className={view.iconClass} />;
-      } else if (view.image) {
-        icon = <img src={view.image} className={styles.itemImage} alt={view.label} />;
-      }
-      return (
-        <span className={`${styles.itemLabel} ${focusedClassName}`}>
-          <span className={styles.itemIcon}>{icon}</span>
-           <span>
-            <TemplateItem
-              key={item.id}
-              template={{
-                source: view.itemLabelTemplate || DEFAULT_ITEM_LABEL_TEMPLATE,
-                options: { iri: item.resourceIri, dashboardId: item.id },
-              }}
-            />
-          </span>
-          <button
-            className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
-            onClick={() => this.onRemoveItem(item)}
-          >
-            <Icon iconType='round' iconName='close'/>
-          </button>
-        </span>
-      );
-    }
-
-    return (
-      <span className={`${styles.itemLabel} ${focusedClassName}`}>
-        Frame {item.index}
-        <button
-          className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
-          onClick={() => this.onRemoveItem(item)}
-        >
-          <Icon iconType='round' iconName='close'/>
-        </button>
-      </span>
-    );
-  }
+  //   return (
+  //     <span className={`${styles.itemLabel} ${focusedClassName}`}>
+  //       Frame {item.index}
+  //       <button
+  //         className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
+  //         onClick={() => this.onRemoveItem(item)}
+  //       >
+  //         <Icon iconType='round' iconName='close'/>
+  //       </button>
+  //     </span>
+  //   );
+  // }
 
   private renderBody(item: Item) {
     const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
@@ -552,6 +558,7 @@ export class DashboardComponent extends Component<Props, State> {
         label: linkedView.label,
         template: '',
         image: linkedView.image,
+        iconName: linkedView.iconName,
         iconClass: linkedView.iconClass,
         description: linkedView.description,
         checkQuery: linkedView.checkQuery,
@@ -599,16 +606,16 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private titleFactory = (node: TabNode) => {
-    console.log(this.state.items)
-    console.log(node.getConfig())
-    const item = this.state.items.find(item => item.id === node.getConfig());
-    if (item) {
-      return this.renderLabel(item);
-    } else {
-      return "Frame " + node.getConfig();
-    }
-  }
+  // private titleFactory = (node: TabNode) => {
+  //   console.log(this.state.items)
+  //   console.log(node.getConfig())
+  //   const item = this.state.items.find(item => item.id === node.getConfig());
+  //   if (item) {
+  //     return this.renderLabel(item);
+  //   } else {
+  //     return "Frame " + node.getConfig();
+  //   }
+  // }
 
   private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
     renderValues.stickyButtons.push(
@@ -635,11 +642,7 @@ export class DashboardComponent extends Component<Props, State> {
             'maximize': <Icon iconType='round' iconName='fullscreen'/>,
             'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
             'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
-            
-/*          'close': <i className="fa fa-times"></i>,
-            'maximize': <i className="fa fa-expand"></i>,
-            'restore': <i className="fa  fa-compress"></i>,
-            'more': <i className="fa fa-caret-down"></i>, */
+
           }
         }
       />

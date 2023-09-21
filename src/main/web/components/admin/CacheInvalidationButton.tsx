@@ -99,7 +99,7 @@ class InvalidateCacheButton extends Component<{}, State> {
 
 /*   <mp-popover title="Cache Invalidation">
               <mp-popover-trigger placement="right"  trigger='["hover"]'> 
-                <i class="fa fa-question-circle" aria-hidden="true" style="margin-left: 5px; font-size: 15px;"></i>
+                <rs-icon icon-type="round" icon-name="help" style="margin-left: 5px; font-size: 15px;"></rs-icon>
               </mp-popover-trigger>
               <mp-popover-content>
                 <div>

@@ -12,6 +12,7 @@ import { ListElementView } from '../widgets/listElementView';
 
 import { Cancellation, CancellationToken } from '../viewUtils/async';
 import { HtmlSpinner } from '../viewUtils/spinner';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const CLASS_NAME = 'ontodia-edit-form';
 
@@ -216,7 +217,7 @@ export class ElementTypeSelector extends React.Component<Props, State> {
     return (
       <div className={`${CLASS_NAME}__form-row ${CLASS_NAME}__element-selector`}>
         <div className={`${CLASS_NAME}__search`}>
-          <i className={`fa fa-search ${CLASS_NAME}__search-icon`} />
+          <Icon iconType='round' iconName='search' className={`${CLASS_NAME}__search-icon`}/>
           <input
             value={searchString}
             onChange={(e) => this.setState({ searchString: (e.target as HTMLInputElement).value })}

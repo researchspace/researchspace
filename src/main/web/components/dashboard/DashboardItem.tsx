@@ -30,6 +30,7 @@ import PageLoaderComponent from 'platform/components/ui/page-loader';
 
 import * as styles from './Dashboard.scss';
 import * as DashboardEvents from './DashboardEvents';
+import Icon from '../ui/icon/Icon';
 
 const DEFAULT_VARIABLE = 'dashboardId';
 
@@ -59,7 +60,11 @@ export interface DashboardViewConfig {
    */
   image?: string;
   /**
-   * Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
+   * Name of the icon (google material icon)that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
+   */
+  iconName?: string;
+  /**
+   * Class of the icon (fa, rs-icon, iconmmon) that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
    */
   iconClass?: string;
   /**
@@ -163,7 +168,7 @@ export interface State {
  * <rs-dashboard-item id='test-1'
  *   views='[
  *     {"id": "ontodia", "label": "Ontodia", "template": "{{> ontodia-template}}", "description": "Example", "image": "https://example/img.jpg"},
- *     {"id": "resource", "label": "Resource viewer", "template": "{{> resource-template}}", "iconClass": "fa fa-automobile",
+ *     {"id": "resource", "label": "Resource viewer", "template": "{{> resource-template}}", "iconName": "fa fa-automobile",
  *      "checkQuery": "ASK {?value a example:Person}" }
  *   ]'>
  *   <template id='ontodia-template'>
@@ -305,6 +310,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
             let image: React.ReactNode | undefined;
             if (view.image) {
               image = <img src={view.image} className={`media-object ${styles.image}`} alt={view.label} />;
+            } else if (view.iconName) {
+              image = <Icon iconType='round' iconName={view.iconName} className={`${styles.icon}`} />  
             } else if (view.iconClass) {
               image = <span className={`${view.iconClass} ${styles.icon}`} />;
             }
@@ -323,6 +330,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     let image: React.ReactNode | undefined;
     if (view.image) {
       image = <img src={view.image} className={`media-object ${styles.image}`} alt={view.label} />;
+    } else if (view.iconName) {
+      image = <Icon iconType='round' iconName={view.iconName} className={`${styles.icon}`} />;
     } else if (view.iconClass) {
       image = <span className={`${view.iconClass} ${styles.icon}`} />;
     }
@@ -363,6 +372,8 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     let image: React.ReactNode | undefined;
     if (view.image) {
       image = <img src={view.image} className={styles.imageComponent} alt={view.label} />;
+    } else if (view.iconName) {
+      image = <Icon iconType='round' iconName={view.iconName} className={`${styles.icon} ${styles.iconComponent}`} />;
     } else if (view.iconClass) {
       image = <span className={`${view.iconClass} ${styles.icon} ${styles.iconComponent}`} />;
     }

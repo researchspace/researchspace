@@ -131,7 +131,7 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
                   this.state.edit
                     ?
                     <Button bsClass='btn-success' onMouseDown={this.onHrefSaved} disabled={this.state.href === ''}>
-                      <i className='fa fa-floppy-o' aria-hidden='true'></i>
+                      <Icon iconType='round' iconName='save'/>
                     </Button>
                     :
                     <Button bsClass='btn-default' onMouseDown={this.onEdit}>
@@ -139,7 +139,7 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
                     </Button>
                 }
                 <Button bsClass='btn-default' onMouseDown={this.onUnlink}>
-                  <i className='fa fa-chain-broken' aria-hidden='true'></i>
+                  <Icon iconType='round' iconName='link_off' />
                 </Button>
               </ButtonGroup>
             </div>

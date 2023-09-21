@@ -147,7 +147,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
       <Button onMouseDown={this.onExternalLinkClick}
         disabled={this.isTextSelectionActionDisabled()}
       >
-        <i className='fa fa-external-link' aria-hidden={true}></i>
+      <Icon iconType='round' iconName='open_in_new'/>
       </Button>
     );
   } */

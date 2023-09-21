@@ -30,6 +30,7 @@ import { AlignmentNode, AlignKind } from './AlignmentNodeModel';
 import { MatchEntry } from './Serialization';
 
 import * as styles from './MatchList.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface MatchListProps {
   className?: string;
@@ -70,7 +71,7 @@ export class MatchList extends Component<MatchListProps, {}> {
           title="Scroll to aligned terms"
           onClick={() => this.scrollToItem(entry)}
         >
-          <span className="fa fa-arrow-right" aria-hidden="true"></span>
+          <Icon iconType='round' iconName='arrow_right_alt'/>
         </Button>
       </li>
     );

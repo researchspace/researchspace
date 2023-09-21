@@ -47,6 +47,7 @@ import { ExternalLink } from './ExternalLink';
 import { InternalLink } from './InternalLink';
 import * as styles from './TextEditor.scss';
 import { ResourceBlock } from './ResourceBlock';
+import Icon from '../ui/icon/Icon';
 
 
 interface TextEditorProps {
@@ -386,7 +387,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                 {this.state.documentIri ? (
                 <Draggable iri={this.state.documentIri}>
                   <span className={styles.draggableGripper} title='drag narrative'>
-                    <i className='rs-icon rs-icon-drag_points'></i>
+                    <Icon iconType='round' iconName='drag_indicator'/>
                   </span>
                 </Draggable>
               ) : null}

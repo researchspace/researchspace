@@ -180,7 +180,9 @@ $font-size: $font-size-small;
                     top: 0;
                     bottom: 0;
                     width: 10000px;
-                    padding: 2px;
+                    
+                    height: $frame-container-height;
+                    // padding: 2px;
 
                     &_top {
                 //        border-top: 2px solid transparent; // if you change this, update the _sizer above
@@ -212,9 +214,9 @@ $font-size: $font-size-small;
             display: flex;
             align-items: center;
             cursor: pointer;
-            height: 28px;
+            height: 29px;
             padding: 0px 6px 0px 8px; // if you change top or bottom update the tabset_sizer above
-            margin: 0 2px;
+            margin: 0 3px;
             box-sizing: border-box;
 
             white-space: nowrap;
@@ -223,6 +225,12 @@ $font-size: $font-size-small;
             border-radius: $border-radius;
             font-weight: 600;
             letter-spacing: .25px;
+
+            &.search,
+            &.clipboard {
+
+                padding: 0 8px;
+            }
 
             &.rs-icon,
             &.fa,
@@ -268,32 +276,7 @@ $font-size: $font-size-small;
                 }
             }
 
-            &.empty-frame-button {
-
-                .flexlayout__tab_button_content::before {
-
-                    @include materialIcon('\e069', 14px);
-                    margin-right: 5px;
-                }
-            }
-
-            &.flexlayout__border_button_clipboard {
-
-                .flexlayout__tab_button_content::before {
-
-                    @include materialIcon('\e14f', 14px);
-                    margin-right: 5px;
-                }
-            }
-
-            &.flexlayout__border_button_finder {
-
-                .flexlayout__tab_button_content::before {
-
-                    @include materialIcon('\e8b6', 14px);
-                    margin-right: 5px;
-                }
-            }
+            @include frame-icons('tab');
 
         //   &_top {
             //   box-shadow: inset -2px 2px 5px 0px rgba(0, 0, 0, .15);
@@ -373,7 +356,7 @@ $font-size: $font-size-small;
                 font-size: 15px;
                 font-weight: 600;
 
-                height: 28px;
+                height: $frame-button-height;
 
                 background: transparent;
                 display: flex;
@@ -388,7 +371,7 @@ $font-size: $font-size-small;
                 }
 
                 &:hover {
-                    background: $color-light;
+                    background: $color-frame-button-hover-bg;
                 }
             }
         }
@@ -399,8 +382,8 @@ $font-size: $font-size-small;
 
             .flexlayout__tab_toolbar_sticky_button {
 
-                width: 28px;
-                height: 28px;
+                width: $frame-button-height;
+                height: $frame-button-height;
                 background-color: transparent;
                 border-radius: $border-radius;
                 border: none;
@@ -417,10 +400,9 @@ $font-size: $font-size-small;
                     font-size: 22px;
                 }
 
-                &:hover
-                    {
-                    background-color: $color-light;
-                    }
+                &:hover {
+                    background-color: $color-frame-button-hover-bg;
+                }
             }
         }
         
@@ -430,8 +412,8 @@ $font-size: $font-size-small;
             padding: 0 5px;
 
             &_button {
-                min-width: 28px;
-                height: 28px;
+                min-width: $frame-button-height;
+                height: $frame-button-height;
                 background-color: transparent;
                 background: none;
                 border: none;
@@ -452,25 +434,25 @@ $font-size: $font-size-small;
             //       background: transparent url("/assets/images/icons/restore.png") no-repeat center;
             //   }
 
-            &-float {
-                background: transparent url("/assets/images/icons/popout.png") no-repeat center;
-            }
+                &-float {
+                    background: transparent url("/assets/images/icons/popout.png") no-repeat center;
+                }
 
-            i {
-                font-size: 22px;
-            }
+                i {
+                    font-size: 22px;
+                }
 
-            &:hover,
-            &:focus,
-            &:focus-within {
-                background-color: $color-light;
-            }
+                &:hover,
+                &:focus,
+                &:focus-within {
+                    background-color: $color-frame-button-hover-bg;
+                }
             }
 
             .flexlayout__tab_toolbar_sticky_button {
 
-                width: 28px;
-                height: 28px;
+                width: $frame-button-height;
+                height: $frame-button-height;
                 background-color: transparent;
                 border-radius: $border-radius;
                 border: none;
@@ -490,7 +472,7 @@ $font-size: $font-size-small;
                 &:hover,
                 &:focus,
                 &:focus-within {
-                background-color: $color-light;
+                    background-color: $color-frame-button-hover-bg;
                 }
             }
         }
@@ -572,13 +554,15 @@ $font-size: $font-size-small;
             &_tab_container {
                 white-space: nowrap;
                 display: flex;
+                align-items: center;
                 box-sizing: border-box;
                 position: absolute;
                 top: 0;
                 bottom: 0;
                 width: 10000px;
 
-                padding: 2px;
+                height: $frame-container-height;
+               // padding: 2px;
 
                 &_right {
                     transform-origin: top left;
@@ -596,9 +580,9 @@ $font-size: $font-size-small;
             display: flex;
             align-items: center;
             cursor: pointer;
-            height: 28px;
+            height: 29px;
             padding: 0px 6px 0px 8px;
-            margin: 0 2px;
+            margin: 0 3px;
             box-sizing: border-box;
 
             white-space: nowrap;
@@ -607,6 +591,12 @@ $font-size: $font-size-small;
             border-radius: $border-radius;
             font-weight: 600;
             letter-spacing: .25px;
+
+            &.search,
+            &.clipboard {
+
+                padding: 0 8px;
+            }
 
             &--selected {
                 background-color: $color-frame-buttonSelected-bg;
@@ -636,32 +626,7 @@ $font-size: $font-size-small;
                 }
             }
 
-            &.empty-frame-button {
-
-                .flexlayout__border_button_content::before {
-
-                    @include materialIcon('\e069', 14px);
-                    margin-right: 5px;
-                }
-            }
-
-            &.flexlayout__border_button_clipboard {
-
-                .flexlayout__border_button_content::before {
-
-                    @include materialIcon('\e14f', 14px);
-                    margin-right: 5px;
-                }
-            }
-
-            &.flexlayout__border_button_finder {
-
-                .flexlayout__border_button_content::before {
-
-                    @include materialIcon('\f02f', 14px);
-                    margin-right: 5px;
-                }
-            }
+            @include frame-icons('border');
 
             &_leading {
                 display: inline;
@@ -738,7 +703,7 @@ $font-size: $font-size-small;
                         font-size: 15px;
                         font-weight: 600;
 
-                        height: 28px;
+                        height: $frame-button-height;
 
                         background: transparent;
                         display: flex;
@@ -753,7 +718,7 @@ $font-size: $font-size-small;
                         }
 
                         &:hover {
-                            background: $color-light;
+                            background: $color-frame-button-hover-bg;
                         }
                 }
 

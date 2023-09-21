@@ -88,6 +88,7 @@ import TextSelection from './TextSelection';
 import SearchSummary from './SearchSummary';
 import MapSelectionOverlay from './MapSelectionOverlay';
 import { SelectType, SelectedArea } from './OLMapSelection';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const DEFAULT_TEXT_HELP_PAGE = Rdf.iri('http://help.researchspace.org/resource/SolrFullTextSearchSyntax');
 
@@ -943,11 +944,11 @@ class QueryBuilderInner extends React.Component<InnerProps, State> {
           onClick={this.state.store.selectSubSearchTerm}
         >
           {/* <span style={{ position: category.thumbnail ? 'absolute' : 'relative' }} className={styles.magnifierIcon}>
-            <i className='rs-icon rs-icon-search' />
+            <Icon iconType='round' iconName='search'/>
           </span>
            {category.thumbnail ? <img src={category.thumbnail} /> : null} */}
            <span className={styles.magnifierIcon}>
-            <i className='rs-icon rs-icon-search' />
+           <Icon iconType='round' iconName='search'/>
           </span>
           
         </button>

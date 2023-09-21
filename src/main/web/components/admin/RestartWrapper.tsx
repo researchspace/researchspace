@@ -28,7 +28,7 @@ import { getOverlaySystem } from 'platform/components/ui/overlay';
 /**
  * @example
  * <mp-restart-wrapper>
- *  <Button><i class="fa fa-power-off fa-5x" aria-hidden="true"></i></Button>
+ *  <Button>restart</i></Button>
  * </mp-restart-wrapper>
  */
 export class RestartWrapper extends React.Component {

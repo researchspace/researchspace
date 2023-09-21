@@ -125,7 +125,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
             <div class="rs-default-card__hover-icon">
               <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
                 <button type="button" class="rs-button" title="Remove Value">
-                  <i class="rs-icon rs-icon-delete_round"></i>
+                  <Icon iconType='round' iconName='cancel'/>
                 </button>
               </mp-event-trigger>
             </div>

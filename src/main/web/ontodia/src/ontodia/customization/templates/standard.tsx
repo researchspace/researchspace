@@ -208,7 +208,7 @@ export class StandardTemplate extends Component<TemplateProps, {}> {
           disabled={!canEdit}
           onClick={onEdit}
         >
-          <span className="fa fa-edit" />
+          <Icon iconType='round' iconName='edit'/> 
           &nbsp;
           {canEdit === undefined ? <HtmlSpinner width={SPINNER_WIDTH} height={SPINNER_HEIGHT} /> : 'Edit'}
         </button>

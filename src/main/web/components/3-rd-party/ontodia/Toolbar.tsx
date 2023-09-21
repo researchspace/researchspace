@@ -206,7 +206,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               disabled={!undo.enabled}
               onClick={undo.invoke}
             >
-              <span className="fa fa-undo" aria-hidden="true" />
+              <Icon iconType='round' iconName='undo' />
             </Button>
             <Button
               className="ontodia-btn ontodia-btn-default"
@@ -214,7 +214,7 @@ export class Toolbar<P extends ToolbarProps = ToolbarProps, S = {}> extends Comp
               disabled={!redo.enabled}
               onClick={redo.invoke}
             >
-              <span className="fa fa-repeat" aria-hidden="true" />
+              <Icon iconType='round' iconName='repeat'/>
             </Button>
           </ButtonGroup>
         ) : null}

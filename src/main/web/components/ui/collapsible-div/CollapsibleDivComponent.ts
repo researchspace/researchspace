@@ -48,7 +48,7 @@ interface State {
  * @example
    <mp-collapsible-div expanded='true'>
       <mp-collapsible-div-trigger expanded-class="x" collapsed-class="y">
-          <i class="fa fa-question-circle" aria-hidden="true"></i>
+          <rs-icon icon-type="round" icon-name="help"></rs-icon>
       </mp-collapsible-div-trigger>
       <mp-collapsible-div-content>Content</mp-collapsible-div-content>
   </mp-collapsible-div>

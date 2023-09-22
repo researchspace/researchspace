@@ -80,13 +80,16 @@ export class NamespaceManager extends Component<{}, State> {
 
     return (
       <div className={styles.component}>
-        {this.getTable()}
+        
+        {this.getUpdatePanel()}
+
         {this.state.modificationError ? (
           <Alert alert={AlertType.DANGER} message="">
             <ErrorPresenter error={this.state.modificationError} />
           </Alert>
         ) : null}
-        {this.getUpdatePanel()}
+
+        {this.getTable()}
       </div>
     );
   }
@@ -159,24 +162,24 @@ export class NamespaceManager extends Component<{}, State> {
       return <Spinner />;
     }
     return (
-      <div className={classnames(styles.updatePanel, 'row')}>
-        <div className="col-xs-1 px-0">
+      <div className={styles.updatePanel}>
+        <div style={{ display: 'flex', flex: '1', gap: '10px'}} >
           <FormControl
             type="text"
             placeholder="Prefix"
             value={this.state.selectedPrefix}
             onChange={this.onPrefixInput}
+            style={{ width: 'auto'}}
           />
-        </div>
-        <div className="col-xs-5">
           <FormControl
             type="text"
             placeholder="Namespace"
             value={this.state.selectedNamespace}
             onChange={this.onNamespaceInput}
+            style={{ flex: '1'}}
           />
         </div>
-        <div className={classnames(styles.updatePanel_submit, 'col-xs-6')}>
+        <div className={styles.updatePanel_submit}>
           <StorageSelector
             allApps={this.state.appStatus}
             sourceApps={[]}
@@ -187,11 +190,11 @@ export class NamespaceManager extends Component<{}, State> {
             <Button
               type="submit"
               bsSize="small"
-              bsStyle="primary"
+              bsStyle="action"
               onClick={this.onSetNamespace}
               disabled={!(this.state.selectedPrefix && this.state.selectedNamespace && this.state.selectedAppId)}
             >
-              Set Namespace
+              Create namespace
             </Button>
           </ButtonToolbar>
         </div>

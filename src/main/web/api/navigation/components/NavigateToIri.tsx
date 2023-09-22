@@ -45,8 +45,8 @@ export class NavigateToIRI extends React.Component<NavigateToIRIProps, State> {
   }
 
   static defaultProps = {
-    placeholder: 'Enter the full IRI to navigate to the resource page, e.g http://example.org/bob#me',
-    buttonCaption: 'Search',
+    placeholder: 'Enter full page IRI, e.g http://example.org/bob#me',
+    buttonCaption: 'Go to template',
   };
 
   render() {

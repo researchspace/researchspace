@@ -228,7 +228,7 @@ export class PageManager extends Component<{}, PageAdminState> {
       flexGrow: 1,
     };
     const title: CSSProperties = {
-      paddingRight: '20px',
+      paddingRight: '5px',
     };
     const toolbarStyle: CSSProperties = {
       display: 'flex',
@@ -241,7 +241,7 @@ export class PageManager extends Component<{}, PageAdminState> {
         { style: rowStyle, key: 'selected-pages' },
         D.div({ style: colStyle }, 
           D.div({style: title}, 'Selected pages:'),
-          D.b({}, this.state.selectedPages.length)
+          D.b({className:'color-action'}, this.state.selectedPages.length)
         ),
         D.div({}, 
           D.div({style: colStyle, key: '1'}, 'Select pages: ',
@@ -256,18 +256,22 @@ export class PageManager extends Component<{}, PageAdminState> {
               {
                 type: 'submit',
                 bsStyle: 'default',
-                onClick: this.onClickDeleteSelected,
-                disabled: this.state.selectedPages.length === this.state.data.length,
+                className: 'btn-textAndIcon',
+                onClick: this.onClickExportSelected,
               },
-              'Delete selected'
+              D.i({ className: 'material-icons-round' }, 'download'),
+              D.span({ }, 'Download selected')
             ),
             Button(
               {
                 type: 'submit',
                 bsStyle: 'default',
-                onClick: this.onClickExportSelected,
+                className: 'btn-textAndIcon',
+                onClick: this.onClickDeleteSelected,
+                disabled: this.state.selectedPages.length === this.state.data.length,
               },
-              'Export selected'
+              D.i({ className: 'material-icons-round' }, 'delete'),
+              D.span({ }, 'Delete selected')
             )
           ),
       ),

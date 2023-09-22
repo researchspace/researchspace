@@ -86,12 +86,6 @@
                   {{graph.value}}</semantic-link>
               </template>
 
-              <template id='delete'>
-                <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}">
-                  <rs-icon icon-type="round" icon-name="delete"></rs-icon>
-                </mp-graph-store-action>
-              </template>
-
               <template id='count'>
                 <semantic-query query='
                   SELECT ?size WHERE {
@@ -106,29 +100,44 @@
               </template>
 
               <template id='export'>
-                <bs-dropdown-button id="download" bs-size="xsmall" title="" class="mp-rdf-graph-action__download-dropdown"
-                  no-caret="true">
-                  <bs-menu-item event-key=1>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig"
-                      class="mp-rdf-graph-action__download-dropdown-item">TRIG</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=2>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl"
-                      class="mp-rdf-graph-action__download-dropdown-item">TURTLE</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=3>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt"
-                      class="mp-rdf-graph-action__download-dropdown-item">NTRIPLES</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=4>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf"
-                      class="mp-rdf-graph-action__download-dropdown-item">RDF/XML</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=4>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl"
-                      class="mp-rdf-graph-action__download-dropdown-item">OWL</mp-graph-store-action>
-                  </bs-menu-item>
-                </bs-dropdown-button>
+                <bs-dropdown id="download">
+                  <bs-dropdown-toggle>
+                 
+                      <rs-icon icon-type="round" icon-name="file_download"></rs-icon>
+                      Download
+               
+                  </bs-dropdown-toggle>
+                  <bs-dropdown-menu>
+                    <bs-menu-item event-key=1>
+                      <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig"
+                        >TRIG</mp-graph-store-action>
+                    </bs-menu-item>
+                    <bs-menu-item event-key=2>
+                      <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl"
+                        >TURTLE</mp-graph-store-action>
+                    </bs-menu-item>
+                    <bs-menu-item event-key=3>
+                      <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt"
+                        >NTRIPLES</mp-graph-store-action>
+                    </bs-menu-item>
+                    <bs-menu-item event-key=4>
+                      <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf"
+                        >RDF/XML</mp-graph-store-action>
+                    </bs-menu-item>
+                    <bs-menu-item event-key=4>
+                      <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl"
+                        >OWL</mp-graph-store-action>
+                    </bs-menu-item>
+                  </bs-dropdown-menu>
+                </bs-dropdown>
+              </template>
+
+              <template id='delete'>
+                <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}">
+                  <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
+                    <rs-icon icon-type="round" icon-name="delete"></rs-icon>Delete
+                  </button>
+                </mp-graph-store-action>
               </template>
 
             </semantic-table>

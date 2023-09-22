@@ -54,7 +54,6 @@ interface State {
   progressText?: Data.Maybe<string>;
   targetGraph?: Data.Maybe<string>;
   keepSourceGraphs?: boolean;
-  showOptions?: boolean;
   remoteFileUrl?: string;
   repositoryType?: RepositoryType;
 }
@@ -103,7 +102,9 @@ export interface Props {
 
 const CLASS_NAME = 'RdfUpload';
 const tabClass = `${CLASS_NAME}__tab`;
+const tabContainerClass = `${CLASS_NAME}__tabContainerClass`;
 const noteClass = `${CLASS_NAME}__note`;
+const advancedOptionsClass = `${CLASS_NAME}__advanced_options`;
 
 /**
  * @example
@@ -291,64 +292,79 @@ export class RdfUpload extends Component<Props, State> {
         {showLoadByUrlTab ?
          <Tabs id="rdf-upload-tabs" unmountOnExit={true}>
            <Tab eventKey={1} className={tabClass} title="File Upload" disabled={isInProcess}>
-             {fileUploadTab}
+            <div className={tabContainerClass}>
+              <div>
+                <p><b>RDF file</b></p>
+                {fileUploadTab}
+              </div>
+              {this.props.showAdvancedOptions ?
+                <React.Fragment>
+                  { this.renderAdvancedOptions() }
+                </React.Fragment> : null
+                }
+              </div>
            </Tab>
            <Tab eventKey={2} className={tabClass} title="Load by HTTP/FTP/File URL" disabled={isInProcess}>
              {progressBar}
              <div className={noteClass}>
-               Please note: Loading via HTTP/FTP/File URL depends on the database backend i.e. it must support the
-               SPARQL LOAD command and must allow outgoing network connections to the publicly accessible HTTP/FTP URLs
-               or must have access to the File URL respectively.
-             </div>
-             <FormControl
-               type="text"
-               value={this.state.remoteFileUrl || ''}
-               placeholder="Please enter publicly accessible HTTP/FTP URL"
-               onChange={(e) =>
-                 this.setState({
-                   remoteFileUrl: ((e.currentTarget as any) as HTMLInputElement).value,
-                 })
-               }
-             />
-             <Button
-               bsStyle="primary"
-               className={`${CLASS_NAME}__load-button`}
-               disabled={!this.state.remoteFileUrl || isInProcess}
-               onClick={this.onClickLoadByUrl}
-             >
-               Load by URL
-             </Button>
+                  Loading via HTTP/FTP/File URL depends on the database backend i.e. it must support the
+                  SPARQL LOAD command and must allow outgoing network connections to the publicly accessible HTTP/FTP URLs
+                  or must have access to the File URL respectively.
+              </div>
+
+              {this.props.showAdvancedOptions ?
+                <React.Fragment>
+                  { this.renderAdvancedOptions() }
+                </React.Fragment> : null
+              }
+
+              <p><b>HTTP/FTP URL</b></p>
+              <FormControl type="text"
+                            value={this.state.remoteFileUrl || ''}
+                            placeholder="Enter publicly accessible HTTP/FTP URL"
+                            onChange={(e) =>
+                this.setState({
+                  remoteFileUrl: ((e.currentTarget as any) as HTMLInputElement).value,
+                })
+              }
+              />
+              <Button
+                bsStyle="action"
+                className={`${CLASS_NAME}__load-button`}
+                disabled={!this.state.remoteFileUrl || isInProcess}
+                onClick={this.onClickLoadByUrl}
+              >
+                Load by URL
+              </Button>
+           
+              
+              
              {messages}
            </Tab>
          </Tabs>
         : fileUploadTab}
 
-        {this.props.showAdvancedOptions ?
-         <React.Fragment>
-           <a className={`${CLASS_NAME}__advance`} onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
-           { this.renderAdvancedOptions() }
-         </React.Fragment> : null
-        }
+        
       </div>
     );
   }
 
   private renderAdvancedOptions() {
     return (
-      <Panel collapsible expanded={this.state.showOptions}>
-        <p><b>Target NamedGraph URI</b></p>
+      <div className={advancedOptionsClass}>
+        <p><b>Target named graph URI</b></p>
         <p>
           <FormControl
             type="text"
-            label="Target NamedGraph"
-            placeholder="URI of the target NamedGraph. Will be generated automatically if empty."
+            label="Target named graph"
+            placeholder="URI of the target Named graph. Will be generated automatically if empty."
             onChange={this.onChangeTargetGraph}
           />
         </p>
-        <Checkbox label="Keep source NamedGraphs" onChange={this.onChangeKeepSourceGraphs}>
-          Keep source NamedGraphs
+        <Checkbox label="Keep source named graphs" onChange={this.onChangeKeepSourceGraphs}>
+          Keep source named graphs
         </Checkbox>
-      </Panel>
+      </div>
     );
   }
 

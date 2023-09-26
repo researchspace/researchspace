@@ -50,15 +50,39 @@
         </bs-alert>
     [[/if]]  
     [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/queryTemplateContainer>:read:any")]]         
-        <semantic-context repository="assets">
+      
+    
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap:20px;">
+        <h1>Query Template Catalog</h1>
+        [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:create:any")]]         
+        <mp-overlay-dialog title="Create Query template" type="modal" bs-size="large">
+          <mp-overlay-dialog-trigger>
+            <button class="btn btn-action btn-textAndIcon">
+              <i class="material-icons-round" aria-hidden="true">add_box</i>
+               Query template
+            </button>
+          </mp-overlay-dialog-trigger>
+          <mp-overlay-dialog-content>
+              <div>
+                  <semantic-context repository="assets">
+                  <mp-spin-query-template-editor></mp-spin-query-template-editor>
+                  </semantic-context>
+              </div>
+          </mp-overlay-dialog-content>
+        </mp-overlay-dialog>
+      [[/if]]
+      </div>
+
+      <hr style="margin-top:0px;" />
+      <semantic-context repository="assets">
           <semantic-table config='{
-            "query":"SELECT ?template ?label ?text ?author ?modified WHERE {
-                      ?template <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spinrdf.org/spin#Template>;
-                      <http://www.w3.org/ns/prov#wasAttributedTo> ?author;
-                      <http://www.w3.org/ns/prov#generatedAtTime> ?modified
-                      OPTIONAL {?template <http://www.w3.org/2000/01/rdf-schema#label> ?label.}
-                      [[#if (urlParam "queryTemplateFilter")]]FILTER(?template=<[[urlParam "queryTemplateFilter"]]>) [[/if]]            
-                      } ORDER BY DESC(?modified)",
+                  "query":"SELECT ?template ?label ?text ?author ?modified WHERE {
+                                  ?template <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://spinrdf.org/spin#Template>;
+                                  <http://www.w3.org/ns/prov#wasAttributedTo> ?author;
+                                  <http://www.w3.org/ns/prov#generatedAtTime> ?modified
+                                  OPTIONAL {?template <http://www.w3.org/2000/01/rdf-schema#label> ?label.}
+                                  [[#if (urlParam "queryTemplateFilter")]]FILTER(?template=<[[urlParam "queryTemplateFilter"]]>) [[/if]]            
+                                  } ORDER BY DESC(?modified)",
                   "columnConfiguration" : [
                       {"variableName":"template", "displayName":"Template", "cellTemplate": "
                                   <mp-overlay-dialog title=\"Edit Query Template\" type=\"modal\" bs-size=\"large\">
@@ -76,6 +100,7 @@
                       {"variableName":"modified", "displayName":"Modified", "cellTemplate": "{{dateTimeFormat modified.value \"LLL\"}}" },
                       {"displayName": "Actions", "cellTemplate": "{{> actions}}"}
                   ],
+                  "no-result-template":"{{> noResultTemplate}}",
                   "layout":{
                     "tupleTemplate": null,
                     "options":{
@@ -85,42 +110,38 @@
                   }
           }'>
             <template id='actions'>
-              <div style="display: flex;">
-                <mp-copy-to-clipboard text='{{template.value}}' message='Query Template IRI has been copied to clipboard!'>
-                  <button class="btn btn-default" style="margin-right: 8px">
-                    <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+              <div>
+                <div style="display: flex;">
+                  <mp-copy-to-clipboard text='{{template.value}}' message='Query Template IRI has been copied to clipboard!'>
+                    <button class="btn btn-default btn-textAndIcon" title="Copy IRI" style="margin-right: 8px">
                       <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
                       Copy IRI
                     </button>
-                  </button>
-                </mp-copy-to-clipboard>
-                [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:delete:any")]]   
-                  <mp-ldp-remove-from-container-action iri="{{template.value}}" container="http://www.researchspace.org/resource/system/queryTemplateContainer">
-                    <button class="btn btn-default btn-textAndIcon" style="margin-right: 8px;">
-                      <rs-icon icon-type="round" icon-name="delete"></rs-icon>
-                      Delete</button>
-                  </mp-ldp-remove-from-container-action>   
-                [[/if]]
+                  </mp-copy-to-clipboard>
+                  [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:delete:any")]]   
+                    <mp-ldp-remove-from-container-action iri="{{template.value}}" container="http://www.researchspace.org/resource/system/queryTemplateContainer">
+                      <button class="btn btn-default btn-textAndIcon" style="margin-right: 8px;">
+                        <rs-icon icon-type="round" icon-name="delete"></rs-icon>
+                        Delete</button>
+                    </mp-ldp-remove-from-container-action>   
+                  [[/if]]
+                </div>
               </div>
             </template>
-          </semantic-table>
-        </semantic-context>
-  
-        [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:create:any")]]         
-          <mp-overlay-dialog title="Create Query Template" type="modal" bs-size="large">
-            <mp-overlay-dialog-trigger><button class="btn btn-default">Create Query Template</button></mp-overlay-dialog-trigger>
-            <mp-overlay-dialog-content>
-                <div>
-                    <semantic-context repository="assets">
-                    <mp-spin-query-template-editor></mp-spin-query-template-editor>
-                    </semantic-context>
-                </div>
-            </mp-overlay-dialog-content>
-          </mp-overlay-dialog>
-        [[/if]]
 
+            <template id='noResultTemplate'>
+              <p>No Query templates available</p>
+            </template>
+          </semantic-table>
+      </semantic-context>
+  
     [[else]]
-      No permission to edit or add items in Query Template Catalog.
+      <bs-alert bs-style="warning">
+        <strong>No permission!</strong><br />
+        <p>
+          No permission to edit or add items in Query Template Catalog.
+        </p>
+      </bs-alert>
     [[/if]]
   
       </bs-col>

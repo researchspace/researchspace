@@ -53,7 +53,8 @@
   
             <div>
               <bs-alert bs-style="info">
-                Using this interface, you can export and import selected individual LDP resources as well as whole containers. Note that:
+                <p><strong>Info</strong></p>
+                <p>Using this interface, you can export and import selected individual LDP resources as well as whole containers. Note that:</p>
               <ul>
                 <li>Exporting a resource does not include exporting of related resources. For example, when exporting a query template, the resulting file will contain the link from the exported template resource (instance of <code>spin:Template</code>) to the query body (instance of <code>sp:Query</code>), but will not contain the query body resource itself. This will need to be exported separately from its own container.</li>
                 <li>When importing a resource with a URI that already exists among LDP assets, the existing resource will not get updated. Instead, the URI of the imported resource will be replaced with a randomly generated one. Thus, exporting and re-importing the same asset will result in a duplicate of the same resource.</li>
@@ -61,20 +62,25 @@
               </ul>
               </bs-alert>
             </div>
-            <div style='position: absolute; right: 0;'>
+
+            
+            
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap:20px;">
+              <h1> Containers hierarchy </h1>
               [[#if isRoot]]
                 <mp-ldp-import-resource container="http://www.researchspace.org/resource/system/rootContainer">
-                  <button class="btn btn-primary btn-textAndIcon" style='margin-left: 10px' title='Should be only used to import existing containers into the new installation!'>
-                    <rs-icon icon-type="round" icon-name="file_download"></rs-icon> Import Container
+                  <button class="btn btn-default btn-textAndIcon" style='margin-left: 10px' title='Should be only used to import existing containers into the new installation!'>
+                    <rs-icon icon-type="round" icon-name="file_upload"></rs-icon> 
+                    Import container
                   </button>
                 </mp-ldp-import-resource>
               [[else]]
                 [[> http://www.researchspace.org/resource/assets/LdpContainerGenericAction container=(this)]]
               [[/if]]
             </div>
+            <hr style="margin-top:0px;" />
 
             [[#if (ask "PREFIX ldp: <http://www.w3.org/ns/ldp#> ASK {?? ldp:contains ?c. ?c a ldp:Container .}")]]
-              <h2> Child containers hierarchy </h2>
               <semantic-context repository='assets'>
                 <semantic-tree
                   collapsed=true
@@ -103,9 +109,9 @@
                       <semantic-link uri="{{data.node.value}}" style='margin-right: 10px;'></semantic-link>
 
                       <mp-ldp-export-resource iri="{{data.node.value}}">
-                        <button class="btn btn-default btn-textAndIcon" title="Export" style="margin-right: 5px;">
-                          <rs-icon icon-type="round" icon-name="file_upload"></rs-icon>
-                          <span>Export</span>
+                        <button class="btn btn-default btn-textAndIcon" title="Download" style="margin-right: 5px;">
+                          <rs-icon icon-type="round" icon-name="file_download"></rs-icon>
+                          <span>Download</span>
                         </button>
                       </mp-ldp-export-resource>
                       {{#ifCond data.node.value "!==" "http://www.researchspace.org/resource/system/rootContainer"}}

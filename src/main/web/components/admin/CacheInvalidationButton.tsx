@@ -80,7 +80,7 @@ class InvalidateCacheButton extends Component<{}, State> {
           D.div({className:'icon-container icon-container-default'},   D.i({className: 'material-icons-round'}, 'question_mark'))
         ),
       ),
-      D.div({},
+      D.div({ style: { paddingTop: '10px' } },
         createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
       )
     ]);

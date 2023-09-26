@@ -103,7 +103,6 @@ export interface Props {
 const CLASS_NAME = 'RdfUpload';
 const tabClass = `${CLASS_NAME}__tab`;
 const tabContainerClass = `${CLASS_NAME}__tabContainerClass`;
-const noteClass = `${CLASS_NAME}__note`;
 const advancedOptionsClass = `${CLASS_NAME}__advanced_options`;
 
 /**
@@ -306,38 +305,43 @@ export class RdfUpload extends Component<Props, State> {
            </Tab>
            <Tab eventKey={2} className={tabClass} title="Load by HTTP/FTP/File URL" disabled={isInProcess}>
              {progressBar}
-             <div className={noteClass}>
-                  Loading via HTTP/FTP/File URL depends on the database backend i.e. it must support the
+             <Alert alert={AlertType.INFO} message="">
+                <p>Loading via HTTP/FTP/File URL depends on the database backend i.e. it must support the
                   SPARQL LOAD command and must allow outgoing network connections to the publicly accessible HTTP/FTP URLs
-                  or must have access to the File URL respectively.
-              </div>
+                  or must have access to the File URL respectively.</p>
+              </Alert>
 
-              {this.props.showAdvancedOptions ?
-                <React.Fragment>
-                  { this.renderAdvancedOptions() }
-                </React.Fragment> : null
-              }
+              <div style={{ display: 'flex', gap: '10px'}} >
+                <div style={{ flex: '1'}} >
+                  {this.props.showAdvancedOptions ?
+                    <React.Fragment>
+                      { this.renderAdvancedOptions() }
+                    </React.Fragment> : null
+                  }
+                </div>
 
-              <p><b>HTTP/FTP URL</b></p>
-              <FormControl type="text"
-                            value={this.state.remoteFileUrl || ''}
-                            placeholder="Enter publicly accessible HTTP/FTP URL"
-                            onChange={(e) =>
-                this.setState({
-                  remoteFileUrl: ((e.currentTarget as any) as HTMLInputElement).value,
-                })
-              }
-              />
-              <Button
-                bsStyle="action"
-                className={`${CLASS_NAME}__load-button`}
-                disabled={!this.state.remoteFileUrl || isInProcess}
-                onClick={this.onClickLoadByUrl}
-              >
-                Load by URL
-              </Button>
-           
-              
+                <div style={{ flex: '1'}} >
+                  <p><b>HTTP/FTP URL</b></p>
+                  <div style={{ display: 'flex', gap: '5px'}} >
+                    <FormControl type="text"
+                                  value={this.state.remoteFileUrl || ''}
+                                  placeholder="Enter publicly accessible HTTP/FTP URL"
+                                  onChange={(e) =>
+                      this.setState({
+                        remoteFileUrl: ((e.currentTarget as any) as HTMLInputElement).value,
+                      })
+                    }
+                    />
+                    <Button
+                      bsStyle="action"
+                      disabled={!this.state.remoteFileUrl || isInProcess}
+                      onClick={this.onClickLoadByUrl}
+                    >
+                      Load by URL
+                    </Button>
+                  </div>
+                </div>
+              </div>              
               
              {messages}
            </Tab>

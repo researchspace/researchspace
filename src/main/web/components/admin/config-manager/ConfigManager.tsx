@@ -76,10 +76,10 @@ export class ConfigManager extends Component<ConfigManagerProps, State> {
       <div className={styles.component}>
         {this.getTable()}
         {this.props.editable ? null : (
-          <i>
+          <Alert alert={AlertType.WARNING} message="">
             {capitalizeFirstLetter(this.props.group)}
             &nbsp;configuration group is not editable during runtime.
-          </i>
+          </Alert>
         )}
       </div>
     );

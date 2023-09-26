@@ -80,7 +80,7 @@ export class NamespaceManager extends Component<{}, State> {
 
     return (
       <div className={styles.component}>
-        
+        <strong>New namespace</strong>
         {this.getUpdatePanel()}
 
         {this.state.modificationError ? (
@@ -148,12 +148,20 @@ export class NamespaceManager extends Component<{}, State> {
       resultsPerPage: 20,
     };
     return (
-      <Table
-        numberOfDisplayedRows={maybe.Just(10)}
-        columnConfiguration={columnConfig}
-        data={Either.Left<any[], SparqlClient.SparqlSelectResult>(tableData)}
-        layout={maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() })}
-      />
+      <div>
+        <h1>All namespaces</h1>
+        <hr style={{ marginTop: '0'}} />
+        <Alert alert={AlertType.INFO} message="">
+          <p><strong>Info</strong></p>
+          <p>Prefixes starting with a capital letter are system namespaces and can not be changed during runtime.</p>
+        </Alert>
+        <Table
+          numberOfDisplayedRows={maybe.Just(10)}
+          columnConfiguration={columnConfig}
+          data={Either.Left<any[], SparqlClient.SparqlSelectResult>(tableData)}
+          layout={maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() })}
+        />
+      </div>
     );
   }
 
@@ -266,13 +274,13 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
       } else if (this.state.confirm) {
         return (
           <div>
-            Delete prefix "{record.prefix}"?
-            <div>
-              <Button className="btn btn-default" onClick={this.onConfirm}>
-                Delete
-              </Button>
+            <p>Delete namespace "{record.prefix}"?</p>
+            <div style={{ display: 'flex', gap: '5px'}}>
               <Button className="btn btn-default" onClick={this.onCancel}>
                 Cancel
+              </Button>
+              <Button className="btn btn-action" onClick={this.onConfirm}>
+                Delete
               </Button>
             </div>
           </div>

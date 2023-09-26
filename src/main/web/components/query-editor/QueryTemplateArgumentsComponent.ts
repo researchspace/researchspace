@@ -71,12 +71,12 @@ export class QueryTemplateArgumentsComponent extends Component<Props, State> {
   };
 
   private handleDeleteArgument = (index) => {
-    const title = 'Delete Argument';
+    const title = 'Delete argument';
     const body = D.div({},
 /*       { style: { textAlign: 'center' } }, */
-      D.div({ style: { margin: '0 0 20px' } }, 'Do you want to delete Argument?'),
+      D.div({ style: { margin: '0 0 20px' } }, 'Do you want to delete the argument?'),
       ButtonToolbar(
-        { style: { display: 'inline-block' } },
+        { style: { display: 'flex', justifyContent: 'end' } },
 
         Button({ bsStyle: 'default', onClick: () => getOverlaySystem().hide(title) }, 'Cancel'),
 

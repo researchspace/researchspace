@@ -35,7 +35,7 @@ import * as styles from './FileManager.scss';
 
 // const OBJECT_KINDS = ['file'];
 const OBJECT_KINDS = 'file';
-const CSV_DATA_FOLDER = '/data/';
+const DELIMITED_FILE_DATA_FOLDER = '/Delimited_Data/';
 const STORAGE_ID = 'runtime';
 // const ACCEPT_PATTERN = 'text/csv'
 
@@ -111,7 +111,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
       progressText: undefined,
       storageId: STORAGE_ID,
       path: {
-        folder: CSV_DATA_FOLDER,
+        folder: DELIMITED_FILE_DATA_FOLDER,
         objectKind,
         name: undefined,
       },

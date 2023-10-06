@@ -6,4 +6,4 @@ app = Flask(__name__)
 #app.config['CORS_HEADERS'] = 'Content-Type'
 
 #Import all required routes from routes folder
-from app.routes import sample
+from app.routes import delimited_file_upload_controller

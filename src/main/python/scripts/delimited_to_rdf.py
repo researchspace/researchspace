@@ -60,7 +60,7 @@ class DelimitedToRDFConverter:
     
                     # Create RDF triples for each has_note property
                     for key, value in row.items():
-                        if key not in [unique_id_col, unique_id_label_col]:
+                        if key not in [unique_id_col, unique_id_label_col] and value:
                             appellation_id = URIRef(str(entity_id) + '/' + key + '/' + str(uuid.uuid4()))
                             appellation_type = Literal(key)
                             appellation_content = Literal(value)

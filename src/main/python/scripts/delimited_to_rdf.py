@@ -69,10 +69,13 @@ class DelimitedToRDFConverter:
                             g.add((appellation_id, self.crm.P2_has_type, appellation_type))
                             g.add((appellation_id, self.crm.P190_has_symbolic_content, appellation_content))
             
-            # Serialize the RDF graph to TTL format
+            # Serialize the RDF graph to TTL format and save it as a file for archival
             g.serialize(destination=outputRdfFilePath, format='turtle', encoding='utf-8')
-            
-            return "Success: RDF file created successfully: " + outputRdfFilePath
+
+            # Serialize the RDF graph to TTL format
+            rdf_data = g.serialize(format='turtle', encoding='utf-8')
+
+            return rdf_data
         
         except FileNotFoundError as e:
             abort(404, description="The specified file " + dataFileName + " was not found: " + str(e))
@@ -99,5 +102,4 @@ class DelimitedToRDFConverter:
         abs_apth = os.path.normpath(os.path.join(current_dir, string))
 
         return abs_apth
-
-
+    

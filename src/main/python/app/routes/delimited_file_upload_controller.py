@@ -18,11 +18,12 @@ def generate_rdf_file():
 
     # Get data from the POST request
     request_payload = request.json
+    # print(request_payload)
     rdf = DelimitedToRDFConverter();
     rdf_data = rdf.create_rdf_file(request_payload.get('Delimited_File_Name'),
                                           request_payload.get('Unique_Id_Column'),
-                                          request_payload.get('Unique_Id_Label_Column'))
-    
+                                          request_payload.get('Unique_Id_Label_Column'),
+                                          request_payload.get('Mapped_Columns_Array'))
     rdf_file_name = request_payload.get('Delimited_File_Name').split('.')[0] + '.ttl'
 
     # Create a file-like object from RDF data

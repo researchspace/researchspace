@@ -25,9 +25,15 @@ class DelimitedToRDFConverter:
 
         return headers
 
-    def create_rdf_file(self, dataFileName, unique_id_col, unique_id_label_col):
+    def create_rdf_file(self, dataFileName, unique_id_col, unique_id_label_col, mapped_columns):
         try:
-           
+            
+            if unique_id_col in mapped_columns:
+                mapped_columns.remove(unique_id_col)
+            
+            if unique_id_label_col in mapped_columns:
+                mapped_columns.remove(unique_id_label_col)
+            
             # Input File Path
             delimitedFilePath = self.get_absolute_path(self.relativeDelimitedFileRootPath) + '/' + dataFileName
             
@@ -40,7 +46,7 @@ class DelimitedToRDFConverter:
 
             # Create an RDF graph
             g = Graph()
-    
+
             # Open and read the CSV file
             with open(delimitedFilePath, 'r', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
@@ -60,7 +66,7 @@ class DelimitedToRDFConverter:
     
                     # Create RDF triples for each has_note property
                     for key, value in row.items():
-                        if key not in [unique_id_col, unique_id_label_col] and value:
+                        if (key not in [unique_id_col, unique_id_label_col] and value) and key in mapped_columns:
                             appellation_id = URIRef(str(entity_id) + '/' + key + '/' + str(uuid.uuid4()))
                             appellation_type = Literal(key)
                             appellation_content = Literal(value)

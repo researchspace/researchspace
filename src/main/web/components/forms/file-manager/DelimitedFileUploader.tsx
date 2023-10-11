@@ -33,17 +33,35 @@ import { getFileIcon } from './FileVisualizer';
 
 import * as styles from './FileManager.scss';
 
+import axios from 'axios';
+import { RDFGraphStoreService } from 'platform/api/services/rdf-graph-store';
+import { Rdf } from 'platform/api/rdf';
+import * as moment from 'moment';
+import { refresh } from 'platform/api/navigation';
+
 // const OBJECT_KINDS = ['file'];
 const OBJECT_KINDS = 'file';
 const DELIMITED_FILE_DATA_FOLDER = '/Delimited_Data/';
 const STORAGE_ID = 'runtime';
 // const ACCEPT_PATTERN = 'text/csv'
+const FLASK_BASE_URL = 'http://localhost:5000/';
 
 interface FilePath {
   objectKind: string;
   folder: string;
   name: string;
 }
+
+interface MappedColumnAttr {
+  value: string;
+  label: string;
+}
+
+// interface DelimitedFileMappings {
+//   uniqueIdentifier: string;
+//   uniqueIdentifierLabel: string;
+//   columns: [];
+// }
 
 export interface State {
   alertState?: AlertConfig;
@@ -54,6 +72,12 @@ export interface State {
   storageId?: string;
   path?: FilePath;
   file?: File;
+  isFileNotUploaded?: boolean;
+  //fileMapping?: DelimitedFileMappings;
+  uniqueIdentifier: string;
+  uniqueIdentifierLabel: string;
+  columns: [];
+  selectedMappedColumns: MappedColumnAttr[]
 }
 
 export interface Props {
@@ -67,6 +91,9 @@ export interface Props {
    */
   placeholder?: string;
 
+  targetGraph?: Data.Maybe<string>;
+
+  keepSourceGraphs?: boolean;
   /**
    * Object storage id. Used to detect upload folder based on object sotrages which are
    * defined in '/runtime-data/config/data-storage.prop.
@@ -115,6 +142,11 @@ export class DelimitedFileUploader extends Component<Props, State> {
         objectKind,
         name: undefined,
       },
+      isFileNotUploaded: true,
+      uniqueIdentifier: undefined,
+      uniqueIdentifierLabel: undefined,
+      columns: [],
+      selectedMappedColumns: [],
     };
   }
 
@@ -142,9 +174,6 @@ export class DelimitedFileUploader extends Component<Props, State> {
 
   uploadFile() {
     const file = this.state.file;
-    console.log(this.state.file);
-    console.log(this.getFolder());
-    console.log(this.state.path.name);
     this.cancellation
       .map(
         this.getFileManager().uploadFileDirectlyToStorage({
@@ -155,36 +184,36 @@ export class DelimitedFileUploader extends Component<Props, State> {
           onProgress: (percent) => {
             this.setState({
               progress: percent,
-              progressText: 'Uploading ...',
+              progressText: 'Uploading File...',
             });
           },
         })
       )
       .observe({
         value: (resource) => {
-          addNotification({
-            message: 'File succesfully uploaded.',
-            level: 'success',
-          });
+          this.getFileColumnsForMapping();
+          // addNotification({
+          //   message: 'File succesfully uploaded.',
+          //   level: 'success',
+          // });
           this.setState({
-            alertState: {
-              alert: AlertType.SUCCESS,
-              message:
-                `File "${resource}" has been successfully ` + `uploaded to the storage "${this.state.storageId}".`,
-            },
-            progress: null,
-            path: {
-              ...this.state.path,
-              name: '',
-            },
-            file: undefined,
+            // alertState: {
+            //   alert: AlertType.SUCCESS,
+            //   message:
+            //     `File "${resource}" has been successfully ` + `uploaded to the storage "${this.state.storageId}".`,
+            // },
+            progress: 80,
+            path: this.state.path,
+            file: file,
+            isFileNotUploaded: false,
           });
         },
         error: (error) => {
-          addNotification({
-            message: 'Failed to upload file.',
-            level: 'error',
-          });
+          // addNotification({
+          //   message: 'Failed to upload file.',
+          //   level: 'error',
+          // });
+          console.log(error)
           this.setState({
             alertState: {
               alert: AlertType.WARNING,
@@ -196,6 +225,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
               name: '',
             },
             file: undefined,
+            isFileNotUploaded: true,
           });
         },
       });
@@ -213,6 +243,9 @@ export class DelimitedFileUploader extends Component<Props, State> {
         name: file.name,
       },
     });
+
+    //Calling it here to upload file without button click
+    this.uploadFile()
   }
 
   onDropRejected(files: File[]) {
@@ -264,6 +297,145 @@ export class DelimitedFileUploader extends Component<Props, State> {
     }
   }
 
+  getFileColumnsForMapping(){
+    const queryParams = {
+      dataFileName: this.state.file.name
+    };
+
+    axios.get(FLASK_BASE_URL + 'filecolumns', {
+      params: queryParams,
+    })
+    .then((response) => {
+      
+      // set columns of delimited file
+      this.setState({
+        columns: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('Unable to fetch the Columns for RDF Mapping ', error)
+    });
+  }
+
+  generateRDFFromDelimitedFile(){
+    
+    console.log('mapped columns',this.state.selectedMappedColumns)
+    let var_mappedColumnsArray;
+    if (this.state.selectedMappedColumns.length === 0)
+    {
+      var_mappedColumnsArray = this.state.columns
+      // console.log('length columns',this.state.selectedMappedColumns.length)
+      // console.log('mapped columns',this.state.selectedMappedColumns)
+
+      // const columnsObj = this.state.columns.map((selectedValue) => ({
+      //   value: selectedValue,
+      //   label: selectedValue,
+      // }));
+
+      // this.setState({
+      //   selectedMappedColumns:  columnsObj,
+      // });
+
+      // this.setState({ selectedMappedColumns: columnsObj }, () => {
+      //   // The state has been updated; it's safe to continue here.
+      // });
+    }
+    else{
+      var_mappedColumnsArray = this.state.selectedMappedColumns.map(item => item.value)
+    }
+
+    const request_payload = {
+      Delimited_File_Name: this.state.file.name,
+      Unique_Id_Column: this.state.uniqueIdentifier,
+      Unique_Id_Label_Column: this.state.uniqueIdentifierLabel,
+      Mapped_Columns_Array: var_mappedColumnsArray
+    };
+
+    axios.post(FLASK_BASE_URL + 'generaterdf', request_payload)
+    .then((response) => {
+      this.uploadRDFData(response)
+
+      this.setState({
+        // alertState: {
+        //   alert: AlertType.SUCCESS,
+        //   message:
+        //     `File and Mappings has been successfully uploaded to the storage "${this.state.storageId}".`,
+        // },
+        progress: null,
+        path: {
+          ...this.state.path,
+          name: '',
+        },
+        file: undefined,
+        isFileNotUploaded: true,
+        uniqueIdentifier: undefined,
+        uniqueIdentifierLabel: undefined,
+        columns: [],
+        selectedMappedColumns: [],
+      });
+    })
+    .catch((error) => {
+      console.error('Error Occurred while generating RDF', error);
+    });
+  }
+
+  uploadRDFData(rdfResponse: any){
+
+    const delimitedFileName = this.state.file.name
+    const rdfFileName = this.state.file.name.split('.')[0] + '.ttl'
+    
+
+    let targetGraph;
+    if (this.props.targetGraph.isJust) {
+      targetGraph = this.props.targetGraph.get();
+    } else {
+      targetGraph = `file://${rdfFileName}-${createTimestamp()}`;
+    }
+
+    const create_rdf_request = RDFGraphStoreService.createGraphFromFile({
+      targetGraph: Rdf.iri(encodeURI(targetGraph)),
+      keepSourceGraphs: this.props.keepSourceGraphs,
+      file: rdfResponse.data,
+      contentType: rdfResponse.headers['content-type'],
+      repository: 'default',
+      onProgress: (percent) => {
+        // Handle progress here if needed
+        console.log('Progress:', percent);
+      },    
+    });
+
+    this.cancellation.map(create_rdf_request).observe({
+      value: () => {
+        addNotification({
+        message: 'File succesfully uploaded.',
+        level: 'success',
+        });
+
+        this.setState({
+          alertState: {
+            alert: AlertType.SUCCESS,
+            message:
+              'File ' + delimitedFileName + ' and Mappings has been successfully uploaded.',
+          },
+        });
+        setTimeout(() => refresh(), 2000);
+      },
+      error: (error) => {
+        console.log(error)
+        this.setState({
+          alertState: {
+            alert: AlertType.WARNING,
+            message: 'Failed to upload file ' + delimitedFileName + ' : ' + error,
+          },
+        });
+        addNotification({
+          message: 'Failed to upload file.',
+          level: 'error',
+        });
+      },
+    });
+  }
+
   render() {
     const alert = this.state.alertState ? (
       <div className={styles.alertComponent}>
@@ -273,6 +445,126 @@ export class DelimitedFileUploader extends Component<Props, State> {
     const { storages: storages, path, file, storageId } = this.state;
     const fileNotSelected = !file;
     const renderedPath = `${storageId}: ${this.getFolder()}/${path.name || 'undefined'}`;
+
+    const delimitedFileMapping = (
+      <React.Fragment>
+        <div style={{ alignItems: 'center' }}>
+          <label>Unique Identifier</label>
+          <ReactSelect
+            disabled={this.state.isFileNotUploaded}
+            className={styles.storageInput}
+            clearable={true}
+            value={this.state.uniqueIdentifier}
+            options={ this.state.columns ? 
+              this.state.columns.map((column) => ({
+                  value: column,
+                  label: column,
+                }))
+                : []
+            }
+            onChange={(selectedUniqueId) => {
+              if (!selectedUniqueId) { //when user clears the selection. Value is NULL
+                this.setState({
+                  uniqueIdentifier: '', // Clear the selected columns
+                  progress: 85,
+                  progressText: 'Uploading Mapping...',
+                });
+              } 
+              else {
+                // Access the selected values directly from selectedColumns
+                this.setState({
+                  uniqueIdentifier: selectedUniqueId.value,
+                  progress: 85,
+                  progressText: 'Uploading Mapping...',});
+                }}
+              }
+              // if (Array.isArray(selectedUniqueId) || typeof selectedUniqueId.value !== 'string') {
+              //   return;
+              // }
+              // this.setState({
+              //   uniqueIdentifier: selectedUniqueId.value,
+              //   progress: 85,
+              //   progressText: 'Uploading Mapping...',});
+              // }}
+          />
+
+          <label>Unique Identifier Label</label>
+          <ReactSelect
+            disabled={this.state.isFileNotUploaded}
+            className={styles.storageInput}
+            clearable={false}
+            value={this.state.uniqueIdentifierLabel}
+            options={ this.state.columns ? 
+              this.state.columns.filter((item) => item !== this.state.uniqueIdentifier).map((column) => ({
+                  value: column,
+                  label: column,
+                }))
+                : []
+            }
+            onChange={(selectedUniqueIdLabel) => {
+              if (Array.isArray(selectedUniqueIdLabel) || typeof selectedUniqueIdLabel.value !== 'string') {
+                return;
+              }
+              this.setState({
+                uniqueIdentifierLabel: selectedUniqueIdLabel.value,
+                progress: 90,
+                progressText: 'Uploading Mapping...',});
+              }}
+          />
+
+          <label>Select Columns to be Mapped</label>
+          <ReactSelect
+            multi={true}
+            disabled={this.state.isFileNotUploaded}
+            className={styles.storageInput}
+            clearable={true}
+            value={this.state.selectedMappedColumns}
+            options={ this.state.columns ? 
+              this.state.columns
+              .filter((item) => item !== this.state.uniqueIdentifier && item !== this.state.uniqueIdentifierLabel)
+              .map((column) => ({
+                  value: column,
+                  label: column,
+                }))
+                : []
+            }
+              onChange={(selectedColumns) => {
+                // Check if no columns are selected (user cleared the selection)
+                // if (!selectedColumns || selectedColumns.length === 0) {
+                //   this.setState({
+                //     selectedMappedColumns: [], // Clear the selected columns
+                //     progress: 95,
+                //     progressText: 'Uploading Mapping...',
+                //   });
+                // } else {
+                  // Access the selected values directly from selectedColumns
+                  this.setState({
+                    selectedMappedColumns:  selectedColumns.map((selectedValue) => ({
+                      value: selectedValue['value'],
+                      label: selectedValue['label'],
+                    })),
+                    progress: 95,
+                    progressText: 'Uploading Mapping...',
+                  });
+                }
+              }
+          />
+          <button
+                title={
+                  fileNotSelected ? 'Please select first a file to upload...':
+                  (!this.state.uniqueIdentifierLabel
+                    ? 'Please select Unique Identifier Label for mapping'
+                    : 'Click on the button to upload')
+                }
+                className="btn btn-primary"
+                disabled={!this.state.uniqueIdentifierLabel}
+                onClick={() => this.generateRDFFromDelimitedFile()}
+              >
+                Upload File and Mapping
+          </button>
+        </div>
+      </React.Fragment>
+    );
 
     return (
       <div className={styles.DirectFileUploader}>
@@ -368,7 +660,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
             </div>
             <label>Target Filename</label>
             <input
-              disabled={fileNotSelected}
+              disabled={true}
               value={path.name}
               placeholder={fileNotSelected ? 'Please select first a file to upload...' : 'Input filename...'}
               title={fileNotSelected ? 'Please select first a file to upload' : 'Filename'}
@@ -390,7 +682,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
               }
               className={`plain-text-field__text form-control ${styles.storageInput}`}
             />
-            <button
+            {/* <button
               title={
                 fileNotSelected
                   ? 'Please use the file selector to select a file to upload'
@@ -401,9 +693,9 @@ export class DelimitedFileUploader extends Component<Props, State> {
               onClick={() => this.uploadFile()}
             >
               Upload
-            </button>
+            </button> */}
           </div>
-
+          {delimitedFileMapping}
           </div>
         </div>
         {/* <div className={styles.row} style={{ flexDirection: 'column', marginTop: '30px' }}>
@@ -439,6 +731,10 @@ export class DelimitedFileUploader extends Component<Props, State> {
       </div>
     );
   }
+}
+
+function createTimestamp(): string {
+  return moment().format('DD-MM-YYYY-hh-mm-ss');
 }
 
 export default DelimitedFileUploader;

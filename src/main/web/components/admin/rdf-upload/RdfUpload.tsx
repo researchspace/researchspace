@@ -291,14 +291,18 @@ export class RdfUpload extends Component<Props, State> {
     const delimitedFileUploadTab = (
       <React.Fragment>
         {progressBar}
-        <div className={noteClass}>
+        {/* <div className={noteClass}>
           Delimited files can be uploaded using the drag&amp;drop field below. Clicking into the field will open the
           browser's default file selector.
-        </div>
-        <DelimitedFileUploader/>
+        </div> */}
+        <DelimitedFileUploader 
+                targetGraph={this.state.targetGraph}
+                keepSourceGraphs={this.state.keepSourceGraphs}>
+        </DelimitedFileUploader>
         {messages}
       </React.Fragment>
     );
+    
     return (
       <div className={classnames(CLASS_NAME, className)} style={style}>
         {this.props.showAdvancedOptions ?

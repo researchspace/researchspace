@@ -235,7 +235,7 @@ export class DashboardComponent extends Component<Props, State> {
         )
         .observe({
           value: ({ data }) => {
-            const {viewId, resourceIri, entityEditorLabel} = data as AddFrameEventData
+            const {viewId, resourceIri, resourceEditorLabel} = data as AddFrameEventData
 
             if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
@@ -247,8 +247,8 @@ export class DashboardComponent extends Component<Props, State> {
                   this.onAddNewItemHandler(data)
                 },
               })
-            } else if (entityEditorLabel) { 
-              this.onAddNewItemHandler(data, entityEditorLabel)
+            } else if (resourceEditorLabel) { 
+              this.onAddNewItemHandler(data, resourceEditorLabel)
             } else {
               const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
               this.onAddNewItemHandler(data, view?.label)

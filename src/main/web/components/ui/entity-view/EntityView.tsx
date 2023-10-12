@@ -56,13 +56,13 @@ export class EntityView extends Component<Props, State> {
 SELECT DISTINCT ?config WHERE {
   {
     ?entity a ?rdfType .
-    ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
-      <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType .
+    ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+      <http://www.researchspace.org/resource/system/resource_configuration/resource_ontology_type> ?rdfType .
     BIND(1 as ?order)
   } UNION {
     ?entity crm:P2_has_type ?p2 .
-    ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
-      <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?p2 .
+    ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
+      <http://www.researchspace.org/resource/system/resource_configuration/resource_system_type> ?p2 .
     BIND(0 as ?order)
   }
 } ORDER BY ASC(?order)
@@ -165,7 +165,7 @@ SELECT DISTINCT ?config WHERE {
                         'type': 'bgp',
                         triples: [{
                           subject: '?node',
-                          predicate: 'http://www.researchspace.org/resource/system/authority_manager/menu_broader_item',
+                          predicate: 'http://www.researchspace.org/resource/system/resource_configuration/menu_broader_item',
                           object: '?parent'
                         }]
                       }

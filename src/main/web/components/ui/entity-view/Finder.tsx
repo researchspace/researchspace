@@ -27,7 +27,7 @@ import { entityConfigs, EntityViewConfig } from 'platform/api/services/EntityVie
 import { Component, ComponentContext, ComponentProps } from 'platform/api/components';
 import { TemplateItem } from '../template';
 
-const FINDER_NAVIGATION_ENTRY_IRI = 'http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/FINDER';
+const FINDER_NAVIGATION_ENTRY_IRI = 'http://www.researchspace.org/resource/system/resource_configuration/data/FINDER';
 
 
 export class Finder extends Component<any, any> {
@@ -104,7 +104,7 @@ export class Finder extends Component<any, any> {
                   'type': 'bgp',
                   triples: [{
                     subject: '?node',
-                    predicate: 'http://www.researchspace.org/resource/system/authority_manager/menu_broader_item',
+                    predicate: 'http://www.researchspace.org/resource/system/resource_configuration/menu_broader_item',
                     object: '?parent'
                   }]
                 }

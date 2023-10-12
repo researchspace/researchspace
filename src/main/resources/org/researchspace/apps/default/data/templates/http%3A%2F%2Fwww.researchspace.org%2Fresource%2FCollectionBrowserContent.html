@@ -1,38 +1,36 @@
-<semantic-query 
-                  query='
-                          SELECT ?config ?collection ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
+<semantic-query query=' SELECT ?config ?collection ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
                             OPTIONAL {
                               <{{configOrScheme}}> crm:P67_refers_to ?managedConfig .
                               BIND(<{{configOrScheme}}> AS ?collection) .
                             }
                             OPTIONAL {
-                              <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/FormConfig> .
+                              <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
                               BIND(<{{configOrScheme}}> as ?managedConfig) .
                             }
                             BIND(COALESCE(?managedConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?config) .
                             BIND(BOUND(?managedConfig) as ?isManaged) .
                             
-                            ?config <http://www.researchspace.org/resource/system/authority_manager/item_label> ?title ;
-                              <http://www.researchspace.org/resource/system/authority_manager/for_type> ?rdfType ;
-                              <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI .
+                            ?config <http://www.researchspace.org/resource/system/resource_configuration/resource_label> ?title ;
+                              <http://www.researchspace.org/resource/system/resource_configuration/resource_ontology_type> ?rdfType ;
+                              <http://www.researchspace.org/resource/system/resource_configuration/resource_form> ?formIRI .
                             
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type> ?P2_has_type .
+                              ?config <http://www.researchspace.org/resource/system/resource_configuration/resource_system_type> ?P2_has_type .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern> ?restrictionPattern .
+                              ?config <http://www.researchspace.org/resource/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/membership_property> ?membershipProperty .
+                              ?config <http://www.researchspace.org/resource/system/resource_configuration/resource_membership_property> ?membershipProperty .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/broader_property> ?broaderPropertyIRI .
+                              ?config <http://www.researchspace.org/resource/system/resource_configuration/resource_broader_property> ?broaderPropertyIRI .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/order_by_pattern> ?orderByPattern .
+                              ?config <http://www.researchspace.org/resource/system/resource_configuration/resource_order_sparql_pattern> ?orderByPattern .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern> ?labelSparqlPattern .
+                              ?config <http://www.researchspace.org/resource/system/resource_configuration/resource_label_sparql_pattern> ?labelSparqlPattern .
                             }
                           } LIMIT 1
                         '

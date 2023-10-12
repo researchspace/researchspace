@@ -289,7 +289,7 @@ public class LDPAssetsLoader {
             }
             if (modelExisting.isEmpty()) {
                 toLoad.add(ctx);
-            } else if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
+            } else if (!repositoryId.equals("vocabularies") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                 inconsistentContexts.add(ctx);
             }
         }

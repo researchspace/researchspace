@@ -448,7 +448,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
 
     const delimitedFileMapping = (
       <React.Fragment>
-        <div style={{ alignItems: 'center' }}>
+
           <label>Unique Identifier</label>
           <ReactSelect
             disabled={this.state.isFileNotUploaded}
@@ -559,10 +559,10 @@ export class DelimitedFileUploader extends Component<Props, State> {
                 className="btn btn-primary"
                 disabled={!this.state.uniqueIdentifierLabel}
                 onClick={() => this.generateRDFFromDelimitedFile()}
+                style={{ marginTop: '15px'}}
               >
                 Upload File and Mapping
           </button>
-        </div>
       </React.Fragment>
     );
 
@@ -622,8 +622,8 @@ export class DelimitedFileUploader extends Component<Props, State> {
                 this.setState({ storageId: storageId.value });
               }}
             /> */}
-            <label>Target Folder</label>
-            <div className={styles.storageInput} style={{ display: 'flex' }}>
+            {/* <label>Target Folder</label> */}
+            {/* <div className={styles.storageInput} style={{ display: 'flex' }}> */}
               {/* <ReactSelect
                 clearable={false}
                 style={{ width: 85 }}
@@ -640,7 +640,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
                   this.setState({ path: newPath });
                 }}
               /> */}
-              <input
+              {/* <input
                 disabled={true}
                 value={path.objectKind}
                 style={{ width: 35, padding: 5 }}
@@ -656,9 +656,9 @@ export class DelimitedFileUploader extends Component<Props, State> {
                 //   this.setState({ path: newPath });
                 // }}
                 className={`plain-text-field__text form-control ${styles.storageInput}`}
-              />
-            </div>
-            <label>Target Filename</label>
+              /> */}
+            {/* </div> */}
+            <label>Filename</label>
             <input
               disabled={true}
               value={path.name}
@@ -668,8 +668,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
               className={`plain-text-field__text form-control ${styles.storageInput}`}
             />
 
-          <label>Target Path Preview</label>
-          <div className={styles.storageInput} style={{ display: 'flex' }}>
+          {/* <label>Target Path Preview</label>
             <input
               disabled={true}
               value={fileNotSelected ? '' : renderedPath}
@@ -681,7 +680,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
                   : 'Target path: ' + renderedPath
               }
               className={`plain-text-field__text form-control ${styles.storageInput}`}
-            />
+            /> */}
             {/* <button
               title={
                 fileNotSelected
@@ -694,7 +693,6 @@ export class DelimitedFileUploader extends Component<Props, State> {
             >
               Upload
             </button> */}
-          </div>
           {delimitedFileMapping}
           </div>
         </div>

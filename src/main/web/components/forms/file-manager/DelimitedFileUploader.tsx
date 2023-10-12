@@ -72,12 +72,13 @@ export interface State {
   storageId?: string;
   path?: FilePath;
   file?: File;
-  isFileNotUploaded?: boolean;
+  isDelimitedFileNotUploaded?: boolean;
   //fileMapping?: DelimitedFileMappings;
   uniqueIdentifier: string;
   uniqueIdentifierLabel: string;
   columns: [];
   selectedMappedColumns: MappedColumnAttr[]
+  isRdfFileUploading: boolean
 }
 
 export interface Props {
@@ -142,11 +143,12 @@ export class DelimitedFileUploader extends Component<Props, State> {
         objectKind,
         name: undefined,
       },
-      isFileNotUploaded: true,
+      isDelimitedFileNotUploaded: true,
       uniqueIdentifier: undefined,
       uniqueIdentifierLabel: undefined,
       columns: [],
       selectedMappedColumns: [],
+      isRdfFileUploading: false
     };
   }
 
@@ -205,7 +207,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
             progress: 80,
             path: this.state.path,
             file: file,
-            isFileNotUploaded: false,
+            isDelimitedFileNotUploaded: false,
           });
         },
         error: (error) => {
@@ -225,7 +227,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
               name: '',
             },
             file: undefined,
-            isFileNotUploaded: true,
+            isDelimitedFileNotUploaded: true,
           });
         },
       });
@@ -319,7 +321,8 @@ export class DelimitedFileUploader extends Component<Props, State> {
 
   generateRDFFromDelimitedFile(){
     
-    console.log('mapped columns',this.state.selectedMappedColumns)
+    this.setState({isRdfFileUploading: true})
+
     let var_mappedColumnsArray;
     if (this.state.selectedMappedColumns.length === 0)
     {
@@ -367,12 +370,14 @@ export class DelimitedFileUploader extends Component<Props, State> {
           name: '',
         },
         file: undefined,
-        isFileNotUploaded: true,
+        isDelimitedFileNotUploaded: true,
         uniqueIdentifier: undefined,
         uniqueIdentifierLabel: undefined,
         columns: [],
         selectedMappedColumns: [],
+        isRdfFileUploading: false
       });
+      setTimeout(() => refresh(), 2000);
     })
     .catch((error) => {
       console.error('Error Occurred while generating RDF', error);
@@ -418,7 +423,6 @@ export class DelimitedFileUploader extends Component<Props, State> {
               'File ' + delimitedFileName + ' and Mappings has been successfully uploaded.',
           },
         });
-        setTimeout(() => refresh(), 2000);
       },
       error: (error) => {
         console.log(error)
@@ -451,7 +455,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
 
           <label>Unique Identifier</label>
           <ReactSelect
-            disabled={this.state.isFileNotUploaded}
+            disabled={this.state.isDelimitedFileNotUploaded}
             className={styles.storageInput}
             clearable={true}
             value={this.state.uniqueIdentifier}
@@ -490,7 +494,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
 
           <label>Unique Identifier Label</label>
           <ReactSelect
-            disabled={this.state.isFileNotUploaded}
+            disabled={this.state.isDelimitedFileNotUploaded}
             className={styles.storageInput}
             clearable={false}
             value={this.state.uniqueIdentifierLabel}
@@ -515,7 +519,7 @@ export class DelimitedFileUploader extends Component<Props, State> {
           <label>Select Columns to be Mapped</label>
           <ReactSelect
             multi={true}
-            disabled={this.state.isFileNotUploaded}
+            disabled={this.state.isDelimitedFileNotUploaded}
             className={styles.storageInput}
             clearable={true}
             value={this.state.selectedMappedColumns}
@@ -559,10 +563,11 @@ export class DelimitedFileUploader extends Component<Props, State> {
                 className="btn btn-primary"
                 disabled={!this.state.uniqueIdentifierLabel}
                 onClick={() => this.generateRDFFromDelimitedFile()}
-                style={{ marginTop: '15px'}}
+                style={{ marginTop: '15px', marginBottom: '3px'}}
               >
                 Upload File and Mapping
           </button>
+          {this.state.isRdfFileUploading && <h5>File is Uploading...</h5>}
       </React.Fragment>
     );
 

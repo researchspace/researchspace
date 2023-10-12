@@ -287,9 +287,13 @@ public class LDPAssetsLoader {
                     modelExisting.add(res.next());
                 }
             }
+            /* Allow all repositories to be loaded for the first time */
             if (modelExisting.isEmpty()) {
                 toLoad.add(ctx);
-            } else if (!repositoryId.equals("vocabularies") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
+            } 
+            /* Skip checks for the content of the vocabularies repository as the assumption 
+               is that these are good practice vocabularies that will be modified during development or instance use */
+            else if (!repositoryId.equals("vocabularies") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                 inconsistentContexts.add(ctx);
             }
         }

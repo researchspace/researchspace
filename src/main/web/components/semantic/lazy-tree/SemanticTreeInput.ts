@@ -347,6 +347,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   private onSelectionChanged = (selection: TreeSelection<Node>) => {
     if (this.props.onSelectionChanged) {
       this.props.onSelectionChanged(selection);
+      console.log(11111)
     }
 
     /**

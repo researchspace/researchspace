@@ -83,14 +83,16 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
       <div className={classnames(styles.component, className)}>
         <Tabs id="rs-text-annotation-types">
           <Tab eventKey="images" title="Images">
-            <a target='_blank' href={this.props.imageIri}>
+            <div class="image-container">
               <ImageThumbnail 
                 imageOrRegion={this.props.imageIri}
                 imageIdPattern={this.props.imageIdPattern}
                 iiifServerUrl={this.props.iiifServerUrl}
               />
-            </a>
-            <div className="rs--image-click"></div>
+              <a className="rs--image-click" target="_blank" href={this.props.imageIri}>
+                <span>◱</span>
+              </a>
+            </div>
           </Tab>
           <Tab eventKey="notes" title='Notes'>
             <div className={styles.annotationList} ref={this.onAnnotationListMount}>

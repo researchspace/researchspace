@@ -83,7 +83,7 @@ export class AnnotationSidebar extends Component<AnnotationSidebarProps, State> 
       <div className={classnames(styles.component, className)}>
         <Tabs id="rs-text-annotation-types">
           <Tab eventKey="images" title="Images">
-            <div class="image-container">
+            <div className="image-container">
               <ImageThumbnail 
                 imageOrRegion={this.props.imageIri}
                 imageIdPattern={this.props.imageIdPattern}

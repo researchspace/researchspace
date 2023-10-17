@@ -1,2 +1,2 @@
 # Include all files inside scripts folder to be the part of scripts package
-__all__ = ["delimited_to_rdf"]
+__all__ = ["delimited_to_rdf", "clip_open_source", "deepltranslator"]

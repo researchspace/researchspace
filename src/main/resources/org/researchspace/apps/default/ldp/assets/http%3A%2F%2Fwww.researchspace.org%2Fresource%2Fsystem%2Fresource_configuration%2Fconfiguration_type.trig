@@ -1,0 +1,47 @@
+
+<http://www.researchspace.org/resource/system/resource_configuration/configuration_type/context> {
+  
+  <http://www.researchspace.org/resource/system/resource_configuration/configuration_type>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>,
+      <http://www.researchspace.org/resource/system/category/system>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Resource configuration type";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-8f512994403f401cb47e147df79204d2-4vca6e;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#boolean>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-8f512994403f401cb47e147df79204d2-6tyjdq;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-8f512994403f401cb47e147df79204d2-havgus;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-17T12:23:05.858+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+
+  _:genid-8f512994403f401cb47e147df79204d2-4vca6e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  OPTIONAL {
+    $subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?systemType .
+    FILTER(?systemType in (<http://www.researchspace.org/resource/system/resource_configuration/configuration_type/system>))
+  }
+  BIND(IF(BOUND(?systemType), true, false) AS ?value) .
+}""" .
+  
+  _:genid-8f512994403f401cb47e147df79204d2-6tyjdq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/resource_configuration/configuration_type/system> .
+} WHERE { 
+  FILTER(?value = true) .
+  $subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/resource_configuration/configuration_type/system> .
+}""" .
+  
+  _:genid-8f512994403f401cb47e147df79204d2-havgus a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/resource/system/resource_configuration/configuration_type/system> .
+} WHERE {
+  FILTER(?value = true) .
+#  BIND(IRI(CONCAT(STR(?subject), \"/navigation\")) AS ?systemType) .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/resource/system/resource_configuration/configuration_type> .
+}

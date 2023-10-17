@@ -47,6 +47,9 @@ import { ItemSelectionChanged } from './SemanticTreeInputEvents';
 
 import * as styles from './SemanticTreeInput.scss';
 
+const ITEM_INPUT_VARIABLE = 'item';
+const ITEM_OUTPUT_VARIABLE = 'label';
+
 export interface ComplexTreePatterns {
   /*
    *  Need to be specified if component should emit events.
@@ -114,6 +117,11 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * @default false
    */
   closeDropdownOnSelection?: boolean;
+
+    /**
+   * query to retrieve the item label that will be visualized
+   */
+    queryItemLabel?: string;
 }
 
 const ITEMS_LIMIT = 200;
@@ -243,7 +251,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       } else {
         selection = initialSelection as ReadonlyArray<Rdf.Iri>;
       }
-      this.setInitialSelection(selection).onValue(this.onSelectionChanged);
+      this.setInitialSelection(selection).onValue(() => {this.onSelectionChanged});
     }
   }
 
@@ -340,14 +348,46 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     }
   }
 
+  /**
+   * If the attribute query_item_label is specified, and contains ?item,
+   * For each of the selected items the query will be fired and
+   * and the label will be updated
+   */
+  private updateLabelField(selection: TreeSelection<Node>) {
+    const { queryItemLabel } = this.props;
+    if (queryItemLabel) {
+      const selectedItems = TreeSelection.leafs(selection);
+      if (queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
+        selectedItems.map((selectedItem) => {
+
+          SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.iri.value}>`)).onValue(
+            (result) => {
+              const label = Rdf.literal(result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value);
+              const node = TreeSelection.nodesFromKey(selection, selectedItem.iri.value).first();
+              selection.updateNode(selection.getKeyPath(node), (singleNode) => {
+                singleNode.label = label;
+                this.setState({ confirmedSelection: selection });
+                return singleNode;
+              });
+            }
+          );
+        });
+      }
+    }
+  }
+
   public setValue(iri: Rdf.Iri) {
     this.setInitialSelection([iri]).onValue(this.onSelectionChanged);
   }
 
   private onSelectionChanged = (selection: TreeSelection<Node>) => {
+    
+    this.updateLabelField(selection)
+
     if (this.props.onSelectionChanged) {
       this.props.onSelectionChanged(selection);
     }
+
 
     /**
      * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
@@ -358,6 +398,9 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         eventType: ItemSelectionChanged, source: this.props.id, data: {iri}
       });
     }
+
+    
+
   }
 
   private renderTextField() {

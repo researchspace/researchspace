@@ -51,22 +51,29 @@
                                       page-size='10000'
                                       config='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
                                               {{#if labelSparqlPattern}}
-                                              "labelPattern": "{{labelSparqlPattern}}",
+                                                "labelPattern": "{{labelSparqlPattern}}",
                                               {{/if}}
                                               {{#if orderByPattern}}
-                                              "orderByPattern": "{{orderByPattern}}",
+                                                "orderByPattern": "{{orderByPattern}}",
                                               {{/if}}
-                                              "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__. {{#if rdfType}} ?item a/rdfs:subClassOf* <{{rdfType}}> .{{/if}} {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
+                                                "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__. {{#if rdfType}} ?item a/rdfs:subClassOf* <{{rdfType}}> .{{/if}} {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
                                               }'>
                     <template id='template'>
                       <span class="tree-item-actions-container">
-                          <mp-event-trigger id='resource-config-form-edit-trigger--{{iri}}' type='Component.TemplateUpdate'
-                                            data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' targets='["resource-config-term-forms"]'>
+                          <mp-event-trigger id='resource-config-form-edit-trigger--{{iri}}' 
+                                            type='Component.TemplateUpdate'
+                                            data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
+                                            targets='["resource-config-term-forms"]'>
                             <span class='tree-item-action'>
                               <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
                             </span>
                           </mp-event-trigger>
-                          <mp-event-proxy id='resource-config-focus-tree-element' on-event-source='resource-config-form-edit-trigger--{{iri}}' proxy-event-type='LazyTree.Focus' proxy-targets='["resource-config-scheme-tree"]' data='{"iri":"{{iri}}"}'></mp-event-proxy>
+                          <mp-event-proxy id='resource-config-focus-tree-element' 
+                                          on-event-source='resource-config-form-edit-trigger--{{iri}}' 
+                                          proxy-event-type='LazyTree.Focus' 
+                                          proxy-targets='["resource-config-scheme-tree"]' 
+                                          data='{"iri":"{{iri}}"}'>
+                          </mp-event-proxy>
                       </span>
                     </template>
                   </semantic-lazy-tree> 
@@ -82,23 +89,6 @@
           <div class="page__content-container resource-editDetails-form-container">
             <mp-event-target-template-render id='resource-config-term-forms' template='{{> template}}'>
               <template id='template'>
-                {{#switch mode}}
-                  {{#case "new" break=true}}
-                      <h2 class="resource-editDetails-form-title">New configuration</h2>
-                  {{/case}}
-  
-                  {{#case "edit" break=true}}
-                    <h2 class="resource-editDetails-form-title"><mp-label iri='{{iri}}'></mp-label></h2>
-                  {{/case}}
-                
-                  {{#case "deleted" break=true}}
-                    <h2 class="resource-editDetails-form-title">Deleted configuration: {{label}}</h2>
-                  {{/case}}
-
-                  {{#default}}
-                    <div></div>
-                  {{/default}}
-                {{/switch}}
       
                 {{#if (not (eq mode "deleted"))}}
                   <mp-event-proxy id='resource-config-tree-refresh-on-created' 

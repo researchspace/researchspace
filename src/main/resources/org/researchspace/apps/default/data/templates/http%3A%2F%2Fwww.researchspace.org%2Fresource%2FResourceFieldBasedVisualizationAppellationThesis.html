@@ -32,7 +32,7 @@
                               template='{{> tuple2Template bindings_2=bindings}}'
                               >
             {{else}}
-              <semantic-query  query='SELECT distinct ?val ?link WHERE{ <{{cur_resource.value}}> <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ?o . ?o <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> . ?o <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> "{{field.value}}" . ?o <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?link . ?o <http://www.cidoc-crm.org/cidoc-crm/P190_href_title> ?val} order by ?val'  
+              <semantic-query  query='SELECT distinct ?val ?link WHERE{ <{{cur_resource.value}}> <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ?o . ?o <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> . ?o <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> "{{field.value}}" . ?o <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?val . ?o <http://www.cidoc-crm.org/cidoc-crm/P70i_is_documented_in> ?link} order by ?val'  
                 template='{{> tuple2Template bindings_2=bindings}}'
                 >
             {{/ifCond}}
@@ -47,7 +47,7 @@
                         {{#ifCond field.value "==="  "Literature"}}
                           {{#each bindings_2}}  
                             <span class="rs-page-resource__field-label">
-                                  <a href="{{link.value}}">{{val.value}}</a>
+                                  <a href="{{{link.value}}}">{{val.value}}</a>
                             </span>
                             <br/>
                           {{/each}}

@@ -1,0 +1,61 @@
+@prefix : <http://ccd-tna.kartography.cloud/resource/> .
+@prefix rs: <http://www.researchspace.org/ontology/> .
+@prefix User: <http://www.researchspace.org/resource/user/> .
+@prefix Help: <http://help.researchspace.org/resource/> .
+@prefix Platform: <http://www.researchspace.org/resource/system/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/> .
+@prefix rsp: <http://www.researchspace.org/resource/> .
+@prefix rshelp: <http://researchspace.org/help/> .
+@prefix crmsci: <http://www.ics.forth.gr/isl/CRMsci/> .
+@prefix crmgeo: <http://www.ics.forth.gr/isl/CRMgeo/> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix crminfluence: <http://www.cidoc-crm.org/cidoc-crm/influence/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix crminf: <http://www.ics.forth.gr/isl/CRMinf/> .
+@prefix Admin: <http://www.researchspace.org/resource/admin/> .
+@prefix bds: <http://www.bigdata.com/rdf/search#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix crmba: <http://www.cidoc-crm.org/cidoc-crm/CRMba/> .
+@prefix ontodia: <http://ontodia.org/schema/v1#> .
+@prefix crmarchaeo: <http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/> .
+@prefix forms: <http://www.researchspace.org/resource/system/forms/> .
+@prefix frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/> .
+
+rs:context {
+  rs:EX_Digital_Image a rdfs:Class;
+    rdfs:subClassOf crmdig:D1_Digital_Object, crm:E36_Visual_Item;
+    rdfs:label "Digital Image" .
+  
+  rs:EX_Digital_Image_Region a rdfs:Class;
+    rdfs:subClassOf crmdig:D35_Area, crm:E36_Visual_Item, crmdig:D1_Digital_Object;
+    rdfs:label "Digital Image Region" .
+  
+  <http://www.researchspace.org/ontology/> a <http://www.w3.org/ns/ldp#Resource>, prov:Entity,
+      owl:Ontology;
+    prov:generatedAtTime "2021-10-04T05:27:54.915Z"^^xsd:dateTime;
+    prov:wasAttributedTo User:admin .
+  
+  rs:PX_has_main_representation a rdf:Property;
+    rdfs:label "has main representation";
+    rdfs:range crmdig:D1_Digital_Object;
+    rdfs:domain crm:E1_CRM_Entity;
+    rdfs:comment "This is to identifier the primary digital representation an object may have";
+    rdfs:subPropertyOf crm:P138i_has_representation .
+  
+  rs:PX_main_represents a rdf:Property;
+    rdfs:domain crm:D1_Digital_Object;
+    rdfs:range crm:E1_CRM_Entity;
+    rdfs:label "is main represetation of";
+    rdfs:comment "This is to identifier the primary digital representation of an object";
+    rdfs:subPropertyOf crm:P138_represents .
+  
+  ontodia:Diagram rdfs:subClassOf crminf:I4_Proposition_Set .
+  
+  <http://researchspace.org/container/rootContainer/ontologyContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/ontology/> .
+}

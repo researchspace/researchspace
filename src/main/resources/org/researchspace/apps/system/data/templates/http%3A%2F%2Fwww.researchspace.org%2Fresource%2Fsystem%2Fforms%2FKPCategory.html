@@ -1,26 +1,56 @@
 <semantic-form [[> rsp:FormDefaults]] 
                persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
                new-subject-template='{{scheme}}/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}'
-               fields='[[fieldDefinitions
-                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                        rdfType="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                        inScheme="http://www.researchspace.org/resource/system/skos_inScheme"
-                        prefLabel="http://www.researchspace.org/resource/system/skos_prefLabel"
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  rdfsType="http://www.w3.org/2000/01/rdf-schema#type"
+                  inScheme="http://www.researchspace.org/pattern/system/entity/skos_inScheme"
+
+                  prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
+
+                  broader="http://www.researchspace.org/pattern/system/type/broader"
+                  narrower="http://www.researchspace.org/pattern/system/type/narrower"
+
+                  description="http://www.researchspace.org/pattern/system/entity/description"
                ]]'
 >
 
-  <div class="form-scroll-area">
-  
-    <semantic-form-hidden-input for="classtype" default-value="http://www.researchspace.org/resource/system/fields/category"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="rdfType" default-value="http://www.w3.org/2004/02/skos/core#Concept"></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="inScheme" default-value="http://www.researchspace.org/resource/system/FieldCategories"> </semantic-form-hidden-input>  
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-value="http://www.w3.org/2004/02/skos/core#Concept"></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="rdfsType" default-value="http://www.researchspace.org/resource/system/fields/category"></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="inScheme" default-value="http://www.researchspace.org/resource/system/FieldCategories"></semantic-form-hidden-input>  
+      
+    <semantic-form-text-input for="prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
+                              placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
+    </semantic-form-text-input>
+      
+    <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                    placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                    close-dropdown-on-selection='false'
+                                    default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                    tree-patterns='{"scheme": "{{scheme}}",
+                                                    "schemePattern": "?item skos:inScheme <{{scheme}}>",
+                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                    "labelPattern": "?item skos:prefLabel ?label ."}'
+    ></semantic-form-tree-picker-input>
+
+    <semantic-form-tree-picker-input for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                      placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}"
+                                      close-dropdown-on-selection='false'
+                                      tree-patterns='{"scheme": "{{scheme}}",
+                                                      "schemePattern": "?item skos:inScheme <{{scheme}}>",
+                                                      "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                      "labelPattern": "?item skos:prefLabel ?label ."}'
+    ></semantic-form-tree-picker-input>
     
-    <semantic-form-text-input for="prefLabel" placeholder="Enter preferred label" label="Preferred label"> </semantic-form-text-input>
-
+    <semantic-form-text-input for="description" multiline=true label="Description/comment" 
+                              placeholder="Enter description/comment"> 
+    </semantic-form-text-input>
+      
   </div>
-
+  
   <semantic-form-errors></semantic-form-errors>
-  [[> rsp:FormDefaultActions]] 
+  [[> rsp:FormDefaultActions formEntity='category']] 
 </semantic-form>
-
 

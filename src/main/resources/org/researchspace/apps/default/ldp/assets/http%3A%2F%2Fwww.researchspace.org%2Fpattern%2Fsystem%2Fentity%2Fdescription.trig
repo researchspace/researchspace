@@ -1,0 +1,50 @@
+
+<http://www.researchspace.org/pattern/system/entity/description/context> {
+  <http://www.researchspace.org/pattern/system/entity/description> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-1c06e75a0ef1469fb8f4351de156a893-bknke5;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1c06e75a0ef1469fb8f4351de156a893-jq8yj;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Description/comment"@en;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/system>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-1c06e75a0ef1469fb8f4351de156a893-62863m;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-20T14:03:40.355+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-1c06e75a0ef1469fb8f4351de156a893-bknke5 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P67i_is_referred_to_by ?information_object  .
+  ?information_object a crm:E73_Information_Object .
+  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+ ?information_object crm:P190_has_symbolic_content $value . 
+}
+  where {
+BIND(URI(CONCAT(str($subject), \"/description\")) as ?information_object)}""" .
+  
+  _:genid-1c06e75a0ef1469fb8f4351de156a893-62863m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P67i_is_referred_to_by ?information_object  .
+  ?information_object a crm:E73_Information_Object .
+  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+ ?information_object crm:P190_has_symbolic_content $value . 
+} WHERE {
+  $subject crm:P67i_is_referred_to_by ?information_object  .
+  ?information_object a crm:E73_Information_Object .
+  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+ ?information_object crm:P190_has_symbolic_content $value . 
+}""" .
+  
+  _:genid-1c06e75a0ef1469fb8f4351de156a893-jq8yj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    $subject crm:P67i_is_referred_to_by ?information_object  .
+  ?information_object a crm:E73_Information_Object .
+  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+ ?information_object crm:P190_has_symbolic_content $value . 
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/entity/description> .
+}

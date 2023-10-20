@@ -116,19 +116,69 @@
                 {{/case}}
 
                 {{#case "edit" break=true}}
-                  <h2 class="resource-editDetails-form-title"><mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label></h2>
+                  <h2 class="resource-editDetails-form-title">
+                    <mp-draggable iri='{{iri}}'>
+                      <div style="display: flex; align-items: center; cursor: grab;">
+                        <i class="rs-icon rs-icon-drag_points" style="margin-right: 7px; margin-left: 10px;"></i> 
+                        {{#if labelSparqlPattern}}
+                          <semantic-query query="SELECT ?label WHERE {
+                                                  BIND(<{{iri}}> as ?item) .
+                                                  {{labelSparqlPattern}}
+                                                }"
+                                          template='{{> template}}'>
+  
+                            <template id='template'>
+                              {{#each bindings}}
+                                <span>{{label.value}}{{#if @last}}{{else}},{{/if}}</span>
+                              {{/each}}
+                            </template>
+                          </semantic-query>
+                        {{else}}
+                        <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                        {{/if}}
+                      </div>
+                    </mp-draggable>
+                  </h2>
+
+                  <div style="display: flex; gap: 10px;">
+                    <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard'>
+                      <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+                        <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+                        Copy IRI
+                      </button>
+                    </mp-copy-to-clipboard>
+                    <mp-event-trigger id='{{frameId}}-form-refresh-trigger' 
+                                      type='Component.TemplateUpdate' 
+                                      targets='["{{frameId}}-term-forms"]'>
+                      <button class="btn btn-default btn-textAndIcon" title="Refresh form">
+                        <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                          Refresh
+                        </button>
+                    </mp-event-trigger>
+                  </div>
                 {{/case}}
 
                 {{#case "view" break=true}}
      
-                  <h2 class="resource-editDetails-form-title"><mp-label iri='{{iri}}'></mp-label></h2>
-                  <!-- <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard!'>
-                    <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
-                      <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
-                      Copy IRI
-                    </button>
-                  </mp-copy-to-clipboard> -->
-  
+                  <h2 class="resource-editDetails-form-title">
+                    <mp-label iri='{{iri}}'></mp-label>
+                  </h2>
+                  <div style="display: flex; gap: 10px;">
+                    <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard'>
+                      <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+                        <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+                        Copy IRI
+                      </button>
+                    </mp-copy-to-clipboard>
+                    <mp-event-trigger id='{{frameId}}-form-refresh-trigger' 
+                                      type='Component.TemplateUpdate' 
+                                      targets='["{{frameId}}-term-forms"]'>
+                      <button class="btn btn-default btn-textAndIcon" title="Refresh form">
+                        <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                          Refresh
+                        </button>
+                    </mp-event-trigger>
+                  </div>
                 {{/case}}
               
                 {{#case "deleted" break=true}}

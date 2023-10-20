@@ -1,29 +1,31 @@
-<semantic-form [[> rsp:FormDefaults]] 
-               persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
-               new-subject-template='{{scheme}}/data/{{{{raw}}}}{{resource_label}}{{{{/raw}}}}'
-               fields='[[
+<semantic-form  id='{{viewId}}-vocab-form' 
+                post-action="event"
+                subject='{{node}}'
+                persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
+                new-subject-template='{{scheme}}/data/{{{{raw}}}}{{resource_label}}{{{{/raw}}}}'
+                fields='[[
                 fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                  resource_configuration_is_listed_in="http://www.researchspace.org/resource/system/resource_configuration/cidoc-crm/P71i_is_listed_in"
+                  resource_configuration_is_listed_in="http://www.researchspace.org/pattern/system/entity/is_listed_in"
 
-                  resource_configuration_type="http://www.researchspace.org/resource/system/resource_configuration/configuration_type"
+                  resource_configuration_type="http://www.researchspace.org/pattern/system/resource_configuration/configuration_type"
                   
-                  resource_label="http://www.researchspace.org/resource/system/resource_configuration/resource_label"
-                  resource_form="http://www.researchspace.org/resource/system/resource_configuration/resource_form"
+                  resource_label="http://www.researchspace.org/pattern/system/resource_configuration/resource_label"
+                  resource_form="http://www.researchspace.org/pattern/system/resource_configuration/resource_form"
 
-                  resource_ontology_type="http://www.researchspace.org/resource/system/resource_configuration/resource_ontology_type"
-                  resource_system_type="http://www.researchspace.org/resource/system/resource_configuration/resource_system_type"
+                  resource_ontology_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_type"
+                  resource_system_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_system_type"
 
-                  resource_broader_property="http://www.researchspace.org/resource/system/resource_configuration/resource_broader_property"
-                  resource_membership_property="http://www.researchspace.org/resource/system/resource_configuration/resource_membership_property"
+                  resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
+                  resource_membership_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property"
                   
-                  resource_label_sparql_pattern="http://www.researchspace.org/resource/system/resource_configuration/resource_label_sparql_pattern"
-                  resource_restriction_sparql_pattern="http://www.researchspace.org/resource/system/resource_configuration/resource_restriction_sparql_pattern"
-                  resource_order_sparql_pattern="http://www.researchspace.org/resource/system/resource_configuration/resource_order_sparql_pattern"
+                  resource_label_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern"
+                  resource_restriction_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern"
+                  resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
                   
-                  entity_has_navigation="http://www.researchspace.org/resource/system/resource_configuration/has_navigation_menu"
-                  has_facet_kp="http://www.researchspace.org/resource/system/resource_configuration/has_facet_kp"
-                  entity_has_view="http://www.researchspace.org/resource/system/resource_configuration/has_view"
+                  entity_has_navigation="http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu"
+                  has_facet_kp="http://www.researchspace.org/pattern/system/resource_configuration/has_facet_kp"
+                  entity_has_view="http://www.researchspace.org/pattern/system/resource_configuration/has_view"
                ]]'
                >
 
@@ -49,22 +51,44 @@
       <div style="display: flex; align-items: center; gap: 5px;">
         {{#ifCond mode "!==" "new"}}
           <mp-copy-to-clipboard text='{{node}}' message='IRI has been copied'>
-            <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+            <button class="btn btn-default btn-textAndIcon" title="Copy IRI" style="height: 41px;">
               <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
               Copy IRI
             </button>
           </mp-copy-to-clipboard>
         {{/ifCond}}
-        <button class="btn btn-default">
+        <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
+                          type='Component.TemplateUpdate' 
+                          targets='["{{viewId}}-resource-config-term-forms"]'
+                          data='{"mode": "{{mode}}",
+                                "frameId": "{{viewId}}",
+                                {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                {{#if broaderProperty}}"broaderPropertyIRI":"{{broaderProperty}}",{{/if}} 
+                                "iri": "{{node}}"}' >
+          <button class="btn btn-default btn-textAndIcon" title="Refresh form" style="height: 41px;">
+            <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+              Refresh
+            </button>
+        </mp-event-trigger>
+
+        <div class="page__section-container-whiteBg" style="display: flex; align-items: center; gap:5px; padding: 7px 12px; margin: 0;">
+          <div class='color-secondary' style="font-weight: 600;">System</div>
+          
           <div class="menu-toggle toggle-label-left">
-            <semantic-form-checkbox-input class="toggle" for='resource_configuration_type' 
+            <semantic-form-checkbox-input class="toggle" for="resource_configuration_type" render-header="false"
               label="system">
             </semantic-form-checkbox-input>
           </div>
-        </button>
+        [[!--  <mp-popover>
+            <mp-popover-trigger placement="bottom"  trigger='["click","hover","focus"]'> 
+              <sup><rs-icon icon-type="round" icon-name="help_center"></rs-icon></sup>
+            </mp-popover-trigger>
+            <mp-popover-content>
+              <div>Content</div>
+            </mp-popover-content>
+          </mp-popover> --]]
+        </div>
       </div>
-      
-
     </div>
 
     <bs-tabs id="tabs">
@@ -82,7 +106,7 @@
                 placeholder="Enter IRI of the form that should be used to edit the resource"></semantic-form-text-input>
               </div>
               {{#if node}}
-                  <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/resource_configuration/resource_form> ?form}'>
+                  <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?form}'>
                     <template id='template'>
                       <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
                           <button class="btn btn-primary btn-input-inline btn-textAndIcon">
@@ -128,7 +152,7 @@
                                                                             "tooltip": "Open list of system types"
                                                                           }'
 
-                                                nested-form-template='{{{{raw}}}}{{> forms:E55_Type nested=true editable=true 
+                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true 
                                                                       scheme="http://www.researchspace.org/resource/vocab/system_entity"
                                                                       entityType="system type" }}{{{{/raw}}}}'
 
@@ -170,7 +194,7 @@
           </div>
 
       </bs-tab>
-
+[[!--
       <bs-tab event-key="2" title="Navigation menu">
 
           <div>Enable and customise a <b>navigation menu</b> to be displayed in the Resource page.</div>
@@ -180,17 +204,17 @@
           </div>
       
           {{#if node}}
-            <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/resource/system/resource_configuration/has_navigation_menu> ?form}'>
+            <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu> ?form}'>
               <template id='then'>
                 <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
                                 options='{
                                           "collection": "{{node}}/navigation menu",
-                                          "membershipProperty": "http://www.researchspace.org/resource/system/resource_configuration/menu_item",
+                                          "membershipProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_item",
                                           "itemLabel": "Navigation item",
                                           "resourceView": "[[resolvePrefix "rsp:ResourceNavigationConfigForm"]]",
-                                          "broaderProperty": "http://www.researchspace.org/resource/system/resource_configuration/menu_broader_item",
-                                          "labelSparqlPattern": "?item <http://www.researchspace.org/resource/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/resource/system/resource_configuration/resource_label> ?label .",
-                                          "frameId": "entity-navigation-config",
+                                          "broaderProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_broader_item",
+                                          "labelSparqlPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .",
+                                          "viewId": "entity-navigation-config",
                                           "editable": true
                                           }'
                 ></inline-template>
@@ -198,7 +222,7 @@
           {{/if}}
 
       </bs-tab>
-[[!--
+
     <bs-tab event-key="3" title="Views">
       <div>Define the <b>views (eg. thumbnail, table, timeline, chart, etc.)</b>
       used to display the entities associated to the Resource in the Resource page.</div>
@@ -206,9 +230,9 @@
                                     new-subject-template='view/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                                     fields='[[
                                       fieldDefinitions
-                                      view_has_label="http://www.researchspace.org/resource/system/resource_configuration/view_has_label"
-                                      view_has_order="http://www.researchspace.org/resource/system/resource_configuration/view_has_order"
-                                      view_has_template="http://www.researchspace.org/resource/system/resource_configuration/view_has_template"
+                                      view_has_label="http://www.researchspace.org/pattern/system/resource_configuration/view_has_label"
+                                      view_has_order="http://www.researchspace.org/pattern/system/resource_configuration/view_has_order"
+                                      view_has_template="http://www.researchspace.org/pattern/system/resource_configuration/view_has_template"
                                       ]]'
                                       >
                             <semantic-form-text-input for="view_has_label" placeholder="Enter label" label="View label"></semantic-form-text-input>
@@ -238,5 +262,5 @@
     
     <semantic-form-errors></semantic-form-errors>
 
- [[> rsp:FormDefaultActions]] 
+ [[> rsp:FormDefaultActions formEntity='configuration']] 
 </semantic-form>

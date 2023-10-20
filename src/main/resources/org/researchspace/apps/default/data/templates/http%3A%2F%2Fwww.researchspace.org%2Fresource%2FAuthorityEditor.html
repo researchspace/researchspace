@@ -40,7 +40,7 @@ uses client-side template:
                                             "xsdDatatype": "xsd:anyURI",
                                             "valueSetPattern": "SELECT $value $label WHERE { 
                                                                   ?value <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container> .
-                                                                  ?value <http://www.researchspace.org/resource/system/resource_configuration/resource_label> ?label .
+                                                                  ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .
                                                                 } ORDER BY ASC(?label)"
                                             }
                                     ]'>
@@ -73,7 +73,7 @@ uses client-side template:
                                       BIND("{{viewId}}" as ?viewId)
                                       BIND(IRI(CONCAT(STR(Default:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?schemeLabel), "\\s", "_")))) AS ?scheme) .
                                       BIND(?entityTypeURI as ?entityType)
-                                      ?entityType <http://www.researchspace.org/resource/system/resource_configuration/resource_label> ?entityTypeLabel .
+                                      ?entityType <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?entityTypeLabel .
                                       BIND (bound(?schemeDescription) AS ?schemeDescriptionText) . 
                                    #   BIND (IF(?schemeDescription , ?schemeDescription, false) AS ?schemeDescriptionText)
                                       OPTIONAL {
@@ -104,8 +104,8 @@ uses client-side template:
                                     fields='[[fieldDefinitions
                                               classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                               rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
-                                              scheme_refersto_type="http://www.researchspace.org/resource/system/crm_refers_to"
-                                              scheme_description="http://www.researchspace.org/resource/system/entity_description"
+                                              scheme_refersto_type="http://www.researchspace.org/pattern/system/scheme/refers_to"
+                                              scheme_description="http://www.researchspace.org/pattern/system/entity/description"
                                             ]]'
                       >
                         
@@ -235,7 +235,7 @@ uses client-side template:
                       BIND(BOUND(?managedConfig) as ?isManaged) 
                       OPTIONAL {
                         ?scheme crm:P67_refers_to ?authorityType .
-                        ?authorityType <http://www.researchspace.org/resource/system/resource_configuration/resource_label> ?authorityTypeLabel .
+                        ?authorityType <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?authorityTypeLabel .
                       }
                       OPTIONAL {
                      
@@ -296,7 +296,7 @@ uses client-side template:
                                                         post-action="reload"
                                                         fields='[[fieldDefinitions
                                                                   rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
-                                                                  prefLabel="http://www.researchspace.org/resource/system/skos_prefLabel"
+                                                                  prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
                                                                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                         ]]'
                                         >
@@ -323,7 +323,7 @@ uses client-side template:
                                                           "deletePattern": "DELETE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value . } WHERE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value. }",
                                                           "valueSetPattern": "SELECT $value $label WHERE { 
                                                               ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
-                                                              ?value <http://www.researchspace.org/resource/system/resource_configuration/resource_label> ?label .
+                                                              ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .
                                                             }"
                                                           }
                                                         ]'

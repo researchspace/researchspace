@@ -1,0 +1,45 @@
+
+<http://www.researchspace.org/pattern/system/type/narrower/context> {
+  <http://www.researchspace.org/pattern/system/type/narrower> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>,
+      <http://www.w3.org/2004/02/skos/core#Concept>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-15c1d5777a99424b8eef922677d56da6-jc79on;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-15c1d5777a99424b8eef922677d56da6-pjdi1n;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.w3.org/2004/02/skos/core#Concept>,
+      <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Narrower";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/system>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-15c1d5777a99424b8eef922677d56da6-8wv73d;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-20T16:39:32.799+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-15c1d5777a99424b8eef922677d56da6-pjdi1n a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P127i_has_narrower_term $value .
+  $value crm:P127_has_broader_term $subject .
+ 
+} WHERE {}""" .
+  
+  _:genid-15c1d5777a99424b8eef922677d56da6-8wv73d a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+ 
+    $subject crm:P127i_has_narrower_term $value .
+  $value crm:P127_has_broader_term $subject .
+} WHERE {
+ 
+   $subject crm:P127i_has_narrower_term $value .
+  $value crm:P127_has_broader_term $subject .
+}""" .
+  
+  _:genid-15c1d5777a99424b8eef922677d56da6-jc79on a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P127i_has_narrower_term ?value .
+  ?value skos:prefLabel ?label.
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/type/narrower> .
+}

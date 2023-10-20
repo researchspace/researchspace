@@ -206,9 +206,9 @@ export class ImportResourceComponent extends Component<Props, State> {
         <FormGroup>
           <p>These object IRIs are not present in target DB:</p>
           {unknownObjects.map((objectIRI) => (
-            <p className='color-action'>
+            <div className='color-action'>
               <ControlLabel>{objectIRI['@id'] + '\n'}</ControlLabel>
-            </p>
+            </div>
           ))}
         </FormGroup>
       );

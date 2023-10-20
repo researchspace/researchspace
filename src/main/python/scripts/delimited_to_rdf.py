@@ -118,12 +118,12 @@ class DelimitedToRDFConverter:
     
                     # Create RDF triples for each has_note property
                     for key, value in row.items():
-                        if (key not in [unique_id_col, unique_id_label_col] and value) and key in mapped_columns:
+                        if (key in mapped_columns):
 
                             if key == 'Pictures':
-                                g.add(entity_id, self.crm.P138i_has_representation, URIRef(self.sample_image_url))
+                                g.add((entity_id, self.crm.P138i_has_representation, URIRef(self.sample_image_url)))
 
-                            elif key == 'Literature':
+                            elif key == 'Literature' and value:
                                 exploded_column_values = value.split(';')
 
                                 for single_value in exploded_column_values:
@@ -144,7 +144,7 @@ class DelimitedToRDFConverter:
                                     else:
                                         appellation_id = self.distinct_values_url[key][single_value]
                                         g.add((entity_id, self.crm.P3_has_note, appellation_id))
-                            else:
+                            elif value:
 
                                 exploded_column_values = value.split(';')
 

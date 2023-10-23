@@ -38,7 +38,6 @@
         <button name="submit" class="btn btn-action">[[#if actionType]][[actionType]][[else]]Save[[/if]] [[#if formEntity]][[formEntity]][[/if]]</button>
       {{/switch}}
 
-
       <mp-event-proxy id='{{viewId}}-show-form-debug-dialog' 
                       on-event-source='{{viewId}}-vocab-form' 
                       on-event-type='Form.DryRunResults'
@@ -50,7 +49,7 @@
       <mp-event-target-template-render id='{{viewId}}-form-debug-info' template='{{> debugInfo}}'>
         <template id='debugInfo'>
           {{#if show}}
-            <mp-overlay-dialog show='true' id='{{viewId}}-form-debug-info-dialog' title="Form Debug" type="modal" bs-size="large">
+            <mp-overlay-dialog show='true' id='{{viewId}}-form-debug-info-dialog' title="Form debug" type="modal" class="modal-xlSize">
               <mp-overlay-dialog-content>
                 <div>
                   <ul>
@@ -119,6 +118,7 @@
                                   <mp-code-block mode='text/turtle' code-text='{{valueInsertQuery}}'></mp-code-block>
                                 </mp-collapsible-div-content>
                               </mp-collapsible-div>
+
                               <mp-collapsible-div expanded='false'>
                                 <mp-collapsible-div-trigger>
                                   <b>CONSTRUCT Query (debug)</b>
@@ -139,7 +139,7 @@
                     <div style="display: flex; justify-content: flex-end; width: 100%;">
                       <mp-event-trigger id='{{viewId}}-close-form-debug-dialog' 
                                         type='OverlayDialog.Close' 
-                                        proxy-targets='["{{viewId}}-form-debug-info-dialog"]'>
+                                        targets='["{{viewId}}-form-debug-info-dialog"]'>
                         <button class="btn btn-default">Close</button>
                       </mp-event-trigger>
                     </div>

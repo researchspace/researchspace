@@ -1,0 +1,50 @@
+
+<http://www.researchspace.org/pattern/system/document/abstract/context> {
+  
+  <http://www.researchspace.org/pattern/system/document/abstract> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E31_Document>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/document> ;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-c328a2cb97084c1aaa0b682d9c5742aa-q3mw9;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-c328a2cb97084c1aaa0b682d9c5742aa-i5m5a;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Document abstract";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-c328a2cb97084c1aaa0b682d9c5742aa-a0tm4yt;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-24T16:44:11.727+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-c328a2cb97084c1aaa0b682d9c5742aa-q3mw9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  	$subject crm:P67i_is_referred_to_by ?informationObj .
+    ?informationObj a crm:E73_Information_Object .
+  	?informationObj crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/abstract> .
+	?informationObj crm:P190_has_symbolic_content $value .
+}""" .
+  
+  _:genid-c328a2cb97084c1aaa0b682d9c5742aa-i5m5a a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P67i_is_referred_to_by ?informationObj .
+    ?informationObj a crm:E73_Information_Object .
+  	?informationObj crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/abstract> .
+	?informationObj crm:P190_has_symbolic_content $value .
+} WHERE {
+   BIND(URI(CONCAT(str($subject),\"/abstract\")) as ?informationObj)
+}""" .
+  
+  _:genid-c328a2cb97084c1aaa0b682d9c5742aa-a0tm4yt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  	$subject crm:P67i_is_referred_to_by ?informationObj .
+    ?informationObj a crm:E73_Information_Object .
+  	?informationObj crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/abstract> .
+	?informationObj crm:P190_has_symbolic_content $value .
+} WHERE {
+  	$subject crm:P67i_is_referred_to_by ?informationObj .
+    ?informationObj a crm:E73_Information_Object .
+  	?informationObj crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/abstract> .
+	?informationObj crm:P190_has_symbolic_content $value .
+}""" .
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/document/abstract> .
+}

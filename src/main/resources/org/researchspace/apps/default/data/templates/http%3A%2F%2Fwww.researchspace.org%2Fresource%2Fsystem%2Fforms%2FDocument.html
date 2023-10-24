@@ -1,0 +1,123 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/assets/files"}'
+                new-subject-template='/E31_Document/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                fields='[[fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                          document_url="http://www.researchspace.org/pattern/system/document/url"
+                          document_title="http://www.researchspace.org/pattern/system/document/title"
+
+                          document_type="http://www.researchspace.org/pattern/system/document/type"
+                          document_creation="http://www.researchspace.org/pattern/system/document/creation"
+
+                          document_abstract="http://www.researchspace.org/pattern/system/document/abstract"
+                         
+                        ]]'
+              >
+              
+  <div class="{{#if nested}}nested-form{{else}}form-scroll-area{{/if}}">
+
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E31_Document'> </semantic-form-hidden-input>
+    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/system_entity/document'></semantic-form-hidden-input>
+
+    <div style="display: flex; align-items:stretch; column-gap:30px; flex-wrap: wrap;">
+      <div style="min-width: 330px;">
+        <semantic-form-file-input for='document_url' 
+                                  label='Document file'
+                                  storage='images'
+                                  accept-pattern='application/*' 
+                                  temp-storage='tmp'
+                                  placeholder='Drag .pdf or .doc file or click to upload'
+                                  name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                  media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                  resource-query='PREFIX rso: <http://www.researchspace.org/ontology/>
+                                                  CONSTRUCT {
+                                                    ?__resourceIri__ a rso:EX_File.
+                                                    ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
+                                                    ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                                  } WHERE {}'
+                                  generate-iri-query='SELECT ?resourceIri {
+                                                        BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                      }'
+        ></semantic-form-file-input>
+      </div>
+      <div style="flex: 1;">
+        <semantic-form-text-input for="document_title" label="Document title" placeholder="Enter document title"> </semantic-form-text-input>
+
+        <semantic-form-tree-picker-input for='document_type' 
+                                        default-values='[{{#if docType}}"{{docType}}"{{/if}}]' 
+                                        label="Document type" 
+                                        placeholder="Select document type" 
+                                        close-dropdown-on-selection='true'
+                                        tree-patterns='{"scheme": "<http://ccd-tna.kartography.cloud/resource/vocab/document_type>", 
+                                                        "schemePattern": "?item crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/document_type>"}'
+                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                    "view": "authority-content",
+                                                                    "scheme": "http://ccd-tna.kartography.cloud/resource/vocab/document_type",
+                                                                    "tooltip": "Open list of document types"
+                                                                  }'
+                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true 
+                                                                            scheme="http://ccd-tna.kartography.cloud/resource/vocab/document_type"
+                                                                            entityType="document type" }}
+                                                              {{{{/raw}}}}'
+                                                        >
+        </semantic-form-tree-picker-input>
+
+        <semantic-form-composite-input for="document_creation"
+                                        render-header=false
+                                        new-subject-template="/E65_Creation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                        fields='[[fieldDefinitions
+                                                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                  creation_date="http://www.researchspace.org/pattern/system/document/creation/date"
+                                                  creation_author="http://www.researchspace.org/pattern/system/document/creation/author"
+                                                ]]'>
+        
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E65_Creation'> </semantic-form-hidden-input>
+
+            <div style="display: flex; align-items:flex-start; column-gap:15px; flex-wrap: wrap;">
+              <semantic-form-datetime-input for='creation_date' label="Document Date" placeholder="Enter date"></semantic-form-datetime-input>
+
+           
+              <semantic-form-tree-picker-input for="creation_author" 
+                                                label="Author" 
+                                                placeholder="Select author" 
+                                                close-dropdown-on-selection='false'
+                                                tree-patterns='{"scheme": "<http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>", 
+                                                                "schemePattern": "?item crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>",
+                                                                "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                                "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                  ?identifier a crm:E41_Appellation .
+                                                                                  ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                  ?identifier crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/full_name>"}'
+                                                
+                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                            "view": "authority-content",
+                                                                            "scheme": "http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure",
+                                                                            "tooltip": "Open list of authors"
+                                                                          }'
+                                                nested-form-template='{{{{raw}}}}
+                                                                        {{> forms:User nested=true editable=true 
+                                                                        scheme="http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure"
+                                                                        entityType="author" }}
+                                                                      {{{{/raw}}}}'
+                                                >
+              </semantic-form-tree-picker-input>
+          </div>
+
+        </semantic-form-composite-input>
+      </div> 
+    </div>
+
+    <semantic-form-text-input for="document_abstract" multiline='true' label="Document abstract" placeholder="Enter abstract"> </semantic-form-text-input>
+
+  </div>
+  
+  <semantic-form-errors></semantic-form-errors>
+  {{#ifCond mode "===" "new"}}
+    [[> rsp:FormDefaultActions actionType='Upload' formEntity='document' assetForm=true assetStorage='tmp']] 
+  {{else}}
+    [[> rsp:FormDefaultActions formEntity='document' assetForm=true assetStorage='tmp']] 
+  {{/ifCond}}
+
+</semantic-form>

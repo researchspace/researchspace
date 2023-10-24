@@ -9,32 +9,33 @@
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
     <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-83fe2a2e17394a09b960d4260afde29e-f05lq;
     <http://www.w3.org/2000/01/rdf-schema#label> "Term in Scheme"@en;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Entity>,
-      <http://www.w3.org/2004/02/skos/core#Concept>;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.w3.org/2004/02/skos/core#Concept>;
+
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/system>;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
     <http://www.w3.org/ns/prov#generatedAtTime> "2020-10-22T03:03:23.657+03:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
   _:genid-83fe2a2e17394a09b960d4260afde29e-lgr5jc a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject skos:inScheme ?value.
-      ?value skos:prefLabel ?label .
-}""" .
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label 
+    WHERE { 
+      $subject skos:inScheme ?value.
+      ?value skos:prefLabel ?label . 
+    }""" .
   
   _:genid-83fe2a2e17394a09b960d4260afde29e-n4z495 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> "INSERT { $subject skos:inScheme $value} WHERE {}" .
   
+  _:genid-83fe2a2e17394a09b960d4260afde29e-zocpot a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> "DELETE {$subject skos:inScheme $value} WHERE { $subject skos:inScheme $value }" .
+
   _:genid-83fe2a2e17394a09b960d4260afde29e-f05lq a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT $value $label WHERE {
     $value skos:inScheme ?scheme.
     $value skos:prefLabel $label . 
     $label bds:search \"*?token*\"
 }""" .
-  
-  _:genid-83fe2a2e17394a09b960d4260afde29e-zocpot a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> "DELETE {$subject skos:inScheme $value} WHERE {$subject skos:inScheme $value}" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/entity/skos_inScheme> .

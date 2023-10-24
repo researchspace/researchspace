@@ -2,10 +2,9 @@
 <http://www.researchspace.org/pattern/system/entity/skos_narrower/context> {
   <http://www.researchspace.org/pattern/system/entity/skos_narrower> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.w3.org/2004/02/skos/core#Concept> ;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>,
-      <http://www.w3.org/2004/02/skos/core#Concept>;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.w3.org/2004/02/skos/core#Concept>,
-      <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.w3.org/2004/02/skos/core#Concept>;
     <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1f98eed218f64293b6757e6427361372-y39d7g;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
@@ -19,33 +18,26 @@
   
   _:genid-1f98eed218f64293b6757e6427361372-jhz647q a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {  
-  $subject skos:narrower ?value .
-  $value skos:broader $subject .
-  $value crm:P127_has_broader_term $subject .
-  $subject crm:P127i_has_narrower_term ?value .
-}
-WHERE{
-  $subject skos:narrower ?value .
-  $value skos:broader $subject .
-  $value crm:P127_has_broader_term $subject .
-  $subject crm:P127i_has_narrower_term ?value .
-}
-  """ .
+      $subject skos:narrower ?value .
+      $value skos:broader $subject .
+    }
+    WHERE{
+      $subject skos:narrower ?value .
+      $value skos:broader $subject .
+    } """ .
   
   _:genid-1f98eed218f64293b6757e6427361372-tawaus a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
-  $subject skos:narrower $value .
-  $value skos:broader $subject .
-  $subject  crm:P127i_has_narrower_term $value .
-  $value crm:P127_has_broader_term $subject .
-} 
-WHERE {}""" .
+      $subject skos:narrower $value .
+      $value skos:broader $subject .
+    } 
+    WHERE {}""" .
   
   _:genid-1f98eed218f64293b6757e6427361372-y39d7g a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  $subject skos:narrower ?value .
-  ?value skos:prefLabel ?label .
-}""" .
+      $subject skos:narrower ?value .
+      ?value skos:prefLabel ?label .
+    }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/entity/skos_narrower> .

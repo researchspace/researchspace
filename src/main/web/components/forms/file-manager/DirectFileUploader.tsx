@@ -299,13 +299,13 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
                 <div className=''> {this.props.children || (
                     <div className='placeholder-item'>
                       <Icon iconType='round' iconName='file_upload' />
-                      <div>{this.props.placeholder || 'Drag a file or click to upload'}</div>
+                      <div>{this.props.placeholder || 'Drag file or click to upload'}</div>
                     </div>
                   )}
                 </div>
               ) : (
                 <div className={styles.fileIcon}>
-                  <i className={getFileIcon(file.type)} aria-hidden="true"></i>
+                  <Icon iconType='round' iconName={getFileIcon(file.type)}/>
                 </div>
               )}
             </Dropzone>

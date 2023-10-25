@@ -225,7 +225,9 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
               namePredicateIri={this.props.namePredicateIri}
               mediaTypePredicateIri={this.props.mediaTypePredicateIri}
             ></FileVisualizer>
-            <Icon iconType='round' iconName='close' onClick={this.removeFile} className={`${styles.caRemoveFile}`}/>
+            <button className={`btn btn-default btn-textAndIcon ${styles.caRemoveFile}`}>
+              <Icon iconType='round' iconName='close' onClick={this.removeFile} />
+            </button>
           </div>
         ) : (
           this.renderBody()

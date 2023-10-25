@@ -28,6 +28,7 @@ import { Alert, AlertConfig, AlertType } from 'platform/components/ui/alert';
 import { Spinner } from 'platform/components/ui/spinner';
 
 import * as styles from './FileManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 const DEFAULT_TITLE = 'Download file';
 const IMAGE_TYPES = [
@@ -173,7 +174,7 @@ export class FileVisualizer extends Component<FileVisualizerProps, FileVisualize
     const fileUrl = FileManager.getFileUrl(resource.fileName, this.props.storage);
     return (
       <a key="resource-iri" href={fileUrl} className={styles.fileIcon}>
-        <i className={icon} aria-hidden="true"></i>
+        <Icon iconType='round' iconName={icon}/>
       </a>
     );
   }
@@ -207,15 +208,15 @@ export function getFileIcon(mediaType: string): string {
     case 'image/tiff':
     case 'image/bmp':
     case 'image/png':
-      return 'fa fa-file-image-o';
+      return 'image';
     case 'application/pdf':
-      return 'fa fa-file-pdf-o';
+      return 'picture_as_pdf';
     case 'application/xml':
-      return 'fa fa-file-excel-o';
+      return 'table_view';
     case 'text/plain':
-      return 'fa fa-file-text';
+      return 'article';
     case 'text/html':
-      return 'fa fa-file-text-o';
+      return 'html';
     case 'video/mpeg':
     case 'video/mp4':
     case 'video/ogg':
@@ -225,8 +226,8 @@ export function getFileIcon(mediaType: string): string {
     case 'video/x-flv':
     case 'video/3gpp':
     case 'video/3gpp2':
-      return 'fa fa-film';
+      return 'smart_display';
     default:
-      return 'fa fa-file';
+      return 'description';
   }
 }

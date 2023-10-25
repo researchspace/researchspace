@@ -116,7 +116,10 @@ export class RdfUpload extends Component<Props, State> {
     keepSourceGraphs: false,
     allowLoadByUrl: true,
     showAdvancedOptions: true,
-    dropAreaTemplate: `<div class='${CLASS_NAME}__rdf-dropzone-content'>Please drag&amp;drop your RDF file(s) here</div>`
+    dropAreaTemplate: `<div class='${CLASS_NAME}__rdf-dropzone-content'>
+                        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                        <div>Drag RDF file(s) or click to upload</div>
+                      </div>`
   }
 
   constructor(props: Props, context: any) {

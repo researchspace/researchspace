@@ -211,8 +211,9 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
               {resourceIri.value}
             </a>
           ) : resourceIri ? (
-            <div className={styles.uploadedImageIri} title="File is loaded">
-              File is loaded
+            <div className={`${styles.uploadedImageIri} alert-component alert-component__success`} title="File loaded">
+              <Icon iconType='round' iconName='done' className='icon-left' />
+              File loaded
             </div>
           ) : null}
         </div>
@@ -262,7 +263,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderDropZone() {
     const alert = this.state.alertState ? <Alert {...this.state.alertState}></Alert> : null;
-    const placeholder = this.props.placeholder || 'Please drag&drop your file here';
+    const placeholder = this.props.placeholder || 'Drag file or click to upload';
     return (
       <div className={styles.FileUploader}>
         <Dropzone
@@ -272,7 +273,10 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           noClick={Boolean(this.state.progress)}
         >
           {(this.props.children as JSX.Element | JSX.Element[]) || (
-            <div className={styles.mpDropZonePlaceHolder}>{placeholder}</div>
+            <div className='placeholder-item'>
+              <Icon iconType='round' iconName='file_upload' />
+              <div>{placeholder}</div>
+            </div>
           )}
         </Dropzone>
         {alert ? <div className={styles.alertComponent}>{alert}</div> : null}
@@ -289,8 +293,8 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
         <div className={styles.urlInputHolder}>
           <FormControl inputRef={ref => { this.urlInputRef = ref; }}
-            type='text' placeholder='Please type file URL here' />
-          <Button bsStyle='primary' type='submit'
+            type='text' placeholder='Type file URL here' />
+          <Button bsStyle='action' type='submit'
             onClick={this.fetchFileFromUrl}
           >Fetch</Button>
         </div>
@@ -339,7 +343,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           this.setState({
             alertState: {
               alert: AlertType.WARNING,
-              message: e.message + ' Please, try to upload the file manually.',
+              message: e.message + ' Try to upload the file manually.',
             }
           });
         });

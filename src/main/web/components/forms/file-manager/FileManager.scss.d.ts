@@ -14,7 +14,6 @@ declare namespace FileManagerScssNamespace {
     fileUploader: string;
     fileVisualizer: string;
     header: string;
-    mpDropZonePlaceHolder: string;
     progress: string;
     rightInputBar: string;
     row: string;

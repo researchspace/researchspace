@@ -1,0 +1,68 @@
+<semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
+                post-action="event"
+                subject='{{node}}'
+                persistence='{"type": "sparql", "targetGraphIri": "{{node}}/container/context"}'
+                new-subject-template='/EX_Digital_Image_Region/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            
+                            image_annotation_label="http://www.researchspace.org/pattern/system/image_annotation/label"
+                            image_annotation_area_of_image="http://www.researchspace.org/pattern/system/image_annotation/area_of_image"
+                          ]]'
+              >
+              
+  <div class="{{#if nested}}nested-form{{else}}form-scroll-area{{/if}}">
+    <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/EX_Digital_Image_Region'> </semantic-form-hidden-input>
+
+    <div style="display: flex; align-items: end; column-gap: 20px;">
+      {{#if node}}
+        <rs-iiif-image-thumbnail height='480' width='640' style='height: 63px; width: 100px;'
+                                  image-or-region='{{node}}'    
+                                  image-id-pattern='OPTIONAL { ?imageIRI crm:P1_is_identified_by/rso:PX_has_file_name ?carrierImageID. } BIND(COALESCE(?carrierImageID, REPLACE(STR(?imageIRI), "^.*/(.*)$", "$1")) AS ?imageID) .'
+                                  
+                                  iiif-server-url='/proxy/iiif-server/iiif/2'
+                                >
+        </rs-iiif-image-thumbnail>
+      {{/if}}
+      <div style="flex: 1; margin-top: -20px;">
+        <semantic-form-text-input for='image_annotation_label' label='Image annotation name' placeholder='Enter image annotation name'></semantic-form-text-input>
+      </div>
+    </div>
+
+    {{#if node}}
+      <semantic-query query='SELECT ?image ?imageLabel WHERE {
+                              <{{node}}> crmdig:L49_is_primary_area_of ?image .
+                              ?image a rso:EX_Digital_Image .
+                              ?image crm:P2_has_type <http://www.researchspace.org/resource/vocab/system_entity/image> .
+                              ?image <http://www.w3.org/2000/01/rdf-schema#label> ?imageLabel .
+                            } limit 1'
+
+                      template='{{> template}}'>
+
+          <template id='template'>
+            <div>
+              <div style="display: flex; align-items: baseline; column-gap: 5px;padding: 25px 0 5px 0px;">
+                <h5 style="margin: 0;">Annotation of image:</h5>
+                <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                    urlqueryparam-view='entity-editor' 
+                                    urlqueryparam-resource-iri='{{bindings.0.image.value}}'
+                                    class='text-link'
+                                    >
+                  <span class="text-link">{{bindings.0.imageLabel.value}}</span>
+                </semantic-link>
+              </div>
+              <mp-resource-thumbnail iri='{{bindings.0.image.value}}' style="max-height: 220px;" title="{{bindings.0.imageLabel.value}}">
+                <mp-resource-thumbnail-fallback>
+                  <div>No image available</div>
+                </mp-resource-thumbnail-fallback>
+              </mp-resource-thumbnail>
+            </div>
+          </template>
+      </semantic-query>
+    {{/if}}
+
+ </div>
+  
+  <semantic-form-errors></semantic-form-errors>
+  [[> rsp:FormDefaultActions formEntity='image annotation']]
+</semantic-form>

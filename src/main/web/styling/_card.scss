@@ -1,0 +1,923 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+//rs-card-default is the default card for Clipboard, Search and Knowledge Map */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-auto-rows: minmax(283px, auto);
+    grid-gap: 30px;
+}
+
+.card {
+    position: relative;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    word-wrap: break-word;
+
+    background-color: transparent;
+    border: 0.8px solid $color-primary-50--op35;
+
+    &:hover {
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 5px 0 rgba(0, 0, 0, 0.1);
+    }
+}
+
+/*  Card deck */
+// Bootstrap 4 Cards
+$card-group-margin: 30px / 2 !default;
+$card-deck-margin: $card-group-margin !default;
+
+.card-deck {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+
+    .card {
+        margin-bottom: $card-deck-margin;
+    }
+}
+
+@media (min-width: 576px) {
+    .card-deck {
+        -webkit-box-orient: horizontal;
+        -webkit-box-direction: normal;
+        -ms-flex-flow: row wrap;
+        flex-flow: row wrap;
+        margin-right: -$card-deck-margin;
+        margin-left: -$card-deck-margin;
+    }
+
+    .card-deck .card {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-flex: 1;
+        -ms-flex: 1 0 0%;
+        flex: 1 0 0%;
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        margin-right: $card-deck-margin;
+        margin-left: $card-deck-margin;
+    }
+
+    .card-deck .card {
+        max-width: calc(25% - 30px);
+        min-width: calc(25% - 30px);
+    }
+
+    .card-deck.cards-latest-section .card {
+        max-width: calc(50% - 30px);
+        min-width: calc(50% - 30px);
+    }
+}
+
+.card-body {
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    max-height: 195px;
+}
+
+.card-header {
+    padding: 0 8px;
+    height: 27px;
+    margin-bottom: 0;
+}
+
+.card-img {
+    display: block;
+    height: 126px;
+    width: 100%;
+    padding: 0;
+}
+
+.card-icon {
+    height: 126px;
+    width: 100%;
+    padding: 0;
+}
+
+.card-footer {
+    min-height: 63px;
+}
+
+.rs-default-card__img-container {
+    position: relative;
+    flex-grow: 1;
+    min-height: 100px;
+
+    a {
+        width: 100%;
+    }
+
+    .rs-icon {
+
+        display: flex;
+        height: 100%;
+        font-size: 5.3em;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+/* -- object card theme ------ */
+.card.rs-object-card {
+
+/*     Default card is used Clipboard, Search and KM */
+    &.rs-default-card {
+
+        border-radius: 5px;
+        border: 0.5px solid $color-primary-50--op50;
+        box-shadow: 0px 0px 5px 0px #1c0a6d24;
+
+        height: 100%;
+        width: 100%;
+
+        .rs-default-card__hover {
+            display: none;
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 72%;
+            background: #f5f5f5c2;
+            padding: 0px 10px;
+            align-items: center;
+            z-index: 1;
+
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+
+            &.rs-default-card__hover-additional {
+                bottom: 0;
+                top: initial;
+                height: 28%;
+                justify-content: center;
+
+                border-top-left-radius: 0px;
+                border-top-right-radius: 0px;
+                border-bottom-left-radius: 5px;
+                border-bottom-right-radius: 5px;
+    
+                .rs-default-card__hover-options {
+                    -webkit-flex-flow: unset;
+                    border-top: 1px solid #8080803b;
+                    padding-top: 5px;
+
+                    &:empty {
+
+                        border-top: none;
+                        padding-top: 0;
+                    }
+                }
+            }
+
+            .rs-default-card__hover-institute {
+                text-shadow: -4px -4px 7px $color-white;
+                font-family: $font-family-base;
+                color: $color-dark;
+                font-size: 11px;
+                line-height: 1.3;
+                width: 100%;
+                text-align: center;
+            }
+
+            .rs-default-card__hover-DigImg {
+                padding: 10px 0;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            & .rs-default-card__hover-options {
+                width: 100%;
+                display: flex;
+                -webkit-flex-flow: row wrap;
+                justify-content: center;
+                align-content: center;
+
+                .rs-button {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    background-color: transparent;
+                    border: none;
+                    height: 24px;
+                    width: 100%;
+                    padding: 0px;
+                }
+
+                .rs-default-card__hover-icon {
+                    width: 33%;
+                    height: fit-content;
+                    text-align: center;
+                    padding: 10px 0px;
+                    border-radius: 3px;
+
+                    &:hover {
+                        background: $color-card-icon-hover;
+                    }
+
+                    .fa {
+                        font-size: 1.8em;
+                    }
+
+                    img {
+                        height: 97%;
+                        width: auto;
+                    }
+
+                    .rs-icon,
+                    .iconmoon {
+
+                        font-size: 1.75em;
+
+                        &.rs-icon-media {
+
+                            font-size: 1.9em;
+                        }
+
+                        &.rs-icon-image {
+
+                            font-size: 1.5em;
+                        }
+
+                    }
+                }
+            }
+        }
+
+        .rs-default-card__front {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        &:hover {
+            box-shadow: 1px 2px 8px 0px #8b849e, 1px 3px 12px 2px rgba(0, 0, 0, 0.07);
+
+            .rs-default-card__hover {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+            }
+        }
+
+        & .card-header {
+            width: 100%;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            height: 30px;
+            align-items: center;
+            font-family: $font-family-base;
+            font-weight: 600;
+            color: $color-primary-100;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-size: 12px;
+
+            .rs-default-card__header-left {
+                height: inherit;
+                display: flex;
+                align-items: center;
+                width: 100%;
+
+                .rs-icon {
+
+                    font-size: 10px;
+                    font-weight: 600;
+                    color: $color-primary-100;
+                    padding-right: 2px;
+                }
+            }
+
+            .rs-default-card__header-right {
+                width: 42%;
+                text-align: end;
+                align-self: center;
+            }
+        }
+
+        & .rs-default-card__img {
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+            object-position: 50% 50%;
+        }
+
+        & .rs-default-card__footer {
+
+            background-color: #fbfbfb;
+            border-bottom-right-radius: 5px;
+            border-bottom-left-radius: 5px;
+            position: relative;
+
+            font-weight: 600;
+
+            .rs-default-card__footer-titles {
+
+                display: -webkit-box;
+                /* max-width: 400px; */
+                /* height: 28.8px; */
+                /* margin: 0 auto; */
+                /* font-size: 12px; */
+                /* line-height: 1.2; */
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+             //   display: flex;
+               /*  --max-lines: 2;
+                --lh: 1.6rem;
+                position: relative;
+                max-height: calc(var(--lh) * var(--max-lines));
+                overflow: hidden;
+                padding-right: 1rem; /* space for ellipsis */
+
+             /*   &::before {
+                    position: absolute;
+                    content: "...";
+                    bottom: 0;
+                    right: 0;
+                }
+                  
+                  &::after {
+                    content: "";
+                    position: absolute;
+                    right: 0;
+                    width: 1rem;
+                    height: 1rem;
+                    background: $color-white;
+                  } */
+                  & > p:last-child, 
+                  & > div:last-child,
+                  & > span:last-child {
+
+                    margin-bottom: 0 !important;
+                  }
+
+            }
+
+            .rs-body-s-M, .rs-body-s-B {
+                font-size: 11px;
+            }
+
+            & .btn-group {
+                position: absolute;
+                top: -14px;
+                right: 10px;
+
+                & .rs-default-card__footer-options {
+                    font-size: 10px;
+                }
+
+                & .rs-dropdown-S {
+                    height: 23px;
+                    padding: 0px 8px;
+                    border-bottom: none;
+                    background-color: transparent;
+                    border-radius: 3px;
+                    display: flex;
+                    align-items: baseline;
+
+                    & .rs-dropdown-S-icon {
+                        margin-left: 0px;
+                    }
+                }
+
+                & .rs-dropdown-menu-S > li > a {
+                    font-size: 11px !important;
+                    padding: 4px 15px !important;
+                }
+
+                & .rs-dropdown-menu-S.dropdown-menu > li > a:focus,
+                & .rs-dropdown-menu-S.dropdown-menu > li > a:hover {
+                    background-color: $color-primary-50;
+                }
+            }
+
+            & .rs-default-card__footer-options {
+                padding: 0px 10px;
+                height: 100%;
+                width: 100%;
+                display: none;
+                align-items: center;
+                justify-content: center;
+
+                .rs-button {
+                    background-color: transparent;
+                    border: none;
+                    height: 21px;
+                    width: auto;
+                }
+
+                .rs-default-card__footer-icon {
+                    width: 25%;
+
+                    .fa {
+                        color: $color-primary-100;
+                    }
+
+                    img {
+                        height: 100%;
+                        width: auto;
+                    }
+
+                    .fa:hover, img:hover {
+                        color: #7669ab;
+                    }
+                }
+            }
+        }
+    }
+
+    & .card-header {
+        background-color: $color-white;
+    }
+
+    & .card-img, 
+    & .card-icon {
+        background-color: $color-primary-50;
+    }
+
+    & .card-body .rs-card-top {
+        background-color: $color-primary-50;
+        padding: 8px;
+    }
+
+    & .card-body .rs-card-top p,
+    & .card-footer p {
+        margin-bottom: 3px;
+    }
+
+    & .card-body .rs-card-top p:last-child,
+    & .card-footer p:last-child {
+        margin-bottom: 0px;
+    }
+
+    & .card-footer {
+        background-color: $color-primary-50--op35;
+        padding: 8px;
+        width: 100%;
+    }
+}
+
+// card in clipboard and DradAndDropInput
+.set-management--grid-view,
+.DragAndDropInput--holder {
+
+    .card.rs-object-card.rs-default-card {
+        border: 0.5px solid $color-card-border;
+        cursor: grab;
+  
+        &:hover,
+        &:focus {
+          border: 0.5px solid $color-card-border;
+          cursor: grab;
+        }
+  
+        &:hover {
+          box-shadow: none;
+        }
+  
+        .card-header,
+        .rs-default-card__footer {
+          background: #ffffffb8;
+        }
+  
+        .card-header {
+          font-size: 8px;
+          height: 20px;
+  
+          .rs-default-card__header-left {
+            width: 100%;
+          }
+  
+          .rs-default-card__header-right {
+            width: 42%;
+          }
+        }
+  
+        .rs-default-card__hover .rs-default-card__hover-options {
+  
+          .rs-default-card__hover-icon {
+            padding: 9px 0px;
+          }
+        }
+  
+        /* .rs-default-card__img-container  */
+        .rs-default-card__hover {
+          padding: 0px 8px;
+  
+          .rs-default-card__hover-institute {
+            font-size: 10px !important;
+            line-height: 1.2;
+            max-height: 30px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 7px 0px 5px 0px;
+          }
+        }
+  
+        .rs-default-card__footer {
+          .rs-body-s-M,
+          .rs-body-s-B {
+            font-size: 10px !important;
+          }
+  
+          .rs-ja-card {
+            font-size: 9px;
+          }
+        }
+    }
+}
+
+.rs-card-column {
+    padding: 0px 8px;
+}
+
+/* -- concept card theme ------ */
+.card.rs-concept-card {
+    background-color: $color-secondaryA-50--op35;
+
+    & .card-header {
+        background-color: $color-white;
+    }
+
+    & .card-body {
+        background-color: $color-secondaryA-50;
+    }
+
+    & .card-body .rs-card-top {
+        padding: 16px 8px;
+        // height: 195px;
+    }
+
+    & .card-body .rs-card-top p,
+    & .card-footer p {
+        margin-bottom: 4px;
+    }
+
+    & .card-body .rs-card-top p:last-child,
+    & .card-footer p:last-child {
+        margin-bottom: 0px;
+    }
+
+    & .card-footer {
+        padding: 8px;
+    }
+}
+
+/* -- context card theme ------ */
+.card.rs-context-card {
+    background-color: $color-secondaryB-50--op35;
+
+    & .card-header {
+        background-color: $color-white;
+    }
+
+    & .card-body {
+        background-color: $color-secondaryB-50;
+    }
+
+    & .card-body .rs-card-top {
+        padding: 16px 8px;
+    }
+
+    & .card-body .rs-card-top p,
+    & .card-footer p {
+        margin-bottom: 4px;
+    }
+
+    & .card-body .rs-card-top p:last-child,
+    & .card-footer p:last-child {
+        margin-bottom: 0px;
+    }
+
+    & .card-footer {
+        padding: 8px;
+    }
+}
+
+/* -- Filter card theme ------ */
+.card.rs-filter-card {
+    background-color: $color-primary-50--op35;
+
+    & .card-header {
+        background-color: $color-white;
+    }
+
+    & .card-body {
+        background-color: $color-dark;
+    }
+
+    & .card-body .rs-card-top {
+        padding: 16px 8px;
+        height: 195px;
+    }
+
+    & .card-body .rs-card-top p,
+    & .card-footer p {
+        margin-bottom: 4px;
+    }
+
+    & .card-body .rs-card-top p:last-child,
+    & .card-footer p:last-child {
+        margin-bottom: 0px;
+    }
+
+    & .card-footer {
+        padding: 8px;
+        min-height: 61px;
+        position: relative;
+
+        .filter-card-bottom {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+        }
+    }
+}
+
+// common Css for cards in the system (Clipboard card , search results, panel system)
+
+.rs-card-img {
+    height: 115px;
+    width: 99%;
+    min-width: 50px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* Card Actions: show or hide depending on the current page */
+// If we are in thinking frames page we show action that opens KM in the new frame,
+// but when we are somewhere else we show link to thinking frames page.
+// we apply the same logic to other KM related actions
+
+.thinking-frames-page {
+    .set-action {
+        &__km-navigate {
+            display: none;
+        }
+    }
+
+    .rs-default-card-action {
+
+        &__km-navigate, 
+        &__image-navigate {
+            display: none;
+        }
+    }
+}
+
+.page:not(.thinking-frames-page) {
+
+    .set-action__km-add-frame {
+        display: none;
+    }
+
+    .rs-default-card-action {
+        &__km-add-frame, 
+        &__image-add-frame {
+            display: none;
+        }
+    }
+}
+
+// card checkbox selection
+.card-select-container {
+
+    position: relative;
+
+    .card-select-input {
+
+        display: flex;
+        align-items: center;
+    }
+
+    input[type="checkbox"] {
+
+        position: absolute;
+        right: 5px;
+        top: 11px;
+        z-index: 200;
+        width: 18px;
+        height: 18px;
+        color: #363839;
+        border: 1px solid #c1c1c1;
+        background: $color-white;
+        border-radius: 3px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        cursor: pointer;
+        box-shadow: 0px 0px 3px 0px #a5a5a5;
+
+        transition: background 175ms cubic-bezier(0.1, 0.1, 0.25, 1);
+
+        &:focus {
+
+            outline: none;
+        }
+
+        &:hover {
+
+            border: 1px solid #828282;
+        }
+
+        &::before {
+            position: absolute;
+            content: '';
+            display: block;
+
+            top: 1px;
+            left: 5px;
+            width: 5px;
+            height: 10px;
+            border-style: solid;
+
+            border-color: $color-white;
+            border-width: 0 2px 2px 0;
+            -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
+            opacity: 0;
+        }
+
+        &:checked {
+
+            color: $color-white;
+            border-color: $color-checkbox-select;
+            background: $color-checkbox-select;
+            
+            &::before {
+              opacity: 1;
+            }
+        }
+    }
+
+    .card.rs-object-card.rs-default-card {
+        cursor: grab;
+    }
+}
+
+.rs-card-container {
+    margin-top: 8px;
+    border: 1px solid transparent;
+  
+    &:hover {
+      border: 1px dashed $color-primary-100;
+      border-radius: 5px;
+      cursor: grab;
+    }
+}
+
+/*  Card in Thinking Frame, frames sidebar area */
+.thinking-frames__frames-sidebar {
+
+    .card.rs-object-card.rs-default-card {
+      &:hover .rs-default-card__hover {
+        padding: 0px 6px;
+        height: 100%;
+  
+        &.rs-default-card__hover-additional {
+          height: 0;
+        }
+      }
+  
+      & .rs-default-card__hover .rs-default-card__hover-options .rs-default-card__hover-icon {
+  
+        .rs-default-card__hover-icon {
+          padding: 8px 0px;
+        }
+      }
+  
+      .card-header {
+        font-size: 8px;
+        height: 20px;
+  
+        .icon-template {
+          height: 8px;
+          width: 8px;
+          margin-bottom: 0px;
+        }
+      }
+  
+      .rs-default-card__hover {
+        padding: 0px 8px;
+  
+        .rs-default-card__hover-institute {
+          font-size: 10px;
+          line-height: 1.2;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          padding-bottom: 5px;
+        }
+  
+        .rs-default-card__hover-DigImg {
+  
+          justify-content: center;
+        }
+      }
+  
+      .rs-default-card__footer {
+        .rs-body-s-M,
+        .rs-body-s-B {
+          font-size: 10px;
+        }
+  
+        .rs-ja-card {
+          font-size: 9px;
+        }
+      }
+    }
+}
+
+/*  Knowledge Map card */
+.thinking-frames__frames .ontodia-accordion-item__body {
+
+    /*  Knowledge Map card */
+    .rs-KM-card-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px;
+    }
+  
+    .rs-card-note-container {
+      width: 100%;
+      background-color: $color-primary-50;
+      border-radius: 5px;
+      border: 0.5px solid $color-primary-50--op50;
+      box-shadow: 0px 0px 5px 0px #1c0a6d24;
+      padding: 10px;
+      margin: 5px;
+  
+      font-size: 14px;
+      line-height: 1.3;
+      text-align: justify;
+  
+      span:first-child {
+        font-weight: 600;
+      }
+    }
+  
+    .card.rs-object-card.rs-default-card {
+      .rs-default-card__hover .rs-default-card__hover-options {
+        .rs-default-card__hover-icon {
+          width: 33%;
+        }
+  
+        .rs-button {
+          height: 26px;
+        }
+      }
+  
+      .rs-default-card__footer-titles .rs-body-s-M {
+        line-height: 1.4;
+      }
+  
+      .rs-default-card__footer .rs-body-s-M,
+      .rs-default-card__footer span.rs-body-s-B {
+        font-size: 16px;
+      }
+  
+      .rs-default-card__footer .rs-ja-card {
+        font-size: 13px;
+      }
+    }
+}

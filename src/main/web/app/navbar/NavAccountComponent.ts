@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import '../../scss/main.scss';
+import '../../styling/main.scss';
 
 import * as React from 'react';
 import * as ReactBootstrap from 'react-bootstrap';

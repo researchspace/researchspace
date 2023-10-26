@@ -6,7 +6,8 @@
       SELECT ?item ?itemHolder ?parent ?kind WHERE {
         {
           FILTER(!(?__isSearch__)) .
-          {{
+          {
+            {
             ?__rootSet__ ldp:contains ?itemHolder .
             BIND(?__rootSet__ as ?parent) .
             OPTIONAL { ?itemHolder platform:setItem ?setItem }
@@ -23,10 +24,12 @@
             ?__rootSet__ ontodia:layoutData/ontodia:hasElement ?itemHolder .
             ?itemHolder ontodia:resource ?item .
             BIND(?__rootSet__ as ?parent) .
-          }}
+          }
+          }
         } UNION {
           FILTER(?__isSearch__) .
-          {{
+          {
+            {
               ?__rootSet__ ldp:contains ?__setToSearch__ .
               ?__setToSearch__ ldp:contains ?itemHolder.
               BIND(?__setToSearch__ as ?parent) .
@@ -41,7 +44,8 @@
               ?itemHolder ontodia:resource ?item .
               BIND(?__setToSearch__ as ?parent) .
               FILTER(?__filterPatterns__)
-          }}
+          }
+          }
         }
 
         OPTIONAL {

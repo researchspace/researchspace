@@ -1,0 +1,204 @@
+[[!-- 
+  This is Template that can be used to browse hierarchical resources or simple collection of resources
+  
+  variables:
+    collection - resource collection IRI (concept sheme, authority list, etc.);
+    itemLabel - label that describes collection item, like Term, Concept, Place, Actor, etc;
+    resourceForm - IRI of the form that should be used to edit the resource in the collection;
+    membershipProperty - property that connects resource to the collection, like  skos:inScheme, crm:P71i_is_listed_in, etc;
+    broaderProperty - (optional) if collection is hierarchical specifies property that is used to refer from item to it's broader resource, like skos:broader, crm:P127_has_broader_term, crm:P89_falls_within, etc;
+    orderByPattern - (optional) SPARQL pattern that can be used to get the order
+    editable - false if collection is readonly one, true otherwise
+--]]
+
+
+<div class="rs-vocabulary-terms-container">
+
+{{#if collection}}
+  <mp-splitpane min-size=180 default-size=400 default-open='true' class="frame-split-pane">
+    <div data-flex-layout="column top-stretch">
+      <mp-splitpane-toggle-on>
+        <button class="btn-toggle-on">
+          <div class="btn-toggle-on-content">
+            <div style='text-align: left;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            padding-bottom: 3px;'>{{itemLabel}}s</div>
+            <div class="btn btn-grey">
+              <i class='iconmoon iconmoon-arrow-right2'></i>
+            </div>
+          </div>
+          
+        </button>
+      </mp-splitpane-toggle-on>
+      <mp-splitpane-toggle-off>
+        <div class="split-pane__leftsidebar-header">
+          <button data-flex-layout='row center-left' class="btn-toggle-off">
+            <div style='text-align: left;
+            min-height: 30px;
+            display: flex;
+            align-items: center;'>
+              {{#if collection}}<mp-label iri='{{collection}}'></mp-label> - {{/if}}{{itemLabel}}s
+            </div>
+            <div class="page__main-top-actions">
+              {{#if editable}}
+                <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"mode": "new" }' targets='["{{frameId}}-term-forms"]'>
+                  <button class="btn btn-grey">
+                    <i class='fa fa-plus btn-icon-left'></i>
+                    <span>Add New</span>
+                  </button>
+                </mp-event-trigger>
+              {{/if}}
+                <mp-event-trigger id='set-action__search-add-add-frame' type='Dashboard.AddFrame' 
+                                  data='{"viewId": "entity-search","resourceIri":"{{config}}"}' 
+                                  targets='["thinking-frames"]'>
+                  <button type="button" class='btn btn-grey' title="Entity Search">
+                    <i class='rs-icon rs-icon-search btn-icon-left'></i>
+                          Search all
+                  </button>
+              </mp-event-trigger>
+              <button class="btn btn-grey">
+                <i class='iconmoon iconmoon-arrow-left2'></i>
+              </button>
+            </div>
+          </button>
+        </div>
+      </mp-splitpane-toggle-off>
+      <mp-splitpane-sidebar-open style="flex: 1;">
+        <div class="split-pane__sidebar-open">
+          <div class="rs-vocabulary-terms-area">
+            <mp-event-target-template-render id='{{frameId}}-mytree'  template='{{> treeTemplate}}'>
+              <template id='treeTemplate'>
+                <semantic-lazy-tree id='{{frameId}}-scheme-tree' info-template='{{> template}}' type='simple'  focused='{{iri}}' page-size='10000'
+                                    config='{"scheme": "{{collection}}", 
+                                            {{#if labelSparqlPattern}}
+                                            "labelPattern": "{{labelSparqlPattern}}",
+                                            {{/if}}
+                                            {{#if broaderProperty}}
+                                            "relationPattern": "?item <{{broaderProperty}}> ?parent",
+                                            {{/if}}
+                                            {{#if orderByPattern}}
+                                            "orderByPattern": "{{orderByPattern}}",
+                                            {{/if}}
+                                            "schemePattern": "{{#if membershipProperty}} ?item <{{membershipProperty}}> ?__scheme__.{{/if}} {{#if rdfType}} ?item a/rdfs:subClassOf* <{{rdfType}}> .{{/if}} {{#if P2_has_type}} ?item crm:P2_has_type <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
+                                            }'>
+                  <template id='template'>
+                    <span class="tree-item-actions-container">
+                      {{#if editable}}
+                        <mp-event-trigger id='{{frameId}}-form-edit-trigger--{{iri}}' type='Component.TemplateUpdate'
+                                          data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' targets='["{{frameId}}-term-forms"]'>
+                          <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-pencil' title="Edit {{itemLabel}}"></i></span>
+                        </mp-event-trigger>
+                        <mp-event-proxy id='{{frameId}}-focus-tree-element' on-event-source='{{frameId}}-form-edit-trigger--{{iri}}' proxy-event-type='LazyTree.Focus' proxy-targets='["{{frameId}}-scheme-tree"]' data='{"iri":"{{iri}}"}'></mp-event-proxy>
+                        {{#if broaderProperty}}
+                        <mp-event-trigger id='{{frameId}}-form-new-trigger' type='Component.TemplateUpdate' data='{"broader": "{{iri}}", "mode": "new" }' targets='["{{frameId}}-term-forms"]'>
+                          <span class='tree-item-action'><i class='fa fa-plus' title="Add narrower {{itemLabel}}"></i></span>
+                        </mp-event-trigger>
+                        {{/if}}
+                      {{else}}
+                        <mp-event-trigger id='{{frameId}}-form-edit-trigger' type='Component.TemplateUpdate'
+                                          data='{"iri":"{{iri}}",  "mode": "view" }' targets='["{{frameId}}-term-forms"]'>
+                          <span class='tree-item-action' style="margin-right: 7px;"><i class='fa fa-file' title="View {{itemLabel}}"></i></span>
+                        </mp-event-trigger>
+                      {{/if}}
+                    </span>
+                  </template>
+                </semantic-lazy-tree> 
+              </template>
+            </mp-event-target-template-render>
+          </div>
+        </div>
+      </mp-splitpane-sidebar-open>
+    </div>
+{{/if}}
+      <div class="page__grid-container">
+
+        <div class="page__content-container rs-vocabulary-terms-form-area">
+          <mp-event-target-template-render id='{{frameId}}-term-forms' template='{{> template}}'>
+            <template id='template'>
+              {{#switch mode}}
+
+                {{#case "new" break=true}}
+                  {{#if broader}}
+                    <h3>Adding: <div class="rs-vocabulary-terms-form-label">new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></div></h3>
+                  {{else}}
+                    <h3>Adding: <div class="rs-vocabulary-terms-form-label">new {{itemLabel}}</div></h3>
+                  {{/if}}
+                {{/case}}
+
+                {{#case "edit" break=true}}
+                <div class="rs-vocabulary-terms-form-label-container">
+                  <h3>Editing {{itemLabel}}: <div class="rs-vocabulary-terms-form-label">
+                    <mp-draggable iri='{{iri}}'>
+                      <div style="display: flex; align-items: center; cursor: grab;">
+                        <i class="rs-icon rs-icon-drag_points" style="margin-right: 7px; margin-left: 10px;"></i>                
+                        <mp-label iri='{{iri}}'></mp-label>
+                      </div>
+                    </mp-draggable>
+                  </div></h3>
+                  <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard!'>
+                    <button class="btn btn-grey"><i class="fa fa-clipboard btn-icon-left" aria-hidden=true></i> Copy IRI</button>
+                  </mp-copy-to-clipboard>
+                </div>
+                {{/case}}
+
+                {{#case "view" break=true}}
+                <div class="rs-vocabulary-terms-form-label-container">
+                  <h3>Viewing {{itemLabel}}: <div class="rs-vocabulary-terms-form-label"><mp-label iri='{{iri}}'></mp-label></div></h3>
+                  <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard!'>
+                    <button class="btn btn-grey"><i class="fa fa-clipboard btn-icon-left" aria-hidden=true></i> Copy IRI</button>
+                  </mp-copy-to-clipboard>
+                </div>
+                {{/case}}
+              
+                {{#case "deleted" break=true}}
+                   <h3>Deleted {{itemLabel}}: <div class="rs-vocabulary-terms-form-label">{{label}}</div></h3>
+                {{/case}}
+              {{/switch}}
+    
+              {{#if (not (eq mode "deleted"))}}
+              <mp-event-proxy id='{{frameId}}-tree-refresh-on-created' 
+                              on-event-source='{{frameId}}-vocab-form' 
+                              on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                              proxy-event-type='Component.TemplateUpdate' 
+                              proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
+                              additional-data='{"mode": "edit"}'
+                              ></mp-event-proxy>
+    
+              <mp-event-proxy id='{{frameId}}-tree-refresh-on-delete' 
+                              on-event-source='{{frameId}}-vocab-form' 
+                              on-event-types='["Form.ResourceRemoved"]'
+                              proxy-event-type='Component.TemplateUpdate' 
+                              proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
+                              additional-data='{"mode": "deleted", "label": "{{label}}"}'
+                              ></mp-event-proxy>
+              
+              <inline-template template-iri='{{resourceForm}}' 
+                                  options='{
+                                            "scheme": "{{collection}}", 
+                                            {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
+                                            {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                            {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
+                                            "editable": {{editable}},
+                                            "mode": "{{mode}}",
+                                            "viewId": "{{frameId}}",
+                                            "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
+                                           	
+                                  }'>
+              </inline-template>
+              {{else}}
+                <div></div>
+              {{/if}}
+            </template>
+          </mp-event-target-template-render>
+        </div>
+      </div>
+
+{{#if collection}}
+  </mp-splitpane>
+
+{{/if}}
+
+</div>
+

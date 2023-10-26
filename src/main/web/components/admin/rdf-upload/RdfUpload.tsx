@@ -39,8 +39,12 @@ import { Alert, AlertConfig, AlertType } from 'platform/components/ui/alert';
 import { Dropzone } from 'platform/components/ui/dropzone';
 import { ErrorPresenter } from 'platform/components/ui/notification';
 import { Spinner } from 'platform/components/ui/spinner';
+import { TemplateItem } from 'platform/components/ui/template';
 
 import { RdfUploadExtension } from './extensions';
+
+import * as RdfUploadEvents from './RdfUploadEvents';
+import { trigger } from 'platform/api/events';
 
 import './RdfUpload.scss';
 
@@ -58,7 +62,43 @@ interface State {
 export interface Props {
   className?: string;
   style?: CSSProperties;
+
   contentType?: string;
+  targetGraph?: string;
+  /**
+   * Specifies files that can be accepted for upload.
+   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#Unique_file_type_specifiers
+   */
+  accept?: string[];
+
+  /**
+   * Preserve graphs from defined in the uploaded file.
+   *
+   * @default false
+   */
+  keepSourceGraphs?: boolean;
+
+  /**
+   * Show "Load by URL" tab
+   *
+   * @default true
+   */
+  allowLoadByUrl?: boolean;
+
+  /**
+   * Show advanced upload options
+   *
+   * @default true
+   */
+  showAdvancedOptions?: boolean;
+
+  /**
+   * Drop area content template.
+   * Parameters:
+   *   - isDragAccept - true when drop is accepted
+   *   - isDragReject - true when drop is rejected
+   */
+  dropAreaTemplate?: string;
 }
 
 const CLASS_NAME = 'RdfUpload';
@@ -72,6 +112,13 @@ const noteClass = `${CLASS_NAME}__note`;
 export class RdfUpload extends Component<Props, State> {
   private readonly cancellation = new Cancellation();
 
+  static defaultProps = {
+    keepSourceGraphs: false,
+    allowLoadByUrl: true,
+    showAdvancedOptions: true,
+    dropAreaTemplate: `<div class='${CLASS_NAME}__rdf-dropzone-content'>Please drag&amp;drop your RDF file(s) here</div>`
+  }
+
   constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
@@ -79,8 +126,7 @@ export class RdfUpload extends Component<Props, State> {
       progress: maybe.Nothing<number>(),
       progressText: maybe.Nothing<string>(),
       targetGraph: maybe.Nothing<string>(),
-      keepSourceGraphs: false,
-      showOptions: false,
+      keepSourceGraphs: props.keepSourceGraphs,
     };
   }
 
@@ -97,22 +143,29 @@ export class RdfUpload extends Component<Props, State> {
     this.cancellation.cancelAll();
   }
 
-  private onDrop = (files: ReadonlyArray<File>) => {
+  private onDropAccepted = (files: ReadonlyArray<File>) => {
     const { repository } = this.context.semanticContext;
 
     this.setState({
       messages: [],
       progress: maybe.Nothing<number>(),
     });
-
+    
     const uploads = files.map((file: File, fileNumber: number) => {
       const contentType = _.isEmpty(this.props.contentType)
         ? SparqlUtil.getMimeType(SparqlUtil.getFileEnding(file))
         : this.props.contentType;
-      const targetGraph = this.state.targetGraph.isJust
-        ? this.state.targetGraph.get()
-        : `file://${file.name}-${createTimestamp()}`;
-
+      
+      let targetGraph;
+      if (this.state.targetGraph.isJust) {
+        targetGraph = this.state.targetGraph.get()
+      } else {
+        if (this.props.targetGraph) {
+          targetGraph = this.props.targetGraph;
+        } else {
+          targetGraph = `file://${file.name}-${createTimestamp()}`;
+        }
+      }
       const upload = RDFGraphStoreService.createGraphFromFile({
         targetGraph: Rdf.iri(encodeURI(targetGraph)),
         keepSourceGraphs: this.state.keepSourceGraphs,
@@ -137,7 +190,29 @@ export class RdfUpload extends Component<Props, State> {
     });
 
     this.cancellation.map(Kefir.combine(uploads)).observe({
-      value: () => setTimeout(() => refresh(), 2000),
+      value: (v) => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+        // FIRE EVENT
+        trigger({
+          eventType: RdfUploadEvents.RdfUploadSuccess,
+          source: Math.random().toString()
+        });
+      },
+      error: () => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+      },
+      end: () => {
+        this.setState({
+          progress: maybe.Nothing<number>(),
+          progressText: maybe.Nothing<string>(),
+        });
+      }
     });
   };
 
@@ -193,85 +268,72 @@ export class RdfUpload extends Component<Props, State> {
       .getOrElse(null);
 
     const isInProcess = Boolean(this.state.progress.getOrElse(0));
+    {/* load by URL doesn't make any sense for Neptune repository */}
+    const showLoadByUrlTab =
+      this.state.repositoryType !== NeptuneRepositoryType && this.props.allowLoadByUrl;
 
+    const fileUploadTab = (
+      <React.Fragment>
+        {progressBar}
+        {/* <div className={noteClass}>
+          RDF files can be uploaded using the drag&amp;drop field below. Clicking into the field will open the
+          browser's default file selector.
+        </div> */}
+        <Dropzone onDropAccepted={this.onDropAccepted} accept={this.props.accept}>
+          {(options) => <TemplateItem template={{source: this.props.dropAreaTemplate, options}} />}
+        </Dropzone>
+        {messages}
+      </React.Fragment>
+    );
     return (
       <div className={classnames(CLASS_NAME, className)} style={style}>
-        <a onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
-        {this.renderAdvancedOptions()}
-        <Tabs id="rdf-upload-tabs" unmountOnExit={true}>
-          {this.renderTabExtensions()}
-          <Tab eventKey={1} className={tabClass} title="File Upload" disabled={isInProcess}>
-            {progressBar}
-            <div className={noteClass}>
-              RDF files can be uploaded using the drag&amp;drop field below. Clicking into the field will open the
-              browser's default file selector.
-            </div>
-            <Dropzone onDrop={this.onDrop}>
-              <div className={`${CLASS_NAME}__rdf-dropzone-content`}>Please drag&amp;drop your RDF file(s) here.</div>
-            </Dropzone>
-            {messages}
-          </Tab>
-          {/* load by URL doesn't make any sense for Neptune repository */}
-          {this.state.repositoryType !== NeptuneRepositoryType ? (
-            <Tab eventKey={2} className={tabClass} title="Load by HTTP/FTP/File URL" disabled={isInProcess}>
-              {progressBar}
-              <div className={noteClass}>
-                Please note: Loading via HTTP/FTP/File URL depends on the database backend i.e. it must support the
-                SPARQL LOAD command and must allow outgoing network connections to the publicly accessible HTTP/FTP URLs
-                or must have access to the File URL respectively.
-              </div>
-              <FormControl
-                type="text"
-                value={this.state.remoteFileUrl || ''}
-                placeholder="Please enter publicly accessible HTTP/FTP URL"
-                onChange={(e) =>
-                  this.setState({
-                    remoteFileUrl: ((e.currentTarget as any) as HTMLInputElement).value,
-                  })
-                }
-              />
-              <Button
-                bsStyle="primary"
-                className={`${CLASS_NAME}__load-button`}
-                disabled={!this.state.remoteFileUrl || isInProcess}
-                onClick={this.onClickLoadByUrl}
-              >
-                Load by URL
-              </Button>
-              {messages}
-            </Tab>
-          ) : null}
-        </Tabs>
+        {this.props.showAdvancedOptions ?
+         <React.Fragment>
+           <a className={`${CLASS_NAME}__advance`} onClick={() => this.setState({ showOptions: !this.state.showOptions })}>Advanced Options</a>
+           { this.renderAdvancedOptions() }
+         </React.Fragment> : null
+        }
+        {showLoadByUrlTab ?
+         <Tabs id="rdf-upload-tabs" unmountOnExit={true}>
+           <Tab eventKey={1} className={tabClass} title="File Upload" disabled={isInProcess}>
+             {fileUploadTab}
+           </Tab>
+           <Tab eventKey={2} className={tabClass} title="Load by HTTP/FTP/File URL" disabled={isInProcess}>
+             {progressBar}
+             <div className={noteClass}>
+               Please note: Loading via HTTP/FTP/File URL depends on the database backend i.e. it must support the
+               SPARQL LOAD command and must allow outgoing network connections to the publicly accessible HTTP/FTP URLs
+               or must have access to the File URL respectively.
+             </div>
+             <FormControl
+               type="text"
+               value={this.state.remoteFileUrl || ''}
+               placeholder="Please enter publicly accessible HTTP/FTP URL"
+               onChange={(e) =>
+                 this.setState({
+                   remoteFileUrl: ((e.currentTarget as any) as HTMLInputElement).value,
+                 })
+               }
+             />
+             <Button
+               bsStyle="primary"
+               className={`${CLASS_NAME}__load-button`}
+               disabled={!this.state.remoteFileUrl || isInProcess}
+               onClick={this.onClickLoadByUrl}
+             >
+               Load by URL
+             </Button>
+             {messages}
+           </Tab>
+         </Tabs>
+        : fileUploadTab}
       </div>
     );
   }
 
-  private renderTabExtensions() {
-    const tabs = RdfUploadExtension.get();
-    if (!tabs) {
-      return null;
-    }
-    const tabKeys = Object.keys(tabs);
-    tabKeys.sort();
-
-    const { repositoryType, targetGraph } = this.state;
-    return tabKeys.map((tabKey, index) => {
-      const tab = tabs[tabKey]({ repositoryType, targetGraph });
-      if (tab) {
-        return (
-          <Tab eventKey={3 + index} className={tabClass} title={tab.title}>
-            {tab.content}
-          </Tab>
-        );
-      } else {
-        return null;
-      }
-    });
-  }
-
   private renderAdvancedOptions() {
     return (
-      <Panel className="" collapsible expanded={this.state.showOptions}>
+      <Panel collapsible expanded={this.state.showOptions}>
         <FormControl
           type="text"
           label="Target NamedGraph"

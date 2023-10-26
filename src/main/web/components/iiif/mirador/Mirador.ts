@@ -30,8 +30,6 @@ import { researchspaceAnnotationBodyEditor } from './AnnotationBodyEditor';
 import 'cache-loader!script-loader!../../../lib/mirador/mirador.js';
 import '../../../lib/mirador/css/mirador.scss';
 
-import '../../../scss/iiif-region-editor-mirador.scss';
-
 interface EmitterMixin extends Mirador.EventEmitter {
   bus?: JQuery;
   eventStackDepth?: number;
@@ -56,6 +54,17 @@ Mirador.EventEmitter.prototype.subscribe = function (this: EmitterMixin, name, h
   this.bus.on.apply(this.bus, arguments);
   return { name, handler };
 };
+
+/**
+ * There is no such function in original mirador event bus, but we add it here so we can
+ * easily have event listeners that are fired only once and then automatically unsubscribed
+ */
+Mirador.EventEmitter.prototype.one = function (this: EmitterMixin, name, handler) {
+  ensureBusExists(this);
+  this.bus.one.apply(this.bus, arguments);
+  return { name, handler };
+};
+
 Mirador.EventEmitter.prototype.unsubscribe = function (this: EmitterMixin) {
   ensureBusExists(this);
   this.bus.off.apply(this.bus, arguments);
@@ -107,34 +116,60 @@ Mirador['DummyJSONStorage'] = class {
  *  button with 'Open as semantic link in platform' action
  */
 const globalHandlebars = Mirador.Handlebars;
-Mirador.AnnotationTooltip.prototype.viewerTemplate = globalHandlebars.compile(
-  [
-    '<div class="all-annotations" id="annotation-viewer-{{windowId}}">',
-    '{{#each annotations}}',
-    '<div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">',
-    '<div class="button-container">',
-    '{{#if id}}',
-    '<mp-template-item><semantic-link guess-repository=true iri="{{id}}"></semantic-link></mp-template-item>',
-    '{{/if}}',
-    '<i class="fa fa fa-external-link fa-fw"></i>open</a>',
-    '{{#if showUpdate}}<a href="#edit" class="edit">',
-    '<i class="fa fa-pencil-square-o fa-fw"></i>{{t "edit"}}</a>{{/if}}',
-    '{{#if showDelete}}<a href="#delete" class="delete">',
-    '<i class="fa fa-trash-o fa-fw"></i>{{t "delete"}}</a>{{/if}}',
-    '</div>',
-    '<div class="text-viewer">',
-    '{{#if username}}<p class="user">{{username}}:</p>{{/if}}',
-    '<p>{{{annoText}}}</p>',
-    '</div>',
-    '<div id="tags-viewer-{{windowId}}" class="tags-viewer">',
-    '{{#each tags}}',
-    '<span class="tag">{{this}}</span>',
-    '{{/each}}',
-    '</div>',
-    '</div>',
-    '{{/each}}',
-    '</div>',
-  ].join('')
+
+// add raw handlebars helper to the helpers available in the mirador
+// see https://handlebarsjs.com/guide/block-helpers.html#raw-blocks
+globalHandlebars.registerHelper(
+  'raw',
+  function (options) {
+    return options.fn(this);
+  }
+);
+const defaultAnnotationViewerTemplate = globalHandlebars.compile(
+  `
+  <div class="all-annotations" id="annotation-viewer-{{windowId}}">
+    <div class="text-viewer">Image Region(s)</div>
+      {{#each annotations}}
+        <div class="annotation-display annotation-tooltip" data-anno-id="{{id}}">
+          <div class="button-container">
+            {{#if id}}
+              <mp-template-item style="max-width: calc(100% - 80px);">
+                <div>
+                  <semantic-link iri="{{id}}" style="display: block; width: 100%;">{{{annoText}}}</semantic-link>
+                </div>
+              </mp-template-item>
+            {{/if}}
+            <div>
+              {{#if showUpdate}}
+                <a href="#edit" class="edit">
+                  <i class="fa fa-pencil"></i>
+                </a>
+              {{/if}}
+              {{#if showDelete}}
+                <a href="#delete" class="delete">
+                  <i class="fa fa-trash-o"></i>
+                </a>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+  `
+ );
+Mirador.AnnotationTooltip.prototype.viewerTemplate = defaultAnnotationViewerTemplate;
+Mirador.AnnotationTooltip.prototype.editorTemplate = globalHandlebars.compile(
+  `
+  <form id="annotation-editor-{{windowId}}" class="annotation-editor annotation-tooltip" {{#if id}}data-anno-id="{{id}}"{{/if}}>
+    <div>
+      <div class="button-container">
+        <a href="#cancel" class="cancel"><button class="btn btn-default">{{t "cancel"}}</button></a>
+        <a href="#save" class="save"><button class="btn btn-action">{{t "save"}}</button></a>
+      </div>
+    </div>
+  </form>
+  `
 );
 
 /**
@@ -178,7 +213,7 @@ function rectangleToFragmentString({ x, y, width, height }: OpenSeadragon.Rect) 
 
 const overlayInit = Mirador.Overlay.prototype.init;
 Mirador.Overlay.prototype.init = function (this: Mirador.Overlay) {
-  this.hitOptions.tolerance = 50;
+  this.hitOptions.tolerance = 10;
   overlayInit.apply(this, arguments);
 };
 
@@ -188,10 +223,10 @@ function applyRedrawHack(mirador: Mirador.Instance, onInitialized: (mirador: Mir
   }
   mirador.hackTimer = window.setInterval(() => {
     if (!_.isEmpty($(`#${mirador.viewer.id} .mirador-viewer:visible`))) {
-      mirador.viewer.workspace.calculateLayout();
-      onInitialized(mirador);
       window.clearInterval(mirador.hackTimer);
       mirador.hackTimer = null;
+      mirador.viewer.workspace.calculateLayout();
+      onInitialized(mirador);
     }
   }, 500);
 }
@@ -225,7 +260,7 @@ export function scrollToRegions(
   return task;
 }
 
-function scrollToRegion(
+export function scrollToRegion(
   window: Mirador.Window,
   regionOfView: (view: Mirador.ImageViewModule) => ViewportRegion
 ): Kefir.Property<boolean> {
@@ -241,7 +276,7 @@ function scrollToRegion(
             region.width,
             region.height
           );
-          imageView.osd.viewport.fitBounds(viewportRect, true);
+          imageView.osd.viewport.fitBounds(viewportRect);
           imageView.osd.forceRedraw();
         }
         emitter.emit(true);
@@ -260,6 +295,11 @@ export function renderMirador(options: {
 }): Mirador.Instance {
   Mirador.DEFAULT_SETTINGS.windowSettings.useDetailsSidebar =
     options.miradorConfig.useDetailsSidebar;
+
+  if (options.miradorConfig.annotationViewTooltipTemplate) {
+    Mirador.AnnotationTooltip.prototype.viewerTemplate =
+      globalHandlebars.compile(options.miradorConfig.annotationViewTooltipTemplate);
+  }
   const instance = Mirador(
     assign(
       {
@@ -292,4 +332,7 @@ export function removeMirador(mirador: Mirador.Instance, element: HTMLElement) {
   if (element) {
     element.innerHTML = '';
   }
+
+  // reset annotation template
+  Mirador.AnnotationTooltip.prototype.viewerTemplate = defaultAnnotationViewerTemplate;
 }

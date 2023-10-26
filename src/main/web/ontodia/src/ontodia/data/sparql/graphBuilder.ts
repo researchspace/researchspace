@@ -1,7 +1,7 @@
 import { keyBy } from 'lodash';
 
 import { GenerateID } from '../../data/schema';
-import { LayoutElement, LayoutLink, SerializedDiagram, makeSerializedDiagram } from '../../editor/serializedDiagram';
+import { LayoutElement, LayoutLink, SerializedDiagram, LinkTypeOptions, makeSerializedDiagram } from '../../editor/serializedDiagram';
 import { uniformGrid } from '../../viewUtils/layout';
 
 import { Dictionary, ElementModel, LinkModel, ElementIri, LinkTypeIri } from '../model';
@@ -12,7 +12,10 @@ import { parseTurtleText } from './turtle';
 const GREED_STEP = 150;
 
 export class GraphBuilder {
-  constructor(public dataProvider: DataProvider) {}
+  constructor(
+    public dataProvider: DataProvider,
+    public linkTypeOptions?: ReadonlyArray<LinkTypeOptions>
+  ) {}
 
   createGraph(graph: {
     elementIds: ElementIri[];
@@ -23,7 +26,7 @@ export class GraphBuilder {
   }> {
     return this.dataProvider.elementInfo({ elementIds: graph.elementIds }).then((elementsInfo) => ({
       preloadedElements: elementsInfo,
-      diagram: makeLayout(graph.elementIds, graph.links),
+      diagram: makeLayout(graph.elementIds, graph.links, this.linkTypeOptions),
     }));
   }
 
@@ -78,7 +81,8 @@ export function makeGraphItems(
 
 export function makeLayout(
   elementsIds: ReadonlyArray<ElementIri>,
-  linksInfo: ReadonlyArray<LinkModel>
+  linksInfo: ReadonlyArray<LinkModel>,
+  linkTypeOptions?: ReadonlyArray<LinkTypeOptions>,
 ): SerializedDiagram {
   const rows = Math.ceil(Math.sqrt(elementsIds.length));
   const grid = uniformGrid({ rows, cellSize: { x: GREED_STEP, y: GREED_STEP } });
@@ -107,5 +111,5 @@ export function makeLayout(
       target: { '@id': target['@id'] },
     });
   });
-  return makeSerializedDiagram({ layoutData: { '@type': 'Layout', elements, links }, linkTypeOptions: [] });
+  return makeSerializedDiagram({ layoutData: { '@type': 'Layout', elements, links }, linkTypeOptions: linkTypeOptions });
 }

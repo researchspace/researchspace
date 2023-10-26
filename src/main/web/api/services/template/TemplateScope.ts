@@ -22,8 +22,9 @@ import { Rdf } from 'platform/api/rdf';
 
 import { DefaultHelpers, ContextCapturer, CapturedContext } from './functions';
 
+import { ParsedTemplate } from './TemplateCommons';
+import { defaultContextCache } from './TemplateCache';
 import {
-  ParsedTemplate,
   fetchRemoteTemplate,
   parseTemplate,
   isRemoteReference,
@@ -44,7 +45,14 @@ export interface TemplateScopeProps {
   partials?: { readonly [id: string]: string };
 }
 
+export interface TemplateScopeTrace {
+  componentTag?: string;
+  componentId?: string;
+  templateId?: string;
+}
+
 export interface TemplateScopeOptions extends TemplateScopeProps {
+  scopeTrace?: TemplateScopeTrace
   helpers?: { readonly [id: string]: Function };
 }
 
@@ -76,19 +84,22 @@ export interface TemplateScopeOptions extends TemplateScopeProps {
  *   .then(template => { ... });
  */
 export class TemplateScope {
-  static readonly default = new TemplateScope(DefaultHelpers);
+  static readonly default = new TemplateScope(DefaultHelpers, null, null, defaultContextCache);
   /** DO NOT USE. For testing purposes only. */
   static _fetchRemoteTemplate = fetchRemoteTemplate;
 
   private readonly handlebars = createHandlebarsWithIRILookup();
-  private readonly compiledCache = new Map<string, HandlebarsTemplateDelegate>();
+  private readonly compiledCache;
 
   private readonly partials: ReadonlyMap<string, ParsedTemplate>;
 
   private constructor(
     private readonly helpers: { readonly [id: string]: Function },
-    partials?: ReadonlyMap<string, ParsedTemplate>
+    private readonly scopeTrace?: TemplateScopeTrace,
+    partials?: ReadonlyMap<string, ParsedTemplate>,
+    cache?: Map<string, HandlebarsTemplateDelegate>,
   ) {
+    this.compiledCache = cache || new Map<string, HandlebarsTemplateDelegate>();
     for (const helperId in helpers) {
       if (!helpers.hasOwnProperty(helperId)) {
         continue;
@@ -112,7 +123,9 @@ export class TemplateScope {
 
   static builder(options: TemplateScopeOptions = {}): TemplateScopeBuilder {
     const helpers = { ...DefaultHelpers, ...options.helpers };
-    return new TemplateScopeBuilder(options, (partials) => new TemplateScope(helpers, partials));
+    return new TemplateScopeBuilder(
+      options, (partials) => new TemplateScope(helpers, options.scopeTrace, partials)
+    );
   }
 
   static create(options: TemplateScopeOptions = {}) {

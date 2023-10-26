@@ -19,7 +19,7 @@
 
 import * as _ from 'lodash';
 
-import { Rdf } from 'platform/api/rdf';
+import * as Rdf from '../core/Rdf';
 import { rdf, xsd, persist } from 'platform/api/rdf/vocabularies';
 
 const { JsonUndefined, JsonNull } = persist;

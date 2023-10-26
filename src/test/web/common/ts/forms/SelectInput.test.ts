@@ -26,9 +26,9 @@ import { Rdf } from 'platform/api/rdf';
 import { SelectInput, SelectInputProps, FieldValue, normalizeFieldDefinition } from 'platform/components/forms';
 
 import { shallow, mount } from 'platform-tests/configuredEnzyme';
-import { mockLanguagePreferences } from 'platform-tests/mocks';
+import { mockConfig } from 'platform-tests/mocks';
 
-mockLanguagePreferences();
+mockConfig();
 
 const DATATYPE = Rdf.iri('http://www.w3.org/2001/XMLSchema-datatypes#string');
 

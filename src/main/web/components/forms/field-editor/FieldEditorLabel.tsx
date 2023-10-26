@@ -46,7 +46,7 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
               onChangeLabelValue(newLabelValue);
             }}
           />
-          <div className="input-group-btn" style={{ fontSize: 'inherit' }}>
+          <div className="input-group-btn" style={{ fontSize: 'inherit', display: 'flex' }}>
             <div className="field-editor__lang-selector-holder">
               <ReactSelect
                 value={lang}

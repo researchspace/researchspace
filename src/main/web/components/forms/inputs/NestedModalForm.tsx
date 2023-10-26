@@ -19,23 +19,24 @@
 import * as React from 'react';
 import { Component, Children, ReactElement, ReactNode, cloneElement } from 'react';
 import { Modal } from 'react-bootstrap';
+import * as uuid from 'uuid';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
 import { getLabel } from 'platform/api/services/resource-label';
 
-import { componentHasType } from 'platform/components/utils';
-
 import { FieldDefinition, getPreferredLabel } from '../FieldDefinition';
 import { FieldValue, AtomicValue } from '../FieldValues';
+
 import {
-  ResourceEditorForm,
   ResourceEditorFormProps,
   performFormPostAction,
   getPostActionUrlQueryParams,
-} from '../ResourceEditorForm';
-import { trigger } from 'platform/api/events';
-import * as FormEvents from 'platform/components/forms/FormEvents';
+} from '../ResourceEditorFormConfig';
+import { elementHasInputType, InputKind } from './InputCommpons';
+import { ModuleRegistry } from 'platform/api/module-loader';
+import { TemplateContext } from 'platform/api/components';
+import { CapturedContext } from 'platform/api/services/template';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
@@ -43,6 +44,7 @@ export interface NestedModalFormProps {
   onSubmit: (value: AtomicValue) => void;
   onCancel: () => void;
   children: ReactElement<ResourceEditorFormProps> | undefined;
+  parent: React.RefObject<HTMLElement>;
 }
 
 export class NestedModalForm extends Component<NestedModalFormProps, {}> {
@@ -53,7 +55,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 
   render() {
-    const { definition, onSubmit, onCancel, children, subject } = this.props;
+    const { definition, onSubmit, onCancel, children, subject, parent } = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
@@ -75,10 +77,17 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       },
     };
     return (
-      <Modal bsSize="large" show={true} onHide={onCancel}>
+      <Modal
+        show={true}
+        onHide={onCancel}
+        container={
+          // restrict nested form backdrop to semantic form that is closest ancestor of parent input element
+          parent.current.closest('.semantic-form')
+        }
+      >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
-            (subject ? `Create New ` : 'Edit ') +
+            (subject ? 'Create New ' : '') +
                         `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
           }</Modal.Title>
         </Modal.Header>
@@ -88,10 +97,26 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 }
 
-export function tryExtractNestedForm(children: ReactNode): ReactElement<ResourceEditorFormProps> | undefined {
+export async function tryExtractNestedForm(
+  children: ReactNode, templateContext: TemplateContext, nestedFormTemplate?: string
+): Promise<ReactElement<ResourceEditorFormProps> | undefined> {
+  if (React.Children.count(children) === 1) {
+    return Promise.resolve(getNestedForm(children));
+  } else if (nestedFormTemplate) {
+    const template = await templateContext.templateScope.compile(nestedFormTemplate);
+    // see TemplateItem#compileTemplate, here we need to do the same to make sure that we propagate the context properly
+    const capturer = CapturedContext.inheritAndCapture(templateContext.templateDataContext);
+    const parsedTemplate = await ModuleRegistry.parseHtmlToReact(template({"viewId": uuid.v4()}, { capturer, parentContext: templateContext.templateDataContext }));
+    return getNestedForm(parsedTemplate);
+  } else {
+    return Promise.resolve(undefined);
+  }
+}
+
+function getNestedForm(children: ReactNode) {
   if (Children.count(children) !== 1) {
     return undefined;
   }
   const child = Children.only(children);
-  return componentHasType(child, ResourceEditorForm) ? child : undefined;
+  return elementHasInputType(child, InputKind.SemanticForm) ? child as ReactElement<ResourceEditorFormProps> : undefined;
 }

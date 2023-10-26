@@ -48,7 +48,7 @@ import { FileUploadService } from 'platform/api/services/file-upload';
 
 const ProgressBar = React.createFactory(ReactBootstrap.ProgressBar);
 
-import '../scss/image-upload-widget.scss';
+import './image-upload-widget.scss';
 
 interface Props {
   config: {
@@ -371,7 +371,7 @@ class ImageUploadWidget extends Component<Props, State> {
         ),
         D.button(
           {
-            className: 'btn btn-sm btn-danger iiif-upload__cancel-button pull-right',
+            className: 'btn btn-sm btn-default iiif-upload__cancel-button pull-right',
             onClick: () => window.location.reload(),
           },
           'Cancel'

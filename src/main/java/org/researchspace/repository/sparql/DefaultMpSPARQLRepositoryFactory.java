@@ -56,15 +56,17 @@ public class DefaultMpSPARQLRepositoryFactory extends AbstractMpSPARQLRepository
      */
     @Override
     public SPARQLRepository getRepositoryInternal(MpSPARQLRepositoryConfig config) throws RepositoryConfigException {
-        SPARQLRepository result = null;
+        CustomSPARQLRepository result = null;
 
         if (config instanceof SPARQLRepositoryConfig) {
             SPARQLRepositoryConfig httpConfig = config;
             if (httpConfig.getUpdateEndpointUrl() != null) {
-                result = new CustomSPARQLRepository(httpConfig.getQueryEndpointUrl(), httpConfig.getUpdateEndpointUrl());
+                result = new CustomSPARQLRepository(httpConfig.getQueryEndpointUrl(),
+                        httpConfig.getUpdateEndpointUrl());
             } else {
                 result = new CustomSPARQLRepository(httpConfig.getQueryEndpointUrl());
             }
+            result.setWritable(config.isWritable());
         } else {
             throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
         }

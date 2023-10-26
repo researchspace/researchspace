@@ -18,6 +18,7 @@
  */
 
 import { Component } from 'react';
+import { isMatch } from 'lodash';
 
 import { Cancellation } from 'platform/api/async';
 import { Event, listen, trigger } from 'platform/api/events';
@@ -29,15 +30,30 @@ export interface EventProxyConfig {
   id: string;
 
   /**
-   * Type of event to listen to.
+   * Type of event to listen to. Can't be used together with onEventTypes
    */
   onEventType?: string;
+
+  /**
+   * Types of event to listen to. Can't be used together with onEventType.
+   */
+  onEventTypes?: string[];
 
   /**
    * Source component that we listen for events.
    * When empty will listen for all events of a given type.
    */
   onEventSource?: string;
+
+  /**
+   * Listen only to events sent to the given target.
+   */
+  onEventTarget?: string;
+
+  /**
+   * Proxy only events with payload that includes the following data.
+   */
+  onEventData?: Record<string, any>
 
   /**
    * Type of the event that this component triggers when
@@ -49,10 +65,16 @@ export interface EventProxyConfig {
    * Ids of targets for triggered event.
    */
   proxyTargets?: string[];
+
   /**
    * Data that will be sent to all targets instead of the original event's data
    */
   data?: object;
+
+  /**
+   * Data that will be merged with proxied event data.
+   */
+  additionalData?: object;
 }
 export type EventProxyProps = EventProxyConfig;
 
@@ -73,14 +95,31 @@ export class EventProxy extends Component<EventProxyProps, void> {
   private cancelation = new Cancellation();
 
   componentDidMount() {
-    this.cancelation
-      .map(
-        listen({
-          eventType: this.props.onEventType,
-          source: this.props.onEventSource,
-        })
+    if (this.props.onEventTypes) {
+      this.props.onEventTypes.forEach(
+        eventType => {
+          this.cancelation
+            .map(
+              listen({
+                eventType,
+                source: this.props.onEventSource,
+                target: this.props.onEventTarget,
+              })
+            )
+            .onValue(this.onEvent);
+        }
       )
-      .onValue(this.onEvent);
+    } else {
+      this.cancelation
+        .map(
+          listen({
+            eventType: this.props.onEventType,
+            source: this.props.onEventSource,
+            target: this.props.onEventTarget,
+          })
+        )
+        .onValue(this.onEvent);
+    }
   }
 
   componentWillUnmount() {
@@ -88,11 +127,18 @@ export class EventProxy extends Component<EventProxyProps, void> {
   }
 
   private onEvent = (event: Event<any>) => {
+    let data = this.props.data || event.data;
+    data = { ...data, ...this.props.additionalData };
+
+    if (this.props.onEventData && !isMatch(event.data, this.props.onEventData)) {
+      return;
+    }
+
     trigger({
       eventType: this.props.proxyEventType,
       source: this.props.id,
       targets: this.props.proxyTargets,
-      data: this.props.data || event.data,
+      data,
     });
   };
 

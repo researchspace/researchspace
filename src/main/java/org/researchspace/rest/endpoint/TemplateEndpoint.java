@@ -90,6 +90,7 @@ import org.researchspace.di.AssetsMap;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.rest.feature.CacheControl.NoCache;
 import org.researchspace.security.PermissionUtil;
+import org.researchspace.security.SecurityService;
 import org.researchspace.security.Permissions.PAGES;
 import org.researchspace.services.storage.StorageUtils;
 import org.researchspace.services.storage.api.ObjectKind;
@@ -449,12 +450,6 @@ public class TemplateEndpoint extends ResourceConfig {
             }
         }
 
-        Optional<String> author = StorageUtils.currentUsername();
-        if (!author.isPresent()) {
-            return Response.status(Status.FORBIDDEN).entity("Sign In is required to save the changes to the page")
-                    .build();
-        }
-
         // preserve old behavior to delete template if it's empty
         if (pageSource.length() == 0) {
             try {
@@ -469,7 +464,7 @@ public class TemplateEndpoint extends ResourceConfig {
             byte[] bytes = pageSource.getBytes(StandardCharsets.UTF_8);
             InputStream newContent = new ByteArrayInputStream(bytes);
             try {
-                platformStorage.getStorage(targetAppId).appendObject(objectId, new ObjectMetadata(author.get(), null),
+                platformStorage.getStorage(targetAppId).appendObject(objectId, new ObjectMetadata(SecurityService.getUserName(), null),
                         newContent, bytes.length);
                 return Response.created(new URI(iri.stringValue())).build();
             } catch (StorageException e) {
@@ -641,23 +636,23 @@ public class TemplateEndpoint extends ResourceConfig {
     @Path("header")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication
-    public String getHeader() throws IOException {
-        return st.renderPageLayoutTemplate(TEMPLATES.HEADER);
+    public String getHeader(@QueryParam("preferredLanguage") Optional<String> preferredLanguage) throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.HEADER, preferredLanguage.orElse(null));
     }
 
     @GET()
     @Path("footer")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication
-    public String getFooter() throws IOException {
-        return st.renderPageLayoutTemplate(TEMPLATES.FOOTER);
+    public String getFooter(@QueryParam("preferredLanguage") Optional<String> preferredLanguage) throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.FOOTER, preferredLanguage.orElse(null));
     }
 
     @GET()
     @Path("noPermissionsPage")
     @Produces(MediaType.TEXT_HTML)
     @RequiresAuthentication
-    public String getNoPermissionsPage() throws IOException {
-        return st.renderPageLayoutTemplate(TEMPLATES.NO_PERMISSIONS_PAGE);
+    public String getNoPermissionsPage(@QueryParam("preferredLanguage") Optional<String> preferredLanguage) throws IOException {
+        return st.renderPageLayoutTemplate(TEMPLATES.NO_PERMISSIONS_PAGE, preferredLanguage.orElse(null));
     }
 }

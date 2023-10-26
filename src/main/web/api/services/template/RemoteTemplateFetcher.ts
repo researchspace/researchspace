@@ -18,26 +18,19 @@
  */
 
 import * as Handlebars from 'handlebars';
+import { partition } from 'lodash';
 
 import { WrappingError } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlUtil } from 'platform/api/sparql';
 
 import { escapeRemoteTemplateHtml } from './TemplateParser';
+import { ParsedTemplate } from './TemplateCommons';
+import { remoteTemplateCache } from './TemplateCache';
 
 import { PageService } from '../page';
 
-const remoteTemplateCache = new Map<string, Promise<ParsedTemplate>>();
 
-export function purgeRemoteTemplateCache() {
-  remoteTemplateCache.clear();
-}
-
-export interface ParsedTemplate {
-  readonly source: string;
-  readonly ast: hbs.AST.Program;
-  readonly references: ReadonlyArray<string>;
-}
 
 export function fetchRemoteTemplate(iri: Rdf.Iri): Promise<ParsedTemplate> {
   if (remoteTemplateCache.has(iri.value)) {
@@ -83,7 +76,7 @@ interface HandlebarsJavaScriptCompiler {
 class IRIResolvingCompiler extends (Handlebars as HandlebarsAPI).JavaScriptCompiler {
   nameLookup(parent: any, name: any, type: string) {
     if (type === 'partial' && typeof name === 'string' && isRemoteReference(name)) {
-      const [iri] = SparqlUtil.resolveIris([name]);
+      const iri = resolveTemplateIri(name);
       return super.nameLookup(parent, iri.value, type);
     }
     return super.nameLookup(parent, name, type);
@@ -92,7 +85,7 @@ class IRIResolvingCompiler extends (Handlebars as HandlebarsAPI).JavaScriptCompi
 IRIResolvingCompiler.prototype.compiler = IRIResolvingCompiler;
 
 export function isRemoteReference(partialName: string) {
-  return partialName.indexOf(':') >= 0;
+  return partialName.includes(':');
 }
 
 class RemoteTemplateScanner extends Handlebars.Visitor {
@@ -119,12 +112,14 @@ class RemoteTemplateScanner extends Handlebars.Visitor {
     }
   }
 
-  private getPartialName(name: hbs.AST.PathExpression | hbs.AST.SubExpression) {
+  private getPartialName(name: hbs.AST.PathExpression | hbs.AST.SubExpression | hbs.AST.StringLiteral) {
     if (name.type === 'PathExpression') {
       const path = name as hbs.AST.PathExpression;
       if (path.parts.length === 1) {
         return path.original;
       }
+    } else if (name.type === 'StringLiteral') {
+      return (name as hbs.AST.StringLiteral).value;
     }
     return undefined;
   }
@@ -142,9 +137,22 @@ export function parseTemplate(body: string): ParsedTemplate {
   scanner.accept(ast);
 
   const references = scanner.localReferences;
-  SparqlUtil.resolveIris(scanner.remoteReferences)
+
+  // if reference starts with http then it is full IRI, otherwise it is prefixed one
+  const [expanded, prefixed] = partition(scanner.remoteReferences, ref => ref.startsWith('http'));
+  expanded.forEach(ref => references.add(ref));
+
+  SparqlUtil.resolveIris(prefixed)
     .map((iri) => iri.value)
     .forEach((remoteReference) => references.add(remoteReference));
 
   return { source: body, ast, references: Array.from(references.values()) };
+}
+
+function resolveTemplateIri(ref: string) {
+  if (ref.startsWith('http:/')) {
+    return Rdf.iri(ref);
+  } else {
+    return SparqlUtil.resolveIris([ref])[0];
+  }
 }

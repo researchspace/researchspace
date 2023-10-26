@@ -280,7 +280,7 @@ export function convertAnnotationToCompositeValue(annotation: OARegionAnnotation
         })
       );
     } else if (field.id === ImageRegionViewport.id) {
-      const value = Rdf.literal(annotation['http://www.researchspace.org/ontology/viewport']);
+      const value = Rdf.literal(annotation[rso.viewport.value]);
       values = Immutable.List<Forms.FieldValue>([Forms.FieldValue.fromLabeled({ value })]);
     } else if (field.id === ImageRegionIsPrimaryAreaOf.id) {
       values = Immutable.List<Forms.FieldValue>(

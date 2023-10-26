@@ -1,0 +1,42 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
+               new-subject-template='{{scheme}}/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                  inScheme="http://www.researchspace.org/pattern/vocabulary_manager/skos:inScheme"
+                  prefLabel="http://www.researchspace.org/pattern/vocabulary_manager/skos:prefLabel"
+                  broader="http://www.researchspace.org/pattern/vocabulary_manager/skos:broader"
+                  narrower="http://www.researchspace.org/pattern/vocabulary_manager/skos:narrower"
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  scopeNote="http://www.w3.org/2004/02/skos/core#scopeNote"
+                  altLabel="http://www.researchspace.org/pattern/vocabulary_manager/skos:altLabel"
+                  related="http://www.researchspace.org/pattern/vocabulary_manager/skos:related"
+                  P138i_has_representation="http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation"
+               ]]'
+>
+
+  <div class="form-scroll-area">
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E55_Type","http://www.w3.org/2004/02/skos/core#Concept"]'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+    
+    <semantic-form-text-input for="prefLabel"> </semantic-form-text-input>
+    <semantic-form-text-input for="altLabel"> </semantic-form-text-input>
+   
+    <semantic-form-tree-picker-input for="broader" placeholder="drag from tree" 
+                                     default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                     tree-patterns='{"scheme": "{{scheme}}"}'
+    ></semantic-form-tree-picker-input>
+    <semantic-form-tree-picker-input for="narrower" 
+                                     placeholder="drag from tree" 
+                                     tree-patterns='{"scheme": "{{scheme}}"}'
+    ></semantic-form-tree-picker-input>
+    
+    <semantic-form-text-input for="scopeNote" multiline=true> </semantic-form-text-input>
+    <semantic-form-autocomplete-input for="P138i_has_representation"></semantic-form-autocomplete-input>
+    <semantic-form-autocomplete-input for="related"> </semantic-form-autocomplete-input>
+
+    <semantic-form-errors></semantic-form-errors>
+  </div>
+  
+  [[> rsp:FormDefaultActions]] 
+</semantic-form>

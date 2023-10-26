@@ -52,6 +52,8 @@ import {
   ValuesWithErrors,
 } from './MultipleValuesInput';
 
+import { InputKind } from './InputCommpons';
+
 export interface CompositeInputProps extends SingleValueInputProps {
   fields: ReadonlyArray<FieldDefinitionProp>;
   newSubjectTemplate?: string;
@@ -74,6 +76,8 @@ const VALIDATION_DEBOUNCE_DELAY = 500;
 type ChildInput = MultipleValuesInput<MultipleValuesProps, unknown>;
 
 export class CompositeInput extends SingleValueInput<ComponentProps, {}> {
+  public static readonly inputKind = InputKind.CompositeInput;
+
   private readonly cancellation = new Cancellation();
   private compositeOperations = this.cancellation.derive();
 

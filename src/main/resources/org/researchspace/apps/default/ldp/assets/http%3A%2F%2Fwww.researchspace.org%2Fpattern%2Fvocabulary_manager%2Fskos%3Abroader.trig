@@ -1,0 +1,48 @@
+
+<http://www.researchspace.org/pattern/vocabulary_manager/skos:broader/context> {
+  <http://www.researchspace.org/pattern/vocabulary_manager/skos:broader> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>,
+      <http://www.w3.org/2004/02/skos/core#Concept>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Broader Term"@en;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.w3.org/2004/02/skos/core#Concept>,
+      <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-4eebf8fd850848d6be9bd6ffa47c5c35-97cakd;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-4eebf8fd850848d6be9bd6ffa47c5c35-9ir8ya;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-4eebf8fd850848d6be9bd6ffa47c5c35-4pdre;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/FieldCategories/authority_manager>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2020-10-22T13:41:58.222+03:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-4eebf8fd850848d6be9bd6ffa47c5c35-4pdre a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject <http://www.w3.org/2004/02/skos/core#broader> $value .
+  $value <http://www.w3.org/2004/02/skos/core#narrower> $subject .
+  $subject crm:P127_has_broader_term $value .
+  $value crm:P127i_has_narrower_term $subject .
+} WHERE {}""" .
+  
+  _:genid-4eebf8fd850848d6be9bd6ffa47c5c35-9ir8ya a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject <http://www.w3.org/2004/02/skos/core#broader> $value .
+  $value <http://www.w3.org/2004/02/skos/core#narrower> $subject .
+  $subject crm:P127_has_broader_term $value .
+  $value crm:P127i_has_narrower_term $subject .
+} WHERE {
+  $subject <http://www.w3.org/2004/02/skos/core#broader> $value .
+  $value <http://www.w3.org/2004/02/skos/core#narrower> $subject .
+  $subject crm:P127_has_broader_term $value .
+  $value crm:P127i_has_narrower_term $subject . 
+}""" .
+  
+  _:genid-4eebf8fd850848d6be9bd6ffa47c5c35-97cakd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject <http://www.w3.org/2004/02/skos/core#broader> ?value.
+  ?value skos:prefLabel ?label.
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/vocabulary_manager/skos:broader> .
+}

@@ -175,7 +175,7 @@ function getImageBindings(
   return SparqlClient.select(parametrizedQuery, { context: { repository: repository } });
 }
 
-function parseImageSubarea(value: string): Data.Maybe<ImageSubarea> {
+export function parseImageSubarea(value: string): Data.Maybe<ImageSubarea> {
   if (!value) {
     return maybe.Nothing<ImageSubarea>();
   }

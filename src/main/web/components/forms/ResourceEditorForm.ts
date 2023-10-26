@@ -25,13 +25,13 @@ import * as moment from 'moment';
 
 import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
-import { navigateToResource, refresh, getCurrentResource } from 'platform/api/navigation';
+import { getCurrentResource } from 'platform/api/navigation';
 import { Rdf } from 'platform/api/rdf';
 import { addNotification } from 'platform/components/ui/notification';
 import { addToDefaultSet } from 'platform/api/services/ldp-set';
 import { BrowserPersistence, isValidChild, componentHasType, universalChildren } from 'platform/components/utils';
 import { ErrorNotification } from 'platform/components/ui/notification';
-import { trigger } from 'platform/api/events';
+import { listen, trigger } from 'platform/api/events';
 
 import { FieldDefinitionProp } from './FieldDefinition';
 import { DataState, FieldValue, FieldError, CompositeValue } from './FieldValues';
@@ -40,74 +40,18 @@ import { SemanticForm, SemanticFormProps } from './SemanticForm';
 import { ValuePatch, computeValuePatch, applyValuePatch } from './Serialization';
 
 import { TriplestorePersistence, isTriplestorePersistence } from './persistence/TriplestorePersistence';
-import { LdpPersistence, LdpPersistenceConfig } from './persistence/LdpPersistence';
-import { SparqlPersistence, SparqlPersistenceConfig } from './persistence/SparqlPersistence';
-import { RawSparqlPersistence, RawSparqlPersistenceConfig } from './persistence/RawSparqlPersistence';
+import { LdpPersistence } from './persistence/LdpPersistence';
+import { SparqlPersistence } from './persistence/SparqlPersistence';
+import { RawSparqlPersistence } from './persistence/RawSparqlPersistence';
 import { SparqlPersistence as SparqlPersistenceClass } from './persistence/SparqlPersistence';
 import { RecoverNotification } from './static/RecoverNotification';
 
 import { CompositeInput } from './inputs/CompositeInput';
 import * as FormEvents from './FormEvents';
-
-export type PostAction = 'none' | 'reload' | 'redirect' | 'event' | string | ((subject: Rdf.Iri) => void);
-
-/**
- * @see getPostActionUrlQueryParams().
- */
-export interface ResourceEditorFormProps {
-  fields: ReadonlyArray<FieldDefinitionProp>;
-  /**
-   * IRI of instance described by the form.
-   * This value will be passed down to all queries as $subject.
-   */
-  subject?: Rdf.Iri | string;
-  /**
-   * URI template to customize subject generation.
-   *
-   * The template allows to reference form values, e.g if there is field A that uniquely
-   * identify record, we can specify subject template as `http://collection.bm.com/records/{{A}}`,
-   * where A will be substituted with value of the field A.
-   *
-   * `{{UUID}}` placeholder allows to substitute a random UUID.
-   */
-  newSubjectTemplate?: string;
-  initializeModel?: (model: CompositeValue) => CompositeValue;
-  persistence?: TriplestorePersistenceConfig['type'] | TriplestorePersistenceConfig | TriplestorePersistence;
-  children?: ReactNode;
-  /**
-   * Whether intermediate user inputs to the form should
-   * be persisted on client-side persistence layer (such as local storage, cookies etc).
-   * If undefined or false, the form will neither try persist change
-   * nor try to recover on initalization form states from the persistence layer.
-   */
-  browserPersistence?: boolean;
-  /**
-   * Optional identifier to be used to recover cached
-   * form states from the local storage. By default the current {@link ResourceContext} will
-   * be used as identifier. However, if several forms being embedded on a page,
-   * unique and static form idenfier need to be assigned manually.
-   */
-  formId?: string;
-  /**
-   * Optional post-action to be performed after saving the form.
-   * Can be either "none", "reload" or "redirect" (redirects to the subject of the form)
-   * or any IRI string to which the form will redirect.
-   */
-  postAction?: PostAction;
-  debug?: boolean;
-  /**
-   * Used as source id for emitted events.
-   */
-  id?: string;
-  /**
-   * `true` if persisted component should be added to the default set of the current user
-   *
-   * @default false
-   */
-  addToDefaultSet?: boolean;
-}
-
-export type TriplestorePersistenceConfig = LdpPersistenceConfig | SparqlPersistenceConfig | RawSparqlPersistenceConfig;
+import {
+  ResourceEditorFormProps, TriplestorePersistenceConfig, performFormPostAction, getPostActionUrlQueryParams,
+} from './ResourceEditorFormConfig';
+import { InputKind } from './inputs/InputCommpons';
 
 interface State {
   readonly model?: CompositeValue;
@@ -174,6 +118,8 @@ const BROWSER_PERSISTENCE = BrowserPersistence.adapter<ValuePatch>();
  *  <resource-editor-form>
  */
 export class ResourceEditorForm extends Component<ResourceEditorFormProps, State> {
+  public static readonly inputKind = InputKind.SemanticForm;
+
   private initialState: State;
   private persistence: TriplestorePersistence;
 
@@ -197,6 +143,32 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   componentDidMount() {
     if (this.persistence instanceof SparqlPersistenceClass) {
       this.validateFields();
+    }
+
+    if (this.props.id) {
+      this.cancellation.map(
+        listen({
+          target: this.props.id,
+          eventType: FormEvents.FormRemoveResource,
+        })
+      ).observe({
+        value: (event) => {
+          if (event.data.iri === this.props.subject) {
+            this.onRemove();
+          }
+        }
+      });
+
+      this.cancellation.map(
+        listen({
+          target: this.props.id,
+          eventType: FormEvents.FormSave,
+        })
+      ).observe({
+        value: () => {
+          this.onSave();
+        }
+      });
     }
   }
 
@@ -315,6 +287,16 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               disabled: !this.canSubmit(),
               onClick: this.onSubmit,
             });
+          case 'delete':
+            return cloneElement(element, {
+              disabled: !this.canSubmit(),
+              onClick: this.onRemove,
+            });
+          case 'dry-run':
+            return cloneElement(element, {
+              disabled: !this.canSubmit(),
+              onClick: this.onDryRun,
+            });
           case 'load-state': {
             let input: HTMLInputElement;
             const setInput = (value: HTMLInputElement) => (input = value);
@@ -380,7 +362,10 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   private onSubmit = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    this.onSave();
+  };
 
+  private onSave = () => {
     const validatedModel = this.form.validate(this.state.model);
     if (readyToSubmit(validatedModel, FieldError.isPreventSubmit)) {
       this.setState((state) => ({ model: validatedModel, submitting: true }));
@@ -423,7 +408,42 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
     } else {
       this.setState((state) => ({ model: validatedModel, submitting: false }));
     }
-  };
+  }
+
+  private onRemove = () => {
+    const itemToRemove = this.initialState.model.subject;
+    this.persistence
+      .remove(this.initialState.model)
+      .observe({
+        value: () => {
+          performFormPostAction({
+            postAction: this.props.postAction,
+            subject: itemToRemove,
+            eventProps: { isNewSubject: false, isRemovedSubject: true, sourceId: this.props.id },
+            queryParams: getPostActionUrlQueryParams(this.props),
+          });
+        },
+        error: () => {}
+      })
+    ;
+  }
+
+  private onDryRun = () => {
+    const initialModel = this.initialState.model;
+    this.form
+      .finalize(this.state.model)
+      .flatMap(
+        (finalModel) => (this.persistence as SparqlPersistence).dryPersist(initialModel, finalModel)
+      ).onValue(
+        res => trigger({
+          source: this.props.id,
+          eventType: FormEvents.FormDryRunResults,
+          data: {
+            dryRunResults: res,
+          },
+        })
+      );
+  }
 
   private onSaveData = () => {
     const valuePatch: ValuePatch = computeValuePatch(FieldValue.empty, this.state.model);
@@ -503,54 +523,6 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   };
 }
 
-/**
- * Performs either a reload (default) or a redirect after the form has been submited
- * and the data been saved. Alsow can trigger the events:
- * - FormEvents.FormResourceCreated
- * - FormEvents.FormResourceUpdate
- * if the action is 'event'
- * if the action is 'none' nothing happen
- * TODO should be moved outside when separating the components
- */
-export function performFormPostAction(parameters: {
-  postAction: PostAction;
-  subject: Rdf.Iri;
-  eventProps: { isNewSubject: boolean; sourceId: string };
-  queryParams?: { [paramKey: string]: string };
-}) {
-  const { postAction = 'reload', subject, eventProps, queryParams } = parameters;
-  if (postAction === 'none') {
-    return;
-  }
-
-  if (postAction === 'reload') {
-    refresh();
-  } else if (postAction === 'redirect') {
-    navigateToResource(subject, queryParams).onValue((v) => v);
-  } else if (postAction === 'event') {
-    if (!eventProps.sourceId) {
-      throw new Error("If you want use postAction 'event', you have to define the id as well.");
-    }
-    if (eventProps.isNewSubject) {
-      trigger({
-        eventType: FormEvents.FormResourceCreated,
-        source: eventProps.sourceId,
-        data: { iri: subject.value },
-      });
-    } else {
-      trigger({
-        eventType: FormEvents.FormResourceUpdated,
-        source: eventProps.sourceId,
-        data: { iri: subject.value },
-      });
-    }
-    return;
-  } else if (typeof postAction === 'function') {
-    postAction(subject);
-  } else {
-    navigateToResource(Rdf.iri(postAction), queryParams).onValue((v) => v);
-  }
-}
 
 function normalizePersistenceMode(
   persistenceProp:
@@ -597,28 +569,7 @@ function getSubject(props: ResourceEditorFormProps): Rdf.Iri {
   return subjectIri || Rdf.iri('');
 }
 
-const POST_ACTION_QUERY_PARAM_PREFIX = 'urlqueryparam';
-
-/**
- * Extracts user-defined `urlqueryparam-<KEY>` query params from
- * a form configuration to provide them on post action navigation.
- */
-export function getPostActionUrlQueryParams(props: ResourceEditorFormProps) {
-  const params: { [paramKey: string]: string } = {};
-
-  for (const key in props) {
-    if (Object.hasOwnProperty.call(props, key)) {
-      if (key.indexOf(POST_ACTION_QUERY_PARAM_PREFIX) === 0) {
-        const queryKey = key.substring(POST_ACTION_QUERY_PARAM_PREFIX.length).toLowerCase();
-        params[queryKey] = props[key];
-      }
-    }
-  }
-
-  return params;
-}
-
-function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) {
+function getInvalidFields(fields: ReadonlyArray<FieldDefinitionProp>) { 
   return fields.filter((field) => !field.insertPattern || !field.deletePattern);
 }
 

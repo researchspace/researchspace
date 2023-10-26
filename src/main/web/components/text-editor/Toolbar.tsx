@@ -216,7 +216,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     return (
       <ButtonToolbar className={styles.toolbar}>
         <ButtonGroup>
-          <Button bsStyle='primary' onClick={this.props.onDocumentSave} disabled={saving}>
+          <Button bsStyle='success' onClick={this.props.onDocumentSave} disabled={saving}>
             <i className={saving ? 'fa fa-spinner fa-pulse fa-fw' : 'fa fa-floppy-o' }
               aria-hidden='true'></i>
             &nbsp; Save

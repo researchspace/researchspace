@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - master
+      - 'build-docker/**'
+      - 'build-zip/**'
 
 jobs:
   build:
@@ -28,7 +30,7 @@ jobs:
           node-version: 12.x
 
       # cache gradle wrapper files, reset cache if we update gradle-wrapper version in gradle-wrapper.properties file
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
@@ -36,7 +38,7 @@ jobs:
             ${{ runner.os }}-gradle-wrapper-
 
       # cache dependencies resolved by gradle, reset cache when build.gradle is updated
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-caches-${{ hashFiles('build.gradle') }}
@@ -44,7 +46,7 @@ jobs:
             ${{ runner.os }}-gradle-caches-
 
       # cache dependencies resolved by npm, reset cache when package-lock.json us updated
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -53,7 +55,7 @@ jobs:
 
       # run tests with gradle only if no build_image label is present and we are not building master branch, otherwise tests are run as part of buildZip task
       - name: test
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') == false && github.ref != 'refs/heads/master'
+        if: (contains(github.event.pull_request.labels.*.name, 'build_image') == false && github.ref != 'refs/heads/master') || contains(github.ref, 'build-docker')
         uses: eskatos/gradle-command-action@v1
         env:
           CHROMIUM_BIN: /usr/bin/google-chrome
@@ -61,11 +63,11 @@ jobs:
           arguments: test
 
       - name: Set current date as env variable
-        run: echo "::set-env name=DATE::$(date +'%Y-%m-%d')"
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       # build war only if build_image label is present and build_zip don't
       - name: war
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') && !contains(github.event.pull_request.labels.*.name, 'build_zip')
+        if: contains(github.ref, 'build-docker') || (contains(github.event.pull_request.labels.*.name, 'build_image') && !contains(github.event.pull_request.labels.*.name, 'build_zip'))
         uses: eskatos/gradle-command-action@v1
         env:
           CHROMIUM_BIN: /usr/bin/google-chrome
@@ -84,7 +86,7 @@ jobs:
           arguments: buildZip
 
       - name: docker build
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')
         run: |
           export DOCKER_FOLDER="$(pwd)/dist/docker"
           cp build/libs/ROOT-*.war $DOCKER_FOLDER/platform/ROOT.war
@@ -94,18 +96,38 @@ jobs:
           cd $DOCKER_FOLDER/platform
           docker build -t researchspace/platform-ci:${DATE}_${GITHUB_SHA} .
 
+      - name: get branch local name
+        id: get-branch
+        if: contains(github.ref, 'build-docker')
+        run: |
+          branch=$(echo ${{github.ref}} | cut -d "/" -f 4)
+          echo "::set-output name=branch-local-name::$branch"
+
+      - name: tag docker image for non-master branch
+        if: contains(github.ref, 'build-docker')
+        run: docker tag researchspace/platform-ci:${DATE}_${GITHUB_SHA} researchspace/platform-ci:${{steps.get-branch.outputs.branch-local-name}}
+
       - name: tag docker image for master branch
         if: github.ref == 'refs/heads/master'
         run: docker tag researchspace/platform-ci:${DATE}_${GITHUB_SHA} researchspace/platform-ci:latest
 
       - name: Push docker image
-        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master'
+        if: contains(github.event.pull_request.labels.*.name, 'build_image') || github.ref == 'refs/heads/master' || contains(github.ref, 'build-docker')
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: |
           echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
           docker push researchspace/platform-ci:${DATE}_${GITHUB_SHA}
+
+      - name: Push latest tag for non-master
+        if: contains(github.ref, 'build-docker')
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          echo "$DOCKER_HUB_PASSWORD" | docker login --username ${DOCKER_HUB_USER} --password-stdin
+          docker push researchspace/platform-ci:${{steps.get-branch.outputs.branch-local-name}}
 
       - name: Push latest tag for master
         if: github.ref == 'refs/heads/master'

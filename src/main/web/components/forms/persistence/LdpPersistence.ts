@@ -26,6 +26,8 @@ import { requestAsProperty } from 'platform/api/async';
 import * as request from 'platform/api/http';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+import { LdpService } from 'platform/api/services/ldp';
+import { VocabPlatform } from 'platform/api/rdf/vocabularies';
 
 import { FieldValue, CompositeValue, EmptyValue } from '../FieldValues';
 import { parseQueryStringAsUpdateOperation } from './PersistenceUtils';
@@ -54,6 +56,11 @@ export class LdpPersistence implements TriplestorePersistence {
       const updates = computeModelDiff(FieldValue.empty, currentModel);
       return this.persistModelUpdates(currentModel.subject, updates);
     }
+  }
+
+  remove(model: CompositeValue): Kefir.Property<void> {
+    const ldp = new LdpService(VocabPlatform.FormContainer.value, this.config);
+    return ldp.deleteResource(model.subject) as Kefir.Property<void>;
   }
 
   persistModelUpdates(subject: Rdf.Iri, updates: ModelDiffEntry[]) {

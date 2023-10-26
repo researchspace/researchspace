@@ -22,6 +22,7 @@ import { Props as ReactProps, createElement } from 'react';
 import * as D from 'react-dom-factories';
 import * as maybe from 'data.maybe';
 
+import { Cancellation } from 'platform/api/async';
 import { BuiltInEvents, trigger } from 'platform/api/events';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
@@ -171,6 +172,9 @@ export class SemanticTree extends Component<Props, State> {
     tupleTemplate: '<semantic-link iri="{{node.value}}"></semantic-link>',
   };
 
+  private readonly cancellation = new Cancellation();
+  private querying = this.cancellation.derive();
+
   constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
@@ -180,22 +184,39 @@ export class SemanticTree extends Component<Props, State> {
   }
 
   public componentDidMount() {
+    this.loadData(this.props);
+  }
+
+  public componentWillReceiveProps(props: Props) {
+    if (props.query !== this.props.query) {
+      this.loadData(props);
+    }
+  }
+
+  public componentWillUnmount() {
+    this.cancellation.cancelAll();
+  }
+
+  private loadData(props: Props) {
     const context = this.context.semanticContext;
-    const stream = SparqlClient.select(this.props.query, { context });
-    stream
+    this.querying = this.cancellation.deriveAndCancel(this.querying);
+    const loading =
+      this.querying.map(
+        SparqlClient.select(props.query, { context })
+      )
       .onError((errorMessage) => this.setState({ isLoading: false, errorMessage: maybe.Just(errorMessage) }))
       .onValue(this.processSparqlResult)
       .onEnd(() => {
         if (this.props.id) {
-          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: this.props.id });
+          trigger({ eventType: BuiltInEvents.ComponentLoaded, source: props.id });
         }
       });
 
-    if (this.props.id) {
+    if (props.id) {
       trigger({
         eventType: BuiltInEvents.ComponentLoading,
         source: this.props.id,
-        data: stream,
+        data: loading,
       });
     }
   }

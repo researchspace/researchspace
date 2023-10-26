@@ -18,19 +18,15 @@
     font-size: .4em;
     font-weight: 800;
   }
-  .btn-default:hover,
-  .btn-default:focus{
-    color:white;
-  }
 </style>
 
 <div class="page">
   
-  <div class="container-fluid rs-page-header">
+  <div class="container-fluid adminPage-header-container">
     <bs-row class="row-center">
-      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 page_header--col">
-        <div class="page__header">
-          <div class='page__header-thumbnail'>
+      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 adminPage-header--col">
+        <div class="adminPage-header--content">
+          <div class='adminPage-header--thumbnail'>
             <h2>
               <span class="fa-stack">
                 <span class="fa-stack-1x filetype-text">SPIN</span>
@@ -38,7 +34,7 @@
               </span>
             </h2>
           </div>
-          <div class='page__header-body'>
+          <div class='adminPage-header--body'>
             <h2>Query Templates</h2>
           </div>
         </div>
@@ -92,16 +88,16 @@
                   }
           }'>
             <template id='actions'>
-              <div>
+              <div style="display: flex;">
                 <mp-copy-to-clipboard text='{{template.value}}' message='Query Template IRI has been copied to clipboard!'>
-                  <button class="btn btn-xs btn-default" style="margin-right: 8px">
-                    <i class="fa fa-clipboard" aria-hidden=true></i> Copy IRI
+                  <button class="btn-grey" style="margin-right: 8px">
+                    <i class="fa fa-clipboard btn-icon-left" aria-hidden=true></i> Copy IRI
                   </button>
                 </mp-copy-to-clipboard>
                 [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:delete:any")]]   
                   <mp-ldp-remove-from-container-action iri="{{template.value}}" container="http://www.researchspace.org/resource/system/queryTemplateContainer">
-                    <button class="btn btn-xs btn-danger" style="margin-right: 8px;"><i class="fa fa-trash" aria-hidden=true></i> Delete</button>
-                  </mp-ldp-remove-from-container-action>   
+                    <button class="btn-grey" style="margin-right: 8px;"><i class="fa fa-trash btn-icon-left" aria-hidden=true></i> Delete</button>
+                  </mp-ldp-remove-from-container-action>
                 [[/if]]
               </div>
             </template>
@@ -110,7 +106,7 @@
   
         [[#if (hasPermission "api:ldp:container:http://www.researchspace.org/resource/system/querytemplatecontainer:create:any")]]         
           <mp-overlay-dialog title="Create Query Template" type="modal" bs-size="large">
-            <mp-overlay-dialog-trigger><button class="btn btn-default btn btn-sm btn-primary" style="padding: 10px;">Create Query Template</button></mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-trigger><button class="btn btn-sm btn-primary" style="padding: 10px;">Create Query Template</button></mp-overlay-dialog-trigger>
             <mp-overlay-dialog-content>
                 <div>
                     <semantic-context repository="assets">

@@ -156,13 +156,14 @@ export function isWebComponent(componentTag: string) {
  */
 export function renderWebComponent(
   componentTag: string,
-  props: Object,
+  props: Record<string, any>,
   children?: ReactNode[],
   templateScope?: TemplateScope
 ): Promise<ReactElement<any>> {
   // check if user is permitted to use the component
   // if not it will not be rendered at all
-  templateScope = templateScope || TemplateScope.create();
+  templateScope = templateScope ||
+    TemplateScope.create({scopeTrace: {componentTag, componentId: props.id}});
   return isComponentPermited(componentTag)
     .toPromise()
     .then<ReactElement<any>>((result) => {
@@ -420,7 +421,8 @@ function attributeValue(name: string, val: string): any {
   // replace with something more generic, like https://github.com/YousefED/typescript-json-schema
   if (decoded === 'true' || decoded === 'false') {
     return JSON.parse(decoded);
-  } else if (!isNaN(+decoded)) {
+  } else if (decoded !== '' && !isNaN(+decoded)) {
+    // isNaN returns true for empty string, so we need to check for it 
     // custom handling for number attributes
     return +decoded;
   } else {

@@ -49,7 +49,7 @@
     <bs-tabs class="details-tabs">
     [[#if withSummary]]
         <bs-tab title='Summary' event-key='summary' mount-on-enter=true>
-            <div class="rs-summary-table table-responsive rs-object-dataset--table">
+            <div class="rs-summary-table table-responsive">
                 <table class="table table-hover">
                 [[#block "summary"]]
                 <tbody>
@@ -146,11 +146,14 @@
                         <bs-row class="row-center" style="padding:32px 0px 8px 0px;">
                             <bs-col xs=11 sm=10 lg=8 style="padding: 0px;">
                                 <div class="row" style="height:100%;">
-                                    <div class="col-xs-12 col-sm-6 rs-image-container">
+                                    <div class="col-xs-12 col-sm-6 rs-resource-header--image-container">
 
                                         <div class="rs-resource-img__btngroup">
 
-                                            <mp-overlay-dialog title="Resource Media" type="modal" class="modal-resourceMedia">
+                                            {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+                                            [[!-- don't show resource media icon for image regions --]]
+                                            {{else}}
+                                            <mp-overlay-dialog title="Resource Media" type="modal" class="modal-xlSize">
                                                 <mp-overlay-dialog-trigger>
                                                     <button type="button" class="rs-resource-img__btn" title="Explore Media">
                                                         <i class="rs-icon rs-icon-expand_media"></i>
@@ -168,60 +171,89 @@
                                                     <i class="rs-icon rs-icon-image"></i>
                                                 </button>
                                             </semantic-link-container>
+                                            {{/if}}
 
                                             [[#if (hasPermission "forms:ldp:*")]]
+                                              {{#if (hasKey allTypes "http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing")}}
+                                                {{#if (hasKey allTypes "http://www.researchspace.org/ontology/EX_Digital_Image_Region")}}
+                                                [[!-- don't show annotation icon for image regions --]]
+                                                {{else}}
                                             <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                                 urlqueryparam-view='image-graph-authoring' urlqueryparam-resource='[[this]]'>
+                                                 urlqueryparam-view='objectImageObservation' urlqueryparam-resource='[[this]]'>
                                                 <button type="button" class="rs-resource-img__btn" title="Annotate Images">
                                                     <i class="rs-icon rs-icon-area_annotation"></i>
                                                 </button>
                                             </semantic-link-container>
+                                                {{/if}}
+                                              {{/if}}
                                             [[/if]]
 
                                         </div>
 
                                         [[#block "imageContent"]]
-                                        <rs-object-representations query='SELECT DISTINCT ?imgURL ?isMainRep
-                                                                        WHERE {
-                                                                        OPTIONAL {
+                                        <rs-object-representations query='SELECT DISTINCT ?label ?imgURL ?isMainRep
+                                                                          WHERE {
+                                                                          OPTIONAL { <[[this]]> rdfs:label ?label . }  
+                                                                          OPTIONAL {
                                                                             {
-                                                                            <[[this]]> a ?type ;
-                                                                            FILTER(?type != rso:EX_Digital_Image) .
-                                                                            ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
-                                                                            <[[this]]> ?representationProp ?representation .
+                                                                              <[[this]]> a ?type ;
+                                                                              FILTER(?type != rso:EX_Digital_Image) .
+                                                                              ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
+                                                                              <[[this]]> ?representationProp ?representation .
 
-                                                                            OPTIONAL {
+                                                                              OPTIONAL {
                                                                                 <[[this]]> ?representationProp ?representation .
                                                                                 ?representation a rso:EX_Digital_Image ;
                                                                                                 crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
-                                                                            }
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                                                                              }
 
-                                                                            OPTIONAL {
+                                                                              OPTIONAL {
                                                                                 <[[this]]> ?representationProp ?representation .
                                                                                 ?representation a rso:EX_Digital_Image .
                                                                                 BIND(REPLACE(STR(?representation), "^.*/(.*)$", "$1") as ?imageID) .
                                                                                 BIND(?imageID as ?imgIiifId)
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
-                                                                            }
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                                                                              }
 
-                                                                            BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?representation) AS ?imgURLx)
-                                                                            BIND(IF(EXISTS { <[[this]]> rso:PX_has_main_representation ?representation }, true, false) AS ?isMainRepx)
+                                                                              OPTIONAL {
+                                                                                <[[this]]> crm:P138i_has_representation ?representation .
+                                                                                ?representation a rso:EX_Digital_Image_Region .
+                                                                                ?representation crmdig:L49_is_primary_area_of ?image .
+                                                                                ?image crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
+                                                                                ?representation rso:boundingBox ?bb.
+                                                                                BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?uploadIiifRegionUrl)
+                                                                              }
+
+                                                                              OPTIONAL {
+                                                                                <[[this]]> crm:P138i_has_representation ?representation .
+                                                                                ?representation a rso:EX_Digital_Image_Region .
+                                                                                ?representation crmdig:L49_is_primary_area_of ?image .
+                                                                                ?representation rso:boundingBox ?bb.
+                                                                                BIND(STRAFTER(?bb, "xywh=") AS ?boundingBox).
+                                                                                BIND(REPLACE(STR(?image), "^.*/(.*)$", "$1") as ?imageID) .
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/", ?boundingBox, "/!640,480/0/default.jpg") AS ?iiifRegionUrl)
+                                                                              }
+
+
+                                                                              BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?uploadIiifRegionUrl, ?iiifRegionUrl, ?representation) AS ?imgURLx)
+                                                                              BIND(IF(EXISTS { <[[this]]> rso:PX_has_main_representation ?representation }, true, false) AS ?isMainRepx)
                                                                             } UNION {
-                                                                            <[[this]]> a rso:EX_Digital_Image ;
-                                                                            OPTIONAL {
+                                                                              <[[this]]> a rso:EX_Digital_Image ;
+                                                                              OPTIONAL {
                                                                                 <[[this]]> a rso:EX_Digital_Image ;
                                                                                 crm:P1_is_identified_by/rso:PX_has_file_name ?fileName. 
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
-                                                                            }
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
+                                                                              }
 
-                                                                            OPTIONAL {
+                                                                              OPTIONAL {
                                                                                 <[[this]]> a rso:EX_Digital_Image ;
                                                                                 BIND(REPLACE(STR(<[[this]]>), "^.*/(.*)$", "$1") as ?imageID) .
-                                                                                BIND(CONCAT("/proxy/IIIF/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
-                                                                            }
-                                                                            BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURLx)
-                                                                            BIND(true AS ?isMainRepy)
+                                                                                BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
+                                                                              }
+                                                                              BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, <[[this]]>) AS ?imgURLx)
+                                                                              BIND(true AS ?isMainRepy)
                                                                             }  
                                                                         }
                                                                         BIND(?imgURLx AS ?imgURL)
@@ -254,7 +286,7 @@
             [[!-- Tabs: Summary, raw data, Images, Annotation, Assertion, Related resources --]]
             <div class="container-fluid px-0">
 
-                <bs-tab-container id="tab-container" class="rs-tabs"
+                <bs-tab-container id="tab-container" class="rs-resource-tabs"
                     default-active-key="[[#if withSummary]]summary[[else]]raw-data[[/if]]">
                     <div>
                         <bs-nav bs-style="tabs" class="{{getValueByKey entityBgColor allTypes 'rs-entity-bg-thing'}}">
@@ -265,61 +297,48 @@
                             [[#if withGeoData]]
                             <bs-nav-item event-key="places">Related Places</bs-nav-item>
                             [[/if]]
-                            [[#if (hasPermission "forms:ldp:*")]]
+                   [[!--   [[#if (hasPermission "forms:ldp:*")]]
                             <bs-nav-item event-key="media" disabled=true>Media</bs-nav-item>
                             [[/if]]
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-nav-item event-key="annotations" disabled=true>Annotations
                                 <span class="rs-badge rs-badge--info rs-body-s-M text-white"
                                     style="margin-left:8px;">0</span>
-                                <!--      <semantic-query query="SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {
-                        ?s <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> <[[this]]>;}"
-                        template='{{#each bindings}}
-                        <span class="rs-badge rs-badge--info rs-body-s-M text-white" style="margin-left:8px;">{{count.value}}</span>
-                        {{/each}}'
-                        no-result-template='<span class="rs-badge rs-badge--info rs-body-s-M text-white" style="margin-left:8px;">0</span>'
-                        ></semantic-query> -->
                             </bs-nav-item>
                             [[/if]]
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-nav-item event-key="assertions" disabled=true>Assertions
                                 <span class="rs-badge rs-badge--info rs-body-s-M text-white"
                                     style="margin-left:8px;">0</span>
-                                <!--    <semantic-query query="SELECT (COUNT(DISTINCT ?s) AS ?count) WHERE {
-                                    ?s <http://www.ics.forth.gr/isl/CRMdig/L43_annotates> <[[this]]>;}"
-                                    template='{{#each bindings}}
-                                    <span class="rs-badge rs-badge--info rs-body-s-M text-white" style="margin-left:8px;">{{count.value}}</span>
-                                    {{/each}}'
-                                    no-result-template='<span class="rs-badge rs-badge--info rs-body-s-M text-white" style="margin-left:8px;">0</span>'
-                                    ></semantic-query> -->
                             </bs-nav-item>
                             [[/if]]
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-nav-item event-key="related" disabled=true>Explore Related</bs-nav-item>
                             [[/if]]
+                    --]]
                         </bs-nav>
 
                         <bs-tab-content animation="true">
                             [[#if withSummary]]
                             <bs-tab-pane event-key="summary">
-                                <div class="container-fluid rs-summary-section">
+                                <div class="container-fluid rs-resource-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
+                                            <hr class="rs-resource-section--headerLine">
 
                                             [[#block "instituteHeader"]]
-                                            <span class="rs-h1 rs-section-header">Dataset</span>
+                                            <span class="rs-h1 rs-resource-section--header">Dataset</span>
                                             [[/block]]
 
-                                            <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
+                                            <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
                                                 [[currentDateTime format="dd-MM-yyyy"]].</span>
                                         </bs-col>
-                                    </bs-row> <!--  close row -->
+                                    </bs-row>
 
                                     <bs-row class="row-center">
                                         <bs-col xs=11 sm=10 md=10 lg=8 class="rs-summary-table">
 
-                                            <div class="table-responsive rs-table rs-object-dataset--table">
+                                            <div class="table-responsive rs-table">
                                                 <table class="table table-hover">
                                                     <thead>
                                                         <tr>
@@ -339,18 +358,18 @@
                                             </div>
 
                                         </bs-col>
-                                    </bs-row> <!--  close row -->
-                                </div> <!--  close container -->
+                                    </bs-row>
+                                </div>
 
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                <div class="container-fluid rs-summary-section rs-background-p10">
+                                <div class="container-fluid rs-resource-summary-section rs-background-p10">
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Public Discussion</span>
-                                            <span class="rs-body-xs-I rs-section-header">Documents the ongoing discussion
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Public Discussion</span>
+                                            <span class="rs-body-xs-I rs-resource-section--header">Documents the ongoing discussion
                                                 about findings.
-                                                <a style="padding-left:5px; text-decoration: underline;">Read more</a>
+                                                <a class="text-underline" style="padding-left:5px;">Read more</a>
                                             </span>
                                         </bs-col>
                                         <bs-col xs=3 md=3 lg=2>
@@ -420,11 +439,11 @@
                                 [[/if]]
 
                                 [[#if (hasPermission "forms:ldp:*")]]
-                                <div class="container-fluid rs-summary-section">
+                                <div class="container-fluid rs-resource-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Related Resources</span>
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Related Resources</span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
 
@@ -437,15 +456,15 @@
                             [[/if]]
 
                             <bs-tab-pane event-key="raw-data">
-                                <div class="container-fluid rs-summary-section">
+                                <div class="container-fluid rs-resource-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
+                                            <hr class="rs-resource-section--headerLine">
 
                                             [[#block "instituteHeader"]]
-                                            <span class="rs-h1 rs-section-header">Dataset</span>
+                                            <span class="rs-h1 rs-resource-section--header">Dataset</span>
                                             [[/block]]
-                                            <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
+                                            <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
                                                 [[currentDateTime
                                                 format="dd-MM-yyyy"]].</span>
                                         </bs-col>
@@ -460,7 +479,7 @@
 
                                             </mp-field-visualization>
                                         </bs-col>
-                                    </bs-row> <!--  close row -->
+                                    </bs-row> 
 
                                 </div> <!--  close container -->
 
@@ -476,36 +495,36 @@
 
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-tab-pane event-key="media" mount-on-enter=true>
-                                <div class="container-fluid rs-summary-section">
+                                <div class="container-fluid rs-resource-summary-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
+                                            <hr class="rs-resource-section--headerLine">
 
-                                            <span class="rs-h1 rs-section-header">Images</span>
-                                            <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
+                                            <span class="rs-h1 rs-resource-section--header">Images</span>
+                                            <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
                                                 [[currentDateTime format="dd-MM-yyyy"]].</span>
                                         </bs-col>
 
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
+                                            <hr class="rs-resource-section--headerLine">
 
-                                            <span class="rs-h1 rs-section-header">Videos</span>
-                                            <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
+                                            <span class="rs-h1 rs-resource-section--header">Videos</span>
+                                            <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
                                                 [[currentDateTime format="dd-MM-yyyy"]].</span>
                                         </bs-col>
 
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
+                                            <hr class="rs-resource-section--headerLine">
 
-                                            <span class="rs-h1 rs-section-header">3D Models</span>
-                                            <span class="rs-body-xs-I rs-section-header">Latest confirmed data set from
+                                            <span class="rs-h1 rs-resource-section--header">3D Models</span>
+                                            <span class="rs-body-xs-I rs-resource-section--header">Latest confirmed data set from
                                                 [[currentDateTime format="dd-MM-yyyy"]].</span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
 
                                     [[!-- <bs-row class="row-center">
                                         <bs-col xs=11 class="rs-summary-table">
-                                            <div class="rs-mirador-container">
+                                            <div class="rs-resource-mirador-container">
                                                 <rs-iiif-side-by-side
                                                     selection='[[jsonArrayFromSelect "SELECT DISTINCT ?value WHERE {  <[[this]]> crm:P138i_has_representation ?value } LIMIT 2" ]]'
                                                     [[> rsp:IIIFConfig]]/>
@@ -520,11 +539,11 @@
 
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-tab-pane event-key="annotations">
-                                <div class="container-fluid rs-summary-section">
+                                <div class="container-fluid rs-resource-summary-section">
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Annotations made</span>
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Annotations made</span>
                                             <span style="position: absolute; top: -1px; margin-left: 12px;">
                                                 <button type="button"
                                                     class="rs-button rs-button-icon-S rs-button-icon-S--dark"
@@ -582,11 +601,11 @@
 
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-tab-pane event-key="assertions">
-                                <div class="container-fluid rs-summary-section">
+                                <div class="container-fluid rs-resource-summary-section">
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Assertions made</span>
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Assertions made</span>
                                             <span style="position: absolute; top: -1px; margin-left: 12px;">
                                                 <button type="button"
                                                     class="rs-button rs-button-icon-S rs-button-icon-S--dark"
@@ -619,12 +638,12 @@
 
                             [[#if (hasPermission "forms:ldp:*")]]
                             <bs-tab-pane event-key="related">
-                                <div class="container-fluid rs-summary-section">
+                                <div class="container-fluid rs-resource-summary-section">
 
                                     <bs-row>
                                         <bs-col xs=9 md=7 lg=8 style="position: relative; padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Resources</span>
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Resources</span>
                                         </bs-col>
                                         <bs-col xs=3 md=3 lg=2>
                                             <input type="text" placeholder="Search in related data ..."
@@ -640,7 +659,7 @@
                                     </bs-row> <!--  close row -->
 
 
-                                    [[!-- <div class="rs-section-showall">
+                                    [[!-- <div class="rs-resource-section-showall">
                                         <button type="button" class="rs-button rs-button-icon-M--dark">
                                             <i class="rs-icon rs-icon-chevron_down"></i>
                                         </button>
@@ -649,11 +668,11 @@
 
                                 </div> <!--  close container -->
 
-                                <div class="container-fluid rs-summary-section rs-background-p10">
+                                <div class="container-fluid rs-resource-summary-section rs-background-p10">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Pages</span>
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Pages</span>
                                         </bs-col>
 
                                     </bs-row> <!--  close row -->
@@ -692,7 +711,7 @@
                                         </bs-col>
                                     </bs-row> <!--  close row -->
 
-                                    <div class="rs-section-showall">
+                                    <div class="rs-resource-section-showall">
                                         <button type="button" class="rs-button rs-button-icon-M--dark">
                                             <i class="rs-icon rs-icon-chevron_down"></i>
                                         </button>
@@ -701,16 +720,16 @@
 
                                 </div> <!--  close container -->
 
-                                <div class="container-fluid rs-page-section">
+                                <div class="container-fluid rs-resource-page-section">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Assertions</span>
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Assertions</span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
 
                                     <bs-row style="margin: 0;">
-                                        <bs-col xs=12 class="rs-section-cards">
+                                        <bs-col xs=12 class="rs-resource-section-cards">
                                             [[#block "relatedAssertions"]]
                                             [[/block]]
                                         </bs-col>
@@ -718,11 +737,11 @@
 
                                 </div> <!--  close container -->
 
-                                <div class="container-fluid rs-summary-section rs-background-p10">
+                                <div class="container-fluid rs-resource-summary-section rs-background-p10">
                                     <bs-row>
                                         <bs-col xs=12 style="padding: 0;">
-                                            <hr class="rs-header-line">
-                                            <span class="rs-h1 rs-section-header">Wikidata</span>
+                                            <hr class="rs-resource-section--headerLine">
+                                            <span class="rs-h1 rs-resource-section--header">Wikidata</span>
                                         </bs-col>
                                     </bs-row> <!--  close row -->
 

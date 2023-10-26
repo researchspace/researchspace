@@ -46,6 +46,7 @@ export class researchspaceAnnotationBodyEditor implements MiradorAnnotationBodyE
 
     const textResource = getAnnotationTextResource(this.annotation);
     this.originalRegionTitle = textResource ? textResource.chars : '';
+    this.changedRegionTitle = this.originalRegionTitle;
   }
 
   show(selector: string) {

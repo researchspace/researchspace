@@ -1,0 +1,731 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ 
+/* Dashboard Page */
+
+.rs-dashboard-bg {
+  background-color: $color-dashboardPage-bg;
+}
+
+// Create new section + buttons
+.rs-ds-add--title {
+  margin-bottom: 10px;
+}
+
+/* .rs-ds-card {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  height: 90px;
+  max-width: 340px;
+  cursor: pointer;
+  background-color: $color-white;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  margin-bottom: 15px;
+  box-shadow: 3px 2px 10px rgba(0, 0, 0, 0.1);
+
+  &:hover,
+  &:focus,
+  &:focus-within {
+    -webkit-transform: scale(1.02);
+    transform: scale(1.02);
+    box-shadow: 3px 2px 7px rgba(0, 0, 0, 0.3);
+  }
+
+  @media (min-width: 1200px) {
+    max-width: 380px;
+  }
+  
+  @media (min-width: 1600px) {
+    max-width: 450px;
+  }
+  
+  @media (min-width: 2000px) {
+    max-width: 500px;
+  }
+  
+  @media (min-width: 2500px) {
+    max-width: 550px;
+  }
+} */
+
+/* .rs-ds-icon {
+  height: 50px;
+} */
+
+/* .rs-ds-card--header {
+  padding-bottom: 1px;
+} */
+
+iframe {
+  width: 100%;
+  height: 100%;
+}
+
+// Project dashboard
+.rs-dashboard-container {
+  padding: 40px 50px;
+
+  min-height: calc(100vh - 93px); //depending from n. of rows displayed in the activity table
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: fit-content(55px) 100px 100px 100px 355px;
+  grid-template-areas:
+    'welcome . icons icons'
+    'map activity activity activity'
+    'narrative activity activity activity'
+    'image activity activity activity'
+    'team activity activity activity';
+
+  column-gap: 30px;
+  row-gap: 20px;
+
+  @media only screen and (max-width: 715px) {
+    padding: 20px;
+    max-height: unset;
+
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 55px 100px 100px 100px 300px auto;
+    grid-template-areas:
+      'welcome icons'
+      'map map'
+      'narrative narrative'
+      'image image'
+      'team team'
+      'activity activity';
+  }
+
+  @media (min-width: 715px) and (max-width: 992px) {
+    padding: 20px;
+    max-height: unset;
+
+    grid-template-columns: 1fr 4fr;
+
+    grid-template-rows: 55px 100px 100px 100px auto;
+    grid-template-areas:
+      'welcome icons'
+      'map team'
+      'narrative team'
+      'image team'
+      'activity activity';
+  }
+
+  @media (min-width: 992px) and (max-width: 1700px) {
+    max-height: unset;
+  
+    grid-template-rows: 55px 100px 100px 100px min-content auto;
+    grid-template-areas:
+      'welcome . icons icons'
+      'map activity activity activity'
+      'narrative activity activity activity'
+      'image activity activity activity'
+      'team activity activity activity'
+      '. activity activity activity';
+  }
+  
+  @media (min-width: 1450px) {
+    grid-template-columns: 0.7fr repeat(3, 1fr);
+  }
+  
+  @media (min-width: 1800px) {
+    grid-template-columns: 0.6fr repeat(3, 1fr);
+  }
+  
+  @media (min-width: 2200px) {
+    grid-template-columns: 0.5fr repeat(3, 1fr);
+  }
+  
+  @media (min-width: 3000px) {
+    padding: 50px;
+  
+    grid-template-columns: 0.5fr fit-content(300px) repeat(3, 1fr) 0.5fr;
+    grid-template-rows: 55px 100px 100px 100px 355px;
+    grid-template-areas:
+      '. welcome . icons icons .'
+      '. map activity activity activity .'
+      '. narrative activity activity activity .'
+      '. image activity activity activity .'
+      '. team activity activity activity .';
+  
+    column-gap: 5rem;
+    row-gap: 4rem;
+  }
+}
+
+.rs-dashboard-welcome {
+  grid-area: welcome;
+
+  .welcome-title {
+    color: #46494c;
+    font-size: 2.2rem;
+    line-height: 1.7;
+  }
+
+  .welcome-hi {
+    color: #46494c;
+    font-size: 1.5rem;
+  }
+
+  .welcome-user {
+    font-weight: bold;
+  }
+}
+
+.rs-dashboard-icon-area {
+  grid-area: icons;
+  justify-self: end;
+  align-self: center;
+
+  img {
+    height: 1.7rem;
+    margin-left: 2.4rem;
+  }
+}
+
+.rs-dashboard-km {
+  grid-area: map;
+}
+
+.rs-dashboard-narrative {
+  grid-area: narrative;
+}
+
+.rs-dashboard-image {
+  grid-area: image;
+}
+
+.rs-dashboard-activity {
+  height: auto;
+  overflow-y: hidden;
+  overflow-x: auto;
+
+  grid-area: activity;
+  padding: 30px 40px 25px 40px;
+  height: 100%;
+
+  & .rs-dashboard-table {
+    height: 100%;
+    overflow: overlay;
+
+    .semantic-table-holder {
+      padding-top: 12px;
+    }
+
+    .griddle-filter .filter-container {
+   //   width: 200px;
+    }
+
+    & .griddle .top-section {
+      position: absolute;
+      top: 1.6rem;
+      right: 4.3rem;
+    }
+
+    .researchspace-table-widget-holder .griddle-filter .filter-container::before {
+      content: '';
+    }
+
+    /* .researchspace-table-widget-holder .filter-container .form-control {
+
+      width: 100%;
+
+      background-color: $color-off-white;
+      border-radius: 4px;
+
+      color: #83878e;
+      font-size: 1.4rem;
+      font-weight: bold;
+
+      padding: 4px 30px 4px 15px;
+
+      background-image: url(/assets/images/icons/search_grey.svg);
+      background-size: 14px 14px;
+
+      &::placeholder {
+        color: #636668;
+        font-size: 1.4rem;
+        font-weight: bold;
+        text-transform: none;
+
+        letter-spacing: 0.45px;
+        opacity: 0.8;
+      }
+    } */
+
+    .griddle-container {
+      padding-top: 12px;
+      height: 620px;
+
+      overflow-x: visible;
+      overflow-y: inherit;
+
+      .griddle-body,
+      .griddle-body > div,
+      table {
+        height: inherit;
+      }
+    }
+
+    .table > thead {
+      display: none;
+    }
+
+    tr.standard-row {
+      border-bottom: 1px solid #dddddd40;
+
+      display: grid;
+      grid-auto-flow: column;
+      width: 100%;
+      grid-template-columns: 3fr minmax(70px, 1.5fr) minmax(180px, 1.5fr) minmax(180px, 3fr) minmax(60px, 70px);
+      grid-template-rows: 100%;
+      grid-template-areas: 'title user type date download';
+
+      align-items: center;
+    }
+
+    .table > tbody > tr > td {
+      border-bottom: none;
+    }
+
+    .table > tbody > tr > td {
+      color: #666666;
+      font-size: 1.5rem;
+    }
+
+    .rs-dashboard--a {
+      color: #83878e;
+      text-transform: capitalize;
+      font-size: 1.4rem;
+
+      .fa {
+        color: #5e6064;
+      }
+    }
+
+    .rs-dashboard--a-title {
+      color: #5e6165;
+      font-weight: bold;
+      font-size: 1.6rem;
+      text-transform: capitalize;
+      letter-spacing: 0.3px;
+
+      .rs-icon-drag_points {
+
+        margin-right: 12px;
+        color: #5e6165;
+      }
+    }
+
+    tbody .standard-row td:first-child {
+      grid-area: title;
+      justify-self: start;
+    }
+
+    tbody .standard-row td:nth-child(2) {
+      grid-area: user;
+      justify-self: center;
+
+      .fa-user {
+        margin-right: 10px;
+        font-size: 1.5rem;
+      }
+    }
+
+    tbody .standard-row td:nth-child(3) {
+      grid-area: type;
+      justify-self: center;
+    }
+
+    tbody .standard-row td:nth-child(4) {
+      grid-area: date;
+      justify-self: end;
+    }
+
+    tbody .standard-row td:nth-child(5) {
+      grid-area: download;
+      justify-self: center;
+
+      .fa {
+        font-size: 1.5rem;
+        color: #5d6064;
+      }
+    }
+
+    .table > tbody > tr > td.footer-container {
+      padding-top: 14px;
+    }
+
+    .table > tbody > tr.standard-row:hover {
+      background-color: transparent;
+    }
+
+    .rs-dashboard-tableDate {
+      font-style: italic;
+      font-size: 1.4rem;
+    }
+
+    .rs-dashboard-tableDateValue {
+      font-style: normal;
+      padding-left: 5px;
+      color: #5e6165;
+      font-weight: 600;
+    }
+
+    table .pagination {
+      & > li > a {
+        color: #5d6063;
+        font-size: 1.4rem;
+        font-weight: bold;
+        padding: 2px 7px;
+        border-radius: 4px;
+      }
+
+      & > .active > a,
+      & > .active > a:hover,
+      & > .active > a:focus,
+      & > .active > span,
+      & > .active > span:hover,
+      & > .active > span:focus {
+        background-color: #5e6164;
+        color: $color-white;
+        border-radius: 4px;
+      }
+    }
+
+    .pagination > li > a:hover,
+    .pagination > li > a:focus,
+    .pagination > li > span:hover,
+    .pagination > li > span:focus {
+      background-color: #f6f6f6fc;
+    }
+
+    .pagination > li.disabled > a:hover {
+      background-color: transparent;
+    }
+  }
+
+}
+
+.rs-latest-activity {
+
+  h1 {
+
+    margin-bottom: 1.2em;
+  }
+
+  & .rs-dashboard-table {
+    height: 100%;
+
+    .researchspace-table-widget-holder .griddle-filter .filter-container::before {
+      content: '';
+    }
+
+    /* .researchspace-table-widget-holder .griddle-filter .filter-container {
+      border: 1px solid $input-border-color;
+      margin: 0;
+    } */
+
+    /* .researchspace-table-widget-holder .filter-container .form-control {
+
+      width: 100%;
+      border:none;
+
+      background-color: inherit;
+
+      font-size: 1.4rem;
+    } */
+
+    .griddle-container {
+      padding-top: 10px;
+    }
+
+    .table > thead {
+      display: none;
+    }
+
+    tr.standard-row {
+
+      display: grid;
+      grid-auto-flow: column;
+      width: 100%;
+      grid-template-columns: 3fr minmax(70px, 1.5fr) minmax(180px, 1.5fr) minmax(180px, 3fr) minmax(60px, 70px);
+      grid-template-rows: 100%;
+      grid-template-areas: 'title user type date download';
+
+      align-items: center;
+    }
+
+    .table > tbody > tr > td {
+      border-bottom: none;
+    }
+
+    .table > tbody > tr > td {
+      font-size: 1.5rem;
+    }
+
+    .rs-dashboard--a {
+      text-transform: capitalize;
+      font-size: 1.4rem;
+
+    }
+
+    .rs-dashboard--a-title {
+      font-weight: bold;
+      font-size: 1.6rem;
+      text-transform: capitalize;
+      letter-spacing: 0.3px;
+
+      .rs-icon-drag_points {
+
+        margin-right: 12px;
+      }
+    }
+
+    tbody .standard-row td:first-child {
+      grid-area: title;
+      justify-self: start;
+    }
+
+    tbody .standard-row td:nth-child(2) {
+      grid-area: user;
+      justify-self: start;
+
+      .fa-user {
+        margin-right: 10px;
+        font-size: 1.5rem;
+      }
+    }
+
+    tbody .standard-row td:nth-child(3) {
+      grid-area: type;
+      justify-self: start;
+    }
+
+    tbody .standard-row td:nth-child(4) {
+      grid-area: date;
+      justify-self: start;
+    }
+
+    tbody .standard-row td:nth-child(5) {
+      grid-area: download;
+      justify-self: start;
+
+      .fa {
+        font-size: 1.5rem;
+      }
+    }
+
+    .table > tbody > tr > td.footer-container {
+      padding-top: 14px;
+    }
+
+    .table > tbody > tr.standard-row:hover {
+      background-color: transparent;
+    }
+
+    .rs-dashboard-tableDate {
+      font-style: italic;
+      font-size: 1.4rem;
+    }
+
+    .rs-dashboard-tableDateValue {
+      font-style: normal;
+      padding-left: 5px;
+      font-weight: 600;
+    }
+
+    table .pagination {
+      & > li > a {
+        font-size: 1.4rem;
+        font-weight: bold;
+        padding: 2px 7px;
+        border-radius: 4px;
+      }
+
+      & > .active > a,
+      & > .active > a:hover,
+      & > .active > a:focus,
+      & > .active > span,
+      & > .active > span:hover,
+      & > .active > span:focus {
+        color: $color-white;
+        border-radius: 4px;
+      }
+    }
+  }
+
+}
+
+@media only screen and (max-width: 1700px) {
+  .rs-latest-activity .rs-dashboard-table {
+    .griddle-container {
+      height: unset;
+      overflow: unset;
+    }
+
+    tr.standard-row {
+      grid-template-columns: 100%;
+      grid-template-rows: auto;
+      grid-template-areas:
+        'title'
+        'user'
+        'type'
+        'date'
+        'download';
+
+      align-items: stretch;
+      border-bottom: none;
+
+      margin: 0 0 1rem 0;
+    }
+
+    td,
+    tbody .standard-row td:first-child,
+    tbody .standard-row td:nth-child(2),
+    tbody .standard-row td:nth-child(3),
+    tbody .standard-row td:nth-child(4),
+    tbody .standard-row td:nth-child(5) {
+      justify-self: stretch;
+
+      display: flex;
+      align-items: center;
+      font-size: 1.4rem;
+      padding: 11px 15px 9px 15px;
+    }
+
+    td::before {
+      padding-right: 14px;
+    }
+
+    .table > tbody > tr > td > a {
+      font-size: 1.6rem;
+    }
+
+    .rs-dashboard-tableDate {
+      font-style: normal;
+    }
+
+    tr:nth-child(even),
+    tr:nth-child(even):hover {
+      background-color: #cccccc38 !important;
+    }
+
+    /*
+        Label the data - Use of a data-* attribute and content. 
+        This way means we need to keep HTML and CSS in sync. 
+        */
+    //  td:nth-of-type(1)::before { content: "Title:"; }
+    td:nth-of-type(2)::before {
+      content: 'User:';
+    }
+    td:nth-of-type(3)::before {
+      content: 'Resource:';
+    }
+    td:nth-of-type(5)::before {
+      content: 'Download data:';
+    }
+    //   td.footer-container::before { content: ""; }
+
+    .table > tbody > tr > td.footer-container {
+      justify-content: center;
+      display: flex;
+      padding: 7.5px 10px ;
+    }
+  }
+}
+
+.rs-dashboard-team {
+  grid-area: team;
+
+  padding: 25px 30px;
+  overflow: auto;
+}
+
+.rs-dashboard-sectionTitle {
+  font-size: 1.6rem;
+  letter-spacing: 0.2px;
+  border-bottom: 1px solid #e3e3e3;
+  padding-bottom: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #a4a4a5;
+}
+
+.rs-dashboard-userCard_container {
+  display: grid;
+  grid-auto-rows: auto;
+  grid-auto-flow: row;
+  grid-auto-columns: 100%;
+  row-gap: 1.1rem;
+  margin: 1.1rem 0;
+
+  .rs-dashboard-userCard {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+  }
+
+  .rs-dashboard-userCard-img {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    width: 30%;
+
+    .rs-userCard-img {
+      align-self: center;
+      height: auto;
+      width: 100%;
+      max-width: 48px;
+      padding: 0.5rem;
+      border-radius: 12px;
+    }
+
+    .rs-icon-user_profile {
+      align-self: center;
+      font-size: 2.8em;
+    }
+  }
+
+  .rs-dashboard-userCard--text {
+    width: 70%;
+    overflow: hidden;
+    max-height: 100%;
+
+    .rs-user-headerText {
+      color: #5e6165;
+      font-weight: 600;
+      font-size: 1.45rem;
+      line-height: 1.4;
+    }
+
+    .rs-user-text {
+
+      color: grey;
+      font-size: 1.25rem;
+      line-height: 1.2;
+      padding-left: 2px;
+      text-transform: capitalize;
+    }
+  }
+}

@@ -1,6 +1,21 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Record<string,any>": {
+            "description": "Construct a type with a set of properties K of type T",
+            "propertyOrder": [
+            ],
+            "type": "object"
+        }
+    },
     "properties": {
+        "additionalData": {
+            "additionalProperties": true,
+            "description": "Data that will be merged with proxied event data.",
+            "properties": {
+            },
+            "type": "object"
+        },
         "data": {
             "additionalProperties": true,
             "description": "Data that will be sent to all targets instead of the original event's data",
@@ -12,13 +27,28 @@
             "description": "Used as a source id for re-triggered event",
             "type": "string"
         },
+        "onEventData": {
+            "$ref": "#/definitions/Record<string,any>",
+            "description": "Proxy only events with payload that includes the following data."
+        },
         "onEventSource": {
             "description": "Source component that we listen for events.\nWhen empty will listen for all events of a given type.",
             "type": "string"
         },
-        "onEventType": {
-            "description": "Type of event to listen to.",
+        "onEventTarget": {
+            "description": "Listen only to events sent to the given target.",
             "type": "string"
+        },
+        "onEventType": {
+            "description": "Type of event to listen to. Can't be used together with onEventTypes",
+            "type": "string"
+        },
+        "onEventTypes": {
+            "description": "Types of event to listen to. Can't be used together with onEventType.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
         },
         "proxyEventType": {
             "description": "Type of the event that this component triggers when\nreceives event.",
@@ -35,10 +65,14 @@
     "propertyOrder": [
         "id",
         "onEventType",
+        "onEventTypes",
         "onEventSource",
+        "onEventTarget",
+        "onEventData",
         "proxyEventType",
         "proxyTargets",
-        "data"
+        "data",
+        "additionalData"
     ],
     "required": [
         "id",

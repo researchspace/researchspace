@@ -16,28 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+ @import '~basic-styles.scss';
+
 .FileVisualizer {
   width: 100%;
   height: 100%;
 }
 
 .DirectFileUploader {
-  display: flex;
+/*   display: flex;
   flex-direction: column;
-  width: 500px;
+  width: 500px; */
 
   .row {
     display: flex;
 
     .rightInputBar {
       display: flex;
-      padding-left: 15px;
+      padding-left: 35px;
       flex-direction: column;
       flex-grow: 1;
 
       label {
-        margin-top: 5px;
-        margin-bottom: 0;
+        margin-top: 10px;
+        margin-bottom: 2px;
       }
 
       .storageInput {
@@ -48,12 +50,21 @@
 }
 
 .FileUploader {
-  width: 200px;
+  min-width: 200px;
+  width: 40%;
 
   .progress {
     height: 15px;
     box-shadow: none;
     margin-bottom: 5px;
+  }
+}
+
+:global(.semantic-form) {
+
+  .FileUploader {
+
+    width: 100%;
   }
 }
 
@@ -63,7 +74,7 @@
     position: absolute;
     width: calc(100% - 4px);
     font-size: 12px;
-    color: black;
+    color: $color-dark;
     height: 60px;
     left: 2px;
     bottom: 2px;
@@ -100,11 +111,13 @@
   display: flex;
   position: relative;
   flex-direction: column;
-  justify-content: center;
+  justify-content: stretch;
   align-items: center;
   overflow: hidden;
   width: 100%;
-  height: 225px;
+  height: 100%;
+ // min-height: 215px;
+  padding: 12px 0 12px 10px;
 
   img {
     max-height: 100%;
@@ -117,7 +130,7 @@
   }
 
   .header {
-    height: 25px;
+    height: fit-content;
     width: 100%;
     flex-grow: 0;
     flex-shrink: 0;
@@ -131,20 +144,21 @@
       overflow: hidden;
       margin-bottom: 5px;
       white-space: nowrap;
-      color: #0891bc;
+
+      font-weight: 600;
+      color: $color-dark;
+      font-size: 16px;
+      cursor: auto;
     }
   }
 
   .fileContainer {
     position: relative;
     display: flex;
-    width: 100%;
-    height: 150px;
-    border: 2px solid #ababab;
-    background-color: #efefef;
+    height: 180px;
+    width: auto;
+    margin-top: 10px;
     overflow: hidden;
-    border-radius: 10px;
-    box-shadow: inset 0px 0px 12px -3px #585858;
     justify-content: center;
     align-items: center;
 
@@ -155,15 +169,19 @@
       align-items: center;
       top: 5px;
       right: 5px;
-      border-radius: 30px;
-      width: 35px;
-      height: 35px;
-      background: rgba(230, 230, 230, 0.377);
-      color: gray;
+      border-radius: 3px;
+      width: 25px;
+      height: 25px;
+      color: $btn-grey-color;
+      border: 1px solid $btn-grey-border-color;
+      background-color: $btn-grey-color-bg;
       cursor: pointer;
-      &:hover {
-        background: rgba(255, 255, 255, 0.377);
-        color: rgb(97, 97, 97);
+      box-shadow: 0px 0px 1px 1px #ffffff49;
+
+      &:hover,
+      &:focus {
+        color: $btn-grey-color;
+        background-color: $btn-grey-hover-color-bg;
       }
     }
   }
@@ -196,7 +214,7 @@
 
 .fileIcon {
   font-size: 60px;
-  color: #34a4ca;
+  color: $color-dark;
 }
 
 .mpDropZonePlaceHolder {
@@ -204,9 +222,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px;
-  font-size: 20px;
-  color: #adadad;
+  padding: 15px;
+  font-size: 16px;
+  line-height: 1.4;
+  color: $color-dark;
   text-align: center;
 }
 
@@ -216,6 +235,10 @@
 
 .selectorHolder {
   width: 100%;
+
+  :global(.form-group) {
+    min-height: auto;
+  }
 }
 
 .urlInputHolder {
@@ -225,5 +248,19 @@
   :global(button.btn) {
     margin-top: 0 !important;
     flex: 1;
+  }
+
+  :global(.form-control) {
+
+    border: 1px solid $input-border-color;
+    margin-right: 3px;
+  }
+}
+
+.storageInput {
+
+  :global(.btn) {
+
+   line-height: 0.9;
   }
 }

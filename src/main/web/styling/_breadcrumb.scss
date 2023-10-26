@@ -1,0 +1,122 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2020, © Trustees of the British Museum
+ * Copyright (C) 2015-2019, metaphacts GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * @author Mike Kelly <mkelly@britishmuseum.org>
+ */
+
+.base-breadcrumb {
+  position: fixed;
+  width: 100%;
+  z-index: $zindex-breadcrumb;
+  margin-bottom: 0;
+  background-color: $color-breadcrumb-bg;
+  border-radius: 0;
+  box-shadow: 0 0 6px #ccc;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-transform: none;
+  list-style: none;
+  height: $breadcrumb-height;
+}
+
+// Example
+// <ol class="page-breadcrumb">
+//   <li><a title="Home" href="/">Home</a></li>
+//   <li class="active">
+//     My Diagrams
+//   </li>
+// </ol>
+
+ol.page-breadcrumb {
+
+  display: flex;
+  align-items: center;
+
+  @extend .base-breadcrumb;
+  padding: $padding-base-vertical $padding-base-horizontal * 2;
+
+  > li {
+    display: inline-block;
+    font-weight: 800;
+
+    + li:before {
+      content: '#{$breadcrumb-separator}'; // Unicode space added since inline-block means non-collapsing white-space
+      padding: 0 5px;
+      color: $color-dark;
+    }
+  }
+
+  > .active {
+    vertical-align: top;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 500px;
+    color: $color-dark;
+    font-weight: normal;
+  }
+
+  li div {
+    display: inline-block;
+  }
+}
+
+// Example
+// <div class="page-breadcrumb">
+// <rs-browse-history></rs-browse-history>
+//  <ol>
+//    <li><a title="Home" href="/">Home</a></li>
+//    <li class="active">
+//      My Diagrams
+//    </li>
+//   </ol>
+// </div>
+
+div.page-breadcrumb {
+  @extend .base-breadcrumb;
+  display: flex;
+
+  > ol {
+    padding: $padding-base-vertical $padding-base-horizontal * 2;
+  }
+
+  > ol > li {
+    display: inline-block;
+
+    + li:before {
+      content: '#{$breadcrumb-separator}'; // Unicode space added since inline-block means non-collapsing white-space
+      padding: 0 5px;
+      color: $color-dark;
+    }
+  }
+
+  > ol > .active {
+    color: $color-dark;
+  }
+
+  & ol > .active {
+    color: $color-dark;
+  }
+
+  ol li div {
+    display: inline-block;
+  }
+}
+

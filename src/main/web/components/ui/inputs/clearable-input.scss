@@ -21,47 +21,76 @@
 $total-padding: 5px;
 
 .clearable-input {
+
+  min-height: $input-height;
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 0;
-  background-color: white;
+  background-color: transparent;
 
-  border: 1px solid #ccc;
+  border-radius: $input-border-radius;
+  border: 1px solid $input-border-color;
+
+  background-image: url(/assets/images/icons/search.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  background-position: right 8px center;
+  color: $color-dark;
+
   &--focused {
-    border-color: #b3b3b3;
-  }
-
-  padding: $total-padding / 2;
-  & > * {
-    margin: $total-padding / 2;
+//    border: none;
   }
 
   &__input-with-clear {
     flex: auto;
     display: flex;
+    height: 100%;
   }
 
   // use more specific selector to override Bootstrap's attributes
   &__input.form-control {
-    width: unset;
-    height: 30px;
+    width: 100%;
+  //  height: 100%;
     flex: auto;
     min-width: 0;
-    padding: 3px 6px;
-    border: 0;
     box-shadow: none;
+
+    border: none;
+
+    &::placeholder {
+      /* Chrome, Firefox, Opera, Safari 10.1+ */
+      opacity: 1; /* Firefox */
+    }
+
+    &:focus {
+      outline: none;
+      border: none;
+  
+      &::placeholder {
+        /* Chrome, Firefox, Opera, Safari 10.1+ */
+  
+        opacity: 0.7; /* Firefox */
+      }
+    }
+
   }
 
   &__clear {
-    width: 25px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+
+    width: 45px;
     align-self: center;
     pointer-events: auto;
     text-decoration: none;
     cursor: pointer;
-    color: #828282;
+
+    color: $color-dark--op50;
+
     &:hover {
-      color: #484848;
+      color: $color-dark;
     }
   }
 

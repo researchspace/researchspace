@@ -25,6 +25,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.Optional;
 import java.util.Set;
 
@@ -172,7 +173,12 @@ public class RepositoryManager implements RepositoryManagerInterface {
      */
     public void sentTestQueries() {
         for (Entry<String, Repository> entry : initializedRepositories.entrySet()) {
-            this.sendTestQuery(entry.getKey(), entry.getValue());
+
+            // @gspinaci Prevent default test query sending for SailRepositories 
+            // SailRepositories requires custom queries
+            if(!(entry.getValue() instanceof SailRepository)) {
+                this.sendTestQuery(entry.getKey(), entry.getValue());
+            }
         }
     }
 
@@ -302,7 +308,13 @@ public class RepositoryManager implements RepositoryManagerInterface {
                 }
             }
         } catch (Exception e) {
-            logger.error("Failed to send test query to repository \"{}\": {} \n", id, e.getMessage());
+            logger.error("Failed to send test query to repository \"{}\": {} . Waiting 10 seconds .... \n", id, e.getMessage());
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException e1) {
+                throw new RuntimeException(e1);
+            }
+            sendTestQuery(id, repository);
         }
     }
 

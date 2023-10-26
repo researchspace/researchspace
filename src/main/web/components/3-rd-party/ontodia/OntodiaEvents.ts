@@ -103,8 +103,17 @@ export interface OntodiaEventData {
     /**
      * IRI of an entity to be focused on.
      */
-    iri: string;
+    iri?: string;
+
+    /**
+     * IRIs of an entities to be focused on.
+     */
+    iris?: string;
   };
+
+  'Ontodia.HighlightElements': {
+    iris: string[];
+  }
 }
 const event: EventMaker<OntodiaEventData> = EventMaker;
 
@@ -117,3 +126,4 @@ export const EditElement = event('Ontodia.EditElement');
 export const DeleteElement = event('Ontodia.DeleteElement');
 
 export const FocusOnElement = event('Ontodia.FocusOnElement');
+export const HighlightElements = event('Ontodia.HighlightElements');

@@ -1,0 +1,76 @@
+
+<http://www.researchspace.org/pattern/image_observation/crm:P138_represents-visual-item/context> {
+  <http://www.researchspace.org/pattern/image_observation/crm:P138_represents-visual-item>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>,
+      <http://www.cidoc-crm.org/cidoc-crm/E4_Period>, <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>,
+      <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/entity/E55_Type/d2149fcd-563d-45bb-a65c-e3da7ad9fc47>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#comment> """This property establishes the relationship between an E36 Visual Item and the entity that it visually represents.
+Any entity may be represented visually. This property is part of the fully developed path from E24 Physical Man-Made Thing through P65 shows visual item (is shown by), E36 Visual Item, P138 represents (has representation) to E1 CRM Entity, which is shortcut by P62depicts (is depicted by). P138.1 mode of representation allows the nature of the representation to be refined.
+This property is also used for the relationship between an original and a digitisation of the original by the use of techniques such as digital photography, flatbed or infrared scanning. Digitisation is here seen as a process with a mechanical, causal component rendering the spatial distribution of structural and optical properties of the original and does not necessarily include any visual similarity identifiable by human observation.
+""";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-6db8e4;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-xo2n138;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "depicts";
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-tg25lf;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-ny0d97;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2020-10-20T15:22:30.198+03:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-ny0d97 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P138_represents ?value . 
+}""" .
+  
+  _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-xo2n138 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P138_represents $value . 
+  ?object crm:P62_depicts $value .
+} WHERE {
+  ?object crm:P56_bears_feature/crm:P65_shows_visual_item $subject .
+}""" .
+  
+  _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-tg25lf a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  $subject crm:P138_represents $value .
+  ?object crm:P62_depicts $value .
+} WHERE {
+  $subject crm:P138_represents $value .
+  ?object crm:P56_bears_feature/crm:P65_shows_visual_item $subject .
+}""" .
+  
+  _:genid-a9a28e866faa4cea9e0a42cd8b76c4df-6db8e4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  {
+    ?value a/rdfs:subClassOf* crm:E18_Physical_Thing. 
+    FILTER NOT EXISTS { ?value a/rdfs:subClassOf* crm:E21_Person.  }
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Physical Thing]\") AS ?label)
+  } UNION {
+    ?value a/rdfs:subClassOf* crm:E21_Person. 
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Person]\") AS ?label)
+  } UNION {
+    ?value a/rdfs:subClassOf* crm:E53_Place. 
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Place]\") AS ?label)
+  } UNION {
+    ?value a/rdfs:subClassOf* crm:E4_Period. 
+    ?value rdfs:label ?l .
+    FILTER REGEX(STR(?l), ?__token__, \"i\")
+    BIND(CONCAT(?l, \" [Period]\") AS ?label)
+  }
+} LIMIT 20""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/image_observation/crm:P138_represents-visual-item> .
+}

@@ -144,8 +144,8 @@ export class OntodiaContents extends Component<Props, State> {
 
   render() {
     return (
-      <div>
-        <div className={styles.container}>
+      <div className={styles.container}>
+        <div className={styles.items}>
           {this.state.elements.map(({ iri, persisted }) =>
             createElement(TemplateItem, {
               key: iri,

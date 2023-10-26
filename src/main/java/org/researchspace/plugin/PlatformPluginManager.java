@@ -197,9 +197,11 @@ public class PlatformPluginManager extends DefaultPluginManager {
             // relativize returns without leading /
             String relativePath = appFolder.toURI().relativize(f.toURI()).getPath();
             if (supportedFolders.contains(relativePath)
-                    || supportedFolders.stream().anyMatch(supported -> relativePath.startsWith(supported))) {
+            || supportedFolders.stream().anyMatch(supported -> relativePath.startsWith(supported))
+            || relativePath.startsWith(".git")) {
                 continue;
             }
+            logger.warn(relativePath);
             logger.warn(
                     "App \"{}\" contains a folder \"{}\"  which doesn't seem to be a supported app artefact or is packaged into the wrong directory structure.",
                     appFolder.getName(), relativePath);

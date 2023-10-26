@@ -25,6 +25,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaults = require('./defaults')();
 
 const cesiumSource = 'node_modules/cesium/Build/CesiumUnminified/';
+const webIfcSource = 'node_modules/web-ifc/';
 const CopyPlugin = require("copy-webpack-plugin");
 
 /**
@@ -248,6 +249,18 @@ module.exports = function(isProd) {
 
                 // needed for ontodia
                 {test: /\.ttl$/, use: ['raw-loader']},
+                // Wasm files for the BIM viewer (ifc)
+                {
+                    test: /\.wasm$/,
+                    type: "javascript/auto",
+                    use: {
+                      loader: "file-loader",
+                      options: {
+                        outputPath: "assets/no_auth", // The output path for the wasm file
+                        publicPath: "assets/no_auth", // The public path to load the wasm file
+                      },
+                    },
+                  },
             ],
             noParse: [/.+zone\.js\/dist\/.+/]
         },
@@ -283,8 +296,13 @@ module.exports = function(isProd) {
                     { from: path.join(cesiumSource, 'Workers'), to: 'Workers' },
                     { from: path.join(cesiumSource, 'Assets'), to: 'Assets' },
                     { from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' }
-                ]
+                ], {debug: true}
             ),
+            new CopyPlugin([
+                {
+                  from: path.join(webIfcSource, 'web-ifc.wasm'), to: '.',
+                },
+              ], { debug: true }),
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
                 exclude: /src\/main\/web\/ontodia|node_modules/,

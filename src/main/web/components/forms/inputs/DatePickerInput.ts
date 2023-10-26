@@ -43,16 +43,69 @@ export const OUTPUT_UTC_DATE_FORMAT = 'YYYY-MM-DD';
 export const OUTPUT_UTC_TIME_FORMAT = 'HH:mm:ss';
 
 export type DatePickerMode = 'date' | 'time' | 'dateTime';
+type ViewMode = "years" | "months" | "days" | "time";
 
 export interface DatePickerInputProps extends AtomicValueInputProps {
   mode?: DatePickerMode;
   placeholder?: string;
+  visualizationMode?: ViewMode; // the starting selection of the datepicker
+  utcOffset?: number; // Possibility to specify the UTC timezone offset (in minutes) manually from props
+  end?: boolean; // If true, autofill from keyboard goes to the last day (and or the last month) compatible with input
 }
 
 export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> {
+
+  
   private get datatype() {
     return this.props.definition.xsdDatatype || vocabularies.xsd.dateTime;
   }
+
+  mode = this.props.mode || getModeFromDatatype(this.datatype);
+  end = this.props.end === true || false; // if prop is present AND true
+
+
+  // Handle autocomplete with keyboard input
+  private handleKeyboardInput(value: string): AtomicValue | EmptyValue {
+    const detectedFormat = detectDateFormat(value);
+    let convertedValue;
+
+    switch (detectedFormat) {
+      case 'YYYY':
+        convertedValue = this.end ? moment(`${value}-12-31`).endOf('year').format('YYYY-MM-DD') : `${value}-01-01`;
+        break;
+      case 'YYYY-MM':
+        const [yearMM, monthMM] = value.split('-');
+        convertedValue = this.end ? moment(`${yearMM}-${monthMM}-01`).endOf('month').format('YYYY-MM-DD') : `${yearMM}-${monthMM}-01`;
+        break;
+      case 'MM/YYYY':
+        const [monthMY, yearMY] = value.split('/');
+        convertedValue = this.end ? moment(`${yearMY}-${monthMY}-01`).endOf('month').format('YYYY-MM-DD') : `${yearMY}-${monthMY}-01`;
+        break;
+      case 'MM-YYYY':
+        const [monthMmY, yearMmY] = value.split('-');
+        convertedValue = this.end ? moment(`${yearMmY}-${monthMmY}-01`).endOf('month').format('YYYY-MM-DD') : `${yearMmY}-${monthMmY}-01`;
+        break;
+      case 'DD/MM/YYYY':
+        const [dayDMY, monthDMY, yearDMY] = value.split('/');
+        convertedValue = `${yearDMY}-${monthDMY}-${dayDMY}`;
+        break;
+      default:
+        return FieldValue.empty;
+    }
+
+    const momentValue = moment(convertedValue, OUTPUT_UTC_DATE_FORMAT);
+
+    // Set time to noon for 'date' mode to prevent timezone issues
+    if (momentValue.isValid() && this.mode === 'date') {
+      momentValue.set('hour', 12);
+      convertedValue = momentValue.format(OUTPUT_UTC_DATE_FORMAT);
+    }
+
+    return AtomicValue.set(this.props.value, {
+      value: Rdf.literal(convertedValue, this.datatype),
+    });
+  }
+
 
   render() {
     const rdfNode = FieldValue.asRdfNode(this.props.value);
@@ -64,21 +117,21 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
     //    as if current time zone was UTC+00;
     // 2. after date picker returns changed Momeent value we should
     //    convert it back using `localMomentAsIfItWasUtc()`
-    const localMoment = utcMomentAsIfItWasLocal(utcMoment);
+    const localMoment = this.utcMomentAsIfItWasLocal(utcMoment);
 
-    const mode = this.props.mode || getModeFromDatatype(this.datatype);
+    const visualizationMode = this.props.visualizationMode;
 
     const displayedDate = localMoment
       ? localMoment
       : dateLiteral
-      ? dateLiteral.value
-      : rdfNode && rdfNode.isLiteral()
-      ? rdfNode.value
-      : undefined;
+        ? dateLiteral.value
+        : rdfNode && rdfNode.isLiteral()
+          ? rdfNode.value
+          : undefined;
 
     const placeholder =
       typeof this.props.placeholder === 'undefined'
-        ? defaultPlaceholder(this.props.definition, mode)
+        ? defaultPlaceholder(this.props.definition, this.mode)
         : this.props.placeholder;
 
     return D.div(
@@ -89,9 +142,9 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
         onChange: this.onDateSelected, // for keyboard changes
         closeOnSelect: true,
         value: displayedDate as any, // TODO: fix typings (value could be Moment)
-        viewMode: mode === 'time' ? 'time' : 'days',
-        dateFormat: mode === 'date' || mode === 'dateTime' ? OUTPUT_UTC_DATE_FORMAT : null,
-        timeFormat: mode === 'time' || mode === 'dateTime' ? OUTPUT_UTC_TIME_FORMAT : null,
+        viewMode: visualizationMode,
+        dateFormat: this.mode === 'date' || this.mode === 'dateTime' ? OUTPUT_UTC_DATE_FORMAT : null,
+        timeFormat: this.mode === 'time' || this.mode === 'dateTime' ? OUTPUT_UTC_TIME_FORMAT : null,
         inputProps: { placeholder },
       }),
 
@@ -99,26 +152,35 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
     );
   }
 
+
   private onDateSelected = (value: string | Moment) => {
     let parsed;
+
+    // Set to noon to avoid timezone issues, in the case of just date input.
+    if (this.mode === 'date' && typeof value !== 'string') {
+      value.set('hour', 12);
+    }
+
     if (typeof value === 'string') {
       // if user enter a string without using the date picker
       // we pass direclty to validation
       parsed = this.parse(value);
+      parsed = this.handleKeyboardInput(value);
     } else {
       // otherwise we format to UTC
-      const utcMoment = localMomentAsIfItWasUtc(value);
+      const utcMoment = this.localMomentAsIfItWasUtc(value);
       const mode = getModeFromDatatype(this.datatype);
       const formattedDate =
         mode === 'date'
           ? utcMoment.format(OUTPUT_UTC_DATE_FORMAT)
           : mode === 'time'
-          ? utcMoment.format(OUTPUT_UTC_TIME_FORMAT)
-          : utcMoment.format();
+            ? utcMoment.format(OUTPUT_UTC_TIME_FORMAT)
+            : utcMoment.format();
       parsed = this.parse(formattedDate);
     }
     this.setAndValidate(parsed);
   };
+
 
   private parse(isoDate: string): AtomicValue | EmptyValue {
     if (isoDate.length === 0) {
@@ -129,8 +191,29 @@ export class DatePickerInput extends AtomicValueInput<DatePickerInputProps, {}> 
     });
   }
 
+
+  private utcMomentAsIfItWasLocal(utcMoment: Moment | undefined): Moment | undefined {
+    if (!utcMoment) {
+      return undefined;
+    }
+
+    // If we are in date mode, we do not want to subtract the timezone offset hours (it would go to the day before)
+    if (this.mode === "date") {
+      return utcMoment.clone().local();
+    } else {
+      const localOffset = this.props.utcOffset !== undefined ? this.props.utcOffset : moment().utcOffset();
+      return utcMoment.clone().subtract(localOffset, 'm').local();
+    }
+  }
+
+  private localMomentAsIfItWasUtc(localMoment: Moment) {
+    const localOffset = this.props.utcOffset !== undefined ? this.props.utcOffset : moment().utcOffset();
+    return localMoment.clone().utc().add(localOffset, 'm');
+  }
+
   static makeHandler = AtomicValueInput.makeAtomicHandler;
 }
+
 
 export function getModeFromDatatype(datatype: Rdf.Iri): DatePickerMode {
   const parsed = XsdDataTypeValidation.parseXsdDatatype(datatype);
@@ -144,6 +227,31 @@ export function getModeFromDatatype(datatype: Rdf.Iri): DatePickerMode {
   }
   return 'dateTime';
 }
+
+
+// Detect the format from the keyboard input
+function detectDateFormat(value: string): string | null {
+  const yearPattern = /^\d{4}$/;                  // YYYY
+  const yearMonthPattern = /^\d{4}-\d{2}$/;       // YYYY-MM
+  const monthYearSlashPattern = /^\d{2}\/\d{4}$/; // MM/YYYY
+  const monthYearDashPattern = /^\d{2}-\d{4}$/;   // MM-YYYY
+  const fullDatePattern = /^\d{2}\/\d{2}\/\d{4}$/; // DD/MM/YYYY
+
+  if (yearPattern.test(value)) {
+    return 'YYYY';
+  } else if (yearMonthPattern.test(value)) {
+    return 'YYYY-MM';
+  } else if (monthYearSlashPattern.test(value)) {
+    return 'MM/YYYY';
+  } else if (monthYearDashPattern.test(value)) {
+    return 'MM-YYYY';
+  } else if (fullDatePattern.test(value)) {
+    return 'DD/MM/YYYY';
+  }
+
+  return null;
+}
+
 
 function dateLiteralFromRdfNode(node: Rdf.Node | undefined): Rdf.Literal | undefined {
   if (!node || !node.isLiteral()) {
@@ -166,23 +274,11 @@ export function utcMomentFromRdfLiteral(literal: Rdf.Literal | undefined): Momen
     mode === 'date'
       ? moment.utc(literal.value, INPUT_XSD_DATE_FORMAT)
       : mode === 'time'
-      ? moment.utc(literal.value, INPUT_XSD_TIME_FORMAT)
-      : moment.utc(literal.value);
+        ? moment.utc(literal.value, INPUT_XSD_TIME_FORMAT)
+        : moment.utc(literal.value);
   return parsedMoment.isValid() ? parsedMoment : undefined;
 }
 
-function utcMomentAsIfItWasLocal(utcMoment: Moment | undefined): Moment | undefined {
-  if (!utcMoment) {
-    return undefined;
-  }
-  const localOffset = moment().utcOffset();
-  return utcMoment.clone().subtract(localOffset, 'm').local();
-}
-
-function localMomentAsIfItWasUtc(localMoment: Moment) {
-  const localOffset = moment().utcOffset();
-  return localMoment.clone().utc().add(localOffset, 'm');
-}
 
 function defaultPlaceholder(definition: FieldDefinition, mode: DatePickerMode) {
   const valueType = mode === 'time' ? 'time' : 'date';

@@ -12,7 +12,7 @@
 --]]
 
 
-<div class="resource-editDetails-container">
+<div class="resource-editView-container">
 
 {{#if collection}}
   <mp-splitpane min-size=140 default-size=400 default-open='true' class="frame-split-pane">
@@ -102,89 +102,91 @@
 {{/if}}
       <div class="page__grid-container">
 
-        <div class="page__content-container resource-editDetails-form-container">
+        <div class="page__content-container resource-editView-form-container">
           <mp-event-target-template-render id='{{frameId}}-term-forms' template='{{> template}}'>
             <template id='template'>
-              {{#switch mode}}
+              <div class='resource-editView-formHeader'>
+                {{#switch mode}}
 
-                {{#case "new" break=true}}
-                  {{#if broader}}
-                    <h2 style="margin-top: 0;">Create new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></h2>
-                  {{else}}
-                    <h2 style="margin-top: 0;">Create new {{itemLabel}}</h2>
-                  {{/if}}
-                {{/case}}
+                  {{#case "new" break=true}}
+                    {{#if broader}}
+                      <h2 style="margin-top: 0;">Create new {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></h2>
+                    {{else}}
+                      <h2 style="margin-top: 0;">Create new {{itemLabel}}</h2>
+                    {{/if}}
+                  {{/case}}
 
-                {{#case "edit" break=true}}
-                  <h2 class="resource-editDetails-form-title">
-                    <mp-draggable iri='{{iri}}'>
-                      <div style="display: flex; align-items: center; cursor: grab;">
-                        <i class="rs-icon rs-icon-drag_points" style="margin-right: 7px; margin-left: 10px;"></i> 
-                        {{#if labelSparqlPattern}}
-                          <semantic-query query="SELECT ?label WHERE {
-                                                  BIND(<{{iri}}> as ?item) .
-                                                  {{labelSparqlPattern}}
-                                                }"
-                                          template='{{> template}}'>
-  
-                            <template id='template'>
-                              {{#each bindings}}
-                                <span>{{label.value}}{{#if @last}}{{else}},{{/if}}</span>
-                              {{/each}}
-                            </template>
-                          </semantic-query>
-                        {{else}}
-                        <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                        {{/if}}
-                      </div>
-                    </mp-draggable>
-                  </h2>
+                  {{#case "edit" break=true}}
+                    <h2 class="resource-editView-formHeader-title">
+                      <mp-draggable iri='{{iri}}'>
+                        <div style="display: flex; align-items: center; cursor: grab;">
+                          <i class="rs-icon rs-icon-drag_points" style="margin-right: 7px; margin-left: 10px;"></i> 
+                          {{#if labelSparqlPattern}}
+                            <semantic-query query="SELECT ?label WHERE {
+                                                    BIND(<{{iri}}> as ?item) .
+                                                    {{labelSparqlPattern}}
+                                                  }"
+                                            template='{{> template}}'>
+    
+                              <template id='template'>
+                                {{#each bindings}}
+                                  <span>{{label.value}}{{#if @last}}{{else}},{{/if}}</span>
+                                {{/each}}
+                              </template>
+                            </semantic-query>
+                          {{else}}
+                          <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                          {{/if}}
+                        </div>
+                      </mp-draggable>
+                    </h2>
 
-                  <div style="display: flex; gap: 10px;">
-                    <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard'>
-                      <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
-                        <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
-                        Copy IRI
-                      </button>
-                    </mp-copy-to-clipboard>
-                    <mp-event-trigger id='{{frameId}}-form-refresh-trigger' 
-                                      type='Component.TemplateUpdate' 
-                                      targets='["{{frameId}}-term-forms"]'>
-                      <button class="btn btn-default btn-textAndIcon" title="Refresh form">
-                        <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                          Refresh
+                    <div style="display: flex; gap: 10px;">
+                      <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard'>
+                        <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+                          <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+                          Copy IRI
                         </button>
-                    </mp-event-trigger>
-                  </div>
-                {{/case}}
+                      </mp-copy-to-clipboard>
+                      <mp-event-trigger id='{{frameId}}-form-refresh-trigger' 
+                                        type='Component.TemplateUpdate' 
+                                        targets='["{{frameId}}-term-forms"]'>
+                        <button class="btn btn-default btn-textAndIcon" title="Refresh form">
+                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                            Refresh
+                          </button>
+                      </mp-event-trigger>
+                    </div>
+                  {{/case}}
 
-                {{#case "view" break=true}}
-     
-                  <h2 class="resource-editDetails-form-title">
-                    <mp-label iri='{{iri}}'></mp-label>
-                  </h2>
-                  <div style="display: flex; gap: 10px;">
-                    <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard'>
-                      <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
-                        <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
-                        Copy IRI
-                      </button>
-                    </mp-copy-to-clipboard>
-                    <mp-event-trigger id='{{frameId}}-form-refresh-trigger' 
-                                      type='Component.TemplateUpdate' 
-                                      targets='["{{frameId}}-term-forms"]'>
-                      <button class="btn btn-default btn-textAndIcon" title="Refresh form">
-                        <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                          Refresh
+                  {{#case "view" break=true}}
+      
+                    <h2 class="resource-editView-formHeader-title">
+                      <mp-label iri='{{iri}}'></mp-label>
+                    </h2>
+                    <div style="display: flex; gap: 10px;">
+                      <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied to clipboard'>
+                        <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+                          <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+                          Copy IRI
                         </button>
-                    </mp-event-trigger>
-                  </div>
-                {{/case}}
-              
-                {{#case "deleted" break=true}}
-                  <h2 style="margin-top: 0;">Deleted {{itemLabel}}: {{label}}</h2>
-                {{/case}}
-              {{/switch}}
+                      </mp-copy-to-clipboard>
+                      <mp-event-trigger id='{{frameId}}-form-refresh-trigger' 
+                                        type='Component.TemplateUpdate' 
+                                        targets='["{{frameId}}-term-forms"]'>
+                        <button class="btn btn-default btn-textAndIcon" title="Refresh form">
+                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                            Refresh
+                          </button>
+                      </mp-event-trigger>
+                    </div>
+                  {{/case}}
+                
+                  {{#case "deleted" break=true}}
+                    <h2 style="margin-top: 0;">Deleted {{itemLabel}}: {{label}}</h2>
+                  {{/case}}
+                {{/switch}}
+              </div>
     
               {{#if (not (eq mode "deleted"))}}
               <mp-event-proxy id='{{frameId}}-tree-refresh-on-created' 

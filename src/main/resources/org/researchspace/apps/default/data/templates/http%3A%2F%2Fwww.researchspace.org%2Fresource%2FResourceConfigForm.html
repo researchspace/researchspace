@@ -2,7 +2,7 @@
                 post-action="event"
                 subject='{{node}}'
                 persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
-                new-subject-template='{{scheme}}/data/{{{{raw}}}}{{resource_label}}{{{{/raw}}}}'
+                new-subject-template='{{scheme}}/data/{{{{raw}}}}{{resource_name}}{{{{/raw}}}}'
                 fields='[[
                 fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -10,48 +10,65 @@
 
                   resource_configuration_type="http://www.researchspace.org/pattern/system/resource_configuration/configuration_type"
                   
-                  resource_label="http://www.researchspace.org/pattern/system/resource_configuration/resource_label"
-                  resource_form="http://www.researchspace.org/pattern/system/resource_configuration/resource_form"
+                  resource_name="http://www.researchspace.org/pattern/system/resource_configuration/resource_name"
+                  resource_ontology_class="http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class"
+                  resource_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_type"
 
-                  resource_ontology_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_type"
-                  resource_system_type="http://www.researchspace.org/pattern/system/resource_configuration/resource_system_type"
-
+                  resource_part_of_vocabulary="http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary"
                   resource_broader_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property"
                   resource_membership_property="http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property"
                   
+                  resource_in_finder="http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder"
+
                   resource_label_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern"
                   resource_restriction_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern"
                   resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
                   
+                  resource_form="http://www.researchspace.org/pattern/system/resource_configuration/resource_form"
                   entity_has_navigation="http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu"
                   has_facet_kp="http://www.researchspace.org/pattern/system/resource_configuration/has_facet_kp"
                   entity_has_view="http://www.researchspace.org/pattern/system/resource_configuration/has_view"
                ]]'
                >
 
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-      {{#switch mode}}
-        {{#case "new" break=true}}
-            <h2 class="resource-editDetails-form-title">New configuration</h2>
-        {{/case}}
+    <div class='resource-editView-formHeader'>
 
-        {{#case "edit" break=true}}
-          <h2 class="resource-editDetails-form-title"><mp-label iri='{{node}}'></mp-label></h2>
-        {{/case}}
-      
-        {{#case "deleted" break=true}}
-          <h2 class="resource-editDetails-form-title">Deleted configuration: <mp-label iri='{{node}}'></mp-label></h2>
-        {{/case}}
+      {{#ifCond mode "==" "new"}}
+        <h2 class="resource-editView-formHeader-title">New configuration</h2>
+      {{else}}
+        <semantic-query query="SELECT ?label WHERE {
+                                <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                              }"
+                        template='{{> template}}'>
 
-        {{#default}}
-          <div></div>
-        {{/default}}
-      {{/switch}}
+          <template id='template'>
+            <h2 class="resource-editView-formHeader-title">
+              {{#switch mode}}
+                {{#case "edit" break=true}}
+                  {{bindings.0.label.value}}
+                {{/case}}
+
+                {{#case "view" break=true}}
+                {{bindings.0.label.value}}
+                {{/case}}
+              
+                {{#case "deleted" break=true}}
+                  Deleted: {{bindings.0.label.value}}
+                {{/case}}
+
+                {{#default}}
+                  <div></div>
+                {{/default}}
+              {{/switch}}
+            </h2>
+          </template>
+        </semantic-query>
+      {{/ifCond}}
 
       <div style="display: flex; align-items: center; gap: 5px;">
         {{#ifCond mode "!==" "new"}}
           <mp-copy-to-clipboard text='{{node}}' message='IRI has been copied'>
-            <button class="btn btn-default btn-textAndIcon" title="Copy IRI" style="height: 41px;">
+            <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
               <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
               Copy IRI
             </button>
@@ -65,135 +82,309 @@
                                 {{#if broader}}"broader": "{{broader}}",{{/if}}
                                 {{#if broaderProperty}}"broaderPropertyIRI":"{{broaderProperty}}",{{/if}} 
                                 "iri": "{{node}}"}' >
-          <button class="btn btn-default btn-textAndIcon" title="Refresh form" style="height: 41px;">
+          <button class="btn btn-default btn-textAndIcon" title="Refresh form">
             <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
               Refresh
-            </button>
+          </button>
         </mp-event-trigger>
 
-        <div class="page__section-container-whiteBg" style="display: flex; align-items: center; gap:5px; padding: 7px 12px; margin: 0;">
-          <div class='color-secondary' style="font-weight: 600;">System</div>
-          
-          <div class="menu-toggle toggle-label-left">
-            <semantic-form-checkbox-input class="toggle" for="resource_configuration_type" render-header="false"
-              label="system">
-            </semantic-form-checkbox-input>
-          </div>
-        [[!--  <mp-popover>
-            <mp-popover-trigger placement="bottom"  trigger='["click","hover","focus"]'> 
-              <sup><rs-icon icon-type="round" icon-name="help_center"></rs-icon></sup>
-            </mp-popover-trigger>
-            <mp-popover-content>
-              <div>Content</div>
-            </mp-popover-content>
-          </mp-popover> --]]
-        </div>
+        {{#if node}}
+        <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> ?value . }'
+                      then='{{> then}}'>
+
+          <template id='then'>
+            <mp-popover>
+              <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                <div class="badge badge--secondary badge-inlineButton">Vocabulary</div>
+              </mp-popover-trigger>
+              <mp-popover-content>
+                Resource is part of a vocabulary list.
+              </mp-popover-content>
+            </mp-popover>
+          </template>
+          </semantic-if>
+
+          <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . }'
+                      then='{{> then}}'>
+
+            <template id='then'>
+              <mp-popover>
+                <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                  <div class="badge badge--secondary badge-inlineButton">Finder</div>
+                </mp-popover-trigger>
+                <mp-popover-content>
+                  Resource is displayed in Finder.
+                </mp-popover-content>
+              </mp-popover>
+            </template>
+          </semantic-if>
+
+          <semantic-if query='ASK { <{{node}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                      then='{{> then}}'>
+
+            <template id='then'>
+              <mp-popover>
+                <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                  <div class="badge badge--secondary badge-inlineButton">System</div>
+                </mp-popover-trigger>
+                <mp-popover-content>
+                  System configuration can't be edited.
+                </mp-popover-content>
+              </mp-popover>
+            </template>
+          </semantic-if>
+        {{/if}}
+
       </div>
     </div>
 
-    <bs-tabs id="tabs">
+    <bs-tabs id="form-tabs">
 
-      <bs-tab event-key="1" title="Details">
+      <bs-tab event-key="detail" title="Resource Details">
 
-          <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object", "http://www.researchspace.org/resource/system/resource_configuration"]'></semantic-form-hidden-input>
-          <semantic-form-hidden-input for="resource_configuration_is_listed_in" default-value="http://www.researchspace.org/resource/system/resource_configurations_container"> </semantic-form-hidden-input>
-        
-          <div class="form-section-content">
-            <semantic-form-text-input for="resource_label" placeholder="Enter the resource label (e.g. Place, Actor, Collection item, Concept, etc.)" label="Resource label"></semantic-form-text-input>
-            <div style="display:flex; gap:5px; align-items: end; margin-top: 21px;">
-              <div style="flex: 1;">
-                <semantic-form-text-input for="resource_form" default-value="http://www.researchspace.org/resource/system/forms/" label="Resource form"
-                placeholder="Enter IRI of the form that should be used to edit the resource"></semantic-form-text-input>
-              </div>
-              {{#if node}}
-                  <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?form}'>
-                    <template id='template'>
-                      <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
-                          <button class="btn btn-primary btn-input-inline btn-textAndIcon">
-                            <rs-icon icon-type="round" icon-name="edit" title="Edit form"></rs-icon>
-                            Edit form
-                          </button>
-                      </semantic-link-container>
-                    </template>
-                  </semantic-query>
-              {{/if}}
-            </div>
+        <div class="form-section-header">
+          <h4>Resource details</h4>
+          <div>Enter the resource details</div>
+        </div>
 
-          </div>
+        <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object", "http://www.researchspace.org/resource/system/resource_configuration"]'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="resource_configuration_is_listed_in" default-value="http://www.researchspace.org/resource/system/resource_configurations_container"> </semantic-form-hidden-input>
+      
+        <div class="form-section-content page__section-container">
+          <semantic-form-text-input for="resource_name" placeholder="Enter the resource name (e.g. Place, Actor, Collection item, Concept, etc.)" label="Name"></semantic-form-text-input>
 
-          <div class="form-section-header">
-            <h3>Resource types</h3>
-            <div>An ontology type (e.g. CIDOC-CRM Man-Made object, Place, etc.) and a system type are required in the resource configuration.</div>
-          </div>
+          <semantic-form-tree-picker-input for="resource_ontology_class" 
+                                          label="Ontology class (CIDOC-CRM, Skos, etc.)"
+                                          placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)" 
+                                          close-dropdown-on-selection='true'
+                                          query-item-label='SELECT ?label WHERE {
+                                              ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                              FILTER (lang(?label) = "en")
+                                            }'
+                                            
+          ></semantic-form-tree-picker-input>
+
+          <semantic-form-tree-picker-input for='resource_type' 
+                                          label="Type"
+                                          placeholder="Select an additional type to be associated to the resource" 
+                                          close-dropdown-on-selection='true'
+                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/resource_type>", 
+                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/resource_type>",
+                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                      "view": "authority-content",
+                                                                      "scheme": "http://www.researchspace.org/resource/vocab/resource_type",
+                                                                      "tooltip": "Open list of resource types"
+                                                                    }'
+
+                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true 
+                                                                scheme="http://www.researchspace.org/resource/vocab/resource_type"
+                                                                entityType="resource type" }}{{{{/raw}}}}'
+
+                                          query-item-label='SELECT ?label WHERE {
+                                                              ?item skos:prefLabel ?label .
+                                                            }'
+                                            >
+          </semantic-form-tree-picker-input> 
+
+          <semantic-form-text-input for="resource_label_sparql_pattern" label="Label (SPARQL pattern)" placeholder="Enter a SPARQL pattern for the resource label" > </semantic-form-text-input>
+          <semantic-form-text-input for="resource_restriction_sparql_pattern" label="Restriction (SPARQL pattern)" placeholder="Enter a SPARQL pattern to apply a restriction" > </semantic-form-text-input>
           
-          <div class="form-section-content">
-              <semantic-form-tree-picker-input for="resource_ontology_type" 
-                                              label="Ontology type (CIDOC-CRM, Skos, etc.)"
-                                              placeholder="Select the ontology type (e.g. CIDOC-CRM Man-Made object, Place, etc.)" 
-                                              close-dropdown-on-selection='true'
-                                              query-item-label='SELECT ?label WHERE {
-                                                  ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.
-                                                  FILTER (lang(?label) = "en")
-                                                }'
-                                                
-              ></semantic-form-tree-picker-input>
-
-              <semantic-form-tree-picker-input for='resource_system_type' 
-                                              label="System type"
-                                              placeholder="Select an additional system type to be associated to the resource" 
-                                              close-dropdown-on-selection='true'
-                                              tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/system_entity>", 
-                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/system_entity>",
-                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-
-                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                          "view": "authority-content",
-                                                                          "scheme": "http://www.researchspace.org/resource/vocab/system_entity",
-                                                                          "tooltip": "Open list of system types"
-                                                                        }'
-
-                                              nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true 
-                                                                    scheme="http://www.researchspace.org/resource/vocab/system_entity"
-                                                                    entityType="system type" }}{{{{/raw}}}}'
-
-                                              query-item-label='SELECT ?label WHERE {
-                                                                  ?item skos:prefLabel ?label .
-                                                                }'
-                                                >
-              </semantic-form-tree-picker-input> 
-          </div>
-            
-          <div class="form-section-header">
-            <h3>Resource properties</h3>
-            <div>Define a Membership property, if the resource is part of a vocabulary/collection, and a Broader property to refer to a broader resource.</div>
-          </div>
-          <div class="form-section-content">
-            <semantic-form-tree-picker-input  for="resource_membership_property" 
-                                              label="Membership property" 
-                                              placeholder="Enter a property that connects the resource to the collection (e.g. skos:inScheme, crm:P71i_is_listed_in)"
-                                              close-dropdown-on-selection='true'
-            >
-            </semantic-form-tree-picker-input>
-            <semantic-form-tree-picker-input for="resource_broader_property" 
-                                              label="Broader property" 
-                                              placeholder="Enter property used to refer to a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"
-                                              close-dropdown-on-selection='true'
-                                              
-              >
-            </semantic-form-tree-picker-input>
-          </div>
-
-          <div class="form-section-header">
-            <h3>SPARQL Patterns</h3>
-            <div>Define specific SPARQL patterns to assign resource label, restriction and order.</div>
-          </div>
-          <div class="form-section-content">
-            <semantic-form-text-input for="resource_label_sparql_pattern" label="Label (SPARQL pattern)" placeholder="Enter a SPARQL pattern for the resource label" > </semantic-form-text-input>
-            <semantic-form-text-input for="resource_restriction_sparql_pattern" label="Restriction (SPARQL pattern)" placeholder="Enter a SPARQL pattern to apply a restriction" > </semantic-form-text-input>
-            <semantic-form-text-input for="resource_order_sparql_pattern" label="Order by (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order"> </semantic-form-text-input>
-          </div>
+        </div>
 
       </bs-tab>
+
+      <bs-tab event-key="edit" title="Form">
+
+        <div class="form-section-header">
+          <h4>Resource - Form</h4>
+          <div>Enter the form used to edit the resource.</div>
+        </div>
+
+        <div class="form-section-content page__section-container">
+          <div style="display:flex; gap:5px; align-items: end;">
+            <div style="flex: 1;">
+              <semantic-form-text-input for="resource_form" default-value="http://www.researchspace.org/resource/system/forms/" label="Resource form"
+              placeholder="Enter IRI of the form that should be used to edit the resource"></semantic-form-text-input>
+            </div>
+            {{#if node}}
+                <semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?form}'>
+                  <template id='template'>
+                    <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
+                        <button class="btn btn-primary btn-input-inline btn-textAndIcon">
+                          <rs-icon icon-type="round" icon-name="edit" title="Edit form"></rs-icon>
+                          Edit form
+                        </button>
+                    </semantic-link-container>
+                  </template>
+                </semantic-query>
+            {{/if}}
+          </div>
+        </div>
+
+      </bs-tab>
+
+      <bs-tab event-key="context" title="Context Page">
+
+    [[!--    <mp-event-target-template-render id='{{viewId}}-documentation-editTab' template='{{> template}}'>
+          <template id='template'>
+            {{#if hideMessage}}
+            {{else}}
+              <div style="margin-top: 20px;">
+                <div class="documentation-section documentation-section-withIcon">
+                  <div class="documentation-section-icon-container">
+                    <i class="fa fa-info"></i>
+                  </div>
+
+                  <div style="flex: 1;"> 
+                    <div class="documentation-section-title">RESOURCE - CONTEXT PAGE</div>
+                    <div style="padding-top: 3px;">Enter the context page configurations for:
+                      <ul>
+                        <li>Navigation menu</li>
+                        <li>Views</li>
+                        <li>Filters</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <mp-event-trigger id='{{viewId}}-documentation-editTab-trigger'
+                                    type='Component.TemplateUpdate'
+                                    data='{ "hideMessage": "true" }'
+                                    targets='["{{viewId}}-documentation-editTab"]'
+                              >
+                      <button class="btn btn-documentation">
+                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                      </button>
+                  </mp-event-trigger>
+                </div> 
+              </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render> --]]
+
+        <div class="form-section-header">
+          <h4>Resource - Context page</h4>
+          <div>Enter the context page configurations for:
+            <ul>
+              <li>Navigation menu</li>
+              <li>Views</li>
+              <li>Filters</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="form-section-content page__section-container">
+
+        </div>
+
+      </bs-tab>
+
+      <bs-tab event-key="vocabulary" title="Vocabulary">
+        
+      [[!--  <mp-event-target-template-render id='{{viewId}}-documentation-vocabularyTab' template='{{> template}}'>
+          <template id='template'>
+            {{#if hideMessage}}
+            {{else}}
+              <div style="margin-top: 20px;">
+                <div class="documentation-section documentation-section-withIcon">
+                  <div class="documentation-section-icon-container">
+                    <i class="fa fa-info"></i>
+                  </div>
+
+                  <div style="flex: 1;"> 
+                    <div class="documentation-section-title">VOCABULARY CONFIGURATION</div>
+                    <div style="padding-top: 3px;">Define if the resource can be used as vocabulary type, 
+                      the type of membership in the vocabulary, the relation with a broader resource and the list order.</div>
+                  </div>
+                  <mp-event-trigger id='{{viewId}}-documentation-vocabularyTab-trigger'
+                                    type='Component.TemplateUpdate'
+                                    data='{ "hideMessage": "true" }'
+                                    targets='["{{viewId}}-documentation-vocabularyTab"]'
+                              >
+                      <button class="btn btn-documentation">
+                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                      </button>
+                  </mp-event-trigger>
+                </div> 
+              </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render> --]]
+
+        <div class="form-section-header">
+          <h4>Resource - Vocabulary configuration</h4>
+          <div>Define if the resource can be used as vocabulary type, 
+            the type of membership in the vocabulary, the relation with a broader resource and the list order.</div>
+        </div>
+
+        <div class="form-section-content page__section-container">
+
+          <div class="menu-toggle toggle-label-right" style="margin-bottom: 30px;">
+              <semantic-form-checkbox-input class="toggle" for='resource_part_of_vocabulary' label="Use as Vocabulary type"></semantic-form-checkbox-input>
+          </div>
+      
+          <semantic-form-tree-picker-input  for="resource_membership_property" 
+                                            label="Membership in the vocabulary" 
+                                            placeholder="Enter a property that define the membership of the resource in the vocabulary (e.g. skos:inScheme, crm:P71i_is_listed_in)"
+                                            close-dropdown-on-selection='true'
+          >
+          </semantic-form-tree-picker-input>
+          <semantic-form-tree-picker-input for="resource_broader_property" 
+                                            label="Broader resource property" 
+                                            placeholder="Enter a property that define the relation with a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"
+                                            close-dropdown-on-selection='true'                      
+            >
+          </semantic-form-tree-picker-input>
+
+          <semantic-form-text-input for="resource_order_sparql_pattern" label="List order (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order of list of resources in the vocabulary"> </semantic-form-text-input>
+        </div>
+
+      </bs-tab>
+
+      <bs-tab event-key="finder" title="Finder">
+
+       [[!-- <mp-event-target-template-render id='{{viewId}}-documentation-finderTab' template='{{> template}}'>
+          <template id='template'>
+            {{#if hideMessage}}
+            {{else}}
+              <div style="margin-top: 20px;">
+                <div class="documentation-section documentation-section-withIcon">
+                  <div class="documentation-section-icon-container">
+                    <i class="fa fa-info"></i>
+                  </div>
+
+                  <div style="flex: 1;"> 
+                    <div class="documentation-section-title">RESOURCE - DISPLAY IN FINDER</div>
+                    <div style="padding-top: 3px;">Define if the resource is displayed in the Finder.</div>
+                  </div>
+                  <mp-event-trigger id='{{viewId}}-documentation-finderTab-trigger'
+                                    type='Component.TemplateUpdate'
+                                    data='{ "hideMessage": "true" }'
+                                    targets='["{{viewId}}-documentation-finderTab"]'
+                              >
+                      <button class="btn btn-documentation">
+                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                      </button>
+                  </mp-event-trigger>
+                </div> 
+              </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render> --]]
+
+        <div class="form-section-header">
+          <h4>Resource - Display in Finder</h4>
+          <div>Define if the resource is displayed in the Finder.</div>
+        </div>
+
+        <div class="form-section-content page__section-container">
+          <div class="menu-toggle toggle-label-right" style="margin-bottom: 30px;">
+              <semantic-form-checkbox-input class="toggle" for='resource_in_finder' label="Display in Finder"></semantic-form-checkbox-input>
+          </div>
+        </div>
+        
+      </bs-tab>
+
 [[!--
       <bs-tab event-key="2" title="Navigation menu">
 
@@ -213,7 +404,7 @@
                                           "itemLabel": "Navigation item",
                                           "resourceView": "[[resolvePrefix "rsp:ResourceNavigationConfigForm"]]",
                                           "broaderProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_broader_item",
-                                          "labelSparqlPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .",
+                                          "labelSparqlPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .",
                                           "viewId": "entity-navigation-config",
                                           "editable": true
                                           }'
@@ -262,5 +453,8 @@
     
     <semantic-form-errors></semantic-form-errors>
 
- [[> rsp:FormDefaultActions formEntity='configuration']] 
+    {{#ifCond mode "!==" "view"}}
+      [[> rsp:FormDefaultActions formEntity='configuration']] 
+    {{/ifCond}}
+
 </semantic-form>

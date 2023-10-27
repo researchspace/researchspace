@@ -1,10 +1,10 @@
 <style>
-  .resource-editDetails-container .collection-terms-area .LazyTree--alignmentTreeContainer .LazyTree--decoratedNodeBody {
+  .resource-editView-container .collection-terms-area .LazyTree--alignmentTreeContainer .LazyTree--decoratedNodeBody {
     max-width: calc(100% - 48px);
   }
 </style>
 {{#bind frameId=dashboardId}}
-<div class="resource-editDetails-container">
+<div class="resource-editView-container">
     <mp-splitpane min-size=60 default-size=330 max-size=330 size=330 default-open='true' persist-resize=false snap-threshold=120 class="frame-split-pane" >
       <div data-flex-layout="column top-stretch">
         <mp-splitpane-toggle-on>
@@ -51,6 +51,8 @@
                                       config='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
                                               {{#if labelSparqlPattern}}
                                                 "labelPattern": "{{labelSparqlPattern}}",
+                                              {{else}}
+                                                "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label . ",
                                               {{/if}}
                                               {{#if orderByPattern}}
                                                 "orderByPattern": "{{orderByPattern}}",
@@ -60,22 +62,51 @@
                     <template id='template'>
                       <span class="tree-item-actions-container">
                         <div style="display: flex; align-items: center; gap: 7px;">
-                          <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
-                                        then='{{> systemBadge}}'
+
+                          <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> ?value . }'
+                            then='{{> partOfVocabulary}}'
                           >
-                              <template id='systemBadge'>
-                                <span class="badge badge--secondary" style="height: 28px;">system</span>
+                            <template id='partOfVocabulary'>
+                              <span class="badge badge--secondary" style="height: 28px;">vocabulary</span>
+                            </template>
+                          </semantic-if>
+
+                          <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . }'
+                                      then='{{> inFinder}}'
+                          >
+                            <template id='inFinder'>
+                              <span class="badge badge--secondary" style="height: 28px; width: 54px;">finder</span>
+                            </template>
+                          </semantic-if>
+
+                          <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                                        then='{{> system}}'
+                                        else='{{> noSystem}}'
+                          >
+                              <template id='system'>
+                                <span class="badge badge--secondary" style="height: 28px; width: 54px;">system</span>
+                                <mp-event-trigger id='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
+                                                  type='Component.TemplateUpdate'
+                                                  data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "view" }' 
+                                                  targets='["{{frameId}}-resource-config-term-forms"]'>
+                                  <span class='tree-item-action'>
+                                    <rs-icon icon-type="round" icon-name="article" title="View configuration"></rs-icon>
+                                  </span>
+                                </mp-event-trigger>
+                              </template>
+
+                              <template id='noSystem'>
+                                <mp-event-trigger id='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
+                                                  type='Component.TemplateUpdate'
+                                                  data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
+                                                  targets='["{{frameId}}-resource-config-term-forms"]'>
+                                  <span class='tree-item-action'>
+                                    <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
+                                  </span>
+                                </mp-event-trigger>
                               </template>
                           </semantic-if>
 
-                          <mp-event-trigger id='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
-                                            type='Component.TemplateUpdate'
-                                            data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
-                                            targets='["{{frameId}}-resource-config-term-forms"]'>
-                            <span class='tree-item-action'>
-                              <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
-                            </span>
-                          </mp-event-trigger>
                         </div>
                         <mp-event-proxy id='{{frameId}}-resource-config-focus-tree-element' 
                                         on-event-source='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
@@ -95,7 +126,7 @@
 
         <div class="page__grid-container">
   
-          <div class="page__content-container resource-editDetails-form-container">
+          <div class="page__content-container resource-editView-form-container">
             <mp-event-target-template-render id='{{frameId}}-resource-config-term-forms' template='{{> template}}'>
               <template id='template'>
       
@@ -119,7 +150,7 @@
                   {{#if mode}}
                     <inline-template template-iri='[[resolvePrefix "rsp:ResourceConfigForm"]]' 
                                     options='{
-                                              "scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
+                                              "scheme": "http://www.researchspace.org/resource/custom/resource_configurations_container", 
                                               {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
                                               {{#if broader}}"broader": "{{broader}}",{{/if}}
                                               "editable": true,

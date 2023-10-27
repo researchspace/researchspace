@@ -25,7 +25,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaults = require('./defaults')();
 
 const cesiumSource = 'node_modules/cesium/Build/CesiumUnminified/';
-const webIfcSource = 'node_modules/web-ifc/';
+// const webIfcSource = 'node_modules/web-ifc/';
 const CopyPlugin = require("copy-webpack-plugin");
 
 /**
@@ -298,11 +298,11 @@ module.exports = function(isProd) {
                     { from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' }
                 ], {debug: true}
             ),
-            new CopyPlugin([
-                {
-                  from: path.join(webIfcSource, 'web-ifc.wasm'), to: '.',
-                },
-              ], { debug: true }),
+            // new CopyPlugin([
+            //     {
+            //       from: path.join(webIfcSource, 'web-ifc.wasm'), to: '.',
+            //     },
+            //   ], { debug: true }),
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
                 exclude: /src\/main\/web\/ontodia|node_modules/,

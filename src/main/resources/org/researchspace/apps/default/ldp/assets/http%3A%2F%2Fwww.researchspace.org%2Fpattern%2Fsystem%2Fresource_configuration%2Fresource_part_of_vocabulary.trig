@@ -1,0 +1,45 @@
+
+<http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary/context> {
+  <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration>,
+      <http://www.researchspace.org/resource/system/category/system>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Resource part of vocabulary";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#boolean>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-d379b0cac8d14b0c8bc65da1b00af34b-ix6nl;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-d379b0cac8d14b0c8bc65da1b00af34b-55c93h;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-d379b0cac8d14b0c8bc65da1b00af34b-jq8uvb;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-26T14:04:58.770+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-d379b0cac8d14b0c8bc65da1b00af34b-55c93h a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  OPTIONAL {
+    $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> ?partOfVoc.
+  }
+  BIND(IF(BOUND(?partOfVoc), true, false) AS ?value) .
+}""" .
+  
+  _:genid-d379b0cac8d14b0c8bc65da1b00af34b-ix6nl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> $partOfVoc .
+} WHERE {
+  FILTER(?value = true) .
+  BIND(IRI(CONCAT(STR(?subject), \"/part_of_vocabulary\")) AS ?partOfVoc) .
+}""" .
+  
+  _:genid-d379b0cac8d14b0c8bc65da1b00af34b-jq8uvb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> $partOfVoc . 
+} WHERE { 
+  FILTER(?value = true) .
+  $subject <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> $partOfVoc  .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> .
+}

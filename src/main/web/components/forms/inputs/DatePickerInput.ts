@@ -38,9 +38,12 @@ import './datetime.scss';
 // input format patterns include timezone offset to be compatible with XSD specification
 export const INPUT_XSD_DATE_FORMAT = 'YYYY-MM-DDZZ';
 export const INPUT_XSD_TIME_FORMAT = 'HH:mm:ssZZ';
+export const INPUT_XSD_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm:ssZZ';
+
 // output format patterns for UTC moments (without timezone offset), compatible with ISO and XSD
 export const OUTPUT_UTC_DATE_FORMAT = 'YYYY-MM-DD';
 export const OUTPUT_UTC_TIME_FORMAT = 'HH:mm:ss';
+
 
 export type DatePickerMode = 'date' | 'time' | 'dateTime';
 type ViewMode = "years" | "months" | "days" | "time";
@@ -254,9 +257,9 @@ function detectDateFormat(value: string): string | null {
 
 
 function dateLiteralFromRdfNode(node: Rdf.Node | undefined): Rdf.Literal | undefined {
-  if (!node || !node.isLiteral()) {
+  if (!node || typeof node.isLiteral !== 'function' || !node.isLiteral()) {
     return undefined;
-  }
+}
   const dateString = node.value;
   const types = [vocabularies.xsd.date, vocabularies.xsd.time, vocabularies.xsd.dateTime];
   return find(
@@ -269,13 +272,26 @@ export function utcMomentFromRdfLiteral(literal: Rdf.Literal | undefined): Momen
   if (!literal) {
     return undefined;
   }
+  console.log("Literal incoming:")
+  console.log(literal);
+
+  if (!moment(literal.value, INPUT_XSD_DATE_FORMAT, true).isValid() && 
+    !moment(literal.value, INPUT_XSD_TIME_FORMAT, true).isValid() &&
+    !moment(literal.value, OUTPUT_UTC_DATE_FORMAT, true).isValid() &&
+    !moment(literal.value, OUTPUT_UTC_TIME_FORMAT, true).isValid() &&
+    !moment(literal.value, INPUT_XSD_DATETIME_FORMAT, true).isValid()) {
+    console.log(`Invalid date format: ${literal.value}`);
+    return undefined;
+}
   const mode = getModeFromDatatype(literal.datatype);
   const parsedMoment =
-    mode === 'date'
-      ? moment.utc(literal.value, INPUT_XSD_DATE_FORMAT)
-      : mode === 'time'
-        ? moment.utc(literal.value, INPUT_XSD_TIME_FORMAT)
-        : moment.utc(literal.value);
+    mode === 'date' ? moment.utc(literal.value, INPUT_XSD_DATE_FORMAT)
+    : mode === 'time' ? moment.utc(literal.value, INPUT_XSD_TIME_FORMAT)
+    : moment.utc(literal.value, INPUT_XSD_DATETIME_FORMAT);
+    console.log("Parsing: ")
+    console.log(literal.value)
+    console.log("Parsed moment is: ")
+    console.log(parsedMoment)
   return parsedMoment.isValid() ? parsedMoment : undefined;
 }
 

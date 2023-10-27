@@ -55,9 +55,9 @@ export function initEntityConfig() {
       `
 CONSTRUCT {
   ?config a <http://www.researchspace.org/resource/system/resource_configuration> .
-  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_type> ?rdfType .
-  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .
-  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_system_type> ?P2_has_type .
+  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?rdfType .
+  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
   ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
 
   ?config <http://www.researchspace.org/pattern/system/resource_configuration/has_facet_kp> ?facetKp .
@@ -74,14 +74,14 @@ CONSTRUCT {
   
 } WHERE {
   ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
-    <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .
+    <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
 
   OPTIONAL {
-    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_type> ?rdfType .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?rdfType .
   }
 
   OPTIONAL {
-    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_system_type> ?P2_has_type .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
   }
 
   OPTIONAL {
@@ -127,13 +127,13 @@ CONSTRUCT {
             const pg = Rdf.pg(configIri, configGraph);
 
             const label =
-              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_label')], pg).map(l => l.value).get();
+              Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_name')], pg).map(l => l.value).get();
 
             const rdfType =
-              Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_type')], pg).getOrElse(undefined);
+              Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class')], pg).getOrElse(undefined);
 
             const p2HasType =
-              Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_system_type')], pg).getOrElse(undefined);
+              Rdf.getValueFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_type')], pg).getOrElse(undefined);
 
             const restrictionPattern =
               Rdf.getValueFromPropertyPath<Rdf.Literal>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern')], pg).map(l => l.value).getOrElse(undefined);

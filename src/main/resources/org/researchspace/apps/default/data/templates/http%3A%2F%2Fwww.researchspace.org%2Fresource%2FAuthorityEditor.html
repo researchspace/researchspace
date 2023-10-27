@@ -40,7 +40,7 @@ uses client-side template:
                                             "xsdDatatype": "xsd:anyURI",
                                             "valueSetPattern": "SELECT $value $label WHERE { 
                                                                   ?value <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container> .
-                                                                  ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .
+                                                                  ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
                                                                 } ORDER BY ASC(?label)"
                                             }
                                     ]'>
@@ -73,7 +73,7 @@ uses client-side template:
                                       BIND("{{viewId}}" as ?viewId)
                                       BIND(IRI(CONCAT(STR(Default:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?schemeLabel), "\\s", "_")))) AS ?scheme) .
                                       BIND(?entityTypeURI as ?entityType)
-                                      ?entityType <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?entityTypeLabel .
+                                      ?entityType <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?entityTypeLabel .
                                       BIND (bound(?schemeDescription) AS ?schemeDescriptionText) . 
                                    #   BIND (IF(?schemeDescription , ?schemeDescription, false) AS ?schemeDescriptionText)
                                       OPTIONAL {
@@ -235,7 +235,7 @@ uses client-side template:
                       BIND(BOUND(?managedConfig) as ?isManaged) 
                       OPTIONAL {
                         ?scheme crm:P67_refers_to ?authorityType .
-                        ?authorityType <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?authorityTypeLabel .
+                        ?authorityType <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?authorityTypeLabel .
                       }
                       OPTIONAL {
                      
@@ -323,7 +323,7 @@ uses client-side template:
                                                           "deletePattern": "DELETE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value . } WHERE { $subject <http://www.cidoc-crm.org/cidoc-crm/P67_refers_to> $value. }",
                                                           "valueSetPattern": "SELECT $value $label WHERE { 
                                                               ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
-                                                              ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_label> ?label .
+                                                              ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
                                                             }"
                                                           }
                                                         ]'

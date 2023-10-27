@@ -59,7 +59,7 @@ import * as Validation from './Validation';
 import { FieldEditorLabel } from './FieldEditorLabel';
 
 import './field-editor.scss';
-import { findLastIndex } from 'lodash';
+import ResourceLinkContainer, {ResourceLinkContainerProps } from 'platform/api/navigation/components/ResourceLinkContainer';
 
 const btn = createFactory(ReactBootstrap.Button);
 const bsrow = createFactory(ReactBootstrap.Row);
@@ -260,7 +260,9 @@ class FieldEditorComponent extends Component<Props, State> {
       row({
         label: 'Categories',
         expanded: true,
-        element: createElement(SemanticTreeInput, {
+        element: [
+          D.div({className: 'category-semantic-tree-input-wrapper'},
+          createElement(SemanticTreeInput, {
           ...this.state.categoryQueries,
           initialSelection: this.state.categories,
           multipleSelection: true,
@@ -270,7 +272,19 @@ class FieldEditorComponent extends Component<Props, State> {
               .toArray();
             this.updateState({ categories });
           },
-        } as SemanticTreeInputProps),
+        } as SemanticTreeInputProps),           
+        createElement(ResourceLinkContainer, {
+          "target": "_blank",
+          "uri": "http://www.researchspace.org/resource/ThinkingFrames",
+          "urlqueryparam-view": "authority-content",
+          "urlqueryparam-resource": "http://www.researchspace.org/resource/system/FieldCategories"
+        } as ResourceLinkContainerProps, btn(
+          {
+            className: 'btn btn-default',
+          },
+          D.i({ className: 'fa fa-book' })
+        ))
+        ),],
       }),
       this.renderMultipleValuesInput({
         values: this.state.domain,

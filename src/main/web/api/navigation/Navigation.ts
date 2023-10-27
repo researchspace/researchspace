@@ -31,6 +31,8 @@ import { ConfigHolder } from 'platform/api/services/config-holder';
 import { getOverlaySystem } from 'platform/components/ui/overlay';
 import { NavigationConfirmationDialog } from './components/NavigationConfirmationDialog';
 import { init as initPersistentHistory, persistRecentPages } from './PersistentHistory';
+import { getCurrentResource, __unsafe__setCurrentResource } from './CurrentResource';
+export { getCurrentResource, __unsafe__setCurrentResource };
 
 export type EventType = 'NAVIGATED' | 'BEFORE_NAVIGATE';
 export type Listener = NavigatedListener | BeforeNavigateListener;
@@ -58,8 +60,6 @@ export interface Event {
 }
 const listeners: Map<string, Listener> = new Map();
 let currentLocation: uri.URI;
-
-let currentResource: Rdf.Iri;
 
 const history = h.createBrowserHistory();
 history.listen((location, action) =>
@@ -90,22 +90,8 @@ export function navigationConfirmation(message: string): () => void {
   });
 }
 
-/**
- * Returns current resource IRI.
- */
-export function getCurrentResource(): Rdf.Iri {
-  return currentResource;
-}
-
 export function getCurrentRepository(): string {
   return currentLocation.search(true)['repository'] || 'default';
-}
-
-/**
- * For testing purpose only
- */
-export function __unsafe__setCurrentResource(resource: Rdf.Iri) {
-  currentResource = resource;
 }
 
 /**
@@ -237,7 +223,7 @@ export function init(location = history.location): Kefir.Property<Data.Maybe<uri
     fragment: location.hash,
   });
   return resolveResourceIri(currentLocation).map((maybeIri) =>
-    maybeIri.map((iri) => (currentResource = iri)).map((_) => currentLocation)
+    maybeIri.map(__unsafe__setCurrentResource).map((_) => currentLocation)
   );
 }
 

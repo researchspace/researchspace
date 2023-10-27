@@ -159,7 +159,7 @@ export class NamespaceManager extends Component<{}, State> {
     }
     return (
       <div className={classnames(styles.updatePanel, 'row')}>
-        <div className="col-xs-2">
+        <div className="col-xs-1 px-0">
           <FormControl
             type="text"
             placeholder="Prefix"
@@ -167,7 +167,7 @@ export class NamespaceManager extends Component<{}, State> {
             onChange={this.onPrefixInput}
           />
         </div>
-        <div className="col-xs-6">
+        <div className="col-xs-5">
           <FormControl
             type="text"
             placeholder="Namespace"
@@ -175,15 +175,13 @@ export class NamespaceManager extends Component<{}, State> {
             onChange={this.onNamespaceInput}
           />
         </div>
-        <div className="col-xs-3">
+        <div className={classnames(styles.updatePanel_submit, 'col-xs-6')}>
           <StorageSelector
             allApps={this.state.appStatus}
             sourceApps={[]}
             targetApp={this.state.selectedAppId}
             onChange={this.onSelectedAppChange}
           />
-        </div>
-        <div className="col-xs-1">
           <ButtonToolbar>
             <Button
               type="submit"
@@ -266,10 +264,10 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
           <div>
             Delete prefix "{record.prefix}"?
             <div>
-              <Button bsSize="xs" bsStyle="danger" onClick={this.onConfirm}>
+              <Button className="btn-grey" onClick={this.onConfirm}>
                 Delete
               </Button>
-              <Button bsSize="xs" onClick={this.onCancel}>
+              <Button className="btn-grey" onClick={this.onCancel}>
                 Cancel
               </Button>
             </div>
@@ -277,8 +275,8 @@ function createActionsCellRenderer(params: { onDelete: (record: PrefixRecord) =>
         );
       } else {
         return (
-          <Button bsSize="xs" onClick={this.onDeleteClick}>
-            <span className="fa fa-trash-o" />
+          <Button className="btn-grey" onClick={this.onDeleteClick}>
+            <span className="fa fa-trash-o btn-icon-left" />
             &nbsp;Delete
           </Button>
         );

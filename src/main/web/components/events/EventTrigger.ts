@@ -41,6 +41,15 @@ interface EventTriggerConfig {
    * Data that will be sent to all targets
    */
   data?: any;
+
+  /**
+   * Array of actions to trigger event.
+   *
+   * Can be "hover", "click", "mounted".
+   *
+   * @default ["click"]
+   */
+  on?: string[];
 }
 type EventTriggerProps = EventTriggerConfig;
 
@@ -57,21 +66,49 @@ type EventTriggerProps = EventTriggerConfig;
  * In the example above Component.Refresh event is sent to the element with id 'some-element'.
  */
 export class EventTrigger extends Component<EventTriggerProps, void> {
-  render() {
-    const child = Children.only(this.props.children) as ReactElement<any>;
-    const props = { onClick: this.onClick };
-    return cloneElement(child, props);
+
+  static defaultProps = {
+    on: ["click"],
+  };
+
+  componentDidMount() {
+    if (this.props.on.some(o => o === 'mounted')) {
+      this.triggerEvent();
+    }
   }
 
-  private onClick = (e: MouseEvent<HTMLElement>) => {
+  render() {
+    if (this.props.children) {
+      const child = Children.only(this.props.children) as ReactElement<any>;
+      const props = this.props.on.reduce(
+        (res, action) => {
+          if (action == 'click') {
+            res['onClick'] = this.onEvent;
+          } else if (action === 'hover') {
+            res['onMouseEnter'] = this.onEvent;
+          }
+          return res;
+        }, {}
+      )
+      return cloneElement(child, props);
+    } else {
+      return null;
+    }
+  }
+
+  private onEvent = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    this.triggerEvent();
+  };
+
+  private triggerEvent() {
     trigger({
       eventType: this.props.type,
       source: this.props.id,
       targets: this.props.targets,
       data: this.props.data,
     });
-  };
+  }
 }
 export default EventTrigger;

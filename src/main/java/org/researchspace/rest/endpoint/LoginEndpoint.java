@@ -21,6 +21,7 @@ package org.researchspace.rest.endpoint;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -29,6 +30,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
@@ -75,9 +77,10 @@ public class LoginEndpoint {
         if (request.getAttribute(
                 org.apache.shiro.web.filter.authc.FormAuthenticationFilter.DEFAULT_ERROR_KEY_ATTRIBUTE_NAME) != null) {
             map.put(org.apache.shiro.web.filter.authc.FormAuthenticationFilter.DEFAULT_ERROR_KEY_ATTRIBUTE_NAME,
-                    "Username or Password incorrect.");
+                    "Incorrect username or password.");
         }
         map.put("assetsMap", this.assetsMap.get().getAssets());
+        map.put("lang", st.getDefaultPreferredLanguage());
         return st.renderPageLayoutTemplate(TEMPLATES.LOGIN_PAGE, map);
     }
 }

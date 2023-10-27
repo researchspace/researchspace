@@ -75,4 +75,8 @@ public class GlobalConfiguration extends ConfigurationGroupBase {
         return getStringList("repositoriesLDPLoad", Lists.newArrayList(RepositoryManager.ASSET_REPOSITORY_ID));
     }
 
+    public List<String> getForceLDPLoadFromStorages() {
+        return getStringList("forceLDPLoadFromStorages");
+    }
+
 }

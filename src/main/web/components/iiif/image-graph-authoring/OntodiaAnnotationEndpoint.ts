@@ -131,12 +131,12 @@ export class OntodiaAnnotationEndpoint implements AnnotationEndpoint {
     return Kefir.constant(Rdf.iri(elementData.id));
   }
 
-  remove(annotationIri: Rdf.Iri) {
+  remove(annotation: OARegionAnnotation) {
     trigger({
       eventType: OntodiaEvents.DeleteElement,
       source: this.miradorId,
       targets: [this.ontodiaId],
-      data: { iri: annotationIri.value as ElementIri },
+      data: { iri: annotation['@id'] as ElementIri },
     });
     return Kefir.constant(undefined);
   }

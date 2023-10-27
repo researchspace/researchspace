@@ -98,17 +98,11 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
             <HasPermission permission={Permissions.queryEditorSelectEndpoint}>
               {this.renderRepositorySelector()}
             </HasPermission>
-            <Button
-              bsStyle="primary"
-              disabled={this.state.isExecuting}
-              onClick={() => this.executeQuery(this.state.query)}
-            >
-              {this.state.isExecuting ? 'Executing...' : 'Execute'}
-            </Button>
             <HasPermission
               permission={Permissions.toLdp('container', VocabPlatform.QueryTemplateContainer, 'create', 'owner')}
             >
               <Button
+              className='btn-grey'
                 onClick={() =>
                   getOverlaySystem().show(
                     SaveQueryModal.KEY,
@@ -122,6 +116,13 @@ export class SparqlQueryEditor extends Component<SparqlQueryEditorProps, State> 
                 Save
               </Button>
             </HasPermission>
+            <Button
+              bsStyle="primary"
+              disabled={this.state.isExecuting}
+              onClick={() => this.executeQuery(this.state.query)}
+            >
+              {this.state.isExecuting ? 'Executing...' : 'Execute'}
+            </Button>
           </div>
           <div
             ref={(resultHolder) => (this.resultHolder = resultHolder)}

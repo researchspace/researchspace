@@ -1,0 +1,914 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+//Buttons mixins
+@mixin button {
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+}
+
+@mixin button-border($border, $border-radius) {
+    border: $border;
+    border-radius: $border-radius;
+}
+
+@mixin button-font($font-size, $color, $spacing) {
+    //for hokusai
+   // font-family: nth($family-list, 1);
+    font-family: $font-family-base;
+    font-size: $font-size;
+    color: $color;
+    letter-spacing: $spacing;
+    text-transform: uppercase;
+}
+
+// Button sizes
+@mixin button-size($padding-horizontal, $height) {
+    padding-right: $padding-horizontal;
+    padding-left: $padding-horizontal;
+    height: $height;
+}
+
+@mixin rotate-text($degree) {
+    -webkit-transform: rotate($degree + deg);
+    -ms-transform: rotate($degree + deg);
+    transform: rotate($degree + deg);
+}
+
+@mixin badge {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 23px;
+    width: 23px;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 50%;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+@mixin tag {
+    color: $color-white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    
+    padding: 0px 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 27px;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 3px;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+@mixin vertical-align-flex {
+    display: flex;
+    align-items: center;
+}
+
+@mixin item-on-right {
+    margin-left: auto;
+}
+
+///////////////////////Exported Code/////////////////////////////
+
+/* Buttons */
+.btn {
+    border-width: 1px;
+    font-size: 14px;
+    border-radius: 3px;
+    line-height: 1.2;
+    padding: 8px 10px;
+
+    @media screen and (max-width: 767px) {
+        font-size: 12px !important;
+    }   
+
+    &:hover, &:focus, &.focus {
+        color: inherit;
+    }
+
+}
+
+.btn-table {
+
+    padding: 6px 10px;
+}
+
+button:disabled {
+
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn:active, .btn.active {
+    box-shadow: none;
+}
+
+.btn.disabled, 
+.btn[disabled], 
+fieldset[disabled] .btn {
+    opacity: 0.6;
+}
+
+.btn[disabled].btn-primary,
+.btn[disabled].btn-default {
+    opacity: 0.3;
+}
+
+.btn-default {
+    color: $color-dark;
+    background-color: transparent;
+    border-color: $color-dark;
+}
+
+.btn-default:hover,
+.btn-default:focus,
+.btn-default:focus-within,
+.btn-default:active,
+.btn-default:active:hover,
+.btn-default.active,
+.open > .btn-default.dropdown-toggle,
+.btn-default:active:hover,
+.btn-default:active:focus,
+.btn-default:active.focus,
+.btn-default.active:hover,
+.btn-default.active:focus,
+.btn-default.active.focus,
+.open > .btn-default.dropdown-toggle:hover,
+.open > .btn-default.dropdown-toggle:focus,
+.open > .btn-default.dropdown-toggle.focus,
+.btn-default.disabled:hover,
+.btn-default.disabled:focus,
+.btn-default.disabled.focus,
+.btn-default[disabled]:hover,
+.btn-default[disabled]:focus,
+.btn-default[disabled].focus,
+fieldset[disabled] .btn-default:hover,
+fieldset[disabled] .btn-default:focus,
+fieldset[disabled] .btn-default.focus {
+    color: $color-dark;
+    background-color: transparent;
+    border-color: $color-dark;
+}
+
+.btn-primary {
+    background-color: $color-dark;
+    border-color: $color-dark;
+    color: $color-white;
+    font-weight: 600;
+
+    &:hover,
+    &:active,
+    &.active,
+    &:focus,
+    &.focus,
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus, 
+    .open > &.dropdown-toggle,
+    .open > &.dropdown-toggle:hover, 
+    .open > &.dropdown-toggle:focus, 
+    .open > &.dropdown-toggle.focus {
+        background-color: $color-dark;
+        border-color: $color-dark;
+        color: $color-white;
+        font-weight: 600;
+    }
+
+    .fa,
+    .rs-icon,
+    .iconmoon {
+
+        color: $color-white;
+    }
+}
+
+.btn-grey {
+
+    color: $btn-grey-color;
+    border: 1px solid $btn-grey-border-color;
+   // box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.14);
+    background-color: $btn-grey-color-bg;
+    white-space: nowrap;
+
+    border-radius: 3px;
+    line-height: 1.2;
+    padding: 6px 10px;
+
+    display: flex;
+    align-items: center;
+    width: fit-content;
+
+    &:hover,
+    &:focus {
+
+        color: $btn-grey-color;
+        background-color: $btn-grey-color-bg;
+        outline: none;
+    }
+
+    i {
+        font-size: 16px;
+    }
+
+    &.btn-icon {
+
+        .fa,
+        .rs-icon,
+        .iconmoon {
+
+            color: $btn-grey-color;
+        }
+    }
+
+    .fa,
+    .rs-icon,
+    .iconmoon {
+
+        color: $btn-grey-color;
+    }
+
+    &:disabled,
+    &[disabled] {
+
+        opacity: 0.5;
+
+        &:hover,
+        &:focus {
+
+            background-color: $btn-grey-color-bg;
+            color: $btn-grey-color;
+            border: 1px solid $btn-grey-border-color;
+
+            .fa,
+            .rs-icon,
+            .iconmoon {
+
+                color: $btn-grey-color;
+            }
+        }
+    }
+
+    .mp-rdf-graph-action {
+        color: inherit;
+    }
+
+    &.btn-selected {
+        background-color: $color-btn-selected;
+        border-color: $color-btn-selected;
+        color: $color-white;
+        box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.25);
+    }
+}
+
+.btn-grey-container {
+
+    display: flex;
+
+    button:not(:last-child) {
+        margin-right: .8em;
+    }
+}
+
+.btn-tab {
+
+    border: none;
+    background-color: transparent;
+    white-space: nowrap;
+
+    font-size: 14.5px;
+    border-radius: 3px;
+    padding: 8px 14px;
+
+    &:hover,
+    &:focus {
+        background-color: $color-btn-tab-bg;
+        outline: none;
+    }
+
+    &.btn-selected {
+        background-color: $color-btn-tab-bg;
+        font-weight: 600;
+    }
+
+}
+
+.btn-export {
+
+    color: $color-dark;
+    background-color: $color-secondaryB-10;
+    border: 1px solid $color-secondaryB-50;
+    padding: 5px 8px;
+    font-size: 12px;
+
+    &:hover {
+
+        box-shadow: 0px 0px 2px 1px #ddd;
+    }
+}
+
+.btn-delete {
+
+    color: $color-white;
+    background-color: $color-danger;
+    font-weight: bold;
+    text-shadow: 0px 0px 1px #4c040485;
+    padding: 5px 8px;
+    font-size: 12px;
+    margin-bottom: 3px;
+    margin: 2px 0px 2px 0px;
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+
+        box-shadow: 0px 0px 2px 1px #bbb;
+        color: $color-white;
+    }
+}
+
+.btn-success {
+    background-color: $color-success;
+    border-color: $color-success;
+    color:$color-white;
+    text-shadow: 0px 0px 1px #00000061;
+    font-weight: 600;
+
+    &:hover,
+    &:active,
+    &.active,
+    .open > &.dropdown-toggle,
+    &:focus,
+    &.focus {
+        background-color: $color-success-darker;
+        border-color: $color-success-darker;
+        color:$color-white;
+    }
+}
+
+.btn-success:active:hover, 
+.btn-success:active:focus, 
+.btn-success:active.focus, 
+.btn-success.active:hover, 
+.btn-success.active:focus, 
+.btn-success.active.focus, 
+.open > .btn-success.dropdown-toggle:hover, 
+.open > .btn-success.dropdown-toggle:focus, 
+.open > .btn-success.dropdown-toggle.focus {
+
+    background-color: $color-success-darker;
+    border-color: $color-success-darker;
+    color:$color-white;
+}
+
+.btn-warning {
+
+    font-weight: bold;
+    text-shadow: 0px 0px 2px #9e9e9e9c;
+}
+
+.btn-danger {
+
+    color: $color-white;
+    background-color: $color-danger;
+    border-color: $color-danger;
+    font-weight: 600;
+    text-shadow: 0px 0px 1px #670a15c4;
+
+    &:hover,
+    &:active,
+    &.active,
+    &:active:hover, 
+    &:active:focus, 
+    &:active.focus, 
+    &.active:hover, 
+    &.active:focus, 
+    &.active.focus, 
+    .open > &.dropdown-toggle,
+    &:focus,
+    &.focus {
+        background-color: $color-danger-darker;
+        border-color: $color-danger-darker;
+    }
+}
+
+.btn-icon {
+
+    display: flex;
+    align-items: center;
+}
+
+.btn-icon-right {
+
+    padding-left: 7px;
+}
+
+.btn-icon-left {
+
+    padding-right: 7px;
+}
+
+.btn-back {
+
+    white-space: nowrap;
+    padding-left: 30px;
+    width: fit-content;
+    height: 35px;
+    background: linear-gradient(to bottom, $color-dark--op75 0%, $color-dark--op30 100%);
+    border: none;
+    border-radius: 4px;
+    position: relative;
+    color: $color-white;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+    font-size: 15px;
+    text-align: right;
+    padding-right: 12px;
+    box-sizing: border-box;
+    text-indent: 5px;
+    box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: block;
+    margin-bottom: 18px;
+
+    &:after {
+        content: "";
+        width: 0;
+        height: 0;
+        display: block;
+        border-top: 19px solid $color-dark;
+        border-bottom: 16px solid $color-dark;
+        border-right: 16px solid transparent;
+        border-left: 15px solid $color-dark;
+        position: absolute;
+        opacity: 0.6;
+        right: 0;
+        left: 0;
+        top: 0;
+        border-radius: 5px 0 0 5px;
+    }
+}
+
+.btn-header-right {
+
+    display: flex;
+    align-items: center;
+
+    padding: 7px 20px;
+    margin-bottom: 5px;
+    border: none;
+    background: transparent;
+    color: $color-dark;
+    cursor: pointer;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: $color-white;
+        background-color: $color-dark;
+        border-color: $color-dark;
+        border-radius: 15px;
+    }
+
+    .fa {
+        font-size: 17px;
+        padding-right: 8px;
+        opacity: 0.3;
+    }
+
+    div {
+        font-size: 15px;
+    }
+}
+
+.btn-link:hover, 
+.btn-link:focus {
+    text-decoration: none;
+}
+
+.rs-button {
+    @include button;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.btn-edit-form {
+
+    display: flex;
+    align-items: center;
+
+    position: absolute;
+    top: 10px;
+    right: 38px;
+
+    padding: 7px 10px;
+
+}
+
+/* Search page buttons */
+.rs-button-M1--dark {
+    @include button-border(1px solid $color-dark, 20px);
+    @include button-font(14px, $color-white, 0.5px);
+    @include button-size(16px, 26px);
+
+    background-color: $color-dark;
+
+    &:focus {
+        box-shadow: 0px 0px 2px 2px #337ab7;
+        -webkit-box-shadow: 0px 0px 2px 2px #337ab7;
+        -moz-box-shadow: 0px 0px 2px 2px #337ab7;
+    }
+
+    &.rs-disabled {
+        background-color: $color-primary-100;
+        border-color: $color-primary-100;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+}
+
+/* Show all fields button */
+.rs-button-icon-M--dark {
+    @include button-border(none, 50%);
+
+    height: 36px;
+    width: 36px;
+    padding: 0;
+    background-color: $color-dark;
+
+    &:focus {
+        box-shadow: 0px 0px 2px 2px #337ab7;
+        -webkit-box-shadow: 0px 0px 2px 2px #337ab7;
+        -moz-box-shadow: 0px 0px 2px 2px #337ab7;
+    }
+
+    .rs-icon {
+
+        color: $color-white;
+        font-size: 10px;
+    }
+}
+
+.rs-button-icon-S {
+    @include button-border(none, 50%);
+
+    height: 26px;
+    width: 26px;
+    padding: 0;
+
+    &:focus {
+        box-shadow: 0px 0px 2px 2px #337ab7;
+        -webkit-box-shadow: 0px 0px 2px 2px #337ab7;
+        -moz-box-shadow: 0px 0px 2px 2px #337ab7;
+    }
+
+    &--dark {
+        background-color: $color-dark;
+
+        .rs-icon {
+            color: $color-white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    }
+}
+
+.rs-button-S-img {
+    height: 20px;
+    width: 20px;
+    margin-left: 3px;
+    display: flex;
+    flex-direction: row;
+}
+
+/* Dashboard buttons */
+.rs-btn-dashboard {
+    height: 100%;
+    background-color: $color-white;
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+    
+    font-family: $font-family-base;
+    padding-right: 7%;
+    padding-left: 10%;
+    
+    box-shadow: 3px 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ededed;
+
+    transition: all .2s ease;
+
+    &:hover, &:focus {
+        cursor: pointer;
+        -webkit-transform: scale(1.02);
+        transform: scale(1.02);
+        box-shadow: 3px 2px 7px rgba(0, 0, 0, 0.3);
+    }
+
+    .rs-btn-dashboard-icon {
+        height: 100%;
+        width: 30%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        & .rs-icon {
+            font-size: 3.5em;
+
+            &.rs-icon-diagram {
+                color: $color-dashboard-km;
+            }
+
+            &.iconmoon-file-text2 {
+                color: $color-dashboard-narrative;
+            }
+
+            &.rs-icon-images {
+                color: $color-dashboard-image;
+            }
+        }
+
+    }
+
+    .rs-btn-dashboard-text {
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+
+    }
+
+    .rs-btn-dashboard-count {
+
+        color: grey;
+        text-align: right;
+        font-weight: lighter;
+        font-size: 3rem;
+        padding-bottom: 1rem;
+
+    }
+
+    .rs-btn-dashboard-title {
+
+        color: #737275;
+        text-align: right;
+        font-weight: 800;
+        font-size: 1.6rem;
+
+    }
+
+    &.rs-btn-dashboard-configuration {
+
+        color: #5e6165;
+        font-weight: 700;
+        font-size: 1.65rem;
+        padding: 10px 25px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .fa {
+
+            padding-right: 12px;
+            color: inherit;
+            font-size: inherit;
+        }
+    }
+}
+
+.rs-btn-dashboard--km {
+    background-color: $color-dashboard-km;
+}
+
+.rs-btn-dashboard--narrative {
+    background-color: $color-dashboard-narrative;
+}
+
+.rs-btn-dashboard--img {
+    background-color: $color-dashboard-image;
+}
+
+.rs-badge-dashboard {
+    background-color: transparent;
+    border: 1px solid $color-white;
+    box-shadow: 1px 1px 2px 0px #d2d2d2b5;
+}
+
+/* Drawer */
+//Buttons for right and left Sidebar
+.rs-drawer {
+    min-width: 144px;
+    width: 144px;
+    height: 37px;
+    background-color: $color-grey;
+
+    @include rotate-text(270);
+
+    border: none;
+    box-shadow: 0px 0px 2px 1px #cccccce8;
+    -webkit-box-shadow: 0px 0px 2px 1px #cccccce8;
+    -moz-box-shadow: 0px 0px 2px 1px #cccccce8;
+
+    &:hover, &:focus {
+        box-shadow: 0px 0px 2px 1px #adadad;
+        -webkit-box-shadow: 0px 0px 2px 1px #adadad;
+        -moz-box-shadow: 0px 0px 2px 1px #adadad;
+    }
+
+    &.shadow-none {
+        box-shadow: none;
+    }
+}
+
+.rs-drawer-transparent {
+    min-width: 144px;
+    width: 144px;
+    height: 40px;
+    background-color: transparent;
+    padding: 0;
+    font-size: 16.5px;
+    font-weight: 600;
+
+    @include rotate-text(270);
+
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+
+    @media screen and (max-width: 767px) {
+        font-size: 12px;
+    }
+}
+
+.rs-badge {
+    @include badge;
+
+    &--info {
+        background-color: $color-info;
+    }
+
+    &--white {
+        background-color: $color-white;
+
+        &.active {
+            background-color: $color-primary-100;
+            color: $color-white;
+        }
+
+        &:hover, &:focus {
+            background-color: $color-dark;
+            color: $color-white;
+        }
+    }
+
+    &:empty {
+        display: none;
+    }
+}
+
+// Tags
+.rs-tag {
+    @include tag;
+
+    color:$color-tag;
+    background-color: $color-tag-bg;
+
+    &--info {
+        background-color: $color-info;
+    }
+
+    &--success {
+        background-color: $color-success;
+    }
+}
+
+.rs-dashboard-tag {
+    font-family: $font-family-base;
+    font-size: 1.25rem;
+    font-weight: bold;
+    line-height: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    width: 170px;
+    height: 30px;
+    padding: 0;
+}
+
+/*  Conclusion */
+.rs-conclusion {
+    @include vertical-align-flex;
+
+    height: 25px;
+    padding: 4px 4px 4px 8px;
+    border-bottom: 1px solid $color-dark;
+
+    & .rs-agreed {
+        @include item-on-right;
+    }
+}
+
+.rs-udp-visibility {
+    top: 16px !important;
+    right: 25px !important;
+}
+
+.rs-btn-visibility {
+    padding: 7px 10px;
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 105px;
+}
+
+.rs-udp-visibility .dropdown-menu {
+    min-width: 115px !important;
+    right: 0;
+    left: unset;
+    font-family: $font-family-base;
+    font-size: 13px;
+    line-height: 1.2 !important;
+
+    & fieldset {
+        padding-top: 3px;
+    }
+
+    & .radio {
+        margin-bottom: 7px;
+    }
+
+    & .share-component {
+        padding: 0 17px !important;
+    }
+
+    & input[type="radio"] {
+        margin: 2px -20px 0;
+    }
+
+    & .radio label {
+        padding-left: 25px;
+    }
+}
+
+// form buttons
+.form-btn-group {
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 25px;
+    margin-bottom: 10px;
+
+    button {
+        margin-bottom: 5px;
+    }
+
+    button:not(:first-child) {
+        margin-left: 5px;
+    }
+}

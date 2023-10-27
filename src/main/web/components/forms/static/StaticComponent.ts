@@ -23,6 +23,7 @@ import { Component } from 'platform/api/components';
 
 import { FieldDefinition } from '../FieldDefinition';
 import { FieldValue } from '../FieldValues';
+import { InputKind } from '../inputs/InputCommpons';
 
 export interface StaticFieldProps extends HTMLAttributes<HTMLElement> {
   for?: string;
@@ -31,6 +32,8 @@ export interface StaticFieldProps extends HTMLAttributes<HTMLElement> {
 }
 
 export abstract class StaticComponent<P extends StaticFieldProps, S> extends Component<P, S> {
+  public static readonly inputKind = InputKind.StaticInput;
+
   constructor(props: P, context: any) {
     super(props, context);
   }

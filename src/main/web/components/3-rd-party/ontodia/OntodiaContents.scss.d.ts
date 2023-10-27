@@ -1,6 +1,7 @@
 declare namespace OntodiaContentsScssNamespace {
   export interface IOntodiaContentsScss {
     container: string;
+    items: string;
   }
 }
 

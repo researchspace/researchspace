@@ -67,7 +67,7 @@ export class NavigateToIRI extends React.Component<NavigateToIRIProps, State> {
             </InputGroup.Button>
           </InputGroup>
           {this.state.error ? (
-            <HelpBlock>Can't navigate to the resource. The value is not a valid IRI.</HelpBlock>
+            <HelpBlock>Can't navigate to the resource? The value is not a valid IRI.</HelpBlock>
           ) : null}
         </FormGroup>
       </Form>

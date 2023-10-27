@@ -93,12 +93,14 @@ export class WorkspaceMarkup extends React.Component<WorkspaceMarkupProps, {}> {
       return;
     }
 
-    const element = editor.createNewEntity({ elementModel });
-    const targetPosition = position || getViewportCenterInPaperCoords(this.paperArea);
-    element.setPosition(targetPosition);
+    const element = editor.createNewEntity({ elementModel, position });
+    if (position) {
+      const targetPosition = position;
+      element.setPosition(targetPosition);
 
-    view.performSyncUpdate();
-    centerElementToPosition(element, targetPosition);
+      view.performSyncUpdate();
+      centerElementToPosition(element, targetPosition);
+    }
 
     batch.store();
     editor.setSelection([element]);

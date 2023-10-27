@@ -1,0 +1,399 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ // style for src/main/resources/org/researchspace/apps/default/data/templates/http%3A%2F%2Fwww.researchspace.org%2Fresource%2FImageAnnotationWorkspace.html
+
+.imageAnnotationWorkspace__container {
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-rows: 100%;
+    grid-template-areas: 'viewer observationArea';
+
+    .imageAnnotationWorkspace__viewer {
+
+        grid-area: viewer;
+        height: 100%;
+    }
+
+    .imageAnnotationWorkspace__observationArea_bg {
+
+        background-color: $pageDarkerSection-bg;
+        box-shadow: inset 0px 0px 9px 3px $pageDarkerSection-shadow;
+        grid-row: 1 / -1;
+        grid-column: 2 / -1;
+    }
+
+    .imageAnnotationWorkspace__observationArea_container {
+
+        grid-area: observationArea;
+
+        position: relative;
+        height: 100%;
+        width: 100%;
+
+        display: grid;
+        grid-template-columns: minmax(30px, 0.1fr) 2fr minmax(25px, 0.1fr);
+        grid-template-rows: minmax(25px, 0.05fr) auto 20px;
+        grid-template-areas: '. . .'
+                            '. itemsList .'
+                            '. . .';
+
+        .imageAnnotationWorkspace__observationArea_content {
+
+            grid-area: itemsList;
+
+            height: 100%;
+            overflow-y: hidden;
+
+            .imageAnnotationWorkspace__observationArea {
+
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .page__main-title-row {
+
+             //   margin-bottom: 1.5em;
+                padding-right: 25px;
+            }
+
+            .imageAnnotationWorkspace__observationArea_items {
+
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+
+                padding-bottom: 20px;
+                padding-right: 10px;
+
+                & > div:first-child .collapsible-panel-trigger {
+
+                    margin-top: 5px;
+                }
+
+                .collapsible-panel-trigger {
+
+                    margin-top: 20px;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .collapsible-panel-trigger__collapsed:before,
+                .collapsible-panel-trigger__expanded:before {
+                  
+                    padding-right: 8px;
+                }
+
+                .collapsible-div-content {
+
+                    padding: 0;
+                }
+
+                .imageAnnotationWorkspace__observationArea_resourceTitleRow {
+    
+                    width: 100%;
+                    display: flex;
+                    flex: 1;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    justify-content: space-between;
+        
+                    .entityLabel {
+                        width: calc(100% - 145px);
+                        font-size: 18px;
+                        margin: 0;
+                    }
+                }
+
+                & > .imageAnnotationWorkspace__observationArea_resourceTitleRow:first-child {
+
+                    margin-top: 0;
+                }
+            }
+    
+            .imageAnnotationWorkspace__items {
+    
+                h2 {
+                    margin-top: 0;
+                }
+    
+                .imageAnnotationWorkspace__item_container {
+    
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    height: auto;
+
+                    & > .imageAnnotationWorkspace__item:last-child {
+
+                        border-bottom: none;
+                    }
+
+                    .imageAnnotationWorkspace__item {
+    
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 7px 10px;
+                        border-bottom: 1px solid $color-grey;
+        
+                        &:hover {
+                            background-color: #e9eaeec9;
+                        }
+        
+                        .region-label {
+                            width: calc(100% - 255px);
+                        }
+        
+                        .feature-label {
+
+                            display: block;
+                            width: auto;
+                        }
+        
+                        .btn-grey {
+                            
+                            margin-right: 6px;
+
+                            .fa, .rs-icon, .iconmoon {
+
+                                padding: 0;
+                            }
+                        }
+
+                        .btn-grey:last-child {
+                            
+                            margin-right: 0;
+                        }
+        
+                        .fa-exclamation-circle {
+        
+                            color: $color-exclamation;
+                            font-size: 25px;
+                            position: absolute;
+                            right: 2px;
+                            top: -3px;
+                        }
+        
+                        .btn-icon {
+                            font-size: 17px;
+                        }
+
+                        .user-info {
+
+                            width: 160px;
+                            font-size: 12px;
+
+                            display: flex;
+                            flex-direction: column;
+                            padding: 0 10px;
+
+                            margin-left: auto;
+
+                            .user-info-name {
+
+                                text-decoration: underline;
+                                font-weight: 600;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .imageAnnotationWorkspace__formArea_container {
+
+            grid-area: itemsList;
+
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+
+            .imageAnnotationWorkspace__form-titleRow {
+    
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+        
+                h1 {
+                    width: calc(100% - 140px);
+                }
+            }
+    
+            .imageAnnotationWorkspace__form-container {
+
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                padding: 20px 15px 20px 25px;
+
+                flex: 1;
+
+                h2 {
+        
+                    font-size: 18px;
+                    line-height: 1.3;
+                    font-weight: normal;
+
+                    width: 100%;
+                }
+
+                .feature-form-type-selection-container {
+
+                    text-align: center;
+                    margin: 15px 0;
+
+                }
+
+                .feature-add-type {
+
+                    padding: 4%;
+                }
+
+                .feature-form-type-selection {
+
+                    display: flex;
+                    justify-content: center;
+
+                    & > button:not(:last-child) {
+                        margin-right: 10px;
+                    }
+                }
+
+                .imageAnnotationWorkspace__form-edit-featureType {
+                    margin: 20px 0px;
+                    display: flex;
+                }
+                
+                .semantic-form {
+                    // for new feature and associate feature Form
+                    flex: 1;
+                    overflow: hidden;
+                    height: 100%;
+
+                    .composite-input {
+
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .semantic-form-checklist-input__label {
+
+                        margin-top: 5px;
+
+                        .semantic-form-checklist-input__input:checked~.semantic-form-checklist-input__checkbox {
+
+                            border-radius: 2px;
+                            background-color: $color-checkbox-select;
+
+                            &:after {
+                                border-radius: 0;
+                                position: absolute;
+                                content: '';
+                                display: block;
+                                top: 3px;
+                                left: 7px;
+                                width: 6px;
+                                height: 10px;
+                                border-style: solid;
+                                border-color: $color-white;
+                                border-width: 0 2px 2px 0;
+                                -webkit-transform: rotate(45deg);
+                                transform: rotate(45deg);
+                                opacity: 1;
+                                background: transparent;
+                            }
+                        }
+                    }
+                }
+
+                .form-scrollable-area {
+
+                    flex: 1;
+
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    height: 100%;
+                    padding-right: 10px;
+                }
+
+                .existing-feature-container {
+                    height: 100%;
+
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .existing-feature-scrollable-area {
+
+                    flex: 1;
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    padding-right: 20px;
+
+                    & > .existing-feature-item:last-child {
+                        border-bottom: none;
+                    }
+                }
+
+                .existing-feature-item {
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 7px 10px;
+                    border-bottom: 1px solid $color-grey;
+    
+                    &:hover {
+    
+                        background-color: #e9eaeec9;
+                    }
+    
+                    .existing-feature-label {
+    
+                        width: calc(100% - 60px);
+                    }
+                }
+
+                .save-message {
+
+                    color: $color-white;
+                    background-color: $color-success;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                    padding: 0 20px;
+                    margin-right: 20px;
+                    width: 100%;
+                    font-weight: 600;
+                    line-height: normal;
+                    font-size: 14.5px;
+                }
+            }
+        }
+    }
+}
+
+

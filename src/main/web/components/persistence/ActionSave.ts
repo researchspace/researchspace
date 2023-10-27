@@ -56,7 +56,7 @@ interface Props {
 }
 
 interface State {
-  show: '' | 'editor' | 'saving' | 'success';
+  show: 'hide' | 'editor' | 'saving' | 'success';
   savedIri?: string;
   label?: string;
   description?: string;
@@ -69,17 +69,14 @@ export class ActionSaveComponent extends Component<Props, State> {
 
   constructor(props: Props, context: any) {
     super(props, context);
-    this.state = { show: '' };
-    this.onClick = this.onClick.bind(this);
-    this.onSave = this.onSave.bind(this);
-    this.onCancel = this.onCancel.bind(this);
+    this.state = { show: 'hide' };
   }
 
-  onClick() {
+  onClick = () => {
     this.setState({ show: 'editor' });
   }
 
-  onSave() {
+  onSave = () => {
     this.setState({ show: 'saving' });
 
     const componentGraph = componentToGraph({
@@ -101,9 +98,9 @@ export class ActionSaveComponent extends Component<Props, State> {
       });
   }
 
-  onCancel() {
+  onCancel = () => {
     this.setState({
-      show: '',
+      show: 'hide',
       savedIri: undefined,
       label: undefined,
       description: undefined,
@@ -155,7 +152,7 @@ export class ActionSaveComponent extends Component<Props, State> {
           ModalBody({}, 'Visualization ', ResourceLink({ uri: this.state.savedIri }), 'has been saved successfully!'),
           ModalFooter({}, Button({ onClick: this.onCancel }, 'OK'))
         );
-      case '':
+      case 'hide':
         return null;
     }
   }
@@ -173,7 +170,7 @@ export class ActionSaveComponent extends Component<Props, State> {
     return Button(
       {
         title: 'Save into default set',
-        onClick: this.onClick,
+        onClick: this.state.show == 'hide' ? this.onClick : undefined,
       },
       D.i({ className: 'fa fa-save' }),
       this.renderModal()

@@ -1,0 +1,51 @@
+{{#if node}}
+<semantic-query query='SELECT ?form WHERE { <{{node}}> <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?form}'>
+  <template id='template'>
+    <semantic-link-container uri='{{bindings.0.form.value}}' urlqueryparam-action='edit' target='_blank'>
+        <div style="margin: 10px 0;" class="text-underline"><i class="fa fa-pencil btn-icon-left"></i>Edit form template</div>
+    </semantic-link-container>
+  </template>
+</semantic-query>
+{{/if}}
+
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
+               new-subject-template='{{scheme}}/data/{{{{raw}}}}{{item_label}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  P71i_is_listed_in="http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in"
+                  item_label="http://www.researchspace.org/resource/system/authority_manager/item_label"
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  for_type="http://www.researchspace.org/resource/system/authority_manager/for_type"
+                  for_P2_has_type="http://www.researchspace.org/resource/system/authority_manager/for_P2_has_type"
+                  broader_property="http://www.researchspace.org/resource/system/authority_manager/broader_property"
+                  membership_property="http://www.researchspace.org/resource/system/authority_manager/membership_property"
+                  order_by_pattern="http://www.researchspace.org/resource/system/authority_manager/order_by_pattern"
+                  label_sparql_pattern="http://www.researchspace.org/resource/system/authority_manager/label_sparql_pattern"
+                  restriction_sparql_pattern="http://www.researchspace.org/resource/system/authority_manager/restriction_sparql_pattern"
+                  uses_form="http://www.researchspace.org/resource/system/authority_manager/uses_form"
+               ]]'
+               >
+
+  <div class="form-scroll-area">
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.researchspace.org/resource/system/FormConfig"]'></semantic-form-hidden-input>
+
+    <semantic-form-hidden-input for="P71i_is_listed_in" default-value="http://www.researchspace.org/resource/system/vocab/authority_manager_config_types"> </semantic-form-hidden-input>  
+    <semantic-form-text-input for="item_label"> </semantic-form-text-input>
+
+    <semantic-form-tree-picker-input for="for_type"></semantic-form-tree-picker-input>
+    <semantic-form-tree-picker-input for="for_P2_has_type"></semantic-form-tree-picker-input>
+    <semantic-form-text-input for="restriction_sparql_pattern"> </semantic-form-text-input>
+    <semantic-form-text-input for="label_sparql_pattern"> </semantic-form-text-input>
+    
+    <semantic-form-tree-picker-input for="membership_property"></semantic-form-tree-picker-input>
+    <semantic-form-tree-picker-input for="broader_property"></semantic-form-tree-picker-input>
+    <semantic-form-text-input for="order_by_pattern"> </semantic-form-text-input>
+
+    <semantic-form-text-input for="uses_form" default-value="http://www.researchspace.org/resource/system/forms/"></semantic-form-text-input>
+    
+    <semantic-form-errors></semantic-form-errors>
+  </div>
+ [[> rsp:FormDefaultActions]] 
+</semantic-form>

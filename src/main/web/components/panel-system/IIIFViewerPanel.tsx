@@ -20,12 +20,15 @@ import * as React from 'react';
 import { isEqual, flatten } from 'lodash';
 import * as Kefir from 'kefir';
 
+import { trigger, listen } from 'platform/api/events';
 import { Cancellation } from 'platform/api/async';
 import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 import { ImageRegionEditorComponentMirador, ImageRegionEditorConfig } from 'platform/components/iiif/ImageRegionEditor';
+import { AddImagesForObjectEvent, AddObjectImagesEvent, IiifManifestObject } from '../iiif/ImageRegionEditorEvents';
+
 
 const BINDING_VARIABLE = 'subject';
 
@@ -43,7 +46,7 @@ export interface IIIFViewerPanelProps extends ImageRegionEditorConfig {
 }
 
 export interface State {
-  imageOrRegion?: { [iri: string]: Array<string> };
+  imageOrRegion?:  IiifManifestObject[];
 }
 
 /**
@@ -63,6 +66,7 @@ export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
 
   componentDidMount() {
     this.queryImages();
+    this.listenToEvents();
   }
 
   componentDidUpdate(prevProps: IIIFViewerPanelProps) {
@@ -73,6 +77,40 @@ export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
+  }
+
+  private listenToEvents = () => {
+    this.cancellation
+        .map(
+          listen({
+            eventType: AddImagesForObjectEvent,
+            target: this.props.id
+          })
+        ).observe({
+          value: (event) => {
+            const { query } = this.props;
+            const parsedQuery = SparqlUtil.parseQuery(query);
+            const sparql = SparqlClient.setBindings(parsedQuery, { [BINDING_VARIABLE]: Rdf.iri(event.data.objectIri) });
+            SparqlClient.select(sparql)
+                        .map(({ results }) => ({
+                          iri: event.data.objectIri,
+                          images: results.bindings.map(({ image }) => image.value),
+                        }))
+                        .onValue(
+                          images => {
+                            trigger({
+                              eventType: AddObjectImagesEvent,
+                              source: this.props.id,
+                              targets: [this.props.id],
+                              data: {
+                                objectIri: event.data.objectIri,
+                                imageIris: images.images
+                              }
+                            });
+                          }
+                        );
+          }
+        })
   }
 
   private queryImages() {
@@ -92,11 +130,9 @@ export class IIIFViewerPanel extends Component<IIIFViewerPanelProps, State> {
     });
     this.queryingCancellation = this.cancellation.deriveAndCancel(this.queryingCancellation);
     this.queryingCancellation.map(Kefir.combine(querying)).onValue((result) => {
-      const imageOrRegion: { [iri: string]: Array<string> } = {};
+      const imageOrRegion: IiifManifestObject[] = [];
       flatten(result).forEach(({ iri, images }) => {
-        if (!(imageOrRegion[iri] && imageOrRegion[iri].length)) {
-          imageOrRegion[iri] = images;
-        }
+        imageOrRegion.push({ objectIri: iri, images});
       });
       this.setState({ imageOrRegion });
     });

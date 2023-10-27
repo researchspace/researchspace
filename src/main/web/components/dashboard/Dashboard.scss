@@ -15,11 +15,168 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+ 
+ @import '~basic-styles.scss';
 
 .defaultDashboard {
   display: flex;
   align-items: center;
   flex: 1;
+  
+  &.container-fluid {
+
+    padding: 0 70px;
+  }
+}
+
+.gridViewDashboard {
+
+  flex: 1;
+
+  display: grid;
+  grid-template-columns: .2fr 3fr .2fr;
+  grid-template-rows: .3fr fit-content(30px) max-content fit-content(30px) max-content auto .3fr;
+
+  grid-gap: 2rem;
+
+  grid-template-areas: '. info .'
+                        '. title1 .'
+                        '. grid1 .'
+                        '.title2 .'
+                        '. grid2 .'
+                        '. drop .'
+                        '. . .';
+}
+
+.help {
+
+  grid-area: info;
+  justify-self: end;
+  align-self: center;
+
+  display: flex;
+  align-items: center;
+
+  padding-top: 30px;
+
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  
+  :global(.fa) {
+    font-size: 20px;
+    padding-right: 13px;
+  }
+}
+
+.gridViewTitle1, 
+.gridViewTitle2 {
+
+  font-size: 20px;
+  align-self: end;
+}
+
+.gridViewTitle1 {
+
+  grid-area: title1;
+}
+
+.gridViewTitle2 {
+
+  grid-area: title2;
+}
+
+.gridViewItemsView,
+.gridViewItemsAuth {
+
+  display: grid;
+  grid-auto-rows: 110px;
+  grid-auto-flow: row;
+  grid-gap: 2rem;
+
+  & div {
+    height: 100%;
+  }
+}
+
+.gridViewItemsView {
+
+  grid-area: grid1;
+  grid-template-columns:repeat(auto-fit, minmax(330px , 1fr));
+
+  padding-bottom: 2em;
+}
+
+.gridViewItemsAuth {
+
+  grid-area: grid2;
+  grid-template-columns:repeat(auto-fit, minmax(330px , 1fr));
+}
+
+.dropResourceContainer {
+
+  grid-area: drop;
+  align-self: center;
+
+  margin-top: 2em;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+}
+
+.dropResourceIcon {
+  display: flex;
+  justify-content: center;
+
+  padding-bottom: 5px;
+
+  :global(.rs-icon-drop_resource) {
+
+    font-size: 3.8em;
+
+    animation-name: pulse;
+    animation-duration: 5s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  to { transform: scale(1); }
+}
+
+@keyframes pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 60px rgba(0, 0, 0, 0);
+  }
+}
+
+/* .dropResourceIconHand {
+
+  margin-top: -7px;
+  animation-name: rotate;
+  animation-duration: 2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes rotate {
+  0% { transform: translateX(0px)  rotateZ(0deg); }
+  50% { transform: translateX(-5px)  rotateZ(-20deg); }
+  100% { transform: translateX(0px)  rotateZ(0deg); }
+} */
+
+.dropResourceText {
+
+  margin-top: 12px;
+  text-transform: uppercase;
+  font-size: 15px;
 }
 
 .defaultColumnItem {
@@ -27,38 +184,104 @@
 }
 
 .defaultComponent {
-  padding: 20px;
-  box-shadow: 0 0 2px 2px rgba(121, 121, 121, 0.35);
-  &:hover {
-    cursor: pointer;
-    box-shadow: 0px 3px 5px 3px rgba(121, 121, 121, 0.6);
+  height: 100px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  background-color: $color-tf-dashboardCard-bg;
+  padding: 3% 7%;
+  box-shadow: 0 0 6px 1px hsla(0, 0%, 47%, 0.38);
+
+  &:hover,
+  &:focus,
+  &:focus-within {
+
     transition: 0.3s ease-in-out;
+    -webkit-transform: scale(1.02);
+    transform: scale(1.02);
+    box-shadow: 0 0 6px 1px hsla(0, 0%, 47%, 0.5);
+  }
+
+  @media (min-width: 1200px) {
+    padding: 2% 9%;
+  }
+
+  :global(.media)  {
+    height: auto;
+  }
+
+  :global(.media-left) {
+
+    padding-right: 25px;
+  }
+
+  :global(.media-body)  {
+    height: 100%;
+    vertical-align: middle;
+  }
+
+  :global(.media-heading)  {
+    font-size: 16px;
+  }
+
+  :global(.media-description)  {
+    padding-top: 4px;
+    font-size: 13px;
+    line-height: 1.3;
   }
 }
 
-.emptyPageLabel,
-.emptyPageDescription {
+.emptyPageLabel {
+
   display: flex;
   font-weight: bold;
   align-self: center;
   font-size: 25px;
+  margin-bottom: 5px;
 }
 
 .emptyPageDescription {
   font-weight: normal;
   font-size: 20px;
+  display: flex;
+  align-self: center;
 }
 
-.image,
-.imageComponent {
-  width: 64px;
-  height: 64px;
+.image {
+  width: auto;
+  height: 53px;
+
+  @media screen and (max-width: 767px) {
+    height: 25px;
+  }
+
+  @media (min-width: 768px) and (max-width: 991px) {
+    height: 30px;
+  }
+
+  @media (min-width: 992px) {
+    height: 35px;
+  }
+
+  @media (min-width: 1200px) {
+    height: 38px;
+  }
+
+  @media (min-width: 1600px) {
+    height: 47px;
+  }
+
+  @media (min-width: 2000px) {
+    height: 53px;
+  }
 }
 
 .imageComponent {
   display: flex;
-  align-self: center;
-  margin-right: 20px;
+  width: auto;
+  height: 100%;
+  max-height: 63px;
+  margin-right: 25px;
 }
 
 .icon {
@@ -67,6 +290,7 @@
 
 .iconComponent {
   margin-right: 20px;
+  font-size: 4em;
 }
 
 .emptyPageDropArea {
@@ -75,7 +299,7 @@
   flex: 1;
   align-items: center;
   margin: 20px;
-  border: 2.5px dashed #adb5bdc2;
+  border: 2.5px dashed $color-dark--op50;
   margin: 40px;
 }
 
@@ -86,7 +310,7 @@
   align-items: flex-end;
   height: 32%;
   box-sizing: border-box;
-  padding: 0;
+  padding: 0 6vw;
 }
 
 .emptyPageDrop {
@@ -97,7 +321,7 @@
   justify-content: center;
   text-align: center;
 
-  font-size: 23px;
+  font-size: 18px;
   line-height: 1.5;
   height: 65%;
   box-sizing: border-box;
@@ -105,6 +329,21 @@
   a {
     text-decoration: underline;
   }
+
+  img {
+    height: 65px;
+  }
+
+  :global(.rs-icon-drop_resource) {
+
+    font-size: 3.5em;
+  }
+}
+
+.emptyPageDroptext {
+
+  text-transform: uppercase;
+  margin-top: 15px;
 }
 
 .template {
@@ -117,11 +356,16 @@
 :global(.mp-droppable-enabled) > .dropAreaChildren.notOpacity {
   opacity: 1;
 }
+
 .viewContainer {
-  flex: 1 1 0px;
-  overflow: hidden;
+  height: 100%;
+  overflow: auto;
   display: flex;
   flex-direction: column;
+
+  position: relative;
+
+  background-color: $color-tf-dashboard-bg;
 }
 
 .itemsContainer {
@@ -131,22 +375,39 @@
 
 .itemsList {
   margin: 0;
+
+  :global(.list-group-item) {
+    padding: 7px 9px 7px 24px;
+    background-color: $color-primary-50;
+
+    :global(.btn-default) {
+      text-decoration: underline;
+      border: none;
+    }
+
+    :global(.fa-question-circle) {
+      font-size: 15px;
+    }
+  }
 }
 
 .itemLabelContainer {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .itemLabel {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  letter-spacing: 0.2px;
   flex: 1;
   opacity: 0.5;
 }
 
 .itemLabelActive {
   opacity: 1;
+  color: $color-dark;
+  font-weight: 600;
 }
 
 .itemIcon {
@@ -159,12 +420,38 @@
 }
 
 .addItemButton {
-  margin: 0 10px;
+  background: $color-dark;
+  color: $color-white;
+  padding: 5px;
+  border-radius: 3px;
+  align-items: center;
+  display: flex;
+
+  i {
+    margin-right: 7px;
+  }
+
+  &:hover,
+  &:focus {
+
+    background: $color-dark;
+    color: $color-white;
+  }
+
 }
 
 .deleteItemButton {
   flex: 0 0 auto;
   margin-left: auto;
+  color: $color-dark;
+  background-color: transparent;
+  padding: 2px;
+
+  &:hover,
+  &:focus {
+
+    color: $color-dark;
+  }
 }
 
 .expandItemButton {

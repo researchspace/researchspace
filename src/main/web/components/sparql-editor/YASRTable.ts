@@ -87,9 +87,9 @@ function table(jsonResult) {
         showCopyToClipboardButton: true,
       });
       const buttonLabel = prefetchAndShowLabels ? 'Fetch Labels: ON' : 'Fetch Labels: OFF';
-      const className = prefetchAndShowLabels ? 'btn-success' : 'btn-danger';
+      const className = prefetchAndShowLabels ? 'btn-primary' : 'btn-default';
       return D.div(
-        {},
+        {className: 'sparql-endpoint-result-table'},
         D.button(
           {
             key: 'sparql-endpoint-label-toogle-button',

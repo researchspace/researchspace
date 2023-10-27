@@ -28,8 +28,6 @@ import { Button } from 'react-bootstrap';
 
 import {
   isValidChild,
-  componentHasType,
-  hasBaseDerivedRelationship,
   universalChildren,
 } from 'platform/components/utils';
 
@@ -53,8 +51,7 @@ import {
   ValuesWithErrors,
   checkCardinalityAndDuplicates,
 } from './MultipleValuesInput';
-import { CompositeInput } from './CompositeInput';
-import { FormSwitch } from './FormSwitch';
+import { InputKind, InputReactElement, elementHasInputType, elementIsSingleValueInput } from './InputCommpons';
 
 export interface CardinalitySupportProps extends MultipleValuesProps {
   children?: ReactNode;
@@ -112,14 +109,14 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
       return D.div({});
     }
 
-    const dataState = this.props.dataState;
+    const { dataState, readonly } = this.props;
     this.lastRenderedDataState = this.dataState();
 
     const size = this.props.values.size;
-    const canEdit = dataState === DataState.Ready || dataState === DataState.Verifying;
+    const canEdit = readonly != true && (dataState === DataState.Ready || dataState === DataState.Verifying);
     const canAddValue = canEdit && size < definition.maxOccurs;
     const canRemoveValue = canEdit && size > definition.minOccurs && size > 0;
-    const fieldLabel = (getPreferredLabel(definition.label) || 'value').toLowerCase();
+    const fieldLabel = (this.props.label || getPreferredLabel(definition.label) || 'value').toLowerCase();
 
     return D.div(
       { className: COMPONENT_NAME },
@@ -146,7 +143,17 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
     this.ensureValueKeys(this.props.values.size);
 
     const childIsInputGroup = isInputGroup(this.props.children);
-    const className = childIsInputGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
+
+    // if we don't want to render header and cardinality is 1 then there there is no reason to show the group borders and other styles
+    const canCollapseGroup =
+      this.props.renderHeader === false &&
+      this.props.definition.minOccurs === 1 &&
+      this.props.definition.maxOccurs === 1;
+
+    let className = childIsInputGroup ? `${COMPONENT_NAME}__group-instance` : `${COMPONENT_NAME}__single-instance`;
+    if (canCollapseGroup) {
+      className = className + ` ${COMPONENT_NAME}_no-header`;
+    }
 
     return this.props.values.map((value, index) =>
       D.div(
@@ -242,8 +249,8 @@ function renderChildInputs(
     return universalChildren(
       Children.map(children, (child) => {
         if (isValidChild(child)) {
-          const element = child as ReactElement<any>;
-          if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
+          const element = child as InputReactElement;
+          if (elementIsSingleValueInput(element)) {
             const inputIndex = nextIndex;
             nextIndex++;
 
@@ -355,8 +362,8 @@ function findInputs(inputChildren: ReactNode): ReactElement<SingleValueInputProp
   function collectInputs(children: ReactNode) {
     Children.forEach(children, (child) => {
       if (isValidChild(child)) {
-        const element = child as ReactElement<any>;
-        if (hasBaseDerivedRelationship(SingleValueInput, element.type)) {
+        const element = child as InputReactElement;
+        if (elementIsSingleValueInput(element)) {
           foundInputs.push(element);
         } else if (element.props.children) {
           collectInputs(element.props.children);
@@ -374,14 +381,14 @@ function isInputGroup(children: ReactNode) {
   if (childCount !== 1) {
     return childCount > 1;
   }
-  const child = Children.toArray(children)[0];
+  const child = Children.toArray(children)[0] as InputReactElement;
   if (!isValidChild(child)) {
     return true;
   }
   return (
-    componentHasType(child, CompositeInput) ||
-    componentHasType(child, FormSwitch) ||
-    !componentHasType(child, SingleValueInput as any)
+    elementHasInputType(child, InputKind.CompositeInput) ||
+      elementHasInputType(child, InputKind.FormSwitch) ||
+      !elementIsSingleValueInput(child)
   );
 }
 

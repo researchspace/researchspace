@@ -1,0 +1,364 @@
+/**
+ * ResearchSpace
+ * Copyright (C) 2015-2020, © Trustees of the British Museum
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+ //Mixin
+@mixin font-common($color, $size, $line) {
+   // font-family: $font-family-base;
+    color: $color;
+    font-size: $size;
+    line-height: $line;
+}
+
+@mixin uppercase {
+    text-transform: uppercase;
+}
+
+@mixin underline {
+    text-decoration: underline;
+}
+
+@mixin character($char) {
+    letter-spacing: $char;
+}
+
+@mixin truncate($truncation-boundary) {
+    max-width: $truncation-boundary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+////////////////////Exported Code////////////////////////////////////////////
+
+.rs-header-logo {
+
+    font-family: $font-family-navbar-logo;
+    color: $color-white;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 26px;
+    @include character(0.34px);
+
+}
+
+/* Headings */
+$h-line: 1.2;
+
+.rs-h1, h1, .h1 {
+   // @include font-common($color-dark, 20px, $h-line);
+   @include font-common($color-dark, 23px, $h-line);
+    font-weight: 600;
+}
+
+h1.rs-main-title {
+
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.rs-h2, h2, .h2 {
+    //@include font-common($color-dark, 16px, $h-line);
+    @include font-common($color-dark, 20px, $h-line);
+    font-weight: 600;
+}
+
+.rs-h3, h3, .h3 {
+  //  @include font-common($color-dark, 15px, $h-line);
+    @include font-common($color-dark, 18px, $h-line);
+    font-weight: 600;
+//    @include uppercase;
+}
+
+.rs-h4, h4, .h4 {
+   // @include font-common($color-dark, 12px, $h-line);
+    @include font-common($color-dark, 16px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+.rs-h5, h5, .h5 {
+ //   @include font-common($color-primary-100, 10px, $h-line);
+    @include font-common($color-dark, 15px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+h6, .h6 {
+  //  @include font-common($color-primary-100, 8px, $h-line);
+    @include font-common($color-dark, 14px, $h-line);
+    @include uppercase;
+    @include character(0.6px);
+}
+
+// override default header margins
+h1,.h1,
+h2,.h2,
+h3,.h3 {
+  margin-top: $line-height-computed / 2;
+  margin-bottom: $line-height-computed / 2;
+}
+
+/* Display */
+$d-line: 1.1;
+
+/* Display1 needs font */
+
+.rs-display1 {
+    font-family: $font-family-navbar-logo;
+    color: $color-dark;
+    font-size: 46px;
+    font-weight: 800;
+    line-height: $d-line;
+
+    @include character(1px);
+}
+
+.rs-display2 {
+    @include font-common($color-dark, 32px, $d-line);
+    @include character(0.7px);
+}
+
+.rs-display3 {
+    @include font-common($color-dark, 20px, $d-line);
+    @include character(0.2px);
+}
+
+.rs-display4 {
+    @include font-common($color-dark, 26px, $d-line);
+    @include character(0.2px);
+    @include underline;
+}
+
+/* Boby fonts */
+$b-line: 1.2;
+$b-name: body;
+
+.rs-#{$b-name}-xs-I {
+    @include font-common($color-dark, 10px, $b-line);
+
+    font-style: italic;
+}
+
+.rs-#{$b-name}-xs-U {
+    @include font-common($color-dark, 10px, $b-line);
+    @include underline;
+
+    font-style: italic;
+}
+
+.rs-#{$b-name}-s-M {
+    @include font-common($color-dark, 12px, $b-line);
+}
+
+.rs-#{$b-name}-s-U {
+    @include font-common($color-dark, 12px, $b-line);
+    @include underline;
+}
+
+.rs-#{$b-name}-s-B {
+    @include font-common($color-dark, 12px, $b-line);
+
+    font-weight: 600;
+}
+
+.rs-#{$b-name}-s-I {
+    @include font-common($color-dark, 12px, $b-line);
+    font-style: italic;
+}
+
+.rs-#{$b-name}-m-M {
+    @include font-common($color-dark, 13.5px, $b-line);
+}
+
+.rs-#{$b-name}-m-U {
+    @include font-common($color-dark, 13.5px, $b-line);
+    @include underline;
+}
+
+.rs-#{$b-name}-m-B {
+    @include font-common($color-dark, 13.5px, $b-line);
+
+    font-weight: 600;
+}
+
+a {
+    color: $color-dark;
+    cursor: pointer;
+    text-decoration: none;
+    user-select: text;
+
+    &:hover {
+        color: $color-dark;
+        text-decoration: none;
+    }
+
+    &:focus, 
+    &:focus-within {
+        color: $color-dark--op75;
+        text-decoration: none;
+    }
+
+    &.text-muted {
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+}
+ 
+a.active.focus,
+a.active:focus,
+a:active,
+a.active,
+a:active.focus,
+a:active:focus,
+a.focus,
+a:focus,
+a:focus-within,
+.btn.active.focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn:active:focus,
+.btn:focus {
+    outline: none !important;
+}
+
+pre {
+    padding: 20px 30px;
+    line-height: 1.3;
+    font-family: $font-family-base;
+}
+
+textarea {
+
+    line-height: 1.4;
+}
+
+:focus {
+    outline: none;
+}
+
+.rs-U-none {
+    text-decoration: none !important;
+}
+
+.text-white {
+    color: $color-white;
+}
+
+.text-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.text-underline {
+    text-decoration: underline;
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+        text-decoration: underline;
+    }
+}
+
+.mp-action {
+    color: $color-dark;
+    cursor: pointer;
+}
+
+.info {
+    background-color: $color-info;
+}
+
+.bg-success {
+    background-color: $color-success-light;
+}
+
+.error-notification span {
+    color: $color-danger;
+}
+
+// put notifications on top of header
+.notifications-wrapper > div {
+    z-index: $zindex-notifications !important;
+}
+
+////Icons
+.fa-exclamation-triangle {
+    color: $color-danger;
+}
+
+.has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label,
+.has-value.Select--single > .Select-control .Select-value .Select-value-label {
+    color: $color-dark !important;
+}
+
+.rs-no-access-message {
+
+    color: $color-dark;
+    font-size: 15px !important;
+    line-height: 1.2;
+    margin: 30px 20px;
+}
+
+.rs-copy-IRI {
+    text-decoration:underline; 
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.alert {
+
+    p {
+        line-height: 1.4;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+    }
+
+    & > ul {
+        margin-top: 8px;
+
+        & > li {
+            padding-bottom: 2px;
+          }
+    }
+}
+
+//json renderer
+.LogBrowser--admin-log-browser {
+
+    ._2SzV72RmTpb3LzIMDV6ohp {
+      color: red;
+    }
+  
+    ._3cXa-36GYrmnrGIXEg46cX {
+      color: #bbb;
+      fill: #bbb;
+    }
+}

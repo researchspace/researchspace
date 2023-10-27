@@ -35,7 +35,7 @@ import LdpOverlayImageService from '../../data/iiif/LDPOverlayImageService';
 
 import { OpenSeadragonOverlay } from './OpenSeadragonOverlay';
 
-import '../../scss/image-overlay.scss';
+import './image-overlay.scss';
 import * as block from 'bem-cn';
 
 const b = block('overlay-comparison');

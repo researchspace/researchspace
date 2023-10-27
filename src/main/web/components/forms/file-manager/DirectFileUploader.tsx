@@ -277,7 +277,7 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
 
     return (
       <div className={styles.DirectFileUploader}>
-        <div className={styles.row}>
+        <div className={styles.row} style={{ alignItems: 'center' }}>
           <div className={styles.FileUploader}>
             {this.state.progress ? (
               <ReactBootstrap.ProgressBar
@@ -372,7 +372,7 @@ export class DirectFileUploader extends Component<DirectFileUploaderProps, Direc
             />
           </div>
         </div>
-        <div className={styles.row} style={{ flexDirection: 'column', marginTop: '10px' }}>
+        <div className={styles.row} style={{ flexDirection: 'column', marginTop: '30px' }}>
           <label>Target Path Preview</label>
           <div className={styles.storageInput} style={{ display: 'flex' }}>
             <input

@@ -19,14 +19,18 @@
 
 import * as request from 'platform/api/http';
 
-import { purgeRemoteTemplateCache, parseTemplate } from './RemoteTemplateFetcher';
-import { TemplateScope } from './TemplateScope';
+import { parseTemplate } from './RemoteTemplateFetcher';
 
 const TEMPLATE_SERVICE_URL = '/rest/template/';
+
+import { getPreferredUserLanguage } from '../language';
 
 export function getHeader(cb: (html: string) => void): void {
   request
     .get(TEMPLATE_SERVICE_URL + 'header')
+    .query({
+        preferredLanguage: getPreferredUserLanguage()
+    })
     .accept('text/html')
     .end((err, res) => {
       cb(res.text);
@@ -36,6 +40,9 @@ export function getHeader(cb: (html: string) => void): void {
 export function getFooter(cb: (html: string) => void): void {
   request
     .get(TEMPLATE_SERVICE_URL + 'footer')
+    .query({
+        preferredLanguage: getPreferredUserLanguage()
+    })
     .accept('text/html')
     .end((err, res) => {
       cb(res.text);
@@ -45,15 +52,13 @@ export function getFooter(cb: (html: string) => void): void {
 export function getNoPermissionsPage(cb: (html: string) => void): void {
   request
     .get(TEMPLATE_SERVICE_URL + 'noPermissionsPage')
+    .query({
+        preferredLanguage: getPreferredUserLanguage()
+    })
     .accept('text/html')
     .end((err, res) => {
       cb(res.text);
     });
-}
-
-export function purgeTemplateCache() {
-  TemplateScope.default.clearCache();
-  purgeRemoteTemplateCache();
 }
 
 export { ContextCapturer, CapturedContext } from './functions';

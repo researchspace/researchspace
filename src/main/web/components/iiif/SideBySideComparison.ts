@@ -156,7 +156,7 @@ export class SideBySideComparison extends Component<Props, State> {
       saveSession: false,
       data: imagesMetadata.map((metadata) => ({
         manifestUri: metadata.manifest['@id'],
-        location: 'British Museum',
+        location: '',
         manifestContent: metadata.manifest,
       })),
       annotationEndpoint: {

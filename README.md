@@ -7,10 +7,23 @@
 - - -
 
 <p align="center">
-  <a href="https://gitter.im/researchspace/community"><img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
+  <a href="https://nightly.link/researchspace/researchspace/workflows/main/master/zip-bundle.zip">
+    <img src="https://img.shields.io/badge/download-zip-blue" height="30px"></a> 
+  <a href="https://hub.docker.com/repository/docker/researchspace/platform-ci/general">
+    <img src="https://img.shields.io/badge/docker-researchspace%2Fplatform--ci%3Alatest-blue" height="30px"></a>
+  <a href="https://gitter.im/researchspace/community">
+    <img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
 - - -
+<p>##################################################################################################################</p>
+<h2>NOTICE</h2>
+<p>Please note that no pull requests will be considerd unless they come with appropriate documentation </p>
+<p> As a temporary position documentation requires a title, reason for the change, description of the changes, and details of the testing</p>
+<p> These summary requirements will be formalised in short course with an online form.</p>
+<p>Thanks for your understanding</p>
+
+<p>#################################################################################################################</p>
 
 [ResearchSpace](https://www.researchspace.org/) is a new type of contextualising knowledge system. It promotes collaborative interdisciplinary research allowing people to grow knowledge that relates to and reveals different aspects of society.
 
@@ -23,7 +36,9 @@ The ResearchSpace system has been designed to allow researchers to connect quali
 alt="ResearchSpace Overview" width="640" border="1" /></a>
 
 # Knowledge Base 
-**To Be Added**
+see <a href="https://documentation.researchspace.org/resource/rsp:Start"> ResearchSpace Documentation Site</a>
+also see <a href="https://kartography.org">Kartography CIC</a>
+
 
 # Demo 
 Changing the methods of research in the humanities requires innovation in how we combine the qualitative with the quantitative through collaborative research, expressive structured data, and a human-centered and participatory approach to the ‘knowledge graph’.
@@ -194,9 +209,20 @@ You should see console output similar to:
 21:24:49 INFO  digilib runs at:
 21:24:49 INFO    http://localhost:10214/digilib
 ```
+*********************************************************************************************************************************************
+**********************************************************************************************************************************************
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+**THIS IS REALLY IMPORTANT - THESE COMPONENTS ARE IMPORTANT **
+
 
 On the first run you need to import set of default ontologies and knowledge patterns for CIDOC-CRM, see [instance configuration repository](https://github.com/researchspace/researchspace-instance-configurations)
 
+You need to go to settings, LDP , An then ontology container and import 
+
+******************************************************************************************************************************************
+********************************************************************************************************************************************
 ### Run ResearchSpace with your own triplestore and IIIF server
 
 Adjust `sparqlEndpoint`, `iiifScaler` and `imageStorageRoot` properties in the `gradle.properties`.
@@ -302,6 +328,8 @@ When developing frontend code in the Visual Studio Code we recommend setting Typ
 ### Java
 
 Generated eclipse project has predefined code formatter that is automatically enabled. Please always reformat your java code with eclipse before submiting PR. 
+
+For Visual Studio Code users, follow this [guide](https://github.com/redhat-developer/vscode-java/wiki/Formatter-settings) to setup the formatter.
 
 ### Typescript & SCSS
 

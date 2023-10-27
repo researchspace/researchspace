@@ -4,6 +4,8 @@ declare global {
   namespace Mirador {
     var OpenSeadragon: (options: OpenSeadragon.ViewerOptions) => OpenSeadragon.Viewer;
 
+    const Manifest: any;
+
     const Handlebars: any;
     const DEFAULT_SETTINGS: {
       windowSettings?: WindowSettings;
@@ -24,7 +26,13 @@ declare global {
       emitterId: number;
       debug: boolean;
       subscribe(event: string, handler: Function): void;
-      unsubscribe(event: string): void;
+
+      /**
+       * There is no such function in original mirador event bus, but we add it here so we can
+       * easily have event listeners that are fired only once and then automatically unsubscribed
+       */
+      one(event: string, handler: Function): void;
+      unsubscribe(event: string, handler?: Function): void;
       publish(event: string, ...args: any[]): void;
     }
 
@@ -32,14 +40,18 @@ declare global {
 
     class AnnotationTooltip {
       viewerTemplate: any;
+      editorTemplate: any;
     }
 
     interface Options {
       id: string;
 
-      // this is ResearchSpace specific option, it is not actually used by mirador,
+      // these are ResearchSpace specific option, it is not actually used by mirador,
       // see Mirador.ts for usage
       useDetailsSidebar?: boolean;
+      annotationViewTooltipTemplate?: string;
+
+      // end of ResearchSpace specific options
 
       workspaceType?: string;
       workspaces?: any;
@@ -180,12 +192,22 @@ declare global {
     /* implementation details */
     interface Viewer {
       workspace: Workspace;
+      manifestsPanel: ManifestPanel;
       id: string
+    }
+
+    interface ManifestPanel {
+      manifestListItems: ManifestListItem[];
+    }
+
+    interface ManifestListItem {
+      manifest: Manifest
     }
 
     /* implementation details */
     interface Workspace {
       windows: Window[];
+      slots: Slot[]
       calculateLayout(): void;
     }
 
@@ -197,7 +219,25 @@ declare global {
         ImageView: ImageViewModule;
       };
       canvasID: string;
+      canvases: {[canvasId: string]: Canvas};
+      annotationsList: {'@id': string, on: any}[]
       destroy: () => void
+    }
+
+    interface Canvas {
+      bounds: Bonunds
+    }
+
+    interface Bounds {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }
+
+    interface Slot {
+      window: Window
+      layoutAddress: string
     }
 
     /* implementation details */

@@ -1,0 +1,47 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
+               new-subject-template='{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  inScheme="http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in"
+                  
+                  rdfsLabel="http://www.researchspace.org/pattern/general/rdfs:label"
+                  appelation="http://www.researchspace.org/pattern/vocabulary_manager/crm:P1_is_identified_by"
+                  broader="http://www.researchspace.org/pattern/vocabulary_manager/crm:P89_falls_within"
+                  narrower="http://www.researchspace.org/pattern/vocabulary_manager/crm:P89i_contains"
+                  scopeNote="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
+                  P138i_has_representation="http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation"
+               ]]'
+>
+  <div class="form-scroll-area">
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+    
+    <semantic-form-composite-input for="appelation" 
+                                   label="Known As"
+                                   new-subject-template="/E41_Appellation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                   fields='[[
+                                    fieldDefinitions
+                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                      rdfsLabel="http://www.researchspace.org/pattern/general/rdfs:label"
+                                    ]]'>
+      <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E41_Appellation'> </semantic-form-hidden-input>
+      <semantic-form-text-input render-header=false for="rdfsLabel"> </semantic-form-text-input>
+    </semantic-form-composite-input>
+
+    {{#if broader}}
+      <semantic-form-autocomplete-input for="broader" placeholder="drag from tree" default-values='["{{broader}}"]'></semantic-form-autocomplete-input>
+    {{else}}
+      <semantic-form-autocomplete-input for="broader" placeholder="drag from tree"></semantic-form-autocomplete-input>
+    {{/if}}
+    
+    <semantic-form-autocomplete-input for="narrower" placeholder="drag from tree"></semantic-form-autocomplete-input>
+    <semantic-form-text-input for="scopeNote" multiline=true> </semantic-form-text-input>
+    <semantic-form-autocomplete-input for="P138i_has_representation"></semantic-form-autocomplete-input>
+   
+    <semantic-form-errors></semantic-form-errors>
+ </div>
+  
+ [[> rsp:FormDefaultActions]] 
+</semantic-form>

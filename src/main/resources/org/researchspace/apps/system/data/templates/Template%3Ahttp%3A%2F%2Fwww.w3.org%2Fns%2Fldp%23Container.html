@@ -31,14 +31,14 @@
     
   </style>
   
-  <div class="container-fluid rs-page-header">
+  <div class="container-fluid adminPage-header-container">
   <bs-row class="row-center">
-    <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 page_header--col pr-0">
-      <div class="page__header">
-        <div class='page__header-thumbnail'>
-          <h2><i class="fa fa-sitemap fa-lg"></i></h2>
+    <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 adminPage-header--col pr-0">
+      <div class="adminPage-header--content">
+        <div class='adminPage-header--thumbnail'>
+          <i class="fa fa-archive fa-lg"></i>
         </div>
-        <div class='page__header-body'>
+        <div class='adminPage-header--body'>
           <h2>LDP - [[label]]</h2>
         </div>
       </div>
@@ -65,7 +65,7 @@
               [[#if isRoot]]
                 <mp-ldp-import-resource container="http://www.researchspace.org/resource/system/rootContainer">
                   <button class="btn btn-primary" style='margin-left: 10px' title='Should be only used to import existing containers into the new installation!'>
-                    <i class="fa fa-upload" aria-hidden="true"></i> Import Container</button>
+                    <i class="fa fa-download" aria-hidden="true"></i> Import Container</button>
                 </mp-ldp-import-resource>
               [[else]]
                 [[> http://www.researchspace.org/resource/assets/LdpContainerGenericAction container=(this)]]
@@ -98,19 +98,22 @@
                   '
                 >
                   <template id='actions'>
-                    <div style='padding: 0 5px 5px 5px;'>
+                    <div style='padding: 0 5px 5px 5px; display: flex; align-items: center;'>
                       <semantic-link uri="{{data.node.value}}" style='margin-right: 10px;'></semantic-link>
 
                       <mp-ldp-export-resource iri="{{data.node.value}}">
-                        <button class="btn btn-xs btn-export" title="Export">
-                          <i class="fa fa-download" style="padding:0px" aria-hidden=true></i>
+                        <button class="btn btn-grey" title="Export" style="margin-right: 5px;">
+                          <i class="fa fa-upload btn-icon-left" aria-hidden=true></i>
+                          <span>Export</span>
                         </button>
                       </mp-ldp-export-resource>
                       {{#ifCond data.node.value "!==" "http://www.researchspace.org/resource/system/rootContainer"}}
                         <mp-ldp-remove-from-container-action iri="{{data.node.value}}" container="{{data.parent.value}}">
-                          <button class="btn btn-xs btn-delete" title="Delete">
-                            <i class="fa fa-trash" style="padding:0px" aria-hidden=true></i></button>
-                        </mp-ldp-remove-from-container-action>   
+                          <button class="btn btn-grey" title="Delete">
+                            <i class="fa fa-trash btn-icon-left" aria-hidden=true></i>
+                            <span>Delete</span>
+                          </button>
+                        </mp-ldp-remove-from-container-action>
                       {{/ifCond}}
                     </div>
                   </template>

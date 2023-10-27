@@ -25,13 +25,11 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.config.Ini;
-import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.web.config.WebIniSecurityManagerFactory;
 import org.researchspace.config.Configuration;
 import org.researchspace.secrets.SecretResolver;
-import org.researchspace.secrets.SecretsHelper;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -59,7 +57,7 @@ public class LDAPRealmProvider implements Provider<Realm> {
     @Inject
     private Configuration config;
 
-    @Inject(optional = true)
+    @Inject
     private SecretResolver secretResolver;
 
     @Override
@@ -70,7 +68,10 @@ public class LDAPRealmProvider implements Provider<Realm> {
         Ini ini = SecurityConfigRecord.readIni(record);
         logger.info("Trying to initialize SHIRO LDAP realm from: " + record.getLocationDescription());
 
-        resolveSecrets(ini);
+
+        final Set<String> settingsWithSecrets = Sets.newHashSet("ldapRealm.contextFactory.systemUsername",
+                "ldapRealm.contextFactory.systemPassword");
+        ShiroRealmUtils.resolveSecrets(settingsWithSecrets, ini, this.secretResolver);
 
         WebIniSecurityManagerFactory factory = new WebIniSecurityManagerFactory(ini);
         // need to call getInstance before getting the beans
@@ -83,24 +84,4 @@ public class LDAPRealmProvider implements Provider<Realm> {
 
         return (DefaultLdapRealm) r;
     }
-
-    protected void resolveSecrets(Ini ini) {
-        // iterate over all sections and replace known settings containing secrets
-        final Set<String> settingsWithSecrets = Sets.newHashSet("ldapRealm.contextFactory.systemUsername",
-                "ldapRealm.contextFactory.systemPassword");
-        for (String sectionName : ini.getSectionNames()) {
-            Section section = ini.getSection(sectionName);
-            section.replaceAll((key, value) -> {
-                if (settingsWithSecrets.contains(key)) {
-                    if (value.startsWith("\\${") && value.endsWith("}")) {
-                        // get rid of the leading \ which might be used to escape the $
-                        value = value.substring(1);
-                    }
-                    return SecretsHelper.resolveSecretOrFallback(secretResolver, value);
-                }
-                return value;
-            });
-        }
-    }
-
 }

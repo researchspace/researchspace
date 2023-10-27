@@ -101,7 +101,7 @@ export class SplitPaneComponent extends Component<Props, State> {
   static readonly defaultProps: Partial<Props> = {
     defaultSize: 300,
     defaultOpen: true,
-    navHeight: 105, // our default nav + breadcrumbs size
+    navHeight: 92, // our default nav + breadcrumbs size
   };
 
   private readonly cancellation = new Cancellation();

@@ -17,34 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
+import { isFunction } from 'lodash';
 
-import ReactDropzone, { DropzoneOptions } from 'react-dropzone';
+import ReactDropzone, { DropzoneOptions, DropzoneState } from 'react-dropzone';
 
+type ChildrenFunction = (state: DropzoneState) => JSX.Element;
 export interface DropzoneProps extends DropzoneOptions {
   className?: string;
   style?: React.CSSProperties;
-  children?: JSX.Element | ReadonlyArray<JSX.Element>;
+  children?: JSX.Element | ReadonlyArray<JSX.Element> | ChildrenFunction;
 }
 
-const DEFAULT_STYLE: React.CSSProperties = {
-  width: 200,
-  height: 200,
-  borderWidth: 2,
-  borderColor: 'rgb(102, 102, 102)',
-  borderStyle: 'dashed',
-  borderRadius: 5,
-};
+const BASE_CLASSNAME = 'dropzone-area'
 
 export class Dropzone extends React.Component<DropzoneProps, {}> {
   render() {
-    const { className, children, ...otherProps } = this.props;
-    const style = Object.assign({}, DEFAULT_STYLE, this.props.style);
+    const { className, children, style, ...otherProps } = this.props;
+    const classNames = [BASE_CLASSNAME, className].join(' ')
     return (
       <ReactDropzone {...otherProps}>
-        {({ getRootProps, getInputProps }) => (
-          <div {...getRootProps()} className={className} style={style}>
-            {children}
-            <input {...getInputProps()} />
+        {(state) => (
+          <div {...state.getRootProps()} className={classNames} style={style}>
+            {isFunction(children) ? children(state) : children}
+            <input {...state.getInputProps()} />
           </div>
         )}
       </ReactDropzone>

@@ -1,0 +1,304 @@
+<mp-splitpane min-size=180 default-size=380 default-open='false' class="frame-split-pane">
+  <div data-flex-layout="column top-stretch">
+    <mp-splitpane-toggle-on>
+      <button class="btn-toggle-on">
+        <div class="btn-toggle-on-content">
+          <div style='text-align: left;
+          min-height: 30px;
+          display: flex;
+          align-items: center;
+          padding-right: 10px;'>File Upload</div>
+          <div class="btn btn-grey">
+            <i class='iconmoon iconmoon-arrow-right2'></i>
+          </div>
+        </div>
+      </button>
+    </mp-splitpane-toggle-on>
+    <mp-splitpane-toggle-off>
+      <div class="split-pane__leftsidebar-header">
+        <button data-flex-layout='row center-left' class="btn-toggle-off">
+          <div style='text-align: left;
+            min-height: 30px;'>
+              File Upload
+            </div>
+            <div class="page__main-top-actions">
+              <button class="btn btn-grey">
+                <i class='iconmoon iconmoon-arrow-left2'></i>
+              </button>
+            </div>
+        </button>
+      </div>
+    </mp-splitpane-toggle-off>
+    <mp-splitpane-sidebar-open style="flex: 1; overflow: hidden;">
+      <div class="split-pane__sidebar-open asset-uploads">
+        [[#if (hasPermission "forms:ldp:*")]]
+            <semantic-query
+                            query='
+                              SELECT ?title ?formIRI WHERE {
+                                VALUES (?config ?order) {
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Image> 1)
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Document> 2)
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Audio> 3)
+                                  (<http://www.researchspace.org/resource/system/vocab/authority_manager_config_types/data/Video> 4)
+                                }
+                                ?config a <http://www.researchspace.org/resource/system/FormConfig> ;
+																	<http://www.researchspace.org/resource/system/authority_manager/item_label> ?title ;
+                                  <http://www.researchspace.org/resource/system/authority_manager/uses_form> ?formIRI .
+                              } ORDER BY ?order
+                            '
+                            template='{{> assets-upload}}'
+            >
+              <template id='assets-upload'>
+                <mp-event-target-template-render id='asset-upload-form-area' template='{{> assetUploadForm}}'>
+                  <template id='assetUploadForm'>
+                    <bs-dropdown-button
+                                    bs-style="default"
+                                    title="{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{title.value}}{{/with}}{{else}}{{bindings.0.title.value}}{{/if}}"
+                                    id="upload-type-selection"
+                    >
+                      {{#each bindings}}
+                      <mp-event-trigger id='upload-pdf' type='Component.TemplateUpdate' data='{"assetTypeIndex": "{{@index}}"}' targets='["asset-upload-form-area"]'>
+                        <bs-menu-item event-key="{{title.value}}" active='{{#if ../assetTypeIndex}}{{#ifCond ../assetTypeIndex "==" @index}}true{{else}}false{{/ifCond}}{{else}}{{#ifCond @index "==" "0"}}true{{else}}false{{/ifCond}}{{/if}}'>{{title.value}}</bs-menu-item>
+                      </mp-event-trigger> 
+                      {{/each}}
+                    </bs-dropdown-button>
+                    {{#each bindings}}
+                    {{/each}}
+                    
+                    <div class="asset-upload-form">
+                      <semantic-context repository='assets'>
+                        <inline-template template-iri='{{#if assetTypeIndex}}{{#with (lookup bindings assetTypeIndex)}}{{formIRI.value}}{{/with}}{{else}}{{bindings.0.formIRI.value}}{{/if}}' 
+                                         options='{
+                                                  "editable": true,
+                                                  "mode": "new",
+                                                  "viewId": "assets"
+                                                  }'>
+                        </inline-template>
+                      </semantic-context>
+                    </div>
+                  </template>
+                </mp-event-target-template-render>
+              </template>
+            </semantic-query>
+        [[/if]]
+
+      </div>
+    </mp-splitpane-sidebar-open>
+  </div>
+  
+  <mp-event-target-template-render id='asset-display-area' template='{{> assetDisplay}}'>
+    <template id='assetDisplay'>
+      <div class="frame-container asset-display">
+        <div class="frame-header">
+          <h1 class="rs-main-title">Images</h1>
+          <div class="asset-display-types">
+     [[!--        {{#if assetDisplayType}}
+              <mp-event-trigger id='display-image' type='Component.TemplateUpdate' data='{"assetDisplayType": "image"}' targets='["asset-display-area"]'>
+                <button class='btn-tab {{#ifCond assetDisplayType "==" "image"}}btn-selected{{/ifCond}}'>Images</button>
+              </mp-event-trigger>
+            {{else}}
+              <button class='btn-tab btn-selected'>Image</button>
+            {{/if}}
+           <mp-event-trigger id='display-pdf' type='Component.TemplateUpdate' data='{"assetDisplayType": "document"}' targets='["asset-display-area"]'>
+              <button class='btn-tab {{#ifCond assetDisplayType "==" "document"}}btn-selected{{/ifCond}}'>PDF documents</button>
+            </mp-event-trigger> 
+            <mp-event-trigger id='display-video' type='Component.TemplateUpdate' data='{"assetDisplayType": "video"}' targets='["asset-display-area"]'>
+              <button class='btn-tab {{#ifCond assetDisplayType "==" "video"}}btn-selected{{/ifCond}}'>Videos</button>
+            </mp-event-trigger>
+            <mp-event-trigger id='display-audio' type='Component.TemplateUpdate' data='{"assetDisplayType": "audio"}' targets='["asset-display-area"]'>
+              <button class='btn-tab {{#ifCond assetDisplayType "==" "audio"}}btn-selected{{/ifCond}}'>Audios</button>
+            </mp-event-trigger> --]]
+          </div>
+        </div>
+        <div class="frame-content asset-display-results">
+          {{#switch assetDisplayType}}
+            {{#case "document" break=true}}
+            <semantic-search>
+              <div class="asset-display__filter-actions">
+                <semantic-search-query-keyword
+                    query='
+                      SELECT ?subject WHERE { 
+                        ?subject a rso:EX_File .
+                        ?subject <http://www.researchspace.org/ontology/PX_has_media_type> "application/pdf" .
+                        ?subject rdfs:label ?label .
+                        ?label bds:search ?__token__ ;
+                                    bds:minRelevance "0.3" ;
+                                    bds:matchAllTerms "true"  .
+                      }
+                    '
+                    default-query='
+                      SELECT ?subject WHERE {
+                        ?subject a rso:EX_File .
+                        ?subject <http://www.researchspace.org/ontology/PX_has_media_type> "application/pdf" .
+                      }
+                    '
+                    debounce=500
+                  ></semantic-search-query-keyword>
+                  <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+                    <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
+                    <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
+                      [[#if (hasPermission "forms:ldp:*")]]
+                    <mp-create-set-action></mp-create-set-action>
+                    [[/if]]
+                  </mp-selection-action-choice>
+              </div>
+              <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+                <semantic-search-result-holder>
+                  <div data-flex-self="md-full">
+                    <semantic-search-result id='semantic-search-result'>
+                        <semantic-table id='image-grid'
+                                  query='
+                                    SELECT DISTINCT ?subject ?container WHERE {
+                                      OPTIONAL {
+                                        ?subject crm:P1_is_identified_by/prov:generatedAtTime ?generated .
+                                      }
+                                      BIND(CONCAT(STR(?subject), "/container") AS ?container)
+                                    } ORDER BY DESC(?generated) ?subject
+                                    '
+                                  tuple-template='{{> gridItem }}',
+                                  options='{"showFilter":false, "resultsPerPage":30}'
+                        >
+                          <template id='gridItem'>
+                            <div class='card-select-container'>
+                              <div class='card-select-input'>
+                                <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                              </div>
+                            <mp-draggable iri='{{subject.value}}'>
+                              <div class="rs-card-container">
+                                {{#> rsp:itemCardTemplate iri=subject.value}}
+                                  {{#*inline "hoverContent"}}
+                                    <div>
+                                      <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                                    </div>
+                                  {{/inline}}
+                                  [[#if (hasPermission "forms:ldp:*")]]
+                                  {{#*inline "additionalActions"}}
+                                    <div class="rs-default-card__hover-icon">
+                                      <mp-ldp-remove-from-container-action 
+                                        iri='{{container.value}}' 
+                                        container='http://www.researchspace.org/resource/system/formContainer'
+                                      >
+                                        <button type="button" name='delete' class="rs-button" title="Delete">
+                                          <i class="fa fa-trash-o" style="font-size: 23px;"></i>
+                                        </button>
+                                      </mp-ldp-remove-from-container-action>
+                                    </div>
+                                  {{/inline}}
+                                  [[/if]]
+                                {{/rsp:itemCardTemplate}}
+                              </div>
+                            </mp-draggable>
+                          </div>
+                          </template>
+                        </semantic-table>
+                      </semantic-search-result>
+                  </div>
+                </semantic-search-result-holder>
+              </div>
+            </semantic-search>
+            {{/case}}
+          
+            {{#case "video" break=true}}
+            <div>video</div>
+            {{/case}}
+          
+            {{#case "audio" break=true}}
+            <div>audio</div>
+            {{/case}}
+
+            {{#default}}
+              <semantic-search>
+                <div class="asset-display__filter-actions">
+                  <semantic-search-query-keyword
+                      query='
+                        SELECT ?subject WHERE { 
+                          ?subject a rso:EX_Digital_Image .
+                          ?subject rdfs:label ?label .
+                          ?label bds:search ?__token__ ;
+                                      bds:minRelevance "0.3" ;
+                                      bds:matchAllTerms "true"  .
+                        }
+                      '
+                      default-query='
+                        SELECT ?subject WHERE {
+                          ?subject a rso:EX_Digital_Image .
+                        }
+                      '
+                      debounce=500
+                    ></semantic-search-query-keyword>
+                    <mp-selection-action-choice id='Action' title='With selected ...' selection='images-selection-aggregator'>
+                      <rs-iiif-overlay-action [[> rsp:IIIFConfig]]></rs-iiif-overlay-action>
+                      <rs-iiif-side-by-side-action [[> rsp:IIIFConfig]]></rs-iiif-side-by-side-action>
+                        [[#if (hasPermission "forms:ldp:*")]]
+                      <mp-create-set-action></mp-create-set-action>
+                      [[/if]]
+                    </mp-selection-action-choice>
+                </div>
+                
+                <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+                  <semantic-search-result-holder>
+                    <div data-flex-self="md-full">
+                      
+                      <semantic-search-result id='semantic-search-result'>
+                          <semantic-table id='image-grid'
+                                    query='
+                                      SELECT DISTINCT ?subject ?container WHERE {
+                                        OPTIONAL {
+                                          ?subject crm:P1_is_identified_by/prov:generatedAtTime ?generated .
+                                        }
+                                        BIND(CONCAT(STR(?subject), "/container") AS ?container)
+                                      } ORDER BY DESC(?generated) ?subject
+                                      '
+                                    tuple-template='{{> gridItem }}',
+                                    options='{"showFilter":false, "resultsPerPage":30}'
+                          >
+                            <template id='gridItem'>
+                              <div class='card-select-container'>
+                                <div class='card-select-input'>
+                                  <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                                </div>
+                              <mp-draggable iri='{{subject.value}}'>
+                                <div class="rs-card-container">
+                                  {{#> rsp:itemCardTemplate iri=subject.value}}
+                                  
+                                    {{#*inline "hoverContent"}}
+                                      <div>
+                                        <mp-selection-toggle selection="images-selection-aggregator" tag="{{subject.value}}"></mp-selection-toggle>
+                                      </div>
+                                    {{/inline}}
+              
+                                    [[#if (hasPermission "forms:ldp:*")]]
+                                    {{#*inline "additionalActions"}}
+                                    
+                                      <div class="rs-default-card__hover-icon">
+                                        <mp-ldp-remove-from-container-action 
+                                          iri='{{container.value}}' 
+                                          container='http://www.researchspace.org/resource/system/formContainer'
+                                        >
+                                          <button type="button" name='delete' class="rs-button" title="Delete">
+                                            <i class="fa fa-trash-o" style="font-size: 23px;"></i>
+                                          </button>
+                                        </mp-ldp-remove-from-container-action>
+                                      </div>
+                                    {{/inline}}
+                                    [[/if]]
+                                  {{/rsp:itemCardTemplate}}
+              
+                                </div>
+                              </mp-draggable>
+              
+                            </div>
+                            </template>
+                          </semantic-table>
+                        </semantic-search-result>
+                    </div>
+                  </semantic-search-result-holder>
+                </div>
+              </semantic-search>
+            {{/default}}
+          {{/switch}}
+        </div>
+      </div>
+    </template>
+  </mp-event-target-template-render>
+</mp-splitpane>

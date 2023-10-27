@@ -54,6 +54,7 @@ public class SPARQLBasicAuthRepositoryFactory extends AbstractMpSPARQLRepository
                 result = new SPARQLAuthenticatingRepository(httpConfig.getQueryEndpointUrl());
             }
             result.setBasicAuthCredentials(httpConfig.getUsername(), httpConfig.getPassword());
+            result.setWritable(httpConfig.isWritable());
         } else {
             throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
         }

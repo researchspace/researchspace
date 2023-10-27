@@ -775,7 +775,7 @@ class ObjectsPanel extends React.Component<ObjectsPanelProps, ObjectsPanelState>
               onChange={this.onSelectAll}
               disabled={nonPresented.length === 0}
             />
-            Select All
+            <span>Select All</span>
           </label>
         </div>
         {this.props.loading ? (

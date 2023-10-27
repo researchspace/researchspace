@@ -261,7 +261,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderDropZone() {
     const alert = this.state.alertState ? <Alert {...this.state.alertState}></Alert> : null;
-    const placeholder = this.props.placeholder || 'Please drag&drop your file here.';
+    const placeholder = this.props.placeholder || 'Please drag&drop your file here';
     return (
       <div className={styles.FileUploader}>
         <Dropzone

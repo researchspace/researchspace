@@ -55,6 +55,7 @@ export interface LazyTreeSelectorProps<T extends Traversable<T> = Traversable<an
   expandedByDefault?: boolean;
   isExpanded: (item: T) => boolean | undefined;
   onExpandedOrCollapsed: (item: T, expanded: boolean) => void;
+  onItemClick?: (item: T) => void;
 }
 
 type TreeNode = Traversable<any>;
@@ -96,7 +97,7 @@ const OVERSCAN_ITEM_COUNT = 10;
  * request additional items at the anchor location.
  */
 const OVERSCAN_LOAD_ANCHOR = 20;
-const MIN_ITEM_HEIGHT = 25;
+const MIN_ITEM_HEIGHT = 30;
 const PADDING_PER_DEPTH_LEVEL = 20;
 
 // workaround for older React typings
@@ -246,7 +247,14 @@ export class LazyTreeSelector extends Component<LazyTreeSelectorProps, State> {
         <span
           className={styles.expandToggle}
           style={{ visibility: isLeaf ? 'collapse' : undefined }}
-          onClick={() => this.toggleExpanded(item, expanded)}
+          onClick={
+            () => {
+              this.toggleExpanded(item, expanded);
+              if (this.props.onItemClick) {
+                this.props.onItemClick(item);
+              }
+            }
+          }
         ></span>
         {this.props.hideCheckboxes ? null : (
           <input

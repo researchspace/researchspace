@@ -24,7 +24,7 @@ import * as Immutable from 'immutable';
 
 import { SparqlUtil } from 'platform/api/sparql';
 
-import { CompositeValue, EmptyValue } from '../FieldValues';
+import { CompositeValue, EmptyValue, FieldValue } from '../FieldValues';
 import { RawSparqlPersistence } from './RawSparqlPersistence';
 import { TriplestorePersistence } from './TriplestorePersistence';
 
@@ -56,4 +56,16 @@ export class SparqlPersistence implements TriplestorePersistence {
       .send(stringQueries);
     return Kefir.fromNodeCallback<void>((cb) => req.end((err, res) => cb(err, res.body))).toProperty();
   }
+
+  remove(model: CompositeValue): Kefir.Property<void> {
+    return this.persist(model, FieldValue.empty);
+  }
+
+  dryPersist(
+    initialModel: CompositeValue | EmptyValue,
+    currentModel: CompositeValue | EmptyValue,
+  ) {
+    return RawSparqlPersistence.dryRun(initialModel, currentModel, this.config.targetGraphIri, this.config.targetInsertGraphIri);
+  }
+
 }

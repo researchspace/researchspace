@@ -64,6 +64,17 @@ export const GenericFunctions = {
     return checkCondition(v1, operator, v2) ? options.fn(this) : options.inverse(this);
   },
 
+  and: function() {
+    return Array.prototype.every.call(arguments, Boolean);
+  },
+
+  eq: (v1, v2) => v1 === v2,
+  not: (v1) => !v1,
+
+  or: function() {
+    return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
+  },
+
   /**
    * switch statement for handlebars templates
    * Use break=true to skip other cases
@@ -144,6 +155,10 @@ export const GenericFunctions = {
 
   stringify(options) {
     return JSON.stringify(options);
+  },
+
+  parse(options) {
+    return JSON.parse(options);
   },
 
   /**

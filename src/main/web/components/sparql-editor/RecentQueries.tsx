@@ -44,15 +44,6 @@ export class RecentQueries extends Component<RecentQueriesProps, void> {
       return <span>no queries</span>;
     }
 
-    const labelStyle: React.CSSProperties = {
-      background: 'lightgrey',
-      color: '#fff',
-      display: 'inline-block',
-      fontSize: '0.8em',
-      padding: '1px 5px',
-      marginBottom: 3,
-      marginRight: 3,
-    };
     return (
       <div className="list-group" style={{ marginBottom: 0 }}>
         {recentQueries.map((item, index) => (
@@ -70,8 +61,8 @@ export class RecentQueries extends Component<RecentQueriesProps, void> {
               queryEditorContext.setQuery(query, { repository });
             }}
           >
-            <span style={labelStyle}>{item.get('date')}</span>
-            {item.get('repository') ? <span style={labelStyle}>{item.get('repository')}</span> : null}
+            <span className="list-group-item-label">{item.get('date')}</span>
+            {item.get('repository') ? <span className="list-group-item-label">{item.get('repository')}</span> : null}
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {item.get('query')}
             </div>

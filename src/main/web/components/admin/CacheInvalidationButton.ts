@@ -43,15 +43,16 @@ class InvalidateCacheButton extends Component<{}, State> {
 
   public render() {
     return D.div({}, [
-      createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
       Button(
         {
           type: 'submit',
           className: 'btn-cache',
           onClick: this.onClick,
         },
+        D.i({className: 'fa fa-history'}),
         'Invalidate All Caches'
       ),
+      createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
     ]);
   }
 

@@ -20,6 +20,7 @@
 import { EventMaker } from 'platform/api/events';
 
 export interface FormEventData {
+  // triggers
   /**
    * If the post-action='event' for SemanticFormComponent, Component fires this event after a
    * new form is submitted
@@ -30,8 +31,35 @@ export interface FormEventData {
    * Component fires this event on each update of the form including creation
    */
   'Form.ResourceUpdated': { iri: string };
+
+  /**
+   * semantic-form fires this event when resource is removed
+   */
+  'Form.ResourceRemoved': { iri: string };
+
+  /**
+   * Don't perform persistance, just run it without saving and send the output with event.
+   */
+  'Form.DryRunResults': Record<string, any>;
+
+
+  // listens
+  /**
+   * Triggers remove resource action, iri needs to match current subject.
+   */
+  'Form.RemoveResource': { iri: string };
+
+  /**
+   * Triggers save action on the current form
+   */
+  'Form.Save': { }
 }
 const event: EventMaker<FormEventData> = EventMaker;
 
 export const FormResourceCreated = event('Form.ResourceCreated');
 export const FormResourceUpdated = event('Form.ResourceUpdated');
+export const FormResourceRemoved = event('Form.ResourceRemoved');
+export const FormDryRunResults = event('Form.DryRunResults');
+
+export const FormRemoveResource = event('Form.RemoveResource');
+export const FormSave = event('Form.Save');

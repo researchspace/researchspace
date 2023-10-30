@@ -59,7 +59,9 @@ import * as Validation from './Validation';
 import { FieldEditorLabel } from './FieldEditorLabel';
 
 import './field-editor.scss';
-import ResourceLinkContainer, {ResourceLinkContainerProps } from 'platform/api/navigation/components/ResourceLinkContainer';
+import Icon from 'platform/components/ui/icon/Icon';
+import  ResourceLinkComponent, {ResourceLinkProps }  from 'platform/api/navigation/components/ResourceLinkComponent';
+
 
 const btn = createFactory(ReactBootstrap.Button);
 const bsrow = createFactory(ReactBootstrap.Row);
@@ -68,18 +70,18 @@ const input = createFactory(ReactBootstrap.FormControl);
 const textarea = createFactory(TextareaAutosize);
 const select = createFactory(ReactSelectComponent);
 
-const FIELD_DEF_INSTANCE_BASE = 'http://www.researchspace.org/fieldDefinition/';
+const FIELD_DEF_INSTANCE_BASE = 'http://www.researchspace.org/pattern/';
 const CLASS_NAME = 'field-editor';
 const block = bem(CLASS_NAME);
 
 interface Props {
   /**
-   * IRI of the field definition to be edited.
+   * IRI of the knowledge pattern to be edited.
    */
   fieldIri?: string;
   /**
    * Optional string to make the base IRI being used
-   * for creating new field definitions configurable
+   * for creating new knowledge patterns configurable
    */
   fieldInstanceBaseIri?: string;
   /**
@@ -152,7 +154,7 @@ class FieldEditorComponent extends Component<Props, State> {
 
   public componentDidMount() {
     // only if in edit mode, we try to fetch an existing
-    // field definition (as identified by the provided fieldIri
+    // knowledge pattern (as identified by the provided fieldIri
     // from backend and de-serialize it back to the component state.
     if (this.isEditMode()) {
       const fieldIri = Rdf.iri(this.props.fieldIri);
@@ -206,53 +208,61 @@ class FieldEditorComponent extends Component<Props, State> {
     return D.div(
       {},
       row({
-        label: 'Label*',
+        label: 'Label *',
         expanded: this.state.label.length > 0,
         expandOnMount: true,
         onExpand: () => addLabel(),
         element: [
           this.state.label.map((label, index) => this.renderLabel(label, index, langOptions)),
-          Boolean(lang) ? D.a({ onClick: () => addLabel() }, '+ Add label') : null,
+          Boolean(lang) ? 
+          D.button ({className:'btn btn-secondary btn-textAndIcon', onClick: () => addLabel()},
+              D.i ({className: 'material-icons-round'}, 'add_box'),
+              D.span ({}, 'Label')
+            ) : null,
         ],
       }),
       row({
-        label: 'Identifier*',
+        label: 'Identifier *',
         expanded: this.state.id.isJust,
         expandOnMount: true,
         onExpand: () => this.updateValues({ id: empty }, Validation.validateIri),
         error: this.state.id.map((v) => v.error).getOrElse(undefined),
-        element: D.div({ className: 'input-group' }, [
+        element: D.div({ className: 'inputAndButton-wrapper' }, [
           input({
             className: block('iri-input').toString(),
             type: 'text',
-            placeholder: 'Any IRI to be used as unique identifier for the field definition.',
+            placeholder: 'Enter IRI to be used as unique identifier for the knowledge pattern',
             onChange: (e) => this.updateValues({ id: getFormValue(e) }, Validation.validateIri),
             value: this.state.id.isJust ? this.state.id.get().value : undefined,
             disabled: this.isEditMode(),
           }),
           D.div(
-            { className: 'input-group-btn' },
+            { className: '' },
             this.isEditMode()
               ? this.renderCopyToClipboardButton()
               : btn(
                   {
                     title: 'Generate IRI',
+                    className: 'btn btn-default',
                     onClick: (e) => this.generateIRI(),
                   },
-                  D.i({ className: 'fa fa-refresh' })
+                  createElement(Icon, {
+                    iconName: 'autorenew',
+                    iconType: 'round'
+                  }) 
                 )
           ),
         ]),
       }),
       row({
         label: 'Description',
-        expanded: this.state.description.isJust,
+        expanded: true,
         onExpand: () => this.updateValues({ description: empty }),
         onCollapse: () => this.updateValues({ description: nothing }),
         element: textarea({
           className: classnames('form-control', block('description-input').toString()),
           rows: 4,
-          placeholder: 'Description',
+          placeholder: 'Enter description (displayed in input info button)',
           onChange: (e) => this.updateValues({ description: getFormValue(e) }),
           value: this.state.description.isJust ? this.state.description.get().value : undefined,
         }),
@@ -261,11 +271,12 @@ class FieldEditorComponent extends Component<Props, State> {
         label: 'Categories',
         expanded: true,
         element: [
-          D.div({className: 'category-semantic-tree-input-wrapper'},
+          D.div({className: 'inputAndButton-wrapper'},
           createElement(SemanticTreeInput, {
           ...this.state.categoryQueries,
           initialSelection: this.state.categories,
           multipleSelection: true,
+          placeholder: 'Select a knowledge pattern category',
           onSelectionChanged: (selection) => {
             const categories = TreeSelection.leafs(selection)
               .map((node) => node.iri)
@@ -273,12 +284,12 @@ class FieldEditorComponent extends Component<Props, State> {
             this.updateState({ categories });
           },
         } as SemanticTreeInputProps),           
-        createElement(ResourceLinkContainer, {
+        createElement(ResourceLinkComponent, {
           "target": "_blank",
           "uri": "http://www.researchspace.org/resource/ThinkingFrames",
           "urlqueryparam-view": "authority-content",
           "urlqueryparam-resource": "http://www.researchspace.org/resource/system/FieldCategories"
-        } as ResourceLinkContainerProps, btn(
+        } as ResourceLinkProps, btn(
           {
             className: 'btn btn-default',
           },
@@ -289,9 +300,9 @@ class FieldEditorComponent extends Component<Props, State> {
       this.renderMultipleValuesInput({
         values: this.state.domain,
         label: 'Domains',
-        addButtonLabel: '+ Add domain',
+        addButtonLabel: 'Domain',
         showAddButton: true,
-        placeholder: 'Any IRI to be used as domain for the field definition.',
+        placeholder: 'Any IRI to be used as domain for the knowledge pattern.',
         onChange: (value, index) => {
           const domain = [...this.state.domain];
           domain[index] = Validation.validateIri(value);
@@ -318,7 +329,7 @@ class FieldEditorComponent extends Component<Props, State> {
           className: block('xsd-input').toString(),
           multi: false,
           clearable: false,
-          placeholder: 'Please select any XSD datatype',
+          placeholder: 'Select any XSD datatype',
           options: vocabularies.xsd.LIST_TYPES,
           onChange: (e: Value) => this.updateValues({ xsdDatatype: Just({ value: e.value }) }),
           labelKey: 'label',
@@ -328,9 +339,9 @@ class FieldEditorComponent extends Component<Props, State> {
       this.renderMultipleValuesInput({
         values: this.state.range,
         label: 'Ranges',
-        addButtonLabel: '+ Add range',
+        addButtonLabel: 'Range',
         showAddButton: true,
-        placeholder: 'Any IRI to be used as range for the field definition.',
+        placeholder: 'Any IRI to be used as range for the knowledge pattern.',
         onChange: (value, index) => {
           const range = [...this.state.range];
           range[index] = Validation.validateIri(value);
@@ -393,7 +404,7 @@ class FieldEditorComponent extends Component<Props, State> {
       this.renderMultipleValuesInput({
         values: this.defaultsUpToMax(),
         label: 'Default values',
-        addButtonLabel: '+ Add default value',
+        addButtonLabel: 'Default value',
         showAddButton: !(this.isMaxSet() && this.state.defaults.length >= parseInt(this.state.max.get().value)),
         onChange: (value, index) => {
           const defaults = [...this.defaultsUpToMax()];
@@ -600,7 +611,7 @@ class FieldEditorComponent extends Component<Props, State> {
 
   private renderCopyToClipboardButton = () => {
     const value = this.state.id.isJust ? this.state.id.get().value : '';
-    const button = btn({ title: 'Copy to clipboard' }, D.i({ className: 'fa fa-copy' }));
+    const button = btn({ title: 'Copy identifier' }, D.span({className: 'material-icons-round'}, 'copy'));
     return createElement(CopyToClipboardComponent, { text: value }, button);
   };
 
@@ -639,7 +650,11 @@ class FieldEditorComponent extends Component<Props, State> {
           ),
           error ? bsrow({ className: block('error').toString() }, bscol({ md: 12 }, error.message)) : null,
         ]),
-        showAddButton ? D.a({ onClick: onAdd }, addButtonLabel) : null,
+        showAddButton ? 
+        D.button ({className:'btn btn-secondary btn-textAndIcon', onClick: onAdd},
+              D.i ({className: 'material-icons-round'}, 'add_box'),
+              D.span ({}, addButtonLabel)
+            ) : null,
       ],
     });
   }
@@ -679,7 +694,7 @@ class FieldEditorComponent extends Component<Props, State> {
   }
 
   /**
-   * Returns base IRI to be used for storing new field definitions.
+   * Returns base IRI to be used for storing new knowledge patterns.
    * If not configured as attribute on the field editor, it will return a
    * standard LdpBase prefix + 'fieldDefinitionContainer/' or {@FIELD_DEF_INSTANCE_BASE}.
    */
@@ -696,7 +711,7 @@ class FieldEditorComponent extends Component<Props, State> {
   };
 
   /**
-   * Action for save or update button. Saves the graph (i.e. the field definition)
+   * Action for save or update button. Saves the graph (i.e. the knowledge pattern)
    * using LDP api.
    */
   private onSaveOrUpdate = (navigateTo?: string) => {

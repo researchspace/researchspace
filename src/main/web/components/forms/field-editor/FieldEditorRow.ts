@@ -58,14 +58,14 @@ export class FieldEditorRow extends Component<Props, {}> {
     const canBeCollapsed = expanded && onCollapse;
     return row(
       { className: block('row').toString() },
-      col({ md: 3, onClick: () => this.toggle({ expand: true }) }, D.span({}, label)),
+      D.div({ className:block('input-header').toString(), onClick: () => this.toggle({ expand: true }) }, D.span({}, label)),
       col(
         { md: canBeCollapsed ? 8 : 9 },
         row(
           {},
           expanded
             ? children
-            : D.i(
+            : D.div(
                 {
                   className: block('expand').toString(),
                   onClick: () => this.toggle({ expand: true }),

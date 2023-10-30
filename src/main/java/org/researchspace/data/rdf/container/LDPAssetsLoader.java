@@ -296,6 +296,16 @@ public class LDPAssetsLoader {
             else if (!repositoryId.equals("vocabularies") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                 inconsistentContexts.add(ctx);
             }
+             /* Skip checks for the content of ontologies repository as the assumption 
+               is that these ontologies can be modified  */
+               else if (!repositoryId.equals("ontologies") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
+                inconsistentContexts.add(ctx);
+            }
+             /* Skip checks for the content of configuration repository as the assumption 
+               is that configurations are editable  */
+               else if (!repositoryId.equals("configurations") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
+                inconsistentContexts.add(ctx);
+            }
         }
 
         if (!inconsistentContexts.isEmpty()) {

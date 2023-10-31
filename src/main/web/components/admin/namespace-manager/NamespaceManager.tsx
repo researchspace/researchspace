@@ -151,10 +151,22 @@ export class NamespaceManager extends Component<{}, State> {
       <div>
         <h1>All namespaces</h1>
         <hr style={{ marginTop: '0'}} />
-        <Alert alert={AlertType.INFO} message="">
-          <p><strong>Info</strong></p>
-          <p>Prefixes starting with a capital letter are system namespaces and can not be changed during runtime.</p>
-        </Alert>
+        
+        <div style={{ marginBottom: '20px'}}>
+          <div className="documentation-section documentation-section-withIcon">
+            <div className="documentation-section-icon-container">
+              <i className="fa fa-info"></i>
+            </div>
+
+            <div style={{ flex: '1'}}> 
+              <div className="documentation-section-title">Info</div>
+              <div className="documentation-section-content">
+              Prefixes starting with a capital letter are system namespaces and can not be changed during runtime.
+              </div>
+            </div>
+          </div> 
+        </div>
+        
         <Table
           numberOfDisplayedRows={maybe.Just(10)}
           columnConfiguration={columnConfig}

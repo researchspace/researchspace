@@ -25,17 +25,40 @@
         <h1>Data import</h1>
         <hr style="margin-top:0px;" />
 
-        <bs-alert bs-style="info">
-          <strong>Info!</strong><br />
-          <p>
-            Every app has exactly one associated storage. The storage ID is equal to the app ID.
-          </p>
-          <p>
-            If no explicit storage is defined for an <semantic-link title="Apps" uri='[[resolvePrefix "Help:Apps"]]'>app
-            </semantic-link>, the platform creates a standard, non-versioned file storage
-            within the root directory of the respective app.
-          </p>
-        </bs-alert>
+        <mp-event-target-template-render id='documentation-adminApps' template='{{> template}}'>
+          <template id='template'>
+            {{#if hideMessage}}
+            {{else}}
+              <div style="margin-bottom: 20px;">
+                <div class="documentation-section documentation-section-withIcon">
+                  <div class="documentation-section-icon-container">
+                    <i class="fa fa-info"></i>
+                  </div>
+
+                  <div style="flex: 1;"> 
+                    <div class="documentation-section-title">INFO</div>
+                    <div class="documentation-section-content">
+                      Every app has exactly one associated storage. The storage ID is equal to the app ID. <br>
+                      If no explicit storage is defined for an 
+                      <semantic-link title="Apps" uri='[[resolvePrefix "Help:Apps"]]'>app</semantic-link>, 
+                      the platform creates a standard, non-versioned file storage
+                      within the root directory of the respective app.
+                    </div>
+                  </div>
+                  <mp-event-trigger id='{{viewId}}-documentation-adminApps-close-trigger'
+                                    type='Component.TemplateUpdate'
+                                    data='{ "hideMessage": "true" }'
+                                    targets='["documentation-adminApps"]'
+                              >
+                      <button class="btn btn-documentation">
+                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                      </button>
+                  </mp-event-trigger>
+                </div> 
+              </div>
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
 
         <mp-json-renderer get-url='/rest/admin/apps'></mp-json-renderer>
 

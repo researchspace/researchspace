@@ -51,19 +51,42 @@
       <bs-row class="row-center">
         <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8 pr-0">
   
-            <div>
-              <bs-alert bs-style="info">
-                <p><strong>Info</strong></p>
-                <p>Using this interface, you can export and import selected individual LDP resources as well as whole containers. Note that:</p>
-              <ul>
-                <li>Exporting a resource does not include exporting of related resources. For example, when exporting a query template, the resulting file will contain the link from the exported template resource (instance of <code>spin:Template</code>) to the query body (instance of <code>sp:Query</code>), but will not contain the query body resource itself. This will need to be exported separately from its own container.</li>
-                <li>When importing a resource with a URI that already exists among LDP assets, the existing resource will not get updated. Instead, the URI of the imported resource will be replaced with a randomly generated one. Thus, exporting and re-importing the same asset will result in a duplicate of the same resource.</li>
-                <li>The latter applies also when exporting and importing whole containers. For example, exporting the whole Query Template Container and importing it on a different system will not add the included templates into the list of existing ones, but instead create another Query Template Container parallel to the existing one.</li>
-              </ul>
-              </bs-alert>
-            </div>
-
-            
+          <mp-event-target-template-render id='documentation-systemConfig' template='{{> template}}'>
+            <template id='template'>
+              {{#if hideMessage}}
+              {{else}}
+                <div style="margin-bottom: 20px;">
+                  <div class="documentation-section documentation-section-withIcon">
+                    <div class="documentation-section-icon-container">
+                      <i class="fa fa-info"></i>
+                    </div>
+  
+                    <div style="flex: 1;"> 
+                      <div class="documentation-section-title">Info</div>
+                      <div class="documentation-section-content">
+                        <div>Using this interface, you can export and import selected individual LDP 
+                          resources as well as whole containers. Note that:</div>
+                          <ul>
+                            <li>Exporting a resource does not include exporting of related resources. For example, when exporting a query template, the resulting file will contain the link from the exported template resource (instance of <code>spin:Template</code>) to the query body (instance of <code>sp:Query</code>), but will not contain the query body resource itself. This will need to be exported separately from its own container.</li>
+                            <li>When importing a resource with a URI that already exists among LDP assets, the existing resource will not get updated. Instead, the URI of the imported resource will be replaced with a randomly generated one. Thus, exporting and re-importing the same asset will result in a duplicate of the same resource.</li>
+                            <li>The latter applies also when exporting and importing whole containers. For example, exporting the whole Query Template Container and importing it on a different system will not add the included templates into the list of existing ones, but instead create another Query Template Container parallel to the existing one.</li>
+                          </ul>
+                      </div>
+                    </div>
+                    <mp-event-trigger id='{{viewId}}-documentation-systemConfig-close-trigger'
+                                      type='Component.TemplateUpdate'
+                                      data='{ "hideMessage": "true" }'
+                                      targets='["documentation-systemConfig"]'
+                                >
+                        <button class="btn btn-documentation">
+                          <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                        </button>
+                    </mp-event-trigger>
+                  </div> 
+                </div>
+              {{/if}}
+            </template>
+          </mp-event-target-template-render>
             
             <div style="display: flex; justify-content: space-between; align-items: baseline; gap:20px;">
               <h1> Containers hierarchy </h1>

@@ -17,12 +17,38 @@
           <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
             
                 [[#if (hasPermission "api:config:*:*:read")]]
-                <bs-alert bs-style="warning">
-                  <p><strong>Note</strong> </p>
-                  <p>Properties that are marked as <b>Shadowed</b> in the tables below have been overriden by system parameters
-                    (by passing in "-Dconfig.&lt;GroupId&gt;.&lt;ParamId&gt;" when starting the server). Shadowed parameters cannot
-                    be modified through the User Interface.</p>
-                  </bs-alert>
+                <mp-event-target-template-render id='documentation-systemConfig' template='{{> template}}'>
+                  <template id='template'>
+                    {{#if hideMessage}}
+                    {{else}}
+                      <div style="margin-bottom: 20px;">
+                        <div class="documentation-section documentation-section-withIcon">
+                          <div class="documentation-section-icon-container">
+                            <i class="fa fa-info"></i>
+                          </div>
+        
+                          <div style="flex: 1;"> 
+                            <div class="documentation-section-title">Shadowed properties can't be modified</div>
+                            <div class="documentation-section-content">
+                              Properties that are marked as <b>Shadowed</b> in the tables below have been overriden by system parameters
+                              (by passing in "-Dconfig.&lt;GroupId&gt;.&lt;ParamId&gt;" when starting the server). Shadowed parameters cannot
+                              be modified through the User Interface.
+                            </div>
+                          </div>
+                          <mp-event-trigger id='{{viewId}}-documentation-systemConfig-close-trigger'
+                                            type='Component.TemplateUpdate'
+                                            data='{ "hideMessage": "true" }'
+                                            targets='["documentation-systemConfig"]'
+                                      >
+                              <button class="btn btn-documentation">
+                                <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                              </button>
+                          </mp-event-trigger>
+                        </div> 
+                      </div>
+                    {{/if}}
+                  </template>
+                </mp-event-target-template-render>
 
                 <mp-collapsible-div expanded=false>
                   <mp-collapsible-div-trigger>

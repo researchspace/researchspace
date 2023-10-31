@@ -113,9 +113,9 @@ public class KnowledgeMapConfigGenerator {
         String queryString =
             "SELECT DISTINCT ?kp ?datatype WHERE {\n" +
             "  <" + classIri + "> rdfs:subClassOf* ?class . \n" +
-            "  ?kp <http://www.researchspace.org/ontology/fields#domain> ?class. \n" +
+            "  ?kp <http://www.researchspace.org/resource/system/fields/Field> ?class. \n" +
         "  FILTER(?kp NOT IN(<http://www.researchspace.org/instances/fields/EntityType>, <http://www.researchspace.org/instances/fields/EntityHasLabel>, <http://www.researchspace.org/instances/fields/EntityHasImage>, <http://www.researchspace.org/instances/fields/EntityhasConnection>)). \n" +
-            "  ?kp <http://www.researchspace.org/ontology/fields#xsdDatatype> ?datatype . \n" +
+            "  ?kp <http://www.researchspace.org/resource/system/fields/Field/xsdDatatype> ?datatype . \n" +
             "} ";
 
         TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);

@@ -1,5 +1,6 @@
 package org.researchspace.kp;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -61,12 +62,15 @@ public class KnowledgePatternGenerator {
 
     private ValueFactory vf = SimpleValueFactory.getInstance();
 
-    public void generateKnowledgePatternsFromOntology(IRI ontoIri) {
+    public int generateKnowledgePatternsFromOntology(IRI ontoIri) {
+        ArrayList<IRI> ontologyKPs = new ArrayList<IRI>(0);
+        int numberOfKPsGenerated = 0;
+
         logger.debug("Generating KPs for ontology: {}", ontoIri);
 
         Repository repo = repositoryManager.getDefault();
         try(RepositoryConnection conn = repo.getConnection()) {
-            // Our expectation is that ontology is that ontology is fully stored in the
+            // Our expectation is that ontology is fully stored in the
             // named graph where it is defined as an ontology
             Resource[] graphs =
                 Iterations.asList(conn.getStatements(ontoIri, RDF.TYPE, OWL.ONTOLOGY))
@@ -78,15 +82,17 @@ public class KnowledgePatternGenerator {
 
             Set<Resource> objectProperties =
                 ontology.filter(null, RDF.TYPE, OWL.OBJECTPROPERTY).subjects();
-            logger.trace("Generating KPs for {} object properties", objectProperties.size());
+            logger.trace("Generating KPs for {} object properties", objectProperties.size());           
             objectProperties.forEach(op -> saveKp(generateOpKp(ontology, ontoIri, (IRI)op)));
 
-
+            numberOfKPsGenerated += objectProperties.size();
             Set<Resource> datatypeProperties =
                 ontology.filter(null, RDF.TYPE, OWL.DATATYPEPROPERTY).subjects();
             logger.trace("Generating KPs for {} datatype properties", datatypeProperties.size());
             datatypeProperties.forEach(op -> saveKp(generateDpKp(ontology, ontoIri, (IRI)op)));
+            numberOfKPsGenerated += datatypeProperties.size();
         }
+        return numberOfKPsGenerated;
     }
 
     private void saveKp(PointedGraph kpGraph) {
@@ -130,8 +136,12 @@ public class KnowledgePatternGenerator {
     }
 
     private IRI generateBasicKp(ModelBuilder builder, IRI ontoIri, Model onto, IRI prop) {
+        //IRI kpIri =
+          //  this.vf.createIRI("http://www.researchspace.org/instances/fields/", prop.getLocalName());
+
         IRI kpIri =
-            this.vf.createIRI("http://www.researchspace.org/instances/fields/", prop.getLocalName());
+            this.vf.createIRI(ontoIri.stringValue()+"/", prop.getLocalName());
+
 
         builder.subject(kpIri)
             .add(RDF.TYPE, FIELDS.FIELD_TYPE)

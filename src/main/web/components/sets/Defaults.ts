@@ -67,9 +67,9 @@ export const SetListTemplate = `
 export const ItemListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='overflow: hidden;'>
-      <mp-resource-link-container uri="{{iri.value}}" draggable=false>
+      <semantic-link-container uri="{{iri.value}}" draggable=false>
         ${DefaultItemLabel}
-      </mp-resource-link-container>
+      </semantic-link-container>
     </div>
     ${DefaultSetItemActions}
   </div>

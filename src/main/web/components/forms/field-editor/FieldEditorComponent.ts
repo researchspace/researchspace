@@ -62,6 +62,8 @@ import './field-editor.scss';
 import Icon from 'platform/components/ui/icon/Icon';
 import  ResourceLinkComponent, {ResourceLinkProps }  from 'platform/api/navigation/components/ResourceLinkComponent';
 
+const OverlayTrigger = createFactory(ReactBootstrap.OverlayTrigger);
+const Popover = createFactory(ReactBootstrap.Popover);
 
 const btn = createFactory(ReactBootstrap.Button);
 const bsrow = createFactory(ReactBootstrap.Row);
@@ -92,6 +94,13 @@ interface Props {
    * URI to navigate after saving/updating a field.
    */
   navigateTo?: string;
+
+   /**
+   * hide form actions (KP update) when KP has tupe 'system'
+   *
+   * @default false
+   */
+  hideFormActions?: boolean;
 }
 
 /* Default queries to be set on the SPARQL input elements as placeholders */
@@ -191,6 +200,34 @@ class FieldEditorComponent extends Component<Props, State> {
     return defaults.slice(0, maxInt);
   }
 
+  private renderFormActions() {
+    return D.div(
+      { style: { display: 'flex', alignItems: 'center', justifyContent:'end', gap:'5px', margin: '5px 0' } },
+      btn(
+        {
+          bsStyle:'action',
+          disabled: !this.state.isValid,
+          onClick: () => this.onSaveOrUpdate()
+        },
+        this.isEditMode() ? 'Update' : 'Create'
+      ),
+      btn(
+        {
+          bsStyle:'action',
+          disabled: !this.state.isValid,
+          onClick: () => this.onSaveOrUpdate(this.props.navigateTo)
+        },
+        this.isEditMode() ? 'Update and Close' : 'Create and Close'
+      )
+    )
+  }
+
+  private renderFormAlert() {
+     return  D.div({}, 
+        D.span({className:'badge', style: { height: '32px', padding: '0 15px' }},'System knowledge pattern' )
+       )
+  }
+
   private renderEditor = () => {
     const empty = Just<Value>({ value: '' });
     const nothing = Nothing<Value>();
@@ -207,359 +244,345 @@ class FieldEditorComponent extends Component<Props, State> {
     };
     return D.div(
       {},
-      row({
-        label: 'Label *',
-        expanded: this.state.label.length > 0,
-        expandOnMount: true,
-        onExpand: () => addLabel(),
-        element: [
-          this.state.label.map((label, index) => this.renderLabel(label, index, langOptions)),
-          Boolean(lang) ? 
-          D.button ({className:'btn btn-secondary btn-textAndIcon', onClick: () => addLabel()},
-              D.i ({className: 'material-icons-round'}, 'add_box'),
-              D.span ({}, 'Label')
-            ) : null,
-        ],
-      }),
-      row({
-        label: 'Identifier *',
-        expanded: this.state.id.isJust,
-        expandOnMount: true,
-        onExpand: () => this.updateValues({ id: empty }, Validation.validateIri),
-        error: this.state.id.map((v) => v.error).getOrElse(undefined),
-        element: D.div({ className: 'inputAndButton-wrapper' }, [
-          input({
-            className: block('iri-input').toString(),
+      D.div(
+        {style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        D.div( {}, 
+        this.isEditMode() ? 
+          D.div ({ className: 'page__section-container__label-tab', style: {   } },'Knowledge pattern details') : 
+          D.h2 ({style: {  margin: '0' }},'New Knowledge pattern')
+        ),
+        this.hideFormActions() ? this.renderFormAlert() : this.renderFormActions(),
+      ),
+      D.div({className: 'page__section-container'}, 
+        row({
+          label: 'Label *',
+          expanded: this.state.label.length > 0,
+          expandOnMount: true,
+          onExpand: () => addLabel(),
+          element: [
+            this.state.label.map((label, index) => this.renderLabel(label, index, langOptions)),
+            Boolean(lang) ? 
+            D.button ({className:'btn btn-secondary btn-textAndIcon', onClick: () => addLabel()},
+                D.i ({className: 'material-icons-round'}, 'add_box'),
+                D.span ({}, 'Label')
+              ) : null,
+          ],
+        }),
+        row({
+          label: 'Identifier *',
+          expanded: this.state.id.isJust,
+          expandOnMount: true,
+          onExpand: () => this.updateValues({ id: empty }, Validation.validateIri),
+          error: this.state.id.map((v) => v.error).getOrElse(undefined),
+          element: D.div({ className: 'inputAndButton-wrapper' }, [
+            input({
+              className: block('iri-input').toString(),
+              type: 'text',
+              placeholder: 'Enter IRI to be used as unique identifier for the knowledge pattern',
+              onChange: (e) => this.updateValues({ id: getFormValue(e) }, Validation.validateIri),
+              value: this.state.id.isJust ? this.state.id.get().value : undefined,
+              disabled: this.isEditMode(),
+            }),
+            D.div(
+              { },
+              this.isEditMode()
+                ? this.renderCopyToClipboardButton()
+                : btn(
+                    {
+                      title: 'Generate IRI',
+                      className: 'btn btn-default',
+                      onClick: (e) => this.generateIRI(),
+                    },
+                    createElement(Icon, {
+                      iconName: 'autorenew',
+                      iconType: 'round'
+                    }) 
+                  )
+            ),
+          ]),
+        }),
+        row({
+          label: 'Description',
+          expanded: true,
+          onExpand: () => this.updateValues({ description: empty }),
+          onCollapse: () => this.updateValues({ description: nothing }),
+          element: textarea({
+            className: classnames('form-control', block('description-input').toString()),
+            rows: 4,
+            placeholder: 'Enter description (displayed in input info button)',
+            onChange: (e) => this.updateValues({ description: getFormValue(e) }),
+            value: this.state.description.isJust ? this.state.description.get().value : undefined,
+          }),
+        }),
+        row({
+          label: 'Categories',
+          expanded: true,
+          element: [
+            D.div({className: 'inputAndButton-wrapper'},
+            createElement(SemanticTreeInput, {
+            ...this.state.categoryQueries,
+            initialSelection: this.state.categories,
+            multipleSelection: true,
+            placeholder: 'Select a knowledge pattern category',
+            onSelectionChanged: (selection) => {
+              const categories = TreeSelection.leafs(selection)
+                .map((node) => node.iri)
+                .toArray();
+              this.updateState({ categories });
+            },
+          } as SemanticTreeInputProps),           
+          createElement(ResourceLinkComponent, {
+            "target": "_blank",
+            "uri": "http://www.researchspace.org/resource/ThinkingFrames",
+            "urlqueryparam-view": "authority-content",
+            "urlqueryparam-resource": "http://www.researchspace.org/resource/system/FieldCategories"
+          } as ResourceLinkProps, btn(
+            {
+              className: 'btn btn-default',
+            },
+            D.i({ className: 'fa fa-book' })
+          ))
+          ),],
+        }),
+        this.renderMultipleValuesInput({
+          values: this.state.domain,
+          label: 'Domains',
+          addButtonLabel: 'Domain',
+          showAddButton: true,
+          placeholder: 'Any IRI to be used as domain for the knowledge pattern.',
+          onChange: (value, index) => {
+            const domain = [...this.state.domain];
+            domain[index] = Validation.validateIri(value);
+            this.updateState({ domain });
+          },
+          onAdd: () => {
+            const domain = [...this.state.domain, Validation.validateIri('')];
+            this.updateState({ domain });
+          },
+          onDelete: (index) => {
+            const domain = [...this.state.domain];
+            domain.splice(index, 1);
+            this.updateState({ domain });
+          },
+        }),
+        row({
+          label: 'XSD Datatype',
+          expanded: this.state.xsdDatatype.isJust,
+          onExpand: () => this.updateValues({ xsdDatatype: empty }),
+          onCollapse: () => this.updateValues({ xsdDatatype: nothing }),
+          error: this.state.xsdDatatype.map((v) => v.error).getOrElse(undefined),
+          element: select({
+            value: this.state.xsdDatatype.map((v) => v.value).getOrElse(undefined),
+            className: block('xsd-input').toString(),
+            multi: false,
+            clearable: false,
+            placeholder: 'Select any XSD datatype',
+            options: vocabularies.xsd.LIST_TYPES,
+            onChange: (e: Value) => this.updateValues({ xsdDatatype: Just({ value: e.value }) }),
+            labelKey: 'label',
+            valueKey: 'value',
+          }),
+        }),
+        this.renderMultipleValuesInput({
+          values: this.state.range,
+          label: 'Ranges',
+          addButtonLabel: 'Range',
+          showAddButton: true,
+          placeholder: 'Any IRI to be used as range for the knowledge pattern.',
+          onChange: (value, index) => {
+            const range = [...this.state.range];
+            range[index] = Validation.validateIri(value);
+            this.updateState({ range });
+          },
+          onAdd: () => {
+            const range = [...this.state.range, Validation.validateIri('')];
+            this.updateState({ range });
+          },
+          onDelete: (index) => {
+            const range = [...this.state.range];
+            range.splice(index, 1);
+            this.updateState({ range });
+          },
+        }),
+        row({
+          label: 'Min. Cardinality',
+          expanded: this.state.min.isJust,
+          onExpand: () => this.updateValues({ min: Just({ value: '0' }) }, Validation.validateMin),
+          onCollapse: () => this.updateValues({ min: nothing }),
+          error: this.state.min.map((v) => v.error).getOrElse(undefined),
+          element: input({
+            className: block('min-input').toString(),
+            type: 'number',
+            min: 0,
+            step: 1,
+            placeholder: 'Any positive number from 0 to n. "0" for not required.',
+            onChange: (e) => this.updateValues({ min: getFormValue(e) }, Validation.validateMin),
+            value: this.state.min.map((v) => v.value).getOrElse(undefined),
+          }),
+        }),
+        row({
+          label: 'Max. Cardinality',
+          expanded: this.state.max.isJust,
+          onExpand: () => this.updateValues({ max: Just({ value: '1' }) }, Validation.validateMax),
+          onCollapse: () => this.updateValues({ max: nothing }),
+          error: this.state.max.map((v) => v.error).getOrElse(undefined),
+          element: input({
+            className: block('max-input').toString(),
             type: 'text',
-            placeholder: 'Enter IRI to be used as unique identifier for the knowledge pattern',
-            onChange: (e) => this.updateValues({ id: getFormValue(e) }, Validation.validateIri),
-            value: this.state.id.isJust ? this.state.id.get().value : undefined,
-            disabled: this.isEditMode(),
+            placeholder: 'Any positive number from 1 to n. "unbound" for unlimited.',
+            onChange: (e) => this.updateValues({ max: getFormValue(e) }, Validation.validateMax),
+            value: this.state.max.map((v) => v.value).getOrElse(undefined),
           }),
-          D.div(
-            { className: '' },
-            this.isEditMode()
-              ? this.renderCopyToClipboardButton()
-              : btn(
-                  {
-                    title: 'Generate IRI',
-                    className: 'btn btn-default',
-                    onClick: (e) => this.generateIRI(),
-                  },
-                  createElement(Icon, {
-                    iconName: 'autorenew',
-                    iconType: 'round'
-                  }) 
-                )
-          ),
-        ]),
-      }),
-      row({
-        label: 'Description',
-        expanded: true,
-        onExpand: () => this.updateValues({ description: empty }),
-        onCollapse: () => this.updateValues({ description: nothing }),
-        element: textarea({
-          className: classnames('form-control', block('description-input').toString()),
-          rows: 4,
-          placeholder: 'Enter description (displayed in input info button)',
-          onChange: (e) => this.updateValues({ description: getFormValue(e) }),
-          value: this.state.description.isJust ? this.state.description.get().value : undefined,
         }),
-      }),
-      row({
-        label: 'Categories',
-        expanded: true,
-        element: [
-          D.div({className: 'inputAndButton-wrapper'},
-          createElement(SemanticTreeInput, {
-          ...this.state.categoryQueries,
-          initialSelection: this.state.categories,
-          multipleSelection: true,
-          placeholder: 'Select a knowledge pattern category',
-          onSelectionChanged: (selection) => {
-            const categories = TreeSelection.leafs(selection)
-              .map((node) => node.iri)
-              .toArray();
-            this.updateState({ categories });
+        row({
+          label: 'Order',
+          expanded: this.state.order.isJust,
+          onExpand: () => this.updateValues({ order: Just({ value: '1' }) }, Validation.validateOrder),
+          onCollapse: () => this.updateValues({ order: nothing }),
+          error: this.state.order.map((v) => v.error).getOrElse(undefined),
+          element: input({
+            className: block('order-input').toString(),
+            type: 'text',
+            placeholder: 'Any positive number greater than 0.',
+            onChange: (e) => this.updateValues({ order: getFormValue(e) }, Validation.validateOrder),
+            value: this.state.order.map((v) => v.value).getOrElse(undefined),
+          }),
+        }),
+        this.renderMultipleValuesInput({
+          values: this.defaultsUpToMax(),
+          label: 'Default values',
+          addButtonLabel: 'Default value',
+          showAddButton: !(this.isMaxSet() && this.state.defaults.length >= parseInt(this.state.max.get().value)),
+          onChange: (value, index) => {
+            const defaults = [...this.defaultsUpToMax()];
+            defaults[index] = { value };
+            this.updateState({ defaults });
           },
-        } as SemanticTreeInputProps),           
-        createElement(ResourceLinkComponent, {
-          "target": "_blank",
-          "uri": "http://www.researchspace.org/resource/ThinkingFrames",
-          "urlqueryparam-view": "authority-content",
-          "urlqueryparam-resource": "http://www.researchspace.org/resource/system/FieldCategories"
-        } as ResourceLinkProps, btn(
-          {
-            className: 'btn btn-default',
+          onAdd: () => {
+            const defaults = [...this.defaultsUpToMax(), { value: '' }];
+            this.updateState({ defaults });
           },
-          D.i({ className: 'fa fa-book' })
-        ))
-        ),],
-      }),
-      this.renderMultipleValuesInput({
-        values: this.state.domain,
-        label: 'Domains',
-        addButtonLabel: 'Domain',
-        showAddButton: true,
-        placeholder: 'Any IRI to be used as domain for the knowledge pattern.',
-        onChange: (value, index) => {
-          const domain = [...this.state.domain];
-          domain[index] = Validation.validateIri(value);
-          this.updateState({ domain });
-        },
-        onAdd: () => {
-          const domain = [...this.state.domain, Validation.validateIri('')];
-          this.updateState({ domain });
-        },
-        onDelete: (index) => {
-          const domain = [...this.state.domain];
-          domain.splice(index, 1);
-          this.updateState({ domain });
-        },
-      }),
-      row({
-        label: 'XSD Datatype',
-        expanded: this.state.xsdDatatype.isJust,
-        onExpand: () => this.updateValues({ xsdDatatype: empty }),
-        onCollapse: () => this.updateValues({ xsdDatatype: nothing }),
-        error: this.state.xsdDatatype.map((v) => v.error).getOrElse(undefined),
-        element: select({
-          value: this.state.xsdDatatype.map((v) => v.value).getOrElse(undefined),
-          className: block('xsd-input').toString(),
-          multi: false,
-          clearable: false,
-          placeholder: 'Select any XSD datatype',
-          options: vocabularies.xsd.LIST_TYPES,
-          onChange: (e: Value) => this.updateValues({ xsdDatatype: Just({ value: e.value }) }),
-          labelKey: 'label',
-          valueKey: 'value',
-        }),
-      }),
-      this.renderMultipleValuesInput({
-        values: this.state.range,
-        label: 'Ranges',
-        addButtonLabel: 'Range',
-        showAddButton: true,
-        placeholder: 'Any IRI to be used as range for the knowledge pattern.',
-        onChange: (value, index) => {
-          const range = [...this.state.range];
-          range[index] = Validation.validateIri(value);
-          this.updateState({ range });
-        },
-        onAdd: () => {
-          const range = [...this.state.range, Validation.validateIri('')];
-          this.updateState({ range });
-        },
-        onDelete: (index) => {
-          const range = [...this.state.range];
-          range.splice(index, 1);
-          this.updateState({ range });
-        },
-      }),
-      row({
-        label: 'Min. Cardinality',
-        expanded: this.state.min.isJust,
-        onExpand: () => this.updateValues({ min: Just({ value: '0' }) }, Validation.validateMin),
-        onCollapse: () => this.updateValues({ min: nothing }),
-        error: this.state.min.map((v) => v.error).getOrElse(undefined),
-        element: input({
-          className: block('min-input').toString(),
-          type: 'number',
-          min: 0,
-          step: 1,
-          placeholder: 'Any positive number from 0 to n. "0" for not required.',
-          onChange: (e) => this.updateValues({ min: getFormValue(e) }, Validation.validateMin),
-          value: this.state.min.map((v) => v.value).getOrElse(undefined),
-        }),
-      }),
-      row({
-        label: 'Max. Cardinality',
-        expanded: this.state.max.isJust,
-        onExpand: () => this.updateValues({ max: Just({ value: '1' }) }, Validation.validateMax),
-        onCollapse: () => this.updateValues({ max: nothing }),
-        error: this.state.max.map((v) => v.error).getOrElse(undefined),
-        element: input({
-          className: block('max-input').toString(),
-          type: 'text',
-          placeholder: 'Any positive number from 1 to n. "unbound" for unlimited.',
-          onChange: (e) => this.updateValues({ max: getFormValue(e) }, Validation.validateMax),
-          value: this.state.max.map((v) => v.value).getOrElse(undefined),
-        }),
-      }),
-      row({
-        label: 'Order',
-        expanded: this.state.order.isJust,
-        onExpand: () => this.updateValues({ order: Just({ value: '1' }) }, Validation.validateOrder),
-        onCollapse: () => this.updateValues({ order: nothing }),
-        error: this.state.order.map((v) => v.error).getOrElse(undefined),
-        element: input({
-          className: block('order-input').toString(),
-          type: 'text',
-          placeholder: 'Any positive number greater than 0.',
-          onChange: (e) => this.updateValues({ order: getFormValue(e) }, Validation.validateOrder),
-          value: this.state.order.map((v) => v.value).getOrElse(undefined),
-        }),
-      }),
-      this.renderMultipleValuesInput({
-        values: this.defaultsUpToMax(),
-        label: 'Default values',
-        addButtonLabel: 'Default value',
-        showAddButton: !(this.isMaxSet() && this.state.defaults.length >= parseInt(this.state.max.get().value)),
-        onChange: (value, index) => {
-          const defaults = [...this.defaultsUpToMax()];
-          defaults[index] = { value };
-          this.updateState({ defaults });
-        },
-        onAdd: () => {
-          const defaults = [...this.defaultsUpToMax(), { value: '' }];
-          this.updateState({ defaults });
-        },
-        onDelete: (index) => {
-          const defaults = [...this.defaultsUpToMax()];
-          defaults.splice(index, 1);
-          this.updateState({ defaults });
-        },
-      }),
-      row({
-        label: 'Test Subject',
-        expanded: this.state.testSubject.isJust,
-        onExpand: () => this.updateValues({ testSubject: empty }, Validation.validateIri),
-        onCollapse: () => this.updateValues({ testSubject: nothing }),
-        error: this.state.testSubject.map((v) => v.error).getOrElse(undefined),
-        element: input({
-          className: block('label-input').toString(),
-          type: 'text',
-          placeholder: `IRI of any entity to be used for testing the patterns of the field.`,
-          onChange: (e) => this.updateValues({ testSubject: getFormValue(e) }, Validation.validateIri),
-          value: this.state.testSubject.isJust ? this.state.testSubject.get().value : undefined,
-        }),
-      }),
-      row({
-        label: 'Insert Pattern*',
-        expanded: this.state.insertPattern.isJust,
-        expandOnMount: true,
-        onExpand: () =>
-          this.updateValues({ insertPattern: Just({ value: DEFAULT_INSERT }) }, Validation.validateInsert),
-        error: this.state.insertPattern.map((v) => v.error).getOrElse(undefined),
-        element: createElement(SparqlEditor, {
-          onChange: (e) => this.updateValues({ insertPattern: Just({ value: e.value }) }, Validation.validateInsert),
-          syntaxErrorCheck: false,
-          query: this.state.insertPattern.map((v) => v.value).getOrElse(''),
-        }),
-      }),
-      row({
-        label: 'Select Pattern',
-        expanded: this.state.selectPattern.isJust,
-        onExpand: () =>
-          this.updateValues({ selectPattern: Just({ value: DEFAULT_SELECT }) }, Validation.validateSelect),
-        onCollapse: () => this.updateValues({ selectPattern: nothing }),
-        error: this.state.selectPattern.map((v) => v.error).getOrElse(undefined),
-        element: createElement(SparqlEditor, {
-          onChange: (e) => this.updateValues({ selectPattern: Just({ value: e.value }) }, Validation.validateSelect),
-          syntaxErrorCheck: false,
-          query: this.state.selectPattern.map((v) => v.value).getOrElse(''),
-        }),
-      }),
-      row({
-        label: 'Delete Pattern',
-        expanded: this.state.deletePattern.isJust,
-        onExpand: () =>
-          this.updateValues({ deletePattern: Just({ value: DEFAULT_DELETE }) }, Validation.validateDelete),
-        onCollapse: () => this.updateValues({ deletePattern: nothing }),
-        error: this.state.deletePattern.map((v) => v.error).getOrElse(undefined),
-        element: createElement(SparqlEditor, {
-          onChange: (e) => this.updateValues({ deletePattern: Just({ value: e.value }) }, Validation.validateDelete),
-          syntaxErrorCheck: false,
-          query: this.state.deletePattern.map((v) => v.value).getOrElse(''),
-        }),
-      }),
-      row({
-        label: 'ASK Validation Pattern',
-        expanded: this.state.askPattern.isJust,
-        onExpand: () => this.updateValues({ askPattern: Just({ value: DEFAULT_ASK }) }, Validation.validateAsk),
-        onCollapse: () => this.updateValues({ askPattern: nothing }),
-        error: this.state.askPattern.map((v) => v.error).getOrElse(undefined),
-        element: createElement(SparqlEditor, {
-          onChange: (e) => this.updateValues({ askPattern: Just({ value: e.value }) }, Validation.validateAsk),
-          syntaxErrorCheck: false,
-          query: this.state.askPattern.map((v) => v.value).getOrElse(''),
-        }),
-      }),
-      row({
-        label: 'Value Set Pattern',
-        expanded: this.state.valueSetPattern.isJust,
-        onExpand: () =>
-          this.updateValues({ valueSetPattern: Just({ value: DEFAULT_VALUE_SET }) }, Validation.validateValueSet),
-        onCollapse: () => this.updateValues({ valueSetPattern: nothing }),
-        error: this.state.valueSetPattern.map((v) => v.error).getOrElse(undefined),
-        element: createElement(SparqlEditor, {
-          onChange: (e) =>
-            this.updateValues({ valueSetPattern: Just({ value: e.value }) }, Validation.validateValueSet),
-          syntaxErrorCheck: false,
-          query: this.state.valueSetPattern.map((v) => v.value).getOrElse(''),
-        }),
-      }),
-      row({
-        label: 'Autosuggestion Pattern',
-        expanded: this.state.autosuggestionPattern.isJust,
-        onExpand: () =>
-          this.updateValues(
-            { autosuggestionPattern: Just({ value: DEFAULT_AUTOSUGGESTION }) },
-            Validation.validateAutosuggestion
-          ),
-        onCollapse: () => this.updateValues({ autosuggestionPattern: nothing }),
-        error: this.state.autosuggestionPattern.map((v) => v.error).getOrElse(undefined),
-        element: createElement(SparqlEditor, {
-          onChange: (e) =>
-            this.updateValues({ autosuggestionPattern: Just({ value: e.value }) }, Validation.validateAutosuggestion),
-          syntaxErrorCheck: false,
-          query: this.state.autosuggestionPattern.map((v) => v.value).getOrElse(''),
-        }),
-      }),
-      row({
-        label: 'Tree Patterns',
-        expanded: this.state.treePatterns.isJust,
-        onExpand: () =>
-          this.updateState({
-            treePatterns: Just<ValidatedTreeConfig>({ type: 'simple' }),
-          }),
-        onCollapse: () =>
-          this.updateState({
-            treePatterns: Nothing<ValidatedTreeConfig>(),
-          }),
-        element: createElement(TreePatternsEditor, {
-          config: this.state.treePatterns.getOrElse({ type: 'simple' }),
-          onChange: (config: ValidatedTreeConfig) => {
-            const validated = Validation.validateTreeConfig(config);
-            this.updateState({ treePatterns: Just(validated) });
+          onDelete: (index) => {
+            const defaults = [...this.defaultsUpToMax()];
+            defaults.splice(index, 1);
+            this.updateState({ defaults });
           },
         }),
-      }),
-      bsrow(
-        {},
-        bscol({ md: 3 }),
-        bscol(
-          { md: 9,
-            style: { display: 'flex', alignItems: 'center', justifyContent:'end', gap:'5px' }
-           },
-          btn(
-            {
-              disabled: !this.state.isValid,
-              onClick: () => this.onSaveOrUpdate(),
-             className: 'btn btn-action'
+        row({
+          label: 'Test Subject',
+          expanded: this.state.testSubject.isJust,
+          onExpand: () => this.updateValues({ testSubject: empty }, Validation.validateIri),
+          onCollapse: () => this.updateValues({ testSubject: nothing }),
+          error: this.state.testSubject.map((v) => v.error).getOrElse(undefined),
+          element: input({
+            className: block('label-input').toString(),
+            type: 'text',
+            placeholder: `IRI of any entity to be used for testing the patterns of the field.`,
+            onChange: (e) => this.updateValues({ testSubject: getFormValue(e) }, Validation.validateIri),
+            value: this.state.testSubject.isJust ? this.state.testSubject.get().value : undefined,
+          }),
+        }),
+        row({
+          label: 'Insert Pattern*',
+          expanded: this.state.insertPattern.isJust,
+          expandOnMount: true,
+          onExpand: () =>
+            this.updateValues({ insertPattern: Just({ value: DEFAULT_INSERT }) }, Validation.validateInsert),
+          error: this.state.insertPattern.map((v) => v.error).getOrElse(undefined),
+          element: createElement(SparqlEditor, {
+            onChange: (e) => this.updateValues({ insertPattern: Just({ value: e.value }) }, Validation.validateInsert),
+            syntaxErrorCheck: false,
+            query: this.state.insertPattern.map((v) => v.value).getOrElse(''),
+          }),
+        }),
+        row({
+          label: 'Select Pattern',
+          expanded: this.state.selectPattern.isJust,
+          onExpand: () =>
+            this.updateValues({ selectPattern: Just({ value: DEFAULT_SELECT }) }, Validation.validateSelect),
+          onCollapse: () => this.updateValues({ selectPattern: nothing }),
+          error: this.state.selectPattern.map((v) => v.error).getOrElse(undefined),
+          element: createElement(SparqlEditor, {
+            onChange: (e) => this.updateValues({ selectPattern: Just({ value: e.value }) }, Validation.validateSelect),
+            syntaxErrorCheck: false,
+            query: this.state.selectPattern.map((v) => v.value).getOrElse(''),
+          }),
+        }),
+        row({
+          label: 'Delete Pattern',
+          expanded: this.state.deletePattern.isJust,
+          onExpand: () =>
+            this.updateValues({ deletePattern: Just({ value: DEFAULT_DELETE }) }, Validation.validateDelete),
+          onCollapse: () => this.updateValues({ deletePattern: nothing }),
+          error: this.state.deletePattern.map((v) => v.error).getOrElse(undefined),
+          element: createElement(SparqlEditor, {
+            onChange: (e) => this.updateValues({ deletePattern: Just({ value: e.value }) }, Validation.validateDelete),
+            syntaxErrorCheck: false,
+            query: this.state.deletePattern.map((v) => v.value).getOrElse(''),
+          }),
+        }),
+        row({
+          label: 'ASK Validation Pattern',
+          expanded: this.state.askPattern.isJust,
+          onExpand: () => this.updateValues({ askPattern: Just({ value: DEFAULT_ASK }) }, Validation.validateAsk),
+          onCollapse: () => this.updateValues({ askPattern: nothing }),
+          error: this.state.askPattern.map((v) => v.error).getOrElse(undefined),
+          element: createElement(SparqlEditor, {
+            onChange: (e) => this.updateValues({ askPattern: Just({ value: e.value }) }, Validation.validateAsk),
+            syntaxErrorCheck: false,
+            query: this.state.askPattern.map((v) => v.value).getOrElse(''),
+          }),
+        }),
+        row({
+          label: 'Value Set Pattern',
+          expanded: this.state.valueSetPattern.isJust,
+          onExpand: () =>
+            this.updateValues({ valueSetPattern: Just({ value: DEFAULT_VALUE_SET }) }, Validation.validateValueSet),
+          onCollapse: () => this.updateValues({ valueSetPattern: nothing }),
+          error: this.state.valueSetPattern.map((v) => v.error).getOrElse(undefined),
+          element: createElement(SparqlEditor, {
+            onChange: (e) =>
+              this.updateValues({ valueSetPattern: Just({ value: e.value }) }, Validation.validateValueSet),
+            syntaxErrorCheck: false,
+            query: this.state.valueSetPattern.map((v) => v.value).getOrElse(''),
+          }),
+        }),
+        row({
+          label: 'Autosuggestion Pattern',
+          expanded: this.state.autosuggestionPattern.isJust,
+          onExpand: () =>
+            this.updateValues(
+              { autosuggestionPattern: Just({ value: DEFAULT_AUTOSUGGESTION }) },
+              Validation.validateAutosuggestion
+            ),
+          onCollapse: () => this.updateValues({ autosuggestionPattern: nothing }),
+          error: this.state.autosuggestionPattern.map((v) => v.error).getOrElse(undefined),
+          element: createElement(SparqlEditor, {
+            onChange: (e) =>
+              this.updateValues({ autosuggestionPattern: Just({ value: e.value }) }, Validation.validateAutosuggestion),
+            syntaxErrorCheck: false,
+            query: this.state.autosuggestionPattern.map((v) => v.value).getOrElse(''),
+          }),
+        }),
+        row({
+          label: 'Tree Patterns',
+          expanded: this.state.treePatterns.isJust,
+          onExpand: () =>
+            this.updateState({
+              treePatterns: Just<ValidatedTreeConfig>({ type: 'simple' }),
+            }),
+          onCollapse: () =>
+            this.updateState({
+              treePatterns: Nothing<ValidatedTreeConfig>(),
+            }),
+          element: createElement(TreePatternsEditor, {
+            config: this.state.treePatterns.getOrElse({ type: 'simple' }),
+            onChange: (config: ValidatedTreeConfig) => {
+              const validated = Validation.validateTreeConfig(config);
+              this.updateState({ treePatterns: Just(validated) });
             },
-            this.isEditMode() ? 'Update Field' : 'Create Field'
-          ),
-          btn(
-            {
-              disabled: !this.state.isValid,
-              onClick: () => this.onSaveOrUpdate(this.props.navigateTo),
-              className: 'btn btn-action'
-            },
-            this.isEditMode() ? 'Update Field and Close' : 'Create Field and Close'
-          )
-        )
+          }),
+        })
       )
     );
   };
@@ -648,7 +671,7 @@ class FieldEditorComponent extends Component<Props, State> {
               D.span({className: 'material-icons-round'}, 'close')
             )
           ),
-          error ? bsrow({ className: block('error').toString() }, bscol({ md: 12 }, error.message)) : null,
+          error ? D.div({ className: block('error').toString() }, error.message) : null,
         ]),
         showAddButton ? 
         D.button ({className:'btn btn-secondary btn-textAndIcon', onClick: onAdd},
@@ -661,6 +684,10 @@ class FieldEditorComponent extends Component<Props, State> {
 
   private isEditMode = (): boolean => {
     return Boolean(this.props.fieldIri);
+  };
+
+  private hideFormActions = (): boolean => {
+    return Boolean(this.props.hideFormActions);
   };
 
   private updateValues(

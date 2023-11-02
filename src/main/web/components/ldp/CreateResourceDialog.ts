@@ -87,7 +87,7 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
           },
           D.input({
             className: classNames('form-control', b('form__collection-name')),
-            placeholder: this.props.placeholder ? this.props.placeholder : 'Name',
+            placeholder: this.props.placeholder ? this.props.placeholder : 'Name/Identifier',
             type: 'text',
             ref: REF_LDP_RESOURCE_NAME,
             onKeyDown: this.onKeyPress,
@@ -98,7 +98,7 @@ export class CreateResourceDialog extends Component<CreateResourceDialogProps, C
               disabled: this.isLoading() || this.isSuccess(),
               onClick: this.onSaveBtn,
             },
-            this.isLoading() ? 'Saving...' : 'Save'
+            this.isLoading() ? 'Saving...' : 'Create'
           )
         )
       )

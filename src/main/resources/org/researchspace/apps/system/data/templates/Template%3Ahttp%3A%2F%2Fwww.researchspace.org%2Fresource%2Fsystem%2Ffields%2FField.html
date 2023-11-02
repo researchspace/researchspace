@@ -10,95 +10,195 @@
   <li><semantic-link title="Assets" iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">Knowledge Patterns</semantic-link></li>
   <li class="active"><mp-label iri='[[this]]'></mp-label></li>
 </ol>
-
-<div class="page">
-  <div class="container-fluid adminPage-header-container">
-    <bs-row class="row-center">
-      <bs-col xs=11 sm=10 md=10 lg=8 class="adminPage-header--col pr-0">
-        <div class="adminPage-header--content">
-          <div class='adminPage-header--thumbnail'>
-            <rs-icon icon-type="round" icon-name="list"></rs-icon>
-          </div>
-          <div class='adminPage-header--body'>
-            <h2>Knowledge Pattern: <mp-label iri='[[this]]'></mp-label></h2>
-          </div>
-        </div>
-      </bs-col>
-    </bs-row> <!--  close row -->
-  </div>
-
-  <div class="container-fluid" style="margin-bottom:60px;">
-    <bs-row class="row-center">
-        <bs-col xs=11 sm=10 md=10 lg=8 class="pr-0">
-          <div class='pull-right' style="margin-bottom: 10px; display: flex; gap: 8px;">
-            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:create:any")]]
-              <mp-ldp-duplicate-resource-action iri="[[this]]" container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" label="new Knowledge Pattern IRI">
-                <button class="btn btn-default btn-textAndIcon">
-                  <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
-                  Duplicate</button>
-              </mp-ldp-duplicate-resource-action>
-            [[/if]]
-
-            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:export:any")]]
-              <mp-ldp-export-resource iri='[[this]]'>
-                <button class="btn btn-default btn-textAndIcon">
-                  <rs-icon icon-type="round" icon-name="file_download"></rs-icon>
-                  Download
-                </button>
-              </mp-ldp-export-resource>
-            [[/if]]
-            
-            [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:delete:any")]]
-              <mp-ldp-remove-from-container-action iri="[[this]]" container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" 
-                                                  post-action='http://www.researchspace.org/resource/assets/Fields'>
-                <button class="btn btn-default btn-textAndIcon">
-                  <rs-icon icon-type="round" icon-name="delete"></rs-icon>Delete</button>
-              </mp-ldp-remove-from-container-action>
-            [[/if]]
-          </div>
-          <div style='clear: both;'></div>
-          
-          <field-editor field-iri='[[this]]' ></field-editor>
-          
-          <h2 style="margin-top: 20px; margin-bottom: 15px;">Knowledge Pattern Preview</h2>
-          <semantic-form 
-            debug='false' 
-            browser-persistence=false 
-            fields='[[fieldDefinitionsFromQuery "SELECT ?field { BIND(?? AS ?field) }"]]'
-          >
-            <bs-tabs>
-              <bs-tab event-key="1" title="Plain Input">
-                <semantic-form-text-input for='[[this]]' render-header=true></semantic-form-text-input>
-              </bs-tab>
-              <bs-tab event-key="2" title="Autocomplete Input">
-                <semantic-form-autocomplete-input for='[[this]]'></semantic-form-autocomplete-input>
-              </bs-tab>
-              <bs-tab event-key="3" title="Select Input">
-                <semantic-form-select-input data-for='[[this]]'></semantic-form-select-input>
-              </bs-tab>
-              <bs-tab event-key="4" title="Date Input">
-                <semantic-form-datetime-input for='[[this]]'></semantic-form-datetime-input>
-              </bs-tab>
-              <bs-tab event-key="5" title="Tree Input">
-                <semantic-form-tree-picker-input for="[[this]]"></semantic-form-tree-picker-input>
-              </bs-tab>
-            </bs-tabs>
-          </semantic-form>
-
-          <h2 style="margin-top: 40px;">JSON Configuration Example</h2>
-          <i style="color:red;font-size: 11px;">
-            Please be aware of that the "example" id needs to be replaced with the current IRI: "<b>[[this]]</b>"
-          </i>
-          <mp-code-block mode='application/json'>
-                      <![CDATA[
-                      [[fieldDefinitions example=(this)]]
-                      ]]>
-          </mp-code-block>
   
-        </bs-col>   
-      </bs-row> <!--  close row -->
-  </div>
-</div>
+<mp-event-target-template-render id='kp-form-page' template='{{> template}}'>
+  <template id='template'>
+    <div class="page">
+
+      <div class="container-fluid adminPage-header-container">
+        <bs-row class="row-center">
+          <bs-col xs=11 sm=10 md=10 lg=8  style="padding: 35px 0 0;">
+            <div style="display:flex; align-items:center; justify-content: space-between; gap: 10px;">
+              <h2 style="flex: 1; text-transform: capitalize;"><mp-label iri='[[this]]'></mp-label></h2>
+              <div style="display:flex; align-items:center; gap: 7px;">
+                [[!-- KP actions --]]
+
+                <mp-event-trigger id='kp-form-refresh-trigger' 
+                                  type='Component.TemplateUpdate' 
+                                  targets='["kp-form-page"]'
+                >
+                  <button class="btn btn-default btn-textAndIcon" title="Refresh">
+                    <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                      Refresh
+                  </button>
+                </mp-event-trigger>
+              
+            [[!--    <mp-copy-to-clipboard text='[[this]]' message='IRI has been copied'>
+                  <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
+                    <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
+                    Copy IRI
+                  </button>
+                </mp-copy-to-clipboard> --]]
+
+                [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:create:any")]]
+                  <mp-ldp-duplicate-resource-action iri="[[this]]" container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" label="new Knowledge Pattern IRI">
+                    <button class="btn btn-default btn-textAndIcon">
+                      <rs-icon icon-type="round" icon-name="file_copy"></rs-icon>
+                      Duplicate</button>
+                  </mp-ldp-duplicate-resource-action>
+                [[/if]]
+
+                [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:export:any")]]
+                  <mp-ldp-export-resource iri='[[this]]'>
+                    <button class="btn btn-default btn-textAndIcon">
+                      <rs-icon icon-type="round" icon-name="file_download"></rs-icon>
+                      Download
+                    </button>
+                  </mp-ldp-export-resource>
+                [[/if]]
+                
+                [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:delete:any")]]
+                  <semantic-if query='ASK {
+                                        <[[this]]> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . 
+                                      }'
+                                then='{{> disableDelete}}'
+                                else='{{> delete}}'>
+
+                        <template id='disableDelete'>
+                          <div style="display: none;"></div>
+                        </template>
+
+                        <template id='delete'>
+                          <mp-ldp-remove-from-container-action iri="[[this]]" container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" 
+                                                            post-action='http://www.researchspace.org/resource/assets/Fields'>
+                            <button class="btn btn-default btn-textAndIcon">
+                              <rs-icon icon-type="round" icon-name="delete"></rs-icon>Delete
+                            </button>
+                          </mp-ldp-remove-from-container-action>
+                        </template>
+                  </semantic-if>
+                [[/if]]
+              </div>
+            </div>
+          </bs-col>
+        </bs-row> <!--  close row -->
+      </div>
+
+      <div class="container-fluid" style="margin-bottom:60px;">
+        <bs-row class="row-center">
+            <bs-col xs=11 sm=10 md=10 lg=8 class="px-0" >
+              <bs-tabs>
+                <bs-tab event-key="kpForm" title="Knowledge Pattern">
+                  [[!-- KP form --]]
+                  
+
+                  <semantic-if query='ASK {
+                                  <[[this]]> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . 
+                                }'
+                                then='{{> systemKP}}'
+                                else='{{> customKP}}'>
+
+                        <template id='systemKP'>
+                          <field-editor field-iri='[[this]]' hide-form-actions=true></field-editor>
+                          <div></div>
+                        </template>
+
+                        <template id='customKP'>
+                          <field-editor field-iri='[[this]]'></field-editor>
+                        </template>
+                  </semantic-if>
+                
+                    
+                </bs-tab>
+
+                <bs-tab event-key="kpPreview" title="Preview">
+              
+                  [[!-- KP preview --]]
+                  <semantic-form 
+                    debug='false' 
+                    browser-persistence=false 
+                    fields='[[fieldDefinitionsFromQuery "SELECT ?field { BIND(?? AS ?field) }"]]'
+                  >
+
+                    <h5 style="margin-bottom: 6px;">Plain Input</h5>
+                    <div class="page__section-container" style="padding-top: 0;">
+                      <semantic-form-text-input for='[[this]]'></semantic-form-text-input>
+                    </div>
+
+                    <h5 style="margin-bottom: 6px;">Tree Input</h5>
+                    <div class="page__section-container" style="padding-top: 0;">
+                      <semantic-form-tree-picker-input for="[[this]]"></semantic-form-tree-picker-input>
+                    </div>
+
+                    <h5 style="margin-bottom: 6px;">Autocomplete Input</h5>
+                    <div class="page__section-container" style="padding-top: 0;">
+                      <semantic-form-autocomplete-input for='[[this]]'></semantic-form-autocomplete-input>
+                    </div>
+
+                    <h5 style="margin-bottom: 6px;">Select Input</h5>
+                    <div class="page__section-container" style="padding-top: 0;">
+                      <semantic-form-select-input data-for='[[this]]'></semantic-form-select-input>
+                    </div>
+
+                    <h5 style="margin-bottom: 6px;">Date Input</h5>
+                    <div class="page__section-container" style="padding-top: 0;">
+                      <semantic-form-datetime-input for='[[this]]'></semantic-form-datetime-input>
+                    </div>
+
+                  </semantic-form>
+
+                </bs-tab>
+
+                <bs-tab event-key="kpConfiguration" title="JSON Configuration">
+
+                  <mp-event-target-template-render id='documentation-kpConfig' template='{{> template}}'>
+                    <template id='template'>
+                      {{#if hideMessage}}
+                      {{else}}
+                        <div style="margin-top: 20px;">
+                          <div class="documentation-section documentation-section-withIcon">
+                            <div class="documentation-section-icon-container">
+                              <i class="fa fa-info"></i>
+                            </div>
+          
+                            <div style="flex: 1;"> 
+                              <div class="documentation-section-title">Knowledge pattern id</div>
+                              <div style="padding-top: 3px;">
+                                Use the code below replacing 'id':'example' with the current IRI <br>
+                                <b>'id': '[[this]]'</b>
+                              </div>
+                            </div>
+                            <mp-event-trigger id='documentation-kpConfig-trigger'
+                                              type='Component.TemplateUpdate'
+                                              data='{ "hideMessage": "true" }'
+                                              targets='["documentation-kpConfig"]'
+                                        >
+                                <button class="btn btn-documentation">
+                                  <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                                </button>
+                            </mp-event-trigger>
+                          </div> 
+                        </div>
+                      {{/if}}
+                    </template>
+                  </mp-event-target-template-render>
+
+                  <mp-code-block mode='application/json'>
+                              <![CDATA[
+                              [[fieldDefinitions example=(this)]]
+                              ]]>
+                  </mp-code-block>
+
+                </bs-tab>
+
+              </bs-tabs>
+            </bs-col>   
+          </bs-row> <!--  close row -->
+      </div>
+
+    </div>
+  </template>
+</mp-event-target-template-render>
 [[else]]
 
 <p>No Permission</p>

@@ -64,9 +64,9 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
           </div>
         </InputGroup>
         {value.error ? (
-          <Row className="field-editor__error">
-            <Col md={12}>{value.error.message}</Col>
-          </Row>
+          <div className="field-editor__error">
+            <div>{value.error.message}</div>
+          </div>
         ) : null}
       </FormGroup>
     );

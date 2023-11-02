@@ -61,9 +61,8 @@ import { FieldEditorLabel } from './FieldEditorLabel';
 import './field-editor.scss';
 import Icon from 'platform/components/ui/icon/Icon';
 import  ResourceLinkComponent, {ResourceLinkProps }  from 'platform/api/navigation/components/ResourceLinkComponent';
-
-const OverlayTrigger = createFactory(ReactBootstrap.OverlayTrigger);
-const Popover = createFactory(ReactBootstrap.Popover);
+import React = require('react');
+import {OverlayTrigger, Popover } from 'react-bootstrap';
 
 const btn = createFactory(ReactBootstrap.Button);
 const bsrow = createFactory(ReactBootstrap.Row);
@@ -223,9 +222,18 @@ class FieldEditorComponent extends Component<Props, State> {
   }
 
   private renderFormAlert() {
-     return  D.div({}, 
-        D.span({className:'badge', style: { height: '32px', padding: '0 15px' }},'System knowledge pattern' )
-       )
+    return (
+        <div style={ {position:'relative'} }>
+          <span className='badge badge--secondary' style={{height: '32px', padding: '0 15px'}}>System knowledge pattern</span>
+          <OverlayTrigger
+            trigger={['hover', 'click']}
+            placement="bottom"
+            overlay={<Popover id="tooltip" title="Sistem knowledge pattern">It can't be edited or removed.</Popover>}
+          >
+            <Icon iconType='round' iconName='help' style={ {position:'absolute', top: '-5px', right: '-6px', fontSize: '20px'} }/>
+          </OverlayTrigger>
+        </div>
+    )
   }
 
   private renderEditor = () => {

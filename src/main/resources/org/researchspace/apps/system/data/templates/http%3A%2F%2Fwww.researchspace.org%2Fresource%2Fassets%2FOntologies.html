@@ -38,7 +38,7 @@
   <div class="container-fluid">
     <bs-row class="row-center">
       <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
-        
+        [[!-- 
         <div style="margin: 5px 0 15px 0; display: flex; align-items: center; gap: 10px;">
             <semantic-link-container uri="http://www.researchspace.org/resource/admin/DataImportExport">
               <button class="btn btn-action btn-textAndIcon">
@@ -54,6 +54,21 @@
               </button>
             </semantic-link-container>
         </div>
+        --]]
+        <mp-rdf-upload class-name="rdf-upload"
+                          accept='[".trig"]'                                           
+                          keep-source-graphs='true' 
+                          allow-load-by-url='false' 
+                          show-advanced-options='false' 
+                          drop-area-template='{{> template}}'>
+            <template id='template'>
+                <div class='placeholder-item'>
+                  <i class='fa fa-upload'></i>
+                  <div>Drag or click to upload an ontology file</div>
+                </div>
+            </template>
+        </mp-rdf-upload>
+        
         <div data-flex-layout='column top-stretch'></div>
         <semantic-search selector-mode='dropdown' optimizer='none' categories='{
                   "<http://www.w3.org/2000/01/rdf-schema#Literal>": [{
@@ -178,11 +193,20 @@
                               </semantic-link>
                             </div>
                             <div class='col-sm-1 rs-ontology-icon'>
+                              <semantic-if query='ASK {?a <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> }' then='{{> then}}' else='{{> else}}'>
+                                <template id='then'>randomly true 1</template>
+                                <template id='else'>
+                                  <mp-json-renderer
+                                    get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'>
+                                  </mp-json-renderer></template>
+                              </semantic-if>
+                              
+                              [[!--
                               <form method='post' action='/rs/kp/generateKps?ontologyIri={{encodeUriComponent subject.value}}'>
                                 <button type=submit style="background-color: transparent;">
                                   <rs-icon icon-type="round" icon-name="polyline" title='Generate Knowledge Patterns'></rs-icon>
                                 </button>
-                              </form>
+                              </form> --]]
                             </div>
                           </div>
                         </mp-panel-body>

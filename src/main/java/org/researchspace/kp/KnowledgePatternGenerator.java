@@ -136,11 +136,8 @@ public class KnowledgePatternGenerator {
     }
 
     private IRI generateBasicKp(ModelBuilder builder, IRI ontoIri, Model onto, IRI prop) {
-        //IRI kpIri =
-          //  this.vf.createIRI("http://www.researchspace.org/instances/fields/", prop.getLocalName());
-
         IRI kpIri =
-            this.vf.createIRI(ontoIri.stringValue()+"/", prop.getLocalName());
+            this.vf.createIRI(ontoIri.stringValue(), prop.getLocalName());
 
 
         builder.subject(kpIri)

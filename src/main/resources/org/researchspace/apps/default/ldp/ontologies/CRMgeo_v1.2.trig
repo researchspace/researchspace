@@ -27,7 +27,19 @@
 @prefix frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/> .
 
 crmgeo:context {
+
+  <http://www.ics.forth.gr/isl/CRMgeo/> a <http://www.w3.org/ns/ldp#Resource>, owl:Ontology,
+      prov:Entity;
+    rdfs:comment "CRMgeo v1.2"@en;
+    prov:generatedAtTime "2021-10-04T05:27:55.543Z"^^xsd:dateTime;
+    rdfs:label "CRMgeo v1.2"@en;
+    prov:wasAttributedTo User:admin .
+
+    <http://researchspace.org/container/rootContainer/ontologyContainer> <http://www.w3.org/ns/ldp#contains>
+    <http://www.ics.forth.gr/isl/CRMgeo/> .
+
   crmgeo:SP6_Declarative_Place a owl:Class;
+    rdfs:label "Declarative Place"@en;
     rdfs:subClassOf crm:E53_Place, crm:E89_Propositional_Object, <http://www.opengis.net/ont/geosparql#Geometry>;
     rdfs:comment """Scope note: This class comprises instances of E53 Place (S) whose extent (U) and position is defined by a SP5 Geometric Place Expression (S). There is one implicit or explicit SP3 Reference Space in which the SP5 Place Expression describes the intended place. Even though SP5 Geometric Place Expressions have an unlimited precision, measurement devices and the precision of the position of reference features relating the SP4 Spatial Coordinate Reference System to a SP3 Reference Space impose limitations to the determination of an SP6 Declarative Place in the real world (U).
 Several SP5 Geometric Place Expressions may denote the same SP6 Declarative Place if their precision falls within the same range (I).
@@ -41,6 +53,7 @@ Examples:
 	""" .
   
   crmgeo:SP7_Declarative_Spacetime_Volume a owl:Class;
+    rdfs:label "Declarative Spacetime Volume"@en;
     rdfs:subClassOf crm:E89_Propositional_Object, crm:E92_Spacetime_Volume, <http://www.opengis.net/ont/geosparql#Geometry>;
     rdfs:comment """Scope note: 	This class comprises instances of SP8 Spacetime Volumes (S) whose temporal and spatial extent (U) and position is defined by a SP12 Spacetime Volume Expression. There is one implicit or explicit SP3 Reference Space in which the SP12 Spacetime Volume Expression describes the intended Spacetime Volume. As we restrict the model to Galilean physics and explicitly exclude systems with velocities close to the speed of light we do not model a “Reference Time” as it would be necessary for relativistic physics. This implies that there is only one Reference Time. 
 Even though SP12 Spacetime Volume Expressions have an unlimited precision, measurement devices and the precision of the position of reference features relating the SP4 Spatial Coordinate Reference System to a SP3 Reference Space impose limitations to the determination of the spatial part of a SP7 Declarative Spacetime Volume in the real world (U).
@@ -79,6 +92,7 @@ Examples:
 	""" .
   
   crmgeo:SP5_Geometric_Place_Expression a owl:Class;
+    rdfs:label "Geometric Place Expression"@en;
     rdfs:subClassOf crm:E73_Information_Object, crm:E47_Spatial_Coordinates, <http://www.opengis.net/ont/geosparql#Geometry>;
     rdfs:comment """Scope note: 	This class comprises definitions of places by quantitative expressions. An instance of SP5 Geometric Place Expression can be seen as a prescription of how to find the location meant by this expression in the real world (S), which is based on measuring where the quantities referred to in the expression lead to, beginning from the reference points of the respective reference system. 
 A form of expression may be geometries or map elements defined in a SP4 Spatial Coordinate Reference System that unambiguously identify locations in a SP3 Reference Space. Other forms may refer to areas confined by imaginary lines connecting Phenomenal Places such as trees, islands, cities, mountain tops. 
@@ -90,171 +104,193 @@ Examples:
 • a polygon defining the extent of France""" .
   
   crmgeo:Q16_defines_spacetime_volume a owl:ObjectProperty;
+    rdfs:label "defines spacetime volume"@en;
     rdfs:range crmgeo:SP7_Declarative_Spacetime_Volume;
     rdfs:comment """Scope note:	This property associates an instance of SP12 Spacetime Volume Expression with the instance of SP7 Declarative Spacetime Volume it defines. Syntactic variants or use of different scripts may result in multiple instances of SP12 Spacetime Volume Expressions defining exactly the same SP7 Declarative Spacetime Volume. Transformations between different temporal or spatial reference systems in general result in new definitions of Spacetime Volumes approximating each other.""";
     rdfs:domain crmgeo:SP12_Spacetime_Volume_Expression .
   
-  <http://www.ics.forth.gr/isl/CRMgeo/> a <http://www.w3.org/ns/ldp#Resource>, owl:Ontology,
-      prov:Entity;
-    rdfs:comment "CRMgeo v1.2"@en;
-    prov:generatedAtTime "2021-10-04T05:27:55.543Z"^^xsd:dateTime;
-    rdfs:label "CRMgeo v1.2"@en;
-    prov:wasAttributedTo User:admin .
-  
   crmgeo:Q19i_has_reference_event a owl:ObjectProperty;
+      rdfs:label "has reference event"@en;
     rdfs:range crmgeo:SP11_Temporal_Reference_System;
     rdfs:domain crm:E5_Event .
   
   crmgeo:Q17i_is_expressed_in_terms_of a owl:ObjectProperty;
+      rdfs:label "is expressed in terms of"@en;
     rdfs:range crmgeo:SP12_Spacetime_Volume_Expression;
     rdfs:domain crmgeo:SP11_Temporal_Reference_System .
   
   crmgeo:Q10_defines_place a owl:ObjectProperty;
+      rdfs:label "defines place"@en;
     rdfs:subPropertyOf crm:P87i_identifies;
     rdfs:range crmgeo:SP6_Declarative_Place;
     rdfs:comment """Scope note:	This property associates an instance of SP5 Geometric Place Expression with the instance of SP6 Declarative Place it defines. Syntactic variants or use of different scripts may result in multiple instances of SP5 Geometric Place Expression defining exactly the same place. Transformations between different reference systems in general result in new definitions of places approximating each other.""";
     rdfs:domain crmgeo:SP5_Geometric_Place_Expression .
   
   crmgeo:Q15i_is_expressed_in_terms_of a owl:ObjectProperty;
+      rdfs:label "is expressed in terms of"@en;
     rdfs:domain crmgeo:SP11_Temporal_Reference_System;
     rdfs:range crmgeo:SP14_Time_Expression .
   
   crmgeo:asWKT a owl:ObjectProperty;
+      rdfs:label "asWKT"@en;
     rdfs:range <http://www.opengis.net/ont/geosparql#wktLiteral>;
     rdfs:domain <http://www.opengis.net/ont/geosparql#Geometry>;
     rdfs:subPropertyOf crmgeo:Q10i_place_is_defined_by;
     rdfs:comment """Scope note:	""" .
   
   crmgeo:Q14_defines_time a owl:ObjectProperty;
+      rdfs:label "defines time"@en;
     rdfs:domain crmgeo:SP14_Time_Expression;
     rdfs:comment """Scope note:	This property associates an instance of SP14 Time Expression with the instance of SP10 Declarative Time Span it defines. Syntactic variants or use of different scripts may result in multiple instances of SP14 Time Expression defining exactly the same time span. Transformations between different temporal reference systems in general result in new definitions of time spans approximating each other.""";
     rdfs:range crmgeo:SP10_Declarative_Time-Span .
   
   crmgeo:Q11i_is_approximated_by a owl:ObjectProperty;
+      rdfs:label "is approximated by"@en;
     rdfs:domain crm:E53_Place;
     rdfs:range crmgeo:SP6_Declarative_Place;
     rdfs:subPropertyOf crm:P121_overlaps_with .
   
   crmgeo:Q12_approximates a owl:ObjectProperty;
+      rdfs:label "approximates"@en;
     rdfs:range crm:E92_Spacetime_Volume;
     rdfs:comment """Scope note:	This property approximates a SP8 Spacetime Volume. The property does not state the quality or accuracy of the approximation, but an overlap of the spacetime volume is the minimal requirement.""";
     rdfs:domain crmgeo:SP7_Declarative_Spacetime_Volume .
   
   crmgeo:Q18_is_expressed_in_terms_of a owl:ObjectProperty;
+      rdfs:label "is expressed in terms of"@en;
     rdfs:range crmgeo:SP4_Spatial_Coordinate_Reference_System;
     rdfs:domain crmgeo:SP12_Spacetime_Volume_Expression;
     rdfs:comment """Scope note:	This property defines the spatial coordinate reference system in terms of which a SP12 Spacetime Volume Expression is formulated.""" .
   
   crmgeo:Q17_is_expressed_in_terms_of a owl:ObjectProperty;
+      rdfs:label "is expressed in terms of"@en;
     rdfs:domain crmgeo:SP12_Spacetime_Volume_Expression;
     rdfs:comment """Scope note:	This property defines the temporal reference system in terms of which a SP12 Spacetime Volume Expression is formulated.""";
     rdfs:range crmgeo:SP11_Temporal_Reference_System .
   
   crmgeo:Q13_approximates a owl:ObjectProperty;
+      rdfs:label "approximates"@en;
     rdfs:comment """Scope note:	This property approximates a SP9 Time Intervall. The property does not state the quality or accuracy of the approximation, but an overlap in time is the minimal requirement.""";
     rdfs:domain crmgeo:SP10_Declarative_Time-Span;
     rdfs:range crm:E52_Time-Span .
   
   crmgeo:Q15_is_expressed_in_terms_of a owl:ObjectProperty;
+      rdfs:label "is expressed in terms of"@en;
     rdfs:range crmgeo:SP11_Temporal_Reference_System;
     rdfs:domain crmgeo:SP14_Time_Expression;
     rdfs:comment """Scope note:	This property defines the temporal reference system in terms of which an SP14 Time Expression is formulated.""" .
   
   crmgeo:Q14i_defines_time a owl:ObjectProperty;
+      rdfs:label "defines time"@en;
     rdfs:range crmgeo:SP14_Time_Expression;
     rdfs:domain crmgeo:SP10_Declarative_Time-Span .
   
   crmgeo:asGML a owl:ObjectProperty;
-    rdfs:comment """Scope note:	""";
+      rdfs:label "asGML"@en;
     rdfs:range <http://www.opengis.net/ont/geosparql#gmlLiteral>;
     rdfs:domain <http://www.opengis.net/ont/geosparql#Geometry>;
     rdfs:subPropertyOf crmgeo:Q10i_place_is_defined_by .
   
   crmgeo:Q10i_place_is_defined_by a owl:ObjectProperty;
+      rdfs:label "place is defined by"@en;
     rdfs:domain crmgeo:SP6_Declarative_Place;
     rdfs:range crmgeo:SP5_Geometric_Place_Expression .
   
   crmgeo:Q1_occupied a owl:ObjectProperty;
+      rdfs:label "occupied"@en;
     rdfs:range crmgeo:SP1_Phenomenal_Spacetime_Volume;
     rdfs:domain crm:E4_Period;
     rdfs:comment """Scope note:	This property associates an instance of E4 Period with the 4 dimensional point sets (volumes) in spacetime that it occupied. This instance of SP1 Phenomenal Spacetime Volume includes the trajectories of the participating physical things during their participation in the instance of E4 Period, the open spaces via which they have interacted and the spaces by which they had the potential to interact during that period or event in the way defined by the type of the respective period or event, such as the air in a meeting room transferring the voices. It also comprises the areas controlled by some military power. Therefore instances of E4 Period have fuzzy boundaries in spacetime.""";
     rdfs:subClassOf <http://www.opengis.net/ont/geosparql#Feature> .
   
   crmgeo:Q18i_is_expressed_in_terms_of a owl:ObjectProperty;
+      rdfs:label "is expressed in terms of"@en;
     rdfs:range crmgeo:SP12_Spacetime_Volume_Expression;
     rdfs:domain crmgeo:SP4_Spatial_Coordinate_Reference_System .
   
   crmgeo:Q11_approximates a owl:ObjectProperty;
+      rdfs:label "approximates"@en;
     rdfs:subPropertyOf crm:P121_overlaps_with;
     rdfs:domain crmgeo:SP6_Declarative_Place;
     rdfs:range crm:E53_Place;
     rdfs:comment """Scope note:	This property approximates a phenomenal place which is defined in the same reference space. The property does not state the quality or accuracy of the approximation, but an overlap in area is the minimal requirement.""" .
   
   crmgeo:Q2_occupied a owl:ObjectProperty;
+      rdfs:label "occupied"@en;
     rdfs:range crmgeo:SP1_Phenomenal_Spacetime_Volume;
     rdfs:comment """Scope note:	This property describes the 4 dimensional point sets (volumes) in spacetime that the trajectory of an instance of E18 Physical Thing occupies in spacetime in the course of its existence. We include in the occupied space the space filled by the matter of the physical thing and all inner spaces not accessible in regular function.""";
     rdfs:domain crm:E18_Physical_Thing .
   
   crmgeo:Q16i_defines_spacetime_volume a owl:ObjectProperty;
+      rdfs:label "defines spacetime volume"@en;
     rdfs:domain crmgeo:SP7_Declarative_Spacetime_Volume;
     rdfs:range crmgeo:SP12_Spacetime_Volume_Expression .
   
   crmgeo:Q19_has_reference_event a owl:ObjectProperty;
+      rdfs:label "has reference event"@en;
     rdfs:range crm:E5_Event;
     rdfs:domain crmgeo:SP11_Temporal_Reference_System .
   
   crmgeo:Q13i_approximates a owl:ObjectProperty;
+      rdfs:label "approximates"@en;
     rdfs:range crmgeo:SP10_Declarative_Time-Span;
     rdfs:domain crm:E52_Time-Span .
   
   crmgeo:Q12i_approximates a owl:ObjectProperty;
+      rdfs:label "approximates"@en;
     rdfs:range crmgeo:SP7_Declarative_Spacetime_Volume;
     rdfs:domain crm:E92_Spacetime_Volume .
   
   crmgeo:Q1i_is_occupied_by a owl:ObjectProperty;
+      rdfs:label "is occupied by"@en;
     rdfs:domain crmgeo:SP1_Phenomenal_Spacetime_Volume;
     rdfs:subClassOf <http://www.opengis.net/ont/geosparql#Feature>;
     rdfs:range crm:E4_Period .
   
-  <http://researchspace.org/container/rootContainer/ontologyContainer> <http://www.w3.org/ns/ldp#contains>
-      <http://www.ics.forth.gr/isl/CRMgeo/> .
-  
   crmgeo:Q4i_is_spatial_projection a owl:ObjectProperty;
+      rdfs:label "is spatial projection"@en;
     rdfs:comment "i of";
     rdfs:domain crmgeo:SP2_Phenomenal_Place;
     rdfs:range crmgeo:SP1_Phenomenal_Spacetime_Volume .
   
   crmgeo:Q7i_is_described_by a owl:ObjectProperty;
+      rdfs:label "is described by"@en;
     rdfs:range crmgeo:SP4_Spatial_Coordinate_Reference_System;
     rdfs:domain crmgeo:SP3_Reference_Space .
   
   crmgeo:Q6i_rests_in_relation_to a owl:ObjectProperty;
+      rdfs:label "rests in relation to"@en;
     rdfs:subClassOf <http://www.opengis.net/ont/geosparql#Feature>;
     rdfs:domain crm:E18_Physical_Thing;
     rdfs:range crmgeo:SP3_Reference_Space .
   
   crmgeo:SP15_Geometry a owl:Class;
+      rdfs:label "Geometry"@en;
     rdfs:comment """Scope note: 	This class comprises ....(to be elaborated further)
 	Equivalent to:	http://www.opengis.net/ont/geosparql#Geometry   (geosparql)""";
     rdfs:subClassOf crmgeo:SP6_Declarative_Place, <http://www.opengis.net/ont/geosparql#Geometry> .
   
   crmgeo:Q6_is_at_rest_in_relation_to a owl:ObjectProperty;
+      rdfs:label "is at rest in relation_to"@en;
     rdfs:domain crmgeo:SP3_Reference_Space;
     rdfs:comment """Scope note:	This property associates an instance of SP3 Reference Space with the instance of E18 Physical Thing that is at rest in it. For all instances of E18 Physical Thing exist at least one reference space it is at rest with because of their relative stability of form. Larger constellations of matter may comprise many physical features that are at rest with them.""";
     rdfs:subClassOf <http://www.opengis.net/ont/geosparql#Feature>;
     rdfs:range crm:E18_Physical_Thing .
   
   crmgeo:Q5i_defined_in a owl:ObjectProperty;
+      rdfs:label "defined in"@en;
     rdfs:range crm:E53_Place;
     rdfs:domain crmgeo:SP3_Reference_Space .
   
   crmgeo:Q8_is_fixed_on a owl:ObjectProperty;
+      rdfs:label "is fixed on"@en;
     rdfs:comment """Scope note:	This property defines the physical reference features that ground a spatial coordinate reference system in the real world. 
 In surveying and geodesy this is part of the datum definition and is often a point identified by a physical feature on earth (sometimes monuments) where the earth approximation ellipsoid touches the earth and one axis of the ellipsoid runs through.""";
     rdfs:range crm:E26_Physical_Feature;
     rdfs:domain crmgeo:SP4_Spatial_Coordinate_Reference_System .
   
   crmgeo:SP1_Phenomenal_Spacetime_Volume a owl:Class;
+      rdfs:label "Phenomenal Spacetime Volume"@en;
     rdfs:subClassOf <http://www.opengis.net/ont/geosparql#Feature>, crm:E92_Spacetime_Volume;
     rdfs:comment """Scope note: This class comprises the 4 dimensional point sets (volumes) (S) which material phenomena (I) occupy in Space-Time (S). An instance of S1 Space Time Volume represents the true (I) extent of an instance of E4 Period in spacetime or the true (I) extent of the trajectory of an instance of E18 Physical Thing during the course of its existence, from production to destruction. A fuzziness of the extent lies in the very nature of the phenomenon, and not in the shortcomings of observation (U). The degree of fuzziness with respect to the scale of the phenomenon may vary widely, but the extent is never exact in a mathematical sense. According to modern physics, points in space-time are absolute with respect to the physical phenomena happening at them, regardless the so-called Galilean relativity of spatial or temporal reference systems in terms of which an observer may describe them. Following the theory, points relative to different spatial or temporal reference systems can be related if common points of phenomena in space-time are known in different systems. Instances of S1 Space-Time Volume are sets of such absolute space-time points of phenomena (I).The (Einstein) relativity of spatial and temporal distances is of no concern for the scales of things in the cultural-historical discourse, but does not alter the above principles.[ØE8] The temporal projection of an instance of SP1 Space-Time Volume defines an E52 Time-Span while its spatial projection defines an SP2 Phenomenal Place[ØE9]. The true location of an instance of E18 Physical Thing during some time-span can be regarded as the spatial projection of the restriction of its trajectory to the respective time-span.
 Examples:
@@ -264,6 +300,7 @@ Examples:
 • The Space Time Volume of the temple in Abu Simbel before its removal""" .
   
   crmgeo:SP14_Time_Expression a owl:Class;
+      rdfs:label "Time Expression"@en;
     rdfs:subClassOf <http://www.opengis.net/ont/geosparql#Geometry>, crm:E73_Information_Object,
       crm:E49_Time_Appellation;
     rdfs:comment """Scope note: 	This class comprises definitions of temporal extents by quantitative expressions(S). An instance of SP14 Time Expression defines a declarative temporal interval using a temporal reference system. The identity of a SP14 Time Expression is based on its script or symbolic form (I). Several SP14 Time Expressions can denote the same SP10 Declarative Time Interval. 
@@ -280,7 +317,8 @@ Examples:
 •	9.30 am 1.1.1999 to 2.00 pm 1.1.1999""" .
   
   crmgeo:SP13_Phenomenal_Time-Span a owl:Class;
-    rdfs:comment """Scope note:     	This class comprises instances of SP9 Time Intervalls whose extent (U) and position is defined by the temporal projection of the spatiotemporal extent that can be observed or measured. Thus they derive their identity through the extent in time of a real world phenomenon (I). 
+      rdfs:label "Phenomenal Time-Span"@en;
+    rdfs:comment """Scope note: This class comprises instances of SP9 Time Intervalls whose extent (U) and position is defined by the temporal projection of the spatiotemporal extent that can be observed or measured. Thus they derive their identity through the extent in time of a real world phenomenon (I). 
 
 Examples:  
 •	Duration of the phenomenal temporal extent of the Trafalgar battle
@@ -289,32 +327,38 @@ Examples:
     rdfs:subClassOf crm:E52_Time-Span .
   
   crmgeo:Q4_has_spatial_projection a owl:ObjectProperty;
+      rdfs:label "has spatial projection"@en;
     rdfs:comment """Scope note:	This property describes the spatial projection of an instance of a SP1 Phenomenal Spacetime Volume on an instance of SP2 Phenomenal Place. Even though the projection of a spacetime volume to one instance of SP3 Reference Space is unique, each reference space gives rise to another projection. The projections overlap at the time of the spacetime volume, the respective instances of SP2 Phenomenal Place may later drift apart, or earlier be yet apart.
 The property P7 took place at is a shortcut of the more fully developed path from E4 Period through Q1 occupied, SP1 Phenomenal Spacetime Volume Q4 has spatial projection to SP2 Phenomenal Place.""";
     rdfs:domain crmgeo:SP1_Phenomenal_Spacetime_Volume;
     rdfs:range crmgeo:SP2_Phenomenal_Place .
   
   crmgeo:Q5_defined_in a owl:ObjectProperty;
+      rdfs:label "defined in"@en;
     rdfs:range crmgeo:SP3_Reference_Space;
     rdfs:comment """Scope note:	This property associates an instance of  E53 Place with the instance of  SP3 Reference Space it is defined in.""";
     rdfs:domain crm:E53_Place .
   
   crmgeo:Q3_has_temporal_projection a owl:ObjectProperty;
+      rdfs:label "has temporal projection"@en;
     rdfs:range crmgeo:SP13_Phenomenal_Time-Span;
-    rdfs:comment """Scope note: 	This property describes the temporal projection of an instance of a SP1 Phenomenal Spacetime Volume. The property P4 has time-span is a shortcut of the more fully developed path from E4 Period through Q1 occupied, SP1 Phenomenal Spacetime Volume Q3 has temporal projection to E52 Time Span.""";
+    rdfs:comment """Scope note: This property describes the temporal projection of an instance of a SP1 Phenomenal Spacetime Volume. The property P4 has time-span is a shortcut of the more fully developed path from E4 Period through Q1 occupied, SP1 Phenomenal Spacetime Volume Q3 has temporal projection to E52 Time Span.""";
     rdfs:domain crmgeo:SP1_Phenomenal_Spacetime_Volume .
   
   crmgeo:Q9_is_expressed_in_terms_of a owl:ObjectProperty;
+      rdfs:label "is expressed in terms of"@en;
     rdfs:domain crmgeo:SP5_Geometric_Place_Expression;
     rdfs:range crmgeo:SP4_Spatial_Coordinate_Reference_System;
     rdfs:comment """Scope note:	This property defines the coordinate reference system in terms of which a geometric place expression is formulated.""" .
   
   crmgeo:Q7_describes a owl:ObjectProperty;
+      rdfs:label "describes"@en;
     rdfs:domain crmgeo:SP4_Spatial_Coordinate_Reference_System;
     rdfs:comment """Scope note:	This property associates an instance of SP4 Spatial Coordinate Reference System with the instance of SP3 Reference Space for which it can be used to describe locations.""";
     rdfs:range crmgeo:SP3_Reference_Space .
   
   crmgeo:SP11_Temporal_Reference_System a owl:Class;
+      rdfs:label "Temporal Reference System"@en;
     rdfs:subClassOf crm:E29_Design_or_Procedure;
     rdfs:comment """Scope note:	This class compromises systems(S) that are used to describe positions and extents in a Reference Time. If relativistic effects are negligible in the wider spacetime area of interest and the speeds of associated things, then there is only one unique global reference time. The typical way to measure time is to count the cycles of a periodic process for which we have a hypothesis of constant frequency, such as oscillations of a crystal, molecular arrangement, rotation of earth around itself or around the sun. The origin for a Temporal Reference System is fixed on a reference event. As long as the number of cycles passed from that reference event until now are known, the temporal reference system exists (E) and expressions in this Reference System can be interpreted with respect to the Reference Time. 
 A temporal reference system represents time as a continuous linear interpolation over the infinit series of cycles extended from the reference event to he past and the future, regardless of the temporal position of the mathematical point zero of an instance of E61 Time Primitive, such for instance the gregorian calender begins with the event an arbitrary positiong the point zero as beeing the date of the „Birth of Christ“. The actual date of birth of christ is regarded to be unknown and therefor is not the reference event. 
@@ -332,6 +376,7 @@ Examples:
 •	ISO 8601""" .
   
   crmgeo:SP4_Spatial_Coordinate_Reference_System a owl:Class;
+      rdfs:label "Spatial Coordinate Reference System"@en;
     rdfs:comment """Scope note:	This class compromises systems that are used to describe locations in a SP3 Reference Space (S). An instance of SP4 Spatial Coordinate Reference System is composed of two parts: The first is a Coordinate System which is a set of coordinate axes with specified units of measurement and axis directions. The second part is a set of reference features at rest in the Reference Space it describes in the real world that relate the Coordinate System to real world locations (U) and fix it with respect to the reference object of its Reference Space .
 In surveying and geodesy, instance of SP4 Spatial Coordinate Reference System are called a datum. In the case of spatial coordinate reference systems for the earth the datum consists of the reference points and an ellipsoid that approximates the shape of the earth. National systems often use ellipsoids that approximate their territory best and shift them in an appropriate position relative to the earth while WGS84 is an ellipsoid for the whole earth and used in GPS receivers. In engineering a datum is a reference feature of an object used to create a reference system for measurement.The set of reference features in the real world are subset of E26 Physical Feature that are within the described reference space at rest and pertain to the E18 Physical Thing the reference space is at rest with.
 SP4 Spatial Coordinate Reference Systems have a validity for a certain spatial extent of the SP3 Reference Space and in addition a temporal validity. The combination of coordinate reference system and datum provides a unique identity (I). SP4 Spatial Coordinate Reference Systems may be defined for the earth, moving objects like planes or ships, linear features like boreholes or local systems. If there is a standardised identifier system available, such as EPSG codes, it should be used.
@@ -343,13 +388,15 @@ Examples:
     rdfs:subClassOf crm:E29_Design_or_Procedure .
   
   crmgeo:Q2i_is_occupied_by a owl:ObjectProperty;
+      rdfs:label "is occupied by"@en;
     rdfs:range crm:E18_Physical_Thing;
     rdfs:domain crmgeo:SP1_Phenomenal_Spacetime_Volume .
   
   crmgeo:SP10_Declarative_Time-Span a owl:Class;
+      rdfs:label "Declarative Time-Span"@en;
     rdfs:subClassOf crm:E89_Propositional_Object, <http://www.opengis.net/ont/geosparql#Geometry>,
       crm:E52_Time-Span;
-    rdfs:comment """Scope note:     	This class comprises instances of SP9 Time Intervalls that represent the Time Span defined by a SP 14 Time Expression. Thus they derive their identity through an expression defining an extent in time. Even though SP10 Declarative Time Spans have an unlimited precision, measurement devices and the possible precision within the SP11 Temporal Reference System impose limitations to the determination of a SP10 Declarative Time Span. The accuracy of a SP10 Declarative Time Spans depends upon the documentation and measurement method. 
+    rdfs:comment """Scope note:This class comprises instances of SP9 Time Intervalls that represent the Time Span defined by a SP 14 Time Expression. Thus they derive their identity through an expression defining an extent in time. Even though SP10 Declarative Time Spans have an unlimited precision, measurement devices and the possible precision within the SP11 Temporal Reference System impose limitations to the determination of a SP10 Declarative Time Span. The accuracy of a SP10 Declarative Time Spans depends upon the documentation and measurement method. 
 SP10 Declarative Time Spans may be used to approximate actual (phenomenal) Time-Spans of temporal entities.  
 
 Examples:  
@@ -358,10 +405,12 @@ Examples:
 •	Extent in time defined by the expression “14h30 – 16h22 4th July 1945”""" .
   
   crmgeo:Q3i_is_temporal_projection a owl:ObjectProperty;
+      rdfs:label "is temporal projection"@en;
     rdfs:range crmgeo:SP1_Phenomenal_Spacetime_Volume;
     rdfs:domain crmgeo:SP13_Phenomenal_Time-Span .
   
   crmgeo:SP12_Spacetime_Volume_Expression a owl:Class;
+      rdfs:label "Spacetime Volume Expression"@en;
     rdfs:subClassOf crm:E73_Information_Object, <http://www.opengis.net/ont/geosparql#Geometry>;
     rdfs:comment """Scope Note:	This class comprises instances of E59 Primitive Value for spacetime volumes that should be implemented with appropriate validation, precision, interval logic and reference systems to express date ranges and geometries relevant to cultural documentation. A Spacetime Volume Expression may consist of one expression including temporal and spatial information like in GML or a different form of expressing spacetime in an integrated way like a formula containing all 4 dimensions.
 A Spacetime Volume Expression defines a SP7 Declarative Spacetime Volume, which means that the identity of the Spacetime Volume is derived from its geometric and temporal definition. This declarative Spacetime Volume allows for the application of all Spacetime Volume properties to relate phenomenal Spacetime Volumes of Periods and Physical Things to propositions about their spatial and temporal extents. 
@@ -371,14 +420,17 @@ Examples:
 """ .
   
   crmgeo:Q8i_fixes a owl:ObjectProperty;
+      rdfs:label "fixes"@en;
     rdfs:range crmgeo:SP4_Spatial_Coordinate_Reference_System;
     rdfs:domain crm:E26_Physical_Feature .
   
   crmgeo:Q9i_terms_express a owl:ObjectProperty;
+      rdfs:label "terms express"@en;
     rdfs:domain crmgeo:SP4_Spatial_Coordinate_Reference_System;
     rdfs:range crmgeo:SP5_Geometric_Place_Expression .
   
   crmgeo:SP3_Reference_Space a owl:Class;
+      rdfs:label "Reference Space"@en;
     rdfs:subClassOf crm:E1_CRM_Entity;
     rdfs:comment """Scope note:	This class comprises the (typically Euclidian) Space (S) that is at rest (I) in relation to an instance of E18 Physical Thing and extends (U) infinitely beyond it. It is the space in which we typically expect things to stay in place if no particular natural or human distortion processes occur. This definition requires that at least essential parts of the respective physical thing have a stability of form. The degree of this stability (e.g., elastic deformation of a ship on sea, landslides, geological deformations) limits the precision to which an instance of SP3 Reference Space is defined. It is possible to construct types of (non Euclidian) reference spaces which adapt to elastic deformations or have other geometric and dynamic properties to adapt to changes of form of the reference object, but they are of rare utility in the cultural-historical discourse. [ØE11]
 An instance of SP3 Reference Space begins to exist with the largest thing that is at rest in it and ceases to exist with its E6 Destruction[ØE12]. If other things are at rest in the same space and their time-span of existence falls within the one of the reference object, they share the same reference space (I). It has therefore the same temporal extent (time-span of existence) as the whole of the E18 Physical Things it is at rest with (E). 
@@ -389,6 +441,7 @@ Examples:
 • The Space inside and around the Solar system""" .
   
   crmgeo:SP2_Phenomenal_Place a owl:Class;
+      rdfs:label "Phenomenal Place"@en;
     rdfs:subClassOf <http://www.opengis.net/ont/geosparql#Feature>, crm:E53_Place;
     rdfs:comment """Scope note: This class comprises instances of E53 Place (S) whose extent (U) and position is defined by the spatial projection of the spatiotemporal extent of a real world phenomenon that can be observed or measured. The spatial projection depends on the instance of S3 Reference Space onto which the extent of the phenomenon is projected. In general, there are no limitations to the number of Reference Spaces one could regard, but only few choices are relevant for the cultural-historical discourse. Typical for the archaeological discourse is to choose a reference space with respect to which the remains of some events would stay at the same place, for instance, relative to the bedrock of a continental plate. On the other side, for the citizenship of babies born in aeroplanes, the space in which the boundaries of the overflown state are defined may be relevant (I). Instances of SP2 Phenomenal Place exist as long as the respective reference space is defined. Note that we can talk in particular about what was at a place in a country before a city was built there, i.e., before the time the event occurred by which the place is defined, but we cannot talk about the place of earth before it came into existence due to lack of a reasonable reference space (E).
 Examples:

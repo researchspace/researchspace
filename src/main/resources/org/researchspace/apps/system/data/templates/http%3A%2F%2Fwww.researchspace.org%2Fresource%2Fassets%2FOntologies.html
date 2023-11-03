@@ -188,21 +188,29 @@
                                                     template='{{> template}}'
                                     >
                                           <template id='template'>
-                                            <div class="">
+                                            <div>
                                               The system includes 
                                               <b>{{bindings.0.count.value}} knowledge pattern</b>
                                                from this ontology.
                                             </div>
                                           </template>
                                       </semantic-query>
-                                    
-                                    
                                   </div>
                                 </template>
 
-                                <template id='else'>
+                                <template id='else'> 
                                   <mp-json-renderer
-                                    get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'>
+                                    get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'
+                                    template="{{> template}}">
+
+                                    <template id='template'>
+                                      <div>
+                                        The system includes 
+                                        <b>{{this.kp_count}} knowledge pattern</b>
+                                         from this ontology.
+                                      </div>
+                                    </template>
+
                                   </mp-json-renderer>
                                 </template>
                             </semantic-if>

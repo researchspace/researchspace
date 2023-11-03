@@ -66,8 +66,7 @@ public class KnowledgePatternsEndpoint {
         int numberOfKPsGenerated = pg.generateKnowledgePatternsFromOntology(ontologyIri);
 
         Map<String, Object> json = new HashMap<String, Object>();;
-        json.put("ontology", ontologyIri);
-        json.put("number of knowledge patterns created", numberOfKPsGenerated);
+        json.put("kp_count", numberOfKPsGenerated);
         return Response.ok().entity(json).build();
     }
 

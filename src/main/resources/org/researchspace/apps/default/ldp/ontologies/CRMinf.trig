@@ -27,24 +27,21 @@
 @prefix frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/> .
 
 crminf:context {
-  crminf:I1_Argumentation a owl:Class;
+    crminf:I1_Argumentation a owl:Class;
+    rdfs:label "Argumentation"@en;
     rdfs:subClassOf crm:E7_Activity;
-    rdfs:comment """
-            This class comprises the activity of making honest inferences or observations. An honest inference or observation is one in which the E39 Actor carrying out the I1 Argumentation justifies and believes that the I6 Belief Value associated with resulting I2 Belief about the I4 Proposition Set is the correct value at the time that the activity was undertaken and that any I3 Inference Logic  or methodology was correctly applied.
-	Only one instance of E39 Actor may carry out an instance of I1 Argumentation, though the E39 Actor may, of course, be an instance of E74 Group.
-"""@en .
+    rdfs:comment """This class comprises the activity of making honest inferences or observations. An honest inference or observation is one in which the E39 Actor carrying out the I1 Argumentation justifies and believes that the I6 Belief Value associated with resulting I2 Belief about the I4 Proposition Set is the correct value at the time that the activity was undertaken and that any I3 Inference Logic  or methodology was correctly applied.
+	Only one instance of E39 Actor may carry out an instance of I1 Argumentation, though the E39 Actor may, of course, be an instance of E74 Group."""@en .
   
   crminf:J4_that a owl:ObjectProperty;
+    rdfs:label "that"@en;
     rdfs:range crminf:I4_Proposition_Set;
     rdfs:domain crminf:I2_Belief;
-    rdfs:comment """
-            This property associates an instance of I4 Proposition Set with the instance of I2 Belief that holds an opinion about it.
-		"""@en .
+    rdfs:comment """This property associates an instance of I4 Proposition Set with the instance of I2 Belief that holds an opinion about it."""@en .
   
   crminf:J7_is_based_on_evidence a owl:ObjectProperty;
-    rdfs:comment """
-		This property associates an instance of I7 Belief Adoption with the instance of E73 Information Object that was the source of or evidence for the I4 Proposition Set that was adopted.
-		"""@en;
+    rdfs:label "is based on evidence"@en;
+    rdfs:comment """This property associates an instance of I7 Belief Adoption with the instance of E73 Information Object that was the source of or evidence for the I4 Proposition Set that was adopted."""@en;
     rdfs:subPropertyOf crm:P16_used_specific_object;
     rdfs:domain crminf:I7_Belief_Adoption;
     rdfs:range crm:E73_Information_Object .
@@ -60,36 +57,45 @@ crminf:context {
       <http://www.ics.forth.gr/isl/CRMinf/> .
   
   crminf:J6i_adopted_by a owl:ObjectProperty;
+    rdfs:label "adopted by"@en;
     rdfs:domain crminf:I2_Belief;
     rdfs:subPropertyOf crm:P17i_motivated;
     rdfs:range crminf:I7_Belief_Adoption .
+    
   
   crminf:J1i_was_premise_for a owl:ObjectProperty;
+    rdfs:label "was premise for"@en;
     rdfs:range crminf:I5_Inference_Making;
     rdfs:domain crminf:I2_Belief;
     rdfs:subPropertyOf crm:P17i_motivated .
   
   crminf:J7i_is_evidence_for a owl:ObjectProperty;
+    rdfs:label "is evidence for"@en;
     rdfs:range crminf:I7_Belief_Adoption;
     rdfs:subPropertyOf crm:P16i_was_used_for;
     rdfs:domain crm:E73_Information_Object .
   
   crminf:J3i_was_applied_by a owl:ObjectProperty;
+    rdfs:label "was applied by"@en;
     rdfs:subPropertyOf crm:P16i_was_used_for;
     rdfs:range crminf:I5_Inference_Making;
     rdfs:domain crminf:I3_Inference_Logic .
   
   crminf:I5_Inference_Making a owl:Class;
-    rdfs:comment """
-            This class comprises the action of making honest propositions and statements about particular states of affairs in reality or in possible realities or categorical descriptions of reality by using inferences from other statements based on hypotheses and any form of formal or informal logic. It includes evaluations, calculations, and interpretations based on mathematical formulations and propositions. 
+  rdfs:label "Inference Making"@en;
+    rdfs:comment """This class comprises the action of making honest propositions and statements about particular states of affairs in reality or in possible realities or categorical descriptions of reality by using inferences from other statements based on hypotheses and any form of formal or informal logic. It includes evaluations, calculations, and interpretations based on mathematical formulations and propositions. 
 	It is characterized by the use of an existing I2 Belief as the premise that together with a set of I3 Inference Logic draws a further I2 Belief as a conclusion.
-	Documenting instances of I5 Inference Making primarily enables tracing the dependency of knowledge from conclusion to premise through subsequent inferences, possibly back to primary evidence, so that the range of influence of knowledge revision at any intermediate stage of complex inference chains on current convictions can be narrowed down by query. The explicit reference to the applied inference logic further allows scholars or scientists to assess if they can or would follow the documented argument. The class is not intended to promote the use of computationally decidable systems of logic as replacements of scholarly justifications of arguments, even though it allows for documenting the use of decidable logic, if that was deemed adequate for the problem at hand.  Principles of scholarly justifications of arguments are also regarded as kinds of inference logic.
-"""@en;
+	Documenting instances of I5 Inference Making primarily enables tracing the dependency of knowledge from conclusion to premise through
+   subsequent inferences, possibly back to primary evidence, so that the range of influence of knowledge revision at any intermediate stage 
+   of complex inference chains on current convictions can be narrowed down by query. The explicit reference to the applied inference logic 
+   further allows scholars or scientists to assess if they can or would follow the documented argument. The class is not intended to promote 
+   the use of computationally decidable systems of logic as replacements of scholarly justifications of arguments, even though it allows for 
+   documenting the use of decidable logic, if that was deemed adequate for the problem at hand.  Principles of scholarly justifications of arguments are also regarded as kinds of inference logic."""@en;
     rdfs:subClassOf crminf:I1_Argumentation .
   
   crminf:I3_Inference_Logic a owl:Class;
-    rdfs:comment """
-            This class comprises the rules used as inputs to I5 Inference Making.
+  rdfs:label "Inference Logic"@en;
+    rdfs:comment """This class comprises the rules used as inputs to I5 Inference Making.
 	In this context the term “logic” is used in the most general sense of the Greek term, and not in the mathematical sense only. Examples are the direct application of formal logic, mathematical theories and calculus, formal or informal default reasoning based on default values associated with categories, probabilistic reasoning based mathematical models and assumed or observed frequencies for certain categories, application of theoretical social models and comparisons with “cultural parallels”, etc. An instance of Inference Logic could also be a reference to the exact software release of a Bayesian reasoner, a rule such as “later layers are on top of earlier layers”, or even a term like “social intuition”, if this is scholarly acceptable. (after Doerr, Kritsotaki and Boutsika 2011). Indeed anything that is scientifically or academically acceptable as a method for drawing conclusions may be included for instance human pattern recognition.
 	A particular instance of I3 Inference Logic would be the algorithm implemented in a particular revision of a software package.
 	Instances of I3 Inference Logic not only comprise the method of reasoning, but also the set of categorical laws or axioms used in the argumentation. Often both are inextricably interwoven, for instance in a software implementation.
@@ -102,56 +108,57 @@ crminf:context {
     rdfs:subPropertyOf crminf:O2_removed .
   
   crminf:I4_Proposition_Set a owl:Class;
+  rdfs:label "Proposition Set"@en;
     rdfs:subClassOf crm:E73_Information_Object;
-    rdfs:comment """
-            This class comprises the sets of formal, binary propositions that an I2 Belief is held about. It could be implemented as a named graph, a spreadsheet or any other structured data-set. Regardless of the specific syntax employed, the effective propositions it contains should be made up of unambiguous identifiers, concepts of a formal ontology and constructs of logic."""@en .
-  
+    rdfs:comment """This class comprises the sets of formal, binary propositions that an I2 Belief is held about. It could be implemented as a named graph, a spreadsheet or any other structured data-set. Regardless of the specific syntax employed, the effective propositions it contains should be made up of unambiguous identifiers, concepts of a formal ontology and constructs of logic."""@en .
   crmsci:S4_Observation a owl:Class;
     rdfs:subClassOf crminf:I1_Argumentation .
   
   crminf:J6_adopted a owl:ObjectProperty;
+    rdfs:label "adopted"@en;
     rdfs:subPropertyOf crm:P17_was_motivated_by;
     rdfs:range crminf:I2_Belief;
-    rdfs:comment """
-            This property associates an instance of I2 Belief with the instance of I7 Belief Adoption that used it as the source of the I6 Belief Value and propositions used in the resulting new I2 Belief.
+    rdfs:comment """This property associates an instance of I2 Belief with the instance of I7 
+    Belief Adoption that used it as the source of the I6 Belief Value and propositions used in the resulting new I2 Belief.
 		"""@en;
     rdfs:domain crminf:I7_Belief_Adoption .
   
   crminf:J2i_was_concluded_by a owl:ObjectProperty;
+    rdfs:label "was concluded by"@en;
     rdfs:domain crminf:I2_Belief;
     rdfs:subPropertyOf crm:P116i_is_started_by;
     rdfs:range crminf:I1_Argumentation .
   
   crminf:I2_Belief a owl:Class;
-    rdfs:comment """
-            This class comprises the notion that the associated I4 Proposition Set is held to have a particular I6 Belief Value by a particular E39 Actor. This can be understood as the period of time that an individual or group holds a particular set of propositions to be true, false or somewhere in between."""@en;
+    rdfs:label "Belief"@en;
+    rdfs:comment """This class comprises the notion that the associated I4 Proposition Set is held to have a particular 
+    I6 Belief Value by a particular E39 Actor. This can be understood as the period of time that an individual or group holds 
+    a particular set of propositions to be true, false or somewhere in between."""@en;
     rdfs:subClassOf crm:E2_Temporal_Entity .
   
   crminf:J2_concluded_that a owl:ObjectProperty;
+    rdfs:label "concluded that"@en;
     rdfs:domain crminf:I1_Argumentation;
     rdfs:subPropertyOf crm:P116_starts;
-    rdfs:comment """
-            This property associates an instance of I2 Belief with the instance of I1 Argumentation that concluded it.
-		"""@en;
+    rdfs:comment """This property associates an instance of I2 Belief with the instance of I1 Argumentation that concluded it."""@en;
     rdfs:range crminf:I2_Belief .
   
   crmsci:S6_Data_Evaluation a owl:Class;
+    rdfs:label "Data Evaluation"@en;
     rdfs:subClassOf crminf:I5_Inference_Making .
   
   crminf:I7_Belief_Adoption a owl:Class;
+    rdfs:label "Belief Adoption"@en;
     rdfs:subClassOf crminf:I1_Argumentation;
-    rdfs:comment """
-            This class comprises the action of an E39 Actor adopting a particular instance of I2 Belief to create a new instance of I2 Belief that shares some of the same propositions in the original I4 Proposition Set and the associated I6 Belief Value.
+    rdfs:comment """This class comprises the action of an E39 Actor adopting a particular instance of I2 Belief to create a new instance of I2 Belief that shares some of the same propositions in the original I4 Proposition Set and the associated I6 Belief Value.
 	The basis of I7 Belief Adoption is trust in the source of the instance of I2 Belief rather than the application of the rules in instances of I3 Inference Logic.
 		Typical examples are the citation of academic papers or the reuse of data sets.
-	Where an instance of I7 Belief Adoption is based on personal communication (pers.comm.) this should be represented by using P2 has type: “Pers.Comm.” directly from the instance of I7 Belief Adoption.
-"""@en .
+	Where an instance of I7 Belief Adoption is based on personal communication (pers.comm.) this should be represented by using P2 has type: “Pers.Comm.” directly from the instance of I7 Belief Adoption."""@en .
   
   crminf:J3_applies a owl:ObjectProperty;
+    rdfs:label "applies"@en;
     rdfs:subPropertyOf crm:P16_used_specific_object;
-    rdfs:comment """
-            This property associates an instance of I3 Inference Logic with the instance of I5 Inference Making that used it to draw its conclusion.
-		"""@en;
+    rdfs:comment """This property associates an instance of I3 Inference Logic with the instance of I5 Inference Making that used it to draw its conclusion."""@en;
     rdfs:range crminf:I3_Inference_Logic;
     rdfs:domain crminf:I5_Inference_Making .
   
@@ -159,13 +166,13 @@ crminf:context {
     rdfs:subClassOf crminf:I5_Inference_Making .
   
   crminf:J4i_is_subject_of a owl:ObjectProperty;
+    rdfs:label "is subject of"@en;
     rdfs:range crminf:I2_Belief;
     rdfs:domain crminf:I4_Proposition_Set .
   
   crminf:J1_used_as_premise a owl:ObjectProperty;
-    rdfs:comment """
-            This property associates an instance of I2 Belief with the instance of I5 Inference Making that used it as a premise.
-		"""@en;
+    rdfs:label "used as premise"@en;
+    rdfs:comment """This property associates an instance of I2 Belief with the instance of I5 Inference Making that used it as a premise."""@en;
     rdfs:domain crminf:I5_Inference_Making;
     rdfs:range crminf:I2_Belief;
     rdfs:subPropertyOf crm:P17_was_motivated_by .

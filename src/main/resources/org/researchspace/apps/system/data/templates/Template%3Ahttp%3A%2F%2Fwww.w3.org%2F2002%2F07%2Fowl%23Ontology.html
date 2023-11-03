@@ -14,82 +14,78 @@
 </ol>
 
 <div class="page">
-  <div class='page__header-navtabs' style="padding-bottom:20px;">
-    [[> Platform:DefaultResourceHeader]]
-    
-    <mp-overlay-dialog title="Print Preview" type="lightbox">
-      <mp-overlay-dialog-trigger>
-        <rs-icon icon-type="round" icon-name="print" title='Print' class="mp-action" style="padding: 16px 25px 0px 0px;"></rs-icon>
-      </mp-overlay-dialog-trigger>
-      <mp-overlay-dialog-content>
-        <mp-print pages='["[[this]]"]'></mp-print>
-      </mp-overlay-dialog-content>
-    </mp-overlay-dialog>  
+  <div class="container-fluid">
+    <bs-row class="row-center">
+      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+  
+        <div style="padding:20px 0 10px 0;">
+          [[> Platform:DefaultResourceHeader]]
+        </div>
+
+        <bs-tabs id="tabs" unmount-on-exit=true>
+          <bs-tab event-key="1" title="Classes" style="padding-top: 20px;">
+            <bs-row>
+              <bs-col sm=8> 
+                <semantic-table query="SELECT DISTINCT ?Class WHERE { 
+                                          GRAPH ?g { ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
+                                        } ORDER BY ?Class"
+                                options='{"showTableHeading": false, "filterPlaceholderText":"Filter Classes"}'
+                                no-result-template='<i>No Classes.</i>'
+                ></semantic-table>
+              </bs-col>
+              <bs-col sm=4>
+                <semantic-tree 
+                          query="
+                              SELECT DISTINCT ?node ?parent WHERE {
+                                GRAPH ?g { ?? a owl:Ontology . { ?node a owl:Class } UNION { ?x rdfs:subClassOf ?node } }
+                                OPTIONAL { ?node rdfs:subClassOf ?parent. FILTER(ISIRI(?parent)) }
+                                FILTER(ISIRI(?node))
+                              }
+                              ORDER BY ?node"                                    
+                          collapsed="true"
+                          keys-opened='["[[this]]"]'
+                          parentBindingName="parent"
+                          nodeBindingName="node">
+                  </semantic-tree> 
+              </bs-col>
+            </bs-row>
+          </bs-tab>
+          <bs-tab event-key="2" title="Object Properties" style="padding-top: 20px;">
+            <semantic-table query="SELECT distinct ?ObjectProperty WHERE { 
+                                      GRAPH ?g { ?ObjectProperty rdf:type owl:ObjectProperty . ?? rdf:type owl:Ontology } 
+                                  } order by ?ObjectProperty"
+                            options='{"showTableHeading": false, "filterPlaceholderText":"Filter Object Properties"}'
+                            no-result-template='<i>No Object Properties.</i>'>
+            </semantic-table>
+          </bs-tab>
+          <bs-tab event-key="3" title="Datatype Properties" style="padding-top: 20px;">
+            <semantic-table query="SELECT distinct ?DatatypeProperty WHERE { 
+                                      GRAPH ?g { ?DatatypeProperty rdf:type owl:DatatypeProperty . ?? rdf:type owl:Ontology } 
+                                  } order by ?DatatypeProperty"
+                            options='{"showTableHeading": false, "filterPlaceholderText":"Filter Datatype Properties"}'
+                            no-result-template='<i>No Datatype Properties.</i>'>
+            </semantic-table>
+          </bs-tab>    
+          <bs-tab event-key="4" title="Individuals" style="padding-top: 20px;">
+            <semantic-table query='SELECT ?Individual ?Class WHERE { 
+                                    GRAPH ?g { ?Individual rdf:type ?Class . ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology } 
+                                    FILTER( !isBlank(?Individual))
+                                  } LIMIT 500'
+                            options='{"filterPlaceholderText":"Filter Individuals"}'
+                            no-result-template='<i>No Individuals.</i>'>
+            </semantic-table>
+          </bs-tab>
+          <bs-tab event-key="5" title="Diagrams" style="padding-top: 20px;">
+            [[!-- [[> http://www.researchspace.org/resource/assets/OntodiaDiagrams]] --]]
+            <mp-page-loader iri='http://www.researchspace.org/resource/assets/OntodiaDiagramsTable' urlqueryparam-ontology-iri='[[this]]'></mp-page-loader>    
+          </bs-tab>
+          <bs-tab event-key="6" title="VOWL" style="padding-top: 20px;">
+            [[!-- [[> http://www.researchspace.org/resource/OntologyTemplateVowl]] --]]
+            <mp-page-loader iri="http://www.researchspace.org/resource/OntologyTemplateVowl"></mp-page-loader>    
+          </bs-tab>
+        </bs-tabs>
+        
+      </bs-col>
+    </bs-row> <!--  close row -->
   </div>
-  [[!-- We assume that context is defined only when we load the page using print component, only then we want to include print related template. --]]
-  [[#if (urlParam "context")]]
-    [[> http://www.researchspace.org/resource/assets/OntologyPrint ]]
-  [[/if]]
-  <bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
-            <bs-tab event-key="1" title="Classes">
-               <bs-row>
-  							<bs-col sm=8> 
-									 <semantic-table query="SELECT DISTINCT ?Class WHERE { 
-                                            GRAPH ?g { ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology  } FILTER( !isBlank(?Class))
-                                           } ORDER BY ?Class"
-                                  options='{"showTableHeading": false, "filterPlaceholderText":"Filter Classes"}'
-                                  no-result-template='<i>No Classes.</i>'
-                  ></semantic-table>
-                 </bs-col>
-                 <bs-col sm=4>
-                   <semantic-tree 
-                             query="
-                                SELECT DISTINCT ?node ?parent WHERE {
-                                  GRAPH ?g { ?? a owl:Ontology . { ?node a owl:Class } UNION { ?x rdfs:subClassOf ?node } }
-                                  OPTIONAL { ?node rdfs:subClassOf ?parent. FILTER(ISIRI(?parent)) }
-                                  FILTER(ISIRI(?node))
-                                }
-                                ORDER BY ?node"                                    
-                             collapsed="true"
-                             keys-opened='["[[this]]"]'
-                             parentBindingName="parent"
-                             nodeBindingName="node">
-                  	</semantic-tree> 
-                 </bs-col>
-                </bs-row>
-            </bs-tab>
-            <bs-tab event-key="2" title="Object Properties">
-               <semantic-table query="SELECT distinct ?ObjectProperty WHERE { 
-                                      	GRAPH ?g { ?ObjectProperty rdf:type owl:ObjectProperty . ?? rdf:type owl:Ontology } 
-                                     } order by ?ObjectProperty"
-                            	options='{"showTableHeading": false, "filterPlaceholderText":"Filter Object Properties"}'
-                              no-result-template='<i>No Object Properties.</i>'>
-               </semantic-table>
-            </bs-tab>
-            <bs-tab event-key="3" title="Datatype Properties">
-               <semantic-table query="SELECT distinct ?DatatypeProperty WHERE { 
-                                      	GRAPH ?g { ?DatatypeProperty rdf:type owl:DatatypeProperty . ?? rdf:type owl:Ontology } 
-                                     } order by ?DatatypeProperty"
-                               options='{"showTableHeading": false, "filterPlaceholderText":"Filter Datatype Properties"}'
-                               no-result-template='<i>No Datatype Properties.</i>'>
-               </semantic-table>
-            </bs-tab>    
-            <bs-tab event-key="4" title="Individuals">
-              <semantic-table query='SELECT ?Individual ?Class WHERE { 
-                            					GRAPH ?g { ?Individual rdf:type ?Class . ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology } 
-                                     	FILTER( !isBlank(?Individual))
-                           					} LIMIT 500'
-                              options='{"filterPlaceholderText":"Filter Individuals"}'
-                              no-result-template='<i>No Individuals.</i>'>
-              </semantic-table>
-            </bs-tab>
-            <bs-tab event-key="5" title="Diagrams">
-               [[!-- [[> http://www.researchspace.org/resource/assets/OntodiaDiagrams]] --]]
-               <mp-page-loader iri='http://www.researchspace.org/resource/assets/OntodiaDiagramsTable' urlqueryparam-ontology-iri='[[this]]'></mp-page-loader>    
-            </bs-tab>
-            <bs-tab event-key="6" title="VOWL">
-               [[!-- [[> http://www.researchspace.org/resource/OntologyTemplateVowl]] --]]
-               <mp-page-loader iri="http://www.researchspace.org/resource/OntologyTemplateVowl"></mp-page-loader>    
-            </bs-tab>
-  </bs-tabs>
 </div>

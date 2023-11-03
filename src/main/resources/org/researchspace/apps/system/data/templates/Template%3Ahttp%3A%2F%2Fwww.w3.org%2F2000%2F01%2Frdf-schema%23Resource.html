@@ -1,11 +1,11 @@
-<ol class="page-breadcrumb">
+[[!-- <ol class="page-breadcrumb">
   <li>
     <mp-link title="Home" url="/">Home</mp-link>
   </li>
   <li class="active">
     <mp-label iri='[[this]]'></mp-label>
   </li>
-</ol>
+</ol> --]]
 
 <style>
   #tabs .tab-ontodia {
@@ -16,12 +16,12 @@
   }
 </style>
 
-<div class="page">
+<div class="page__section-container">
 	[[#if (ask "ASK { {SELECT * WHERE {?? ?p ?o}LIMIT 1}UNION {SELECT * WHERE {?s ?? ?o}LIMIT 1}UNION {SELECT * WHERE {?s ?p ??}LIMIT 1}UNION{ {SELECT * WHERE {?a ?p ?o. FILTER(??=<Template:http://www.w3.org/2000/01/rdf-schema#Resource> )} LIMIT 1} } }")]]
-    <div class='page__header-navtabs'>
+    <div>
       [[> Platform:DefaultResourceHeader]]
     </div>
-    <bs-tabs id="tabs" class='page__body-navtabs' unmount-on-exit=true>
+    <bs-tabs id="tabs" unmount-on-exit=true>
       <bs-tab event-key="0" class="tab-ontodia" title="Knowledge Graph">
         <ontodia id='ontodia' hide-toolbar=true hide-panels=true hide-scroll-bars=true hide-navigation-confirmation=true auto-zoom=true settings=nostats iri='[[this]]'></ontodia>
       </bs-tab>

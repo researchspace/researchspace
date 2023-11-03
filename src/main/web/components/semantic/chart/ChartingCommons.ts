@@ -129,7 +129,7 @@ export interface SemanticChartConfig {
   noResultTemplate?: string;
 
   /**
-   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied to render tooltip for chart points; the following properies are provided:
+   * <semantic-link iri='http://help.researchspace.org/resource/FrontendTemplating'>Template</semantic-link> which is applied to render tooltip for chart points; the following properties are provided:
    * <mp-documentation type="ChartTooltipData"></mp-documentation>
    */
   tooltipTemplate?: string;

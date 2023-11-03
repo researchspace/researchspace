@@ -41,7 +41,9 @@
                 </mp-copy-to-clipboard> --]]
 
                 [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:create:any")]]
-                  <mp-ldp-duplicate-resource-action iri="[[this]]" container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" label="new Knowledge Pattern IRI">
+                  <mp-ldp-duplicate-resource-action iri="[[this]]" 
+                  container="http://www.researchspace.org/resource/system/fieldDefinitionContainer" 
+                  label="new Knowledge Pattern IRI">
                     <button class="btn btn-default btn-textAndIcon">
                       <rs-icon icon-type="round" icon-name="file_copy"></rs-icon>
                       Duplicate</button>
@@ -59,7 +61,10 @@
                 
                 [[#if (hasPermission "api:ldp:container:<http://www.researchspace.org/resource/system/fieldDefinitionContainer>:delete:any")]]
                   <semantic-if query='ASK {
-                                        <[[this]]> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . 
+                                        { <[[this]]> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . }
+                                        UNION 
+                                        { <[[this]]> <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
+                                          ?ontology a owl:Ontology . }
                                       }'
                                 then='{{> disableDelete}}'
                                 else='{{> delete}}'>

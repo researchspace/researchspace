@@ -101,7 +101,10 @@
         </mp-ldp-export-resource>
 
         <semantic-if query='ASK {
-                              <{{subject.value}}> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . 
+                              { <{{subject.value}}> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . }
+                              UNION 
+                              {<{{subject.value}}> <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
+                                ?ontology a owl:Ontology . }
                             }'
                       then='{{> disableDelete}}'
                       else='{{> delete}}'>

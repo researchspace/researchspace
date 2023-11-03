@@ -95,11 +95,16 @@ interface Props {
   navigateTo?: string;
 
    /**
-   * hide form actions (KP update) when KP has tupe 'system'
+   * hide form actions (KP update): for eg. when KP is type 'system' or from an ontology
    *
    * @default false
    */
   hideFormActions?: boolean;
+
+  badgeLabel?: string;
+
+  badgeTooltip?: string;
+
 }
 
 /* Default queries to be set on the SPARQL input elements as placeholders */
@@ -221,14 +226,16 @@ class FieldEditorComponent extends Component<Props, State> {
     )
   }
 
-  private renderFormAlert() {
+  private renderFormBadge() {
+    const label = this.props.badgeLabel || 'my label'
+    const tooltip = this.props.badgeTooltip || 'my tooltip'
     return (
         <div style={ {position:'relative'} }>
-          <span className='badge badge--secondary' style={{height: '32px', padding: '0 15px'}}>System knowledge pattern</span>
+          <span className='badge badge--secondary' style={{height: '32px', padding: '0 15px'}}>{label}</span>
           <OverlayTrigger
             trigger={['hover', 'click']}
             placement="bottom"
-            overlay={<Popover id="tooltip" title="Sistem knowledge pattern">It can't be edited or removed.</Popover>}
+            overlay={<Popover id="tooltip">{tooltip}</Popover>}
           >
             <Icon iconType='round' iconName='help' style={ {position:'absolute', top: '-5px', right: '-6px', fontSize: '20px'} }/>
           </OverlayTrigger>
@@ -259,7 +266,7 @@ class FieldEditorComponent extends Component<Props, State> {
           D.div ({ className: 'page__section-container__label-tab', style: {   } },'Knowledge pattern details') : 
           D.h2 ({style: {  margin: '0' }},'New Knowledge pattern')
         ),
-        this.hideFormActions() ? this.renderFormAlert() : this.renderFormActions(),
+        this.hideFormActions() ? this.renderFormBadge() : this.renderFormActions(),
       ),
       D.div({className: 'page__section-container'}, 
         row({

@@ -95,25 +95,50 @@
               <bs-tabs>
                 <bs-tab event-key="kpForm" title="Knowledge Pattern">
                   [[!-- KP form --]]
-                  
+                    <semantic-query query='SELECT ?systemKp ?ontologyKp ?ontologyLabel WHERE {
+                                            BIND (<[[this]]> as ?kp)
 
-                  <semantic-if query='ASK {
-                                  <[[this]]> <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> . 
-                                }'
-                                then='{{> systemKP}}'
-                                else='{{> customKP}}'>
+                                            OPTIONAL {
+                                              ?kp <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system> .
+                                              BIND(true as ?systemKp)
+                                            }
 
-                        <template id='systemKP'>
-                          <field-editor field-iri='[[this]]' hide-form-actions=true></field-editor>
-                          <div></div>
-                        </template>
+                                            OPTIONAL {
+                                              ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology .
+                                              ?ontology a owl:Ontology .
+                                              ?ontology rdfs:label ?ontologyLabel .
+                                              BIND(true as ?ontologyKp)
+                                            }
+                                          }'
+                          
+                                    template='{{> noEditableKP}}'
+                                    no-result-template='{{> editableKP}}'
+	                  >
 
-                        <template id='customKP'>
-                          <field-editor field-iri='[[this]]'></field-editor>
-                        </template>
-                  </semantic-if>
-                
-                    
+                      <template id='noEditableKP'>
+                        {{#each bindings}}
+                          {{#if systemKp.value}}
+                            <field-editor field-iri='[[this]]' 
+                                          hide-form-actions=true 
+                                          badge-label="system" 
+                                          badge-tooltip="System knowledge patterns can't be edited">
+                            </field-editor>
+                          {{else if ontologyKp.value}}
+                            <field-editor field-iri='[[this]]' 
+                                          hide-form-actions=true 
+                                          badge-label="{{ontologyLabel.value}}" 
+                                          badge-tooltip="Ontology knowledge patterns can't be edited">
+                            </field-editor>
+                          {{else}}
+                            <field-editor field-iri='[[this]]'></field-editor>
+                          {{/if}}
+                        {{/each}}
+                      </template>
+
+                      <template id='editableKP'>
+                        <field-editor field-iri='[[this]]'></field-editor>
+                      </template>
+                    </semantic-query>
                 </bs-tab>
 
                 <bs-tab event-key="kpPreview" title="Preview">

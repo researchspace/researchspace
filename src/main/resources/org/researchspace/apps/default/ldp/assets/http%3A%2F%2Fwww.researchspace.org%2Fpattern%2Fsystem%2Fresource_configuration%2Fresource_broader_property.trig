@@ -9,7 +9,7 @@
     a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
       <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/resource_configuration> ;
-    <http://www.researchspace.org/resource/system/fields/type> <http://www.researchspace.org/resource/system/type/system>;
+     
     <http://www.researchspace.org/resource/system/fields/treePatterns> """{
   \"type\": \"full\",
   \"rootsQuery\": \"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\\nPREFIX rso: <http://www.researchspace.org/ontology/>\\nPREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>\\nSELECT DISTINCT ?item ?label ?hasChildren WHERE {\\n  ?item a ?type .\\n  FILTER(?type in (rdf:Property, owl:ObjectProperty))\\n      \\n  FILTER(NOT EXISTS { ?item rdfs:subPropertyOf ?parent. })\\n \\n  ?item ((crm:P1_is_identified_by/rdfs:label)|rso:displayLabel|rdfs:label|skos:prefLabel) ?label.\\n  FILTER (lang(?label) = \\\"en\\\")\\n      \\n  OPTIONAL { ?child rdfs:subPropertyOf ?item. }\\n  BIND(BOUND(?child) AS ?hasChildren)\\n  OPTIONAL { BIND(?label AS ?order) }\\n}\\nORDER BY (?order) (?label)\",

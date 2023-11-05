@@ -183,7 +183,10 @@
                                 <template id='then'>
                                   <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
                                     <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
-                                                            ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> 
+                                                            ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
+                                                            ?kp a ?owlType .
+                                                            FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                             
                                                           }'
                                                     template='{{> template}}'
                                     >
@@ -255,9 +258,12 @@
                               </mp-overlay-dialog-content>
                             </mp-overlay-dialog>
                         
-                            <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
-                              <rs-icon icon-type="round" icon-name="delete" title='Delete ontology'></rs-icon>Delete
-                            </button>
+                            
+                            <mp-ldp-remove-from-container-action iri="{{subject.value}}" container="http://researchspace.org/container/rootContainer/ontologyContainer">
+                              <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
+                                <rs-icon icon-type="round" icon-name="delete" title='Delete ontology'></rs-icon>Delete
+                              </button>
+                            </mp-ldp-remove-from-container-action>                            
                           </div>
                           
                           [[!--

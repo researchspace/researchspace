@@ -18,9 +18,93 @@
     <bs-row class="row-center">
       <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
   
-        <div style="padding:20px 0 10px 0;">
+        <div style="padding:20px 0 10px 0;display: flex; justify-content: space-between; align-items: self-start; gap:10px;">
           [[> Platform:DefaultResourceHeader]]
-        </div>
+          
+            <semantic-query query='SELECT DISTINCT ?subject ?graph WHERE {
+                                    BIND(<[[this]]> as ?subject)
+                                    GRAPH ?graph {
+                                      ?subject a owl:Ontology .
+                                    }
+                                  }'
+                                template='{{> template}}'>
+              <template id='template'>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 10px;">
+                    <mp-graph-store-action  title='Download in Turtle Format' 
+                                            action='GET'
+                                            graphuri='{{bindings.0.graph.value}}' 
+                                            file-ending='ttl'>
+                      <button class="btn btn-default btn-textAndIcon" title="Download">
+                        <rs-icon icon-type="round" icon-name="download" title='Download'></rs-icon>Download
+                      </button> 
+                    </mp-graph-store-action>
+                  
+                    <mp-overlay-dialog title="Print Preview" type="lightbox" id="'test">
+                      <mp-overlay-dialog-trigger>
+                        <button class="btn btn-default btn-textAndIcon" title="Print">
+                          <rs-icon icon-type="round" icon-name="print" title='Print'></rs-icon>Print
+                        </button>
+                      </mp-overlay-dialog-trigger>
+                      <mp-overlay-dialog-content>
+                        <mp-print pages='["{{bindings.0.subject.value}}"]'></mp-print>
+                      </mp-overlay-dialog-content>
+                    </mp-overlay-dialog>
+
+                    <mp-overlay-dialog id='removeOntology-confirmation-dialog'
+                                      title="Delete ontology" 
+                                      type="modal" 
+                                      bs-size="large">
+                      <mp-overlay-dialog-trigger>
+                        <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
+                          <rs-icon icon-type="round" icon-name="delete" title='Delete ontology'></rs-icon>Delete
+                        </button>
+                      </mp-overlay-dialog-trigger>
+                      <mp-overlay-dialog-content>
+                        <div>
+                          <p>Are you sure you want to delete the ontology 
+                            <b><semantic-link iri='{{bindings.0.subject.value}}' class="text-underline;"></semantic-link></b>?
+                          </p>
+                          <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
+                                                    ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{bindings.0.subject.value}}> .
+                                                    ?kp a ?owlType .
+                                                    FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                  }'
+                                            template='{{> template}}'
+                            >
+                                  <template id='template'>
+                                    <div>
+                                      This action will remove the {{bindings.0.count.value}} knowledge patterns included in the system for this ontology.
+                                    </div>
+                                  </template>
+                            </semantic-query>
+                          <div class="form-btn-group">
+                            <div style="display: flex; justify-content: flex-end; width: 100%;">
+                              <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
+                                                type='OverlayDialog.Close' 
+                                                targets='["removeOntology-confirmation-dialog"]'>
+                                <button class="btn btn-default">Cancel</button>
+                              </mp-event-trigger>
+                                <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
+                                                type='Component.TemplateUpdate' 
+                                                targets='[""]'>
+                                  <mp-ldp-remove-from-container-action iri="{{subject.value}}" 
+                                                      container="http://researchspace.org/container/rootContainer/ontologyContainer">
+                                    <button class="btn btn-action">Delete ontology</button> 
+                                  </mp-ldp-remove-from-container-action> 
+                              </mp-event-trigger>
+
+
+                            </div>
+                          </div>
+                        </div>
+                      </mp-overlay-dialog-content>
+                    </mp-overlay-dialog>
+                  </div>
+                </div>
+              </template>
+            </semantic-query>     
+         </div> 
 
         [[!-- We assume that context is defined only when we load the page using print component, only then we want to include print related template. --]]
         [[#if (urlParam "context")]]

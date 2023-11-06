@@ -19,13 +19,13 @@
   <li class="active">Ontology Element Search</li>
 </ol>
 
-<div class="page">
+<div class="page" style="margin-bottom: 30px;">
 
   [[> rsp:adminPageHeader title="Ontology Element Search" materialIcon="schema"]]
 
   <div class="container-fluid">
     <bs-row class="row-center">
-      <bs-col xs=11 sm=10 md=10 lg=8>
+      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
         <semantic-search selector-mode="dropdown" categories='{
               "<http://www.w3.org/2001/XMLSchema#Decimal>": [{
                 "kind": "numeric-range",
@@ -84,39 +84,53 @@
             <semantic-search-result-holder>
               <div data-flex-self="md-full">
                 <semantic-search-result>
-                  <mp-sparql-result-counts id='result-count' query="SELECT DISTINCT ?subject {}" template='{{#if hasLimit}} <bs-alert bs-style="warning">
-                                                       Showing {{numberOfResults}} of {{totalNumberOfResults}} matches. <strong>Please, refine your search.</strong> </bs-alert>
-                                                       {{else}} Found {{numberOfResults}} matches. {{/if}}'>
-                  </mp-sparql-result-counts>
+                  
+                    <mp-sparql-result-counts id='result-count' 
+                                              query="SELECT DISTINCT ?subject {}" 
+                                              template='{{#if hasLimit}} 
+                                              <bs-alert bs-style="warning">Showing {{numberOfResults}} of {{totalNumberOfResults}} matches. <strong>Refine your search.</strong> </bs-alert>
+                                              {{else}} <div class="color-action" style="font-weight: 600; margin: 10px 0;"> Found {{numberOfResults}} matches. </div>{{/if}}'>
+                    </mp-sparql-result-counts>
+                  
+                  
                 </semantic-search-result>
                 <semantic-search-result>
                   <semantic-table id='grid-result' query='SELECT DISTINCT ?subject ?description WHERE {
-                                            OPTIONAL { ?subject rdfs:comment ?description  }
-                              }' number-of-displayed-rows="10" tuple-template='{{> tuple-template}}'
-                    options='{"showTableHeading": false, "showFilter":false}'>
+                                            OPTIONAL { ?subject rdfs:comment ?description  }}'
+                                  number-of-displayed-rows="10" 
+                                  tuple-template='{{> tuple-template}}'
+                                  options='{"showTableHeading": false, "showFilter":false}'>
 
                     <template id="tuple-template">
                       <div style="width:100%;">
                         <mp-panel>
-                          <mp-panel-body>
+                          <mp-panel-header>
                             <div>
-                              <h3>
+                              <h4 style="margin-top: 0;">
                                 <semantic-link uri="{{subject.value}}" class="text-underline"></semantic-link>
-                              </h3>
-                              <div><b>URI: </b><i>{{subject.value}}</i></div>
-                              <div><b>Types: </b>
-                                <semantic-query style='display:inline;' class="text-underline"
-                                  query='SELECT ?type WHERE { <{{subject.value}}> a ?type}'
-                                  no-result-template='<span>-</span>'></semantic-query>
-                              </div>
+                              </h4>
+                              <div style="font-size: 11px;">{{subject.value}}</div>
+                            </div>
+                          </mp-panel-header>
+                          <mp-panel-body>
+                            <div class="text-font-size__base text-lineHeight-1-3">
+                              <p><b>Types: </b>
+                                <semantic-query query='SELECT ?type WHERE { <{{subject.value}}> a ?type}'
+                                                style='display:inline;' 
+                                                class="text-underline"
+                                                no-result-template='<span>-</span>'>
+                                </semantic-query>
+                              </p>
+                              <p>
+                                {{#if description.value}}
+                                  {{description.value}}
+                                {{else}}
+                                  No description
+                                {{/if}}
+                              </p>
+                              
                             </div>
                           </mp-panel-body>
-                          <mp-panel-footer>
-                            <div>
-                              <i>{{#if description.value}}<mp-text-truncate lines=3 truncate="...">{{description.value}}
-                                </mp-text-truncate>{{else}}No description{{/if}}</i>
-                            </div>
-                          </mp-panel-footer>
                         </mp-panel>
                       </div>
                     </template>

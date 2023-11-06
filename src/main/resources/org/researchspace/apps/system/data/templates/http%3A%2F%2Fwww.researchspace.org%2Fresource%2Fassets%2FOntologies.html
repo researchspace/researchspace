@@ -186,18 +186,19 @@
                                                             ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
                                                             ?kp a ?owlType .
                                                             FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
-                                             
                                                           }'
                                                     template='{{> template}}'
                                     >
                                           <template id='template'>
                                             <div>
                                               The system includes 
-                                              <b>{{bindings.0.count.value}} knowledge pattern</b>
+                                              <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                                                <b>{{bindings.0.count.value}} knowledge pattern</b>
+                                              </semantic-link>
                                                from this ontology.
                                             </div>
                                           </template>
-                                      </semantic-query>
+                                    </semantic-query>
                                   </div>
                                 </template>
 
@@ -207,9 +208,11 @@
                                     template="{{> template}}">
 
                                     <template id='template'>
-                                      <div>
+                                      <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
                                         The system includes 
-                                        <b>{{this.kp_count}} knowledge pattern</b>
+                                        <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                                          <b>{{this.kp_count}} knowledge pattern</b>
+                                        </semantic-link>
                                          from this ontology.
                                       </div>
                                     </template>
@@ -247,23 +250,80 @@
                               </button> 
                             </mp-graph-store-action>
                           
-                            <mp-overlay-dialog title="Print Preview" type="lightbox">
+                            <mp-overlay-dialog title="Print Preview" type="lightbox" id="'test">
                               <mp-overlay-dialog-trigger>
                                 <button class="btn btn-default btn-textAndIcon" title="Print">
-                                  <rs-icon icon-type="round" icon-name="print" title='Download'></rs-icon>Print
+                                  <rs-icon icon-type="round" icon-name="print" title='Print'></rs-icon>Print
                                 </button>
                               </mp-overlay-dialog-trigger>
                               <mp-overlay-dialog-content>
                                 <mp-print pages='["{{subject.value}}"]'></mp-print>
                               </mp-overlay-dialog-content>
                             </mp-overlay-dialog>
-                        
-                            
-                            <mp-ldp-remove-from-container-action iri="{{subject.value}}" container="http://researchspace.org/container/rootContainer/ontologyContainer">
-                              <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
-                                <rs-icon icon-type="round" icon-name="delete" title='Delete ontology'></rs-icon>Delete
-                              </button>
-                            </mp-ldp-remove-from-container-action>                            
+
+                            <mp-overlay-dialog id='removeOntology-confirmation-dialog'
+                                              title="Delete ontology" 
+                                              type="modal" 
+                                              bs-size="large">
+                              <mp-overlay-dialog-trigger>
+                                <button class="btn btn-default btn-textAndIcon" title="Delete ontology">
+                                  <rs-icon icon-type="round" icon-name="delete" title='Delete ontology'></rs-icon>Delete
+                                </button>
+                              </mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-content>
+                                <div>
+                                  <p>Are you sure you want to remove the ontology 
+                                    <b><semantic-link iri='{{subject.value}}' class="text-underline;"></semantic-link></b>?
+                                  </p>
+                                  <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
+                                                            ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
+                                                            ?kp a ?owlType .
+                                                            FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                          }'
+                                                    template='{{> template}}'
+                                    >
+                                          <template id='template'>
+                                            <div>
+                                              The system includes 
+                                              <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                                                <b>{{bindings.0.count.value}} knowledge pattern</b>
+                                              </semantic-link>
+                                               from this ontology.
+                                            </div>
+                                          </template>
+                                    </semantic-query>
+                                  <div class="form-btn-group">
+                                    <div style="display: flex; justify-content: flex-end; width: 100%;">
+                                      <mp-event-trigger id='removeOntology-cancel-dialog-trigger' 
+                                                        type='OverlayDialog.Close' 
+                                                        targets='["removeOntology-confirmation-dialog"]'>
+                                        <button class="btn btn-default">Cancel</button>
+                                      </mp-event-trigger>
+
+                                      
+                                        <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
+                                                        type='Component.TemplateUpdate' 
+                                                        targets='[""]'>
+                                          <mp-ldp-remove-from-container-action iri="{{subject.value}}" 
+                                                              container="http://researchspace.org/container/rootContainer/ontologyContainer">
+                                            <button class="btn btn-action">Delete ontology</button> 
+                                          </mp-ldp-remove-from-container-action> 
+                                      </mp-event-trigger>
+
+                                  
+                                   
+                                      proxy listen 
+
+                                      render 
+                                      <div>delete kps </div>
+
+
+                                    </div>
+                                  </div>
+                                </div>
+                              </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
+                                               
                           </div>
                           
                           [[!--

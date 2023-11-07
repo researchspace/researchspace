@@ -1220,21 +1220,31 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
       let basemapLayers = [];
       const overlayLayers = [];
+      let newMapLayers = [];
+      
+      if(this.state.mapLayers.length){
+        this.state.mapLayers.forEach(function (tileslayer) {
+          if (tileslayer.get('level') === 'basemap') {
+            basemapLayers.push(tileslayer);
+          } else if (tileslayer.get('level') === 'overlay') {
+            overlayLayers.push(tileslayer);
+          }
+          tileslayer.set('visible', false);
+        });
 
-      //TODO URGENT: IF tiles-layers ARE present in template
-      this.state.mapLayers.forEach(function (tileslayer) {
-        if (tileslayer.get('level') === 'basemap') {
-          basemapLayers.push(tileslayer);
-        } else if (tileslayer.get('level') === 'overlay') {
-          overlayLayers.push(tileslayer);
-        }
-        tileslayer.set('visible', false);
-      });
+        basemapLayers[0].set('visible', true);
 
-      basemapLayers[0].set('visible', true);
-
-      let mapLayersClone = this.state.mapLayers;
-      let newMapLayers = [..._.values(mapLayersClone), ..._.values(layers)];
+        let mapLayersClone = this.state.mapLayers;
+        newMapLayers = [..._.values(mapLayersClone), ..._.values(layers)];
+      } else {
+        console.log("no")
+        newMapLayers = [
+          new TileLayer({
+            source: new OSM(),
+          }),
+          ..._.values(layers),
+        ]
+      }
 
       this.setState(
         {

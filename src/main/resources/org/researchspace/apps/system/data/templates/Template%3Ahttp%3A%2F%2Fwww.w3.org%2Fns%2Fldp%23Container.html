@@ -89,7 +89,7 @@
           </mp-event-target-template-render>
             
             <div style="display: flex; justify-content: space-between; align-items: baseline; gap:20px;">
-              <h1> Containers hierarchy </h1>
+              <h1>Containers hierarchy </h1>
               [[#if isRoot]]
                 <mp-ldp-import-resource container="http://www.researchspace.org/resource/system/rootContainer">
                   <button class="btn btn-default btn-textAndIcon" style='margin-left: 10px' title='Should be only used to import existing containers into the new installation!'>
@@ -98,7 +98,14 @@
                   </button>
                 </mp-ldp-import-resource>
               [[else]]
-                [[> http://www.researchspace.org/resource/assets/LdpContainerGenericAction container=(this)]]
+                <div style="display: flex; align-items: center; gap: 5px;">
+                  [[#if (ask "PREFIX ldp: <http://www.w3.org/ns/ldp#> ASK {?? ldp:contains ?c. MINUS { ?c a ldp:Container .} }")]]
+                    <div>
+                      [[> http://www.researchspace.org/resource/assets/LdpContainerActionExport]]
+                    </div>
+                  [[/if]]
+                  [[> http://www.researchspace.org/resource/assets/LdpContainerGenericAction container=(this)]]
+                </div>
               [[/if]]
             </div>
             <hr style="margin-top:0px;" />
@@ -153,9 +160,7 @@
 
             [[#if (ask "PREFIX ldp: <http://www.w3.org/ns/ldp#> ASK {?? ldp:contains ?c. MINUS { ?c a ldp:Container .} }")]]
           [[!--    <h2> Resources </h2> --]]
-              <div style='position: absolute; right: 280px;'>
-                [[> http://www.researchspace.org/resource/assets/LdpContainerActionExport]]
-              </div>
+      
               <semantic-context repository='assets'>
                 [[> http://www.researchspace.org/resource/assets/LdpResources container=(this) query='SELECT DISTINCT ?subject ?ModificationDate ?attribution ?label WHERE { ?? <http://www.w3.org/ns/ldp#contains> ?subject . ?subject <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate ; <http://www.w3.org/ns/prov#wasAttributedTo> ?attribution. OPTIONAL { ?subject rdfs:label ?label . }}']]
               </semantic-context>

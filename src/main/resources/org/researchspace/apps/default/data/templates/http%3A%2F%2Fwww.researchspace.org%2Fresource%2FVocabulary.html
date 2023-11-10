@@ -1,0 +1,413 @@
+[[!-- uses client-side template: [[> rsp:VocabularyManagerTemplate]] --]]
+
+[[!--  VOCABULARY representation:
+
+  This application page is used to create and edit skos:ConceptScheme or crm:E32_Authority_Document, corresponding to thesauri or authority lists.
+  Creating a skos:ConceptScheme is suitable for hierarchical conceptual structure where the hierarchy is best described by broader or narrower type of relations.
+  Creating a crm:E32_Authority_Document can represent lists of persons, periods, events, etc. The assumption is that all entities in an Authority Document have the same
+  type and relations between entities are based on cidoc-crm entities and their corresponding properties; 
+--]]
+
+[[#> rsp:VocabularyManagerTemplate title="Vocabularies" addTitle='vocabulary']]
+    
+    [[#*inline "customVocabularyForm"]]
+      <semantic-search id="vocabulary-iri-selector">
+        <semantic-search-form-query query-template='{ "queryString": "SELECT $vocabularyLabel ?vocabularyDescription ?entityTypeURI  { 
+                                                                        BIND($label as ?vocabularyLabel).
+                                                                        BIND($description as ?vocabularyDescription).
+                                                                        BIND(?entitytype as ?entityTypeURI )
+                                                                      }",
+                                                    
+                                                        "arguments": { "label": {"type": "xsd:string"},
+                                                                        "description": {"type": "xsd:string", "optional": true},
+                                                                        "entitytype":{"type":"xsd:anyURI"}
+                                                                      }
+                                                    }'
+
+                                    fields='[{"id": "label", "label": "Label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
+                                            {"id": "description", "label": "Description", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
+                                            { "id": "entitytype",
+                                              "label": "Type",
+                                              "xsdDatatype": "xsd:anyURI",
+                                              "valueSetPattern": "SELECT $value $label WHERE { 
+                                                                  ?value <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container> .
+                                                                  ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                                                                } ORDER BY ASC(?label)"
+                                            }
+                                    ]'>
+                            
+            <div class="newVocabulary-modal-form-content">
+              <semantic-form-text-input for="label" placeholder="Enter vocabulary label" label="Label" ></semantic-form-text-input> 
+              <semantic-form-text-input for="description" placeholder="Enter vocabulary description" label="Description" multiline='true'></semantic-form-text-input>        
+
+              <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                <div class="btn-inline-container">
+                  <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                         target="_blank"
+                                         urlqueryparam-view='resource-configuration'
+                                         style="text-decoration: underline;">
+                    <div>+ New vocabulary type</div>
+                  </semantic-link>
+                  <mp-popover title="Vocabulary type">
+                    <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
+                      <div class="badge">
+                        <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+                      </div>
+                    </mp-popover-trigger>
+                    <mp-popover-content>
+                        <p>Vocabulary types are defined in 
+                          <b>Resource Configuration/Vocabulary tab</b>.
+                        </p>
+                        <div>To use a resource as vocabulary type go in tab Vocabulary and enable <b>Use as Vocabulary type</b>.</div>
+                    </mp-popover-content>
+                  </mp-popover>
+                </div>
+              </div>
+              
+              <div class="vocabularyType-checklist-input-container page__section-container">
+                <semantic-form-checklist-input for='entitytype' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
+              </div>
+              <semantic-form-errors></semantic-form-errors>
+
+              <div style="justify-content: end;" class="btn-inline-container">
+                <mp-event-trigger id='{{viewId}}-cancel-newVocabulary-trigger' 
+                                  type='OverlayDialog.Close' 
+                                  targets='["{{viewId}}-createNew-vocabulary-dialog"]'>
+                    <button name="cancel" class="btn btn-default">Cancel</button>
+                </mp-event-trigger>
+                <button name='submit' type="submit" class='btn btn-action'>Create vocabulary</button>
+              </div>
+            </div>
+        </semantic-search-form-query>
+
+        <semantic-search-result-holder>
+          <semantic-search-result>
+            <semantic-query id='new-vocabulary-query-form' 
+                            query='SELECT ?vocabularyLabel ?vocabulary ?entityType ?entityTypeLabel ?vocabularyDescription ?exists ?viewId WHERE {
+                                      BIND("{{viewId}}" as ?viewId)
+                                      BIND(IRI(CONCAT(STR(Default:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?vocabularyLabel), "\\s", "_")))) AS ?vocabulary) .
+                                      BIND(?entityTypeURI as ?entityType)
+                                      ?entityType <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?entityTypeLabel .
+                                  #    BIND (bound(?vocabularyDescription) AS ?vocabularyDescriptionText) . 
+                                  #   BIND (IF(?vocabularyDescription , ?vocabularyDescription, false) AS ?vocabularyDescriptionText)
+                                      OPTIONAL {
+                                        ?vocabulary a skos:ConceptScheme .
+                                        BIND(true as ?exists) .
+                                      }
+                                      OPTIONAL {
+                                        ?vocabulary a crm:E32_Authority_Document .
+                                        BIND(true as ?exists) .
+                                      }
+                                    }'
+
+                            template='{{> template}}'>
+
+              <template id='template'>
+                  {{#if bindings.0.exists}}
+                    <div class="confirm-message alert alert-warning">
+                      <div>Vocabulary with label <b>{{bindings.0.vocabularyLabel.value}}</b> of type <b>{{bindings.0.entityTypeLabel.value}}</b> already exists!</div> 
+                    </div>
+                  {{else}}
+                    <div class="confirm-message alert alert-info" style="display: flex; flex-wrap: wrap; gap: 15px;">
+                      <div>Are you sure you want to create a new vocabulary with IRI: <b>{{bindings.0.vocabulary.value}}</b> ?</div>   
+                      
+                      <semantic-form id='{{bindings.0.viewId.value}}-new-vocabulary-form' 
+                                    persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.vocabulary.value}}"}'
+                                    new-subject-template='{{bindings.0.vocabulary.value}}'
+                                    post-action="event"
+                                    fields='[[fieldDefinitions
+                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                              rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
+                                              vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/vocabulary/refers_to_resourceConfig"
+                                              vocabulary_description="http://www.researchspace.org/pattern/system/entity/description"
+                                            ]]'
+                      >
+                        <div style="display: none;">
+                          <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document","http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object"]'></semantic-form-hidden-input>
+                          <semantic-form-hidden-input for="rdfsLabel" default-value='{{bindings.0.vocabularyLabel.value}}'></semantic-form-hidden-input>   
+                          
+                          <semantic-form-hidden-input for="vocabulary_refersto_resourceConfig" default-value='{{bindings.0.entityType.value}}'></semantic-form-hidden-input>
+                          <semantic-form-hidden-input for="vocabulary_description" default-value='{{bindings.0.vocabularyDescription.value}}'></semantic-form-hidden-input>
+                        </div>
+                        <semantic-form-errors></semantic-form-errors>
+                        <!-- save and reset button for form -->
+                        <mp-event-trigger id='{{bindings.0.viewId.value}}-cancel-confirmNewVocabulary-trigger' 
+                                          type='OverlayDialog.Close' 
+                                          targets='["{{bindings.0.viewId.value}}-createNew-vocabulary-dialog"]'>
+                          <button name="cancel" class="btn btn-default" style="margin-right: 5px;">Cancel</button>
+                        </mp-event-trigger>
+
+                        <button name="submit" class="btn btn-action">Confirm</button>
+
+                      </semantic-form>
+                    </div>
+                  {{/if}}
+              </template>
+            </semantic-query>
+          </semantic-search-result>
+        </semantic-search-result-holder>
+      </semantic-search>
+    [[/inline]]
+    
+    [[#*inline "customVocabularyUploadDropzoneMessage"]]
+      <div class='placeholder-item'>
+        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+        <div> 
+          <p>Drag *.trig or *.nq RDF vocabulary file(s) or click to upload</p>
+          <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
+            <div class="documentation-section-icon-container">
+              <i class="fa fa-info"></i>
+            </div>
+
+            <div style="flex: 1;"> 
+              <div class="documentation-section-title">Vocabularies must be of ontology 
+                class skos:ConceptScheme or crm:E32_Authority_Document.
+              </div>
+              <div style="padding-top: 3px;"> 
+                The vocabulary and all associated 
+              entities must be defined in one named graph that equals to the vocabulary IRI.
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>  
+    [[/inline]]
+    
+    [[#*inline "exceptionsCheck"]]
+      <semantic-query query='SELECT ?vocabulary ?vocabularyGraph WHERE { 
+                              {
+                                GRAPH ?vocabularyGraph {
+                                  ?vocabulary a skos:ConceptScheme .
+                                }
+                              }
+                              UNION {
+                                GRAPH ?vocabularyGraph {
+                                  ?vocabulary a crm:E32_Authority_Document .
+                                }
+                              }
+                              MINUS {
+                                ?vocabulary crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                              }
+                              FILTER(?vocabularyGraph != ?vocabulary) .
+                            }' 
+                      template='{{> template}}'
+                      >
+
+        <template id='template'>
+          <div class="warning-documentation-section warning-documentation-section-withIcon">
+            <div class="warning-documentation-section-icon-container">
+              <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
+            </div>
+    
+            <div> 
+              <div class="warning-documentation-section-title">Warning! &nbsp; The following vocabularies 
+                 can't be edited with Vocabulary Manager.</div>
+              <div style="padding-top: 3px;">
+                <div>Vocabularies of ontology class skos:ConceptScheme or crm:E32_Authority_Document and all their 
+                  corresponding entities should be defined in one named graph that equals to the vocabulary IRI.</div>
+                  <ul>
+                    {{#each bindings}}
+                      <li>
+                        <semantic-link iri='{{vocabulary.value}}'></semantic-link> - Vocabulary IRI: {{vocabulary.value}} in vocabulary graph: {{vocabularyGraph.value}}
+                      </li>
+                    {{/each}}
+                  </ul>
+              </div>
+            </div>
+          </div>
+        </template>
+      </semantic-query>
+    [[/inline]]
+    
+    [[#*inline "VocabularySearchResults"]]
+      <semantic-search>
+        <semantic-search-query-keyword query='PREFIX bds: <http://www.bigdata.com/rdf/search#>
+                                              SELECT ?vocabulary ?vocabularyLabel ?managedByResourceConfig WHERE {
+                                                {
+                                                  GRAPH ?vocabulary {
+                                                    ?vocabulary a skos:ConceptScheme ;
+                                                            skos:prefLabel ?vocabularyLabel .
+                                                    ?vocabularyLabel bds:search ?__token__ .
+                                                  }
+                                                } UNION {
+                                                  GRAPH ?vocabulary {
+                                                    ?vocabulary rdf:type crm:E32_Authority_Document ;
+                                                            rdfs:label ?vocabularyLabel .
+                                                    ?vocabularyLabel bds:search ?__token__ .
+                                                  }
+                                                }
+                                                
+                                                OPTIONAL {
+                                                  ?vocabulary crm:P67_refers_to ?refersToResourceConfig .
+                                                }
+
+                                                MINUS {
+                                                  ?vocabulary crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                                                }
+
+                                                BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
+                                              }'
+                                              
+                default-query='SELECT DISTINCT ?vocabulary ?vocabularyLabel ?managedByResourceConfig 
+                                               ?resourceConfig ?resourceConfigLabel WHERE {
+                                {
+                                  GRAPH ?vocabulary {
+                                      ?vocabulary rdf:type skos:ConceptScheme;
+                                              skos:prefLabel ?vocabularyLabel.
+                                      BIND(skos:ConceptScheme AS ?vocabularyType)
+                                  }
+                                } UNION {
+                                    GRAPH ?vocabulary {
+                                        ?vocabulary rdf:type crm:E32_Authority_Document;
+                                                rdfs:label ?vocabularyLabel.
+
+                                        BIND(crm:E32_Authority_Document AS ?vocabularyType)
+                                    }
+                                } MINUS {
+                                  ?vocabulary crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource>
+                                }
+
+                                OPTIONAL {
+                                  ?vocabulary crm:P67_refers_to ?resourceConfig .
+                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceConfigLabel .
+                                }
+
+                                OPTIONAL {
+                                  ?vocabulary crm:P67i_is_referred_to_by ?information_object  .
+                                  ?information_object a crm:E73_Information_Object .
+                                  ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                 ?information_object crm:P190_has_symbolic_content ?vocabularyDescription . 
+                                }
+
+                                BIND(BOUND(?resourceConfig) as ?managedByResourceConfig) 
+
+                              }'
+        ></semantic-search-query-keyword>
+
+        <div style="margin-top: 20px;" class="vocabulary-table">
+          <semantic-search-result-holder>
+              <semantic-search-result>
+                <semantic-table id='vocabulary-table'
+                                query='SELECT DISTINCT ?vocabulary ?vocabularyLabel ?managedByResourceConfig ?resourceConfigLabel ?vocabularyDescription
+                                        WHERE {} 
+                                        ORDER BY ASC(STR(LCASE(?vocabularyLabel)))'
+                                number-of-displayed-rows=15
+                                options='{"showFilter": false}'
+                                no-result-template='{{> noVocabulary}}'
+                                column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Vocabulary", "cellTemplate": "{{> vocabulary}}" },
+                                                        {"variableName": "resourceConfigLabel", "displayName": "Type"},
+                                                        {"variableName": "vocabularyDescription", "displayName": "Description"},
+                                                        {"variableName": "vocabulary", "displayName": "Actions", "cellTemplate": "{{> actions}}" }
+                                                      ]'>
+                      <template id="noVocabulary">
+                          <div style="padding: 12px 8px">
+                              No vocabulary available
+                          </div>
+                      </template>
+
+                      <template id='vocabulary'>
+                        <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                              urlqueryparam-view='vocabulary-content' 
+                              urlqueryparam-resource='{{vocabulary.value}}'
+                              urlqueryparam-mode='new'
+                            >
+                              {{vocabularyLabel.value}}
+                        </semantic-link>
+                      </template>
+
+                      <template id='actions'>
+                        <div class="btn-inline-container">
+        <!--                <mp-event-trigger id='{{viewId}}-set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                                data='{"resourceIri": "{{scheme.value}}", "viewId": "vocabulary-content","frameId":"{{viewId}}"}' 
+                                targets='["thinking-frames"]'>
+                                <button class="btn btn-default">Show Terms</button>
+                            </mp-event-trigger> -->
+                            <mp-overlay-dialog id='{{viewId}}-edit-vocabulary-dialog'
+                                              title="Edit vocabulary: {{vocabularyLabel.value}}" 
+                                              type="modal" bs-size="large" class="editVocabulary-modal">
+                              <mp-overlay-dialog-trigger>
+                                <button class="btn btn-default btn-textAndIcon"> 
+                                  <rs-icon icon-type="round" icon-name="edit"></rs-icon> Edit
+                                </button>
+                              </mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-content>
+                                
+                                  {{#ifCond managedByResourceConfig.value "===" "true"}}
+                                    <semantic-form id='{{viewId}}-edit-vocabulary-form' 
+                                                    persistence='{"type": "sparql", "targetGraphIri": "{{vocabulary.value}}"}'
+                                                    subject='{{vocabulary.value}}'
+                                                    post-action="event"
+                                                    fields='[[fieldDefinitions
+                                                          rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
+                                                          vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/vocabulary/refers_to_resourceConfig"
+                                                          vocabulary_description="http://www.researchspace.org/pattern/system/entity/description"
+                                                    ]]'
+                                    >
+                                     
+                                      <semantic-form-text-input for="rdfsLabel" placeholder="Enter vocabulary label" label="Label"></semantic-form-text-input>   
+                                      <semantic-form-text-input for="vocabulary_description" placeholder="Enter vocabulary description" label="Description" multiline='true'></semantic-form-text-input>
+                                      
+                                      <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                                      <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
+
+                                      <semantic-form-errors></semantic-form-errors>
+                                      <div class="btn-form-actions"> 
+                                        <button name="reset" class="btn btn-default">Reset</button>
+                                        <button name="submit" class="btn btn-action">Save</button>
+                                      </div>
+                                    </semantic-form>
+                                  {{else}}            
+                                      <semantic-form id='{{viewId}}-manage-vocabulary-form' 
+                                                    persistence='{"type": "sparql", "targetGraphIri": "{{vocabulary.value}}"}'
+                                                    subject='{{vocabulary.value}}'
+                                                    post-action="event"
+                                                    fields='[[fieldDefinitions
+                                                          vocabulary_refersto_resourceConfig="http://www.researchspace.org/pattern/system/vocabulary/refers_to_resourceConfig"
+                                                    ]]'
+                                      >
+
+                                      <div>
+                                        <p>Vocabulary <b>{{vocabularyLabel.value}}</b> is not managed by the system.</p>
+                                        <div>Enable Vocabulary authoring:</div>   
+
+                                        <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                                        <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
+
+                                      <semantic-form-errors></semantic-form-errors>
+                                        
+                                        <div class="btn-group">
+                                          <div class="btn-form-actions">
+                                            <button name="cancel" class="btn btn-default">Cancel</button>
+                                            <button name="submit" class="btn btn-action" >Confirm</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                        
+                                    </semantic-form>
+                                  {{/ifCond}}
+
+                              </mp-overlay-dialog-content>
+                            </mp-overlay-dialog>
+                        
+                            <mp-graph-store-action title="Download" action="GET" graphuri="{{vocabulary.value}}" file-ending="trig">
+                              <button class="btn btn-default btn-textAndIcon"> 
+                                <rs-icon icon-type="round" icon-name="file_download"></rs-icon> Download
+                              </button>
+                            </mp-graph-store-action>
+                        
+                            <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{vocabulary.value}}" graph-description="{{vocabularyLabel.value}}">
+                              <button class="btn btn-default btn-textAndIcon"> 
+                                <rs-icon icon-type="round" icon-name="delete"></rs-icon> Delete
+                              </button>
+                            </mp-graph-store-action>
+                        </div>
+                      </template>
+                </semantic-table>
+              </semantic-search-result>
+          </semantic-search-result-holder>
+        </div>
+      </semantic-search>
+    [[/inline]]
+
+[[/rsp:VocabularyManagerTemplate]]

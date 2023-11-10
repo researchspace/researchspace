@@ -27,7 +27,7 @@ import { entityConfigs, EntityViewConfig } from 'platform/api/services/EntityVie
 import { Component, ComponentContext, ComponentProps } from 'platform/api/components';
 import { TemplateItem } from '../template';
 
-const FINDER_NAVIGATION_ENTRY_IRI = 'http://www.researchspace.org/pattern/system/resource_configuration/data/FINDER';
+const FINDER_NAVIGATION_ENTRY_IRI = 'http://www.researchspace.org/resource/system/resource_configurations_container/data/FINDER';
 
 
 export class Finder extends Component<any, any> {

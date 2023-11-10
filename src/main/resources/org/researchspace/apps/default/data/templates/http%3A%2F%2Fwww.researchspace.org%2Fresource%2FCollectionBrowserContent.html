@@ -1,14 +1,14 @@
-<semantic-query query=' SELECT ?config ?collection ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?isManaged ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
+<semantic-query query=' SELECT ?config ?collection ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?managedByResourceConfig ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
                             OPTIONAL {
-                              <{{configOrScheme}}> crm:P67_refers_to ?managedConfig .
+                              <{{configOrScheme}}> crm:P67_refers_to ?refersToResourceConfig .
                               BIND(<{{configOrScheme}}> AS ?collection) .
                             }
                             OPTIONAL {
                               <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
-                              BIND(<{{configOrScheme}}> as ?managedConfig) .
+                              BIND(<{{configOrScheme}}> as ?refersToResourceConfig) .
                             }
-                            BIND(COALESCE(?managedConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?config) .
-                            BIND(BOUND(?managedConfig) as ?isManaged) .
+                            BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?config) .
+                            BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
                             
                             ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?title ;
                               <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?rdfType ;
@@ -36,7 +36,7 @@
                         '
   >
     <template id='template'>
-      {{#ifCond bindings.0.isManaged.value "===" "true"}}
+      {{#ifCond bindings.0.managedByResourceConfig.value "===" "true"}}
         {{> rsp:SimpleCollectionBrowser 
           frameId=frameId 
           editable=true 

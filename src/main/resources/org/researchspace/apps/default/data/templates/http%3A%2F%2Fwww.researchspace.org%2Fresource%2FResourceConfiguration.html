@@ -4,171 +4,171 @@
   }
 </style>
 {{#bind frameId=dashboardId}}
-<div class="resource-editView-container">
-    <mp-splitpane min-size=60 default-size=330 max-size=330 size=330 default-open='true' persist-resize=false snap-threshold=120 class="frame-split-pane" >
-      <div data-flex-layout="column top-stretch">
-        <mp-splitpane-toggle-on>
-          <button class="btn-toggle-on">
-            <div class="btn-toggle-on-content">
-              <h4>
-                <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
-              </h4>
-            </div>
-          </button>
-        </mp-splitpane-toggle-on>
-        <mp-splitpane-toggle-off>
-          <div class="split-pane__leftsidebar-header">
-            <button data-flex-layout='row center-left' class="btn-toggle-off">
-              <h4 style="width: 100%; text-align: left;">
-                Resource configuration
-              </h4>
-              <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
+  <div class="resource-editView-container">
+      <mp-splitpane min-size=60 default-size=330 max-size=330 size=330 default-open='true' persist-resize=false snap-threshold=120 class="frame-split-pane" >
+        <div data-flex-layout="column top-stretch">
+          <mp-splitpane-toggle-on>
+            <button class="btn-toggle-on">
+              <div class="btn-toggle-on-content">
+                <h4>
+                  <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+                </h4>
+              </div>
             </button>
-          </div>
-        </mp-splitpane-toggle-off>
-        <mp-splitpane-sidebar-open style="flex: 1;">
-          <div class="split-pane__sidebar-open">
-            <div class="collection-terms-area">
-             
-              <mp-event-trigger id='{{frameId}}-resource-config-form-new-trigger' 
-                                type='Component.TemplateUpdate' 
-                                data='{"mode": "new" }' 
-                                targets='["{{frameId}}-resource-config-term-forms"]'>
-                <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
-                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New configuration</span>
-                </button>
-              </mp-event-trigger>
-           
-              <mp-event-target-template-render id='{{frameId}}-resource-config-mytree'  template='{{> treeTemplate}}'>
-                <template id='treeTemplate'>
-                  <semantic-lazy-tree id='{{frameId}}-resource-config-scheme-tree' 
-                                      info-template='{{> template}}'  
-                                      input-placeholder='Select configuration' 
-                                      type='simple'  
-                                      focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
-                                      page-size='10000'
-                                      config='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
-                                              {{#if labelSparqlPattern}}
-                                                "labelPattern": "{{labelSparqlPattern}}",
-                                              {{else}}
-                                                "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label . ",
-                                              {{/if}}
-                                              {{#if orderByPattern}}
-                                                "orderByPattern": "{{orderByPattern}}",
-                                              {{/if}}
-                                                "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__. {{#if rdfType}} ?item a/rdfs:subClassOf* <{{rdfType}}> .{{/if}} {{#if P2_has_type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
-                                              }'>
-                    <template id='template'>
-                      <span class="tree-item-actions-container">
-                        <div style="display: flex; align-items: center; gap: 7px;">
+          </mp-splitpane-toggle-on>
+          <mp-splitpane-toggle-off>
+            <div class="split-pane__leftsidebar-header">
+              <button data-flex-layout='row center-left' class="btn-toggle-off">
+                <h4 style="width: 100%; text-align: left;">
+                  Resource configuration
+                </h4>
+                <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
+              </button>
+            </div>
+          </mp-splitpane-toggle-off>
+          <mp-splitpane-sidebar-open style="flex: 1;">
+            <div class="split-pane__sidebar-open">
+              <div class="collection-terms-area">
+              
+                <mp-event-trigger id='{{frameId}}-resource-config-form-new-trigger' 
+                                  type='Component.TemplateUpdate' 
+                                  data='{"mode": "new" }' 
+                                  targets='["{{frameId}}-resource-config-term-forms"]'>
+                  <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
+                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                    <span>New configuration</span>
+                  </button>
+                </mp-event-trigger>
+            
+                <mp-event-target-template-render id='{{frameId}}-resource-config-mytree'  template='{{> treeTemplate}}'>
+                  <template id='treeTemplate'>
+                    <semantic-lazy-tree id='{{frameId}}-resource-config-scheme-tree' 
+                                        info-template='{{> template}}'  
+                                        input-placeholder='Select configuration' 
+                                        type='simple'  
+                                        focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
+                                        page-size='10000'
+                                        config='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
+                                                {{#if labelSparqlPattern}}
+                                                  "labelPattern": "{{labelSparqlPattern}}",
+                                                {{else}}
+                                                  "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label . ",
+                                                {{/if}}
+                                                {{#if orderByPattern}}
+                                                  "orderByPattern": "{{orderByPattern}}",
+                                                {{/if}}
+                                                  "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__. {{#if rdfType}} ?item a/rdfs:subClassOf* <{{rdfType}}> .{{/if}} {{#if P2_has_type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
+                                                }'>
+                      <template id='template'>
+                        <span class="tree-item-actions-container">
+                          <div style="display: flex; align-items: center; gap: 7px;">
 
-                          <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> ?value . }'
-                            then='{{> partOfVocabulary}}'
-                          >
-                            <template id='partOfVocabulary'>
-                              <span class="badge badge--secondary" style="height: 28px;">vocabulary</span>
-                            </template>
-                          </semantic-if>
-
-                          <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . }'
-                                      then='{{> inFinder}}'
-                          >
-                            <template id='inFinder'>
-                              <span class="badge badge--secondary" style="height: 28px; width: 54px;">finder</span>
-                            </template>
-                          </semantic-if>
-
-                          <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
-                                        then='{{> system}}'
-                                        else='{{> noSystem}}'
-                          >
-                              <template id='system'>
-                                <span class="badge badge--secondary" style="height: 28px; width: 54px;">system</span>
-                                <mp-event-trigger id='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
-                                                  type='Component.TemplateUpdate'
-                                                  data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "view" }' 
-                                                  targets='["{{frameId}}-resource-config-term-forms"]'>
-                                  <span class='tree-item-action'>
-                                    <rs-icon icon-type="round" icon-name="article" title="View configuration"></rs-icon>
-                                  </span>
-                                </mp-event-trigger>
+                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_part_of_vocabulary> ?value . }'
+                              then='{{> partOfVocabulary}}'
+                            >
+                              <template id='partOfVocabulary'>
+                                <span class="badge badge--secondary" style="height: 28px;">vocabulary</span>
                               </template>
+                            </semantic-if>
 
-                              <template id='noSystem'>
-                                <mp-event-trigger id='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
-                                                  type='Component.TemplateUpdate'
-                                                  data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
-                                                  targets='["{{frameId}}-resource-config-term-forms"]'>
-                                  <span class='tree-item-action'>
-                                    <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
-                                  </span>
-                                </mp-event-trigger>
+                            <semantic-if query='ASK { <{{iri}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . }'
+                                        then='{{> inFinder}}'
+                            >
+                              <template id='inFinder'>
+                                <span class="badge badge--secondary" style="height: 28px; width: 54px;">finder</span>
                               </template>
-                          </semantic-if>
+                            </semantic-if>
 
-                        </div>
-                        <mp-event-proxy id='{{frameId}}-resource-config-focus-tree-element' 
-                                        on-event-source='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
-                                        proxy-event-type='LazyTree.Focus' 
-                                        proxy-targets='["{{frameId}}-resource-config-scheme-tree"]' 
-                                        data='{"iri":"{{iri}}"}'>
-                        </mp-event-proxy>
-                      </span>
-                    </template>
-                  </semantic-lazy-tree> 
+                            <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                                          then='{{> system}}'
+                                          else='{{> noSystem}}'
+                            >
+                                <template id='system'>
+                                  <span class="badge badge--secondary" style="height: 28px; width: 54px;">system</span>
+                                  <mp-event-trigger id='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
+                                                    type='Component.TemplateUpdate'
+                                                    data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "view" }' 
+                                                    targets='["{{frameId}}-resource-config-term-forms"]'>
+                                    <span class='tree-item-action'>
+                                      <rs-icon icon-type="round" icon-name="article" title="View configuration"></rs-icon>
+                                    </span>
+                                  </mp-event-trigger>
+                                </template>
+
+                                <template id='noSystem'>
+                                  <mp-event-trigger id='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
+                                                    type='Component.TemplateUpdate'
+                                                    data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
+                                                    targets='["{{frameId}}-resource-config-term-forms"]'>
+                                    <span class='tree-item-action'>
+                                      <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
+                                    </span>
+                                  </mp-event-trigger>
+                                </template>
+                            </semantic-if>
+
+                          </div>
+                          <mp-event-proxy id='{{frameId}}-resource-config-focus-tree-element' 
+                                          on-event-source='{{frameId}}-resource-config-form-edit-trigger--{{iri}}' 
+                                          proxy-event-type='LazyTree.Focus' 
+                                          proxy-targets='["{{frameId}}-resource-config-scheme-tree"]' 
+                                          data='{"iri":"{{iri}}"}'>
+                          </mp-event-proxy>
+                        </span>
+                      </template>
+                    </semantic-lazy-tree> 
+                  </template>
+                </mp-event-target-template-render>
+              </div>
+            </div>
+          </mp-splitpane-sidebar-open>
+        </div>
+
+          <div class="page__grid-container">
+    
+            <div class="page__content-container resource-editView-form-container">
+              <mp-event-target-template-render id='{{frameId}}-resource-config-term-forms' template='{{> template}}'>
+                <template id='template'>
+        
+                  {{#if (not (eq mode "deleted"))}}
+                    <mp-event-proxy id='{{frameId}}-resource-config-tree-refresh-on-created' 
+                                    on-event-source='{{frameId}}-vocab-form' 
+                                    on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                                    proxy-event-type='Component.TemplateUpdate' 
+                                    proxy-targets='["{{frameId}}-resource-config-mytree", "{{frameId}}-resource-config-term-forms"]'
+                                    additional-data='{"mode": "edit"}'
+                    ></mp-event-proxy>
+          
+                    <mp-event-proxy id='{{frameId}}-resource-config-tree-refresh-on-delete' 
+                                    on-event-source='{{frameId}}-vocab-form' 
+                                    on-event-types='["Form.ResourceRemoved"]'
+                                    proxy-event-type='Component.TemplateUpdate' 
+                                    proxy-targets='["{{frameId}}-resource-config-mytree", "{{frameId}}-resource-config-term-forms"]'
+                                    additional-data='{"mode": "deleted", "label": "{{label}}"}'
+                    ></mp-event-proxy>
+      
+                    {{#if mode}}
+                      <inline-template template-iri='[[resolvePrefix "rsp:ResourceConfigForm"]]' 
+                                      options='{
+                                                "scheme": "http://www.researchspace.org/resource/custom/resource_configurations_container", 
+                                                {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
+                                                {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                                "editable": true,
+                                                "mode": "{{mode}}",
+                                                "viewId": "{{frameId}}",
+                                                "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
+                                      }'>
+                      </inline-template>
+                    {{/if}}
+                  
+                  {{else}}
+                    <div></div>
+                  {{/if}}
                 </template>
               </mp-event-target-template-render>
             </div>
           </div>
-        </mp-splitpane-sidebar-open>
-      </div>
 
-        <div class="page__grid-container">
-  
-          <div class="page__content-container resource-editView-form-container">
-            <mp-event-target-template-render id='{{frameId}}-resource-config-term-forms' template='{{> template}}'>
-              <template id='template'>
-      
-                {{#if (not (eq mode "deleted"))}}
-                  <mp-event-proxy id='{{frameId}}-resource-config-tree-refresh-on-created' 
-                                  on-event-source='{{frameId}}-vocab-form' 
-                                  on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
-                                  proxy-event-type='Component.TemplateUpdate' 
-                                  proxy-targets='["{{frameId}}-resource-config-mytree", "{{frameId}}-resource-config-term-forms"]'
-                                  additional-data='{"mode": "edit"}'
-                  ></mp-event-proxy>
-        
-                  <mp-event-proxy id='{{frameId}}-resource-config-tree-refresh-on-delete' 
-                                  on-event-source='{{frameId}}-vocab-form' 
-                                  on-event-types='["Form.ResourceRemoved"]'
-                                  proxy-event-type='Component.TemplateUpdate' 
-                                  proxy-targets='["{{frameId}}-resource-config-mytree", "{{frameId}}-resource-config-term-forms"]'
-                                  additional-data='{"mode": "deleted", "label": "{{label}}"}'
-                  ></mp-event-proxy>
-    
-                  {{#if mode}}
-                    <inline-template template-iri='[[resolvePrefix "rsp:ResourceConfigForm"]]' 
-                                     options='{
-                                              "scheme": "http://www.researchspace.org/resource/custom/resource_configurations_container", 
-                                              {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
-                                              {{#if broader}}"broader": "{{broader}}",{{/if}}
-                                              "editable": true,
-                                              "mode": "{{mode}}",
-                                              "viewId": "{{frameId}}",
-                                              "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
-                                     }'>
-                    </inline-template>
-                  {{/if}}
-                
-                {{else}}
-                  <div></div>
-                {{/if}}
-              </template>
-            </mp-event-target-template-render>
-          </div>
-        </div>
-
-    </mp-splitpane>
-</div>
+      </mp-splitpane>
+  </div>
 {{/bind}}

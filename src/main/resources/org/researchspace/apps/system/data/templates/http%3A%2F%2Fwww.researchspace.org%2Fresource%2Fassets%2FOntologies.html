@@ -55,6 +55,7 @@
               <div>
                 <mp-rdf-upload  accept='[".trig"]'                                           
                                 keep-source-graphs='true' 
+                                ontology='true'
                                 allow-load-by-url='false' 
                                 show-advanced-options='false' 
                                 drop-area-template='{{> template}}'>
@@ -81,7 +82,7 @@
                     proxy-event-type='Component.TemplateUpdate' 
                     proxy-targets='["ontology-search-results"]'>
           ></mp-event-proxy>
-
+        
           <semantic-link-container uri="http://www.researchspace.org/resource/OntologySearch">
             <button class="btn btn-default btn-textAndIcon">
               <rs-icon icon-type="round" icon-name="search"></rs-icon>
@@ -162,7 +163,18 @@
                                       options='{"showFilter": false}'>
 
                         <template id='ontology'>
-                        
+                         <semantic-if query='ASK {<http://www.researchspace.org/resource/system/ontologyContainer> <http://www.w3.org/ns/ldp#contains>  <{{subject.value}}> .}' 
+																				
+                                          else='{{> else}}'>
+                              
+															<template id='else'>                             	
+                        				<ontology-create-new-resource-action 
+																		container="http://www.researchspace.org/resource/system/ontologyContainer" 
+                                    ontology-iri="{{subject.value}}">
+                                </ontology-create-new-resource-action>
+                              </template>
+                            </semantic-if>
+                          
                             <div style="display: flex; align-items: stretch;" >
                               <div class="page__section-container-whiteBg" style="flex: 1; margin: 0; display: flex; flex-direction: column;">
                                 <div style="flex: 1;">
@@ -257,7 +269,7 @@
                                   <rs-icon icon-type="round" icon-name="open_in_new" title='View ontology'></rs-icon>View
                                 </button>
                               </semantic-link>
-                                
+                              
                               <div class="btn-inline-container">
                                 <mp-graph-store-action  title='Download in Turtle Format' 
                                                         action='GET'
@@ -268,6 +280,8 @@
                                   </button> 
                                 </mp-graph-store-action>
                               
+                                
+                                
                                 <mp-overlay-dialog title="Print Preview" type="lightbox" id="'test">
                                   <mp-overlay-dialog-trigger>
                                     <button class="btn btn-default btn-textAndIcon" title="Print">
@@ -318,8 +332,8 @@
                                             <mp-event-trigger id='removeOntology-removeKps-dialog-trigger' 
                                                             type='Component.TemplateUpdate' 
                                                             targets='[""]'>
-                                              <mp-ldp-remove-from-container-action iri="{{subject.value}}" 
-                                                                  container="http://researchspace.org/container/rootContainer/ontologyContainer">
+                                              <mp-ldp-remove-from-container-action ontology=true iri="{{subject.value}}" 
+                                                                  container=" http://www.researchspace.org/resource/system/ontologyContainer">
                                                 <button class="btn btn-action">Delete ontology</button> 
                                               </mp-ldp-remove-from-container-action> 
                                           </mp-event-trigger>

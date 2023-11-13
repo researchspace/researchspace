@@ -291,21 +291,15 @@ public class LDPAssetsLoader {
             if (modelExisting.isEmpty()) {
                 toLoad.add(ctx);
             } 
-            /* Skip checks for the content of the vocabularies repository as the assumption 
-               is that these are good practice vocabularies that will be modified during development or instance use */
-            else if (!repositoryId.equals("vocabularies") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
+            /* Skip checks for the content of the vocabularies, ontologies, configurations repository as the assumption 
+               is that these will be modified during development or instance use */
+            else if(!repositoryId.equals("assets") &&
+                    !repositoryId.equals("vocabularies") && 
+                    !repositoryId.equals("ontologies") && 
+                    !repositoryId.equals("configurations")  && 
+                    !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                 inconsistentContexts.add(ctx);
-            }
-             /* Skip checks for the content of ontologies repository as the assumption 
-               is that these ontologies can be modified  */
-               else if (!repositoryId.equals("ontologies") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
-                inconsistentContexts.add(ctx);
-            }
-             /* Skip checks for the content of configuration repository as the assumption 
-               is that configurations are editable  */
-               else if (!repositoryId.equals("configurations") && !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
-                inconsistentContexts.add(ctx);
-            }
+            }            
         }
 
         if (!inconsistentContexts.isEmpty()) {

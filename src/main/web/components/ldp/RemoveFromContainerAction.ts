@@ -23,10 +23,15 @@ import { Component } from 'platform/api/components';
 import { Rdf } from 'platform/api/rdf';
 import { LdpService } from 'platform/api/services/ldp';
 import { refresh, navigateToResource } from 'platform/api/navigation';
+import {SparqlClient} from 'platform/api/sparql';
 
 interface Props extends ReactProps<RemoveFromContainerComponent> {
   container: string;
   iri: string;
+
+  /* Use this prop to specify an ontology resource is being deleted, 
+     so all associated KPs are also deleted */
+  ontology?: boolean;
 
   /**
    * @default 'reload'
@@ -48,16 +53,42 @@ class RemoveFromContainerComponent extends Component<Props, {}> {
   }
 
   private deleteItem = () => {
-    new LdpService(this.props.container, this.context.semanticContext)
-      .deleteResource(Rdf.iri(this.props.iri))
-      .onValue(() => {
-        if (this.props.postAction === 'reload') {
-          refresh();
-        } else {
-          navigateToResource(Rdf.iri(this.props.postAction)).onValue((v) => v);
-        }
-      });
+    if (this.props.ontology)
+      this.deleteOntologyAndKPs();
+    else 
+      new LdpService(this.props.container, this.context.semanticContext)
+        .deleteResource(Rdf.iri(this.props.iri))
+        .onValue(() => {
+          if (this.props.postAction === 'reload') {
+            refresh();
+          } else {
+            navigateToResource(Rdf.iri(this.props.postAction)).onValue((v) => v);
+          }
+        });
   };
+
+  private deleteOntologyAndKPs(){
+    //first delete KPs
+    const kpsSelectQuery = "SELECT ?kp WHERE {?kp <http://www.researchspace.org/resource/system/fields/ontology> "+Rdf.iri(this.props.iri) +".}";
+    
+    SparqlClient.select(kpsSelectQuery).onValue(( results ) => {
+      for (const binding of results.results.bindings) {
+        const { kp } = binding;
+        new LdpService(kp.value, this.context.semanticContext)
+          .deleteResource(Rdf.iri(kp.value)).onValue(() => {});       
+      }});
+    
+    //delete ontology last
+    new LdpService(this.props.container, this.context.semanticContext)
+        .deleteResource(Rdf.iri(this.props.iri))
+        .onValue(() => {
+          if (this.props.postAction === 'reload') {
+            refresh();
+          } else {
+            navigateToResource(Rdf.iri(this.props.postAction)).onValue((v) => v);
+          }
+        });
+  }
 }
 
 export type component = RemoveFromContainerComponent;

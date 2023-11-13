@@ -30,12 +30,15 @@ module platform {
   export const VisibilityContainer = RDF.iri(_NAMESPACE + 'visibilityContainer');
   export const FieldDefinitionContainer = RDF.iri(_NAMESPACE + 'fieldDefinitionContainer');
   export const FormContainer = RDF.iri(_NAMESPACE + 'formContainer');
+  export const OntologyContainer = RDF.iri(_NAMESPACE + 'ontologyContainer');
   export const OntodiaDiagramContainer = RDF.iri(_NAMESPACE + 'ontodiaDiagramContainer');
   export const QueryContainer = RDF.iri(_NAMESPACE + 'queryContainer');
   export const QueryTemplateContainer = RDF.iri(_NAMESPACE + 'queryTemplateContainer');
   export const PersistedComponentContainer = RDF.iri(_NAMESPACE + 'persistedComponentContainer');
   export const WorkflowContainer = RDF.iri(_NAMESPACE + 'workflowContainer');
   export const WorkflowDefinitionContainer = RDF.iri(_NAMESPACE + 'workflowDefinitionContainer');
+
+  export const RootContainer = RDF.iri(_NAMESPACE + 'rootContainer');
 
   export const Set = RDF.iri(_NAMESPACE + 'Set');
   export const SetItem = RDF.iri(_NAMESPACE + 'SetItem');

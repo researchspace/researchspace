@@ -121,7 +121,6 @@ export class GraphActionLink extends Component<Props, State> {
         if (!this.props.eventOverlayId) {
           /* When there is no id set for the modal dialog, skip creating a modal window and run the delete */
           this.deleteGraphWithoutRefresh();
-          console.log("delete without refresh");
         } else {
             const dialogRef = this.props.eventOverlayId;
             const onHide = () => getOverlaySystem().hide(dialogRef);

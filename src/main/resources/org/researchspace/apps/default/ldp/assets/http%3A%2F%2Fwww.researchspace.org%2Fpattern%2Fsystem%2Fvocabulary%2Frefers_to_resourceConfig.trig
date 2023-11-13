@@ -18,9 +18,12 @@
   
   _:genid-14a22e0f6357483197c9d468e08b14f6-9yj5f a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT $value $label WHERE { 
- ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
- ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
-}""" .
+        ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
+        ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+        MINUS { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource> }
+        ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?use_as_vocabulary_type .
+        ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership_property .
+        } ORDER BY ASC(?label)""" .
   
   _:genid-14a22e0f6357483197c9d468e08b14f6-75nrag a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {

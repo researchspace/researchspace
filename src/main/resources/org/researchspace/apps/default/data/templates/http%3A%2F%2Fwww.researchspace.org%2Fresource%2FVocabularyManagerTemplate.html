@@ -107,6 +107,13 @@ The code for this inline template is defined in the application page using the r
                       proxy-targets='["{{viewId}}-createNew-vocabulary-dialog"]'
       ></mp-event-proxy>
 
+      <mp-event-proxy id='{{viewId}}-vocUpdated-closeModal-proxy' 
+                      on-event-source='{{viewId}}-edit-vocabulary-form'
+                      on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                      proxy-event-type='OverlayDialog.Close' 
+                      proxy-targets='["{{viewId}}-edit-vocabulary-dialog"]'
+      ></mp-event-proxy>
+
       <mp-event-proxy id='{{viewId}}-vocUpdated-refreshTable-proxy'
                       on-event-source='{{viewId}}-edit-vocabulary-form'
                       on-event-type='Form.ResourceUpdated'
@@ -114,12 +121,19 @@ The code for this inline template is defined in the application page using the r
                       proxy-targets='["{{viewId}}-vocabulary-table"]'>
       </mp-event-proxy> 
 
-      <mp-event-proxy id='{{viewId}}-vocUpdated-closeModal-proxy' 
-                      on-event-source='{{viewId}}-edit-vocabulary-form'
+      <mp-event-proxy id='{{viewId}}-vocEnabled-closeModal-proxy' 
+                      on-event-source='{{viewId}}-enable-vocabulary-form'
                       on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                       proxy-event-type='OverlayDialog.Close' 
                       proxy-targets='["{{viewId}}-edit-vocabulary-dialog"]'
       ></mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-vocEnabled-refreshTable-proxy'
+                      on-event-source='{{viewId}}-enable-vocabulary-form'
+                      on-event-type='Form.ResourceUpdated'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-table"]'>
+      </mp-event-proxy>
 
       <mp-event-target-template-render id='{{viewId}}-vocabulary-table' template='{{> template}}'>
         <template id='template'>

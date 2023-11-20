@@ -426,6 +426,14 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private toggle3d = (event: Event<any>) => {
     this.ol3d.setEnabled(!this.ol3d.getEnabled())
+    const scene = this.ol3d.getCesiumScene();
+    const tileset = new cesium.Cesium3DTileset({
+      url: cesium.IonResource.fromAssetId(2095739, {
+        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZmFiZDhiMy1lMTcwLTQ0ZDgtYWIwYi01N2E5NDdiMzA2NTIiLCJpZCI6MTU3MDgyLCJpYXQiOjE2OTk5NjAwNjh9.A4eJW5Xcv9TuDN3S9jNbaoCCo04Big1S_GViFvwiA2I"  
+      }
+      )
+    });
+    scene.primitives.add(tileset);
   }
 
   private createHiddenFeatureStyle(feature){
@@ -715,7 +723,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
     trigger({
       eventType: SemanticMapSendMapLayers,
-      data: [..._.values(this.state.mapLayers)],
+      data: Array.from(_.values(this.state.mapLayers)),
       source: this.props.id,
       targets: this.props.targetControls,
     });
@@ -896,7 +904,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       if (feature) {
         console.log("Clicked feature.")
         console.log(feature)
-        this.setState({ selectedFeatures: [...this.state.selectedFeatures, feature.values_.subject.value] }, ()=>{
+        this.setState({ selectedFeatures: Array.from(this.state.selectedFeatures).concat([feature.values_.subject.value]) }, ()=>{
           // console.log(this.state.selectedFeatures)
         })
         const geometry = feature.getGeometry();
@@ -1117,7 +1125,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         f.setGeometry(geo);
 
         const type = geo.getType();
-        geometries[type] = geometries[type] ? [...geometries[type], f] : [f];
+        geometries[type] = geometries[type] ? geometries[type].concat(f) : [f];
       }
     });
 
@@ -1235,15 +1243,12 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
         basemapLayers[0].set('visible', true);
 
         let mapLayersClone = this.state.mapLayers;
-        newMapLayers = [..._.values(mapLayersClone), ..._.values(layers)];
+newMapLayers = _.values(mapLayersClone).concat(_.values(layers));
       } else {
-        console.log("no")
-        newMapLayers = [
-          new TileLayer({
-            source: new OSM(),
-          }),
-          ..._.values(layers),
-        ]
+        newMapLayers = _.values(layers);
+        newMapLayers.unshift(new TileLayer({
+          source: new OSM(),
+        }));
       }
 
       this.setState(
@@ -1264,7 +1269,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
 
             //TODO URGENT: MAKE EXTENT OPTIONAL (OR PREDEFINED WITH SOME EURISTIC)
-            layers: [..._.values(this.state.mapLayers)],
+            layers: Object.values(this.state.mapLayers),
             target: node,
             view: new View({
               center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
@@ -1422,7 +1427,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
       }
     });
 
-    let newMapLayers = [..._.values(mapLayersClone)];
+    let newMapLayers = Object.values(mapLayersClone);
     this.setState(
       {
         mapLayers: newMapLayers,

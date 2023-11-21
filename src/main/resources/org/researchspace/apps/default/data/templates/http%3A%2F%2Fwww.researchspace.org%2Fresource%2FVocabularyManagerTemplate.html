@@ -93,6 +93,14 @@ The code for this inline template is defined in the application page using the r
                       proxy-targets='["{{viewId}}-vocabulary-table"]'
       ></mp-event-proxy>
 
+      <mp-event-proxy id='{{viewId}}-vocabulary-onFormSave-message-proxy' 
+            on-event-source='{{viewId}}-new-vocabulary-form'
+            on-event-type='Form.ResourceCreated'
+            additional-data='{"vocabularySaved": "true", "viewId": "{{viewId}}" }'
+            proxy-event-type='Component.TemplateUpdate' 
+            proxy-targets='["{{viewId}}-vocabulary-save-state"]'>
+      </mp-event-proxy>
+
       <mp-event-proxy id='{{viewId}}-newVocabCreated-refreshTable-proxy'
                       on-event-source='{{viewId}}-new-vocabulary-form'
                       on-event-type='Form.ResourceCreated'
@@ -121,6 +129,14 @@ The code for this inline template is defined in the application page using the r
                       proxy-targets='["{{viewId}}-vocabulary-table"]'>
       </mp-event-proxy> 
 
+      <mp-event-proxy id='{{viewId}}-vocabulary-onFormEdit-message-proxy' 
+                      on-event-source='{{viewId}}-edit-vocabulary-form'
+                      on-event-types='["Form.ResourceUpdated"]'
+                      additional-data='{"vocabularyUpdate": "true", "viewId": "{{viewId}}" }'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-save-state"]'>
+      </mp-event-proxy>
+
       <mp-event-proxy id='{{viewId}}-vocEnabled-closeModal-proxy' 
                       on-event-source='{{viewId}}-enable-vocabulary-form'
                       on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
@@ -135,11 +151,46 @@ The code for this inline template is defined in the application page using the r
                       proxy-targets='["{{viewId}}-vocabulary-table"]'>
       </mp-event-proxy>
 
+      <mp-event-target-template-render id='{{viewId}}-vocabulary-save-state' template='{{> template}}'>
+        <template id='template'>
+          {{#if hideMessage}}
+          {{else}}
+            {{#if (or vocabularySaved vocabularyUpdate)}}
+              [[!-- the form send an iri in console with the subject of the resource created --]]
+              <div class='success-documentation-section success-documentation-section-withIcon' style="margin-bottom: 10px;">
+                <div class="success-documentation-section-content" style="flex: 1;">
+                  {{#if vocabularySaved}}Created {{/if}}
+                  {{#if vocabularyUpdate}}Updated {{/if}}
+                  vocabulary:
+                  <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                urlqueryparam-view='vocabulary-content' 
+                                urlqueryparam-resource='{{iri}}'
+                                urlqueryparam-mode='new'
+                              >
+                    <mp-label iri='{{iri}}' style="text-decoration: underline;"></mp-label>
+                  </semantic-link>
+                </div>
+                <mp-event-trigger id='{{viewId}}-cancel-save-message-{{iri}}'
+                                  type='Component.TemplateUpdate'
+                                  data='{ "hideMessage": "true" }'
+                                  targets='["{{viewId}}-vocabulary-save-state"]'
+                >
+                  <button class="btn btn-documentation">
+                    <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                  </button>
+                </mp-event-trigger>
+              </div>
+            {{/if}}
+          {{/if}}
+        </template>
+      </mp-event-target-template-render>
+
       <mp-event-target-template-render id='{{viewId}}-vocabulary-table' template='{{> template}}'>
         <template id='template'>
-          [[#> VocabularySearchResults]][[/VocabularySearchResults]]
+            [[#> VocabularySearchResults]][[/VocabularySearchResults]]
         </template>
       </mp-event-target-template-render>
     </div>  
   </div>
+
 {{/bind}}

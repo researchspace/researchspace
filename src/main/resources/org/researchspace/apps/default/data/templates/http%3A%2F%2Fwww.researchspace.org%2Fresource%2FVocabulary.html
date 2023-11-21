@@ -12,65 +12,26 @@
     
     [[#*inline "customVocabularyForm"]]
       <semantic-search id="vocabulary-iri-selector">
-        <semantic-search-form-query query-template='{ "queryString": "SELECT $vocabularyLabel ?vocabularyDescription ?entityTypeURI  { 
+        <semantic-search-form-query id="{{viewId}}-newVocabulary-form"
+                                    element-id-to-hide-after-search="newVocabulary-search-form"
+                                    query-template='{ "queryString": "SELECT $vocabularyLabel ?vocabularyDescription  { 
                                                                         BIND($label as ?vocabularyLabel).
                                                                         BIND($description as ?vocabularyDescription).
-                                                                        BIND(?entitytype as ?entityTypeURI )
                                                                       }",
                                                     
                                                         "arguments": { "label": {"type": "xsd:string"},
-                                                                        "description": {"type": "xsd:string", "optional": true},
-                                                                        "entitytype":{"type":"xsd:anyURI"}
+                                                                        "description": {"type": "xsd:string", "optional": true}
                                                                       }
                                                     }'
 
                                     fields='[{"id": "label", "label": "Label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
-                                            {"id": "description", "label": "Description", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
-                                            { "id": "entitytype",
-                                              "label": "Type",
-                                              "xsdDatatype": "xsd:anyURI",
-                                              "valueSetPattern": "SELECT $value $label WHERE { 
-                                                                  ?value <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container> .
-                                                                  ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
-                                                                  MINUS { ?value crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource> }
-                                                                  ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?use_as_vocabulary_type .
-                                                                  ?value <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership_property .
-                                                                } ORDER BY ASC(?label)"
-                                            }
+                                            {"id": "description", "label": "Description", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"}
                                     ]'>
                             
-            <div class="newVocabulary-modal-form-content">
+            <div id="newVocabulary-search-form">
               <semantic-form-text-input for="label" placeholder="Enter vocabulary label" label="Label" ></semantic-form-text-input> 
               <semantic-form-text-input for="description" placeholder="Enter vocabulary description" label="Description" multiline='true'></semantic-form-text-input>        
 
-              <div style="display: flex; align-items: baseline; justify-content: space-between;">
-                <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
-                <div class="btn-inline-container">
-                  <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
-                                         target="_blank"
-                                         urlqueryparam-view='resource-configuration'
-                                         style="text-decoration: underline;">
-                    <div>+ New vocabulary type</div>
-                  </semantic-link>
-                  <mp-popover title="Vocabulary type">
-                    <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
-                      <div class="badge">
-                        <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
-                      </div>
-                    </mp-popover-trigger>
-                    <mp-popover-content>
-                        <p>Vocabulary types are defined in 
-                          <b>Resource Configuration/Vocabulary tab</b>.
-                        </p>
-                        <div>To use a resource as vocabulary type go in tab Vocabulary and enable <b>Use as Vocabulary type</b>.</div>
-                    </mp-popover-content>
-                  </mp-popover>
-                </div>
-              </div>
-              
-              <div class="vocabularyType-checklist-input-container page__section-container" style="margin: 0;">
-                <semantic-form-checklist-input for='entitytype' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
-              </div>
               <semantic-form-errors></semantic-form-errors>
 
               <div class="btn-form-actions">
@@ -79,7 +40,7 @@
                                   targets='["{{viewId}}-createNew-vocabulary-dialog"]'>
                     <button name="cancel" class="btn btn-default">Cancel</button>
                 </mp-event-trigger>
-                <button name='submit' type="submit" class='btn btn-action'>Create vocabulary</button>
+                <button name='submit' type="submit" class='btn btn-action'>Next</button>
               </div>
             </div>
         </semantic-search-form-query>
@@ -87,14 +48,12 @@
         <semantic-search-result-holder>
           <semantic-search-result>
             <semantic-query id='new-vocabulary-query-form' 
-                            query='SELECT ?vocabularyLabel ?vocabulary ?entityTypeURI ?entityTypeLabel ?vocabularyDescription ?exists ?viewId WHERE {
+                            query='SELECT ?vocabularyLabel ?vocabulary ?vocabularyDescription ?exists ?viewId WHERE {
                                       BIND("{{viewId}}" as ?viewId)
                                       BIND(IRI(CONCAT(STR(Default:), "vocab/", ENCODE_FOR_URI(REPLACE(LCASE(?vocabularyLabel), "\\s", "_")))) AS ?vocabulary) .
                                   
                                       OPTIONAL {
                                         ?vocabulary a skos:ConceptScheme .
-                                     #  ?vocabulary crm:P67_refers_to ?entityTypeURI .
-                                    #   ?vocabulary rdfs:label ?vocabularyLabel .
                                         BIND(true as ?exists) .
                                       }
                                       
@@ -103,30 +62,44 @@
                                         BIND(true as ?exists) .
                                       }
 
-                                      ?entityTypeURI <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?entityTypeLabel .
                                     }'
 
                             template='{{> template}}'>
 
               <template id='template'>
                   {{#if bindings.0.exists}}
-                    <div class="danger-documentation-section danger-documentation-section-withIcon">
-                      <div class="danger-documentation-section-icon-container">
-                        <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
-                      </div>
-              
-                      <div> 
-                        <div class="danger-documentation-section-title">ALREADY EXISTS!</div>
-                        <div class="documentation-section-content">A vocabulary with label <b>{{bindings.0.vocabularyLabel.value}}</b> 
-                          already exists.</div>
+                    <div>
+                      <div id="newVocabulary-query-form-error-alert" style="margin-top: 20px;">
+
+                        <div class="danger-documentation-section danger-documentation-section-withIcon">
+                          <div class="danger-documentation-section-icon-container">
+                            <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
+                          </div>
+                  
+                          <div> 
+                            <div class="danger-documentation-section-title">ALREADY EXISTS!</div>
+                            <div class="danger- documentation-section-content">A vocabulary with label <b>{{bindings.0.vocabularyLabel.value}}</b> 
+                              already exists.</div>
+                          </div>
+                        </div>
+
+                        <div class="btn-inline-container" style="justify-content: flex-end; margin-top: 10px;">
+                          <mp-event-trigger id='{{bindings.0.viewId.value}}-cancel-confirmNewVocabulary-trigger' 
+                                            type='OverlayDialog.Close' 
+                                            targets='["{{bindings.0.viewId.value}}-createNew-vocabulary-dialog"]'>
+                            <button name="cancel" class="btn btn-default">Cancel</button>
+                          </mp-event-trigger>
+  
+                          <rs-back-button  element-id-to-show="newVocabulary-search-form" 
+                                          error-alert-id="newVocabulary-query-form-error-alert"
+                                          class-name="btn btn-action">
+                            Back
+                          </rs-back-button>
+                        </div>
                       </div>
                     </div>
                   {{else}}
-                    <div class="newVocabulary-confirm-message alert alert-info" style="flex-wrap: wrap; gap: 15px;">
-                      <div style="flex: 1;">Are you sure you want to create a new vocabulary with IRI: 
-                        <b>{{bindings.0.vocabulary.value}}</b>?
-                      </div>   
-                      
+                    <div id="newVocabulary-semantic-form">
                       <semantic-form id='{{bindings.0.viewId.value}}-new-vocabulary-form' 
                                     persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.vocabulary.value}}"}'
                                     new-subject-template='{{bindings.0.vocabulary.value}}'
@@ -138,24 +111,75 @@
                                               vocabulary_description="http://www.researchspace.org/pattern/system/entity/description"
                                             ]]'
                       >
-                        <div style="display: none;">
-                          <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document","http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object"]'></semantic-form-hidden-input>
-                          <semantic-form-hidden-input for="rdfsLabel" default-value='{{bindings.0.vocabularyLabel.value}}'></semantic-form-hidden-input>   
+                        <div>
+                          <semantic-form-hidden-input for="classtype" 
+                                                      default-values='["http://www.cidoc-crm.org/cidoc-crm/E32_Authority_Document","http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object"]'>
+                          </semantic-form-hidden-input>
+                          <semantic-form-hidden-input for="rdfsLabel" placeholder="Enter vocabulary label" label="Label"
+                                                      default-value='{{bindings.0.vocabularyLabel.value}}'>
+                          </semantic-form-hidden-input>   
+                          <div>
+                            <span class="customFormHeader">Label:</span>
+                            <span>{{bindings.0.vocabularyLabel.value}}</span>
+                          </div>
+
+                          {{#if bindings.0.vocabularyDescription.value}}
+                            <div>
+                              <span class="customFormHeader">Description:</span>
+                              <span>{{bindings.0.vocabularyDescription.value}}</span>
+                            </div>
+                          {{/if}}
+
+                          <semantic-form-hidden-input for="vocabulary_description"  placeholder="Enter vocabulary description" label="Description" multiline='true'
+                                                      default-value='{{bindings.0.vocabularyDescription.value}}'>
+                          </semantic-form-hidden-input>
+
+                          <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                            <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
+                            <div class="btn-inline-container">
+                              <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                      target="_blank"
+                                                      urlqueryparam-view='resource-configuration'
+                                                      style="text-decoration: underline;">
+                                <div>+ New vocabulary type</div>
+                              </semantic-link>
+                              <mp-popover title="Vocabulary type">
+                                <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
+                                  <div class="badge">
+                                    <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+                                  </div>
+                                </mp-popover-trigger>
+                                <mp-popover-content>
+                                    <p>Vocabulary types are defined in 
+                                      <b>Resource Configuration/Vocabulary tab</b>.
+                                    </p>
+                                    <div>To use a resource as vocabulary type go in tab Vocabulary and enable <b>Use as Vocabulary type</b>.</div>
+                                </mp-popover-content>
+                              </mp-popover>
+                            </div>
+                          </div>
                           
-                          <semantic-form-hidden-input for="vocabulary_refersto_resourceConfig" default-value='{{bindings.0.entityTypeURI.value}}'></semantic-form-hidden-input>
-                          <semantic-form-hidden-input for="vocabulary_description" default-value='{{bindings.0.vocabularyDescription.value}}'></semantic-form-hidden-input>
+                          <div class="vocabularyType-checklist-input-container page__section-container" style="margin: 0;">
+                            <semantic-form-checklist-input for='vocabulary_refersto_resourceConfig' type="checkbox" label="Type" render-header="false"></semantic-form-checklist-input>
+                          </div>
                         </div>
+
+                        <semantic-form-errors></semantic-form-errors>
                         
                         <!-- save and reset button for form -->
-                        <div class="btn-inline-container">
+                        <div class="btn-form-actions">
                           <mp-event-trigger id='{{bindings.0.viewId.value}}-cancel-confirmNewVocabulary-trigger' 
                                             type='OverlayDialog.Close' 
                                             targets='["{{bindings.0.viewId.value}}-createNew-vocabulary-dialog"]'>
                             <button name="cancel" class="btn btn-default">Cancel</button>
                           </mp-event-trigger>
 
-                          <button name="submit" class="btn btn-action">Confirm</button>
-                        [[!--  <semantic-form-errors></semantic-form-errors> --]]
+                          <rs-back-button element-id-to-hide="newVocabulary-semantic-form" 
+                                          element-id-to-show="newVocabulary-search-form">
+                            Back
+                          </rs-back-button>
+
+                          <button name="submit" class="btn btn-action">Create vocabulary</button>
                         </div>
 
                       </semantic-form>
@@ -166,13 +190,14 @@
           </semantic-search-result>
         </semantic-search-result-holder>
       </semantic-search>
+
     [[/inline]]
     
     [[#*inline "customVocabularyUploadDropzoneMessage"]]
       <div class='placeholder-item'>
         <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
         <div> 
-          <p>Drag *.trig or *.nq RDF vocabulary file(s) or click to upload</p>
+          <p>Drag vocabulary as *.trig or *.nq RDF file(s) or click to upload</p>
           <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
             <div class="documentation-section-icon-container">
               <i class="fa fa-info"></i>
@@ -221,7 +246,7 @@
             <div> 
               <div class="warning-documentation-section-title">Warning! &nbsp; The following vocabularies 
                  can't be edited with Vocabulary Manager.</div>
-              <div class="documentation-section-content">
+              <div class="warning-documentation-section-content">
                 <div>Vocabularies of ontology class skos:ConceptScheme or crm:E32_Authority_Document and all their 
                   corresponding entities should be defined in one named graph that equals to the vocabulary IRI.</div>
                   <ul>
@@ -307,6 +332,7 @@
         <div style="margin-top: 20px;" class="vocabulary-table">
           <semantic-search-result-holder>
               <semantic-search-result>
+                
                 <semantic-table id='vocabulary-table'
                                 query='SELECT DISTINCT ?vocabulary ?vocabularyLabel ?managedByResourceConfig ?resourceConfigLabel ?vocabularyDescription
                                         WHERE {} 
@@ -420,7 +446,7 @@
                                           <div class="warning-documentation-section-title">
                                             Vocabulary '<b>{{vocabularyLabel.value}}</b>' is not managed by the system.
                                           </div>
-                                          <div class="documentation-section-content">
+                                          <div class="warning-documentation-section-content">
                                             <div>To enable the vocabulary authoring just assign a vocabulary type below.</div>
                                           </div>
                                         </div>
@@ -523,6 +549,9 @@
           </semantic-search-result-holder>
         </div>
       </semantic-search>
+
     [[/inline]]
 
 [[/rsp:VocabularyManagerTemplate]]
+
+

@@ -32,6 +32,8 @@ import {
   MultipleValuesHandlerProps,
   ValuesWithErrors,
 } from './MultipleValuesInput';
+import { trigger } from 'platform/api/events/EventsStore';
+import { SelectionEvents } from '../../ui/selection';
 
 const CHECKBOX_CLASS = 'semantic-form-checkbox-input';
 
@@ -61,6 +63,14 @@ const FALSE_VALUE = Rdf.literal(false);
  * <semantic-form-checkbox-input for='field-name'></semantic-form-checkbox-input>
  *
  */
+
+function triggerEvent(value: boolean) {
+  trigger({
+    eventType: SelectionEvents.Toggle,
+    source: 'SelectionToggle',
+    data: { value, tag: '' },
+  });
+}
 export class CheckboxInput extends MultipleValuesInput<CheckboxInputProps, {}> {
   constructor(props: CheckboxInputProps, context: any) {
     super(props, context);
@@ -77,6 +87,7 @@ export class CheckboxInput extends MultipleValuesInput<CheckboxInputProps, {}> {
       let newValues = Immutable.List<FieldValue>();
       newValues = newValues.push(FieldValue.fromLabeled(newValue));
       const validated = handler.validate({ values: newValues, errors: errors });
+      triggerEvent(!!getCheckboxState(validated.values))
       return validated;
     });
   };

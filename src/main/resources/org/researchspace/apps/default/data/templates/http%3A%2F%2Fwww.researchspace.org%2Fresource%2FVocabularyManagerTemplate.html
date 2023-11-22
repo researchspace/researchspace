@@ -3,7 +3,7 @@ Uses inline templates and can be customised for presentation and editing of voca
 Incoming Parameters:
   * title -- can be set to "Vocabulary/Project/Bibliography/etc."
   * addTitle
-  * customVocabularyForm
+  * customInsertVocabularyForm
   * customVocabularyUploadDropzoneMessage
   * exceptionsCheck
   * VocabularySearchResults
@@ -31,7 +31,7 @@ The code for this inline template is defined in the application page using the r
             </mp-overlay-dialog-trigger>
             <mp-overlay-dialog-content>
               {{#bind viewId=viewId}}
-                [[#> customVocabularyForm]] [[/customVocabularyForm]]
+                [[#> customInsertVocabularyForm]] [[/customInsertVocabularyForm]]
               {{/bind}}
             </mp-overlay-dialog-content>
           </mp-overlay-dialog>
@@ -94,11 +94,11 @@ The code for this inline template is defined in the application page using the r
       ></mp-event-proxy>
 
       <mp-event-proxy id='{{viewId}}-vocabulary-onFormSave-message-proxy' 
-            on-event-source='{{viewId}}-new-vocabulary-form'
-            on-event-type='Form.ResourceCreated'
-            additional-data='{"vocabularySaved": "true", "viewId": "{{viewId}}" }'
-            proxy-event-type='Component.TemplateUpdate' 
-            proxy-targets='["{{viewId}}-vocabulary-save-state"]'>
+                      on-event-source='{{viewId}}-new-vocabulary-form'
+                      on-event-type='Form.ResourceCreated'
+                      additional-data='{"vocabularySaved": "true", "viewId": "{{viewId}}" }'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-vocabulary-save-state"]'>
       </mp-event-proxy>
 
       <mp-event-proxy id='{{viewId}}-newVocabCreated-refreshTable-proxy'

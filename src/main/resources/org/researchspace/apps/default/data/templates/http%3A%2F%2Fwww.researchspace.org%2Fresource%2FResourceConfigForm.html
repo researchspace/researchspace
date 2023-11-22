@@ -98,7 +98,7 @@
                 <div class="badge badge--secondary badge-inlineButton">Vocabulary</div>
               </mp-popover-trigger>
               <mp-popover-content>
-                Resource is part of a vocabulary list.
+                Resource can be used as vocabulary type.
               </mp-popover-content>
             </mp-popover>
           </template>
@@ -123,12 +123,12 @@
                       then='{{> then}}'>
 
             <template id='then'>
-              <mp-popover title="Sistem configuration">
+              <mp-popover>
                 <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
                   <div class="badge badge--secondary badge-inlineButton">System</div>
                 </mp-popover-trigger>
                 <mp-popover-content>
-                  It can't be edited or removed.
+                  System resource. It can't be edited or removed.
                 </mp-popover-content>
               </mp-popover>
             </template>
@@ -258,6 +258,33 @@
               <semantic-form-checkbox-input class="toggle" for='resource_use_as_vocabulary_type' label="Use as Vocabulary type"></semantic-form-checkbox-input>
           </div>
       
+          <mp-event-proxy id='{{viewId}}-vocabulary-onFormSave-message-proxy' 
+                          on-event-source="SelectionToggle"
+                          on-event-type='Components.Selection.Toggle'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{viewId}}-alert-for-membership-property"]'>
+          </mp-event-proxy>
+
+          <mp-event-target-template-render id='{{viewId}}-alert-for-membership-property' template='{{> template}}'>
+            <template id='template'>
+              {{#if value}}
+                <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin-top: -10px;">
+                  <div class="warning-documentation-section-icon-container">
+                    <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
+                  </div>
+          
+                  <div> 
+                    <div class="warning-documentation-section-title">MEMBERSHIP REQUIRED!</div>
+                    <div class="warning-documentation-section-content">
+                      To use the resource as Vocabulary type a membership property must be defined below.
+                    </div>
+                  </div>
+                </div>
+              {{/if}}
+            </template>
+          </mp-event-target-template-render>
+
+         
           <semantic-form-tree-picker-input  for="resource_membership_property" 
                                             label="Membership in the vocabulary" 
                                             placeholder="Enter a property that define the membership of the resource in the vocabulary (e.g. skos:inScheme, crm:P71i_is_listed_in)"

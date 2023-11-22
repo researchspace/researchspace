@@ -13,7 +13,7 @@
     [[#*inline "customInsertVocabularyForm"]]
       <semantic-search id="vocabulary-iri-selector">
         <semantic-search-form-query id="{{viewId}}-newVocabulary-form"
-                                    element-id-to-hide-after-search="newVocabulary-search-form"
+                                    element-id-to-hide-after-search="{{viewId}}-newVocabulary-search-form"
                                     query-template='{ "queryString": "SELECT $vocabularyLabel ?vocabularyDescription  { 
                                                                         BIND($label as ?vocabularyLabel).
                                                                         BIND($description as ?vocabularyDescription).
@@ -24,11 +24,11 @@
                                                                       }
                                                     }'
 
-                                    fields='[{"id": "label", "label": "Label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
-                                            {"id": "description", "label": "Description", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"}
+                                    fields='[{"iri": "http://www.researchspace.org/pattern/system/vocabularyLabel", "id": "label", "label": "Label", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"},
+                                            {"iri": "http://www.researchspace.org/pattern/system/vocabularyDescription", "id": "description", "label": "Description", "xsdDatatype": "http://www.w3.org/2001/XMLSchema#string"}
                                     ]'>
                             
-            <div id="newVocabulary-search-form">
+            <div id="{{viewId}}-newVocabulary-search-form" class="vocabulary-search-form">
               <semantic-form-text-input for="label" placeholder="Enter vocabulary label" label="Label" ></semantic-form-text-input> 
               <semantic-form-text-input for="description" placeholder="Enter vocabulary description" label="Description" multiline='true'></semantic-form-text-input>        
 
@@ -69,7 +69,7 @@
               <template id='template'>
                   {{#if bindings.0.exists}}
                     <div>
-                      <div id="newVocabulary-query-form-error-alert" style="margin-top: 20px;">
+                      <div id="{{bindings.0.viewId.value}}-newVocabulary-query-form-error-alert" style="margin-top: 20px;">
 
                         <div class="danger-documentation-section danger-documentation-section-withIcon">
                           <div class="danger-documentation-section-icon-container">
@@ -90,8 +90,8 @@
                             <button name="cancel" class="btn btn-default">Cancel</button>
                           </mp-event-trigger>
   
-                          <rs-back-button  element-id-to-show="newVocabulary-search-form" 
-                                          error-alert-id="newVocabulary-query-form-error-alert"
+                          <rs-back-button  element-id-to-show="{{bindings.0.viewId.value}}-newVocabulary-search-form" 
+                                          error-alert-id="{{bindings.0.viewId.value}}-newVocabulary-query-form-error-alert"
                                           class-name="btn btn-action">
                             Back
                           </rs-back-button>
@@ -99,7 +99,7 @@
                       </div>
                     </div>
                   {{else}}
-                    <div id="newVocabulary-semantic-form">
+                    <div id="{{bindings.0.viewId.value}}-newVocabulary-semantic-form">
                       <semantic-form id='{{bindings.0.viewId.value}}-new-vocabulary-form' 
                                     persistence='{"type": "sparql", "targetGraphIri": "{{bindings.0.vocabulary.value}}"}'
                                     new-subject-template='{{bindings.0.vocabulary.value}}'
@@ -153,7 +153,8 @@
                                     <p>Vocabulary types are defined in 
                                       <b>Resource Configuration/Vocabulary tab</b>.
                                     </p>
-                                    <div>To use a resource as vocabulary type go in tab Vocabulary and enable <b>Use as Vocabulary type</b>.</div>
+                                    <div>To use a resource as vocabulary type go in tab Vocabulary, enable <b>Use as Vocabulary type</b> and enter a
+                                      <b>membership property</b>.</div>
                                 </mp-popover-content>
                               </mp-popover>
                             </div>
@@ -174,8 +175,8 @@
                             <button name="cancel" class="btn btn-default">Cancel</button>
                           </mp-event-trigger>
 
-                          <rs-back-button element-id-to-hide="newVocabulary-semantic-form" 
-                                          element-id-to-show="newVocabulary-search-form">
+                          <rs-back-button element-id-to-hide="{{bindings.0.viewId.value}}-newVocabulary-semantic-form" 
+                                          element-id-to-show="{{bindings.0.viewId.value}}-newVocabulary-search-form">
                             Back
                           </rs-back-button>
 
@@ -411,7 +412,8 @@
                                               <p>Vocabulary types are defined in 
                                                 <b>Resource Configuration/Vocabulary tab</b>.
                                               </p>
-                                              <div>To use a resource as vocabulary type go in tab Vocabulary and enable <b>Use as Vocabulary type</b>.</div>
+                                              <div>To use a resource as vocabulary type go in tab Vocabulary, enable <b>Use as Vocabulary type</b> and enter a
+                                                <b>membership property</b>.</div>
                                           </mp-popover-content>
                                         </mp-popover>
                                       </div>
@@ -470,7 +472,8 @@
                                                 <p>Vocabulary types are defined in 
                                                   <b>Resource Configuration/Vocabulary tab</b>.
                                                 </p>
-                                                <div>To use a resource as vocabulary type go in tab Vocabulary and enable <b>Use as Vocabulary type</b>.</div>
+                                                <div>To use a resource as vocabulary type go in tab Vocabulary, enable <b>Use as Vocabulary type</b> and enter a
+                                                  <b>membership property</b>.</div>
                                             </mp-popover-content>
                                           </mp-popover>
                                         </div>

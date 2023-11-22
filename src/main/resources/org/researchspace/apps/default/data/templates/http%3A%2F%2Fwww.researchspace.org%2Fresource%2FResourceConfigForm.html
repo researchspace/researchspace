@@ -291,6 +291,18 @@
                                             close-dropdown-on-selection='true'
           >
           </semantic-form-tree-picker-input>
+          {{#if node}}
+            <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?useAsVocabularyType .
+                                      FILTER NOT EXISTS {  <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membership .}
+            
+                                }'
+                          then='{{> then}}'>
+
+              <template id='then'>
+                <div class="semantic-form-validation-messages__error">Membership is required to use the resource as vocabulary type</div>
+              </template>
+            </semantic-if>
+          {{/if}}
           <semantic-form-tree-picker-input for="resource_broader_property" 
                                             label="Broader resource property" 
                                             placeholder="Enter a property that define the relation with a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"

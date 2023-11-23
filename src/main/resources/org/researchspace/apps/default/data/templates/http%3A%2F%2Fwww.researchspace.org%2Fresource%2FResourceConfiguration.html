@@ -49,15 +49,15 @@
                                         focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
                                         page-size='10000'
                                         config='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
-                                                {{#if labelSparqlPattern}}
-                                                  "labelPattern": "{{labelSparqlPattern}}",
+                                                {{#if resourceLabelPattern}}
+                                                  "labelPattern": "{{resourceLabelPattern}}",
                                                 {{else}}
                                                   "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label . ",
                                                 {{/if}}
-                                                {{#if orderByPattern}}
-                                                  "orderByPattern": "{{orderByPattern}}",
+                                                {{#if resourceOrderPattern}}
+                                                  "resourceOrderPattern": "{{resourceOrderPattern}}",
                                                 {{/if}}
-                                                  "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__. {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} {{#if P2_has_type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
+                                                  "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__. {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} {{#if resourceP2Type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{resourceP2Type}}> .{{/if}} {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
                                                 }'>
                       <template id='template'>
                         <span class="tree-item-actions-container">
@@ -156,7 +156,7 @@
                                                 "editable": true,
                                                 "mode": "{{mode}}",
                                                 "viewId": "{{viewId}}",
-                                                "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
+                                                "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                       }'>
                       </inline-template>
                     {{/if}}

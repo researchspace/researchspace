@@ -3,11 +3,11 @@
   
   variables:
     collection - resource collection IRI (concept sheme, authority list, etc.);
-    itemLabel - label that describes collection item, like Term, Concept, Place, Actor, etc;
+    resourceName - label that describes resource, like Term, Concept, Place, Actor, etc;
     resourceForm - IRI of the form that should be used to edit the resource in the collection;
-    membershipProperty - property that connects resource to the collection, like  skos:inScheme, crm:P71i_is_listed_in, etc;
-    broaderProperty - (optional) if collection is hierarchical specifies property that is used to refer from item to it's broader resource, like skos:broader, crm:P127_has_broader_term, crm:P89_falls_within, etc;
-    orderByPattern - (optional) SPARQL pattern that can be used to get the order
+    resourceMembershipProperty - property that connects resource to the collection, like  skos:inScheme, crm:P71i_is_listed_in, etc;
+    resourceBroaderProperty - (optional) if collection is hierarchical specifies property that is used to refer from item to it's broader resource, like skos:broader, crm:P127_has_broader_term, crm:P89_falls_within, etc;
+    resourceOrderPattern - (optional) SPARQL pattern that can be used to get the order
     editable - false if collection is readonly one, true otherwise
 --]]
 
@@ -47,7 +47,7 @@
                                 targets='["{{viewId}}-term-forms"]'>
                 <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New {{itemLabel}}</span>
+                  <span>New {{resourceName}}</span>
                 </button>
               </mp-event-trigger>
             {{/if}}
@@ -56,23 +56,21 @@
               <template id='treeTemplate'>
                 <semantic-lazy-tree id='{{viewId}}-scheme-tree' 
                                     info-template='{{> template}}' 
-                                    input-placeholder='Select {{itemLabel}}' 
+                                    input-placeholder='Select {{resourceName}}' 
                                     type='simple'  
                                     focused='{{#if (not (eq mode "deleted"))}}{{iri}}{{/if}}' 
                                     page-size='10000'
                                     config='{"scheme": "{{collection}}", 
-                                            {{#if labelSparqlPattern}}
-                                              "labelPattern": "{{labelSparqlPattern}}",
-                                            {{else}}
-                                              "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label . ",
+                                            {{#if resourceLabelPattern}}
+                                              "labelPattern": "{{resourceLabelPattern}}",
                                             {{/if}}
-                                            {{#if broaderProperty}}
-                                              "relationPattern": "?item <{{broaderProperty}}> ?parent",
+                                            {{#if resourceBroaderProperty}}
+                                              "relationPattern": "?item <{{resourceBroaderProperty}}> ?parent",
                                             {{/if}}
-                                            {{#if orderByPattern}}
-                                              "orderByPattern": "{{orderByPattern}}",
+                                            {{#if resourceOrderPattern}}
+                                              "resourceOrderPattern": "{{resourceOrderPattern}}",
                                             {{/if}}
-                                            "schemePattern": "{{#if membershipProperty}} ?item <{{membershipProperty}}> ?__scheme__.{{/if}} {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} {{#if P2_has_type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
+                                            "schemePattern": "{{#if resourceMembershipProperty}} ?item <{{resourceMembershipProperty}}> ?__scheme__.{{/if}} {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} {{#if resourceP2Type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{resourceP2Type}}> .{{/if}} {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
                                             }'>
                   <template id='template'>
                     <span class="tree-item-actions-container">
@@ -82,7 +80,7 @@
                                           data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
                                           targets='["{{viewId}}-term-forms"]'>
                           <span class='tree-item-action'>
-                            <rs-icon icon-type="round" icon-name="edit" title="Edit {{itemLabel}}"></rs-icon>
+                            <rs-icon icon-type="round" icon-name="edit" title="Edit {{resourceName}}"></rs-icon>
                           </span>
                         </mp-event-trigger>
                         <mp-event-proxy id='{{viewId}}-focus-tree-element' 
@@ -91,13 +89,13 @@
                                         proxy-targets='["{{viewId}}-scheme-tree"]' 
                                         data='{"iri":"{{iri}}"}'>
                         </mp-event-proxy>
-                        {{#if broaderProperty}}
+                        {{#if resourceBroaderProperty}}
                           <mp-event-trigger id='{{viewId}}-form-new-trigger' 
                                             type='Component.TemplateUpdate' 
                                             data='{"broader": "{{iri}}", "mode": "new" }' 
                                             targets='["{{viewId}}-term-forms"]'>
                             <span class='tree-item-action'>
-                              <rs-icon icon-type="round" icon-name="add" title="Add narrower {{itemLabel}}"></rs-icon>
+                              <rs-icon icon-type="round" icon-name="add" title="Add narrower {{resourceName}}"></rs-icon>
                             </span>
                           </mp-event-trigger>
                         {{/if}}
@@ -107,7 +105,7 @@
                                           data='{"iri":"{{iri}}",  "mode": "view" }' 
                                           targets='["{{viewId}}-term-forms"]'>
                           <span class='tree-item-action' >
-                            <rs-icon icon-type="round" icon-name="article" title="View {{itemLabel}}"></rs-icon>
+                            <rs-icon icon-type="round" icon-name="article" title="View {{resourceName}}"></rs-icon>
                           </span>
                         </mp-event-trigger>
                       {{/if}}
@@ -129,18 +127,18 @@
                 {{#switch mode}}
                   {{#case "new" break=true}}
                     {{#if broader}}
-                      <h2 class="resource-editView-formHeader-title">New {{itemLabel}} narrower to <mp-label iri='{{broader}}'></mp-label></h2>
+                      <h2 class="resource-editView-formHeader-title">New {{resourceName}} narrower to <mp-label iri='{{broader}}'></mp-label></h2>
                     {{else}}
-                      <h2 class="resource-editView-formHeader-title">New {{itemLabel}}</h2>
+                      <h2 class="resource-editView-formHeader-title">New {{resourceName}}</h2>
                     {{/if}}
                   {{/case}}
 
                   {{#case "edit" break=true}}
                     <h2 class="resource-editView-formHeader-title">
-                      {{#if labelSparqlPattern}}
+                      {{#if resourceLabelPattern}}
                         <semantic-query query="SELECT ?label WHERE {
                                                 BIND(<{{iri}}> as ?item) .
-                                                {{labelSparqlPattern}}
+                                                {{resourceLabelPattern}}
                                               }"
                                         template='{{> template}}'>
 
@@ -156,10 +154,10 @@
 
                   {{#case "view" break=true}}
                     <h2 class="resource-editView-formHeader-title">
-                      {{#if labelSparqlPattern}}
+                      {{#if resourceLabelPattern}}
                         <semantic-query query="SELECT ?label WHERE {
                                                 BIND(<{{iri}}> as ?item) .
-                                                {{labelSparqlPattern}}
+                                                {{resourceLabelPattern}}
                                               }"
                                         template='{{> template}}'>
 
@@ -174,35 +172,66 @@
                   {{/case}}
                 
                   {{#case "deleted" break=true}}
-                    <h2 class="resource-editView-formHeader-title">Deleted: {{label}}</h2>
+                    <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                      <template id='template'>
+                        {{#if hideMessage}}
+                        {{else}}
+                            <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                              <div class="success-documentation-section-icon-container">
+                                <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                              </div>
+
+                              <div style="flex: 1;"> 
+                                <div class="success-documentation-section-title">Success!</div>
+                                <div class="success-documentation-section-content">
+                                  <span style="text-transform: capitalize;">{{label}} </span>
+                                  has been deleted.</div>
+                              </div>
+                              
+                              <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                type='Component.TemplateUpdate'
+                                                data='{ "hideMessage": "true" }'
+                                                targets='["{{viewId}}-deleted-state"]'
+                              >
+                                <button class="btn btn-documentation">
+                                  <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                                </button>
+                              </mp-event-trigger>
+                            </div>
+                        {{/if}}
+                      </template>
+                    </mp-event-target-template-render>
                   {{/case}}
                 {{/switch}}
 
                 {{#if mode}}
                   <div class="btn-inline-container">
-                    {{#ifCond mode "!==" "new"}}
-                      <mp-copy-to-clipboard text='{{iri}}' message='{{itemLabel}} IRI has been copied'>
+                    {{#if (or (eq mode "new") (eq mode "deleted") )}}
+                    {{else}}
+                      <mp-copy-to-clipboard text='{{iri}}' message='{{resourceName}} IRI has been copied'>
                         <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
                           <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
                           Copy IRI
                         </button>
                       </mp-copy-to-clipboard>
-                    {{/ifCond}}
-                    <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
-                                      type='Component.TemplateUpdate' 
-                                      targets='["{{viewId}}-term-forms"]'
-                                      data='{ "mode": "{{mode}}",
-                                              "viewId": "{{viewId}}",
-                                              {{#ifCond mode "!==" "new"}}"iri": "{{iri}}",{{/ifCond}}
-                                              {{#if broader}}"broader": "{{broader}}",{{/if}}
-                                              "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
-                                            }' 
-                                      >
-                      <button class="btn btn-default btn-textAndIcon" title="Refresh form">
-                        <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                          Refresh
-                      </button>
-                    </mp-event-trigger>
+                    {{/if}}
+                    {{#if (not (eq mode "deleted"))}}
+                      <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
+                                        type='Component.TemplateUpdate' 
+                                        targets='["{{viewId}}-term-forms"]'
+                                        data='{ "mode": "{{mode}}",
+                                                "viewId": "{{viewId}}",
+                                                {{#ifCond mode "!==" "new"}}"iri": "{{iri}}",{{/ifCond}}
+                                                {{#if broader}}"broader": "{{broader}}",{{/if}}
+                                                "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
+                                              }' 
+                                        >
+                        <button class="btn btn-default btn-textAndIcon" title="Refresh form">
+                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                            Refresh
+                        </button>
+                      </mp-event-trigger>
+                    {{/if}}
                   </div>
                 {{/if}}
               </div>
@@ -234,7 +263,7 @@
                                             "editable": {{editable}},
                                             "mode": "{{mode}}",
                                             "viewId": "{{viewId}}",
-                                            "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
+                                            "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                     }'>
                   </inline-template>
                 {{/if}}

@@ -4,35 +4,35 @@
       {{#if iri}}
         <semantic-query 
                       query='
-                              SELECT DISTINCT ?config ?resourceFormIRI ?restrictionPattern ?membershipProperty WHERE {
+                              SELECT DISTINCT ?config ?resourceFormIRI ?resourceRestrictionPattern ?resourceMembershipProperty WHERE {
                                 {
                                   <{{iri}}> a/rdfs:subClassOf* ?resourceOntologyClass  .
                                   ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
                                           <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
 
                                   FILTER NOT EXISTS {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
                                   }
 
                                   OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
+                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
                                   }
                                   OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
+                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
                                   }                              
                                 } UNION {
                                   <{{iri}}> rdf:type ?resourceOntologyClass  ;
-                                              crm:P2_has_type ?P2_has_type .
+                                              crm:P2_has_type ?resourceP2Type .
 
                                   ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
                                             <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  ;
-                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
 
                                   OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
+                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
                                   }                              
                                   OPTIONAL {
-                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
+                                    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
                                   }
                                 }
                               }
@@ -50,19 +50,19 @@
                                   { 
                                     BIND(<{{../iri}}> as ?item) .
                                     BIND(<{{config.value}}> as ?config) .
-                                    {{#if restrictionPattern.value}}
-                                      {{{restrictionPattern.value}}}
+                                    {{#if resourceRestrictionPattern.value}}
+                                      {{{resourceRestrictionPattern.value}}}
                                     {{/if}} 
 
-                                    {{#if membershipProperty.value}}
-                                      ?item <{{{membershipProperty.value}}}> ?collection .
+                                    {{#if resourceMembershipProperty.value}}
+                                      ?item <{{{resourceMembershipProperty.value}}}> ?collection .
                                     {{/if}}
 
                                     OPTIONAL {
-                                      ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
+                                      ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
                                     }
                                     OPTIONAL {
-                                      ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?broaderPropertyIRI .
+                                      ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
                                     }                                  
                                   } {{#if @last}}{{else}}UNION{{/if}}  
                                   {{/each}}

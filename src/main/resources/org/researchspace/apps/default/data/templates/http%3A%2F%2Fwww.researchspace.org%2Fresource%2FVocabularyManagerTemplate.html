@@ -157,19 +157,27 @@ The code for this inline template is defined in the application page using the r
           {{else}}
             {{#if (or vocabularySaved vocabularyUpdate)}}
               [[!-- the form send an iri in console with the subject of the resource created --]]
-              <div class='success-documentation-section success-documentation-section-withIcon' style="margin-bottom: 10px;">
-                <div class="success-documentation-section-content" style="flex: 1;">
-                  {{#if vocabularySaved}}Created {{/if}}
-                  {{#if vocabularyUpdate}}Updated {{/if}}
-                  vocabulary:
-                  <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                urlqueryparam-view='vocabulary-content' 
-                                urlqueryparam-resource='{{iri}}'
-                                urlqueryparam-mode='new'
-                              >
-                    <mp-label iri='{{iri}}' style="text-decoration: underline;"></mp-label>
-                  </semantic-link>
+              <div class='success-documentation-section success-documentation-section-withIcon' style="margin-bottom: 20px;">
+                <div class="success-documentation-section-icon-container">
+                  <rs-icon icon-type="round" icon-name="done"></rs-icon>
                 </div>
+
+                <div style="flex: 1;">
+                  <div class="success-documentation-section-title">Success!</div>
+                  <div class="success-documentation-section-content">
+                    {{#if vocabularySaved}}Created {{/if}}
+                    {{#if vocabularyUpdate}}Updated {{/if}}
+                    vocabulary:
+                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                  urlqueryparam-view='vocabulary-content' 
+                                  urlqueryparam-resource='{{iri}}'
+                                  urlqueryparam-mode='new'
+                                >
+                      <mp-label iri='{{iri}}' style="text-decoration: underline;"></mp-label>
+                    </semantic-link>
+                  </div>
+                </div>
+
                 <mp-event-trigger id='{{viewId}}-cancel-save-message-{{iri}}'
                                   type='Component.TemplateUpdate'
                                   data='{ "hideMessage": "true" }'

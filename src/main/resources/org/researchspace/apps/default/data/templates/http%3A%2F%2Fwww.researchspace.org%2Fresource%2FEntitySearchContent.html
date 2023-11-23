@@ -1,17 +1,17 @@
   <semantic-query 
                   query='
-                          SELECT ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {    
+                          SELECT ?resourceOntologyClass  ?resourceP2Type ?resourceRestrictionPattern ?resourceLabelPattern WHERE {    
                             BIND(<[[config]]> as ?config) .
-                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?rdfType .
+                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
                             
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
+                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?labelSparqlPattern .
+                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
                             }
                           } LIMIT 1
                         '
@@ -19,10 +19,10 @@
     <template id='template'>
       <mp-page-loader
   		  iri="http://www.researchspace.org/resource/EntitySearchTemplate"
-  	 	  urlqueryparam-type="<{{bindings.0.rdfType.value}}>"
-        urlqueryparam-p2='{{#if bindings.0.P2_has_type.value}}{{bindings.0.P2_has_type.value}}{{/if}}' 
-        urlqueryparam-restriction='{{#if bindings.0.restrictionPattern.value}}{{bindings.0.restrictionPattern.value}}{{/if}}'
-        urlqueryparam-label='{{#if bindings.0.labelSparqlPattern.value}}{{bindings.0.labelSparqlPattern.value}}{{/if}}'
+  	 	  urlqueryparam-resourceOntologyClass="<{{bindings.0.resourceOntologyClass.value}}>"
+        urlqueryparam-resourceP2Type='{{#if bindings.0.resourceP2Type.value}}{{bindings.0.resourceP2Type.value}}{{/if}}' 
+        urlqueryparam-resourceRestrictionPattern='{{#if bindings.0.resourceRestrictionPattern.value}}{{bindings.0.resourceRestrictionPattern.value}}{{/if}}'
+        urlqueryparam-resourceLabelPattern='{{#if bindings.0.resourceLabelPattern.value}}{{bindings.0.resourceLabelPattern.value}}{{/if}}'
   	  ></mp-page-loader>
     </template>
     <template id='noResultTemplate'>

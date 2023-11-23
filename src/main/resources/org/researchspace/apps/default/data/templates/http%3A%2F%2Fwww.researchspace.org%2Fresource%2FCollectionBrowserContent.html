@@ -1,5 +1,8 @@
-<semantic-query query=' SELECT ?resourceConfiguration ?collection ?resourceName ?resourceOntologyClass ?resourceFormIRI ?membershipProperty ?broaderPropertyIRI 
-                            ?orderByPattern ?managedByResourceConfig  ?P2_has_type ?restrictionPattern ?labelSparqlPattern 
+<semantic-query query=' SELECT  ?collection 
+                                ?resourceConfiguration ?resourceName ?resourceOntologyClass ?resourceP2Type ?resourceFormIRI 
+                                ?resourceMembershipProperty ?resourceBroaderProperty ?resourceOrderPattern 
+                                ?resourceRestrictionPattern ?resourceLabelPattern 
+                                 ?managedByResourceConfig
                             
                         WHERE {
 
@@ -21,22 +24,22 @@
                               <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
                             
                             OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
                             }
                             OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern .
                             }
                             OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty .
                             }
                             OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?broaderPropertyIRI .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?resourceBroaderProperty .
                             }
                             OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?orderByPattern .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?resourceOrderPattern .
                             }
                             OPTIONAL {
-                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?labelSparqlPattern .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?resourceLabelPattern .
                             }
                           } LIMIT 1'
   >
@@ -47,15 +50,15 @@
           editable=true 
           resourceConfiguration=bindings.0.resourceConfiguration.value 
           collection=bindings.0.collection.value 
-          resourceOntologyClass =bindings.0.resourceOntologyClass .value 
-          membershipProperty=bindings.0.membershipProperty.value 
-          P2_has_type=bindings.0.P2_has_type.value 
-          broaderProperty=bindings.0.broaderPropertyIRI.value 
-          orderByPattern=bindings.0.orderByPattern.value 
-          itemLabel=bindings.0.resourceName .value 
+          resourceName=bindings.0.resourceName.value 
+          resourceOntologyClass =bindings.0.resourceOntologyClass.value 
+          resourceP2Type=bindings.0.resourceP2Type.value
+          resourceLabelPattern=bindings.0.resourceLabelPattern.value  
+          resourceRestrictionPattern=bindings.0.resourceRestrictionPattern.value 
           resourceForm=bindings.0.resourceFormIRI.value 
-          restrictionPattern=bindings.0.restrictionPattern.value 
-          labelSparqlPattern=bindings.0.labelSparqlPattern.value 
+          resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
+          resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
+          resourceOrderPattern=bindings.0.resourceOrderPattern.value 
           mode=mode 
           iri=iri}}
       {{else}}
@@ -66,14 +69,16 @@
           editable=false 
           resourceConfiguration=bindings.0.resourceConfiguration.value 
           collection=bindings.0.collection.value 
-          resourceOntologyClass =bindings.0.resourceOntologyClass .value 
-          membershipProperty=bindings.0.membershipProperty.value 
-          broaderProperty=bindings.0.broaderPropertyIRI.value 
-          orderByPattern=bindings.0.orderByPattern.value 
-          itemLabel=bindings.0.resourceName .value 
+          resourceName=bindings.0.resourceName.value 
+          resourceOntologyClass =bindings.0.resourceOntologyClass.value 
+          
+          resourceLabelPattern=bindings.0.resourceLabelPattern.value 
+          resourceRestrictionPattern=bindings.0.resourceRestrictionPattern.value 
           resourceForm=bindings.0.resourceFormIRI.value 
-          restrictionPattern=bindings.0.restrictionPattern.value 
-          labelSparqlPattern=bindings.0.labelSparqlPattern.value 
+          resourceMembershipProperty=bindings.0.resourceMembershipProperty.value 
+          resourceBroaderProperty=bindings.0.resourceBroaderProperty.value 
+          resourceOrderPattern=bindings.0.resourceOrderPattern.value 
+
           selectedEntity=selectedEntity}}
       {{/ifCond}}
     </template>

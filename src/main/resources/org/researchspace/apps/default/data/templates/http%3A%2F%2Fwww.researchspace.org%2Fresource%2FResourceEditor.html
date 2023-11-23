@@ -1,14 +1,14 @@
-{{#bind frameId=dashboardId}}
-  <mp-event-target-template-render id='{{frameId}}-entity-editor-frame' template='{{> template}}'>
+{{#bind viewId=dashboardId}}
+  <mp-event-target-template-render id='{{viewId}}-entity-editor-frame' template='{{> template}}'>
     <template id='template'>
       {{#if iri}}
         <semantic-query 
                       query='
-                              SELECT DISTINCT ?config ?formIRI ?restrictionPattern ?membershipProperty WHERE {
+                              SELECT DISTINCT ?config ?resourceFormIRI ?restrictionPattern ?membershipProperty WHERE {
                                 {
-                                  <{{iri}}> a/rdfs:subClassOf* ?rdfType .
+                                  <{{iri}}> a/rdfs:subClassOf* ?resourceOntologyClass  .
                                   ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
-                                          <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?rdfType .
+                                          <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
 
                                   FILTER NOT EXISTS {
                                     ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
@@ -21,11 +21,11 @@
                                     ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
                                   }                              
                                 } UNION {
-                                  <{{iri}}> rdf:type ?rdfType ;
+                                  <{{iri}}> rdf:type ?resourceOntologyClass  ;
                                               crm:P2_has_type ?P2_has_type .
 
                                   ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
-                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?rdfType ;
+                                            <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  ;
                                             <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
 
                                   OPTIONAL {
@@ -76,7 +76,7 @@
                   {{/ifCond}}
 
                   {{#ifCond bindings.length "==" "1"}}
-                    {{> rsp:CollectionBrowserContent frameId=frameId configOrScheme=bindings.0.config.value iri=iri mode="edit"}}
+                    {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=bindings.0.config.value iri=iri mode="edit"}}
                   {{/ifCond}}
 
                   {{#ifCond bindings.length ">" "1"}}
@@ -86,13 +86,13 @@
                         <ul>
                           {{#each bindings}}
                           <li>
-                            {{title.value}} Form 
+                            {{resourceName.value}} Form 
                             <mp-event-trigger id='form-event-trigger--{{../iri}}' 
                                               type='TwoSidePanel.ShowBack' 
                                               targets='["entity-editor-config-list-{{../iri}}"]'
                                               data='{ 
                                                       "node":"{{../iri}}",
-                                                      "formIRI": "{{formIRI.value}}"
+                                                      "resourceFormIRI": "{{resourceFormIRI.value}}"
                                                     }'>
                               <button class="btn btn-primary">Use</button>
                             </mp-event-trigger>
@@ -101,7 +101,7 @@
                         </ul>
                       </template>
                       <template id='back'>
-                        {{> rsp:CollectionBrowserContent frameId=frameId configOrScheme=formIRI iri=node mode="edit"}}
+                        {{> rsp:CollectionBrowserContent viewId=viewId configOrScheme=resourceFormIRI iri=node mode="edit"}}
                       </template>
                     </two-side-panel>
                   {{/ifCond}}
@@ -114,12 +114,12 @@
         {{#if data.entityTypeConfig}}
           {{#if data.mode}}
               {{#if data.additional_data}}
-                {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+                {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig mode=data.mode}}
               {{else}}
-                {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig mode=data.mode}}
+                {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig mode=data.mode}}
               {{/if}}
           {{else}}
-              {{> rsp:CollectionBrowserContent frameId=frameId  configOrScheme=data.entityTypeConfig }}
+              {{> rsp:CollectionBrowserContent viewId=viewId  configOrScheme=data.entityTypeConfig }}
           {{/if}}
         {{else}}
           {{> rsp:ResourceManagerContent}}

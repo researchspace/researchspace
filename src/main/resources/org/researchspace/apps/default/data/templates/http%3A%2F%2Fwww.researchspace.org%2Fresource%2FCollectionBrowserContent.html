@@ -1,61 +1,80 @@
-<semantic-query query=' SELECT ?config ?collection ?title ?formIRI ?membershipProperty ?broaderPropertyIRI ?orderByPattern ?managedByResourceConfig ?rdfType ?P2_has_type ?restrictionPattern ?labelSparqlPattern WHERE {
+<semantic-query query=' SELECT ?resourceConfiguration ?collection ?resourceName ?resourceOntologyClass ?resourceFormIRI ?membershipProperty ?broaderPropertyIRI 
+                            ?orderByPattern ?managedByResourceConfig  ?P2_has_type ?restrictionPattern ?labelSparqlPattern 
+                            
+                        WHERE {
+
                             OPTIONAL {
                               <{{configOrScheme}}> crm:P67_refers_to ?refersToResourceConfig .
                               BIND(<{{configOrScheme}}> AS ?collection) .
                             }
+
                             OPTIONAL {
                               <{{configOrScheme}}> a <http://www.researchspace.org/resource/system/resource_configuration> .
                               BIND(<{{configOrScheme}}> as ?refersToResourceConfig) .
                             }
-                            BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?config) .
+
+                            BIND(COALESCE(?refersToResourceConfig [[#if defaultConfig]], <[[defaultConfig]]>[[/if]]) AS ?resourceConfiguration ) .
                             BIND(BOUND(?refersToResourceConfig) as ?managedByResourceConfig) .
                             
-                            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?title ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?rdfType ;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?formIRI .
+                            ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName ;
+                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass ;
+                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
                             
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?P2_has_type .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?restrictionPattern .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?membershipProperty .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?broaderPropertyIRI .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_broader_property> ?broaderPropertyIRI .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?orderByPattern .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern> ?orderByPattern .
                             }
                             OPTIONAL {
-                              ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?labelSparqlPattern .
+                              ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_label_sparql_pattern> ?labelSparqlPattern .
                             }
-                          } LIMIT 1
-                        '
+                          } LIMIT 1'
   >
     <template id='template'>
       {{#ifCond bindings.0.managedByResourceConfig.value "===" "true"}}
         {{> rsp:SimpleCollectionBrowser 
-          frameId=frameId 
+          viewId=viewId 
           editable=true 
-          config=bindings.0.config.value 
+          resourceConfiguration=bindings.0.resourceConfiguration.value 
           collection=bindings.0.collection.value 
-          rdfType=bindings.0.rdfType.value 
+          resourceOntologyClass =bindings.0.resourceOntologyClass .value 
           membershipProperty=bindings.0.membershipProperty.value 
           P2_has_type=bindings.0.P2_has_type.value 
           broaderProperty=bindings.0.broaderPropertyIRI.value 
           orderByPattern=bindings.0.orderByPattern.value 
-          itemLabel=bindings.0.title.value 
-          resourceForm=bindings.0.formIRI.value 
+          itemLabel=bindings.0.resourceName .value 
+          resourceForm=bindings.0.resourceFormIRI.value 
           restrictionPattern=bindings.0.restrictionPattern.value 
           labelSparqlPattern=bindings.0.labelSparqlPattern.value 
           mode=mode 
           iri=iri}}
       {{else}}
-        [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, so we can offer here for user to associate a config with it --]]
-        {{> rsp:SimpleCollectionBrowser frameId=frameId editable=false config=bindings.0.config.value collection=bindings.0.collection.value rdfType=bindings.0.rdfType.value membershipProperty=bindings.0.membershipProperty.value broaderProperty=bindings.0.broaderPropertyIRI.value orderByPattern=bindings.0.orderByPattern.value itemLabel=bindings.0.title.value resourceForm=bindings.0.formIRI.value restrictionPattern=bindings.0.restrictionPattern.value labelSparqlPattern=bindings.0.labelSparqlPattern.value selectedEntity=selectedEntity}}
+        [[!-- if there is no authority configuration for the current authority then we can only guess how to edit it, 
+              so we can offer here for user to associate a config with it --]]
+        {{> rsp:SimpleCollectionBrowser 
+          viewId=viewId 
+          editable=false 
+          resourceConfiguration=bindings.0.resourceConfiguration.value 
+          collection=bindings.0.collection.value 
+          resourceOntologyClass =bindings.0.resourceOntologyClass .value 
+          membershipProperty=bindings.0.membershipProperty.value 
+          broaderProperty=bindings.0.broaderPropertyIRI.value 
+          orderByPattern=bindings.0.orderByPattern.value 
+          itemLabel=bindings.0.resourceName .value 
+          resourceForm=bindings.0.resourceFormIRI.value 
+          restrictionPattern=bindings.0.restrictionPattern.value 
+          labelSparqlPattern=bindings.0.labelSparqlPattern.value 
+          selectedEntity=selectedEntity}}
       {{/ifCond}}
     </template>
     <template id='noResultTemplate'>

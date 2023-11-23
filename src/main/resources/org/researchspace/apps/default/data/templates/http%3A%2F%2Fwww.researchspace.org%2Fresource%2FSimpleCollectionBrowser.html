@@ -41,10 +41,10 @@
           <div class="collection-terms-area">
             
             {{#if editable}}
-              <mp-event-trigger id='{{frameId}}-form-new-trigger' 
+              <mp-event-trigger id='{{viewId}}-form-new-trigger' 
                                 type='Component.TemplateUpdate' 
                                 data='{"mode": "new" }' 
-                                targets='["{{frameId}}-term-forms"]'>
+                                targets='["{{viewId}}-term-forms"]'>
                 <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
                   <span>New {{itemLabel}}</span>
@@ -52,9 +52,9 @@
               </mp-event-trigger>
             {{/if}}
 
-            <mp-event-target-template-render id='{{frameId}}-mytree'  template='{{> treeTemplate}}'>
+            <mp-event-target-template-render id='{{viewId}}-mytree'  template='{{> treeTemplate}}'>
               <template id='treeTemplate'>
-                <semantic-lazy-tree id='{{frameId}}-scheme-tree' 
+                <semantic-lazy-tree id='{{viewId}}-scheme-tree' 
                                     info-template='{{> template}}' 
                                     input-placeholder='Select {{itemLabel}}' 
                                     type='simple'  
@@ -72,40 +72,40 @@
                                             {{#if orderByPattern}}
                                               "orderByPattern": "{{orderByPattern}}",
                                             {{/if}}
-                                            "schemePattern": "{{#if membershipProperty}} ?item <{{membershipProperty}}> ?__scheme__.{{/if}} {{#if rdfType}} ?item a/rdfs:subClassOf* <{{rdfType}}> .{{/if}} {{#if P2_has_type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
+                                            "schemePattern": "{{#if membershipProperty}} ?item <{{membershipProperty}}> ?__scheme__.{{/if}} {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} {{#if P2_has_type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{P2_has_type}}> .{{/if}} {{#if restrictionPattern}}{{restrictionPattern}}{{/if}}"
                                             }'>
                   <template id='template'>
                     <span class="tree-item-actions-container">
                       {{#if editable}}
-                        <mp-event-trigger id='{{frameId}}-form-edit-trigger--{{iri}}' 
+                        <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
                                           type='Component.TemplateUpdate'
                                           data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
-                                          targets='["{{frameId}}-term-forms"]'>
+                                          targets='["{{viewId}}-term-forms"]'>
                           <span class='tree-item-action'>
                             <rs-icon icon-type="round" icon-name="edit" title="Edit {{itemLabel}}"></rs-icon>
                           </span>
                         </mp-event-trigger>
-                        <mp-event-proxy id='{{frameId}}-focus-tree-element' 
-                                        on-event-source='{{frameId}}-form-edit-trigger--{{iri}}' 
+                        <mp-event-proxy id='{{viewId}}-focus-tree-element' 
+                                        on-event-source='{{viewId}}-form-edit-trigger--{{iri}}' 
                                         proxy-event-type='LazyTree.Focus' 
-                                        proxy-targets='["{{frameId}}-scheme-tree"]' 
+                                        proxy-targets='["{{viewId}}-scheme-tree"]' 
                                         data='{"iri":"{{iri}}"}'>
                         </mp-event-proxy>
                         {{#if broaderProperty}}
-                          <mp-event-trigger id='{{frameId}}-form-new-trigger' 
+                          <mp-event-trigger id='{{viewId}}-form-new-trigger' 
                                             type='Component.TemplateUpdate' 
                                             data='{"broader": "{{iri}}", "mode": "new" }' 
-                                            targets='["{{frameId}}-term-forms"]'>
+                                            targets='["{{viewId}}-term-forms"]'>
                             <span class='tree-item-action'>
                               <rs-icon icon-type="round" icon-name="add" title="Add narrower {{itemLabel}}"></rs-icon>
                             </span>
                           </mp-event-trigger>
                         {{/if}}
                       {{else}}
-                        <mp-event-trigger id='{{frameId}}-form-edit-trigger' 
+                        <mp-event-trigger id='{{viewId}}-form-edit-trigger' 
                                           type='Component.TemplateUpdate'
                                           data='{"iri":"{{iri}}",  "mode": "view" }' 
-                                          targets='["{{frameId}}-term-forms"]'>
+                                          targets='["{{viewId}}-term-forms"]'>
                           <span class='tree-item-action' >
                             <rs-icon icon-type="round" icon-name="article" title="View {{itemLabel}}"></rs-icon>
                           </span>
@@ -123,7 +123,7 @@
 {{/if}}
       <div class="page__grid-container">
         <div class="page__content-container resource-editView-form-container">
-          <mp-event-target-template-render id='{{frameId}}-term-forms' template='{{> template}}'>
+          <mp-event-target-template-render id='{{viewId}}-term-forms' template='{{> template}}'>
             <template id='template'>
               <div class='resource-editView-formHeader'>
                 {{#switch mode}}
@@ -188,11 +188,11 @@
                         </button>
                       </mp-copy-to-clipboard>
                     {{/ifCond}}
-                    <mp-event-trigger id='{{frameId}}-form-refresh-trigger' 
+                    <mp-event-trigger id='{{viewId}}-form-refresh-trigger' 
                                       type='Component.TemplateUpdate' 
-                                      targets='["{{frameId}}-term-forms"]'
+                                      targets='["{{viewId}}-term-forms"]'
                                       data='{ "mode": "{{mode}}",
-                                              "frameId": "{{frameId}}",
+                                              "viewId": "{{viewId}}",
                                               {{#ifCond mode "!==" "new"}}"iri": "{{iri}}",{{/ifCond}}
                                               {{#if broader}}"broader": "{{broader}}",{{/if}}
                                               "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
@@ -208,19 +208,19 @@
               </div>
     
               {{#if (not (eq mode "deleted"))}}
-                <mp-event-proxy id='{{frameId}}-tree-refresh-on-created' 
-                                on-event-source='{{frameId}}-vocab-form' 
+                <mp-event-proxy id='{{viewId}}-tree-refresh-on-created' 
+                                on-event-source='{{viewId}}-vocab-form' 
                                 on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
                                 proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
+                                proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
                                 additional-data='{"mode": "edit"}'
                 ></mp-event-proxy>
       
-                <mp-event-proxy id='{{frameId}}-tree-refresh-on-delete' 
-                                on-event-source='{{frameId}}-vocab-form' 
+                <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                on-event-source='{{viewId}}-vocab-form' 
                                 on-event-types='["Form.ResourceRemoved"]'
                                 proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["{{frameId}}-mytree", "{{frameId}}-term-forms"]'
+                                proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
                                 additional-data='{"mode": "deleted", "label": "{{label}}"}'
                 ></mp-event-proxy>
 
@@ -233,7 +233,7 @@
                                             {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
                                             "editable": {{editable}},
                                             "mode": "{{mode}}",
-                                            "viewId": "{{frameId}}",
+                                            "viewId": "{{viewId}}",
                                             "broaderPropertyIRI": {{#if broaderProperty}}"{{broaderProperty}}"{{else}}null{{/if}}
                                     }'>
                   </inline-template>

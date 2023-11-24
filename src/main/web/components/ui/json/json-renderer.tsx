@@ -85,7 +85,7 @@ export class GenericJsonRenderer<T> extends Component<Props, State> {
       );
     }
     if (isLoading) {
-      return <Spinner />;
+      return <Spinner spinnerDelay={1000} messageDelay={1000} />;
     }
     if (template && data) {
       return (

@@ -1,8 +1,8 @@
 
 
 <semantic-form [[> rsp:FormDefaults]] 
-               persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
-               new-subject-template='{{scheme}}/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}'
+               persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{skos_prefLabel}}{{{{/raw}}}}{{else}}/skos_concept/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[
                     fieldDefinitions
                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -23,7 +23,9 @@
   <div class="form-scroll-area">
   
     <semantic-form-hidden-input for="classtype" default-values='["http://www.w3.org/2004/02/skos/core#Concept"]'></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="skos_inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+    {{#if scheme}}
+      <semantic-form-hidden-input for="skos_inScheme" default-value="{{scheme}}"> </semantic-form-hidden-input>  
+    {{/if}}
 
     <div class="form-2column-container">
         <div>
@@ -33,24 +35,46 @@
           <semantic-form-text-input for="skos_altLabel" label="Alternative {{#if entityType}}{{entityType}}{{/if}} name" 
                                     placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} alternative name"> 
           </semantic-form-text-input>
-            
-          <semantic-form-tree-picker-input for="skos_broader" label="Broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
-                                          placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
-                                          close-dropdown-on-selection='false'
-                                          tree-patterns='{"scheme": "{{scheme}}",
-                                                          "schemePattern": "?item skos:inScheme <{{scheme}}>",
-                                                          "relationPattern": "?item skos:broader ?parent",
-                                                          "labelPattern": "?item skos:prefLabel ?label ."}'
-          ></semantic-form-tree-picker-input>
-  
-          <semantic-form-tree-picker-input for="skos_narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
-                                           placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}"
-                                           close-dropdown-on-selection='false'
-                                           tree-patterns='{"scheme": "{{scheme}}",
+
+          {{#if scheme}}
+            <semantic-form-tree-picker-input for="skos_broader" label="Broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            close-dropdown-on-selection='false'
+                                            default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                            tree-patterns='{"scheme": "{{scheme}}",
                                                             "schemePattern": "?item skos:inScheme <{{scheme}}>",
                                                             "relationPattern": "?item skos:broader ?parent",
                                                             "labelPattern": "?item skos:prefLabel ?label ."}'
-          ></semantic-form-tree-picker-input>
+            ></semantic-form-tree-picker-input>
+          {{else}}
+            <semantic-form-tree-picker-input for="skos_broader" label="Broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            close-dropdown-on-selection='false'
+                                            default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                            tree-patterns='{"scheme": "http://www.w3.org/2004/02/skos/core#Concept",
+                                                            "relationPattern": "?item skos:broader ?parent",
+                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
+            ></semantic-form-tree-picker-input>
+          {{/if}}
+  
+          {{#if scheme}}
+            <semantic-form-tree-picker-input for="skos_narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}"
+                                            close-dropdown-on-selection='false'
+                                            tree-patterns='{"scheme": "{{scheme}}",
+                                                              "schemePattern": "?item skos:inScheme <{{scheme}}>",
+                                                              "relationPattern": "?item skos:broader ?parent",
+                                                              "labelPattern": "?item skos:prefLabel ?label ."}'
+            ></semantic-form-tree-picker-input>
+          {{else}}
+            <semantic-form-tree-picker-input for="skos_narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
+                                            close-dropdown-on-selection='false'
+                                            tree-patterns='{"scheme": "http://www.w3.org/2004/02/skos/core#Concept",
+                                                            "relationPattern": "?item skos:broader ?parent",
+                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
+            ></semantic-form-tree-picker-input>
+          {{/if}}
   
           <semantic-form-text-input for="skos_related" label="Related {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
                                     placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}term{{/if}}"> 

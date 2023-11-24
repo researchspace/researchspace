@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
-               persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
-               new-subject-template='{{scheme}}/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}'
+               persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}{{else}}/E55_Type/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                fields='[[
                 fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -23,7 +23,9 @@
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
     <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E55_Type"]'></semantic-form-hidden-input>
-    <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{#if scheme}}
+      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{/if}}
   
     <div class="form-2column-container">
       <div>
@@ -34,30 +36,52 @@
                                   placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} alternative name"> 
         </semantic-form-text-input>
           
-        <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
-                                        placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
-                                        close-dropdown-on-selection='false'
-                                        tree-patterns='{"scheme": "{{scheme}}",
-                                                        "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                        "labelPattern": "?item skos:prefLabel ?label ."}'
-        ></semantic-form-tree-picker-input>
-
-        <semantic-form-tree-picker-input for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
-                                         placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}term{{/if}}"
-                                         close-dropdown-on-selection='false'
-                                         tree-patterns='{"scheme": "{{scheme}}",
+        {{#if scheme}}
+          <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                          placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                          close-dropdown-on-selection='false'
+                                          default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                          tree-patterns='{"scheme": "{{scheme}}",
                                                           "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                           "relationPattern": "?item crm:P127_has_broader_term ?parent",
                                                           "labelPattern": "?item skos:prefLabel ?label ."}'
-        ></semantic-form-tree-picker-input>
+          ></semantic-form-tree-picker-input>
+        {{else}}
+          <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                          placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                          close-dropdown-on-selection='false'
+                                          default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                          tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E55_Type",
+                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                          "labelPattern": "?item skos:prefLabel ?label ."}'
+          ></semantic-form-tree-picker-input>
+        {{/if}}
 
-        <semantic-form-text-input for="related" label="Related {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
-                                  placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}term{{/if}}"> 
+        {{#if scheme}}
+          <semantic-form-tree-picker-input for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                          placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                          close-dropdown-on-selection='false'
+                                          tree-patterns='{"scheme": "{{scheme}}",
+                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
+          ></semantic-form-tree-picker-input>
+        {{else}}
+          <semantic-form-tree-picker-input  for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                            placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                            close-dropdown-on-selection='false'
+                                            tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E55_Type",
+                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                          "labelPattern": "?item skos:prefLabel ?label ."}'
+          ></semantic-form-tree-picker-input>
+        {{/if}}
+
+        <semantic-form-text-input for="related" label="Related {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                  placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}type{{/if}}"> 
         </semantic-form-text-input>
         
         <semantic-form-text-input for="description" multiline=true label="Description/comment" 
-                                  placeholder="Enter {{#if entityType}}{{entityType}}{{else}}term{{/if}} description"> 
+                                  placeholder="Enter {{#if entityType}}{{entityType}}{{else}}type{{/if}} description"> 
         </semantic-form-text-input>
       </div>
 

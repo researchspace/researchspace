@@ -1,9 +1,10 @@
 <semantic-form [[> rsp:FormDefaults]] 
-                persistence='{"type": "sparql", "targetInsertGraphIri": "http://www.researchspace.org/assets/files"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/files{{/if}}"}'
                 new-subject-template='/E31_Document/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                           has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                          inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
 
                           document_url="http://www.researchspace.org/pattern/system/document/url"
                           document_title="http://www.researchspace.org/pattern/system/document/title"
@@ -20,6 +21,9 @@
 
     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E31_Document'> </semantic-form-hidden-input>
     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/document'></semantic-form-hidden-input>
+    {{#if scheme}}
+      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{/if}}
 
     <div style="display: flex; align-items:stretch; column-gap:30px; flex-wrap: wrap;">
       <div style="min-width: 330px;" class="FileUploader-container">

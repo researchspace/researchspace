@@ -1,11 +1,13 @@
 <semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
                 post-action="event"
                 subject='{{node}}'
-                persistence='{"type": "sparql", "targetGraphIri": "http://www.researchspace.org/assets/images"}'
+                persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/images{{/if}}"}'
                 new-subject-template='/EX_Digital_Image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                             
                             image_id="http://www.researchspace.org/pattern/system/image/identifier"
                             image_label="http://www.researchspace.org/pattern/system/image/label"
@@ -19,6 +21,9 @@
     <div class="{{#if nested}}nested-form{{else}}form-scroll-area{{/if}}">
         <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/EX_Digital_Image'> </semantic-form-hidden-input>
         <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/image'> </semantic-form-hidden-input>
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
 
         {{#ifCond mode "===" "new"}}
             {{#if object}}

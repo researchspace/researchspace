@@ -1,0 +1,485 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else if additional_data.scheme}}{{additional_data.scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+               new-subject-template='http://www.researchspace.org/resource/user/{{{{raw}}}}{{user_email}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+
+                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                         
+                          user_full_name="http://www.researchspace.org/pattern/system/actor/full_name"
+                          user_email="http://www.researchspace.org/pattern/system/actor/email"
+                          user_type="http://www.researchspace.org/pattern/system/actor/type"
+
+                          user_joining_organisation_range="http://www.researchspace.org/pattern/system/actor/joining_range"
+                          user_broader="http://www.researchspace.org/pattern/system/actor/P107i_is_current_or_former_member_of"
+                          user_narrower="http://www.researchspace.org/pattern/system/actor/P107_has_current_or_former_member"
+
+                          user_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                          image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                          more_image="http://www.researchspace.org/pattern/system/entity/images"
+               ]]'
+>
+
+  <div class="{{#if nested}}nested-form{{else}}form-scroll-area{{/if}}">
+
+    <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E39_Actor"></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/user'></semantic-form-hidden-input>
+    
+    [[!-- All users in the system are part of scheme http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure --]]
+    {{#if scheme}}
+    <semantic-form-hidden-input for="inScheme" default-value="http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure"> 
+    </semantic-form-hidden-input>
+    {{/if}}
+    
+    {{#if additional_data.scheme}}
+      {{#bind scheme=additional_data.scheme}}
+        [[> userTabsContent linkToAuthority='true']] 
+      {{/bind}}
+    {{else}}
+      [[> userTabsContent]] 
+    {{/if}}
+
+    [[#*inline "userTabsContent"]]
+      <bs-tabs id="form-tabs">
+        <bs-tab event-key="1" title="Details">
+          <div class="form-2column-container">
+            <div>
+              <semantic-form-text-input for="user_full_name" label="Name" placeholder="Enter name"> </semantic-form-text-input>
+
+              {{#if node}}
+                <semantic-form-text-input for="user_email" label="Email" placeholder="Enter email" readonly='true'></semantic-form-text-input>
+              {{else}}
+                {{#if additional_data.email}}
+                  <semantic-form-text-input for="user_email" default-value="{{additional_data.email}}" label="Email" placeholder="Enter email" readonly='true'></semantic-form-text-input>
+                {{else}}
+                  <semantic-form-text-input for="user_email" label="Email" placeholder="Enter email"> </semantic-form-text-input>
+                {{/if}}
+              {{/if}}
+              
+              <semantic-form-checklist-input for='user_type' label="User type" row="true"></semantic-form-checklist-input>
+
+              {{#if node}}
+                {{#if (eq user_type "department")}}
+                  [[> narrowerUser 
+                        user_type_label='Department'
+                        narrower_type_label='team' 
+                        narrower_type='http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation_actor_type/team'
+                  ]] 
+                {{else if (eq user_type "team")}}
+                  [[> broaderUser 
+                        user_type_label='Team'
+                        broader_type_label='department' 
+                        broader_type='http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation_actor_type/department'
+                  ]]
+
+                  [[> narrowerUser 
+                        user_type_label='Team'
+                        narrower_type_label='person' 
+                        narrower_type='http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation_actor_type/person'
+                  ]]
+                {{else if (eq user_type "person")}}
+                  <div style="display: flex; align-items:stretch;">
+                    <div style="flex: 1;">
+                      <semantic-form-tree-picker-input for="user_broader" label="Person is member of" 
+                                                        placeholder="Select department or team" 
+                                                        close-dropdown-on-selection='false'
+                                                        default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                                        tree-patterns='{"scheme": "{{scheme}}",
+                                                                        "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}> .
+                                                                                          ?item crm:P2_has_type ?broaderType .
+                                                                                          FILTER (?broaderType in (<http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation_actor_type/department>,<http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation_actor_type/team>))",
+                                                                        "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent . 
+                                                                                            ?item crm:P2_has_type <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation_actor_type/team> .
+                                                                                            ?parent crm:P2_has_type <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation_actor_type/department>",
+                                                                        "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                          ?identifier a crm:E41_Appellation .
+                                                                                          ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                          ?identifier crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/full_name>"}'
+                                                        
+                      ></semantic-form-tree-picker-input>
+                    </div>
+                    [[#if linkToAuthority]]
+                    
+                    [[/if]]
+                  </div>
+                {{else}} 
+                  <div style="display: flex; align-items:stretch;">
+                    <div style="flex: 1;">
+                      <semantic-form-tree-picker-input for="user_broader" label="User is member of" 
+                                                      placeholder="Select member" 
+                                                      close-dropdown-on-selection='false'
+                                                      default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                                      tree-patterns='{"scheme": "{{scheme}}",
+                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>",
+                                                                      "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                                      "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                        ?identifier a crm:E41_Appellation .
+                                                                                        ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                        ?identifier crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/full_name>"}'
+                                                      
+                      ></semantic-form-tree-picker-input>
+                    </div>
+                    [[#if linkToAuthority]]
+                      
+                    [[/if]]
+                  </div>
+
+                  <div style="display: flex; align-items:stretch;">
+                    <div style="flex: 1;">
+                      <semantic-form-tree-picker-input for="user_narrower" label="User has member" 
+                                                      placeholder="Select current or former member"
+                                                      close-dropdown-on-selection='false'
+                                                      default-values='[{{#if narrower}}"{{narrower}}"{{/if}}]' 
+                                                      tree-patterns='{"scheme": "{{scheme}}",
+                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>",
+                                                                      "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                                      "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                        ?identifier a crm:E41_Appellation .
+                                                                                        ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                        ?identifier crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/full_name>"}'
+                                                      
+                      ></semantic-form-tree-picker-input>
+                    </div>
+                    [[#if linkToAuthority]]
+                      
+                    [[/if]]
+                  </div>
+
+                  <div style="padding-top: 25px; display: flex; align-items: flex-start;">
+                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                    urlqueryparam-view='authority-content' 
+                                    urlqueryparam-resource='http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure'
+                                    urlqueryparam-frame=true
+                                >
+                      <div>
+                        <i class="fa fa-external-link" style=" margin-right:3px;"></i>
+                        <span style="text-decoration: underline;">User list</span>
+                      </div>
+                    </semantic-link>
+                  </div>
+                {{/if}}
+              
+                <semantic-form-text-input for="user_description" multiline="true" label="Summary" placeholder="Enter summary"></semantic-form-text-input>
+              {{/if}}
+
+              [[#*inline "broaderUser"]]
+                <div style="display: flex; align-items:stretch;">
+                  <div style="flex: 1;">
+                    <semantic-form-tree-picker-input for="user_broader" label="[[user_type_label]] is member of" 
+                                                      placeholder="Select [[broader_type_label]]" 
+                                                      close-dropdown-on-selection='false'
+                                                      default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                                      tree-patterns='{"scheme": "{{scheme}}",
+                                                                      "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}> .
+                                                                                        ?item crm:P2_has_type <[[broader_type]]>",
+                                                                      
+                                                                      "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                        ?identifier a crm:E41_Appellation .
+                                                                                        ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                        ?identifier crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/full_name>"}'
+                                                      
+                    ></semantic-form-tree-picker-input>
+                  </div>
+                  [[#if linkToAuthority]]
+               
+                  [[/if]]
+                </div>
+              [[/inline]]
+
+              [[#*inline "narrowerUser"]]
+                <div style="display: flex; align-items:stretch;">
+                  <div style="flex: 1;">
+                    <semantic-form-tree-picker-input for="user_narrower" label="[[user_type_label]] has member" 
+                                                      placeholder="Select [[narrower_type_label]] as current or former member"
+                                                      close-dropdown-on-selection='false'
+                                                      default-values='[{{#if narrower}}"{{narrower}}"{{/if}}]' 
+                                                      tree-patterns='{"scheme": "{{scheme}}",
+                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <{{scheme}}> .
+                                                                                        ?item crm:P2_has_type <[[narrower_type]]>",
+                                                                      
+                                                                      "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                        ?identifier a crm:E41_Appellation .
+                                                                                        ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                        ?identifier crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/full_name>"}'
+                                                      
+                    ></semantic-form-tree-picker-input> 
+                  </div>
+                  [[#if linkToAuthority]]
+                   
+                  [[/if]]
+                </div>
+              [[/inline]]
+                
+            </div>
+
+            <div class="form-media-column">
+              <div class="dragAndDrop-input-container">
+                <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
+                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                <i class='fa fa-upload'></i>
+                                                                                <div>Drag main image or click to upload</div>
+                                                                              </div>"
+                                                    nested-form-template='{{{{raw}}}}{{> forms:image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                </semantic-form-drag-and-drop-input>
+              </div>
+
+              <div class="dragAndDrop-input-container">
+                <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                <i class='fa fa-upload'></i>
+                                                                                <div>Drag images or click to upload</div>
+                                                                              </div>"
+                                                    nested-form-template='{{{{raw}}}}{{> forms:image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                </semantic-form-drag-and-drop-input>
+              </div>
+            </div>
+          </div>
+        </bs-tab>
+
+        {{#if (eq user_type "person")}}
+          <bs-tab event-key="2" title="Employment">
+            <h5 style="margin: 25px 0 5px 0px;">Employment details</h5>
+            <semantic-form-composite-input for="user_joining_organisation_range"
+                                            label="Organisation"
+                                            render-header="false" 
+                                            new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                      actor_joining_organisation_domain="http://www.researchspace.org/pattern/system/actor/joining_domain"
+                                                      actor_job_title="http://www.researchspace.org/pattern/system/actor/P144.1_kind_of_member"
+                                              ]]'>
+
+                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
+                  
+                  <div style="display: flex; align-items:stretch; margin-top: -15px;">
+                    <div style="flex: 1;">
+                      <semantic-form-tree-picker-input for='actor_job_title' label="Job title" placeholder="Select job title" close-dropdown-on-selection='false'
+                                                        tree-patterns='{"scheme": "<http://ccd-tna.kartography.cloud/resource/vocab/job_title>", 
+                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://ccd-tna.kartography.cloud/resource/vocab/job_title>",
+                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                                                        nested-form-template='{{{{raw}}}}{{> forms:E55_Type nested=true editable=true 
+                                                                                scheme="http://ccd-tna.kartography.cloud/resource/vocab/job_title"
+                                                                                entityType="job title" }}{{{{/raw}}}}'
+                                                        >
+                      </semantic-form-tree-picker-input>
+                    </div>
+                    
+                  </div>
+
+                  <semantic-form-composite-input for="actor_joining_organisation_domain" 
+                                          render-header="false" 
+                                          new-subject-template="/joining_organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                          fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                    joined_organisation="http://www.researchspace.org/pattern/system/actor/joined_organisation"
+
+                                                    joining_start_date="http://www.researchspace.org/pattern/system/activity/start_date"
+                                                    joining_end_date="http://www.researchspace.org/pattern/system/activity/end_date"
+                                                    joining_description="http://www.researchspace.org/pattern/system/entity/description"
+                                            ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/conservation_entities/joining_organisation'></semantic-form-hidden-input>
+        
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; min-height: 100%;">
+                      <div>
+                        <div style="display: flex; align-items:stretch;">
+                          <div style="flex: 1;">
+                            <semantic-form-tree-picker-input for="joined_organisation" label="Organisation name" 
+                                                              placeholder="Select organisation name" close-dropdown-on-selection='false'
+                                                              tree-patterns='{"scheme": "<http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation>", 
+                                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation>",
+                                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation .  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/address_type/name> . ?appellation crm:P190_has_symbolic_content ?label ."
+                                                                            }'
+                                                              nested-form-template='{{{{raw}}}}{{> forms:organisation nested=true editable=true onlyDetails=true
+                                                                scheme="http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation"
+                                                                entityType="organisation" }}{{{{/raw}}}}'>
+                            </semantic-form-tree-picker-input>        
+                          </div>
+                          
+                        </div>
+
+                        <div style="display: flex; align-items:flex-start; column-gap:15px;">
+                          <div style="flex: 1;">
+                            <semantic-form-datetime-input for='joining_start_date' label="Start date" placeholder="Enter start date"></semantic-form-datetime-input>
+                          </div>
+                          <div style="flex: 1;">
+                            <semantic-form-datetime-input for='joining_end_date' label="End date" placeholder="Enter end date"></semantic-form-datetime-input>
+                          </div>
+                        </div>
+                      </div>
+                      <semantic-form-text-input for="joining_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
+                    </div>
+                  </semantic-form-composite-input>
+          
+            </semantic-form-composite-input>
+          </bs-tab>
+        {{/if}}
+
+        {{#if (or (eq user_type "department") (eq user_type "team"))}}
+          <bs-tab event-key="3" title="Organisation">
+            <semantic-form-composite-input for="user_joining_organisation_range"
+                                            label="Organisation"
+                                            new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                      actor_joining_organisation_domain="http://www.researchspace.org/pattern/system/actor/joining_domain"
+                                              ]]'>
+
+                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
+
+                  <semantic-form-composite-input for="actor_joining_organisation_domain" 
+                                          render-header="false" 
+                                          new-subject-template="/joining_organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                          fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                    joined_organisation="http://www.researchspace.org/pattern/system/actor/joined_organisation"
+                                            ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/conservation_entities/joining_organisation'></semantic-form-hidden-input>
+        
+                    <div style="display: flex; align-items:stretch; margin-top: -15px;">
+                      <div style="flex: 1;">
+                          <semantic-form-tree-picker-input for="joined_organisation" label="Organisation name" 
+                                                            placeholder="Select organisation name" close-dropdown-on-selection='false'
+                                                            tree-patterns='{"scheme": "<http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation>",
+                                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation .  
+                                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/address_type/name> . 
+                                                                                              ?appellation crm:P190_has_symbolic_content ?label ."
+                                                                          }'
+                                                            nested-form-template='{{{{raw}}}}{{> forms:organisation nested=true editable=true onlyDetails=true
+                                                              scheme="http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation"
+                                                              entityType="organisation" }}{{{{/raw}}}}'>
+                          </semantic-form-tree-picker-input> 
+                      </div>
+                    
+                    </div>
+
+                  </semantic-form-composite-input>
+          
+            </semantic-form-composite-input>
+          </bs-tab>
+        {{/if}} 
+
+        {{#if node}}
+          <bs-tab event-key="5" title="Projects">
+            <div style="margin: 25px 0 5px 0px;">
+              <semantic-table id='project-table'
+                            query='SELECT ?project ?projectTitle ?projectStatusLabel ?projectPriorityLabel ?dateStart ?dateEnd ?roleLabel (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?projectTypeLabel) WHERE {
+                                    
+                                    ?project crm:P01i_is_domain_of ?activityDomain . 
+                                    ?activityDomain a crm:PC14_carried_out_by .
+                                    ?activityDomain crm:P02_has_range <{{node}}> .
+
+                                    OPTIONAL {
+                                      ?activityDomain crm:P14.1_in_the_role_of ?role .
+                                      ?role crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/role> .
+                                      ?role skos:prefLabel ?roleLabel.
+                                    }
+
+                                    ?project crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+
+                                    ?project crm:P1_is_identified_by ?appellation .
+                                    ?appellation a crm:E41_Appellation .
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/project_title> .
+                                    ?appellation crm:P190_has_symbolic_content ?projectTitle .  
+
+                                    OPTIONAL {
+                                      ?project crm:P2_has_type ?projectType .
+                                      ?projectType crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                      ?projectType skos:prefLabel ?typeLabel .
+                                    }
+
+                                    OPTIONAL {
+                                      ?project crm:P2_has_type ?projectStatus .
+                                      ?projectStatus crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                      ?projectStatus skos:prefLabel ?projectStatusLabel .
+                                    }
+
+                                    OPTIONAL {
+                                      ?project crm:P2_has_type ?projectPriority .
+                                      ?projectPriority crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/priority> .
+                                      ?projectPriority skos:prefLabel ?projectPriorityLabel .
+                                    }
+
+                                    OPTIONAL {
+                                      ?project crm:P4_has_time-span ?timespanStart .
+                                      ?timespanStart a crm:E52_Time-Span .
+                                      ?timespanStart crm:P82a_begin_of_the_begin ?dateStart .
+                                    }
+
+                                    OPTIONAL {
+                                      ?project crm:P4_has_time-span ?timespanEnd .
+                                      ?timespanEnd a crm:E52_Time-Span .
+                                      ?timespanEnd crm:P82b_end_of_the_end ?dateEnd .
+                                    }
+
+                                  } 
+                                  GROUP BY ?project ?projectTitle ?projectStatusLabel ?projectPriorityLabel ?dateStart ?dateEnd ?roleLabel
+                                  ORDER BY ASC(?projectTitle)'
+
+                            number-of-displayed-rows=10
+                            no-result-template='{{> noResults}}'
+                            column-configuration='[{"variableName": "projectTitle", "displayName": "Project title", "cellTemplate": "{{> project}}" },
+                                                    {"variableName": "projectTypeLabel", "displayName": "Project type"},
+                                                    {"variableName": "roleLabel", "displayName": "User role"},
+                                                    {"variableName": "dateStart", "displayName": "Start date"},
+                                                    {"variableName": "dateEnd", "displayName": "End date"},
+                                                    {"variableName": "projectStatusLabel", "displayName": "Status"},
+                                                    {"variableName": "projectPriorityLabel", "displayName": "Priority"}
+                                                  ]'
+                          >
+                            
+                            <template id="noResults">
+                              <div style="padding: 12px 0">
+                                  No project available
+                              </div>
+                            </template>
+
+                            <template id='project'>
+                              <mp-draggable iri='{{project.value}}'>
+                                <div style="display: flex; align-items: center; cursor: grab;">
+                                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>                
+                                <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
+                                                urlqueryparam-resource='{{project.value}}' 
+                                                urlqueryparam-view='entity-editor' 
+                                                class='a-draggable'
+                                                >
+                                  <div style="display: flex; align-items: center;">
+                                  {{projectTitle.value}}
+                                  </div>
+                                </semantic-link>
+                              </div>
+                              </mp-draggable>
+                            </template>
+
+              </semantic-table>
+            </div>
+          </bs-tab>
+        {{/if}}
+        
+      </bs-tabs>
+    [[/inline]]
+    
+  </div>
+  
+   <semantic-form-errors></semantic-form-errors>
+
+  {{#if node}}
+    {{#ifCond current_user_email '==' form_user_name}}
+      [[> rsp:FormDefaultActions formEntity='user']]
+    {{else}}
+      <div></div>
+    {{/ifCond}}
+  {{else}}
+    [[> rsp:FormDefaultActions formEntity='user']]
+  {{/if}}
+    
+</semantic-form>

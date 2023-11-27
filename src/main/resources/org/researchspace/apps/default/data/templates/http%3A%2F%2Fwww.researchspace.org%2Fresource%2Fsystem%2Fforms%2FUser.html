@@ -1,0 +1,22 @@
+{{#if node}}
+  [[!-- Existing user --]]
+  <semantic-query 
+                  query='SELECT DISTINCT ?userTypeLabel ?currentUserEmail ?formUserEmail WHERE { 
+                          BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?currentUserEmail) 
+
+                          <{{node}}> crm:P1_is_identified_by ?email .
+                          ?email a crm:E42_Identifier .
+                          ?email crm:P190_has_symbolic_content ?formUserEmail .
+                          ?email crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/email> .
+
+                          <{{node}}> crm:P2_has_type ?userType .
+                          ?userType crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/user_type> .
+                          ?userType skos:prefLabel ?userTypeLabel .
+                        } limit 1'>
+    <template id='template'>
+      {{> forms:User_partial user_type=bindings.0.userTypeLabel.value current_user_email=bindings.0.currentUserEmail.value form_user_name=bindings.0.formUserEmail.value}}
+    </template>
+  </semantic-query>
+{{else}}
+  {{> forms:User_partial}}
+{{/if}}

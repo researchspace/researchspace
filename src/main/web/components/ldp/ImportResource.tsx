@@ -230,7 +230,7 @@ export class ImportResourceComponent extends Component<Props, State> {
             <ModalTitle>Success</ModalTitle>
           </ModalHeader>
           <ModalBody>
-            Import successfully done, resource <ResourceLinkComponent uri={serverDone} /> created
+            Import successfully done, resource <ResourceLinkComponent className='text-link-action' target='_blank' uri={serverDone} /> created.
           </ModalBody>
         </Modal>
       );

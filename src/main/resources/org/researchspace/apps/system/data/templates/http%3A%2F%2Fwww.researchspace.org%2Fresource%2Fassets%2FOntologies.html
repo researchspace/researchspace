@@ -8,7 +8,7 @@
 
 [[#*inline "count"]]
 <semantic-query query='
-										SELECT (COUNT(DISTINCT *) as ?count) WHERE{ GRAPH ?g { <{{subject.value}}> a owl:Ontology. [[pattern]] FILTER(!isBlank(?item)) .} }
+										SELECT (COUNT(DISTINCT *) as ?count) WHERE {  { GRAPH ?g { <{{subject.value}}> a owl:Ontology. [[pattern]] FILTER(!isBlank(?item)) .} }}
 									' template='{{> itemCounts}}'>
   <template id='itemCounts'>
     <div>
@@ -62,8 +62,9 @@
 
                   <template id='template'>
                     <div class='RdfUpload__rdf-dropzone-content'>
-                      <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                      <div>Drag Ontology TRIG file or click to upload</div>
+                      <br/><br/><br/>
+                      [[#> customOntologyUploadDropzoneMessage]][[/customOntologyUploadDropzoneMessage]]
+                      <br/><br/>
                     </div>
                   </template>
                 </mp-rdf-upload>
@@ -93,6 +94,7 @@
    
         <mp-event-target-template-render id='ontology-search-results' template='{{> template}}'>
           <template id='template'>
+            
             <semantic-search  selector-mode='dropdown' 
                               optimizer='none' 
                               categories='{
@@ -123,22 +125,25 @@
                                               }'>
 
               <div style="margin-bottom: 20px;">
+               
                 <semantic-search-query-keyword domain='<http://www.w3.org/2002/07/owl#Ontology>'
                                                 placeholder='Search ontology by name' 
                                                 escape-lucene-syntax=false 
                                                 min-search-term-length=2 
                                                 query='SELECT ?subject {
+  																									
                                                       ?subject a owl:Ontology .
                                                       OPTIONAL {
                                                         ?subject rdfs:label ?label .
                                                       }
-                                                      FILTER regex(COALESCE(?label, STR(?subject)), ?__token__, "i") .
+                                                      FILTER regex(str(?label), $__token__, "i") .
                                                     }' 
                                                 default-query='SELECT ?subject {
                                                                   ?subject a owl:Ontology .
                                                                 }
                                                               '>
                 </semantic-search-query-keyword>
+                
               </div>
               
               <div data-flex-layout="row stretch-stretch">
@@ -149,6 +154,7 @@
                 <semantic-search-result-holder>
                   <div data-flex-self="md-full">
                     <semantic-search-result>
+                      
                       <semantic-table id='field-results' 
                                       number-of-displayed-rows=10 
                                       query='SELECT DISTINCT ?subject (SAMPLE(?g) as ?graph) (SAMPLE(?v) as ?version) (SAMPLE(?d) AS ?description) WHERE {
@@ -214,7 +220,7 @@
                                         <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
                                                                 ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
                                                                 ?kp a ?owlType .
-                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty, owl:AnnotationProperty))
                                                               }'
                                                         template='{{> template}}'
                                         >
@@ -232,6 +238,7 @@
                                     </template>
 
                                     <template id='else'> 
+                                      
                                       <mp-json-renderer
                                         get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'
                                         template="{{> template}}">
@@ -246,6 +253,7 @@
                                           </div>
                                         </template>
                                       </mp-json-renderer>
+                                      
                                     </template>
                                 </semantic-if>
                               </div>
@@ -306,7 +314,7 @@
                                       <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
                                                                 ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
                                                                 ?kp a ?owlType .
-                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty,owl:AnnotationProperty))
                                                               }'
                                                         template='{{> template}}'
                                         >
@@ -356,7 +364,9 @@
                         
                             </div>
                         </template>
+                        
                       </semantic-table>
+                     
                     </semantic-search-result>
                   </div>
                 </semantic-search-result-holder>
@@ -368,3 +378,28 @@
     </bs-row> <!--  close row -->
   </div>
 </div>
+
+[[#*inline "customOntologyUploadDropzoneMessage"]]
+      <div class='placeholder-item'>
+        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+        <div> 
+          <p>Drag ontologies as *.trig or click to upload</p>
+          <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
+            <div class="documentation-section-icon-container">
+              <i class="fa fa-info"></i>
+            </div>
+
+            <div style="flex: 1;"> 
+              <div class="documentation-section-title">1. Ontologies should be described using <a href="https://www.w3.org/OWL/">OWL</a>.
+              </div>
+              <div class="documentation-section-content"> 
+                2. For an ontology all classes and properties must be defined in one named graph equal to the ontology IRI.
+              </div>
+              <div class="documentation-section-content"> 
+                3. For <b>updating</b> an ontology, please first <b>delete</b> the one already in the system.
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>  
+    [[/inline]]

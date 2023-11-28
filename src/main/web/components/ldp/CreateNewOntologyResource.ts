@@ -49,45 +49,13 @@ export interface CreateNewOntologyResourceProps extends ReactProps<CreateNewOnto
  * Creates new LDP resource for an ontology. 
  */
 class CreateNewOntologyResourceComponent extends Component<CreateNewOntologyResourceProps, CreateNewOntologyResourceState> {
-  static ontologyContainerExists = false;
-
   constructor(props: CreateNewOntologyResourceProps, context: any) {
     super(props, context);
     this.state = {
     };
   }
-
-  ontologyContainerCheck = () => {
-    if (!CreateNewOntologyResourceComponent.ontologyContainerExists) {
-        //check ontology container exists and if not create it
-        const askOntologyContainerQuery = "ASK {"+iri(VocabPlatform.OntologyContainer.value)+" rdf:type <http://www.w3.org/ns/ldp#Container>}";
-            SparqlClient.ask(askOntologyContainerQuery)
-            .onValue((res) => {        
-                if (!res && !CreateNewOntologyResourceComponent.ontologyContainerExists) {
-                    // Set out to create the ontologyContainer
-                    CreateNewOntologyResourceComponent.ontologyContainerExists = true;
-        
-                    new LdpService(VocabPlatform.RootContainer.value, { repository: "ontologies" }).addResource(
-                        graph([triple(iri(''), rdf.type, iri('http://www.w3.org/ns/ldp#Resource')),
-                                triple(iri(''), rdf.type, iri('http://www.w3.org/ns/ldp#Container')),
-                                triple(iri(''), rdfs.label, literal('Ontology Container')),
-                                triple(iri(''), rdfs.comment, literal('Container to store resources of rdf:type owl:Ontology')),
-                                ]),
-                        maybe.Just(VocabPlatform.OntologyContainer.value)
-                        ).onValue(() => this.setState({}));         
-            }
-        });
-
-        // Force an update to re-render the component
-        this.forceUpdate();
-    }
-  }
-  
-  // this function is called by React when component is mounted to the DOM
   componentDidMount() {
-    //if (!CreateNewOntologyResourceComponent.ontologyContainerExists) 
-    //  this.ontologyContainerCheck();     
-    new LdpService(VocabPlatform.OntologyContainer.value, { repository: "ontologies" }).addResource(
+      new LdpService(VocabPlatform.OntologyContainer.value, { repository: "ontologies" }).addResource(
         graph([triple(iri(''), rdf.type, iri('http://www.w3.org/ns/ldp#Resource'))]),
         maybe.Just(this.props.ontologyIri)
         ).onValue(res => this.setState({}));

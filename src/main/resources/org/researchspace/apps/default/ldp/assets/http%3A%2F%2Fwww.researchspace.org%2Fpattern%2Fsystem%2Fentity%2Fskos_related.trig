@@ -4,11 +4,9 @@
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
 
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.w3.org/2004/02/skos/core#Concept> ;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>,
-    <http://www.w3.org/2004/02/skos/core#Concept>;
+        <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
 
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
     <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-c650da7be11a440f9aafced32f3235df-bimmg;
     <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-c650da7be11a440f9aafced32f3235df-qjl6di;
@@ -21,24 +19,33 @@
   
   _:genid-c650da7be11a440f9aafced32f3235df-8ob0l a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {  
-      $subject skos:related $value .
-      $value skos:related $subject .
+      $subject skos:related ?relatedConcept .
+      ?relatedConcept skos:related $subject .
+      ?relatedConcept a skos:Concept .
+      ?relatedConcept skos:prefLabel ?value .
     } WHERE {
-      $subject skos:related $value .
-      $value skos:related $subject .
+      $subject skos:related ?relatedConcept .
+      ?relatedConcept skos:related $subject .
+      ?relatedConcept a skos:Concept .
+      ?relatedConcept skos:prefLabel ?value .
     }""" .
   
   _:genid-c650da7be11a440f9aafced32f3235df-bimmg a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-      $subject skos:related ?value.
-      ?value skos:prefLabel ?label .
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+      $subject skos:related ?relatedConcept .
+      ?relatedConcept a skos:Concept .
+      ?relatedConcept skos:prefLabel ?value .
     }""" .
   
   _:genid-c650da7be11a440f9aafced32f3235df-qjl6di a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
-    $subject skos:related $value .
-    $value skos:related $subject .
-  } WHERE {}""" .
+    $subject skos:related ?relatedConcept .
+    ?relatedConcept skos:related $subject .
+    ?relatedConcept a skos:Concept .
+    ?relatedConcept skos:prefLabel ?value .
+  } WHERE {
+    BIND(URI(CONCAT(\"http://www.researchspace.org/resource/skos_concept/\",STRUUID())) as ?relatedConcept)
+  }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/entity/skos_related> .

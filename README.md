@@ -17,7 +17,7 @@
 
 <h2>Kartography Work Plan for ResearchSpace</h2>
  <div style="float:left;"><img width=30% align="left" src='https://kartography.org/images/flowing%20into%20pot.png' alt='ResearchSpace'/></div>
- <p>Information about the current developmwent of ResearchSpace by Kartpgraphy CIC is available on the <a href="https://kartography.org/current_work.html">Kartography Web Site</a> </p>
+ <p>Information about the current development of ResearchSpace by Kartography CIC is available on the <a href="https://kartography.org/current_work.html">Kartography Web Site</a> </p>
  
 
 - - -

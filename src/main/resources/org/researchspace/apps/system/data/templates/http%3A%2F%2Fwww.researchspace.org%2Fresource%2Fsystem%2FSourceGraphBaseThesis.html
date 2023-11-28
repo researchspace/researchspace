@@ -1,0 +1,22 @@
+<semantic-graph
+  height='80vh'
+  query='construct { 
+    ?dynamicSubject ?dynamicPredicate ?o
+  }
+  WHERE {
+      <[[this]]> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity> .
+      <[[this]]> <http://www.w3.org/2000/01/rdf-schema#label> ?slabel .
+      <[[this]]> <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ?appellation_iri .
+      ?appellation_iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E41_Appellation> .
+      ?appellation_iri <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?p .
+      ?appellation_iri <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> ?o .
+      BIND(IRI(REPLACE(CONCAT("http://www.cidoc-crm.org/cidoc-crm/", ?p), " ", "_")) AS ?dynamicPredicate) .
+      BIND(IRI(REPLACE(CONCAT("http://www.researchspace.org/term/", ?slabel), " ", "_")) AS ?dynamicSubject) .
+  }'
+  no-result-template='No incoming or outgoing statements for resource [[this]].'
+  user-zooming-enabled=true
+  [[#if customParameters]] [[> parameters]] [[/if]]
+>
+  <semantic-graph-layout-cose-bilkent ideal-edge-length='100'></semantic-graph-layout-cose-bilkent>
+  <semantic-graph-extension-panzoom pan-indicator-min-opacity='0.1'></semantic-graph-extension-panzoom>
+</semantic-graph>

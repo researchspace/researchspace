@@ -210,6 +210,8 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
   }
 
   public render() {
+    // console.log(JSON.stringify(this.state,null,2));
+    // console.log(JSON.stringify(this.props,null,2));
     if (this.state.error) {
       return createElement(ErrorNotification, { errorMessage: this.state.error });
     }

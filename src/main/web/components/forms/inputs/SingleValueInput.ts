@@ -104,6 +104,12 @@ export interface AtomicValueInputProps extends SingleValueInputProps {
   value?: AtomicValue | EmptyValue;
 }
 
+
+export interface AtomicMultiValueInputProps extends AtomicValueInputProps {
+  values?: AtomicValue[];
+  updateValues?: (reducer: (values: FieldValue[]) => FieldValue[]) => void;
+}
+
 export class AtomicValueInput<P extends AtomicValueInputProps, S> extends SingleValueInput<P, S> {
   constructor(props: P, context: any) {
     super(props, context);

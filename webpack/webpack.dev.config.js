@@ -26,9 +26,9 @@ module.exports = function() {
 
     config.output.pathinfo = false;
 
-    config.output.publicPath = 'http://localhost:3000/assets/no_auth/';
+    config.output.publicPath = 'http://localhost:3001/assets/no_auth/';
     config.devServer = {
-        port: 3000,
+        port: 3001,
         contentBase: './src/main/webapp',
         headers: {
             'Access-Control-Allow-Origin': '*',

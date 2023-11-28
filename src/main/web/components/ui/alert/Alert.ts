@@ -50,12 +50,29 @@ export class Alert extends Component<AlertConfig, {}> {
     super(props);
   }
 
+  // render() {
+  //   return D.div(
+  //     {
+  //       className: classNames('alert-component', this.getCSS(this.props.alert), this.props.className),
+  //     },
+  //     // isEmpty(this.props.message) ? '' : this.props.message,
+  //     isEmpty(this.props.message) ? '' : (
+  //     <div dangerouslySetInnerHTML={{ __html: this.props.message.replace(/\n/g, '<br/>') }} />),
+  //     this.props.children
+  //   );
+  // }
+
   render() {
+    
+    const recdHtml = {
+      __html: this.props.message.replace(/\n/g, '<br/>'),
+    };
+    
     return D.div(
       {
         className: classNames('alert-component', this.getCSS(this.props.alert), this.props.className),
+        dangerouslySetInnerHTML : recdHtml,
       },
-      isEmpty(this.props.message) ? '' : this.props.message,
       this.props.children
     );
   }

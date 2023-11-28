@@ -48,6 +48,8 @@ import { trigger } from 'platform/api/events';
 
 import './RdfUpload.scss';
 
+import {DelimitedFileUploader} from '../../forms/file-manager/DelimitedFileUploader'
+
 interface State {
   messages?: ReadonlyArray<AlertConfig>;
   progress?: Data.Maybe<number>;
@@ -285,6 +287,18 @@ export class RdfUpload extends Component<Props, State> {
         {messages}
       </React.Fragment>
     );
+
+    const delimitedFileUploadTab = (
+      <React.Fragment>
+        {progressBar}
+        <div className={noteClass}>
+          Delimited files can be uploaded using the drag&amp;drop field below. Clicking into the field will open the
+          browser's default file selector.
+        </div>
+        <DelimitedFileUploader/>
+        {messages}
+      </React.Fragment>
+    );
     return (
       <div className={classnames(CLASS_NAME, className)} style={style}>
         {this.props.showAdvancedOptions ?
@@ -295,7 +309,7 @@ export class RdfUpload extends Component<Props, State> {
         }
         {showLoadByUrlTab ?
          <Tabs id="rdf-upload-tabs" unmountOnExit={true}>
-           <Tab eventKey={1} className={tabClass} title="File Upload" disabled={isInProcess}>
+           <Tab eventKey={1} className={tabClass} title="RDF File Upload" disabled={isInProcess}>
              {fileUploadTab}
            </Tab>
            <Tab eventKey={2} className={tabClass} title="Load by HTTP/FTP/File URL" disabled={isInProcess}>
@@ -324,6 +338,9 @@ export class RdfUpload extends Component<Props, State> {
                Load by URL
              </Button>
              {messages}
+           </Tab>
+           <Tab eventKey={3} className={tabClass} title="Delimited File Upload" disabled={isInProcess}>
+             {delimitedFileUploadTab}
            </Tab>
          </Tabs>
         : fileUploadTab}

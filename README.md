@@ -15,15 +15,19 @@
     <img src="https://badges.gitter.im/Join Chat.svg" height="30px" alt="Gitter"></a>
 </p>
 
+<h2>Kartography Work Plan for ResearchSpace</h2>
+<p>Information about the current developmwent of ResearchSpace by Kartpgraphy CIC is available on the <a href="https://kartography.org/current_work.html">Kartography Web Site</a> </p>
+  <img src='https://kartography.org/images/flowing%20into%20pot.png' alt='ResearchSpace'/>
+
 - - -
-<p>##################################################################################################################</p>
+<p>##############################################################################################################</p>
 <h2>NOTICE</h2>
 <p>Please note that no pull requests will be considerd unless they come with appropriate documentation </p>
 <p> As a temporary position documentation requires a title, reason for the change, description of the changes, and details of the testing</p>
 <p> These summary requirements will be formalised in short course with an online form.</p>
 <p>Thanks for your understanding</p>
 
-<p>#################################################################################################################</p>
+<p>########################################################################################################</p>
 
 [ResearchSpace](https://www.researchspace.org/) is a new type of contextualising knowledge system. It promotes collaborative interdisciplinary research allowing people to grow knowledge that relates to and reveals different aspects of society.
 

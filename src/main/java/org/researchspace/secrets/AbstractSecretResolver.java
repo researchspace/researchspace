@@ -121,6 +121,17 @@ public abstract class AbstractSecretResolver implements SecretResolver {
         if (prefix != null) {
             key = prefix + key;
         }
+
+        /** 
+        * @GSpinaci complete transformation
+        * 
+        * Set key to lowercase
+        * Then, transform everything into character '.' except: [A-z0-9]
+        * 
+        */ 
+        key = key.toLowerCase();
+        key = key.replaceAll("[^A-z0-9]", ".");
+
         return Optional.of(key);
     }
 

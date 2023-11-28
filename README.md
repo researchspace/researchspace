@@ -21,7 +21,7 @@
 
 - - -
 <p>##############################################################################################################</p>
-<h2>NOTICE</h2>
+<h2>Pull Requests</h2>
 <p>Please note that no pull requests will be considerd unless they come with appropriate documentation </p>
 <p> As a temporary position documentation requires a title, reason for the change, description of the changes, and details of the testing</p>
 <p> These summary requirements will be formalised in short course with an online form.</p>

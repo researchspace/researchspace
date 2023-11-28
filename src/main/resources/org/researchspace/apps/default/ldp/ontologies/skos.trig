@@ -26,19 +26,14 @@
 @prefix frbroo: <http://iflastandards.info/ns/fr/frbr/frbroo/> .
 
 <http://www.w3.org/2004/02/skos/core/context> {
-
-    <http://www.researchspace.org/resource/system/ontologyContainer> <http://www.w3.org/ns/ldp#contains>
-    <http://www.w3.org/2004/02/skos/core> .
-
     <http://www.w3.org/2004/02/skos/core> a owl:Ontology;
     rdfs:label "Skos core"@en;
     owl:versionIRI <http://www.w3.org/TR/skos-reference/skos-owl1-dl.rdf>;
-    rdfs:seeAlso <http://www.w3.org/TR/skos-reference/> ;
-    prov:generatedAtTime "2021-10-04T05:27:54.915Z"^^xsd:dateTime;
-    prov:wasAttributedTo User:admin .
+    rdfs:seeAlso <http://www.w3.org/TR/skos-reference/> .
 
   skos:editorialNote a rdf:Property, owl:AnnotationProperty;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core>;
+    
     rdfs:label "editorial note"@en;
     skos:definition "A note for an editor, translator or maintainer of the vocabulary."@en .
   
@@ -51,6 +46,8 @@
     rdfs:subPropertyOf skos:broader, skos:mappingRelation;
     skos:definition "skos:broadMatch is used to state a hierarchical mapping link between two conceptual resources in different concept schemes."@en;
     owl:inverseOf skos:narrowMatch;
+    rdfs:range skos:Concept;
+    rdfs:domain skos:Concept;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core>;
     rdfs:label "has broader match"@en .
   
@@ -66,6 +63,9 @@
     rdfs:comment "The range of skos:altLabel is the class of RDF plain literals."@en,
       "skos:prefLabel, skos:altLabel and skos:hiddenLabel are pairwise disjoint properties."@en;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core>;
+    rdfs:range rdf:PlainLiteral;
+    rdfs:domain skos:Concept;
+   
     skos:definition "An alternative lexical label for a resource."@en;
     skos:example "Acronyms, abbreviations, spelling variants, and irregular plural/singular forms may be included among the alternative labels for a concept. Mis-spelled terms are normally included as hidden labels (see skos:hiddenLabel)."@en;
     rdfs:label "alternative label"@en .
@@ -73,10 +73,14 @@
   skos:changeNote a owl:AnnotationProperty, rdf:Property;
     skos:definition "A note about a modification to a concept."@en;
     rdfs:label "change note"@en;
+    rdfs:range rdf:PlainLiteral;
+    rdfs:domain skos:Concept;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core> .
   
   skos:narrower a rdf:Property, owl:ObjectProperty;
     skos:definition "Relates a concept to a concept that is more specific in meaning."@en;
+    rdfs:range skos:Concept;
+    rdfs:domain skos:Concept;
     rdfs:label "has narrower"@en;
     rdfs:comment "Narrower concepts are typically rendered as children in a concept hierarchy (tree)."@en;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core>;
@@ -86,6 +90,8 @@
   
   skos:narrowerTransitive a owl:ObjectProperty, owl:TransitiveProperty, rdf:Property;
     rdfs:subPropertyOf skos:semanticRelation;
+    rdfs:range skos:Concept;
+    rdfs:domain skos:Concept;
     skos:scopeNote "By convention, skos:narrowerTransitive is not used to make assertions. Rather, the properties can be used to draw inferences about the transitive closure of the hierarchical relation, which is useful e.g. when implementing a simple query expansion algorithm in a search application."@en;
     owl:inverseOf skos:broaderTransitive;
     skos:definition "skos:narrowerTransitive is a transitive superproperty of skos:narrower.";
@@ -93,6 +99,8 @@
     rdfs:label "has narrower transitive"@en .
   
   skos:broader a rdf:Property, owl:ObjectProperty;
+    rdfs:range skos:Concept;
+    rdfs:domain skos:Concept;
     owl:inverseOf skos:narrower;
     rdfs:comment "Broader concepts are typically rendered as parents in a concept hierarchy (tree)."@en;
     rdfs:label "has broader"@en;
@@ -102,6 +110,8 @@
     skos:scopeNote "By convention, skos:broader is only used to assert an immediate (i.e. direct) hierarchical link between two conceptual resources."@en .
   
   skos:closeMatch a rdf:Property, owl:SymmetricProperty, owl:ObjectProperty;
+    rdfs:range skos:Concept;
+    rdfs:domain skos:Concept;
     skos:definition "skos:closeMatch is used to link two concepts that are sufficiently similar that they can be used interchangeably in some information retrieval applications. In order to avoid the possibility of \"compound errors\" when combining mappings across more than two concept schemes, skos:closeMatch is not declared to be a transitive property."@en;
     rdfs:subPropertyOf skos:mappingRelation;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core>;
@@ -118,12 +128,16 @@
     skos:scopeNote "By convention, skos:broaderTransitive is not used to make assertions. Rather, the properties can be used to draw inferences about the transitive closure of the hierarchical relation, which is useful e.g. when implementing a simple query expansion algorithm in a search application."@en;
     skos:definition "skos:broaderTransitive is a transitive superproperty of skos:broader.";
     owl:inverseOf skos:narrowerTransitive;
+    rdfs:range skos:Concept;
+    rdfs:domain skos:Concept;
     rdfs:subPropertyOf skos:semanticRelation;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core>;
     rdfs:label "has broader transitive"@en .
   
   skos:definition a owl:AnnotationProperty, rdf:Property;
     rdfs:label "definition"@en;
+    rdfs:range rdf:PlainLiteral;
+    rdfs:domain skos:Concept;
     skos:definition "A statement or formal explanation of the meaning of a concept."@en;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core> .
   
@@ -136,11 +150,15 @@
   
   skos:scopeNote a owl:AnnotationProperty, rdf:Property;
     skos:definition "A note that helps to clarify the meaning and/or the use of a concept."@en;
+    rdfs:range rdf:PlainLiteral;
+    rdfs:domain skos:Concept;
     rdfs:label "scope note"@en;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core> .
   
   skos:relatedMatch a owl:SymmetricProperty, owl:ObjectProperty, rdf:Property;
     rdfs:subPropertyOf skos:related, skos:mappingRelation;
+    rdfs:range skos:Concept;
+    rdfs:domain skos:Concept;
     rdfs:label "has related match"@en;
     rdfs:isDefinedBy <http://www.w3.org/2004/02/skos/core>;
     skos:definition "skos:relatedMatch is used to state an associative mapping link between two conceptual resources in different concept schemes."@en .

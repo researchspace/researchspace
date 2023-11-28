@@ -70,8 +70,11 @@
                                             {{#if resourceOrderPattern}}
                                               "resourceOrderPattern": "{{resourceOrderPattern}}",
                                             {{/if}}
-                                            "schemePattern": "{{#if resourceMembershipProperty}} ?item <{{resourceMembershipProperty}}> ?__scheme__.{{/if}} {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} {{#if resourceP2Type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{resourceP2Type}}> .{{/if}} {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
-                                            }'>
+                                            "schemePattern": "{{#if resourceMembershipProperty}} ?item <{{resourceMembershipProperty}}> ?__scheme__.{{/if}} 
+                                                              {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} 
+                                                              {{#if resourceP2Type}} ?item crm:P2_has_type <{{resourceP2Type}}> .{{/if}} 
+                                                              {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
+                                                              }'>
                   <template id='template'>
                     <span class="tree-item-actions-container">
                       {{#if editable}}
@@ -127,7 +130,27 @@
                 {{#switch mode}}
                   {{#case "new" break=true}}
                     {{#if broader}}
-                      <h2 class="resource-editView-formHeader-title">New {{resourceName}} narrower to <mp-label iri='{{broader}}'></mp-label></h2>
+                      <h2 class="resource-editView-formHeader-title">New {{resourceName}} 
+                        {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
+                          member of
+                        {{else}}
+                          narrower to 
+                        {{/ifCond}}
+                        {{#if resourceLabelPattern}}
+                          <semantic-query query="SELECT ?label WHERE {
+                                                  BIND(<{{broader}}> as ?item) .
+                                                  {{resourceLabelPattern}}
+                                                }"
+                                          template='{{> template}}'>
+
+                            <template id='template'>
+                                <span>{{bindings.0.label.value}}</span>
+                            </template>
+                          </semantic-query>
+                        {{else}}
+                          <mp-label iri='{{broader}}'></mp-label>
+                        {{/if}}
+                      </h2>
                     {{else}}
                       <h2 class="resource-editView-formHeader-title">New {{resourceName}}</h2>
                     {{/if}}

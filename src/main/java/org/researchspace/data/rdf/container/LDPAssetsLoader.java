@@ -291,18 +291,19 @@ public class LDPAssetsLoader {
             if (modelExisting.isEmpty()) {
                 toLoad.add(ctx);
             } 
-            /* Skip checks for the content of the vocabularies, ontologies, configurations repository as the assumption 
-               is that these will be modified during development or instance use */
-            else if(!repositoryId.equals("assets") &&
-                    !repositoryId.equals("vocabularies") && 
-                    !repositoryId.equals("ontologies") && 
-                    !repositoryId.equals("configurations")  && 
-                    !LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
+            else if (!LDPAssetsLoader.compareModelsWithoutDates(modelExisting, modelLoaded)) {
                 inconsistentContexts.add(ctx);
-            }            
+            }
         }
 
-        if (!inconsistentContexts.isEmpty()) {
+        if (!inconsistentContexts.isEmpty() && 
+                (repositoryId.equals("ontologies") ||repositoryId.equals("vocabularies") || repositoryId.equals("configurations"))) {
+            /* loading nothing, using what is in the ontologies, vocabularies, or configurations repository at runtime */
+            toLoad = Lists.newArrayList();
+            return toLoad;           
+        }
+
+        if (!inconsistentContexts.isEmpty()) {            
             String msg = "Inconsistent state of the LDP assets storage: the content of named graphs "
                     + inconsistentContexts.toString() + " in the \"" + repositoryId
                     + "\" repository does not correspond to the content loaded from storage";

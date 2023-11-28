@@ -28,16 +28,18 @@
 <p>Thanks for your understanding</p>
 
 <p>########################################################################################################</p>
-
+<h2>The ResearchSpace System</h2>
+<div style="float:left;">
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis
+" target="_blank"><img src="https://i.ytimg.com/vi/MaAv0SE7wis/maxresdefault.jpg" 
+alt="ResearchSpace Overview" width="640" border="1" /></a></div>
 [ResearchSpace](https://www.researchspace.org/) is a new type of contextualising knowledge system. It promotes collaborative interdisciplinary research allowing people to grow knowledge that relates to and reveals different aspects of society.
 
 It challenges the instrumental nature of technology and allows subject experts to become authors of meaningful forms of structured data, combined with visual and textual narrative.
 
 The ResearchSpace system has been designed to allow researchers to connect qualitative and quantitative research, to transition from information systems that solely capture and index ‘essential’ reference material, to ones that address the complexity and richness of the research itself and provide a natural ‘relational’ method that traverses space and time, supporting different levels of complexity, variety of vantage point, and the represention of arguments and meta-commentary in a collaborative environment.
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis
-" target="_blank"><img src="https://i.ytimg.com/vi/MaAv0SE7wis/maxresdefault.jpg" 
-alt="ResearchSpace Overview" width="640" border="1" /></a>
+
 
 # Knowledge Base 
 see <a href="https://documentation.researchspace.org/resource/rsp:Start"> ResearchSpace Documentation Site</a>

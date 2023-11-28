@@ -69,7 +69,12 @@ class RemoveFromContainerComponent extends Component<Props, {}> {
 
   private deleteOntologyAndKPs(){
     //first delete KPs
-    const kpsSelectQuery = "SELECT ?kp WHERE {?kp <http://www.researchspace.org/resource/system/fields/ontology> "+Rdf.iri(this.props.iri) +".}";
+    const kpsSelectQuery = "prefix owl: <http://www.w3.org/2002/07/owl#> "+
+                           "SELECT ?kp WHERE { "+
+                           "  ?kp <http://www.researchspace.org/resource/system/fields/ontology> "+Rdf.iri(this.props.iri) +"."+
+                           "  ?kp a ?owlType . "+
+                           "   FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty,owl:AnnotationProperty)) "+
+                           "}";
     
     SparqlClient.select(kpsSelectQuery).onValue(( results ) => {
       for (const binding of results.results.bindings) {

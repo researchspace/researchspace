@@ -19,14 +19,14 @@
  <div style="float:left;"><img width=30% align="left" src='https://kartography.org/images/flowing%20into%20pot.png' alt='ResearchSpace'/></div>
  <p>Information about the current development of ResearchSpace by Kartography CIC is available on the <a href="https://kartography.org/current_work.html">Kartography Web Site</a> </p>
  <p>Note that archives of previous ResearchSpace specifications are available on the Kartography site (https://kartography.org/papers.html) </p>
-
+<p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
 <h2>Pull Requests</h2>
 <div style="float:left;"><img width=30% align="left" src='https://kartography.org/images/exchanginginformation.png' alt='ResearchSpace'/></div>
 <p>We welcome push requests but would ask that they come with documentation to help the community understand changes.</p>
 <p>Please provide documentation with the git reference to info@kartography.org. Documentation should have a title, reason for the change, description of the changes, and details of the testing</p>
 <p> These summary requirements will be formalised in short course with an online form.</p>
 <p>Thanks for your understanding</p>
-
+<p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
 <h2>The ResearchSpace System</h2>
 <div style="float:left;">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=MaAv0SE7wis

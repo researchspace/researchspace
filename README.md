@@ -21,9 +21,9 @@
 
 - - -
 <p>##############################################################################################################</p>
-<h2>NOTICE</h2>
-<p>Please note that no pull requests will be considerd unless they come with appropriate documentation </p>
-<p> As a temporary position documentation requires a title, reason for the change, description of the changes, and details of the testing</p>
+<h2>PullRequests</h2>
+<p>We welcome push requests but would ask that they come with documentation to help the community understand changes</p>
+<p>Please provide documentation with the git reference to info@kartography.org. Documentation should have a title, reason for the change, description of the changes, and details of the testing</p>
 <p> These summary requirements will be formalised in short course with an online form.</p>
 <p>Thanks for your understanding</p>
 

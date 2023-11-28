@@ -17,11 +17,11 @@
 
 <h2>Kartography Work Plan for ResearchSpace</h2>
 <p>Information about the current developmwent of ResearchSpace by Kartpgraphy CIC is available on the <a href="https://kartography.org/current_work.html">Kartography Web Site</a> </p>
-  <img width=30% src='https://kartography.org/images/flowing%20into%20pot.png' alt='ResearchSpace'/>
+  <img width=30% align="left" src='https://kartography.org/images/flowing%20into%20pot.png' alt='ResearchSpace'/>
 
 - - -
 <p>##############################################################################################################</p>
-<h2>PullRequests</h2>
+<h2>Pull Requests</h2>
 <p>We welcome push requests but would ask that they come with documentation to help the community understand changes</p>
 <p>Please provide documentation with the git reference to info@kartography.org. Documentation should have a title, reason for the change, description of the changes, and details of the testing</p>
 <p> These summary requirements will be formalised in short course with an online form.</p>

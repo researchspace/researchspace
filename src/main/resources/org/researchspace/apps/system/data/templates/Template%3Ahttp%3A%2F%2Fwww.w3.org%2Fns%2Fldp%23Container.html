@@ -122,7 +122,7 @@
                       {
                         ?? ldp:contains+ ?node .
                         ?node a ldp:Container .
-                        ?parent ldp:contains ?node .
+                        ?parent ldp:contains ?node .                     
                       } UNION {
                         BIND(?? as ?node) .
                       }
@@ -143,14 +143,16 @@
                           <rs-icon icon-type="round" icon-name="file_download"></rs-icon>
                           <span>Download</span>
                         </button>
-                      </mp-ldp-export-resource>
-                      {{#ifCond data.node.value "!==" "http://www.researchspace.org/resource/system/rootContainer"}}
-                        <mp-ldp-remove-from-container-action iri="{{data.node.value}}" container="{{data.parent.value}}">
-                          <button class="btn btn-default btn-textAndIcon" title="Delete">
-                            <rs-icon icon-type="round" icon-name="delete"></rs-icon>
-                            <span>Delete</span>
-                          </button>
-                        </mp-ldp-remove-from-container-action>
+                      </mp-ldp-export-resource>                    
+                      {{#ifCond data.node.value "!==" "http://www.researchspace.org/resource/system/rootContainer"}} 
+                      	{{#ifCond	data.node.value "!==" "http://www.researchspace.org/resource/system/ontologyContainer"}}
+                      			<mp-ldp-remove-from-container-action iri="{{data.node.value}}" container="{{data.parent.value}}">
+                              <button class="btn btn-default btn-textAndIcon" title="Delete">
+                                <rs-icon icon-type="round" icon-name="delete"></rs-icon>
+                                <span>Delete</span>
+                              </button>
+                            </mp-ldp-remove-from-container-action>
+                      	{{/ifCond}}
                       {{/ifCond}}
                     </div>
                   </template>
@@ -159,7 +161,7 @@
             [[/if]]
 
             [[#if (ask "PREFIX ldp: <http://www.w3.org/ns/ldp#> ASK {?? ldp:contains ?c. MINUS { ?c a ldp:Container .} }")]]
-          [[!--    <h2> Resources </h2> --]]
+           	[[!-- <h2> Resources </h2> --]]
       
               <semantic-context repository='assets'>
                 [[> http://www.researchspace.org/resource/assets/LdpResources container=(this) query='SELECT DISTINCT ?subject ?ModificationDate ?attribution ?label WHERE { ?? <http://www.w3.org/ns/ldp#contains> ?subject . ?subject <http://www.w3.org/ns/prov#generatedAtTime> ?ModificationDate ; <http://www.w3.org/ns/prov#wasAttributedTo> ?attribution. OPTIONAL { ?subject rdfs:label ?label . }}']]

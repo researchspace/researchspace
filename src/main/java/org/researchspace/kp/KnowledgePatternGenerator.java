@@ -2,6 +2,7 @@ package org.researchspace.kp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -83,7 +84,16 @@ public class KnowledgePatternGenerator {
             Set<Resource> objectProperties =
                 ontology.filter(null, RDF.TYPE, OWL.OBJECTPROPERTY).subjects();
             logger.trace("Generating KPs for {} object properties", objectProperties.size());           
-            objectProperties.forEach(op -> saveKp(generateOpKp(ontology, ontoIri, (IRI)op)));
+            Iterator<Resource> iterator = objectProperties.iterator();
+
+            while (iterator.hasNext()) {
+                Resource resource = iterator.next();
+                if (resource.isIRI()) {
+                    if (resource.toString().contains(ontoIri.stringValue()))
+                        saveKp(generateOpKp(ontology, ontoIri, (IRI)resource));
+                }
+            }
+            //forEach(op -> saveKp(generateOpKp(ontology, ontoIri, (IRI)op)));
             numberOfKPsGenerated += objectProperties.size();
 
             Set<Resource> datatypeProperties =
@@ -91,12 +101,12 @@ public class KnowledgePatternGenerator {
             logger.trace("Generating KPs for {} datatype properties", datatypeProperties.size());
             datatypeProperties.forEach(op -> saveKp(generateDpKp(ontology, ontoIri, (IRI)op)));
             numberOfKPsGenerated += datatypeProperties.size();
-
-             Set<Resource> annotationProperties =
+/* 
+            Set<Resource> annotationProperties =
                 ontology.filter(null, RDF.TYPE, OWL.ANNOTATIONPROPERTY).subjects();
-            logger.trace("Generating KPs for {} datatype properties", datatypeProperties.size());
-            annotationProperties.forEach(op -> saveKp(generateDpKp(ontology, ontoIri, (IRI)op)));
-            numberOfKPsGenerated += annotationProperties.size();
+            logger.trace("Generating KPs for {} annotation properties", annotationProperties.size());
+            annotationProperties.forEach(op -> saveKp(generateApKp(ontology, ontoIri, (IRI)op)));
+            numberOfKPsGenerated += annotationProperties.size();*/
         }
 
         return numberOfKPsGenerated;
@@ -142,9 +152,28 @@ public class KnowledgePatternGenerator {
         return new PointedGraph(kpIri, builder.build());
     }
 
+    private PointedGraph generateApKp(Model onto, IRI ontoIri, IRI prop) {
+        ModelBuilder builder = new ModelBuilder();
+        IRI kpIri = this.generateBasicKp(builder, ontoIri, onto, prop);
+
+        builder.subject(kpIri);
+        addAll(builder, FIELDS.XSD_DATATYPE, Models.getPropertyIRIs(onto, prop, RDFS.RANGE));
+
+        return new PointedGraph(kpIri, builder.build());
+    }
+
     private IRI generateBasicKp(ModelBuilder builder, IRI ontoIri, Model onto, IRI prop) {
+        String ontoIriString = "";
+
+        /* Adding a trailing # for ontologyIri cases like skos */
+        if (!ontoIri.stringValue().endsWith("/") && !ontoIri.stringValue().endsWith("#")) {
+            ontoIriString = ontoIri.stringValue()+"#";
+        } else {
+            ontoIriString = ontoIri.stringValue();
+        }
+
         IRI kpIri =
-            this.vf.createIRI(ontoIri.stringValue(), prop.getLocalName());
+            this.vf.createIRI(ontoIriString, prop.getLocalName());
         
         builder.subject(kpIri)
             .add(RDF.TYPE, FIELDS.FIELD_TYPE)
@@ -179,6 +208,24 @@ public class KnowledgePatternGenerator {
             .subject(selectQueryNode)
             .add(RDF.TYPE, SP.QUERY_CLASS)
             .add(SP.TEXT_PROPERTY, selectPattern);
+
+
+        // generate KP delete pattern and add it to the KP
+        String deletePattern =
+            "DELETE { " +
+            "  $subject <" + prop.stringValue() + "> ?value . \n" + 
+            "} "+
+            " WHERE {\n" +
+            "  $subject <" + prop.stringValue() + "> ?value . \n" +
+            "  " +
+            "}";
+        BNode deleteQueryNode = this.vf.createBNode();
+        builder
+            .add(kpIri, FIELDS.DELETE_PATTERN, deleteQueryNode)
+            .subject(deleteQueryNode)
+            .add(RDF.TYPE, SP.QUERY_CLASS)
+            .add(SP.TEXT_PROPERTY, deletePattern);
+
 
         return kpIri;
     };

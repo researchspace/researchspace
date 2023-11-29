@@ -29,7 +29,7 @@
       <mp-splitpane-toggle-off>
         <div class="split-pane__leftsidebar-header">
           <button data-flex-layout='row center-left' class="btn-toggle-off">
-            <h4 style="width: 100%; text-align: left;">
+            <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
               <mp-label iri='{{collection}}'></mp-label>
             </h4>
             <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
@@ -47,7 +47,7 @@
                                 targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'>
                 <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New {{resourceName}}</span>
+                  <span>New <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label></span>
                 </button>
               </mp-event-trigger>
             {{/if}}
@@ -93,7 +93,7 @@
                                         data='{"iri":"{{iri}}"}'>
                         </mp-event-proxy>
                         {{#if resourceBroaderProperty}}
-                          <mp-event-trigger id='{{viewId}}-form-new-trigger' 
+                          <mp-event-trigger id='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
                                             type='Component.TemplateUpdate' 
                                             data='{"broader": "{{iri}}", "mode": "new" }' 
                                             targets='["{{viewId}}-term-forms"]'>
@@ -101,6 +101,12 @@
                               <rs-icon icon-type="round" icon-name="add" title="Add narrower {{resourceName}}"></rs-icon>
                             </span>
                           </mp-event-trigger>
+                          <mp-event-proxy id='{{viewId}}-addNarrower-focus-tree-element' 
+                                          on-event-source='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='["{{viewId}}-mytree"]' 
+                                          >
+                          </mp-event-proxy>
                         {{/if}}
                       {{else}}
                         <mp-event-trigger id='{{viewId}}-form-edit-trigger' 
@@ -130,7 +136,7 @@
                 {{#switch mode}}
                   {{#case "new" break=true}}
                     {{#if broader}}
-                      <h2 class="resource-editView-formHeader-title">New {{resourceName}} 
+                      <h2 class="resource-editView-formHeader-title">New <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
                         {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
                           member of
                         {{else}}
@@ -152,45 +158,63 @@
                         {{/if}}
                       </h2>
                     {{else}}
-                      <h2 class="resource-editView-formHeader-title">New {{resourceName}}</h2>
+                      <h2 class="resource-editView-formHeader-title">New <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label></h2>
                     {{/if}}
                   {{/case}}
 
                   {{#case "edit" break=true}}
                     <h2 class="resource-editView-formHeader-title">
-                      {{#if resourceLabelPattern}}
-                        <semantic-query query="SELECT ?label WHERE {
-                                                BIND(<{{iri}}> as ?item) .
-                                                {{resourceLabelPattern}}
-                                              }"
-                                        template='{{> template}}'>
+                      <mp-draggable iri='{{iri}}'>
+                        
+                          <div class="link-draggable">
+                            <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                            <span class="text-first-letter-uppercase"><mp-label iri='{{collection}}'></mp-label>:</span>
+                            
+                            {{#if resourceLabelPattern}}
+                              <semantic-query query="SELECT ?label WHERE {
+                                                      BIND(<{{iri}}> as ?item) .
+                                                      {{resourceLabelPattern}}
+                                                    }"
+                                              template='{{> template}}'>
 
-                          <template id='template'>
-                              <span>{{bindings.0.label.value}}</span>
-                          </template>
-                        </semantic-query>
-                      {{else}}
-                        <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                      {{/if}}
+                                <template id='template'>
+                                    <span>{{bindings.0.label.value}}</span>
+                                </template>
+                              </semantic-query>
+                            {{else}}
+                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                            {{/if}}
+                          </div>
+                        
+                      </mp-draggable>
                     </h2>
                   {{/case}}
 
                   {{#case "view" break=true}}
                     <h2 class="resource-editView-formHeader-title">
-                      {{#if resourceLabelPattern}}
-                        <semantic-query query="SELECT ?label WHERE {
-                                                BIND(<{{iri}}> as ?item) .
-                                                {{resourceLabelPattern}}
-                                              }"
-                                        template='{{> template}}'>
+                      <mp-draggable iri='{{iri}}'>
+                        
+                          <div class="link-draggable">
+                            <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                            <span class="text-first-letter-uppercase"><mp-label iri='{{collection}}'></mp-label>:</span>
+                            
+                            {{#if resourceLabelPattern}}
+                              <semantic-query query="SELECT ?label WHERE {
+                                                      BIND(<{{iri}}> as ?item) .
+                                                      {{resourceLabelPattern}}
+                                                    }"
+                                              template='{{> template}}'>
 
-                          <template id='template'>
-                              <span>{{bindings.0.label.value}}</span>
-                          </template>
-                        </semantic-query>
-                      {{else}}
-                        <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                      {{/if}}
+                                <template id='template'>
+                                    <span>{{bindings.0.label.value}}</span>
+                                </template>
+                              </semantic-query>
+                            {{else}}
+                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                            {{/if}}
+                          </div>
+                        
+                      </mp-draggable>
                     </h2>
                   {{/case}}
                 

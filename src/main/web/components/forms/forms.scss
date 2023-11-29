@@ -147,7 +147,8 @@ textarea.form-control {
 fieldset[disabled] .form-control {
 
   background-color: inherit;
-  opacity: 0.5;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 // Feedback states
@@ -298,12 +299,17 @@ fieldset[disabled] .form-control {
     padding: 15px;
     border: 1px solid $input-border-color;
     border-radius: $border-radius;
+    background-color: $color-lighter;
 
-    .semantic-form-input-decorator--with-header:first-of-type {
-      .semantic-form-input-decorator__header {
-        margin-top: 0;
+    .composite-input {
+
+      & > .semantic-form-input-decorator--with-header {
+        .semantic-form-input-decorator__header {
+          margin-top: 5px;
+        }
       }
     }
+    
   }
 
   &_no-header {
@@ -320,9 +326,12 @@ fieldset[disabled] .form-control {
 
   &__group-instance > &__remove-value {
     position: absolute;
-    right: 6px;
-    top: 2px;
+    right: 0;
+    top: 0;
     padding: 8px;
+    display: flex;
+    align-items: center;
+    font-size: 17px;
     border: none;
     background-color: transparent;
 
@@ -330,6 +339,11 @@ fieldset[disabled] .form-control {
     &:focus,
     &:focus-within {
       background-color: transparent;
+    }
+
+    .material-icons-round {
+
+      font-size: inherit;
     }
   }
 }
@@ -464,6 +478,13 @@ fieldset[disabled] .form-control {
 
    font-weight: 600;
    font-size: $font-size-body;
+   display: inline-block;
+   text-transform: lowercase;
+
+   &::first-letter {
+
+    text-transform: uppercase;
+   }
   }
 
   &__label-required:after {

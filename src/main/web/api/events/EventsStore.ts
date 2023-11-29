@@ -70,6 +70,7 @@ export function trigger<Data>(event: Event<Data>) {
           (eventFilter.source ? eventFilter.source === event.source : true) &&
           (eventFilter.target ? _.includes(event.targets || [], eventFilter.target) : true)
       ) {
+        console.log('TRIGGER', event)
         emitter.emit(event);
       }
     }

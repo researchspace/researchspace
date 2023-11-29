@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReactElement, createElement, ReactNode, Children, Props as ReactProps } from 'react';
+import { ReactElement, createElement, ReactNode, Children, Props as ReactProps, cloneElement } from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as Kefir from 'kefir';
@@ -144,6 +144,7 @@ interface State {
   searchResult?: SearchResult;
 
   mode?: DropdownMode;
+  labelToDisplay?: any;
 }
 
 type DropdownMode = { type: 'collapsed' } | ExpandedMode;
@@ -239,7 +240,43 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       mode: { type: 'collapsed' },
       forest: Node.readyToLoadForest,
       confirmedSelection: TreeSelection.empty(Node.emptyForest),
+      labelToDisplay: []
     };
+  }
+
+  doUpdateLabel() {
+    const { initialSelection, queryItemLabel } = this.props;
+    let selection: ReadonlyArray<Rdf.Iri>;
+    if (initialSelection && initialSelection.length !== 0) {
+      if (typeof initialSelection[0] == 'string') {
+        selection = (initialSelection as ReadonlyArray<string>).map(s => Rdf.iri(s));
+      } else {
+        selection = initialSelection as ReadonlyArray<Rdf.Iri>;
+      }
+
+      if (queryItemLabel && queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
+        selection.map((selectedItem) => {
+          
+          SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.value}>`)).onValue(
+            (result) => {
+              console.log('SIMONE HERE ',result.results.bindings)
+              let m = []
+              m[selectedItem.value] = result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value
+              const prev = this.state.labelToDisplay
+              const newState = [...prev, m]
+              this.setState({
+                labelToDisplay: newState
+              })
+              return
+            }
+          ).onEnd(() => {})
+        });
+      }
+    }
+}
+
+  componentWillMount() {
+    this.doUpdateLabel()
   }
 
   componentDidMount() {
@@ -261,9 +298,12 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       props.rootsQuery === nextProps.rootsQuery &&
       props.childrenQuery === nextProps.childrenQuery &&
       props.parentsQuery === nextProps.parentsQuery &&
-      props.searchQuery === nextProps.searchQuery;
+      props.searchQuery === nextProps.searchQuery &&
+      props.initialSelection === nextProps.initialSelection && 
+      props.queryItemLabel === nextProps.queryItemLabel;
     if (!sameQueries) {
       this.setState(this.createQueryModel(nextProps));
+      // this.doUpdateLabel()
     }
   }
 
@@ -403,6 +443,16 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   }
 
+  private test(el: any) {
+    console.log('SIMONE:test', {
+      el,
+      labelToDisplay: this.state.labelToDisplay
+    });
+    console.log(this.state.labelToDisplay[0], el)
+    return this.state.labelToDisplay[el.iri.value] ?? el.label.value
+    // return el.label?.value ?? 'bbb'
+  }
+
   private renderTextField() {
     const textFieldProps: ClearableInputProps & ReactProps<ClearableInput> = {
       ref: (input) => (this.textInput = input),
@@ -461,7 +511,10 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
                 });
               },
             },
-            item.label.value
+            // 'yyy'
+            // this.state.labelToDisplay[item.label.value] ?? 'xxx'
+            // test(item.label.value)
+            this.test(item)
           )
         )
         .toArray()

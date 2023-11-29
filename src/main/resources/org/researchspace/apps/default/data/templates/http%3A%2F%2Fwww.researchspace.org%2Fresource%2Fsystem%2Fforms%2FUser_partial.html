@@ -215,6 +215,245 @@
             </div>
           </div>
         </bs-tab>
+
+        {{#if (eq user_type "person")}}
+          <bs-tab event-key="2" title="Employment">
+            <h5 style="margin: 25px 0 5px 0px;">Employment details</h5>
+            <semantic-form-composite-input for="user_joining_organisation_range"
+                                            label="Organisation"
+                                            render-header="false" 
+                                            new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        actor_job_title="http://www.researchspace.org/pattern/system/actor/P144.1_kind_of_member"
+                                                        actor_joining_organisation_domain="http://www.researchspace.org/pattern/system/actor/joining_domain"
+                                                ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
+                    
+                    <semantic-form-tree-picker-input for='actor_job_title' label="Job title" placeholder="Select job title" close-dropdown-on-selection='false'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/user_job_title>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/user_job_title>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true 
+                                                                            scheme="http://www.researchspace.org/resource/system/vocab/user_job_title"
+                                                                            entityType="job title" }}{{{{/raw}}}}'
+
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/system/vocab/user_job_title",
+                                                                                "tooltip": "Open list of job titles"
+                                                                              }'
+                                                    >
+                    </semantic-form-tree-picker-input>
+
+                    <semantic-form-composite-input for="actor_joining_organisation_domain" 
+                                            render-header="false" 
+                                            new-subject-template="/joining_organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                    joined_joined_organisation="http://www.researchspace.org/pattern/system/joining/joined_organisation"
+
+                                                    joining_start_date="http://www.researchspace.org/pattern/system/activity/start_date"
+                                                    joining_end_date="http://www.researchspace.org/pattern/system/activity/end_date"
+                                                    joining_description="http://www.researchspace.org/pattern/system/entity/description"
+                                            ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/joining_organisation'></semantic-form-hidden-input>
+        
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 35px; min-height: 100%;">
+                        <div>
+                          <semantic-form-tree-picker-input for="joined_joined_organisation" 
+                                                            label="Organisation name" 
+                                                            placeholder="Select organisation name" 
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
+                                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation .  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/address_type/name> . ?appellation crm:P190_has_symbolic_content ?label ."
+                                                                          }'
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true onlyDetails=true
+                                                                                                  scheme="http://www.researchspace.org/resource/system/vocab/organisation"
+                                                                                                  entityType="organisation" }}
+                                                                                  {{{{/raw}}}}'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                  "view": "vocabulary-content",
+                                                                                  "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
+                                                                                  "tooltip": "Open list of organisations"
+                                                                                }'
+                                                            >
+                          </semantic-form-tree-picker-input> 
+
+                          <div style="display: flex; align-items:flex-start; column-gap:15px;">
+                              <div style="flex: 1;">
+                              <semantic-form-datetime-input for='joining_start_date' label="Start date" placeholder="Enter start date"></semantic-form-datetime-input>
+                              </div>
+                              <div style="flex: 1;">
+                              <semantic-form-datetime-input for='joining_end_date' label="End date" placeholder="Enter end date"></semantic-form-datetime-input>
+                              </div>
+                          </div>
+                        </div>
+                        <semantic-form-text-input for="joining_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
+                    </div>
+                    </semantic-form-composite-input>
+            
+            </semantic-form-composite-input>
+          </bs-tab>
+        {{/if}}
+
+        {{#if (or (eq user_type "department") (eq user_type "team"))}}
+          <bs-tab event-key="3" title="Organisation">
+            <semantic-form-composite-input for="user_joining_organisation_range"
+                                            label="{{user_type}} is part of organisation"
+                                            new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        actor_joining_organisation_domain="http://www.researchspace.org/pattern/system/actor/joining_domain"
+                                                ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
+
+                    <semantic-form-composite-input for="actor_joining_organisation_domain" 
+                                            render-header="false" 
+                                            new-subject-template="/joining_organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                    joined_joined_organisation="http://www.researchspace.org/pattern/system/joining/joined_organisation"
+                                                    
+                                            ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/joining_organisation'></semantic-form-hidden-input>
+                    
+                    <semantic-form-tree-picker-input for="joined_joined_organisation" 
+                                                    label="Organisation name" 
+                                                    placeholder="Select organisation name" 
+                                                    close-dropdown-on-selection='true'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
+                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation .  
+                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/address_type/name> . 
+                                                                                        ?appellation crm:P190_has_symbolic_content ?label ."
+                                                                    }'
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true onlyDetails=true
+                                                                                      scheme="http://www.researchspace.org/resource/system/vocab/organisation"
+                                                                                      entityType="organisation" }}
+                                                                          {{{{/raw}}}}'
+                                                    
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
+                                                                                "tooltip": "Open list of organisations"
+                                                                                }'
+                                                    >
+                    </semantic-form-tree-picker-input> 
+
+                    </semantic-form-composite-input>
+            
+            </semantic-form-composite-input>
+          </bs-tab>
+        {{/if}} 
+
+        {{#if node}}
+          <bs-tab event-key="4" title="Projects">
+            <div style="margin: 25px 0 5px 0px;">
+                <semantic-table id='project-table'
+                            query='SELECT ?project ?projectTitle ?projectStatusLabel ?projectPriorityLabel ?dateStart ?dateEnd ?roleLabel (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?projectTypeLabel) WHERE {
+                                    
+                                    ?project crm:P01i_is_domain_of ?activityDomain . 
+                                    ?activityDomain a crm:PC14_carried_out_by .
+                                    ?activityDomain crm:P02_has_range <{{node}}> .
+
+                                    OPTIONAL {
+                                        ?activityDomain crm:P14.1_in_the_role_of ?role .
+                                        ?role crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/role> .
+                                        ?role skos:prefLabel ?roleLabel.
+                                    }
+
+                                    ?project crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/project> .
+
+                                    ?project crm:P1_is_identified_by ?appellation .
+                                    ?appellation a crm:E41_Appellation .
+                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/project_title> .
+                                    ?appellation crm:P190_has_symbolic_content ?projectTitle .  
+
+                                    OPTIONAL {
+                                        ?project crm:P2_has_type ?projectType .
+                                        ?projectType crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                        ?projectType skos:prefLabel ?typeLabel .
+                                    }
+
+                                    OPTIONAL {
+                                        ?project crm:P2_has_type ?projectStatus .
+                                        ?projectStatus crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                        ?projectStatus skos:prefLabel ?projectStatusLabel .
+                                    }
+
+                                    OPTIONAL {
+                                        ?project crm:P2_has_type ?projectPriority .
+                                        ?projectPriority crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/priority> .
+                                        ?projectPriority skos:prefLabel ?projectPriorityLabel .
+                                    }
+
+                                    OPTIONAL {
+                                        ?project crm:P4_has_time-span ?timespanStart .
+                                        ?timespanStart a crm:E52_Time-Span .
+                                        ?timespanStart crm:P82a_begin_of_the_begin ?dateStart .
+                                    }
+
+                                    OPTIONAL {
+                                        ?project crm:P4_has_time-span ?timespanEnd .
+                                        ?timespanEnd a crm:E52_Time-Span .
+                                        ?timespanEnd crm:P82b_end_of_the_end ?dateEnd .
+                                    }
+
+                                    } 
+                                    GROUP BY ?project ?projectTitle ?projectStatusLabel ?projectPriorityLabel ?dateStart ?dateEnd ?roleLabel
+                                    ORDER BY ASC(?projectTitle)'
+
+                            number-of-displayed-rows=10
+                            no-result-template='{{> noResults}}'
+                            column-configuration='[{"variableName": "projectTitle", "displayName": "Project title", "cellTemplate": "{{> project}}" },
+                                                    {"variableName": "projectTypeLabel", "displayName": "Project type"},
+                                                    {"variableName": "roleLabel", "displayName": "User role"},
+                                                    {"variableName": "dateStart", "displayName": "Start date"},
+                                                    {"variableName": "dateEnd", "displayName": "End date"},
+                                                    {"variableName": "projectStatusLabel", "displayName": "Status"},
+                                                    {"variableName": "projectPriorityLabel", "displayName": "Priority"}
+                                                    ]'
+                            >
+                            
+                            <template id="noResults">
+                                <div style="padding: 12px 0">
+                                    No project available
+                                </div>
+                            </template>
+
+                            <template id='project'>
+                                <mp-draggable iri='{{project.value}}'>
+                                <div style="display: flex; align-items: center; cursor: grab;">
+                                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>                
+                                <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
+                                                urlqueryparam-resource='{{project.value}}' 
+                                                urlqueryparam-view='entity-editor' 
+                                                class='a-draggable'
+                                                >
+                                    <div style="display: flex; align-items: center;">
+                                    {{projectTitle.value}}
+                                    </div>
+                                </semantic-link>
+                                </div>
+                                </mp-draggable>
+                            </template>
+
+                </semantic-table>
+            </div>
+          </bs-tab>
+        {{/if}}
         
       </bs-tabs>
     [[/inline]]

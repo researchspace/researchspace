@@ -1,354 +1,398 @@
-<div class="homepage-container">
+[[!-- IMPORTANT: DON'T REMOVE KP GENERATOR BELOW --]]
+[[!-- This section build knowledge patterns (KPs) for any new ontology found in the system. 
+      In its first iteration it generates KPs for all the system ontologies found in 
+      src/main/resources/org/researchspace/apps/default/ldp/ontologies
+--]]
+  <div style="display: none;">
+    <semantic-query query='SELECT ?ontology ?label {
+                            ?ontology a owl:Ontology .
+                            OPTIONAL {
+                              ?ontology rdfs:label ?label .
+                            } 
+                          FILTER NOT EXISTS {?a <http://www.researchspace.org/resource/system/fields/ontology> ?ontology }
+                          } ORDER BY ASC(?label) ?ontology'
+      
+                          template='{{> ontologyKpGenerator}}'>
+      
+      <template id='ontologyKpGenerator'>
+          {{#each bindings}}
+            <ontology-create-new-resource-action 
+                container='http://www.researchspace.org/resource/system/ontologyContainer'
+                ontology-iri="{{ontology.value}}">
+            </ontology-create-new-resource-action>
+            <mp-json-renderer
+                get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent ontology.value}}'
+                template="{{> kpGeneratorTemplate}}">
 
-    <div class="homepage-project-container">
-  
-      <div class="homepage-project-header">
-        <div class="homepage-project-header__welcome">
-          <h4>Welcome back<mp-anonymous-hidden>
-              <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                                template='{{> template}}'>
-                <template id='template'>
-                  <span>, <!-- <semantic-link-container uri='{{bindings.0.__useruri__.value}}'> -->
-                           <span style="text-transform:capitalize;">{{bindings.0.userName.value}}</span>!
-                          <!-- </semantic-link-container> -->
-                  </span>
-                  
-                    
-                </template>
-              </semantic-query>
-            </mp-anonymous-hidden>
-          </h4>
-          <!-- <div class="homepage-project-header__currentDate">
-            <span>|</span>
-            <span>Today: [[currentDateTime format="dd MMMM yyyy"]]</span>
-          </div> -->
-        </div>
-        
-  
-        <div class="ongoing-projects">
-          <div>You have</div>
-          <bs-dropdown id='ongoingProjectsDropdown'>
-            <bs-dropdown-toggle class="link-dropdown">
-                n projects ongoing
-            </bs-dropdown-toggle>
-            <bs-dropdown-menu>
-                <bs-menu-item>
-                    Project 1
-                </bs-menu-item>
-                <bs-menu-item>
-                  Project 2
-                </bs-menu-item>
-                <bs-menu-item>
-                  Project 3
-                </bs-menu-item>
-            </bs-dropdown-menu>
-          </bs-dropdown>
-        </div>
-      </div>
-  
-      <div class="homepage-project-summary">
-        <h3>Projects summary</h3>
-        <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
-          <bs-tab event-key="ongoing" title="Ongoing">
-            <semantic-search id="ongoing-projects">
-              <div class="search-filters-container">
-                
-                <semantic-search-query-keyword 
-                    domain='<http://www.cidoc-crm.org/cidoc-crm/E7_Activity>'
-                    query='
-                      SELECT ?subject WHERE { 
-                        ?subject a <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
-                        ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
-                        ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/open> .
-                        
-                        ?subject rdfs:label|crm:P67i_is_referred_to_by/crm:P190_has_symbolic_content|crm:P2_has_type/skos:prefLabel|crm:P4_has_time-span/crm:P82a_begin_of_the_begin ?label .
-                       
-                        SERVICE <http://www.bigdata.com/rdf/search#search> {
-                                  ?label bds:search ?__token__ ;
-                                  bds:minRelevance "0.3" ;
-                                  bds:matchAllTerms "true"  .
-                        }
-                      }
-                    '
-                    default-query='
-                      SELECT ?subject WHERE {
-                        ?subject a <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
-                        ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
-                        ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/open> .
-                      }
-                    '
-                    debounce=500
-                    placeholder="Search ongoing projects"
-                  ></semantic-search-query-keyword> 
-                  <button class="btn btn-default btn-textAndIcon btn-input-inline">
-                    <rs-icon icon-type="round" icon-name="people_alt"></rs-icon>
-                  </button>
-                  <button class="btn btn-default btn-textAndIcon btn-input-inline">
-                    <rs-icon icon-type="round" icon-name="calendar_month"></rs-icon>
-                  </button>
-                  <semantic-search-result>
-                    <bs-dropdown id='Export'>
-                      <bs-dropdown-toggle class="btn-textAndIcon btn-input-inline">
-                        <rs-icon icon-type="round" icon-name="download"></rs-icon> Export
-                      </bs-dropdown-toggle>
-                      <bs-dropdown-menu>
-                            <mp-sparql-download id='csv-result' 
-                                                query='SELECT ?subject ?title ?status (GROUP_CONCAT(?type;SEPARATOR=", ") AS ?types) ?startDate WHERE {
-                                            
-                                                          ?subject crm:P67i_is_referred_to_by ?titleURI .
-                                                          ?titleURI crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                          ?titleURI crm:P190_has_symbolic_content ?title .
-                                            
-                                                          ?subject crm:P2_has_type ?typeURI .
-                                                          ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
-                                                          ?typeURI skos:prefLabel ?type .
-            
-                                                          BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?statusURI)
-                                            
-                                                          ?subject crm:P2_has_type ?statusURI .
-                                                          ?statusURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
-                                                          ?statusURI skos:prefLabel ?status .
-            
-                                                        OPTIONAL {
-                                                          ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDateURI .
-                                                          ?startDateURI <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDate
-                                                        }
-                                                    } 
-                                                    group by ?subject ?title ?status ?startDate
-                                                    ORDER BY ?title'
-                                                header="text/csv"
-                                                filename="csv-result.csv"
-                            >
-                            <bs-menu-item>Export as CSV</bs-menu-item>
-                            </mp-sparql-download>
-                    
-                        
-                            <mp-sparql-download id='json-result' 
-                                                query='SELECT ?subject ?title ?status (GROUP_CONCAT(?type;SEPARATOR=", ") AS ?types) ?startDate WHERE {
-                                                              ?subject crm:P67i_is_referred_to_by ?titleURI .
-                                                              ?titleURI crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                              ?titleURI crm:P190_has_symbolic_content ?title .
-                                                
-                                                              ?subject crm:P2_has_type ?typeURI .
-                                                              ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
-                                                              ?typeURI skos:prefLabel ?type .
-                
-                                                              BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?statusURI)
-                                                
-                                                              ?subject crm:P2_has_type ?statusURI .
-                                                              ?statusURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
-                                                              ?statusURI skos:prefLabel ?status .
-                
-                                                            OPTIONAL {
-                                                              ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDateURI .
-                                                              ?startDateURI <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDate
-                                                            }
-                                                        } 
-                                                        group by ?subject ?title ?status ?startDate
-                                                        ORDER BY ?title'
-                                                header="application/sparql-results+json"
-                                                filename="json-result.json"
-                            >
-                            <bs-menu-item>Export as JSON</bs-menu-item>
-                            </mp-sparql-download>
-                        
-                      </bs-dropdown-menu>
-                    </bs-dropdown>
-                  </semantic-search-result>
-                
-              </div>
-              
-              <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
-                <semantic-search-result-holder>
-                  <div data-flex-self="md-full">
-                    
-                    <semantic-search-result id='ongoing-projects-result'>
-                        <div class="table-expanded table-projects">
-                          <semantic-table id='ongoing-projects-table'
-                                          query='
-                                          SELECT ?subject ?description ?startDateLabel (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?typeLabels) WHERE {
-                                              #  ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
-                                                
-                                                ?subject crm:P67i_is_referred_to_by ?ref .
-                                                ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                ?ref crm:P190_has_symbolic_content ?description .
-                                  
-                                                ?subject crm:P2_has_type ?type .
-                                                ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
-                                                ?type skos:prefLabel ?typeLabel .
-  
-                                                BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?status)
-                                  
-                                                ?subject crm:P2_has_type ?status .
-                                                ?status crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
-                                              #  ?status skos:prefLabel ?statusLabel .
-  
-                                              OPTIONAL {
-                                                ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDate .
-                                                ?startDate <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDateLabel
-                                              }
-                                          } 
-                                          group by ?subject ?description ?startDateLabel
-                                          ORDER BY ?description '
-                                      
-                                          options='{"showFilter":false}'
-  
-                                          no-result-template='
-                                          <div class="table-no-results">
-                                            <div class="no-results-container">
-                                              <rs-icon icon-type="round" icon-name="search_off" class="no-results-icon"></rs-icon>
-                                              <div class="no-results-text">No ongoing projects found</div>
-                                            </div>
-                                            <mp-overlay-dialog title="Create a new reseach project" type="modal" bs-size="large" class="modal-centered">
-                                              <mp-overlay-dialog-trigger>
-                                                <button class="btn btn-default btn-textAndIcon">
-                                                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                                                    <span>New Project</span>
-                                                </button>
-                                              </mp-overlay-dialog-trigger>
-                                              <mp-overlay-dialog-content>
-                                                <div>PROJECT FORM</div>
-                                              </mp-overlay-dialog-content>
-                                            </mp-overlay-dialog>
-                                            
-                                            </div>'
-  
-                                          number-of-displayed-rows=5
-  
-                                          column-configuration='[
-                                            {
-                                              "variableName": "subject",
-                                              "displayName": "Project details",
-                                              "cellTemplate": "{{> details}}"
-                                            },
-                                            
-                                            {
-                                              "variableName": "typeLabel",
-                                              "displayName": "Type",
-                                              "cellTemplate": "{{> type}}"
-                                            },
-  
-                                            {
-                                              "variableName": "test",
-                                              "displayName": "Researchers",
-                                              "cellTemplate": "{{> researchers}}"
-                                            },
-  
-                                            {
-                                              "variableName": "startDate",
-                                              "displayName": "Start date",
-                                              "cellTemplate": "{{> startDate}}"
-                                            },
-  
-                                            {
-                                              "variableName": "endDate",
-                                              "displayName": "End date",
-                                              "cellTemplate": "{{> startDate}}"
-                                            },
-  
-                                            {
-                                              "variableName": "priority",
-                                              "displayName": "Priority",
-                                              "cellTemplate": "{{> startDate}}"
-                                            },
-  
-                                            {
-                                              "variableName": "progress",
-                                              "displayName": "Progress",
-                                              "cellTemplate": "{{> progress}}"
-                                            }
-                                        
-                                          ]'
-  
-                          >
-                            <template id='details'>  
-                              <div style="display: flex; align-items:center; gap: 10px;">
-                                <span style="height:auto; width:40px; border:1px solid lightgrey; align-self: stretch;">IMG</span>
-                                <div style="flex:1; padding-right: 5px;">
-                                  <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
-                                              urlqueryparam-resource='{{subject.value}}' 
-                                              urlqueryparam-view='entity-editor' 
-                                                >
-  
-                                  <div class="table-title">{{description.value}}</div>
-                                  </semantic-link>
-                                  <mp-text-truncate truncate="..." lines=1 class="table-description">description description description description description description</mp-text-truncate>
-                                </div>
-                              </div>
-                              
-                            </template>
-                
-                            <template id='type'>
-                              <div class="table-badge-container">
-                                <div class="badge badge--secondary">{{typeLabels.value}}</div>
-                              </div>
-                              
-                            </template>
-  
-                            <template id='researchers'>
-                              <rs-icon icon-type="round" icon-name="people_alt" class="researcher-icon"></rs-icon>
-                            </template>
-  
-                            <template id='startDate'>
-                              <div>{{dateTimeFormat startDateLabel.value "DD-MM-YYYY"}}</div>
-                            </template>
-  
-                            <template id='progress'>
-                              
-                              <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-                              </div>
-                            </template>
-                            
-                
-                          </semantic-table>   
-                        </div>
-                      </semantic-search-result>
+                <template id='kpGeneratorTemplate'>
+                  <div class="alert alert-info" style="margin: 0; padding: 15px; font-size: 14px;">
+                    Created
+                    <semantic-link iri="http://www.researchspace.org/resource/system/fieldDefinitionContainer">
+                      <b>{{this.kp_count}} knowledge patterns</b>
+                    </semantic-link>
+                    from the {{label.value}} ontology.
                   </div>
-                </semantic-search-result-holder>
-              </div>
-            </semantic-search>
-  <!--           <div class="table-expanded">
-              <semantic-table query="
-                                prefix person: <http://example.com/person/> 
-                                prefix org: <http://example.com/org/> 
-                                prefix foaf: <http://xmlns.com/foaf/0.1/>
-                                SELECT * WHERE {                    
-                                    VALUES (?person ?prop ?value) { 
-                                    (person:alice foaf:knows person:carol)
-                                    (person:carol foaf:knows person:mike)
-                                    (person:mike foaf:knows person:carol)
-                                    (person:bob foaf:knows person:carol)
-                                    (person:alice foaf:member org:W3C)
-                                    (person:mike foaf:member org:W3C)
-                                    }
-                                }"
-                            number-of-displayed-rows=4
-                            options='{"showFilter": true}'
-              ></semantic-table>
-            </div> -->
-          </bs-tab>
-          <bs-tab event-key="completed" title="Completed">
-            Tab Content 2
-          </bs-tab>
-          <bs-tab event-key="proposed" title="Proposed">
-            Tab Content 3
-          </bs-tab>
-          <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
-            Tab Content 3
-          </bs-tab>
-          <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
-            Tab Content 3
-          </bs-tab>
-      </bs-tabs>
-      </div>
-  
-    </div>
-  
-    <div class="homepage-activity-container">
-      <div class="homepage-activity-header">
-        <h3>Activities</h3>
-      </div>
-    </div>
-  
+                </template>
+            </mp-json-renderer>
+          {{/each}}
+      </template>
+    </semantic-query>
   </div>
+[[!-- END OF KP GENERATOR --]]
+
+[[!-- CUSTOM HOMEPAGE --]]
+  <div class="homepage-container">
+
+      <div class="homepage-project-container">
+    
+        <div class="homepage-project-header">
+          <div class="homepage-project-header__welcome">
+            <h4>Welcome back<mp-anonymous-hidden>
+                <semantic-query query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
+                                  template='{{> template}}'>
+                  <template id='template'>
+                    <span>, <!-- <semantic-link-container uri='{{bindings.0.__useruri__.value}}'> -->
+                            <span style="text-transform:capitalize;">{{bindings.0.userName.value}}</span>!
+                            <!-- </semantic-link-container> -->
+                    </span>
+                    
+                      
+                  </template>
+                </semantic-query>
+              </mp-anonymous-hidden>
+            </h4>
+            <!-- <div class="homepage-project-header__currentDate">
+              <span>|</span>
+              <span>Today: [[currentDateTime format="dd MMMM yyyy"]]</span>
+            </div> -->
+          </div>
+          
+    
+          <div class="ongoing-projects">
+            <div>You have</div>
+            <bs-dropdown id='ongoingProjectsDropdown'>
+              <bs-dropdown-toggle class="link-dropdown">
+                  n projects ongoing
+              </bs-dropdown-toggle>
+              <bs-dropdown-menu>
+                  <bs-menu-item>
+                      Project 1
+                  </bs-menu-item>
+                  <bs-menu-item>
+                    Project 2
+                  </bs-menu-item>
+                  <bs-menu-item>
+                    Project 3
+                  </bs-menu-item>
+              </bs-dropdown-menu>
+            </bs-dropdown>
+          </div>
+        </div>
+    
+        <div class="homepage-project-summary">
+          <h3>Projects summary</h3>
+          <bs-tabs id="projectTabs" default-active-key='ongoing' unmount-on-exit=true>
+            <bs-tab event-key="ongoing" title="Ongoing">
+              <semantic-search id="ongoing-projects">
+                <div class="search-filters-container">
+                  
+                  <semantic-search-query-keyword 
+                      domain='<http://www.cidoc-crm.org/cidoc-crm/E7_Activity>'
+                      query='
+                        SELECT ?subject WHERE { 
+                          ?subject a <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+                          ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                          ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/open> .
+                          
+                          ?subject rdfs:label|crm:P67i_is_referred_to_by/crm:P190_has_symbolic_content|crm:P2_has_type/skos:prefLabel|crm:P4_has_time-span/crm:P82a_begin_of_the_begin ?label .
+                        
+                          SERVICE <http://www.bigdata.com/rdf/search#search> {
+                                    ?label bds:search ?__token__ ;
+                                    bds:minRelevance "0.3" ;
+                                    bds:matchAllTerms "true"  .
+                          }
+                        }
+                      '
+                      default-query='
+                        SELECT ?subject WHERE {
+                          ?subject a <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+                          ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                          ?subject crm:P2_has_type <http://www.researchspace.org/resource/vocab/status/open> .
+                        }
+                      '
+                      debounce=500
+                      placeholder="Search ongoing projects"
+                    ></semantic-search-query-keyword> 
+                    <button class="btn btn-default btn-textAndIcon btn-input-inline">
+                      <rs-icon icon-type="round" icon-name="people_alt"></rs-icon>
+                    </button>
+                    <button class="btn btn-default btn-textAndIcon btn-input-inline">
+                      <rs-icon icon-type="round" icon-name="calendar_month"></rs-icon>
+                    </button>
+                    <semantic-search-result>
+                      <bs-dropdown id='Export'>
+                        <bs-dropdown-toggle class="btn-textAndIcon btn-input-inline">
+                          <rs-icon icon-type="round" icon-name="download"></rs-icon> Export
+                        </bs-dropdown-toggle>
+                        <bs-dropdown-menu>
+                              <mp-sparql-download id='csv-result' 
+                                                  query='SELECT ?subject ?title ?status (GROUP_CONCAT(?type;SEPARATOR=", ") AS ?types) ?startDate WHERE {
+                                              
+                                                            ?subject crm:P67i_is_referred_to_by ?titleURI .
+                                                            ?titleURI crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                            ?titleURI crm:P190_has_symbolic_content ?title .
+                                              
+                                                            ?subject crm:P2_has_type ?typeURI .
+                                                            ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                                            ?typeURI skos:prefLabel ?type .
+              
+                                                            BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?statusURI)
+                                              
+                                                            ?subject crm:P2_has_type ?statusURI .
+                                                            ?statusURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                                            ?statusURI skos:prefLabel ?status .
+              
+                                                          OPTIONAL {
+                                                            ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDateURI .
+                                                            ?startDateURI <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDate
+                                                          }
+                                                      } 
+                                                      group by ?subject ?title ?status ?startDate
+                                                      ORDER BY ?title'
+                                                  header="text/csv"
+                                                  filename="csv-result.csv"
+                              >
+                              <bs-menu-item>Export as CSV</bs-menu-item>
+                              </mp-sparql-download>
+                      
+                          
+                              <mp-sparql-download id='json-result' 
+                                                  query='SELECT ?subject ?title ?status (GROUP_CONCAT(?type;SEPARATOR=", ") AS ?types) ?startDate WHERE {
+                                                                ?subject crm:P67i_is_referred_to_by ?titleURI .
+                                                                ?titleURI crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                                ?titleURI crm:P190_has_symbolic_content ?title .
+                                                  
+                                                                ?subject crm:P2_has_type ?typeURI .
+                                                                ?typeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                                                ?typeURI skos:prefLabel ?type .
+                  
+                                                                BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?statusURI)
+                                                  
+                                                                ?subject crm:P2_has_type ?statusURI .
+                                                                ?statusURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                                                ?statusURI skos:prefLabel ?status .
+                  
+                                                              OPTIONAL {
+                                                                ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDateURI .
+                                                                ?startDateURI <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDate
+                                                              }
+                                                          } 
+                                                          group by ?subject ?title ?status ?startDate
+                                                          ORDER BY ?title'
+                                                  header="application/sparql-results+json"
+                                                  filename="json-result.json"
+                              >
+                              <bs-menu-item>Export as JSON</bs-menu-item>
+                              </mp-sparql-download>
+                          
+                        </bs-dropdown-menu>
+                      </bs-dropdown>
+                    </semantic-search-result>
+                  
+                </div>
+                
+                <div data-flex-layout="row stretch-stretch" class='rs-results-area'>
+                  <semantic-search-result-holder>
+                    <div data-flex-self="md-full">
+                      
+                      <semantic-search-result id='ongoing-projects-result'>
+                          <div class="table-expanded table-projects">
+                            <semantic-table id='ongoing-projects-table'
+                                            query='
+                                            SELECT ?subject ?description ?startDateLabel (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?typeLabels) WHERE {
+                                                #  ?subject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+                                                  
+                                                  ?subject crm:P67i_is_referred_to_by ?ref .
+                                                  ?ref crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
+                                                  ?ref crm:P190_has_symbolic_content ?description .
+                                    
+                                                  ?subject crm:P2_has_type ?type .
+                                                  ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                                                  ?type skos:prefLabel ?typeLabel .
+    
+                                                  BIND(<http://www.researchspace.org/resource/vocab/status/open> as ?status)
+                                    
+                                                  ?subject crm:P2_has_type ?status .
+                                                  ?status crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                                #  ?status skos:prefLabel ?statusLabel .
+    
+                                                OPTIONAL {
+                                                  ?subject <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ?startDate .
+                                                  ?startDate <http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin> ?startDateLabel
+                                                }
+                                            } 
+                                            group by ?subject ?description ?startDateLabel
+                                            ORDER BY ?description '
+                                        
+                                            options='{"showFilter":false}'
+    
+                                            no-result-template='
+                                            <div class="table-no-results">
+                                              <div class="no-results-container">
+                                                <rs-icon icon-type="round" icon-name="search_off" class="no-results-icon"></rs-icon>
+                                                <div class="no-results-text">No ongoing projects found</div>
+                                              </div>
+                                              <mp-overlay-dialog title="Create a new reseach project" type="modal" bs-size="large" class="modal-centered">
+                                                <mp-overlay-dialog-trigger>
+                                                  <button class="btn btn-default btn-textAndIcon">
+                                                    <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                                                      <span>New Project</span>
+                                                  </button>
+                                                </mp-overlay-dialog-trigger>
+                                                <mp-overlay-dialog-content>
+                                                  <div>PROJECT FORM</div>
+                                                </mp-overlay-dialog-content>
+                                              </mp-overlay-dialog>
+                                              
+                                              </div>'
+    
+                                            number-of-displayed-rows=5
+    
+                                            column-configuration='[
+                                              {
+                                                "variableName": "subject",
+                                                "displayName": "Project details",
+                                                "cellTemplate": "{{> details}}"
+                                              },
+                                              
+                                              {
+                                                "variableName": "typeLabel",
+                                                "displayName": "Type",
+                                                "cellTemplate": "{{> type}}"
+                                              },
+    
+                                              {
+                                                "variableName": "test",
+                                                "displayName": "Researchers",
+                                                "cellTemplate": "{{> researchers}}"
+                                              },
+    
+                                              {
+                                                "variableName": "startDate",
+                                                "displayName": "Start date",
+                                                "cellTemplate": "{{> startDate}}"
+                                              },
+    
+                                              {
+                                                "variableName": "endDate",
+                                                "displayName": "End date",
+                                                "cellTemplate": "{{> startDate}}"
+                                              },
+    
+                                              {
+                                                "variableName": "priority",
+                                                "displayName": "Priority",
+                                                "cellTemplate": "{{> startDate}}"
+                                              },
+    
+                                              {
+                                                "variableName": "progress",
+                                                "displayName": "Progress",
+                                                "cellTemplate": "{{> progress}}"
+                                              }
+                                          
+                                            ]'
+    
+                            >
+                              <template id='details'>  
+                                <div style="display: flex; align-items:center; gap: 10px;">
+                                  <span style="height:auto; width:40px; border:1px solid lightgrey; align-self: stretch;">IMG</span>
+                                  <div style="flex:1; padding-right: 5px;">
+                                    <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
+                                                urlqueryparam-resource='{{subject.value}}' 
+                                                urlqueryparam-view='entity-editor' 
+                                                  >
+    
+                                    <div class="table-title">{{description.value}}</div>
+                                    </semantic-link>
+                                    <mp-text-truncate truncate="..." lines=1 class="table-description">description description description description description description</mp-text-truncate>
+                                  </div>
+                                </div>
+                                
+                              </template>
+                  
+                              <template id='type'>
+                                <div class="table-badge-container">
+                                  <div class="badge badge--secondary">{{typeLabels.value}}</div>
+                                </div>
+                                
+                              </template>
+    
+                              <template id='researchers'>
+                                <rs-icon icon-type="round" icon-name="people_alt" class="researcher-icon"></rs-icon>
+                              </template>
+    
+                              <template id='startDate'>
+                                <div>{{dateTimeFormat startDateLabel.value "DD-MM-YYYY"}}</div>
+                              </template>
+    
+                              <template id='progress'>
+                                
+                                <div class="progress">
+                                  <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                </div>
+                              </template>
+                              
+                  
+                            </semantic-table>   
+                          </div>
+                        </semantic-search-result>
+                    </div>
+                  </semantic-search-result-holder>
+                </div>
+              </semantic-search>
+    <!--           <div class="table-expanded">
+                <semantic-table query="
+                                  prefix person: <http://example.com/person/> 
+                                  prefix org: <http://example.com/org/> 
+                                  prefix foaf: <http://xmlns.com/foaf/0.1/>
+                                  SELECT * WHERE {                    
+                                      VALUES (?person ?prop ?value) { 
+                                      (person:alice foaf:knows person:carol)
+                                      (person:carol foaf:knows person:mike)
+                                      (person:mike foaf:knows person:carol)
+                                      (person:bob foaf:knows person:carol)
+                                      (person:alice foaf:member org:W3C)
+                                      (person:mike foaf:member org:W3C)
+                                      }
+                                  }"
+                              number-of-displayed-rows=4
+                              options='{"showFilter": true}'
+                ></semantic-table>
+              </div> -->
+            </bs-tab>
+            <bs-tab event-key="completed" title="Completed">
+              Tab Content 2
+            </bs-tab>
+            <bs-tab event-key="proposed" title="Proposed">
+              Tab Content 3
+            </bs-tab>
+            <bs-tab event-key="myTeamProjects" title="My Team Projects" tab-class-name="tab-right pr-0">
+              Tab Content 3
+            </bs-tab>
+            <bs-tab event-key="myProjects" title="My Projects" tab-class-name="tab-right">
+              Tab Content 3
+            </bs-tab>
+        </bs-tabs>
+        </div>
+    
+      </div>
+    
+      <div class="homepage-activity-container">
+        <div class="homepage-activity-header">
+          <h3>Activities</h3>
+        </div>
+      </div>
+    
+  </div>
+[[!-- END OF CUSTOM HOMEPAGE --]]

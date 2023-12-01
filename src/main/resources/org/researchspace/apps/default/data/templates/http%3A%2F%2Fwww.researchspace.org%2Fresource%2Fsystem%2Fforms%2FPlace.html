@@ -7,6 +7,8 @@
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
 
                         place_name="http://www.researchspace.org/pattern/system/place/name"
+                        place_osmURI="http://www.researchspace.org/pattern/system/place/osmURI"
+                        place_description="http://www.researchspace.org/pattern/system/entity/description"
                         place_address_line1="http://www.researchspace.org/pattern/system/place/address_line1"
                         place_address_line2="http://www.researchspace.org/pattern/system/place/address_line2"
                         place_city="http://www.researchspace.org/pattern/system/place/city"
@@ -24,6 +26,7 @@
                         more_image="http://www.researchspace.org/pattern/system/entity/images" 
                ]]'>
 
+              
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
     <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E53_Place"></semantic-form-hidden-input>
     
@@ -35,10 +38,16 @@
       <bs-tab event-key="1" title="Details">
         <div class="form-2column-container">
           <div>
-            {{#if osm_place_name}}
-              <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{osm_place_name}}" force-defaults=true></semantic-form-text-input>
+            {{#if osmPlaceName}}
+              <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
             {{else}}
               <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
+            {{/if}}
+
+            {{#if placeDescription}}
+              <semantic-form-text-input for="place_description" default-value="{{placeDescription}}" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
+            {{else}}
+              <semantic-form-text-input for="place_description" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
             {{/if}}
 
             <semantic-form-text-input for="place_address_line1" label="Address line 1" placeholder="Enter address line 1"></semantic-form-text-input>
@@ -68,8 +77,8 @@
             <semantic-form-autocomplete-input for="place_overlaps_with_place" label="Overlap with place" placeholder="Enter place name"></semantic-form-autocomplete-input>
             <semantic-form-autocomplete-input for="place_borders_with_place" label="Borders with place" placeholder="Enter place name"></semantic-form-autocomplete-input>
 
-            {{#if osm_geotext}}
-              <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true default-value='{{osm_geotext}}'> </semantic-form-text-input>
+            {{#if osmGeoCoordinates}}
+              <semantic-form-text-input for="place_geo_coordinates" default-value='{{osmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
             {{else}}
               <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
             {{/if}}
@@ -77,9 +86,34 @@
           </div>
 
           <div class="form-media-column">
-            <div>
-              OpenStreetMap view
-            </div>
+            {{#if osmGeoCoordinates}}
+              <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
+                <semantic-map query='SELECT ?wkt WHERE { BIND("{{osmGeoCoordinates}}" AS ?wkt) }'
+                              tuple-template='{{#if osmPlaceName}}<b style="color:#525156; padding-botto:5px;">{{osmPlaceName}}</b>{{/if}}
+                                              {{#if osmPlaceURI}}
+                                                <div>
+                                                  <a style="color:#396EFE;"
+                                                      target="_blank" 
+                                                      href="{{osmPlaceURI}}"
+                                                      title="{{osmPlaceURI}}">
+                                                    Open in wikidata
+                                                  </a>
+                                                </div>
+                                              {{/if}}'>
+                </semantic-map>
+              </div>
+            {{/if}}
+            
+    [[!--        {{#if osmPlaceURI}}
+              <semantic-form-hidden-input for="place_osmURI" default-value="{{osmPlaceURI}}"></semantic-form-hidden-input>  
+              <div style="padding-top: 5px;">
+                <span>Imported from:</span>
+                <a class="text-link-action" target="_blank" href="{{osmPlaceURI}}" title="{{osmPlaceURI}}">{{osmPlaceURI}}</a>
+              </div>
+            {{else}}
+              <semantic-form-hidden-input for="place_osmURI"></semantic-form-hidden-input> 
+            {{/if}}
+--]]
             <div class="dragAndDrop-input-container">
               <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
                                                   placeholder-item-template="<div class='placeholder-item'>

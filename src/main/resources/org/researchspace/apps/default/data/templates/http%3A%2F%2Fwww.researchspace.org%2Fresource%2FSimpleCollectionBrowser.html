@@ -257,18 +257,20 @@
                       {{#if (eq resourceOntologyClass "http://www.cidoc-crm.org/cidoc-crm/E53_Place")}}
                         <mp-overlay-dialog  id='{{viewId}}-importOSMPlace-dialog' 
                                             title="Import place from OpenStreetMap" 
-                                            type="modal" 
-                                            class="modal-xlSize">
+                                            type="lightbox">
                           <mp-overlay-dialog-trigger>
                             <button class="btn btn-action btn-textAndIcon">
-                              <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                              <span>Import place from OSM</span>
+                              <rs-icon icon-type="round" icon-name="file_upload"></rs-icon>
+                              <span>Import place from OSM </span>
                             </button>
                           </mp-overlay-dialog-trigger>
                           <mp-overlay-dialog-content>
-                            {{#bind viewId=viewId}}
-                              [[> rsp:ImportPlaceFromOSM]]
-                            {{/bind}}
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
+                                              options='{
+                                                      "scheme": "{{collection}}", 
+                                                      "viewId": "{{viewId}}"
+                                              }'>
+                            </inline-template>
                           </mp-overlay-dialog-content>
                         </mp-overlay-dialog>
                       {{/if}}
@@ -319,7 +321,7 @@
                                 proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
                                 additional-data='{"mode": "deleted", "label": "{{label}}"}'
                 ></mp-event-proxy>
-
+              
                 {{#if mode}}
                   <inline-template template-iri='{{resourceForm}}' 
                                     options='{
@@ -330,6 +332,13 @@
                                             "editable": {{editable}},
                                             "mode": "{{mode}}",
                                             "viewId": "{{viewId}}",
+                                            {{#if selectedOsmPlace}}
+                                              {{#if osmPlaceURI}}"osmPlaceURI": "{{osmPlaceURI}}",{{/if}}
+                                              {{#if osmPlaceName}}"osmPlaceName": "{{osmPlaceName}}",{{/if}}
+                                              {{#if placeLabel}}"placeLabel": "{{placeLabel}}",{{/if}}
+                                              {{#if osmPlaceURI}}"placeDescription": "{{placeDescription}}",{{/if}}
+                                              {{#if osmPlaceURI}}"osmGeoCoordinates": "{{osmGeoCoordinates}}",{{/if}}
+                                            {{/if}}
                                             "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                     }'>
                   </inline-template>
@@ -340,6 +349,24 @@
               {{/if}}
             </template>
           </mp-event-target-template-render>
+          
+          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-osm-place-proxy'
+                          on-event-source='{{viewId}}-select-osm-place-trigger' 
+                          on-event-type='osmPlaceSelect'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{viewId}}-importOSMPlace-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-osm-place-proxy'
+                          on-event-source='{{viewId}}-select-osm-place-trigger' 
+                          on-event-type='osmPlaceSelect'
+                          proxy-event-type='Component.TemplateUpdate' 
+                      
+                          proxy-targets='["{{viewId}}-term-forms"]'
+                          additional-data='{"mode": "new", "selectedOsmPlace": "true"}'
+          ></mp-event-proxy>
+
+                
         </div>
       </div>
 

@@ -5,9 +5,9 @@
                         fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                        entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
                         place_name="http://www.researchspace.org/pattern/system/place/name"
-                        place_osmURI="http://www.researchspace.org/pattern/system/place/osmURI"
                         place_description="http://www.researchspace.org/pattern/system/entity/description"
                         place_address_line1="http://www.researchspace.org/pattern/system/place/address_line1"
                         place_address_line2="http://www.researchspace.org/pattern/system/place/address_line2"
@@ -26,13 +26,100 @@
                         more_image="http://www.researchspace.org/pattern/system/entity/images" 
                ]]'>
 
-              
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
     <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E53_Place"></semantic-form-hidden-input>
     
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
+
+    <semantic-form-composite-input for="entity_formRecord"
+                                    render-header=false 
+                                    new-subject-template="/entity_form_record" 
+                                    fields='[[
+                                          fieldDefinitions
+                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                            has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                            entity_formRecord_creation="http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_creation"
+                                            entity_formRecord_modification="http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_modification"
+                                        ]]'
+                                    >
+                                  
+        <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object"></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record'></semantic-form-hidden-input>
+         
+        <semantic-form-composite-input  for="entity_formRecord_creation"
+                                        render-header=false 
+                                        new-subject-template="/entity_formRecord_creation" 
+                                        fields='[[
+                                              fieldDefinitions
+                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                creation_at_some_time_within="http://www.researchspace.org/pattern/system/activity/at_some_time_within"
+                                                creation_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
+                                                creation_carried_out_by_currentUser="http://www.researchspace.org/pattern/system/activity/carried_out_by_currentUser"
+                                                creation_afterOSMImport="http://www.researchspace.org/pattern/system/activity/continued_data_transfer"
+                                            ]]'
+                                        >
+                                  
+          <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D7_Digital_Machine_Event"></semantic-form-hidden-input>
+          <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation'></semantic-form-hidden-input>
+                              
+          {{#if node}}
+            <semantic-form-hidden-input for="creation_at_some_time_within"></semantic-form-hidden-input>
+            <semantic-form-hidden-input for="creation_carried_out_by"></semantic-form-hidden-input>
+          {{else}}
+            <semantic-form-hidden-input for="creation_at_some_time_within" default-value="{{currentDateTime 'YYYY-MM-DDTHH:mm:ss'}}"> </semantic-form-hidden-input>
+            <semantic-form-hidden-input for="creation_carried_out_by_currentUser"></semantic-form-hidden-input>
+          {{/if}}
+
+          <semantic-form-composite-input  for="creation_afterOSMImport"
+                                          render-header=false 
+                                          new-subject-template="/import_from_OSM" 
+                                          fields='[[
+                                                fieldDefinitions
+                                                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                  has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                  importFromOSM_osmURI="http://www.researchspace.org/pattern/system/import_from_OSM/osmURI"
+                                              ]]'
+                                        >
+                                  
+            <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D12_Data_Transfer_Event"></semantic-form-hidden-input>
+            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/import_from_OSM'></semantic-form-hidden-input>
+            
+            {{#if osmPlaceURI}}
+              <semantic-form-hidden-input for="importFromOSM_osmURI" default-value="{{osmPlaceURI}}"></semantic-form-hidden-input>  
+            {{else}}
+              <semantic-form-hidden-input for="importFromOSM_osmURI"></semantic-form-hidden-input>
+            {{/if}}
+
+          </semantic-form-composite-input>
+
+        </semantic-form-composite-input>
+
+        {{#if node}}
+          <semantic-form-composite-input  for="entity_formRecord_modification"
+                                          render-header=false 
+                                          new-subject-template="/entity_formRecord_modification/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                          fields='[[
+                                                fieldDefinitions
+                                                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                  has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                  modification_at_some_time_within_currentDateTime="http://www.researchspace.org/pattern/system/activity/at_some_time_within_currentDateTime"
+                                                  modification_carried_out_by_currentUser="http://www.researchspace.org/pattern/system/activity/carried_out_by_currentUser"
+                                              ]]'
+                                          >
+                                    
+            <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D7_Digital_Machine_Event"></semantic-form-hidden-input>
+            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_modification'></semantic-form-hidden-input>
+                                
+            <semantic-form-hidden-input for="modification_at_some_time_within_currentDateTime"></semantic-form-hidden-input>
+            <semantic-form-hidden-input for="modification_carried_out_by_currentUser"></semantic-form-hidden-input>
+            
+          </semantic-form-composite-input>
+        {{/if}}
+
+    </semantic-form-composite-input>
 
      <bs-tabs id="form-tabs">
       <bs-tab event-key="1" title="Details">
@@ -104,16 +191,42 @@
               </div>
             {{/if}}
             
-    [[!--        {{#if osmPlaceURI}}
-              <semantic-form-hidden-input for="place_osmURI" default-value="{{osmPlaceURI}}"></semantic-form-hidden-input>  
+            {{#if osmPlaceURI}}
               <div style="padding-top: 5px;">
                 <span>Imported from:</span>
                 <a class="text-link-action" target="_blank" href="{{osmPlaceURI}}" title="{{osmPlaceURI}}">{{osmPlaceURI}}</a>
               </div>
             {{else}}
-              <semantic-form-hidden-input for="place_osmURI"></semantic-form-hidden-input> 
+              {{#if node}}
+                <semantic-query query='SELECT ?osmURI WHERE {
+                                        <{{node}}> crm:P129i_is_subject_of ?entityFormRecord .
+                                        ?entityFormRecord a crmdig:D1_Digital_Object .
+                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                                        ?entityFormRecordCreation crm:P134_continued ?importFromOSM .
+                                        ?importFromOSM a crmdig:D12_Data_Transfer_Event .
+                                        ?importFromOSM crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_OSM> .
+
+                                        ?importFromOSM crmdig:L14_transferred ?osmURI .
+        
+                                        ?osmURI a crmdig:D1_Digital_Object .
+                                        ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                      }'
+                              template='{{> template}}'
+                >
+                      
+                  <template id='template'>
+                    <div style="padding-top: 5px;">
+                      <span>Imported from:</span>
+                      <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
+                    </div>
+                  </template>
+                </semantic-query>
+              {{/if}}
             {{/if}}
---]]
+
             <div class="dragAndDrop-input-container">
               <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
                                                   placeholder-item-template="<div class='placeholder-item'>

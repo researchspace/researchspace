@@ -331,33 +331,34 @@
       </bs-tab>
 
 [[!--
-      <bs-tab event-key="2" title="Navigation menu">
+          <bs-tab event-key="navigation" title="Navigation menu">
 
-          <div>Enable and customise a <b>navigation menu</b> to be displayed in the Resource page.</div>
+        <div>Enable and customise a <b>navigation menu</b> to be displayed in the Resource page.</div>
 
-          <div class="menu-toggle toggle-label-right" style="margin-top: 30px;">
-              <semantic-form-checkbox-input class="toggle" for='entity_has_navigation' label="Enable navigation menu"></semantic-form-checkbox-input>
-          </div>
-      
-          {{#if node}}
-            <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu> ?form}'>
-              <template id='then'>
-                <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
-                                options='{
-                                          "collection": "{{node}}/navigation menu",
-                                          "resourceMembershipProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_item",
-                                          "resourceName": "Navigation item",
-                                          "resourceView": "[[resolvePrefix "rsp:ResourceNavigationConfigForm"]]",
-                                          "resourceBroaderProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_broader_item",
-                                          "resourceLabelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .",
-                                          "viewId": "entity-navigation-config",
-                                          "editable": true
-                                          }'
-                ></inline-template>
-            </semantic-if>
-          {{/if}}
+        <div class="menu-toggle toggle-label-right" style="margin-top: 30px;">
+            <semantic-form-checkbox-input class="toggle" for='entity_has_navigation' label="Enable navigation menu"></semantic-form-checkbox-input>
+        </div>
+    
+        {{#if node}}
+          <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu> ?form}'>
+            <template id='then'>
+           
+              <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
+                              options='{
+                                        "collection": "{{node}}/navigation menu",
+                                        "resourceMembershipProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_item",
+                                        "resourceName": "Navigation item",
+                                        "resourceForm": "[[resolvePrefix "rsp:ResourceNavigationConfigForm"]]",
+                                        "resourceBroaderProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_broader_item",
+                                        "resourceLabelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .",
+                                        "viewId": "{{viewId}}-entity-navigation-config",
+                                        "editable": true
+                                        }'
+              ></inline-template>
+          </semantic-if>
+        {{/if}}
 
-      </bs-tab>
+    </bs-tab>
 
     <bs-tab event-key="3" title="Views">
       <div>Define the <b>views (eg. thumbnail, table, timeline, chart, etc.)</b>

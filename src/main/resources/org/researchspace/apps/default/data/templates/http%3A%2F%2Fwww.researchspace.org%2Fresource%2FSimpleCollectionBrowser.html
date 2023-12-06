@@ -80,7 +80,10 @@
                       {{#if editable}}
                         <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
                                           type='Component.TemplateUpdate'
-                                          data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
+                                          data='{"iri":"{{iri}}", 
+                                                "label": "{{label}}", 
+                                                "mode": "edit"
+                                                }' 
                                           targets='["{{viewId}}-term-forms"]'>
                           <span class='tree-item-action'>
                             <rs-icon icon-type="round" icon-name="edit" title="Edit {{resourceName}}"></rs-icon>
@@ -231,8 +234,9 @@
                               <div style="flex: 1;"> 
                                 <div class="success-documentation-section-title">Success!</div>
                                 <div class="success-documentation-section-content">
-                                  <span style="text-transform: capitalize;">{{label}} </span>
-                                  has been deleted.</div>
+                                  <span style="text-transform: capitalize;">{{label}}</span>
+                                  <span>has been deleted.</span>
+                                </div>
                               </div>
                               
                               <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
@@ -314,14 +318,38 @@
                                 additional-data='{"mode": "edit"}'
                 ></mp-event-proxy>
       
-                <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
-                                on-event-source='{{viewId}}-vocab-form' 
-                                on-event-types='["Form.ResourceRemoved"]'
-                                proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
-                                additional-data='{"mode": "deleted", "label": "{{label}}"}'
-                ></mp-event-proxy>
-              
+                {{#if iri}}
+                  <semantic-query query="SELECT ?label WHERE {
+                                          BIND(<{{iri}}> as ?item) .
+                                          {{resourceLabelPattern}}
+                                        }"
+                                  template='{{> template}}'
+                                  no-result-template='{{> noResults}}'>
+
+                    <template id='template'>
+                      <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                      on-event-source='{{viewId}}-vocab-form' 
+                                      on-event-types='["Form.ResourceRemoved"]'
+                                      proxy-event-type='Component.TemplateUpdate' 
+                                      proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
+                                      additional-data='{"mode": "deleted", 
+                                                        "label": "{{bindings.0.label.value}}" }'
+                      ></mp-event-proxy>
+
+                      <template id="noResults">
+                        <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                        on-event-source='{{viewId}}-vocab-form' 
+                                        on-event-types='["Form.ResourceRemoved"]'
+                                        proxy-event-type='Component.TemplateUpdate' 
+                                        proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
+                                        additional-data='{"mode": "deleted",
+                                                        "label": "{{label}}" }'
+                        ></mp-event-proxy>
+                      </template>
+                    </template>
+                  </semantic-query>
+                {{/if}}
+
                 {{#if mode}}
                   <inline-template template-iri='{{resourceForm}}' 
                                     options='{
@@ -332,6 +360,7 @@
                                             "editable": {{editable}},
                                             "mode": "{{mode}}",
                                             "viewId": "{{viewId}}",
+                                            {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
                                             {{#if selectedOsmPlace}}
                                               {{#if osmPlaceURI}}"osmPlaceURI": "{{osmPlaceURI}}",{{/if}}
                                               {{#if osmPlaceName}}"osmPlaceName": "{{osmPlaceName}}",{{/if}}
@@ -361,12 +390,10 @@
                           on-event-source='{{viewId}}-select-osm-place-trigger' 
                           on-event-type='osmPlaceSelect'
                           proxy-event-type='Component.TemplateUpdate' 
-                      
                           proxy-targets='["{{viewId}}-term-forms"]'
                           additional-data='{"mode": "new", "selectedOsmPlace": "true"}'
           ></mp-event-proxy>
 
-                
         </div>
       </div>
 

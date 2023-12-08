@@ -1,0 +1,99 @@
+
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/service/vam/>
+
+:vam a ephedra:Service ;
+	sail:sailType "researchspace:RESTSail" ;
+	rdfs:label "A wrapper for the V&M service.";
+	ephedra:hasSPARQLPattern (
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasQuery ;
+      sp:object :_q
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasPageSize ;
+      sp:object :_page_size
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasSystemNumber ;
+      sp:object :_systemNumber
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasObjectType ;
+      sp:object :_objectType
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasPrimaryTitle ;
+      sp:object :_primaryTitle
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasIIIFImageUrl ;
+      sp:object :_iiif_image_base_url
+    ]
+    
+  );
+
+  spin:constraint [
+    a spl:Argument ;
+    rdfs:comment "search term" ;
+    spl:predicate :_q ;
+    spl:valueType xsd:string
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "results" ;
+    spl:predicate :_results ;
+    spl:valueType rdfs:Resource;
+    ephedra:jsonPath "$.records"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "Primary Title" ;
+    spl:predicate :_primaryTitle ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$._primaryTitle"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "Object Type" ;
+    spl:predicate :_objectType ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$.objectType"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "System Number" ;
+    spl:predicate :_systemNumber ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$.systemNumber"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "IIIF image base url" ;
+    spl:predicate :_iiif_image_base_url ;
+    spl:valueType rdfs:Resource;
+    ephedra:jsonPath "$._images._iiif_image_base_url"
+  ] .
+      

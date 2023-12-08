@@ -67,7 +67,7 @@ CONSTRUCT {
   ?view <http://www.researchspace.org/pattern/system/resource_configuration/view_has_order> ?viewOrder.
   ?view <http://www.researchspace.org/pattern/system/resource_configuration/view_has_template> ?viewTemplate .
 
-  ?config <http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu> ?navigation .
+  ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu> ?navigation .
   ?navigation <http://www.researchspace.org/pattern/system/resource_configuration/menu_item> ?navigationEntry .
   ?navigationEntry <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config> ?navigationEntryEntityConfig .
   ?navigationEntry <http://www.researchspace.org/pattern/system/resource_configuration/is_related_by_kp> ?navigationEntryRelatedKp  .
@@ -93,7 +93,7 @@ CONSTRUCT {
   }
   
   OPTIONAL {
-    ?config <http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu> ?navigation .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu> ?navigation .
     ?navigationEntry <http://www.researchspace.org/pattern/system/resource_configuration/menu_item> ?navigation .
     ?navigationEntry <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config> ?navigationEntryEntityConfig .
 
@@ -157,7 +157,7 @@ CONSTRUCT {
               );
             viewes = _.orderBy(viewes, 'order');
 
-            const navigationEntryIris = Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu'), Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/menu_item')], pg);
+            const navigationEntryIris = Rdf.getValuesFromPropertyPath<Rdf.Iri>([Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu'), Rdf.iri('http://www.researchspace.org/pattern/system/resource_configuration/menu_item')], pg);
 
             const navigationEntries =
               navigationEntryIris.map(navigationEntryIri => {

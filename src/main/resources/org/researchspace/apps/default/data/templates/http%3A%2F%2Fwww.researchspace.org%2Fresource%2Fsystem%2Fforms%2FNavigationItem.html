@@ -1,0 +1,66 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "{{navigationMenu}}"}'
+               new-subject-template='{{navigationMenu}}/navigation_item/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+
+                  navigation_item_resource_configuration="http://www.researchspace.org/pattern/system/navigation_item/resource_configuration"
+                  navigation_item_broader_resource_configuration="http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration"
+                  navigation_item_broader_configuration_property="http://www.researchspace.org/pattern/system/navigation_item/broader_configuration_property"
+
+                  navigation_item_menu_section_type="http://www.researchspace.org/pattern/system/navigation_item/menu_section_type"
+                  navigation_item_order_in_menu_section="http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section"
+                  
+               ]]'
+>
+
+  <div>
+    <semantic-form-hidden-input for="classtype" default-values='["{{navigationItem_classtype}}"]'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="inScheme" default-value="{{navigationMenu}}"></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="navigation_item_resource_configuration" default-value="{{resourceConfiguration}}"></semantic-form-hidden-input> 
+
+    <semantic-form-tree-picker-input for='navigation_item_broader_resource_configuration' 
+                                      label="Broader item" 
+                                      placeholder="Select item"
+                                      close-dropdown-on-selection='true'
+                                      tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
+                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container>",
+                                                      "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label"
+                                                    }'
+
+                                      query-item-label='SELECT ?label WHERE {
+                                                          ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                                                        }'
+    >
+    </semantic-form-tree-picker-input> 
+
+    <semantic-form-tree-picker-input for="navigation_item_broader_configuration_property" 
+                                      label="Broader property" 
+                                      placeholder="Enter a property that define the relation with the broader item"
+                                      close-dropdown-on-selection='true'                      
+    >
+    </semantic-form-tree-picker-input>
+
+    <semantic-form-tree-picker-input for='navigation_item_menu_section_type' 
+                                      label="{{navigationMenuType}} section" 
+                                      placeholder="Select section"
+                                      close-dropdown-on-selection='true'
+                                      tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/vocab/navigation_menu_section", 
+                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/navigation_menu_section>",
+                                                      "labelPattern": "?item skos:prefLabel ?label"
+                                                    }'
+
+                                      query-item-label='SELECT ?label WHERE {
+                                                          ?item skos:prefLabel ?label .
+                                                        }'
+      >
+    </semantic-form-tree-picker-input> 
+
+    <semantic-form-text-input for="navigation_item_order_in_menu_section" label="Order in the menu section" placeholder="Enter order number"> </semantic-form-text-input>
+  </div>
+
+  <semantic-form-errors></semantic-form-errors>
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}item{{/if}}']] 
+</semantic-form>

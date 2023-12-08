@@ -4,18 +4,25 @@
 
       <!-- Entity context sidebar -->
       <div class="resource-sidebar">
-        <semantic-tree query='{{navigationQuery}}' tuple-template='{{> nodeTemplate}}'>
+        <semantic-tree query='{{navigationQuery}}' 
+                        tuple-template='{{> nodeTemplate}}'
+                        no-result-template='{{> noResults}}'>
+                        
           <template id='nodeTemplate'>
             <mp-event-trigger id='event-trigger' 
-            type='Component.TemplateUpdate' 
-            targets='["entity-viewes"]'
-            data='{"navigationEntry": "{{node.value}}"}'>
+                              type='Component.TemplateUpdate' 
+                              targets='["entity-viewes"]'
+                              data='{"navigationEntry": "{{node.value}}"}'>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
               <div>{{nodeLabel.value}}</div> 
               <div class="badge" style="margin-left: 15px; background-color: #514f4f; border-radius: 3px;">{{count.value}}</div>
             </div>
           </mp-event-trigger>
           </template>  
+
+          <template id='noResults'>
+            <div>no results available</div>
+          </template>
         </semantic-tree>
       </div>
 
@@ -32,9 +39,8 @@
                   <semantic-search config='{{searchConfig}}'>
 
 <!--  What is this? -->
-                    <semantic-search-query-constant 
-                        domain='<{{entityDomain}}>'
-                        query='{{searchQuery}}'
+                    <semantic-search-query-constant domain='<{{entityDomain}}>'
+                                                    query='{{searchQuery}}'
                       ></semantic-search-query-constant>
   
                     <div style="height: 100%;">
@@ -65,7 +71,10 @@
                                   </bs-dropdown-toggle>
                                   <bs-dropdown-menu>
                                     {{#each viewes}}
-                                    <mp-event-trigger id='{{order}}-view-trigger' type='Component.TemplateUpdate' targets='["search-results"]' data='{"templateIri": "{{templateIri}}"}'>
+                                    <mp-event-trigger id='{{order}}-view-trigger' 
+                                                      type='Component.TemplateUpdate' 
+                                                      targets='["search-results"]' 
+                                                      data='{"templateIri": "{{templateIri}}"}'>
                                       <bs-menu-item>
                                         {{label}}
                                       </bs-menu-item>
@@ -129,7 +138,10 @@
                                 >
                                   <template id='template'>
                                     <div>
-                                      <span><span style="font-weight: 600;">{{#if hasLimit}}{{totalNumberOfResults}}{{else}}{{numberOfResults}}{{/if}}</span> items</span>
+                                      <span>
+                                        <span style="font-weight: 600;">{{#if hasLimit}}{{totalNumberOfResults}}{{else}}{{numberOfResults}}{{/if}}</span> 
+                                        items
+                                      </span>
                                     </div>
                                   </template>
                                 </mp-sparql-result-counts>

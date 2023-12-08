@@ -1,8 +1,3 @@
-<style>
-  .resource-editView-container .collection-terms-area .LazyTree--alignmentTreeContainer .LazyTree--decoratedNodeBody {
-    max-width: calc(100% - 48px);
-  }
-</style>
 {{#bind viewId=dashboardId}}
   <div class="resource-editView-container">
       <mp-splitpane min-size=60 default-size=330 max-size=330 size=330 default-open='true' persist-resize=false snap-threshold=120 class="frame-split-pane" >
@@ -57,7 +52,12 @@
                                                 {{#if resourceOrderPattern}}
                                                   "resourceOrderPattern": "{{resourceOrderPattern}}",
                                                 {{/if}}
-                                                  "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__. {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> .{{/if}} {{#if resourceP2Type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{resourceP2Type}}> .{{/if}} {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
+                                                  "schemePattern": " ?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> ?__scheme__ . 
+                                                                      FILTER(?label != \"Finder\" )
+                                                                      {{#if resourceOntologyClass }} ?item a/rdfs:subClassOf* <{{resourceOntologyClass }}> . {{/if}} 
+                                                                      {{#if resourceP2Type}} ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> <{{resourceP2Type}}> . {{/if}}
+                                                                      {{#if resourceRestrictionPattern}}{{resourceRestrictionPattern}}{{/if}}"
+                                                 
                                                 }'>
                       <template id='template'>
                         <span class="tree-item-actions-container">
@@ -67,7 +67,7 @@
                               then='{{> useAsVocabularyType}}'
                             >
                               <template id='useAsVocabularyType'>
-                                <span class="badge badge--secondary" style="height: 28px;">vocabulary</span>
+                                <span class="badge badge--secondary" style="height: 28px;">Vocabulary</span>
                               </template>
                             </semantic-if>
 
@@ -79,7 +79,7 @@
                               </template>
                             </semantic-if>
 
-                            <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                [[!--            <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
                                           then='{{> system}}'
                                           else='{{> noSystem}}'
                             >
@@ -95,7 +95,7 @@
                                   </mp-event-trigger>
                                 </template>
 
-                                <template id='noSystem'>
+                                <template id='noSystem'>  --]]
                                   <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
                                                     type='Component.TemplateUpdate'
                                                     data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
@@ -104,8 +104,8 @@
                                       <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
                                     </span>
                                   </mp-event-trigger>
-                                </template>
-                            </semantic-if>
+                    [[!--            </template>
+                            </semantic-if> --]]
 
                           </div>
                           <mp-event-proxy id='{{viewId}}-resource-config-focus-tree-element' 

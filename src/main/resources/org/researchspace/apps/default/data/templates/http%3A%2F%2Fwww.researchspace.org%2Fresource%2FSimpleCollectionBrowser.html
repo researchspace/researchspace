@@ -30,7 +30,11 @@
         <div class="split-pane__leftsidebar-header">
           <button data-flex-layout='row center-left' class="btn-toggle-off">
             <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
-              <mp-label iri='{{collection}}'></mp-label>
+              {{#if collectionLabel}}
+                {{collectionLabel}}
+              {{else}}
+                <mp-label iri='{{collection}}'></mp-label>
+              {{/if}}
             </h4>
             <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
           </button>
@@ -47,7 +51,13 @@
                                 targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'>
                 <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label></span>
+                  <span>New 
+                    {{#if collectionLabel}}
+                      <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                    {{else}}
+                      <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                    {{/if}}
+                  </span>
                 </button>
               </mp-event-trigger>
             {{/if}}
@@ -139,7 +149,13 @@
                 {{#switch mode}}
                   {{#case "new" break=true}}
                     {{#if broader}}
-                      <h2 class="resource-editView-formHeader-title">New <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                      <h2 class="resource-editView-formHeader-title">
+                        New 
+                        {{#if collectionLabel}}
+                          <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                        {{else}}
+                          <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                        {{/if}}
                         {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
                           member of
                         {{else}}
@@ -161,7 +177,13 @@
                         {{/if}}
                       </h2>
                     {{else}}
-                      <h2 class="resource-editView-formHeader-title">New <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label></h2>
+                      <h2 class="resource-editView-formHeader-title">New 
+                        {{#if collectionLabel}}
+                          <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                        {{else}}
+                          <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                        {{/if}}
+                      </h2>
                     {{/if}}
                   {{/case}}
 
@@ -171,7 +193,13 @@
                         
                           <div class="link-draggable">
                             <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
-                            <span class="text-first-letter-uppercase"><mp-label iri='{{collection}}'></mp-label>:</span>
+                            <span class="text-first-letter-uppercase">
+                              {{#if collectionLabel}}:
+                                {{collectionLabel}}
+                              {{else}}
+                                <mp-label iri='{{collection}}'></mp-label>:
+                              {{/if}}
+                            </span>
                             
                             {{#if resourceLabelPattern}}
                               <semantic-query query="SELECT ?label WHERE {
@@ -199,7 +227,13 @@
                         
                           <div class="link-draggable">
                             <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
-                            <span class="text-first-letter-uppercase"><mp-label iri='{{collection}}'></mp-label>:</span>
+                            <span class="text-first-letter-uppercase">
+                              {{#if collectionLabel}}:
+                                {{collectionLabel}}
+                              {{else}}
+                                <mp-label iri='{{collection}}'></mp-label>:
+                              {{/if}}
+                            </span>
                             
                             {{#if resourceLabelPattern}}
                               <semantic-query query="SELECT ?label WHERE {

@@ -128,7 +128,7 @@ const DEFAULT_AUTOSUGGESTION = `SELECT ?value ?label WHERE {
 class FieldEditorComponent extends Component<Props, State> {
   static readonly defaultProps: Partial<Props> = {
     categoryScheme: '<http://www.researchspace.org/resource/system/FieldCategories>',
-    navigateTo: 'http://www.researchspace.org/resource/assets/Fields',
+    navigateTo: 'http://www.researchspace.org/resource/system/fieldDefinitionContainer',
   };
   private readonly languages: ReadonlyArray<string>;
 

@@ -1,3 +1,59 @@
+<div class="finder-container">
+
+  <div class="finder-section-favourites-container">
+    <div class="finder-section-name">Favourites</div>
+    <div class="finder-semantic-tree-container">
+      <semantic-tree query='SELECT ?node ?nodeLabel WHERE {
+                              ?node <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?finder .
+                              ?node a Platform:resource_configuration .
+                              ?node <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?nodeLabel .
+                              ?node <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> <http://www.researchspace.org/resource/system/vocab/navigation_menu_section/favourites> .
+                              OPTIONAL {
+                                ?node <http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section> ?order .
+                              }
+                            } ORDER BY ?order' 
+                        tuple-template='{{> nodeTemplate}}'
+                        no-result-template='{{> noResults}}'>
+                        
+          <template id='nodeTemplate'>
+            <mp-event-trigger id='event-trigger' 
+                              type='Component.TemplateUpdate' 
+                              targets='["entity-viewes"]'
+                              data='{"navigationEntry": "{{node.value}}"}'>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
+              <div>{{nodeLabel.value}}</div> 
+            </div>
+          </mp-event-trigger>
+          </template>  
+
+          <template id='noResults'>
+            <div>no results available</div>
+          </template>
+        </semantic-tree>
+    </div>
+  </div>
+
+  <div class="finder-section-resources-container">
+    <div class="finder-section-name">Resources</div>
+    <div class="finder-semantic-tree-container"></div>
+  </div>
+
+  <div class="finder-section-system-container">
+    <div class="finder-section-name">System</div>
+    <div class="finder-semantic-tree-container"></div>
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+[[!--
+
 <entity-finder>
   <template id='template'>
     <div class="resource-context-page">
@@ -175,3 +231,4 @@
     </div>
   </template>
 </entity-finder>
+--]]

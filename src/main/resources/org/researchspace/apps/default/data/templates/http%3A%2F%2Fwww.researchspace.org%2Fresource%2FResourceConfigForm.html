@@ -382,28 +382,33 @@
         </div>
 
         <div class="form-section-content page__section-container" style="width: 50%;">
-          <div class="menu-toggle toggle-label-right" style="margin-bottom: 30px;">
+          <div class="menu-toggle toggle-label-right">
               <semantic-form-checkbox-input class="toggle" for='resource_in_finder' label="Display in Finder"></semantic-form-checkbox-input>
           </div>
           {{#if node}}  
-            <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . }'>
+            <semantic-query query='SELECT ?resourceConfiguration ?navigationMenuItem WHERE { 
+                                    BIND(<{{node}}> as ?resourceConfiguration)
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . 
+                                    OPTIONAL { ?navigationMenuItem crm:P67_refers_to ?resourceConfiguration }
+                                  }'
+                            template='{{> template}}'>
               
-              <template id='then'>
-                <div class="">
-                  
-                  <inline-template  template-iri='[[resolvePrefix "forms:NavigationItem"]]'
-                                    options='{
-                                              "navigationMenu": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Finder/navigation_menu",
-                                              "navigationMenuType": "Finder",
-                                              "navigationItem_classtype": "http://www.researchspace.org/resource/system/FinderNavigationItem",
-                                              "viewId": "{{viewId}}-finder-navigation-item-form",
-                                              "resourceConfiguration": "{{node}}"
-                                            }'
-                  ></inline-template>
-                </div>
+              <template id='template'>
+                <inline-template template-iri='http://www.researchspace.org/resource/system/forms/NavigationItem'
+                                  options='{
+                                            "formId": "{{viewId}}-finder-navigation-item-form",
+                                            "navigationMenu": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Finder/navigation_menu",
+                                            "navigationMenuType": "Finder",
+                                            "navigationItem_classtype": "http://www.researchspace.org/resource/system/FinderNavigationItem",
+                                            {{#if bindings.0.navigationMenuItem.value}}"node": "{{bindings.0.navigationMenuItem.value}}",{{/if}}
+                                            "resourceConfiguration": "{{bindings.0.resourceConfiguration.value}}",
+                                            "mode":{{#if bindings.0.navigationMenuItem.value}}"edit"{{else}}"new"{{/if}},
+                                            "editable": true,
+                                            "viewId": "{{viewId}}"
+                                          }'
+                ></inline-template>
               </template>
-
-            </semantic-if>
+            </semantic-query>
           {{/if}}
         </div>
         

@@ -168,7 +168,24 @@
     <mp-overlay-dialog-content>
       <div>
         <div>
-          <p>Are you sure you want to delete the '<strong><mp-label iri='{{node}}'></mp-label></strong>' ?</p>
+          <p>
+            <span>Are you sure you want to delete '</span>
+            {{#if resourceLabelPattern}}
+              <semantic-query query="SELECT ?label WHERE {
+                                      BIND(<{{node}}> as ?item) .
+                                      {{resourceLabelPattern}}
+                                    }"
+                              template='{{> template}}'>
+
+                <template id='template'>
+                    <strong>{{bindings.0.label.value}}</strong>
+                </template>
+              </semantic-query>
+            {{else}}
+              <strong><mp-label iri='{{node}}' style="text-transform: capitalize;"></mp-label></strong>
+            {{/if}}
+            <span>' ?</span>
+          </p>
           <semantic-query 
                           query='
                             SELECT DISTINCT ?resource ?label  

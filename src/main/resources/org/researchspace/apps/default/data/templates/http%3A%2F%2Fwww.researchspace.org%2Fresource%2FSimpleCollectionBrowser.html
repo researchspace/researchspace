@@ -29,8 +29,12 @@
       <mp-splitpane-toggle-off>
         <div class="split-pane__leftsidebar-header">
           <button data-flex-layout='row center-left' class="btn-toggle-off">
-            <h4 style="width: 100%; text-align: left;">
-              <mp-label iri='{{collection}}'></mp-label>
+            <h4 style="width: 100%; text-align: left;" class="text-first-letter-uppercase">
+              {{#if collectionLabel}}
+                {{collectionLabel}}
+              {{else}}
+                <mp-label iri='{{collection}}'></mp-label>
+              {{/if}}
             </h4>
             <rs-icon icon-type="round" icon-name="chevron_left"></rs-icon>
           </button>
@@ -47,7 +51,13 @@
                                 targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'>
                 <button class="btn btn-action btn-textAndIcon" style="margin-bottom: 10px; justify-content: center;">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
-                  <span>New {{resourceName}}</span>
+                  <span>New 
+                    {{#if collectionLabel}}
+                      <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                    {{else}}
+                      <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                    {{/if}}
+                  </span>
                 </button>
               </mp-event-trigger>
             {{/if}}
@@ -80,7 +90,10 @@
                       {{#if editable}}
                         <mp-event-trigger id='{{viewId}}-form-edit-trigger--{{iri}}' 
                                           type='Component.TemplateUpdate'
-                                          data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
+                                          data='{"iri":"{{iri}}", 
+                                                "label": "{{label}}", 
+                                                "mode": "edit"
+                                                }' 
                                           targets='["{{viewId}}-term-forms"]'>
                           <span class='tree-item-action'>
                             <rs-icon icon-type="round" icon-name="edit" title="Edit {{resourceName}}"></rs-icon>
@@ -93,7 +106,7 @@
                                         data='{"iri":"{{iri}}"}'>
                         </mp-event-proxy>
                         {{#if resourceBroaderProperty}}
-                          <mp-event-trigger id='{{viewId}}-form-new-trigger' 
+                          <mp-event-trigger id='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
                                             type='Component.TemplateUpdate' 
                                             data='{"broader": "{{iri}}", "mode": "new" }' 
                                             targets='["{{viewId}}-term-forms"]'>
@@ -101,6 +114,12 @@
                               <rs-icon icon-type="round" icon-name="add" title="Add narrower {{resourceName}}"></rs-icon>
                             </span>
                           </mp-event-trigger>
+                          <mp-event-proxy id='{{viewId}}-addNarrower-focus-tree-element' 
+                                          on-event-source='{{viewId}}-form-newNarrower-trigger--{{iri}}' 
+                                          proxy-event-type='Component.TemplateUpdate' 
+                                          proxy-targets='["{{viewId}}-mytree"]' 
+                                          >
+                          </mp-event-proxy>
                         {{/if}}
                       {{else}}
                         <mp-event-trigger id='{{viewId}}-form-edit-trigger' 
@@ -130,7 +149,13 @@
                 {{#switch mode}}
                   {{#case "new" break=true}}
                     {{#if broader}}
-                      <h2 class="resource-editView-formHeader-title">New {{resourceName}} 
+                      <h2 class="resource-editView-formHeader-title">
+                        New 
+                        {{#if collectionLabel}}
+                          <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                        {{else}}
+                          <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                        {{/if}}
                         {{#ifCond resourceP2Type '===' 'http://www.researchspace.org/resource/system/vocab/resource_type/user'}}
                           member of
                         {{else}}
@@ -152,45 +177,81 @@
                         {{/if}}
                       </h2>
                     {{else}}
-                      <h2 class="resource-editView-formHeader-title">New {{resourceName}}</h2>
+                      <h2 class="resource-editView-formHeader-title">New 
+                        {{#if collectionLabel}}
+                          <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                        {{else}}
+                          <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                        {{/if}}
+                      </h2>
                     {{/if}}
                   {{/case}}
 
                   {{#case "edit" break=true}}
                     <h2 class="resource-editView-formHeader-title">
-                      {{#if resourceLabelPattern}}
-                        <semantic-query query="SELECT ?label WHERE {
-                                                BIND(<{{iri}}> as ?item) .
-                                                {{resourceLabelPattern}}
-                                              }"
-                                        template='{{> template}}'>
+                      <mp-draggable iri='{{iri}}'>
+                        
+                          <div class="link-draggable">
+                            <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                            <span class="text-first-letter-uppercase">
+                              {{#if collectionLabel}}:
+                                {{collectionLabel}}
+                              {{else}}
+                                <mp-label iri='{{collection}}'></mp-label>:
+                              {{/if}}
+                            </span>
+                            
+                            {{#if resourceLabelPattern}}
+                              <semantic-query query="SELECT ?label WHERE {
+                                                      BIND(<{{iri}}> as ?item) .
+                                                      {{resourceLabelPattern}}
+                                                    }"
+                                              template='{{> template}}'>
 
-                          <template id='template'>
-                              <span>{{bindings.0.label.value}}</span>
-                          </template>
-                        </semantic-query>
-                      {{else}}
-                        <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                      {{/if}}
+                                <template id='template'>
+                                    <span>{{bindings.0.label.value}}</span>
+                                </template>
+                              </semantic-query>
+                            {{else}}
+                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                            {{/if}}
+                          </div>
+                        
+                      </mp-draggable>
                     </h2>
                   {{/case}}
 
                   {{#case "view" break=true}}
                     <h2 class="resource-editView-formHeader-title">
-                      {{#if resourceLabelPattern}}
-                        <semantic-query query="SELECT ?label WHERE {
-                                                BIND(<{{iri}}> as ?item) .
-                                                {{resourceLabelPattern}}
-                                              }"
-                                        template='{{> template}}'>
+                      <mp-draggable iri='{{iri}}'>
+                        
+                          <div class="link-draggable">
+                            <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                            <span class="text-first-letter-uppercase">
+                              {{#if collectionLabel}}:
+                                {{collectionLabel}}
+                              {{else}}
+                                <mp-label iri='{{collection}}'></mp-label>:
+                              {{/if}}
+                            </span>
+                            
+                            {{#if resourceLabelPattern}}
+                              <semantic-query query="SELECT ?label WHERE {
+                                                      BIND(<{{iri}}> as ?item) .
+                                                      {{resourceLabelPattern}}
+                                                    }"
+                                              template='{{> template}}'>
 
-                          <template id='template'>
-                              <span>{{bindings.0.label.value}}</span>
-                          </template>
-                        </semantic-query>
-                      {{else}}
-                        <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                      {{/if}}
+                                <template id='template'>
+                                    <span>{{bindings.0.label.value}}</span>
+                                </template>
+                              </semantic-query>
+                            {{else}}
+                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                            {{/if}}
+                          </div>
+                        
+                      </mp-draggable>
                     </h2>
                   {{/case}}
                 
@@ -207,8 +268,9 @@
                               <div style="flex: 1;"> 
                                 <div class="success-documentation-section-title">Success!</div>
                                 <div class="success-documentation-section-content">
-                                  <span style="text-transform: capitalize;">{{label}} </span>
-                                  has been deleted.</div>
+                                  <span style="text-transform: capitalize;">{{label}}</span>
+                                  <span>has been deleted.</span>
+                                </div>
                               </div>
                               
                               <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
@@ -229,6 +291,28 @@
 
                 {{#if mode}}
                   <div class="btn-inline-container">
+                    {{#if (eq mode "new")}}
+                      {{#if (eq resourceOntologyClass "http://www.cidoc-crm.org/cidoc-crm/E53_Place")}}
+                        <mp-overlay-dialog  id='{{viewId}}-importOSMPlace-dialog' 
+                                            title="Import place from OpenStreetMap" 
+                                            type="lightbox">
+                          <mp-overlay-dialog-trigger>
+                            <button class="btn btn-action btn-textAndIcon">
+                              <rs-icon icon-type="round" icon-name="file_upload"></rs-icon>
+                              <span>Import from OpenStreetMap</span>
+                            </button>
+                          </mp-overlay-dialog-trigger>
+                          <mp-overlay-dialog-content>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
+                                              options='{
+                                                      "scheme": "{{collection}}", 
+                                                      "viewId": "{{viewId}}"
+                                              }'>
+                            </inline-template>
+                          </mp-overlay-dialog-content>
+                        </mp-overlay-dialog>
+                      {{/if}}
+                    {{/if}}
                     {{#if (or (eq mode "new") (eq mode "deleted") )}}
                     {{else}}
                       <mp-copy-to-clipboard text='{{iri}}' message='{{resourceName}} IRI has been copied'>
@@ -268,13 +352,37 @@
                                 additional-data='{"mode": "edit"}'
                 ></mp-event-proxy>
       
-                <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
-                                on-event-source='{{viewId}}-vocab-form' 
-                                on-event-types='["Form.ResourceRemoved"]'
-                                proxy-event-type='Component.TemplateUpdate' 
-                                proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
-                                additional-data='{"mode": "deleted", "label": "{{label}}"}'
-                ></mp-event-proxy>
+                {{#if iri}}
+                  <semantic-query query="SELECT ?label WHERE {
+                                          BIND(<{{iri}}> as ?item) .
+                                          {{resourceLabelPattern}}
+                                        }"
+                                  template='{{> template}}'
+                                  no-result-template='{{> noResults}}'>
+
+                    <template id='template'>
+                      <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                      on-event-source='{{viewId}}-vocab-form' 
+                                      on-event-types='["Form.ResourceRemoved"]'
+                                      proxy-event-type='Component.TemplateUpdate' 
+                                      proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
+                                      additional-data='{"mode": "deleted", 
+                                                        "label": "{{bindings.0.label.value}}" }'
+                      ></mp-event-proxy>
+
+                      <template id="noResults">
+                        <mp-event-proxy id='{{viewId}}-tree-refresh-on-delete' 
+                                        on-event-source='{{viewId}}-vocab-form' 
+                                        on-event-types='["Form.ResourceRemoved"]'
+                                        proxy-event-type='Component.TemplateUpdate' 
+                                        proxy-targets='["{{viewId}}-mytree", "{{viewId}}-term-forms"]'
+                                        additional-data='{"mode": "deleted",
+                                                        "label": "{{label}}" }'
+                        ></mp-event-proxy>
+                      </template>
+                    </template>
+                  </semantic-query>
+                {{/if}}
 
                 {{#if mode}}
                   <inline-template template-iri='{{resourceForm}}' 
@@ -286,6 +394,14 @@
                                             "editable": {{editable}},
                                             "mode": "{{mode}}",
                                             "viewId": "{{viewId}}",
+                                            {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
+                                            {{#if selectedOsmPlace}}
+                                              {{#if osmPlaceURI}}"osmPlaceURI": "{{osmPlaceURI}}",{{/if}}
+                                              {{#if osmPlaceName}}"osmPlaceName": "{{osmPlaceName}}",{{/if}}
+                                              {{#if placeLabel}}"placeLabel": "{{placeLabel}}",{{/if}}
+                                              {{#if osmPlaceURI}}"placeDescription": "{{placeDescription}}",{{/if}}
+                                              {{#if osmPlaceURI}}"osmGeoCoordinates": "{{osmGeoCoordinates}}",{{/if}}
+                                            {{/if}}
                                             "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                     }'>
                   </inline-template>
@@ -296,6 +412,22 @@
               {{/if}}
             </template>
           </mp-event-target-template-render>
+          
+          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-osm-place-proxy'
+                          on-event-source='{{viewId}}-select-osm-place-trigger' 
+                          on-event-type='osmPlaceSelect'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{viewId}}-importOSMPlace-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-osm-place-proxy'
+                          on-event-source='{{viewId}}-select-osm-place-trigger' 
+                          on-event-type='osmPlaceSelect'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{viewId}}-term-forms"]'
+                          additional-data='{"mode": "new", "selectedOsmPlace": "true"}'
+          ></mp-event-proxy>
+
         </div>
       </div>
 

@@ -43,6 +43,7 @@ import org.eclipse.rdf4j.model.vocabulary.SP;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.sail.SailException;
 import org.semarglproject.vocab.XSD;
 
 /**
@@ -70,7 +71,9 @@ public class KnowledgePatternGenerator {
         logger.debug("Generating KPs for ontology: {}", ontoIri);
 
         Repository repo = repositoryManager.getDefault();
-        try(RepositoryConnection conn = repo.getConnection()) {
+        RepositoryConnection conn = repo.getConnection();
+
+        try(conn) {
             // Our expectation is that ontology is fully stored in the
             // named graph where it is defined as an ontology
             Resource[] graphs =
@@ -93,7 +96,7 @@ public class KnowledgePatternGenerator {
                         saveKp(generateOpKp(ontology, ontoIri, (IRI)resource));
                 }
             }
-            //forEach(op -> saveKp(generateOpKp(ontology, ontoIri, (IRI)op)));
+            
             numberOfKPsGenerated += objectProperties.size();
 
             Set<Resource> datatypeProperties =
@@ -107,7 +110,7 @@ public class KnowledgePatternGenerator {
             logger.trace("Generating KPs for {} annotation properties", annotationProperties.size());
             annotationProperties.forEach(op -> saveKp(generateApKp(ontology, ontoIri, (IRI)op)));
             numberOfKPsGenerated += annotationProperties.size();*/
-        }
+        } 
 
         return numberOfKPsGenerated;
     }

@@ -1,0 +1,99 @@
+<semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
+               post-action="event"
+               subject='{{node}}'
+               persistence='{"type": "sparql", "targetGraphIri": "{{navigationMenu}}"}'
+               new-subject-template='{{navigationMenu}}/navigation_item/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+
+                  navigation_item_resource_configuration="http://www.researchspace.org/pattern/system/navigation_item/resource_configuration"
+                  navigation_item_broader_resource_configuration="http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration"
+                  navigation_item_broader_configuration_property="http://www.researchspace.org/pattern/system/navigation_item/broader_configuration_property"
+
+                  navigation_item_menu_section_type="http://www.researchspace.org/pattern/system/navigation_item/menu_section_type"
+                  navigation_item_order_in_menu_section="http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section"
+                  navigation_item_resource_icon="http://www.researchspace.org/pattern/system/navigation_item/resource_icon"
+                  
+               ]]'
+>
+
+  <div>
+    <semantic-form-hidden-input for="classtype" default-values='["{{navigationItem_classtype}}"]'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="inScheme" default-value="{{navigationMenu}}"></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="navigation_item_resource_configuration" default-value="{{resourceConfiguration}}"></semantic-form-hidden-input> 
+
+    <semantic-form-tree-picker-input for='navigation_item_menu_section_type' 
+                                      label="{{navigationMenuType}} section" 
+                                      placeholder="Select section"
+                                      close-dropdown-on-selection='true'
+                                      tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/vocab/navigation_menu_section", 
+                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/navigation_menu_section>",
+                                                      "labelPattern": "?item skos:prefLabel ?label"
+                                                    }'
+
+                                      query-item-label='SELECT ?label WHERE {
+                                                          ?item skos:prefLabel ?label .
+                                                        }'
+      >
+    </semantic-form-tree-picker-input> 
+
+    <semantic-form-text-input for="navigation_item_order_in_menu_section" label="Order in the section" placeholder="Enter order number"> </semantic-form-text-input>
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+      <div class="customFormHeader">Resource icon</div>
+      <div class="btn-inline-container">
+        <span class="badge badge-text-link">
+          <a class="btn-textAndIcon"
+              target="_blank" 
+              href="https://fonts.google.com/icons?icon.set=Material+Icons"
+              title="Google material icons">
+              <rs-icon icon-type="round" icon-name="search" class="icon-left"></rs-icon>
+              <span>search icon</span> 
+          </a>
+        </span>
+        <mp-popover title="Resource icon">
+          <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
+            <div class="badge">
+              <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
+            </div>
+          </mp-popover-trigger>
+          <mp-popover-content>
+              <div>
+                <p>Select an icon for the resource from Google Material Icons. Then enter here only the icon name.</p>
+                <p>Example: to use the icon named 'date range' enter here the name 'date_range'</p>
+              </div>
+          </mp-popover-content>
+        </mp-popover>
+      </div>
+    </div>
+    <semantic-form-text-input for="navigation_item_resource_icon" render-header="false" placeholder="Enter resource icon (as Google Material icon name)"> </semantic-form-text-input>
+
+    <semantic-form-tree-picker-input for='navigation_item_broader_resource_configuration' 
+                                      label="Broader item" 
+                                      placeholder="Select item"
+                                      close-dropdown-on-selection='true'
+                                      tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
+                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container>",
+                                                      "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label"
+                                                    }'
+
+                                      query-item-label='SELECT ?label WHERE {
+                                                          ?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
+                                                        }'
+    >
+    </semantic-form-tree-picker-input> 
+
+    <semantic-form-tree-picker-input for="navigation_item_broader_configuration_property" 
+                                      label="Broader property" 
+                                      placeholder="Enter a property that define the relation with the broader item"
+                                      close-dropdown-on-selection='true'                      
+    >
+    </semantic-form-tree-picker-input>
+
+  </div>
+
+  <semantic-form-errors></semantic-form-errors>
+  <button name="submit" class="btn btn-action">Save</button>
+</semantic-form>

@@ -147,7 +147,8 @@ textarea.form-control {
 fieldset[disabled] .form-control {
 
   background-color: inherit;
-  opacity: 0.5;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 // Feedback states
@@ -298,12 +299,17 @@ fieldset[disabled] .form-control {
     padding: 15px;
     border: 1px solid $input-border-color;
     border-radius: $border-radius;
+    background-color: $color-lighter;
 
-    .semantic-form-input-decorator--with-header:first-of-type {
-      .semantic-form-input-decorator__header {
-        margin-top: 0;
+    .composite-input {
+
+      & > .semantic-form-input-decorator--with-header {
+        .semantic-form-input-decorator__header {
+          margin-top: 5px;
+        }
       }
     }
+    
   }
 
   &_no-header {
@@ -320,9 +326,12 @@ fieldset[disabled] .form-control {
 
   &__group-instance > &__remove-value {
     position: absolute;
-    right: 6px;
-    top: 2px;
+    right: 0;
+    top: 0;
     padding: 8px;
+    display: flex;
+    align-items: center;
+    font-size: 17px;
     border: none;
     background-color: transparent;
 
@@ -330,6 +339,11 @@ fieldset[disabled] .form-control {
     &:focus,
     &:focus-within {
       background-color: transparent;
+    }
+
+    .material-icons-round {
+
+      font-size: inherit;
     }
   }
 }
@@ -464,6 +478,13 @@ fieldset[disabled] .form-control {
 
    font-weight: 600;
    font-size: $font-size-body;
+   display: inline-block;
+   text-transform: lowercase;
+
+   &::first-letter {
+
+    text-transform: uppercase;
+   }
   }
 
   &__label-required:after {
@@ -482,6 +503,21 @@ fieldset[disabled] .form-control {
     left: 10px;
     color: $color-secondary;
   }
+}
+
+.semantic-form-input-title {
+  margin: 20px 0 5px 0px;
+  display: flex;
+  align-items: center;
+
+  font-weight: 600;
+  font-size: $font-size-body;
+  display: inline-block;
+  text-transform: lowercase;
+
+  &::first-letter {
+    text-transform: uppercase;
+   }
 }
 
 
@@ -938,12 +974,19 @@ fieldset[disabled] .form-control {
     overflow-y: auto;
     padding: 0 15px 0 0;
 
-    &.collection-item-tab-pane,
-    &.survey-tab {
+    &.resource-context-page-tab,
+    &.object-tab-pane {
 
       overflow: hidden;
       padding: 0;
+      border: none;
     }
+  }
+
+  .tab-pane.form-tabs-subtabs-content {
+
+    padding: 7px 30px;
+    overflow: hidden;
   }
 }
 
@@ -1031,9 +1074,12 @@ fieldset[disabled] .form-control {
   width: 100%;
   padding: 5px 15px;
 
+
+  li.form-tabs-subtabs-trigger,
   .form-tabs-subtabs-trigger {
 
     padding: 9px 12px;
+    margin: 0;
 
     line-height: 1.4;
     cursor: pointer;
@@ -1043,11 +1089,16 @@ fieldset[disabled] .form-control {
     font-weight: 600;
     cursor: pointer;
 
+    &:first-of-type {
+      padding: 9px 12px;
+    }
+
     &.active,
     &.active:hover,
     &.active:focus {
 
       background-color: #d4e3f5;
+      box-shadow: none;
       color: $color-action;
       font-weight: 700;
     }
@@ -1055,11 +1106,19 @@ fieldset[disabled] .form-control {
     &:hover,
     &:focus {
       background: #e9edf2;
+      box-shadow: none;
+    }
+
+    a {
+      color: inherit;
+      margin: 0;
+     line-height: inherit;
     }
   }
 }
 
-.form-tabs-subtabs-content {
+.form-tabs-subtabs-content,
+.tab-pane.form-tabs-subtabs-content {
 
   display: flex;
   flex-direction: column;
@@ -1067,10 +1126,10 @@ fieldset[disabled] .form-control {
   flex: 1;
   overflow: hidden;
 
-  border-left: 1px solid $color-border;
+ // border-left: 1px solid $color-border;
   padding: 7px 30px;
 
-  .collection-items-table-container,
+  .objects-table-container,
   .project-digital-ass-table-container {
     overflow: auto;
     height: 100%;

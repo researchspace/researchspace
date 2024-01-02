@@ -24,8 +24,7 @@
                   resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
                   
                   resource_in_finder="http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder"
-
-                  entity_has_navigation="http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu"
+                  resource_has_navigation_menu="http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu"
                   has_facet_kp="http://www.researchspace.org/pattern/system/resource_configuration/has_facet_kp"
                   entity_has_view="http://www.researchspace.org/pattern/system/resource_configuration/has_view"
                ]]'
@@ -45,11 +44,15 @@
             <h2 class="resource-editView-formHeader-title">
               {{#switch mode}}
                 {{#case "edit" break=true}}
-                  {{bindings.0.label.value}}
+                  <span class="text-first-letter-uppercase">
+                    {{bindings.0.label.value}}
+                  </span>
                 {{/case}}
 
                 {{#case "view" break=true}}
-                  {{bindings.0.label.value}}
+                  <span class="text-first-letter-uppercase">
+                    {{bindings.0.label.value}}
+                  </span>
                 {{/case}}
               
                 {{#case "deleted" break=true}}
@@ -144,7 +147,7 @@
 
         <div class="form-section-header">
           <h4>Resource details</h4>
-          <div>Enter the resource details</div>
+          <div>Enter the resource details.</div>
         </div>
 
         <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object", "http://www.researchspace.org/resource/system/resource_configuration"]'></semantic-form-hidden-input>
@@ -225,23 +228,79 @@
 
       </bs-tab>
 
-      <bs-tab event-key="context" title="Context Page">
+      <bs-tab event-key="context" title="Context Page" class="resource-context-page-tab" tab-class-name="tab-right">
+        <div class="form-section-header" style="display: flex; flex-direction: column; height: 100%; margin: 0; padding-top: 25px;">
+          <div>
+            <h4 style="margin-top: 0;">Resource - Context page</h4>
+            <div>Enter the context page configurations for: Navigation menu, Views and Filters.</div>
+          </div>
+        
+          <div style="flex: 1; height: 100%; overflow: hidden; margin-top: 15px;">
+            <bs-tab-container id="resourceContextPage-tabs" 
+                              class="bs-left-vertical-tabs form-tabs-subtabs" 
+                              default-active-key="navigationMenu">
+              <div>
+                <bs-nav bs-style="tabs" stacked="true" class="form-tabs-subtabs-triggers-container" 
+                        style="min-width: 170px; margin: 0;padding: 0 15px;">
+                  <bs-nav-item event-key="navigationMenu" class='form-tabs-subtabs-trigger'>
+                      Navigation menu
+                  </bs-nav-item>
+                  <bs-nav-item event-key="resourceViews" class='form-tabs-subtabs-trigger'>
+                      Resource views
+                  </bs-nav-item>
+                  <bs-nav-item event-key="resourceFacets" class='form-tabs-subtabs-trigger'>
+                      Resource facets
+                  </bs-nav-item>
+                </bs-nav>
+              
+                <bs-tab-content animation="true">
 
-        <div class="form-section-header">
-          <h4>Resource - Context page</h4>
-          <div>Enter the context page configurations for:
-            <ul>
-              <li>Navigation menu</li>
-              <li>Views</li>
-              <li>Filters</li>
-            </ul>
+                  <bs-tab-pane event-key="navigationMenu" class="form-tabs-subtabs-content">
+
+                      <div class="menu-toggle toggle-label-right" style="margin: 7px 0 20px 0;">
+                          <semantic-form-checkbox-input class="toggle" for='resource_has_navigation_menu' label="Enable navigation menu"></semantic-form-checkbox-input>
+                      </div>
+                  
+                      {{#if node}}
+                        
+                          <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_has_navigation_menu> ?hasNavigationMenuValue }'>
+                            
+                            <template id='then'>
+                              <div class="navigationMenu_ItemConfigContainer">
+                                <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
+                                                options='{
+                                                          "collection": "{{node}}/navigation_menu",
+                                                          "collectionLabel": "navigation item",
+                                                          "resourceMembershipProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_item",
+                                                          "resourceName": "item",
+                                                          "resourceForm": "[[resolvePrefix "rsp:ResourceNavigationConfigForm"]]",
+                                                          "resourceBroaderProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_broader_item",
+                                                          "resourceLabelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .",
+                                                          "viewId": "{{viewId}}-resource-navigation-config",
+                                                          "editable": true
+                                                          }'
+                                ></inline-template>
+                              </div>
+                            </template>
+
+                          </semantic-if>
+                      {{/if}}
+                  </bs-tab-pane>
+
+                  <bs-tab-pane event-key="resourceViews" class="form-tabs-subtabs-content">
+                    views
+                  </bs-tab-pane>
+
+                  <bs-tab-pane event-key="resourceFacets" class="form-tabs-subtabs-content">
+                    <div>Define the <b>facets</b> applied in the Resource page to filter the results.</div>
+                    <semantic-form-autocomplete-input for="has_facet_kp" placeholder="Select knowledge pattern" label="Facet knowledge pattern"></semantic-form-autocomplete-input>
+                  </bs-tab-pane>
+
+                </bs-tab-content>
+             </div>
+            </bs-tab-container>
           </div>
         </div>
-
-        <div class="form-section-content page__section-container">
-
-        </div>
-
       </bs-tab>
 
       <bs-tab event-key="vocabulary" title="Vocabulary">
@@ -315,50 +374,48 @@
 
       </bs-tab>
 
-      <bs-tab event-key="finder" title="Finder">
+      <bs-tab event-key="finder" title="Finder" tab-class-name="tab-right">
 
         <div class="form-section-header">
           <h4>Resource - Display in Finder</h4>
           <div>Define if the resource is displayed in the Finder.</div>
         </div>
 
-        <div class="form-section-content page__section-container">
-          <div class="menu-toggle toggle-label-right" style="margin-bottom: 30px;">
+        <div class="form-section-content page__section-container" style="width: 50%;">
+          <div class="menu-toggle toggle-label-right">
               <semantic-form-checkbox-input class="toggle" for='resource_in_finder' label="Display in Finder"></semantic-form-checkbox-input>
           </div>
+          {{#if node}}  
+            <semantic-query query='SELECT ?resourceConfiguration ?navigationMenuItem WHERE { 
+                                    BIND(<{{node}}> as ?resourceConfiguration)
+                                    ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?value . 
+                                    OPTIONAL { ?navigationMenuItem crm:P67_refers_to ?resourceConfiguration }
+                                  }'
+                            template='{{> template}}'>
+              
+              <template id='template'>
+                <inline-template template-iri='http://www.researchspace.org/resource/system/forms/NavigationItem'
+                                  options='{
+                                            "formId": "{{viewId}}-finder-navigation-item-form",
+                                            "navigationMenu": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Finder/navigation_menu",
+                                            "navigationMenuType": "Finder",
+                                            "navigationItem_classtype": "http://www.researchspace.org/resource/system/FinderNavigationItem",
+                                            {{#if bindings.0.navigationMenuItem.value}}"node": "{{bindings.0.navigationMenuItem.value}}",{{/if}}
+                                            "resourceConfiguration": "{{bindings.0.resourceConfiguration.value}}",
+                                            "mode":{{#if bindings.0.navigationMenuItem.value}}"edit"{{else}}"new"{{/if}},
+                                            "editable": true,
+                                            "viewId": "{{viewId}}"
+                                          }'
+                ></inline-template>
+              </template>
+            </semantic-query>
+          {{/if}}
         </div>
         
       </bs-tab>
 
+
 [[!--
-      <bs-tab event-key="2" title="Navigation menu">
-
-          <div>Enable and customise a <b>navigation menu</b> to be displayed in the Resource page.</div>
-
-          <div class="menu-toggle toggle-label-right" style="margin-top: 30px;">
-              <semantic-form-checkbox-input class="toggle" for='entity_has_navigation' label="Enable navigation menu"></semantic-form-checkbox-input>
-          </div>
-      
-          {{#if node}}
-            <semantic-if query='ASK WHERE { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/has_navigation_menu> ?form}'>
-              <template id='then'>
-                <inline-template template-iri='[[resolvePrefix "rsp:SimpleCollectionBrowser"]]'
-                                options='{
-                                          "collection": "{{node}}/navigation menu",
-                                          "resourceMembershipProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_item",
-                                          "resourceName": "Navigation item",
-                                          "resourceView": "[[resolvePrefix "rsp:ResourceNavigationConfigForm"]]",
-                                          "resourceBroaderProperty": "http://www.researchspace.org/pattern/system/resource_configuration/menu_broader_item",
-                                          "resourceLabelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/menu_item_config>/<http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .",
-                                          "viewId": "entity-navigation-config",
-                                          "editable": true
-                                          }'
-                ></inline-template>
-            </semantic-if>
-          {{/if}}
-
-      </bs-tab>
-
     <bs-tab event-key="3" title="Views">
       <div>Define the <b>views (eg. thumbnail, table, timeline, chart, etc.)</b>
       used to display the entities associated to the Resource in the Resource page.</div>
@@ -377,10 +434,6 @@
       </semantic-form-composite-input>
     </bs-tab>
 
-    <bs-tab event-key="4" title="Facets">
-      <div>Define the <b>facets</b> applied in the Resource page to filter the results.</div>
-      <semantic-form-autocomplete-input for="has_facet_kp" placeholder="Select knowledge pattern" label="Facet knowledge pattern"></semantic-form-autocomplete-input>
-    </bs-tab>
 --]]
   </bs-tabs>
 

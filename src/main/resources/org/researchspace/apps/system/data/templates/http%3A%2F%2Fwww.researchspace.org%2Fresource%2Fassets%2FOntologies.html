@@ -211,16 +211,40 @@
                                   </semantic-query>
                                 </div>
 
-                                <semantic-if query='ASK {?a <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> }' 
+                                <semantic-if query='ASK where { 
+                                                    {
+                                                      SELECT ((COUNT(?prop)) - (COUNT(?kp)) AS ?diff) WHERE {
+                                                      {
+                                                        BIND(<{{subject.value}}> AS ?ontology)
+                                                      BIND(IF(STRENDS(STR(?ontology), "/"), STR(?ontology), CONCAT(STR(?ontology), "/")) AS ?ontologyURI)
+                                                      BIND(IRI(CONCAT(STR(?ontologyURI), "context")) AS ?ontologyContext)
+
+                                                        GRAPH ?ontologyContext {
+                                                          ?prop rdf:type ?owlType.
+                                                          FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty))
+                                                          FILTER(CONTAINS(STR(?prop), REPLACE(STR(?ontologyContext), "/context", "")))
+                                                        }
+                                                      }
+                                                      UNION
+                                                      {
+                                                        BIND(<{{subject.value}}> AS ?ontology)
+                                                        ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology;
+                                                          rdf:type ?owlType.
+                                                        FILTER(?owlType IN(owl:DatatypeProperty, owl:ObjectProperty))
+                                                      }
+                                                    }
+                                                }
+                                            FILTER(?diff != 0 ) }' 
                                           then='{{> then}}' 
                                           else='{{> else}}'>
 
-                                    <template id='then'>
+                                    <template id='else'>
                                       <div class="alert alert-info" style="margin: 0;padding: 15px; font-size: 14px;">
                                         <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
                                                                 ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
                                                                 ?kp a ?owlType .
-                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty, owl:AnnotationProperty))
+                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
+                                                                
                                                               }'
                                                         template='{{> template}}'
                                         >
@@ -237,8 +261,7 @@
                                       </div>
                                     </template>
 
-                                    <template id='else'> 
-                                      
+                                    <template id='then'>                                      
                                       <mp-json-renderer
                                         get-url='/rs/kp/getGeneratedKpsAndResponse?ontologyIri={{encodeUriComponent subject.value}}'
                                         template="{{> template}}">
@@ -252,8 +275,7 @@
                                             from this ontology.
                                           </div>
                                         </template>
-                                      </mp-json-renderer>
-                                      
+                                      </mp-json-renderer>                                     
                                     </template>
                                 </semantic-if>
                               </div>
@@ -314,7 +336,7 @@
                                       <semantic-query query='SELECT (count(?kp) as ?count) WHERE {
                                                                 ?kp <http://www.researchspace.org/resource/system/fields/ontology> <{{subject.value}}> .
                                                                 ?kp a ?owlType .
-                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty,owl:AnnotationProperty))
+                                                                FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))
                                                               }'
                                                         template='{{> template}}'
                                         >

@@ -85,7 +85,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * This component is an uncontrolled component, but this property can be used to specify
    * array of nodes that should be initially selected.
    */
-  initialSelection?: ReadonlyArray<Rdf.Iri | String>;
+  initialSelection?: ReadonlyArray<Rdf.Iri | string>;
 
   /** Allows to drop entity if it satisfies ASK-query */
   droppable?: {
@@ -124,6 +124,11 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
     queryItemLabel?: string;
 }
 
+interface SelectedItem {
+  key: string; // iri
+  value: string; // label
+}
+
 const ITEMS_LIMIT = 200;
 const MIN_SEARCH_TERM_LENGTH = 3;
 const SEARCH_DELAY_MS = 300;
@@ -144,7 +149,7 @@ interface State {
   searchResult?: SearchResult;
 
   mode?: DropdownMode;
-  labelToDisplay?: any;
+  labelToDisplay?: SelectedItem[];
 }
 
 type DropdownMode = { type: 'collapsed' } | ExpandedMode;
@@ -244,7 +249,12 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
     };
   }
 
-  doUpdateLabel() {
+  /**
+   * If the attributes initial_selection and query_item_label are specified
+   * For each of the selected items the query will be fired and
+   * and the label will be saved in the state, ready to be rendered
+   */
+  initLabelInitialSelection() {
     const { initialSelection, queryItemLabel } = this.props;
     let selection: ReadonlyArray<Rdf.Iri>;
     if (initialSelection && initialSelection.length !== 0) {
@@ -259,24 +269,31 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           
           SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.value}>`)).onValue(
             (result) => {
-              console.log('SIMONE HERE ',result.results.bindings)
-              let m = []
-              m[selectedItem.value] = result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value
               const prev = this.state.labelToDisplay
-              const newState = [...prev, m]
-              this.setState({
-                labelToDisplay: newState
-              })
+              this.setState(
+                {
+                  labelToDisplay: 
+                  [
+                    ...prev, 
+                    {
+                      key: selectedItem.value,
+                      value: result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value
+                    }
+                  ]
+                }
+              );
               return
             }
-          ).onEnd(() => {})
+          )
         });
       }
     }
 }
 
+  // initialize the initial selection item labels 
+  // before component is rendered
   componentWillMount() {
-    this.doUpdateLabel()
+    this.initLabelInitialSelection()
   }
 
   componentDidMount() {
@@ -298,12 +315,9 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       props.rootsQuery === nextProps.rootsQuery &&
       props.childrenQuery === nextProps.childrenQuery &&
       props.parentsQuery === nextProps.parentsQuery &&
-      props.searchQuery === nextProps.searchQuery &&
-      props.initialSelection === nextProps.initialSelection && 
-      props.queryItemLabel === nextProps.queryItemLabel;
+      props.searchQuery === nextProps.searchQuery
     if (!sameQueries) {
       this.setState(this.createQueryModel(nextProps));
-      // this.doUpdateLabel()
     }
   }
 
@@ -399,7 +413,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       const selectedItems = TreeSelection.leafs(selection);
       if (queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
         selectedItems.map((selectedItem) => {
-
           SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.iri.value}>`)).onValue(
             (result) => {
               const label = Rdf.literal(result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value);
@@ -443,14 +456,12 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   }
 
-  private test(el: any) {
-    console.log('SIMONE:test', {
-      el,
-      labelToDisplay: this.state.labelToDisplay
-    });
-    console.log(this.state.labelToDisplay[0], el)
-    return this.state.labelToDisplay[el.iri.value] ?? el.label.value
-    // return el.label?.value ?? 'bbb'
+  private getLabelNoteToDisplay(selectedNode: SelectionNode<Node>) {
+    // search if the selected node has an entry in labelToDisplay mapping
+    const mappedLabels = this.state.labelToDisplay?.filter((b:any) => b.key === selectedNode.iri.value)
+    // if it does, return the mapped label value 
+    // otherwise the selectedNode already has a label value
+    return mappedLabels[0]?.value ?? selectedNode.label.value
   }
 
   private renderTextField() {
@@ -511,10 +522,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
                 });
               },
             },
-            // 'yyy'
-            // this.state.labelToDisplay[item.label.value] ?? 'xxx'
-            // test(item.label.value)
-            this.test(item)
+            this.getLabelNoteToDisplay(item)
           )
         )
         .toArray()
@@ -698,7 +706,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   private renderScrollableDropdownContent(mode: ExpandedMode): ReactElement<any> {
     let limitMessage: ReactElement<any> = null;
-    let noResultsMessage: ReactElement<any> = null;
 
     if (mode.type === 'search') {
       const { matchedCount, matchLimit, forest } = this.state.searchResult;

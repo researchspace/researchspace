@@ -744,7 +744,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
           disabled: !enableSelectionSave,
           onClick: () => this.closeDropdown({ saveSelection: true }),
         },
-        'Select'
+        'Done'
       )
     );
   }

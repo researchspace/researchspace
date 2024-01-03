@@ -32,7 +32,7 @@
 
     <div class='resource-editView-formHeader'>
       {{#ifCond mode "==" "new"}}
-        <h2 class="resource-editView-formHeader-title">New configuration</h2>
+        <h2 class="resource-editView-formHeader-title">New configuration</h2> 
       {{else}}
         <semantic-query query="SELECT ?label WHERE {
                                 <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label .
@@ -52,10 +52,6 @@
                   <span class="text-first-letter-uppercase">
                     {{bindings.0.label.value}}
                   </span>
-                {{/case}}
-              
-                {{#case "deleted" break=true}}
-                  Deleted: {{bindings.0.label.value}}
                 {{/case}}
 
                 {{#default}}
@@ -90,7 +86,7 @@
           </button>
         </mp-event-trigger>
 
-        {{#if node}}
+     [[!--   {{#if node}}
           <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?value . }'
                       then='{{> then}}'>
 
@@ -136,7 +132,7 @@
             </template>
           </semantic-if>
         {{/if}}
-
+     --]]
       </div>
     </div>
 
@@ -242,30 +238,56 @@
             </div>
           </div>
 
-          <mp-event-proxy id='{{viewId}}-vocabulary-onToggleSelection-proxy' 
+          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onToggleSelection-proxy' 
                           on-event-source="SelectionToggle"
                           on-event-type='Components.Selection.Toggle'
                           proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}-resource-vocabulary-config-form"]'>
+                          proxy-targets='["{{viewId}}-resourceVocabulary-config-formContainer"]'>
           </mp-event-proxy>
-         
-          <mp-event-target-template-render id='{{viewId}}-resource-vocabulary-config-form' template='{{> vocabularyConfigForm}}'>
+
+          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onFormSave-proxy' 
+                          on-event-source='{{viewId}}-resourceVocabulary-configuration-form'
+                          on-event-types='["Form.ResourceCreated", "Form.ResourceUpdated"]'
+                          additional-data='{"vocabularyConfigSaved": "true" }'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{viewId}}-resourceVocabulary-config-formContainer"]'>
+          </mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onToggleFalse-proxy' 
+                          on-event-source="SelectionToggle"
+                          on-event-type='Components.Selection.Toggle'
+                          on-event-data='{"value": false}'
+                          data='{"iri": "{{node}}"}'
+                          proxy-event-type='Form.RemoveResource' 
+                          proxy-targets='["{{viewId}}-resourceVocabulary-configuration-form"]'>
+          </mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-resourceVocabulary-onDeleteResource-proxy' 
+                          on-event-source='{{viewId}}-confirm-entity-removal' 
+                          on-event-type='Form.RemoveResource'
+                          data='{"iri": "{{node}}"}'
+                          proxy-event-type='Form.RemoveResource' 
+                          proxy-targets='["{{viewId}}-resourceVocabulary-configuration-form"]'>
+          </mp-event-proxy>
+
+          <mp-event-target-template-render id='{{viewId}}-resourceVocabulary-config-formContainer' template='{{> vocabularyConfigForm}}'>
             <template id='vocabularyConfigForm'>
               
               {{#if (not (eq value true))}}
                 {{#if (not (eq value false))}}
-                  {{#if use_as_vocabulary_type }} 
-                  [[> resourceVocabularyConfig_form]]
+                  {{#if (or use_as_vocabulary_type vocabularyConfigSaved)}} 
+                    [[> resourceVocabularyConfig_form]]
                   {{/if}}
                 {{/if}}
               {{else}}
                 {{#if (eq value true) }}
-                [[> resourceVocabularyConfig_form]]
+                  [[> resourceVocabularyConfig_form]]
                 {{/if}}
               {{/if}}
 
               [[#*inline "resourceVocabularyConfig_form"]]
-                <semantic-form id='{{viewId}}-vocabulary-configuration' 
+              <div class="semantic-form-container-OverflowAuto">
+                <semantic-form id='{{viewId}}-resourceVocabulary-configuration-form' 
                               post-action="event"
                               subject='{{node}}'
                               persistence='{"type": "sparql", "targetInsertGraphIri": "{{scheme}}"}'
@@ -275,8 +297,16 @@
                                           resource_order_sparql_pattern="http://www.researchspace.org/pattern/system/resource_configuration/resource_order_sparql_pattern"
                                       ]]'
                             >
-                  <div class="page__section-container" style="padding-top: 5px; margin-bottom: 0;"> 
-                    <div style="overflow: hidden;">
+                  <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0;"> 
+                    <div class="form-header-withButtons">
+                      <h4 style="margin: 0; align-self: end;">Resource in vocabulary - configuration</h4>
+                      <div class="btn-form-actions"> 
+                        <button name="reset" class="btn btn-default">Reset</button>
+                        <button name="submit" class="btn btn-action">Save configuration</button>
+                      </div>
+                    </div>
+
+                    <div>
                       <semantic-form-tree-picker-input  for="resource_membership_property" 
                                                         label="Membership in the vocabulary" 
                                                         placeholder="Enter a property that define the membership of the resource in the vocabulary (e.g. skos:inScheme, crm:P71i_is_listed_in)"
@@ -319,8 +349,6 @@
                         </semantic-if>
                       {{/if}}
 
-
-
                       <semantic-form-tree-picker-input for="resource_broader_property" 
                                                         label="Broader resource property" 
                                                         placeholder="Enter a property that define the relation with a broader resource (e.g. skos:broader, crm:P127_has_broader_term, crm:P89_falls_within)"
@@ -330,23 +358,12 @@
 
                       <semantic-form-text-input for="resource_order_sparql_pattern" label="List order (SPARQL pattern)" placeholder="Enter a SPARQL pattern to get the order of list of resources in the vocabulary"> </semantic-form-text-input>
                     </div>
-                    <div class="btn-group">
-                      <div class="btn-form-actions"> 
-                        <button name="reset" class="btn btn-default">Reset</button>
-                        <button name="submit" class="btn btn-action">Save vocabulary configuration</button>
-                      </div>
-                    </div>
-                    
+                
                   </div>
                 </semantic-form>  
+              </div>
               [[/inline]]
               
-
-
-              
-
-          
-          
             </template>
           </mp-event-target-template-render>
           
@@ -354,7 +371,7 @@
       {{/if}}
 
       {{#if node}}
-        <bs-tab event-key="context" title="Context Page" class="resource-context-page-tab" tab-class-name="tab-right">
+        <bs-tab event-key="context" title="Context Page" class="tab_overflow_hidden" tab-class-name="tab-right">
           <div class="form-section-header" style="display: flex; flex-direction: column; height: 100%; margin: 0; padding-top: 25px;">
             <div>
               <h4 style="margin-top: 0;">Resource - Context page</h4>
@@ -489,7 +506,7 @@
     </bs-tab>
 
 --]]
-  </bs-tabs>
+    </bs-tabs>
 
     [[!--
     <h3>Table View Config</h3>

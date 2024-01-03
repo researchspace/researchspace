@@ -130,6 +130,39 @@
               <mp-event-target-template-render id='{{viewId}}-resource-config-term-forms' template='{{> template}}'>
                 <template id='template'>
         
+                  {{#ifCond mode "==" "deleted"}}
+                    <mp-event-target-template-render id='{{viewId}}-deleted-state' template='{{> template}}'>
+                      <template id='template'>
+                        {{#if hideMessage}}
+                        {{else}}
+                            <div class='success-documentation-section success-documentation-section-withIcon' style="width: 100%;">
+                              <div class="success-documentation-section-icon-container">
+                                <rs-icon icon-type="round" icon-name="done"></rs-icon>
+                              </div>
+            
+                              <div style="flex: 1;"> 
+                                <div class="success-documentation-section-title">Success!</div>
+                                <div class="success-documentation-section-content">
+                                  <span style="text-transform: capitalize;">{{label}}</span>
+                                  <span> has been deleted.</span>
+                                </div>
+                              </div>
+                              
+                              <mp-event-trigger id='{{viewId}}-cancel-deleted-state-message-{{iri}}'
+                                                type='Component.TemplateUpdate'
+                                                data='{ "hideMessage": "true" }'
+                                                targets='["{{viewId}}-deleted-state"]'
+                              >
+                                <button class="btn btn-documentation">
+                                  <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                                </button>
+                              </mp-event-trigger>
+                            </div>
+                        {{/if}}
+                      </template>
+                    </mp-event-target-template-render>
+                  {{/ifCond}}
+
                   {{#if (not (eq mode "deleted"))}}
                     <mp-event-proxy id='{{viewId}}-resource-config-tree-refresh-on-created' 
                                     on-event-source='{{viewId}}-vocab-form' 

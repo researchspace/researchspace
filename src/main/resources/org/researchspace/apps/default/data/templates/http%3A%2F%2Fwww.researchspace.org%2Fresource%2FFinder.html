@@ -1,60 +1,89 @@
-<div class="finder-container [[#if finderPreview]]finderPreview-container[[/if]]">
+<mp-event-target-template-render id='system-finder-render' template='{{> finder}}'>
+  <template id='finder'>
+    <div class="finder-container {{#if finderPreview}}finderPreview-container{{/if}}">
 
-  <div class="finder-section-favourites-container">
-    <div class="finder-section-name">Favourites</div>
-    <div class="finder-semantic-tree-container">
-      <semantic-tree query='SELECT ?node ?nodeLabel ?navigationItem ?icon WHERE {
-                              ?node <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?finder;
-                              rdf:type Platform:resource_configuration;
-                              <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?nodeLabel .
-          
-                              ?navigationItem crm:P67_refers_to ?node ;
-                              a <http://www.researchspace.org/resource/system/FinderNavigationItem> ;
-                              <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> <http://www.researchspace.org/resource/system/vocab/navigation_menu_section/favourites> .
-                              OPTIONAL { ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section> ?order. }
-                              OPTIONAL { ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> ?icon }
-                            }
-                            ORDER BY (?order)' 
-                        tuple-template='{{> nodeTemplate}}'
-                        no-result-template='{{> noResults}}'>
-                        
-          <template id='nodeTemplate'>
-            <mp-event-trigger id='event-trigger' 
-                              type='Component.TemplateUpdate' 
-                              targets='["entity-viewes"]'
-                              data='{"navigationEntry": "{{node.value}}"}'>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
-              <rs-icon icon-type="round" icon-name="{{icon.value}}"></rs-icon>
-              <div>{{nodeLabel.value}}</div> 
-            </div>
-          </mp-event-trigger>
-          </template>  
+      <div class="finder-section finder-section-favourites-container">
+        <div class="finder-section-name">Favourites</div>
+        [[> finderSemanticTree finderSection='http://www.researchspace.org/resource/system/vocab/navigation_menu_section/favourites']]
+      </div>
 
-          <template id='noResults'>
-            <div>no results available</div>
-          </template>
-        </semantic-tree>
+      <div class="finder-section finder-section-resources-container">
+        <div class="finder-section-name">Resources</div>
+        [[> finderSemanticTree finderSection='http://www.researchspace.org/resource/system/vocab/navigation_menu_section/resources']]
+
+      </div>
+
+      <div class="finder-section finder-section-system-container">
+        <div class="finder-section-name">System</div>
+        [[> finderSemanticTree finderSection='http://www.researchspace.org/resource/system/vocab/navigation_menu_section/system']]
+      </div>
+
+      [[#*inline "finderSemanticTree"]]
+        <div class="finder-semantic-tree-container">
+          <semantic-tree query='SELECT ?node ?nodeLabel ?navigationItem ?icon ?parent WHERE {
+                                  ?node <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?finder;
+                                  rdf:type Platform:resource_configuration;
+                                  <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?nodeLabel .
+              
+                                  ?navigationItem crm:P67_refers_to ?node ;
+                                  a <http://www.researchspace.org/resource/system/FinderNavigationItem> ;
+                                  <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> <[[finderSection]]> .
+                                  OPTIONAL { ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section> ?order. }
+                                  OPTIONAL { ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> ?icon }
+
+                                  OPTIONAL {
+                                    ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration> ?parent .
+                                    ?parent crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
+                                  }
+                                }
+                                ORDER BY (?order) ASC(?nodeLabel)' 
+                            tuple-template='{{> nodeTemplate}}'
+                            no-result-template='{{> noResults}}'>
+                            
+              <template id='nodeTemplate'>
+                <mp-event-trigger id='event-trigger' 
+                                  type='Component.TemplateUpdate' 
+                                  targets='["entity-viewes"]'
+                                  data='{"navigationEntry": "{{node.value}}"}'>
+
+                  {{#ifCond node.value "==" finderItem }}
+                    <div class="finder-semantic-tree-item text-base600-secondary active" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
+                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}"></rs-icon>{{/if}}
+                      <div>{{nodeLabel.value}}</div> 
+                    </div>
+                  {{else}}
+                    <div class="finder-semantic-tree-item text-base600-secondary" style="{{#if finderPreview}}{{else}}cursor:pointer;{{/if}}">
+                      {{#if icon.value}}<rs-icon icon-type="outlined" icon-name="{{icon.value}}"></rs-icon>{{/if}}
+                      <div>{{nodeLabel.value}}</div> 
+                    </div>
+                  {{/ifCond}}
+              </mp-event-trigger>
+              </template>  
+
+              <template id='noResults'>
+                <div>no results available</div>
+              </template>
+          </semantic-tree>
+        </div>
+      [[/inline]]
+
+      {{#if finderPreview}}
+      {{else}}
+        <div class="finder-section-settings-container">
+          <semantic-link uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                        urlqueryparam-view='resource-configuration'>
+            <button class="btn btn-default btn-textAndIcon" style="justify-content: space-between;">
+              
+              <div>Resource configuration</div>
+              <rs-icon icon-type="round" icon-name="chevron_right"></rs-icon>
+            </button>
+          </semantic-link>
+        </div>
+      {{/if}}
+
     </div>
-  </div>
-
-  <div class="finder-section-resources-container">
-    <div class="finder-section-name">Resources</div>
-    <div class="finder-semantic-tree-container"></div>
-  </div>
-
-  <div class="finder-section-system-container">
-    <div class="finder-section-name">System</div>
-    <div class="finder-semantic-tree-container"></div>
-  </div>
-
-</div>
-
-
-
-
-
-
-
+  </template>
+</mp-event-target-template-render>
 
 [[!--
 

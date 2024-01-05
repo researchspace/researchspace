@@ -301,8 +301,8 @@
                     <div class="form-header-withButtons">
                       <h4 style="margin: 0; align-self: end;">Resource in vocabulary - configuration</h4>
                       <div class="btn-form-actions"> 
-                        <button name="reset" class="btn btn-default">Reset</button>
-                        <button name="submit" class="btn btn-action">Save configuration</button>
+                        <button name="reset" class="btn btn-sm btn-default">Reset</button>
+                        <button name="submit" class="btn btn-sm btn-action">Save configuration</button>
                       </div>
                     </div>
 
@@ -370,7 +370,7 @@
         </bs-tab> 
       {{/if}}
 
-      {{#if node}}
+      [[!--  {{#if node}}
         <bs-tab event-key="context" title="Context Page" class="tab_overflow_hidden" tab-class-name="tab-right">
           <div class="form-section-header" style="display: flex; flex-direction: column; height: 100%; margin: 0; padding-top: 25px;">
             <div>
@@ -444,7 +444,7 @@
             </div>
           </div>
         </bs-tab>
-      {{/if}}
+      {{/if}} --]]
 
       {{#if node}}
         <bs-tab event-key="finder" title="Finder" tab-class-name="tab-right">
@@ -467,25 +467,37 @@
                           additional-data='{"finderConfigSaved": "true" }'
                           proxy-event-type='Component.TemplateUpdate' 
                           proxy-targets='["{{viewId}}-resourceFinder-config-formContainer",
-                                          "{{viewId}}-resourceFinder-finderPreviewContainer"]'>
+                                          "{{viewId}}-resourceFinder-finderPreviewContainer",
+                                          "system-finder-render"]'>
           </mp-event-proxy>
 
-          <mp-event-proxy id='{{viewId}}-resourceFinder-onToggleFalse-proxy' 
-                          on-event-source="display_in_finder_toogle"
-                          on-event-type='Components.Selection.Toggle'
-                          on-event-data='{"value": false}'
-                          data='{"iri": "{{navigation_menu_item}}"}'
-                          proxy-event-type='Form.RemoveResource' 
-                          proxy-targets='["{{viewId}}-resourceFinder-navigation-item-form"]'>
-          </mp-event-proxy>
+          <mp-event-proxy id='{{viewId}}-resourceFinder-onDeletedNavigationItem-proxy' 
+                          on-event-source='{{viewId}}-resourceFinder-navigation-item-form' 
+                          on-event-type='Form.ResourceRemoved'
+                          additional-data='{"navigationItemRemoved": "true" }'
+                          proxy-event-type='Component.TemplateUpdate'
+                          proxy-targets='["{{viewId}}-resourceFinder-finderPreviewContainer",
+                                          "system-finder-render"]'
+          ></mp-event-proxy>
 
-          <mp-event-proxy id='{{viewId}}-resourceFinder-onDeleteResource-proxy' 
-                          on-event-source='{{viewId}}-confirm-entity-removal' 
-                          on-event-type='Form.RemoveResource'
-                          data='{"iri": "{{node}}"}'
-                          proxy-event-type='Form.RemoveResource' 
-                          proxy-targets='["{{viewId}}-resourceFinder-configuration-form"]'>
-          </mp-event-proxy>
+          {{#if navigation_menu_item}}
+            <mp-event-proxy id='{{viewId}}-resourceFinder-onToggleFalse-proxy' 
+                            on-event-source="display_in_finder_toogle"
+                            on-event-type='Components.Selection.Toggle'
+                            on-event-data='{"value": false}'
+                            data='{"iri": "{{navigation_menu_item}}"}'
+                            proxy-event-type='Form.RemoveResource' 
+                            proxy-targets='["{{viewId}}-resourceFinder-navigation-item-form"]'>
+            </mp-event-proxy>
+          
+            <mp-event-proxy id='{{viewId}}-resourceFinder-removeNavigationItem-proxy' 
+                            on-event-source='{{viewId}}-confirm-entity-removal' 
+                            on-event-type='Form.RemoveResource'
+                            data='{"iri": "{{navigation_menu_item}}"}'
+                            proxy-event-type='Form.RemoveResource' 
+                            proxy-targets='["{{viewId}}-resourceFinder-configuration-form"]'>
+            </mp-event-proxy>
+          {{/if}}
 
           <div class="resource-finder-configuration-container">
 
@@ -495,14 +507,19 @@
                   <div class="form-header-withButtons">
                     <h4 style="margin: 0; align-self: end;">Finder preview</h4>
                     <div class="btn-form-actions"> 
-                      <button class="btn btn-default btn-textAndIcon" title="Refresh finder">
-                        <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                          Refresh
-                      </button>
+                      <mp-event-trigger id='{{viewId}}-finderPreview-refresh-trigger' 
+                                        type='Component.TemplateUpdate' 
+                                        targets='["{{viewId}}-resourceFinder-finderPreviewContainer"]'
+                                        >
+                        <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh finder">
+                          <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                            Refresh
+                        </button>
+                      </mp-event-trigger>
                     </div>
                   </div>
                   <div style="flex: 1;">
-                    [[> rsp:Finder finderPreview=true]]
+                    {{> rsp:Finder finderPreview=true finderItem=node }}
                   </div>
                 </div>
               </template>
@@ -529,7 +546,7 @@
                     {{/if}}
                   {{/if}}
 
-                  [[#*inline "resourceFinderConfig_form"]]
+                  [[#*inline "resourceFinderConfig_form"]]{{log 'this' this}}
                     <div class="semantic-form-container-OverflowAuto resource-finder-form-container" style="flex: 1;">
                       <inline-template template-iri='http://www.researchspace.org/resource/system/forms/NavigationItem'
                                         options='{
@@ -537,10 +554,17 @@
                                                   "navigationMenu": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Finder/navigation_menu",
                                                   "navigationMenuType": "Finder",
                                                   "navigationItem_classtype": "http://www.researchspace.org/resource/system/FinderNavigationItem",
-                                                  {{#if navigation_menu_item}}"node": "{{navigation_menu_item}}",{{/if}}
-                                                  {{#if finderConfigSaved}}"node": "{{iri}}",{{/if}}
+                                                  {{#if (or navigation_menu_item finderConfigSaved)}} 
+                                                    "node":
+                                                    {{#if navigation_menu_item}}
+                                                      "{{navigation_menu_item}}"
+                                                    {{else}}
+                                                      {{#if finderConfigSaved}}"{{iri}}"{{/if}}
+                                                    {{/if}}
+                                                    ,{{/if}}
+                                                  {{#if value}}"toogle_value": "{{value}}",{{/if}}
                                                   "resourceConfiguration": "{{node}}",
-                                                  "mode":{{#if navigation_menu_item}}"edit"{{else}}"new"{{/if}},
+                                                  "mode":{{#if (or navigation_menu_item finderConfigSaved)}}"edit"{{else}}"new"{{/if}},
                                                   "editable": true,
                                                   "viewId": "{{viewId}}"
                                                 }'

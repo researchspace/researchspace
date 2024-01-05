@@ -22,27 +22,32 @@
 
   height: 100%;
   width: 100%;
-  overflow: hidden;
-  padding: 11px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 15px 0;
 
   display: grid;
-  grid-template-columns: .2fr 3fr .2fr;
-  grid-template-rows: auto auto auto ;
+  grid-template-columns: minmax(15px, .2fr) 3fr minmax(15px, .2fr);
+  grid-template-rows: minmax(140px, 40vh) minmax(140px, min-content) minmax(140px, min-content) min-content;
 
  // column-gap: 30px;
-  row-gap: 20px;
+  row-gap: 4vh;
 
   grid-template-areas: '. favourites .'
                         '. resources .'
-                        '.system .';
+                        '. insystem .'
+                        '. settings .';
 }
 
 .finderPreview-container {
 
+  overflow: hidden;
+
+  grid-template-rows: auto;
   grid-template-columns: max-content;
   grid-template-areas: 'favourites'
                         'resources'
-                        'system';
+                        'insystem';
 
 }
 
@@ -55,15 +60,69 @@
 }
 
 .finder-section-system-container {
-  grid-area: system;
+  grid-area: insystem;
+}
+
+.finder-section-settings-container {
+  grid-area: settings;
+  align-self: end;
+  padding-top: 15px;
+
+  button {
+    width: 100%;
+  }
+}
+
+.finder-section {
+  display: flex;
+  flex-direction: column;
 }
 
 .finder-section-name {
   color: $color-secondary-light;
   font-size: $font-size-small;
   font-weight: 700;
+  padding-bottom: 15px;
 }
 
+.finder-semantic-tree-container {
+  flex: 1;
+  overflow: auto;
+
+  .Tree--leafNode {
+    min-height: 20px;
+  }
+
+  .tree-view_arrow:after {
+
+    color: $color-secondary;
+}
+}
+
+.finder-semantic-tree-item {
+
+  text-transform: capitalize;
+  min-height: inherit;
+
+  display: flex; 
+  align-items: center; 
+  gap: 5px;
+  margin-bottom: 7px;
+
+  i {
+    color: $color-secondary;
+    font-size: $font-size-base;
+  }
+
+  &.active {
+
+    color: $color-action;
+
+    i {
+      color: $color-action;
+    }
+  }
+}
 
 .resource-context-page {
 

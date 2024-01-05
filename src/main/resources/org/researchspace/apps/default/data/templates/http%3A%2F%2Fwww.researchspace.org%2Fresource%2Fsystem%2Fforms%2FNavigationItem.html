@@ -26,8 +26,8 @@
     <div class="form-header-withButtons">
       <h4 style="margin: 0; align-self: end;">Resource - Display in Finder</h4>
       <div class="btn-form-actions"> 
-        <button name="reset" class="btn btn-default">Reset</button>
-        <button name="submit" class="btn btn-action">Save display</button>
+        <button name="reset" class="btn btn-sm btn-default">Reset</button>
+        <button name="submit" class="btn btn-sm btn-action">Save display</button>
       </div>
     </div>
 
@@ -41,12 +41,7 @@
                                             tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/vocab/navigation_menu_section", 
                                                             "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/navigation_menu_section>",
                                                             "labelPattern": "?item skos:prefLabel ?label"
-                                                          }'
-
-                                            query-item-label='SELECT ?label WHERE {
-                                                                ?item skos:prefLabel ?label .
-                                                              }'
-          >
+                                                          }'>
           </semantic-form-tree-picker-input>     
         </div>
 
@@ -54,13 +49,52 @@
           <semantic-form-text-input for="navigation_item_order_in_menu_section" label="Order in the section" placeholder="Enter order number"></semantic-form-text-input>
         </div>
       </div>
+
+      {{#if toogle_value}}
+        <div class="warning-documentation-section warning-documentation-section-withIcon" style="margin-top: 5px;">
+          <div class="warning-documentation-section-icon-container">
+            <rs-icon icon-type="round" icon-name="priority_high"></rs-icon>
+          </div>
+  
+          <div> 
+            <div class="warning-documentation-section-title">Finder section required!</div>
+            <div class="warning-documentation-section-content">
+              To display the resource in Finder a section must be defined above.
+            </div>
+          </div>
+        </div>
+      {{else}}
+        <semantic-if query='ASK { <{{resourceConfiguration}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?displayInFinder .
+                                  FILTER NOT EXISTS {  
+                                    ?navigationItem crm:P67_refers_to <{{resourceConfiguration}}> ;
+                                    a <http://www.researchspace.org/resource/system/FinderNavigationItem> ;
+                                    <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> ?finderSection .
+                                  }
+                            }'
+                      then='{{> then}}'>
+
+          <template id='then'>
+            <div class="danger-documentation-section danger-documentation-section-withIcon" style="margin-top: 5px;">
+              <div class="danger-documentation-section-icon-container">
+                <rs-icon icon-type="round" icon-name="block"></rs-icon>
+              </div>
+      
+              <div> 
+                <div class="danger-documentation-section-title">Missing finder section!</div>
+                <div class="danger- documentation-section-content">Finder section is required to display the resource in finder.</div>
+              </div>
+            </div>
+          </template>
+        </semantic-if>
+      {{/if}}
       
       <semantic-form-tree-picker-input for='navigation_item_broader_resource_configuration' 
                                         label="Broader item" 
                                         placeholder="Select item"
                                         close-dropdown-on-selection='true'
                                         tree-patterns='{"scheme": "http://www.researchspace.org/resource/system/resource_configurations_container", 
-                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container>",
+                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/resource_configurations_container> .
+                                                                          MINUS {?item crm:P2_has_type <http://www.researchspace.org/resource/system/System_Resource> }",
                                                         "labelPattern": "?item <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?label"
                                                       }'
 

@@ -366,7 +366,7 @@ class ImageUploadWidget extends Component<Props, State> {
         React.createElement(AutocompleteInput, { for: 'refers' }),
         React.createElement(AutocompleteInput, { for: 'about' }),
         D.button(
-          { className: 'btn btn-sm btn-success iiif-upload__submit-button pull-right', name: 'submit' },
+          { className: 'btn btn-sm btn-action iiif-upload__submit-button pull-right', name: 'submit' },
           'Submit'
         ),
         D.button(

@@ -343,6 +343,29 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
    * But in addition to that we also need to fetch labels for selected items using LabelsService.
    */
   private setInitialSelection = (initialSelection: ReadonlyArray<Rdf.Iri>) => {
+    const {queryItemLabel} = this.props;
+    // if queryItemLabel is passed by, then use that pattern to retrieve the item label
+    if(queryItemLabel) {
+      return this.cancellation
+      .map(SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${initialSelection[0].value}>`)))
+      .flatMap((result) => {
+        const bindings = initialSelection.map((iri) => ({
+          item: iri,
+          label: Rdf.literal(result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value),
+          hasChildren: Rdf.literal(true),
+        }));
+        return this.restoreTreeFromLeafNodes(bindings);
+      })
+      .map(
+        (forest) => {
+          const confirmedSelection = forest as TreeSelection<Node>;
+          this.setState({ confirmedSelection });
+          return confirmedSelection;
+        }
+      );
+    }
+
+    // otherwise use the default one
     return this.cancellation
       .map(LabelsService.getLabels(initialSelection))
       .flatMap((labels) => {

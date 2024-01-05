@@ -166,8 +166,8 @@ export class LazyTree extends Component<LazyTreeProps, State> {
 
   renderTree() {
     const { patterns, forest, expandingToScroll, highlightedPath } = this.state;
-    const { focused } = this.props;
-
+    const { focused, config } = this.props;
+    
     let highlightedNodes: ReadonlyArray<Node> = [];
     if (highlightedPath) {
       const highlightTarget = forest.fromKeyPath(highlightedPath);
@@ -188,16 +188,22 @@ export class LazyTree extends Component<LazyTreeProps, State> {
       onItemClick: this.onItemClick,
     };
 
+    let queryItemLabelConfig = null
+    if (config && config['labelPattern']) {
+      queryItemLabelConfig = `SELECT ?label WHERE {${config['labelPattern']}}`
+    }
+    
     return (
       <div className={styles.component}>
         <SemanticTreeInput
           {...patterns}
           placeholder={this.props.inputPlaceholder}
           ref={this.onSelectionReady}
-          multipleSelection={true}
+          multipleSelection={false}
           onSelectionClick={this.onSearchBadgeClick}
           onSelectionChanged={this.onSearchSelectionChanged}
           initialSelection={focused && focused.length > 0 ? [Rdf.iri(focused)] : []}
+          queryItemLabel={queryItemLabelConfig}
         />
         <div className={styles.alignmentTreeContainer}>
           {expandingToScroll ? this.renderExpandToScrollMessage() : null}

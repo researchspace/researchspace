@@ -1,14 +1,23 @@
-<mp-set-management
-    [[#if (hasPermission "forms:ldp:*")]]
-      readonly='false'
-    [[else]]
-      readonly='true'
-    [[/if]]
-    id='[[id]]'
-    reparentable='true'
-    fixed-key='[[id]]'
-    default-view-mode='[[defaultViewMode]]'
-    style='flex: auto; overflow-y: auto;'
-    [[> rsp:ClipboardConfig]]
->
-</mp-set-management>
+<mp-event-proxy id='refresh-clipboard-proxy' 
+                on-event-source="btn-refresh-clipboard"
+                proxy-event-type='Component.TemplateUpdate' 
+                proxy-targets='["system-clipboard-render"]'>
+</mp-event-proxy>
+
+<mp-event-target-template-render id='system-clipboard-render' template='{{> clipboard}}'>
+  <template id='clipboard'>
+    <mp-set-management  [[#if (hasPermission "forms:ldp:*")]]
+                          readonly='false'
+                        [[else]]
+                          readonly='true'
+                        [[/if]]
+                        id='[[id]]'
+                        reparentable='true'
+                        fixed-key='[[id]]'
+                        default-view-mode='[[defaultViewMode]]'
+                        style='flex: auto; overflow-y: auto;'
+                        [[> rsp:ClipboardConfig]]
+    >
+    </mp-set-management>
+  </template>
+</mp-event-target-template-render>

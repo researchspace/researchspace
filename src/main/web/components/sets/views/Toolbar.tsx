@@ -21,6 +21,8 @@ import * as classnames from 'classnames';
 
 import { ItemViewMode } from '../Configuration';
 import Icon from 'platform/components/ui/icon/Icon';
+import { trigger } from 'platform/api/events';
+import { ComponentTemplateUpdate } from 'platform/api/events/BuiltInEvents';
 
 export interface ToolbarProps extends ReorderingProps {
   baseClass: string;
@@ -41,6 +43,17 @@ export class Toolbar extends React.Component<ToolbarProps, {}> {
           {!readonly && canReorder ? <ReorderItemsButton {...this.props} /> : null}
           <div className={`${baseClass}__toolbar-spacer`}></div>
           {readonly ? null : this.renderAddNewSetButton()}
+          <button className='btn btn-default btn-default-icon'
+                  title="Refresh clipboard"
+                  onClick={() => {
+                    trigger({ 
+                      eventType: ComponentTemplateUpdate,
+                      source: 'btn-refresh-clipboard', });
+                  }}
+            >
+            <Icon iconType='round' iconName='refresh'/>
+          </button>
+          
         </div>
         {isReordering && canReorder ? <ReorderConfirmation {...this.props} /> : null}
       </div>

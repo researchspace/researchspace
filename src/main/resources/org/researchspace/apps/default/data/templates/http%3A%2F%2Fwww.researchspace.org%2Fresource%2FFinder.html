@@ -20,7 +20,7 @@
 
       [[#*inline "finderSemanticTree"]]
         <div class="finder-semantic-tree-container">
-          <semantic-tree query='SELECT ?node ?nodeLabel ?navigationItem ?icon WHERE {
+          <semantic-tree query='SELECT ?node ?nodeLabel ?navigationItem ?icon ?parent WHERE {
                                   ?node <http://www.researchspace.org/pattern/system/resource_configuration/resource_in_finder> ?finder;
                                   rdf:type Platform:resource_configuration;
                                   <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?nodeLabel .
@@ -30,6 +30,11 @@
                                   <http://www.researchspace.org/pattern/system/navigation_item/menu_section_type> <[[finderSection]]> .
                                   OPTIONAL { ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/order_in_menu_section> ?order. }
                                   OPTIONAL { ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/resource_icon> ?icon }
+
+                                  OPTIONAL {
+                                    ?navigationItem <http://www.researchspace.org/pattern/system/navigation_item/broader_resource_configuration> ?parent .
+                                    ?parent crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/resource_configurations_container> .
+                                  }
                                 }
                                 ORDER BY (?order) ASC(?nodeLabel)' 
                             tuple-template='{{> nodeTemplate}}'
@@ -77,8 +82,6 @@
       {{/if}}
 
     </div>
-
-
   </template>
 </mp-event-target-template-render>
 

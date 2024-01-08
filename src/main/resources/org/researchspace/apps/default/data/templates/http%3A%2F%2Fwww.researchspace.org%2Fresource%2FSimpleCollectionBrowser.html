@@ -315,6 +315,55 @@
                     {{/if}}
                     {{#if (or (eq mode "new") (eq mode "deleted") )}}
                     {{else}}
+                      <semantic-query query='SELECT * WHERE {
+                                            BIND(<{{iri}}> as ?item) .
+                                            ?item a crm:E31_Document .
+                                            ?item crm:P1_is_identified_by ?file .
+                                            ?file rs:PX_has_file_name ?fileName .
+                                          }'
+                                    template='{{> template}}'
+                        >
+                          <template id='template'>
+                            <button type="button" name='open' class="btn btn-default btn-textAndIcon" title="Open document">
+                              <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
+                              Open
+                            </button>
+
+                            <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
+                                <button type="button" name='download' class="btn btn-default btn-textAndIcon" title="Download document">
+                                  <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                  Download
+                                </button>
+                            </mp-file-download>
+                          </template>
+                      </semantic-query>
+
+                      <semantic-query query='SELECT * WHERE {
+                                            BIND(<{{iri}}> as ?item) .
+                                            ?item a rso:EX_Digital_Image .
+                                          }'
+                                    template='{{> template}}'
+                        >
+                          <template id='template'>
+                            <semantic-link-container uri='[[resolvePrefix "rsp:ThinkingFrames"]]'
+                                                      urlqueryparam-view='iiif' 
+                                                      urlqueryparam-resource='{{bindings.0.item.value}}'>
+                              <button type="button" name='open' class="btn btn-default btn-textAndIcon" title="Open image">
+                                <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
+                                Open
+                              </button>
+                            </semantic-link-container>
+                          </mp-resource-thumbnail>
+
+                          <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.item.value}}">
+                              <button type="button" name='download' class="btn btn-default btn-textAndIcon" title="Download image">
+                                <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                Download
+                              </button>
+                          </mp-file-download>
+                        </template>
+                      </semantic-query>
+
                       <mp-copy-to-clipboard text='{{iri}}' message='{{resourceName}} IRI has been copied'>
                         <button class="btn btn-default btn-textAndIcon" title="Copy IRI">
                           <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>

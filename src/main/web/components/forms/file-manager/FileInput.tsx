@@ -196,42 +196,50 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
     const temporaryIri = resourceIri && FileManager.isTemporaryResource(resourceIri);
 
     return (
-      <div className={styles.FileManager}>
+      <div className={styles.FileManagerContainer}>
         <div className={styles.header}>
           {this.state.progress ? (
             <ProgressBar
+              style={{ marginBottom: '10px' }}
               active={true}
               min={0}
               max={100}
               now={this.state.progress}
               label={this.state.progressText}
             ></ProgressBar>
-          ) : resourceIri && !temporaryIri ? (
-            <a className={styles.uploadedImageIri} title={resourceIri.value} href={resourceIri.value}>
-              {resourceIri.value}
-            </a>
+          ) /*: resourceIri && !temporaryIri ? (
+            <div className={`${styles.uploadedImageIri}`} 
+             title={resourceIri.value} href={resourceIri.value} 
+            >
+              <div>Filename: </div>
+              <div>{resourceIri.value}</div>
+            </div>
           ) : resourceIri ? (
             <div className={`${styles.uploadedImageIri} alert-component alert-component__success`} title="File loaded">
-              <Icon iconType='round' iconName='done' className='icon-left' />
-              File loaded
+              <Icon iconType='round' iconName='done' className='icon-left'/>
+              File <span>{resourceIri.value}</span> loaded.
             </div>
-          ) : null}
+          ) */ : null}
         </div>
-        {resourceIri ? (
-          <div className={styles.fileContainer}>
-            <FileVisualizer
-              iri={resourceIri.value}
-              storage={temporaryIri ? this.props.tempStorage : this.props.storage}
-              namePredicateIri={this.props.namePredicateIri}
-              mediaTypePredicateIri={this.props.mediaTypePredicateIri}
-            ></FileVisualizer>
-            <button className={`btn btn-default btn-textAndIcon ${styles.caRemoveFile}`}>
-              <Icon iconType='round' iconName='close' onClick={this.removeFile} />
-            </button>
-          </div>
-        ) : (
-          this.renderBody()
-        )}
+        
+        <div className={resourceIri ? styles.FileManagerUploaded : styles.FileManager}>
+          {resourceIri ? (
+            <div className={styles.fileContainer}>
+              <FileVisualizer
+                iri={resourceIri.value}
+                storage={temporaryIri ? this.props.tempStorage : this.props.storage}
+                namePredicateIri={this.props.namePredicateIri}
+                mediaTypePredicateIri={this.props.mediaTypePredicateIri}
+              ></FileVisualizer>
+              <button className={`btn btn-default`} style={{ minHeight: '38px' }}>
+                  <Icon iconType='round' iconName='delete' onClick={this.removeFile} />
+                </button>
+            </div>
+          ) : (
+            this.renderBody()
+          )}
+        </div>
+        
       </div>
     );
   }

@@ -153,7 +153,7 @@ export class FileVisualizer extends Component<FileVisualizerProps, FileVisualize
       <div
         className={`${styles.FileVisualizer} ${this.props.className ? this.props.className : ''}`}
         style={this.props.style}
-        title={this.props.title || DEFAULT_TITLE}
+       /*  title={this.props.title || DEFAULT_TITLE} */
       >
         {content}
       </div>
@@ -172,11 +172,17 @@ export class FileVisualizer extends Component<FileVisualizerProps, FileVisualize
   renderFileContent(resource: FileResource) {
     const icon = getFileIcon(resource.mediaType);
     const fileUrl = FileManager.getFileUrl(resource.fileName, this.props.storage);
+    // return (
+    //   <a key="resource-iri" href={fileUrl} className={styles.fileIcon}>
+    //     <Icon iconType='round' iconName={icon}/>
+    //   </a>
+    // );
     return (
-      <a key="resource-iri" href={fileUrl} className={styles.fileIcon}>
+      <div className={`${styles.fileNameContent} text-flex`}>
         <Icon iconType='round' iconName={icon}/>
-      </a>
-    );
+        <div>{resource.fileName}</div>
+      </div>
+    )
   }
 
   renderEmptyContent() {

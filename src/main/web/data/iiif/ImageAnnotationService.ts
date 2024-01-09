@@ -49,22 +49,22 @@ export type ExplicitRegion = {
 };
 
 const IMAGE_REGION_INFO_QUERY = SparqlUtil.Sparql`
-  prefix rso: <http://www.researchspace.org/ontology/>
+  prefix rs: <http://www.researchspace.org/ontology/>
   prefix crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
 
   select ?type ?imageID ?area ?bbox ?viewport ?svg ?imageIRI {
     OPTIONAL {
-      ?__iri__ a rso:EX_Digital_Image .
+      ?__iri__ a rs:EX_Digital_Image .
       BIND("image" AS ?type)
       BIND(?__iri__ as ?imageIRI)
     }
     OPTIONAL {
-      ?__iri__ a rso:EX_Digital_Image_Region;
+      ?__iri__ a rs:EX_Digital_Image_Region;
             rdf:value ?svg.
       ?__iri__ crmdig:L49_is_primary_area_of ?imageIRI .
       BIND("region" AS ?type)
-      OPTIONAL { ?__iri__ rso:boundingBox ?bbox }
-      OPTIONAL { ?__iri__ rso:viewport ?viewport }
+      OPTIONAL { ?__iri__ rs:boundingBox ?bbox }
+      OPTIONAL { ?__iri__ rs:viewport ?viewport }
     }
     FILTER(?__imageIdPattern__)
   }

@@ -133,12 +133,12 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       PREFIX mp: <http://www.researchspace.org/resource/system/>
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
-      PREFIX rso: <http://www.researchspace.org/ontology/>
+      PREFIX rs: <http://www.researchspace.org/ontology/>
 
       CONSTRUCT {
         ?__resourceIri__ a crm:E33_Linguistic_Object,
                 crmdig:D1_Digital_Object,
-                rso:Semantic_Narrative.
+                rs:Semantic_Narrative.
 
         ?__resourceIri__ mp:fileName ?__fileName__.
         ?__resourceIri__ mp:mediaType "text/html".

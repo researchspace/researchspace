@@ -80,11 +80,11 @@ const FORM_FIELDS: FieldDefinitionProp[] = [
     prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    prefix rso: <http://www.researchspace.org/ontology/>
+    prefix rs: <http://www.researchspace.org/ontology/>
     prefix crm: <http://www.cidoc-crm.org/cidoc-crm/>
 
     SELECT DISTINCT ?value ?label ?type WHERE {
-      ?value rso:displayLabel ?label .
+      ?value rs:displayLabel ?label .
       ?value rdf:type ?type .
       ?type rdfs:subClassOf* crm:E39_Actor .
       SERVICE <http://www.bigdata.com/rdf/search#search> {
@@ -117,11 +117,11 @@ const FORM_FIELDS: FieldDefinitionProp[] = [
     prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    prefix rso: <http://www.researchspace.org/ontology/>
+    prefix rs: <http://www.researchspace.org/ontology/>
     prefix crm: <http://www.cidoc-crm.org/cidoc-crm/>
 
     SELECT DISTINCT ?value ?label ?type WHERE {
-      ?value rso:displayLabel ?label .
+      ?value rs:displayLabel ?label .
       ?value rdf:type ?type .
       ?type rdfs:subClassOf* crm:E39_Actor .
       SERVICE <http://www.bigdata.com/rdf/search#search> {
@@ -167,11 +167,11 @@ const FORM_FIELDS: FieldDefinitionProp[] = [
     xsdDatatype: 'xsd:anyURI',
     autosuggestionPattern: `prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    prefix rso: <http://www.researchspace.org/ontology/>
+    prefix rs: <http://www.researchspace.org/ontology/>
 
     SELECT DISTINCT ?value ?label WHERE {
-      ?value a rso:Concept;
-        rso:displayLabel ?label .
+      ?value a rs:Concept;
+        rs:displayLabel ?label .
       SERVICE <http://www.bigdata.com/rdf/search#search> {
         ?label bds:search '*?token*' ;
           bds:relevance ?score .
@@ -187,11 +187,11 @@ const FORM_FIELDS: FieldDefinitionProp[] = [
     prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    prefix rso: <http://www.researchspace.org/ontology/>
+    prefix rs: <http://www.researchspace.org/ontology/>
     prefix crm: <http://www.cidoc-crm.org/cidoc-crm/>
 
     SELECT DISTINCT ?value ?label ?type WHERE {
-      ?value rso:displayLabel ?label .
+      ?value rs:displayLabel ?label .
       ?value rdf:type ?type .
       ?type rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
       SERVICE <http://www.bigdata.com/rdf/search#search> {
@@ -207,10 +207,10 @@ const FORM_FIELDS: FieldDefinitionProp[] = [
     xsdDatatype: 'xsd:anyURI',
     autosuggestionPattern: `prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    prefix rso: <http://www.researchspace.org/ontology/>
+    prefix rs: <http://www.researchspace.org/ontology/>
 
     SELECT DISTINCT ?value ?label WHERE {
-      ?value rso:displayLabel ?label .
+      ?value rs:displayLabel ?label .
       SERVICE <http://www.bigdata.com/rdf/search#search> {
         ?label bds:search '*?token*' ;
           bds:relevance ?score .
@@ -224,10 +224,10 @@ const FORM_FIELDS: FieldDefinitionProp[] = [
     xsdDatatype: 'xsd:anyURI',
     autosuggestionPattern: `prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     prefix bds: <http://www.bigdata.com/rdf/search#>
-    prefix rso: <http://www.researchspace.org/ontology/>
+    prefix rs: <http://www.researchspace.org/ontology/>
 
     SELECT DISTINCT ?value ?label WHERE {
-      ?value rso:displayLabel ?label .
+      ?value rs:displayLabel ?label .
       SERVICE <http://www.bigdata.com/rdf/search#search> {
         ?label bds:search '*?token*' ;
           bds:relevance ?score .

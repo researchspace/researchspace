@@ -8,14 +8,14 @@
             <{{iri}}> a ontodia:Diagram .
             <{{iri}}> ontodia:layoutData/ontodia:hasElement/ontodia:resource ?o .
             ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
-            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+            ?o crm:P138i_has_representation|rs:PX_has_main_representation ?image .
           } UNION {
             <{{iri}}> a Platform:Set .
             <{{iri}}> ldp:contains / Platform:setItem ?o .
             ?o a/rdfs:subClassOf* crm:E18_Physical_Thing .
-            ?o crm:P138i_has_representation|rso:PX_has_main_representation ?image . 
+            ?o crm:P138i_has_representation|rs:PX_has_main_representation ?image . 
           } UNION {
-            <{{iri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+            <{{iri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
             BIND(<{{iri}}> as ?o) .
           }
         }'
@@ -29,9 +29,9 @@
               iris='{{bindings.0.items.value}}'
               query='
                 SELECT DISTINCT ?image WHERE {
-                  ?subject (crm:P138i_has_representation|rso:PX_has_main_representation) ?image .
+                  ?subject (crm:P138i_has_representation|rs:PX_has_main_representation) ?image .
                   ?image a ?type .
-                  FILTER(?type in (rso:EX_Digital_Image, rso:EX_Digital_Image_Region))
+                  FILTER(?type in (rs:EX_Digital_Image, rs:EX_Digital_Image_Region))
               }'
               annotation-view-tooltip-template='
                 {{{{raw}}}}                                
@@ -99,7 +99,7 @@
                                   SELECT DISTINCT ?region ?objectIri ?regionLabel {
                                     <{{id}}> crmdig:L49_is_primary_area_of ?image .
                                     ?objectIri crm:P138i_has_representation ?image .
-                                    <{{id}}> rso:displayLabel ?regionLabel .
+                                    <{{id}}> rs:displayLabel ?regionLabel .
                                     BIND(<{{id}}> as ?region) .
                                   } LIMIT 1 
                                 "

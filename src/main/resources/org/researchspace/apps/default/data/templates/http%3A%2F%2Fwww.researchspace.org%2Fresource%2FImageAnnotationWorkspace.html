@@ -4,9 +4,9 @@
  We assume that:
   * we are dealing with objects that are instances of `crm:E18_Physical_Thing` (or any subclass of it) 
   * every object has at least one image representation (crm:P138i_has_representation)
-  * images (rso:EX_Digital_Image) are serverd from IIIF server
+  * images (rs:EX_Digital_Image) are serverd from IIIF server
   * object's features are connected to the object with `crm:P56i_is_found_on` or `crm:P56_bears_feature` property
-  * object feature can have image region (rso:EX_Digital_Image_Region) as a representation (crm:P138i_has_representation)
+  * object feature can have image region (rs:EX_Digital_Image_Region) as a representation (crm:P138i_has_representation)
   * object feature can be:
       "Mark" - ?feature crm:P65_shows_visual_item/rdf:type crm:E37_Mark
       "Inscription" - ?feature crm:P65_shows_visual_item/rdf:type crm:E34_Inscription 
@@ -311,13 +311,13 @@ not used:
                                         <semantic-query
                                             query='
                                               SELECT DISTINCT ?region ?regionLabel ?image {
-                                                <{{objectIri}}> crm:P138i_has_representation|rso:PX_has_main_representation ?image .
+                                                <{{objectIri}}> crm:P138i_has_representation|rs:PX_has_main_representation ?image .
                                                 ?region crmdig:L49_is_primary_area_of ?image .
 
                                                 FILTER NOT EXISTS {
                                                   ?feature crm:P138i_has_representation ?region .
                                                 }
-                                                ?region rso:displayLabel ?regionLabel .
+                                                ?region rs:displayLabel ?regionLabel .
                                               }
                                             '
                                             template='{{> regionsWithoutFeature}}'

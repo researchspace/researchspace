@@ -190,7 +190,7 @@ export interface State {
  *     <semantic-query query='
  *       SELECT ?label ?image WHERE {
  *         BIND( IRI(CONCAT(STR("{{iri}}"))) as ?subject)
- *         ?subject rso:displayLabel ?label .
+ *         ?subject rs:displayLabel ?label .
  *         ?subject crm:P138i_has_representation ?image .
  *       }' template='{{> resource}}'>
  *       <template id='resource'>

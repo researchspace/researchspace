@@ -18,7 +18,7 @@
       {{#if node}}
         <rs-iiif-image-thumbnail height='480' width='640' style='height: 63px; width: 100px;'
                                   image-or-region='{{node}}'    
-                                  image-id-pattern='OPTIONAL { ?imageIRI crm:P1_is_identified_by/rso:PX_has_file_name ?carrierImageID. } BIND(COALESCE(?carrierImageID, REPLACE(STR(?imageIRI), "^.*/(.*)$", "$1")) AS ?imageID) .'
+                                  image-id-pattern='OPTIONAL { ?imageIRI crm:P1_is_identified_by/rs:PX_has_file_name ?carrierImageID. } BIND(COALESCE(?carrierImageID, REPLACE(STR(?imageIRI), "^.*/(.*)$", "$1")) AS ?imageID) .'
                                   
                                   iiif-server-url='/proxy/iiif-server/iiif/2'
                                 >
@@ -32,7 +32,7 @@
     {{#if node}}
       <semantic-query query='SELECT ?image ?imageLabel WHERE {
                               <{{node}}> crmdig:L49_is_primary_area_of ?image .
-                              ?image a rso:EX_Digital_Image .
+                              ?image a rs:EX_Digital_Image .
                             #  ?image crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/image> .
                               ?image <http://www.w3.org/2000/01/rdf-schema#label> ?imageLabel .
                             } limit 1'

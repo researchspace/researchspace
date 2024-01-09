@@ -8,7 +8,7 @@
   type and relations between entities are based on cidoc-crm entities and their corresponding properties; 
 --]]
 
-[[#> rsp:VocabularyManagerTemplate title="System Vocabularies" addTitle='vocabulary']]
+[[#> rsp:VocabularyManagerTemplate title="System Vocabularies / Authorities" addTitle='vocabulary / authority']]
     
     [[#*inline "customInsertVocabularyForm"]]
       <semantic-search id="{{viewId}}-vocabulary-iri-selector">
@@ -29,8 +29,8 @@
                                     ]'>
                             
             <div id="{{viewId}}-newVocabulary-search-form" class="vocabulary-search-form">
-              <semantic-form-text-input for="label" placeholder="Enter vocabulary label" label="Label" ></semantic-form-text-input> 
-              <semantic-form-text-input for="description" placeholder="Enter vocabulary description" label="Description" multiline='true'></semantic-form-text-input>        
+              <semantic-form-text-input for="label" placeholder="Enter vocabulary / authority label" label="Label" ></semantic-form-text-input> 
+              <semantic-form-text-input for="description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'></semantic-form-text-input>        
 
               <semantic-form-errors></semantic-form-errors>
 
@@ -77,7 +77,7 @@
                   
                           <div> 
                             <div class="danger-documentation-section-title">Already exists!</div>
-                            <div class="danger- documentation-section-content">A vocabulary with label <b>{{bindings.0.vocabularyLabel.value}}</b> 
+                            <div class="danger- documentation-section-content">A vocabulary / authority with label <b>{{bindings.0.vocabularyLabel.value}}</b> 
                               already exists.</div>
                           </div>
                         </div>
@@ -117,7 +117,7 @@
                           </semantic-form-hidden-input>
                           <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/System_Resource'>
                           </semantic-form-hidden-input>   
-                          <semantic-form-hidden-input for="rdfsLabel" placeholder="Enter vocabulary label" label="Label"
+                          <semantic-form-hidden-input for="rdfsLabel" placeholder="Enter vocabulary / authority label" label="Label"
                                                       default-value='{{bindings.0.vocabularyLabel.value}}'>
                           </semantic-form-hidden-input>   
                           <div>
@@ -132,7 +132,7 @@
                             </div>
                           {{/if}}
 
-                          <semantic-form-hidden-input for="vocabulary_description" placeholder="Enter vocabulary description" label="Description" multiline='true'
+                          <semantic-form-hidden-input for="vocabulary_description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'
                                                       default-value='{{bindings.0.vocabularyDescription.value}}'>
                           </semantic-form-hidden-input>
 
@@ -144,19 +144,19 @@
                                                       target="_blank"
                                                       urlqueryparam-view='resource-configuration'
                                                       style="text-decoration: underline;">
-                                <div>+ New vocabulary type</div>
+                                <div>+ New vocabulary / authority type</div>
                               </semantic-link>
-                              <mp-popover title="Vocabulary type">
+                              <mp-popover title="Vocabulary / Authority type">
                                 <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
                                   <div class="badge">
                                     <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
                                   </div>
                                 </mp-popover-trigger>
                                 <mp-popover-content>
-                                    <p>Vocabulary types are defined in 
-                                      <b>Resource Configuration/Vocabulary tab</b>.
+                                    <p>Vocabulary / Authority types are defined in 
+                                      <b>Resource Configuration - Vocabulary / Authority tab</b>.
                                     </p>
-                                    <div>To use a resource as vocabulary type go in tab Vocabulary, enable <b>Use as Vocabulary type</b> and enter a
+                                    <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
                                       <b>membership property</b>.</div>
                                 </mp-popover-content>
                               </mp-popover>
@@ -183,7 +183,7 @@
                             Back
                           </rs-back-button>
 
-                          <button name="submit" class="btn btn-action">Create vocabulary</button>
+                          <button name="submit" class="btn btn-action">Create vocabulary / authority</button>
                         </div>
 
                       </semantic-form>
@@ -200,22 +200,22 @@
       <div class='placeholder-item'>
         <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
         <div> 
-          <p>Drag vocabulary as *.trig or *.nq RDF file(s) or click to upload</p>
+          <p>Drag vocabulary / authority as *.trig or *.nq RDF file(s) or click to upload</p>
           <div class="documentation-section documentation-section-withIcon" style="margin: 20px 0;">
             <div class="documentation-section-icon-container">
               <i class="fa fa-info"></i>
             </div>
 
             <div style="flex: 1;"> 
-              <div class="documentation-section-title">Vocabularies must be of ontology 
+              <div class="documentation-section-title">Vocabularies / Authorities must be of ontology 
                 class skos:ConceptScheme or crm:E32_Authority_Document.
               </div>
               <div class="documentation-section-content"> 
                 <ul>
-                  <li>The vocabulary and all associated 
-                      entities must be defined in one named graph that equals to the vocabulary IRI.
+                  <li>The vocabulary / authority and all associated 
+                      entities must be defined in one named graph that equals to the vocabulary / authority IRI.
                   </li>
-                  <li>System vocabulary must include crm:P2_has_type http://www.researchspace.org/resource/system/System_Resource
+                  <li>System vocabulary / authority must include crm:P2_has_type http://www.researchspace.org/resource/system/System_Resource
                   </li>
                 </ul>
                 
@@ -257,15 +257,15 @@
             </div>
     
             <div> 
-              <div class="warning-documentation-section-title">Warning! &nbsp; The following vocabularies 
-                 can't be edited with Vocabulary Manager.</div>
+              <div class="warning-documentation-section-title">Warning! &nbsp; The following vocabularies / authorities
+                 can't be edited.</div>
               <div class="warning-documentation-section-content">
-                <div>Vocabularies of ontology class skos:ConceptScheme or crm:E32_Authority_Document and all their 
-                  corresponding entities should be defined in one named graph that equals to the vocabulary IRI.</div>
+                <div>Vocabularies / Authorities of ontology class skos:ConceptScheme or crm:E32_Authority_Document and all their 
+                  corresponding entities should be defined in one named graph that equals to the vocabulary / authority IRI.</div>
                   <ul>
                     {{#each bindings}}
                       <li>
-                        <semantic-link iri='{{vocabulary.value}}'></semantic-link> - Vocabulary IRI: {{vocabulary.value}} in vocabulary graph: {{vocabularyGraph.value}}
+                        <semantic-link iri='{{vocabulary.value}}'></semantic-link> - Vocabulary / Authority IRI: {{vocabulary.value}} in graph: {{vocabularyGraph.value}}
                       </li>
                     {{/each}}
                   </ul>
@@ -278,7 +278,7 @@
     
     [[#*inline "VocabularySearchResults"]]
       <semantic-search>
-        <semantic-search-query-keyword placeholder="Search vocabulary (minimum 3 characters)"
+        <semantic-search-query-keyword placeholder="Search vocabulary / authority (minimum 3 characters)"
                                        query='PREFIX bds: <http://www.bigdata.com/rdf/search#>
                                               SELECT ?vocabulary ?vocabularyLabel ?managedByResourceConfig WHERE {
                                                 {
@@ -359,14 +359,14 @@
                                 number-of-displayed-rows=15
                                 options='{"showFilter": false}'
                                 no-result-template='{{> noVocabulary}}'
-                                column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Vocabulary", "cellTemplate": "{{> vocabulary}}" },
+                                column-configuration='[ {"variableName": "vocabularyLabel", "displayName": "Vocabulary / Authority", "cellTemplate": "{{> vocabulary}}" },
                                                         {"variableName": "resourceConfigLabel", "displayName": "Type"},
                                                         {"variableName": "vocabularyDescription", "displayName": "Description"},
                                                         {"variableName": "vocabulary", "displayName": "Actions", "cellTemplate": "{{> actions}}" }
                                                       ]'>
                       <template id="noVocabulary">
                           <div style="padding: 12px 8px">
-                              No vocabulary available
+                              No vocabulary / authority available
                           </div>
                       </template>
 
@@ -388,7 +388,7 @@
                                 <button class="btn btn-default">Show Terms</button>
                             </mp-event-trigger> -->
                             <mp-overlay-dialog id='{{viewId}}-edit-vocabulary-dialog'
-                                              title="Edit vocabulary: {{vocabularyLabel.value}}" 
+                                              title="Edit vocabulary / authority: {{vocabularyLabel.value}}" 
                                               type="modal" bs-size="large" class="editVocabulary-modal">
                               <mp-overlay-dialog-trigger>
                                 <button class="btn btn-default btn-textAndIcon"> 
@@ -409,8 +409,8 @@
                                                   ]]'
                                   >
                                     
-                                    <semantic-form-text-input for="rdfsLabel" placeholder="Enter vocabulary label" label="Label"></semantic-form-text-input>   
-                                    <semantic-form-text-input for="vocabulary_description" placeholder="Enter vocabulary description" label="Description" multiline='true'></semantic-form-text-input>
+                                    <semantic-form-text-input for="rdfsLabel" placeholder="Enter vocabulary / authority label" label="Label"></semantic-form-text-input>   
+                                    <semantic-form-text-input for="vocabulary_description" placeholder="Enter vocabulary / authority description" label="Description" multiline='true'></semantic-form-text-input>
                                     
                                     <div style="display: flex; align-items: baseline; justify-content: space-between;">
                                       <div class="customFormHeader">Type<span style="margin-bottom: 2px; margin-left: 2px;">*</span></div>
@@ -420,19 +420,19 @@
                                                                 target="_blank"
                                                                 urlqueryparam-view='resource-configuration'
                                                                 style="text-decoration: underline;">
-                                          <div>+ New vocabulary type</div>
+                                          <div>+ New vocabulary / authority type</div>
                                         </semantic-link>
-                                        <mp-popover title="Vocabulary type">
+                                        <mp-popover title="Vocabulary / Authority type">
                                           <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
                                             <div class="badge">
                                               <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
                                             </div>
                                           </mp-popover-trigger>
                                           <mp-popover-content>
-                                              <p>Vocabulary types are defined in 
-                                                <b>Resource Configuration/Vocabulary tab</b>.
+                                              <p>Vocabulary / Authority types are defined in 
+                                                <b>Resource Configuration - Vocabulary / Authority tab</b>.
                                               </p>
-                                              <div>To use a resource as vocabulary type go in tab Vocabulary, enable <b>Use as Vocabulary type</b> and enter a
+                                              <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
                                                 <b>membership property</b>.</div>
                                           </mp-popover-content>
                                         </mp-popover>
@@ -465,10 +465,10 @@
                                 
                                         <div> 
                                           <div class="warning-documentation-section-title">
-                                            Vocabulary '<b>{{vocabularyLabel.value}}</b>' is not managed by the system.
+                                            Vocabulary / Authority '<b>{{vocabularyLabel.value}}</b>' is not managed by the system.
                                           </div>
                                           <div class="warning-documentation-section-content">
-                                            <div>To enable the vocabulary authoring just assign a vocabulary type below.</div>
+                                            <div>To enable the vocabulary / authority authoring just assign a vocabulary / authority type below.</div>
                                           </div>
                                         </div>
                                       </div>
@@ -481,19 +481,19 @@
                                                                   class="text-link"
                                                                   urlqueryparam-view='resource-configuration'
                                                                   style="text-decoration: underline;">
-                                            <div>+ New vocabulary type</div>
+                                            <div>+ New vocabulary / authority type</div>
                                           </semantic-link>
-                                          <mp-popover title="Vocabulary type">
+                                          <mp-popover title="Vocabulary / Authority type">
                                             <mp-popover-trigger placement="bottom" trigger='["hover", "click"]'>
                                               <div class="badge">
                                                 <rs-icon icon-type="round" icon-name="question_mark"></rs-icon>
                                               </div>
                                             </mp-popover-trigger>
                                             <mp-popover-content>
-                                                <p>Vocabulary types are defined in 
-                                                  <b>Resource Configuration/Vocabulary tab</b>.
+                                                <p>Vocabulary / Authority types are defined in 
+                                                  <b>Resource Configuration - Vocabulary / Authority tab</b>.
                                                 </p>
-                                                <div>To use a resource as vocabulary type go in tab Vocabulary, enable <b>Use as Vocabulary type</b> and enter a
+                                                <div>To use a resource as vocabulary / authority type go in tab Vocabulary / Authority, enable <b>Use as Vocabulary / Authority type</b> and enter a
                                                   <b>membership property</b>.</div>
                                             </mp-popover-content>
                                           </mp-popover>
@@ -523,7 +523,7 @@
 
                             <mp-overlay-dialog show='{{#if delete}}true{{else}}false{{/if}}' 
                                                 id='{{viewId}}-vocabulary-delete-confirmation-dialog' 
-                                                title="Delete vocabulary" 
+                                                title="Delete vocabulary / authority" 
                                                 type="modal" 
                                                 bs-size="large">
                               <mp-overlay-dialog-trigger>
@@ -533,7 +533,7 @@
                               </mp-overlay-dialog-trigger>
                               <mp-overlay-dialog-content>
                                 <div>
-                                  <p>Are you sure you want to delete the vocabulary '<strong>{{vocabularyLabel.value}}</strong>'?</p>
+                                  <p>Are you sure you want to delete the vocabulary / authority '<strong>{{vocabularyLabel.value}}</strong>'?</p>
                              
                                   <div style="justify-content: end;" class="btn-inline-container">
                                       <mp-event-trigger id='{{viewId}}-cancel-vocabulary-delete' 

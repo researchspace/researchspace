@@ -1,0 +1,107 @@
+<semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
+                post-action="event"
+                subject='{{node}}'
+                persistence='{"type": "sparql", "targetGraphIri": ""}'
+
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+                            kMap_title="http://www.w3.org/2000/01/rdf-schema#label"
+                            kMap_description="http://www.researchspace.org/pattern/system/entity/description"
+                  
+                            image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                            more_image="http://www.researchspace.org/pattern/system/entity/images"
+                            
+                          ]]'
+              >
+              
+    <div class="{{#if nested}}nested-form{{else}}form-scroll-area{{/if}}">
+        <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/Knowledge_Map'> </semantic-form-hidden-input>
+    
+        <bs-tabs id="form-tabs">
+            <bs-tab event-key="1" title="Details">
+                <div class="form-2column-container">
+                    <div>
+                        <semantic-form-text-input for="kMap_title" label="Knowledge map title" 
+                                                    placeholder="Enter knowledge map title"> 
+                        </semantic-form-text-input>
+                            
+                        
+                        <semantic-form-text-input for="kMap_description" multiline=true label="Description/comment" 
+                                                    placeholder="Enter knowledge map description"> 
+                        </semantic-form-text-input>
+                    </div>
+                
+                    <div class="form-media-column">
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag main image or click to upload</div>
+                                                                                        </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+                
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag images or click to upload</div>
+                                                                                        </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+                    </div>
+                </div>
+            </bs-tab>
+
+            <bs-tab event-key="metadata" title="Metadata">
+
+                <semantic-query  query='SELECT ?knowledgeMap ?modifiedByUser ?modifiedAtTime WHERE {
+                                            BIND(<{{node}}> AS ?knowledgeMap)
+
+                                            ?knowledgeMap <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
+
+                                            [[#if (hasPermission "forms:ldp:*")]]
+                                                ?knowledgeMap <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                            [[else]]
+                                                ?knowledgeMap <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
+                                            [[/if]]
+                                        }'
+                                        template='{{> template}}'
+                                >
+                                    
+                    <template id='template'>
+                        <div class="semantic-form-input-title">Metadata</div>
+                        <div class="table-expanded">
+                            <table class="table metadata-table">
+                                <tbody>
+                                    <tr>
+                                        <td class="table-title"><b>modified</b></td>
+                                        <td class="table-description">
+                                            {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}}
+                                        </td>
+                                    </tr>
+                                    <tr class="standard-row">
+                                        <td class="table-title"><b>modified by</b></td>
+                                        <td class="table-description">
+                                            <rs-icon icon-type="round" icon-name="account_box" class="table-icon"></rs-icon>
+                                            {{bindings.0.modifiedByUser.value}}
+                                        </td>
+                                    </tr>
+                                </tbody>   
+                            </table>
+                        </div>
+                    </template>
+                </semantic-query>
+            </bs-tab>
+        </bs-tabs>
+    </div>
+  
+    <semantic-form-errors></semantic-form-errors>
+
+        [[> rsp:FormDefaultActions formEntity='knowledge map']]
+
+</semantic-form>

@@ -57,15 +57,16 @@
             </bs-tab>
 
             <bs-tab event-key="metadata" title="Metadata">
+ 
                 <semantic-query  query='SELECT ?narrative ?modifiedByUser ?modifiedAtTime WHERE {
                                             BIND(<{{node}}> AS ?narrative)
 
                                             ?narrative <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
 
                                             [[#if (hasPermission "forms:ldp:*")]]
-                                                ??narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
                                             [[else]]
-                                                ??narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
                                                 FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
                                             [[/if]]
                                         }'

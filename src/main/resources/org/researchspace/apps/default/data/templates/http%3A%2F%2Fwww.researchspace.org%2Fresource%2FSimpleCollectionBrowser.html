@@ -177,11 +177,16 @@
                         {{/if}}
                       </h2>
                     {{else}}
+
                       <h2 class="resource-editView-formHeader-title">New 
-                        {{#if collectionLabel}}
-                          <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                        {{#if collection}}
+                          {{#if collectionLabel}}
+                            <span style="text-transform: lowercase;">{{collectionLabel}}</span>
+                          {{else}}
+                            <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                          {{/if}}
                         {{else}}
-                          <mp-label iri='{{collection}}' style="text-transform: lowercase;"></mp-label>
+                          <span>{{resourceName}}</span>
                         {{/if}}
                       </h2>
                     {{/if}}
@@ -189,70 +194,68 @@
 
                   {{#case "edit" break=true}}
                     <h2 class="resource-editView-formHeader-title">
-                      <mp-draggable iri='{{iri}}'>
-                        
-                          <div class="link-draggable">
-                            <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
-                            <span class="text-first-letter-uppercase">
-                              {{#if collectionLabel}}:
-                                {{collectionLabel}}
-                              {{else}}
-                                <mp-label iri='{{collection}}'></mp-label>:
-                              {{/if}}
-                            </span>
-                            
-                            {{#if resourceLabelPattern}}
-                              <semantic-query query="SELECT ?label WHERE {
-                                                      BIND(<{{iri}}> as ?item) .
-                                                      {{resourceLabelPattern}}
-                                                    }"
-                                              template='{{> template}}'>
+                      <div>
+                        <div class="link-draggable">
+                          <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                          <mp-draggable iri='{{iri}}'>
+                            <div>
+                              {{#if resourceLabelPattern}}
+                                  <semantic-query query="SELECT ?label WHERE {
+                                                          BIND(<{{iri}}> as ?item) .
+                                                          {{resourceLabelPattern}}
+                                                        }"
+                                                  template='{{> template}}'>
 
-                                <template id='template'>
-                                    <span>{{bindings.0.label.value}}</span>
-                                </template>
-                              </semantic-query>
-                            {{else}}
-                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                            {{/if}}
+                                    <template id='template'>
+                                        <div>{{bindings.0.label.value}}</div>
+                                    </template>
+                                  </semantic-query>
+                                {{else}}
+                                  <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                                {{/if}}
+                              </div>
+                          </mp-draggable>
+                        </div>
+                        {{#if resourceName}}
+                          <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
+                            {{resourceName}}
                           </div>
-                        
-                      </mp-draggable>
+                        {{/if}}
+                      </div>
                     </h2>
                   {{/case}}
 
                   {{#case "view" break=true}}
-                    <h2 class="resource-editView-formHeader-title">
-                      <mp-draggable iri='{{iri}}'>
-                        
-                          <div class="link-draggable">
-                            <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
-                            <span class="text-first-letter-uppercase">
-                              {{#if collectionLabel}}:
-                                {{collectionLabel}}
-                              {{else}}
-                                <mp-label iri='{{collection}}'></mp-label>:
-                              {{/if}}
-                            </span>
-                            
+                  <h2 class="resource-editView-formHeader-title">
+                    <div>
+                      <div class="link-draggable">
+                        <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                        <mp-draggable iri='{{iri}}'>
+                          <div>
                             {{#if resourceLabelPattern}}
-                              <semantic-query query="SELECT ?label WHERE {
-                                                      BIND(<{{iri}}> as ?item) .
-                                                      {{resourceLabelPattern}}
-                                                    }"
-                                              template='{{> template}}'>
+                                <semantic-query query="SELECT ?label WHERE {
+                                                        BIND(<{{iri}}> as ?item) .
+                                                        {{resourceLabelPattern}}
+                                                      }"
+                                                template='{{> template}}'>
 
-                                <template id='template'>
-                                    <span>{{bindings.0.label.value}}</span>
-                                </template>
-                              </semantic-query>
-                            {{else}}
-                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                            {{/if}}
-                          </div>
-                        
-                      </mp-draggable>
-                    </h2>
+                                  <template id='template'>
+                                      <div>{{bindings.0.label.value}}</div>
+                                  </template>
+                                </semantic-query>
+                              {{else}}
+                                <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                              {{/if}}
+                            </div>
+                        </mp-draggable>
+                      </div>
+                      {{#if resourceName}}
+                        <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
+                          {{resourceName}}
+                        </div>
+                      {{/if}}
+                    </div>
+                  </h2>
                   {{/case}}
                 
                   {{#case "deleted" break=true}}
@@ -435,7 +438,7 @@
                 {{#if mode}}
                   <inline-template template-iri='{{resourceForm}}' 
                                     options='{
-                                            "scheme": "{{collection}}", 
+                                            {{#if collection}}"scheme": "{{collection}}",{{/if}}
                                             {{#ifCond mode "!==" "new"}}"node": "{{iri}}",{{/ifCond}}
                                             {{#if broader}}"broader": "{{broader}}",{{/if}}
                                             {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}

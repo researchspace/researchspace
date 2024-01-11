@@ -303,7 +303,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
         <div className={styles.urlInputHolder}>
           <FormControl inputRef={ref => { this.urlInputRef = ref; }}
-            type='text' placeholder='Type file URL here' />
+            type='text' placeholder='Enter file URL' />
           <Button bsStyle='action' type='submit'
             onClick={this.fetchFileFromUrl}
           >Fetch</Button>
@@ -314,12 +314,12 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderInputSelector = () => {
     return (
-      <FormGroup>
+      <div className={styles.selectorContainer}>
         <Radio name='inputSelector' inline
           checked={!this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: false}) }
         >
-          File Upload
+          File upload
         </Radio>{' '}
         <Radio name='inputSelector' inline
           checked={this.state.selectUrl}
@@ -327,7 +327,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         >
           URL
         </Radio>{' '}
-      </FormGroup>
+      </div>
     );
   }
 

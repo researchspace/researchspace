@@ -121,8 +121,8 @@ export class FileVisualizer extends Component<FileVisualizerProps, FileVisualize
           error: (error) => {
             this.setState({
               alertState: {
-                alert: AlertType.WARNING,
-                message: `Failed to fetch resource (${error}).`,
+                alert: AlertType.DANGER,
+                message: `Error: failed to fetch resource (${error}).`,
               },
               progress: null,
             });
@@ -196,7 +196,7 @@ export class FileVisualizer extends Component<FileVisualizerProps, FileVisualize
   renderError() {
     return (
       <div className={styles.emptyBody}>
-        Error
+        
         <div className={styles.alertComponent}>
           <Alert {...this.state.alertState}></Alert>
         </div>

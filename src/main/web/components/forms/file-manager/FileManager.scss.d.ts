@@ -21,6 +21,7 @@ declare namespace FileManagerScssNamespace {
     progress: string;
     rightInputBar: string;
     row: string;
+    selectorContainer: string;
     selectorHolder: string;
     spinner: string;
     storageInput: string;

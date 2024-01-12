@@ -1,14 +1,5 @@
 
 <http://www.researchspace.org/pattern/system/activity/research_question/context> {
-  _:genid-b32e45f0badb4acd976ae8ca95cd037f-gfxncr a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P17_was_motivated_by $informationObject .
-  $informationObject a crm:E73_Information_Object .   
-  $informationObject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .
-  $informationObject crm:P190_has_symbolic_content $value .  
-} WHERE { 
-BIND(URI(CONCAT(str($subject),\"/research_question/\",STRUUID())) as ?informationObject)
-}""" .
   
   <http://www.researchspace.org/pattern/system/activity/research_question> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
@@ -17,33 +8,32 @@ BIND(URI(CONCAT(str($subject),\"/research_question/\",STRUUID())) as ?informatio
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
     <http://www.w3.org/2000/01/rdf-schema#label> "Research question";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b32e45f0badb4acd976ae8ca95cd037f-ukvd2u;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b32e45f0badb4acd976ae8ca95cd037f-ukvd2u;
     <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b32e45f0badb4acd976ae8ca95cd037f-gfxncr;
     <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b32e45f0badb4acd976ae8ca95cd037f-oc71v7;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
     <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-11T16:06:57.097Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
+  _:genid-b32e45f0badb4acd976ae8ca95cd037f-gfxncr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P17_was_motivated_by ?value .
+} WHERE { 
+}""" .
+
   _:genid-b32e45f0badb4acd976ae8ca95cd037f-oc71v7 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {  
-  $subject crm:P17_was_motivated_by $informationObject .
-  $informationObject a crm:E73_Information_Object .   
-  $informationObject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .
-  $informationObject crm:P190_has_symbolic_content $value .      
+  $subject crm:P17_was_motivated_by  $value .      
 } WHERE { 
-  $subject crm:P17_was_motivated_by $informationObject .
-  $informationObject a crm:E73_Information_Object .   
-  $informationObject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .
-  $informationObject crm:P190_has_symbolic_content $value .
+  $subject crm:P17_was_motivated_by  $value .
+  $value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .
 }""" .
   
   _:genid-b32e45f0badb4acd976ae8ca95cd037f-ukvd2u a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-$subject crm:P17_was_motivated_by $informationObject .
-  $informationObject a crm:E73_Information_Object .   
-  $informationObject crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .
-  $informationObject crm:P190_has_symbolic_content $value .    
+$subject crm:P17_was_motivated_by $value .   
+  $value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> . 
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

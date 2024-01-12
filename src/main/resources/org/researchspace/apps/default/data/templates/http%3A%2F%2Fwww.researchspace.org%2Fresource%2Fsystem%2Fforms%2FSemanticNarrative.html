@@ -56,47 +56,49 @@
                 </div>
             </bs-tab>
 
-            <bs-tab event-key="metadata" title="Metadata">
- 
-                <semantic-query  query='SELECT ?narrative ?modifiedByUser ?modifiedAtTime WHERE {
-                                            BIND(<{{node}}> AS ?narrative)
+            {{#if node}}
+                <bs-tab event-key="metadata" title="Metadata">
+    
+                    <semantic-query  query='SELECT ?narrative ?modifiedByUser ?modifiedAtTime WHERE {
+                                                BIND(<{{node}}> AS ?narrative)
 
-                                            ?narrative <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
+                                                ?narrative <http://www.w3.org/ns/prov#generatedAtTime> ?modifiedAtTime .
 
-                                            [[#if (hasPermission "forms:ldp:*")]]
-                                                ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
-                                            [[else]]
-                                                ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
-                                                FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
-                                            [[/if]]
-                                        }'
-                                        template='{{> template}}'
-                                >
-                                    
-                    <template id='template'>
-                        <div class="semantic-form-input-title">Metadata</div>
-                        <div class="table-expanded">
-                            <table class="table metadata-table">
-                                <tbody>
-                                    <tr>
-                                        <td class="table-title"><b>modified</b></td>
-                                        <td class="table-description">
-                                            {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}}
-                                        </td>
-                                    </tr>
-                                    <tr class="standard-row">
-                                        <td class="table-title"><b>modified by</b></td>
-                                        <td class="table-description">
-                                            <rs-icon icon-type="round" icon-name="account_box" class="table-icon"></rs-icon>
-                                            {{bindings.0.modifiedByUser.value}}
-                                        </td>
-                                    </tr>
-                                </tbody>   
-                            </table>
-                        </div>
-                    </template>
-                </semantic-query>
-            </bs-tab>
+                                                [[#if (hasPermission "forms:ldp:*")]]
+                                                    ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                [[else]]
+                                                    ?narrative <http://www.w3.org/ns/prov#wasAttributedTo> ?modifiedByUser .
+                                                    FILTER(?modifiedByUser = <http://www.researchspace.org/resource/system/anonymousUser> )
+                                                [[/if]]
+                                            }'
+                                            template='{{> template}}'
+                                    >
+                                        
+                        <template id='template'>
+                            <div class="semantic-form-input-title">Metadata</div>
+                            <div class="table-expanded">
+                                <table class="table metadata-table">
+                                    <tbody>
+                                        <tr>
+                                            <td class="table-title"><b>modified</b></td>
+                                            <td class="table-description">
+                                                {{dateTimeFormat bindings.0.modifiedAtTime.value "DD/MM/YYYY, h:mm a"}}
+                                            </td>
+                                        </tr>
+                                        <tr class="standard-row">
+                                            <td class="table-title"><b>modified by</b></td>
+                                            <td class="table-description">
+                                                <rs-icon icon-type="round" icon-name="account_box" class="table-icon"></rs-icon>
+                                                {{bindings.0.modifiedByUser.value}}
+                                            </td>
+                                        </tr>
+                                    </tbody>   
+                                </table>
+                            </div>
+                        </template>
+                    </semantic-query>
+                </bs-tab>
+            {{/if}}
         </bs-tabs>
     </div>
   

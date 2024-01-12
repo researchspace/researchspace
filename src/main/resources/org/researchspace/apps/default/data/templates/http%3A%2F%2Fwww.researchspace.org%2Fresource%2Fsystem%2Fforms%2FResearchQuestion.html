@@ -1,0 +1,64 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                  persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                  new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/research_question/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+
+                  fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+
+                            has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                            research_question_description="http://www.researchspace.org/pattern/system/entity/description"
+                            disciplinary_subject='http://www.researchspace.org/pattern/system/research_question/disciplinary_subject'
+                  ]]'>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object'> </semantic-form-hidden-input>
+    {{#if scheme}}
+      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{/if}}
+
+    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/research_question'> </semantic-form-hidden-input>
+
+    <bs-tabs id="form-tabs">
+      <bs-tab event-key="detail" title="Details">
+        <semantic-form-text-input for="research_question_description" multiline="true" label="Research question" placeholder="Enter research question description"> </semantic-form-text-input>
+
+        <semantic-form-tree-picker-input  for='disciplinary_subject' 
+                                          label="Disciplinary subject" 
+                                          placeholder="Select disciplinary subject" 
+                                          close-dropdown-on-selection='false'
+                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/disciplinary_subject>", 
+                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/disciplinary_subject>",
+                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                          "labelPattern": "?item skos:prefLabel ?label ."
+                                                        }'
+                                                          
+                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                      "view": "vocabulary-content",
+                                                                      "scheme": "http://www.researchspace.org/resource/vocab/disciplinary_subject",
+                                                                      "tooltip": "Open list of disciplinary subjects"
+                                                                    }'
+                                          
+                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true 
+                                                                                scheme="http://www.researchspace.org/resource/vocab/disciplinary_subject"
+                                                                                entityType="subject" }}{{{{/raw}}}}'
+
+                                          query-item-label='SELECT ?label WHERE {
+                                                              ?item skos:prefLabel ?label .
+                                                            }'
+          ></semantic-form-tree-picker-input>
+      </bs-tab>
+
+      {{#if node}}
+          [[> rsp:FormMetadataTab]]
+      {{/if}}
+    </bs-tabs>
+
+  </div>
+  <semantic-form-errors></semantic-form-errors>
+
+  [[> rsp:FormDefaultActions formEntity='research question']]
+</semantic-form>	

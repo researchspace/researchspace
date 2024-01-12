@@ -1,0 +1,37 @@
+{{#if node}}
+  <semantic-query query='SELECT ?project ?typeExhibition ?typeLoan ?relatedExhibition WHERE {
+                          BIND (<{{node}}> as ?project)
+
+                          OPTIONAL {
+                            ?project crm:P2_has_type ?type .
+                            ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/project_type> .
+                          }
+                          
+                          OPTIONAL {
+                            ?project crm:P2_has_type <http://www.researchspace.org/resource/vocab/project_type/exhibition> .
+                            BIND(true as ?typeExhibition)
+                          }
+                        
+                          OPTIONAL {
+                            ?project crm:P2_has_type <http://www.researchspace.org/resource/vocab/project_type/loan> .
+                            BIND(true as ?typeLoan)
+                          }
+                        
+                          OPTIONAL {
+                            ?project crm:P17_was_motivated_by ?relatedExhibition .
+                            ?relatedExhibition crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .
+                          }
+                          
+                        } GROUP BY ?project ?projectTitle ?typeExhibition ?typeLoan ?relatedExhibition
+                        LIMIT 1'>
+    <template id='template'>
+      {{> forms:Project_partial related_exhibition=bindings.0.relatedExhibition.value 
+                                type_exhibition=bindings.0.typeExhibition.value 
+                                type_loan=bindings.0.typeLoan.value 
+      }}
+    </template>
+  </semantic-query>
+{{else}}
+  {{> forms:Project_partial}}
+{{/if}}
+

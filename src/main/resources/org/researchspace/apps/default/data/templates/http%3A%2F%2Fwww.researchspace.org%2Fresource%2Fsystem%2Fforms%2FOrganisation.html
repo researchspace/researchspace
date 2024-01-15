@@ -185,16 +185,23 @@
             {{#if onlyDetails}}
             {{else}}
                 <bs-tab event-key="2" title="Exhibitions">
-                    <semantic-form-tree-picker-input for='organisation_exhibition' label="Exhibition at the organisation"
+                    <semantic-form-tree-picker-input    for='organisation_exhibition' 
+                                                        label="Exhibition at the organisation"
                                                         placeholder="Select exhibition title" 
                                                         tree-patterns='{"scheme": "crm:E7_Activity",
-                                                        "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .",
-                                                        "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/exhibition_title> ."
-                                                        }'
-                                                        nested-form-template='{{> forms:exhibition nested=true editable=true onlyDetails=true}}'>
-                    </semantic-form-tree-picker-input>
+                                                                        "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .",
+                                                                        "labelPattern": "?item crm:P1_is_identified_by ?appellation .
+                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/exhibition_title> .
+                                                                                        ?appellation crm:P190_has_symbolic_content ?label ."
+                                                                        }'
+                                                        nested-form-template='{{> forms:Exhibition nested=true editable=true mode=new onlyDetails=true}}'
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            ?item crm:P1_is_identified_by ?appellation .
+                                                                            ?appellation a crm:E41_Appellation .
+                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/exhibition_title> .
+                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                        }'
+                    ></semantic-form-tree-picker-input>
 
                     {{#if node}}
                         <div style="margin-top: 20px;">

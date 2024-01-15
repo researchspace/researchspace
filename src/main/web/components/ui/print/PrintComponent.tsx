@@ -188,7 +188,7 @@ export class PrintComponent extends Component<Props, State> {
       if (group) {
         group.sections.push(section);
       } else {
-        groups.push({ id, sections: [section] });
+        groups[id] = ({ id, sections: [section] });
       }
     });
 

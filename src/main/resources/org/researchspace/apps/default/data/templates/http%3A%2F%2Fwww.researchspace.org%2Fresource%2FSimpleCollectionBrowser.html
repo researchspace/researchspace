@@ -323,15 +323,21 @@
                                             ?item a crm:E31_Document .
                                             ?item crm:P1_is_identified_by ?file .
                                             ?file rs:PX_has_file_name ?fileName .
+                                            ?file rs:PX_has_media_type "application/pdf" .
                                           }'
                                     template='{{> template}}'
                         >
                           <template id='template'>
-                            <button type="button" name='open' class="btn btn-default btn-textAndIcon" title="Open document">
-                              <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
-                              Open
-                            </button>
-
+                            <a  href="/file?fileName={{bindings.0.fileName.value}}&storage=images&mode=open&mediaType=application%2Fpdf" 
+                                target="_blank"
+                                title="open document"
+                            >
+                                <button type="button" name='open' class="btn btn-default btn-textAndIcon" title="Open document">
+                                  <rs-icon icon-type="round" icon-name="open_in_new"></rs-icon>
+                                  Open
+                                </button>
+                            </a>
+                            
                             <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
                                 <button type="button" name='download' class="btn btn-default btn-textAndIcon" title="Download document">
                                   <rs-icon icon-type="round" icon-name="download"></rs-icon>

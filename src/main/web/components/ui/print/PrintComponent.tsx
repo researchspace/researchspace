@@ -182,13 +182,12 @@ export class PrintComponent extends Component<Props, State> {
 
     sections.forEach((section) => {
       const id = section.props.id;
-
       const group = _.find(groups, { id });
 
       if (group) {
         group.sections.push(section);
       } else {
-        groups.push({ id, sections: [section] });
+        groups[id] = ({ id, sections: [section] });
       }
     });
 
@@ -346,23 +345,25 @@ export class PrintComponent extends Component<Props, State> {
           { className: 'panel-footer ' + b('select-footer').toString() },
           D.button(
             {
-              className: 'btn btn-primary',
+              className: 'btn btn-action',
               onClick: this.handlePrint,
               title:
                 'Recommended option for native or PDF printing. Uses native browser print ' +
                 'functionlity. Requires Unix, Mac, Windows >10 or a PDF Print Driver being installed.',
             },
+            D.i({ className: 'fa fa-print btn-icon-left' }),
             'Print PDF'
           ),
           ' ',
           this.props.htmlToPdf && this.state.html2pdfLoaded
             ? D.button(
                 {
-                  className: 'btn btn-primary',
+                  className: 'btn btn-action',
                   onClick: this.handleExportAsPDF,
                   title: 'Client-side export to PDF. Only recommended if no PDF print driver' + 'is available.',
                 },
-                'Export as PDF'
+                D.i({ className: 'fa fa-download btn-icon-left' }),
+                'Download PDF'
               )
             : null
         )

@@ -5,8 +5,6 @@
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                           inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
-
-                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                           entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
                           activity_document="http://www.researchspace.org/pattern/system/entity/documents"
@@ -28,7 +26,7 @@
                           activity_request="http://www.researchspace.org/pattern/system/activity/activity_request"
                 ]]'>
 
-  <div style="flex:1; overflow:hidden;">
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -72,30 +70,6 @@
         <div class="form-2column-container">
           <div>
             <semantic-form-text-input for="activity_title" label="Activity title" placeholder="Enter activity title"></semantic-form-text-input>
-
-            <semantic-form-tree-picker-input for="has_type" 
-                                              label="Activity type" 
-                                              placeholder="Select activity type" 
-                                              close-dropdown-on-selection='false'
-                                              tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/activity_type>", 
-                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/activity_type>",
-                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-
-                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                          "view": "vocabulary-content",
-                                                                          "scheme": "http://www.researchspace.org/resource/vocab/activity_type",
-                                                                          "tooltip": "Open list of activity types"
-                                                                        }'
-                                              
-                                              nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                    scheme="http://www.researchspace.org/resource/vocab/activity_type"
-                                                                                    entityType="activity type" }}{{{{/raw}}}}'
-
-                                              query-item-label='SELECT ?label WHERE {
-                                                                  ?item skos:prefLabel ?label .
-                                                                }'
-                                            
-            ></semantic-form-tree-picker-input>
 
             <semantic-form-text-input for="activity_description" multiline="true" label="Activity description" placeholder="Enter activity description"></semantic-form-text-input>
             <semantic-form-text-input for="activity_research_question" multiline="true" label="Activity research question" placeholder="Enter the activity research question"></semantic-form-text-input>
@@ -357,11 +331,8 @@
     </bs-tabs>
   </div>
 
-  <div>
-    <semantic-form-errors></semantic-form-errors> 
+  <semantic-form-errors></semantic-form-errors> 
     
-    [[> rsp:FormDefaultActions formEntity='activity']]
-    
-  </div>
+  [[> rsp:FormDefaultActions formEntity='activity']]
 
 </semantic-form>

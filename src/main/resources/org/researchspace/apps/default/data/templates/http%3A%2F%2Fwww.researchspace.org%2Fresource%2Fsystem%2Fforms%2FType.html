@@ -5,6 +5,7 @@
                 fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                   inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                  entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
                   prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
                   altLabel="http://www.researchspace.org/pattern/system/entity/skos_altLabel"
@@ -26,88 +27,95 @@
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
-  
-    <div class="form-2column-container">
-      <div>
-        <semantic-form-text-input for="prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
-                                  placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
-        </semantic-form-text-input>
-        <semantic-form-text-input for="altLabel" label="Alternative {{#if entityType}}{{entityType}}{{/if}} name" 
-                                  placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} alternative name"> 
-        </semantic-form-text-input>
-          
-        {{#if scheme}}
-          <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                          placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                          close-dropdown-on-selection='false'
-                                          default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
-                                          tree-patterns='{"scheme": "{{scheme}}",
-                                                          "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                          "labelPattern": "?item skos:prefLabel ?label ."}'
-          ></semantic-form-tree-picker-input>
-        {{else}}
-          <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                          placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                          close-dropdown-on-selection='false'
-                                          default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
-                                          tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E55_Type",
-                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                          "labelPattern": "?item skos:prefLabel ?label ."}'
-          ></semantic-form-tree-picker-input>
-        {{/if}}
 
-        {{#if scheme}}
-          <semantic-form-tree-picker-input for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                          placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
-                                          close-dropdown-on-selection='false'
-                                          tree-patterns='{"scheme": "{{scheme}}",
-                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
-          ></semantic-form-tree-picker-input>
-        {{else}}
-          <semantic-form-tree-picker-input  for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                            placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
-                                            close-dropdown-on-selection='false'
-                                            tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E55_Type",
-                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                          "labelPattern": "?item skos:prefLabel ?label ."}'
-          ></semantic-form-tree-picker-input>
-        {{/if}}
+    <bs-tabs id="form-tabs">
+      <bs-tab event-key="detail" title="Details">
+        <div class="form-2column-container">
+          <div>
+            <semantic-form-text-input for="prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
+                                      placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
+            </semantic-form-text-input>
+            <semantic-form-text-input for="altLabel" label="Alternative {{#if entityType}}{{entityType}}{{/if}} name" 
+                                      placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} alternative name"> 
+            </semantic-form-text-input>
+              
+            {{#if scheme}}
+              <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              close-dropdown-on-selection='false'
+                                              default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                              tree-patterns='{"scheme": "{{scheme}}",
+                                                              "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                              "labelPattern": "?item skos:prefLabel ?label ."}'
+              ></semantic-form-tree-picker-input>
+            {{else}}
+              <semantic-form-tree-picker-input for="broader" label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              close-dropdown-on-selection='false'
+                                              default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                              tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E55_Type",
+                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                              "labelPattern": "?item skos:prefLabel ?label ."}'
+              ></semantic-form-tree-picker-input>
+            {{/if}}
 
-        <semantic-form-text-input for="related" label="Related {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                  placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}type{{/if}}"> 
-        </semantic-form-text-input>
+            {{#if scheme}}
+              <semantic-form-tree-picker-input for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                              close-dropdown-on-selection='false'
+                                              tree-patterns='{"scheme": "{{scheme}}",
+                                                                "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                "labelPattern": "?item skos:prefLabel ?label ."}'
+              ></semantic-form-tree-picker-input>
+            {{else}}
+              <semantic-form-tree-picker-input  for="narrower" label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                                placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                                close-dropdown-on-selection='false'
+                                                tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E55_Type",
+                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                              "labelPattern": "?item skos:prefLabel ?label ."}'
+              ></semantic-form-tree-picker-input>
+            {{/if}}
+
+            <semantic-form-text-input for="related" label="Related {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                      placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}type{{/if}}"> 
+            </semantic-form-text-input>
+            
+            <semantic-form-text-input for="description" multiline=true label="Description/comment" 
+                                      placeholder="Enter {{#if entityType}}{{entityType}}{{else}}type{{/if}} description"> 
+            </semantic-form-text-input>
+          </div>
+
+          <div class="form-media-column">
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                              <div>Drag main image or click to upload</div>
+                                                                            </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+              </semantic-form-drag-and-drop-input>
+            </div>
+
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                              <div>Drag images or click to upload</div>
+                                                                            </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+              </semantic-form-drag-and-drop-input>
+            </div>
+          </div>
         
-        <semantic-form-text-input for="description" multiline=true label="Description/comment" 
-                                  placeholder="Enter {{#if entityType}}{{entityType}}{{else}}type{{/if}} description"> 
-        </semantic-form-text-input>
-      </div>
-
-      <div class="form-media-column">
-        <div class="dragAndDrop-input-container">
-          <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
-                                              placeholder-item-template="<div class='placeholder-item'>
-                                                                          <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                          <div>Drag main image or click to upload</div>
-                                                                        </div>"
-                                              nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-          </semantic-form-drag-and-drop-input>
         </div>
-
-        <div class="dragAndDrop-input-container">
-          <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
-                                              placeholder-item-template="<div class='placeholder-item'>
-                                                                          <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                          <div>Drag images or click to upload</div>
-                                                                        </div>"
-                                              nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-          </semantic-form-drag-and-drop-input>
-        </div>
-      </div>
-    
-    </div>
+      </bs-tab>
+      
+      [[> rsp:FormMetadataTab]]
+      
+    </bs-tabs>
   </div>
   
   <semantic-form-errors></semantic-form-errors>

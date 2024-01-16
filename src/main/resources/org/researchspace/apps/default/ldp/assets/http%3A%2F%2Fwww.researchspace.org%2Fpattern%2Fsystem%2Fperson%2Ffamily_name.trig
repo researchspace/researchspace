@@ -1,0 +1,70 @@
+
+<http://www.researchspace.org/pattern/system/person/family_name/context> {
+  <http://www.researchspace.org/pattern/system/person/family_name> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-10d6ebd07aa04499886cc44e9d1996d4-bcdj7l;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-10d6ebd07aa04499886cc44e9d1996d4-l3gcm3;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-10d6ebd07aa04499886cc44e9d1996d4-zwpd3;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Family name";
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-16T16:36:12.646Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-10d6ebd07aa04499886cc44e9d1996d4-l3gcm3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {  
+ 	$subject crm:107i_is_current_or_former_member_of ?family .
+    
+    ?family a crm:E74_Group .
+    ?family crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/family> .
+    ?family crm:P1_is_identified_by $appellation .
+   	$appellation a crm:E41_Appellation .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/full_name> .
+  	$appellation crm:P190_has_symbolic_content $value .      
+} WHERE { 
+ 	$subject crm:107i_is_current_or_former_member_of ?family .
+    
+    ?family a crm:E74_Group .
+    ?family crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/family> .
+    ?family crm:P1_is_identified_by $appellation .
+   	$appellation a crm:E41_Appellation .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/full_name> .
+  	$appellation crm:P190_has_symbolic_content $value .     
+}""" .
+  
+  _:genid-10d6ebd07aa04499886cc44e9d1996d4-bcdj7l a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  
+    $subject crm:107i_is_current_or_former_member_of ?family .
+    
+    ?family a crm:E74_Group .
+    ?family crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/family> .
+    ?family crm:P1_is_identified_by $appellation .
+   	$appellation a crm:E41_Appellation .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/full_name> .
+  	$appellation crm:P190_has_symbolic_content $value .   
+      
+} WHERE {
+  BIND(URI(concat(str($subject), \"/family\") ) as ?family)
+  BIND(URI(concat(str(?family), \"/family_name\") ) as $appellation)
+}""" .
+  
+  _:genid-10d6ebd07aa04499886cc44e9d1996d4-zwpd3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+   	    
+ 	$subject crm:107i_is_current_or_former_member_of ?family .
+    
+    ?family a crm:E74_Group .
+    ?family crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/family> .
+    ?family crm:P1_is_identified_by $appellation .
+   	$appellation a crm:E41_Appellation .
+   	$appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/full_name> .
+  	$appellation crm:P190_has_symbolic_content $value .   
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/person/family_name> .
+}

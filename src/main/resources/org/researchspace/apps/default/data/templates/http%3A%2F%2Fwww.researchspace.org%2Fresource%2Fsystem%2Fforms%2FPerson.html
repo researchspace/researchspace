@@ -1,0 +1,243 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/person/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                            
+                            person_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                            person_image="http://www.researchspace.org/pattern/system/entity/images"
+                            
+                            person_document="http://www.researchspace.org/pattern/system/entity/documents"
+
+                            person_appellation="http://www.researchspace.org/pattern/system/person/appellation"
+                            person_alsoKnownAs="http://www.researchspace.org/pattern/system/person/alsoKnownAs"
+                            person_name_native_language="http://www.researchspace.org/pattern/system/person/name_native_language"
+                            person_family_name="http://www.researchspace.org/pattern/system/person/family_name"
+                            person_description="http://www.researchspace.org/pattern/system/entity/description"
+                            person_gender="http://www.researchspace.org/ontology/PX_gender"
+                            person_nationality="http://www.researchspace.org/ontology/PX_nationality"
+                            person_birth="http://www.researchspace.org/pattern/system/person/birth"
+                            person_death="http://www.researchspace.org/pattern/system/person/death"
+
+                            person_profession="http://www.researchspace.org/ontology/PX_profession"
+                            person_field_of_work="http://www.researchspace.org/pattern/system/person/field_of_work"
+                            person_student="http://www.researchspace.org/pattern/system/person/student"
+                            person_student_of="http://www.researchspace.org/pattern/system/person/student_of"
+                            person_joining_organisation_range="http://www.researchspace.org/pattern/system/actor/joining_range"
+                            person_member_of="http://www.researchspace.org/pattern/system/actor/P107i_is_current_or_former_member_of"
+
+                            person_participated_in_event="http://www.researchspace.org/pattern/system/actor/participated_in_event"
+                            person_performed_activity="http://www.researchspace.org/pattern/system/actor/performed_activity"
+
+                        ]]'
+>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E21_Person"]'></semantic-form-hidden-input>
+    
+    {{#if scheme}}
+      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{/if}}
+
+    <bs-tabs id="form-tabs">
+        <bs-tab event-key="detail" title="Details">
+            <div class="form-2column-container">
+                <div>
+                    <semantic-form-text-input for="person_appellation" label="Person full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
+                    <semantic-form-text-input for="person_alsoKnownAs" label="Also knows as" placeholder="Enter person additional name / also known as"> </semantic-form-text-input>
+                    <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language"> </semantic-form-text-input>
+                    <semantic-form-text-input for="person_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                    <semantic-form-text-input for="person_gender" label="Gender" placeholder="Enter person gender"> </semantic-form-text-input>
+                    <semantic-form-text-input for="person_nationality" label="Nationality" placeholder="Enter person nationality"> </semantic-form-text-input>
+
+                    <semantic-form-composite-input  for="person_birth" 
+                                                    label="Birth"
+                                                    new-subject-template="/E67_Birth"  
+                                                    fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                birthTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/timespan"
+                                                                birthPlace="http://www.researchspace.org/pattern/system/period/took_place_at"
+                                                                birthDescription="http://www.researchspace.org/pattern/system/entity/description"
+                                                        ]]'>
+    
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E67_Birth'> </semantic-form-hidden-input>
+                    
+                        <div style="display: flex; align-items: center; column-gap: 20px; margin-top: -15px;">
+                            <div style="flex: 1;">
+                                <semantic-form-composite-input  for="birthTimeSpan" 
+                                                                render-header="false"
+                                                                new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                fields='[[fieldDefinitions
+                                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                            timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                                    ]]'>   
+                        
+                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+                        
+                                    <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                                        <div style="flex: 1;">
+                                            <semantic-form-datetime-input for="timespan_date" label="Date (date value)"  placeholder="Enter birth date (date value)"></semantic-form-datetime-input>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter birth date (text value)"></semantic-form-text-input>
+                                        </div>
+                                    </div>
+                                </semantic-form-composite-input>
+                            </div>
+                            <div style="flex: 1;">
+                                <semantic-form-select-input for="birthPlace" label="Place" placeholder="Enter place of birth"></semantic-form-select-input>
+                            </div>
+                        </div>
+
+                        <semantic-form-text-input for="birthDescription" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                    </semantic-form-composite-input>
+
+                    <semantic-form-composite-input  for="person_death" 
+                                                    label="Death"
+                                                    new-subject-template="/E69_Death"  
+                                                    fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                deathTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/timespan"
+                                                                deathPlace="http://www.researchspace.org/pattern/system/period/took_place_at"
+                                                                deathDescription="http://www.researchspace.org/pattern/system/entity/description"
+                                                        ]]'>
+    
+                        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E69_Death'> </semantic-form-hidden-input>
+                    
+                        <div style="display: flex; align-items: center; column-gap: 20px; margin-top: -15px;">
+                            <div style="flex: 1;">
+                              <semantic-form-composite-input    for="deathTimeSpan" 
+                                                                render-header="false"
+                                                                new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                fields='[[fieldDefinitions
+                                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                            timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                                    ]]'>   
+                        
+                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+                        
+                                    <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                                        <div style="flex: 1;">
+                                            <semantic-form-datetime-input for="timespan_date" label="Date (date value)"  placeholder="Enter death date (date value)"></semantic-form-datetime-input>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter death date (text value)"></semantic-form-text-input>
+                                        </div>
+                                    </div>
+                                </semantic-form-composite-input>
+                            </div>
+                            <div style="flex: 1;">
+                                <semantic-form-select-input for="deathPlace" label="Place" placeholder="Enter place of death"></semantic-form-select-input>
+                            </div>
+                        </div>
+
+                        <semantic-form-text-input for="deathDescription" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                    </semantic-form-composite-input>
+                </div>
+
+                <div class="form-media-column">
+
+                    <div class="dragAndDrop-input-container">
+                    <semantic-form-drag-and-drop-input for='person_image_main_representation' label="Main image" 
+                                                        placeholder-item-template="<div class='placeholder-item'>
+                                                                                    <i class='fa fa-upload'></i>
+                                                                                    <div>Drag main image or click to upload</div>
+                                                                                    </div>"
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                    </semantic-form-drag-and-drop-input>
+                    </div>
+        
+                    <div class="dragAndDrop-input-container">
+                    <semantic-form-drag-and-drop-input  for='person_image' label="More images" 
+                                                        placeholder-item-template="<div class='placeholder-item'>
+                                                                                    <i class='fa fa-upload'></i>
+                                                                                    <div>Drag images or click to upload</div>
+                                                                                    </div>"
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                    </semantic-form-drag-and-drop-input>
+                    </div>
+
+             [[!--       <div class="dragAndDrop-input-container">
+                        <semantic-form-drag-and-drop-input  for='person_signature' label="Signature" 
+                                                            placeholder-item-template="<div class='placeholder-item'>
+                                                                                        <i class='fa fa-upload'></i>
+                                                                                        <div>Drag images or click to upload</div>
+                                                                                    </div>"
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                        </semantic-form-drag-and-drop-input>
+                    </div> --]]
+
+                    <div class="dragAndDrop-input-container">
+                        <semantic-form-drag-and-drop-input    for='person_document' label="Documents" 
+                                                            placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <i class='fa fa-upload'></i>
+                                                                                            <div>Drag document or click to upload</div>
+                                                                                        </div>"
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" }}{{{{/raw}}}}'
+                                                                                        >
+                        </semantic-form-drag-and-drop-input>
+                    </div>
+                </div>
+            </div>
+        </bs-tab>
+
+        <bs-tab event-key="contact" title="Contact details">
+
+        </bs-tab>
+
+        <bs-tab event-key="profession" title="Profession">
+              <semantic-form-text-input for="person_profession" label="Profession" placeholder="Enter person profession"> </semantic-form-text-input>
+        </bs-tab>
+
+        <bs-tab event-key="event" title="Events">
+          [[!--  <semantic-form-drag-and-drop-input for="participated" label="Add Event/Activity" placeholder="Image" nested-form-template='{{> forms:event nested=true editable=true}}'></semantic-form-drag-and-drop-input>
+                
+            <semantic-form-composite-input for="wasjoined" 
+                                        label="organisations joined"
+                                        new-subject-template="/E85_Joining/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                        fields='[[
+                                        fieldDefinitions
+                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                            rdfsLabel="http://www.w3.org/2000/01/rdf-schema#label"
+                                            joined="http://www.researchspace.org/organisation/P143_joined"
+                                            hasTimeSpan="http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span"
+                                            
+                                        ]]'>
+            <semantic-form-tree-picker-input  label="Joined Group" placeholder="choose group" for="joined" scheme="https://west-african-bronzes.researchspace.org/resource/vocab/organisation"  tree-patterns='{"scheme": "<https://west-african-bronzes.researchspace.org/resource/vocab/organisation>", "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <https://west-african-bronzes.researchspace.org/resource/vocab/organisation>"}' nested-form-template='{{> forms:crm:E74_Group nested=true editable=true}}' > </semantic-form-tree-picker-input>	 
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+            
+    
+                                <semantic-form-composite-input for="hasTimeSpan" 
+                                            label="Time Span"
+                                            new-subject-template="/E52_Time-Span"  
+                                            fields='[[
+                                            fieldDefinitions
+                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                beginOfTimeSpan="http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin"
+                                                endOfTimeSpan="http://www.cidoc-crm.org/cidoc-crm/P82b_end_of_the_end"
+                                            ]]'>
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'> </semantic-form-hidden-input>
+                <semantic-form-text-input for="beginOfTimeSpan"> </semantic-form-text-input>
+                <semantic-form-text-input for="endOfTimeSpan"> </semantic-form-text-input>
+            </semantic-form-composite-input>
+        
+        
+        
+            </semantic-form-composite-input>
+
+            --]]
+        </bs-tab>
+
+        [[> rsp:FormMetadataTab]]
+        
+    </bs-tabs>
+   
+  </div>
+
+  <semantic-form-errors></semantic-form-errors>  
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}person{{/if}}']] 
+</semantic-form>

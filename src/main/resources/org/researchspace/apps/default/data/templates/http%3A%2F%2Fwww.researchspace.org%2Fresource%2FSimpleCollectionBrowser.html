@@ -315,6 +315,26 @@
                           </mp-overlay-dialog-content>
                         </mp-overlay-dialog>
                       {{/if}}
+                      {{#if (eq resourceOntologyClass "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
+                        <mp-overlay-dialog  id='{{viewId}}-importFromWikidata-dialog' 
+                                            title="Import from Wikidata" 
+                                            type="lightbox">
+                          <mp-overlay-dialog-trigger>
+                            <button class="btn btn-action btn-textAndIcon">
+                              <rs-icon icon-type="round" icon-name="file_upload"></rs-icon>
+                              <span>Import from Wikidata</span>
+                            </button>
+                          </mp-overlay-dialog-trigger>
+                          <mp-overlay-dialog-content>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                              options='{
+                                                      "scheme": "{{collection}}", 
+                                                      "viewId": "{{viewId}}"
+                                              }'>
+                            </inline-template>
+                          </mp-overlay-dialog-content>
+                        </mp-overlay-dialog>
+                      {{/if}}
                     {{/if}}
                     {{#if (or (eq mode "new") (eq mode "deleted") )}}
                     {{else}}

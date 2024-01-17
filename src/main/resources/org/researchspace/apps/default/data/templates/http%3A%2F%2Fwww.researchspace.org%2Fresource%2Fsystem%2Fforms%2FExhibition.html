@@ -19,8 +19,7 @@
 
                         exhibition_status="http://www.researchspace.org/pattern/system/activity/current_status"
                       
-                        exhibition_start_date="http://www.researchspace.org/pattern/system/activity/start_date"
-                        exhibition_end_date="http://www.researchspace.org/pattern/system/activity/end_date"
+                        exhibition_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
 
                         exhibition_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
                         exhibition_took_place_at="http://www.researchspace.org/pattern/system/period/took_place_at"
@@ -95,14 +94,28 @@
                                                                 }'
                 ></semantic-form-tree-picker-input>
             
-              <div style="display: flex; align-items:flex-start; column-gap:15px; flex-wrap: wrap;">
-                <div style="flex: 1;">
-                  <semantic-form-datetime-input for='exhibition_start_date' label="Exhibition start date" placeholder="Enter start date"></semantic-form-datetime-input>
-                </div>
-                <div style="flex: 1;">
-                  <semantic-form-datetime-input for='exhibition_end_date' label="Exhibition end date" placeholder="Enter end date"></semantic-form-datetime-input>
-                </div>
-              </div>
+                <semantic-form-composite-input  for="exhibition_date" 
+                                                render-header="false"
+                                                new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                            timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                            timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
+                                                            timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
+                                                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                    ]]'>   
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                    <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                        <div style="flex: 1;">
+                            <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter start date"></semantic-form-datetime-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter end date"></semantic-form-datetime-input>
+                        </div>
+                    </div>
+                </semantic-form-composite-input>
           
             </div>
   

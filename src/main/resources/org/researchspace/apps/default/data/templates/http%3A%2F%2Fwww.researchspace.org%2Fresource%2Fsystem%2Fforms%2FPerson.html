@@ -8,7 +8,7 @@
                             
                             person_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                             person_image="http://www.researchspace.org/pattern/system/entity/images"
-                            
+                            person_signature="http://www.researchspace.org/pattern/system/person/signature_image"
                             person_document="http://www.researchspace.org/pattern/system/entity/documents"
 
                             person_appellation="http://www.researchspace.org/pattern/system/person/appellation"
@@ -45,7 +45,7 @@
         <bs-tab event-key="detail" title="Details">
             <div class="form-2column-container">
                 <div>
-                    <semantic-form-text-input for="person_appellation" label="Person full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
+                    <semantic-form-text-input for="person_appellation" label="Full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
                     <semantic-form-text-input for="person_alsoKnownAs" label="Also knows as" placeholder="Enter person additional name / also known as"> </semantic-form-text-input>
                     <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language"> </semantic-form-text-input>
                     <semantic-form-text-input for="person_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
@@ -57,8 +57,8 @@
                                                     new-subject-template="/E67_Birth"  
                                                     fields='[[fieldDefinitions
                                                                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                birthTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/timespan"
-                                                                birthPlace="http://www.researchspace.org/pattern/system/period/took_place_at"
+                                                                birthTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                                birthPlace="http://www.researchspace.org/pattern/system/period/took_place_at_min0max1"
                                                                 birthDescription="http://www.researchspace.org/pattern/system/entity/description"
                                                         ]]'>
     
@@ -88,7 +88,26 @@
                                 </semantic-form-composite-input>
                             </div>
                             <div style="flex: 1;">
-                                <semantic-form-select-input for="birthPlace" label="Place" placeholder="Enter place of birth"></semantic-form-select-input>
+                                <semantic-form-tree-picker-input    for="birthPlace" 
+                                                                    label="Place" 
+                                                                    placeholder="Select place" 
+                                                                    close-dropdown-on-selection='true'
+                                                                    tree-patterns='{"scheme": "crm:E53_Place",
+                                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                                        ?appellation a crm:E44_Place_Appellation . 
+                                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
+                                                                                                        ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                                    
+                                                                    nested-form-template='{{> forms:Place nested=true editable=true mode=new }}'
+
+                                                                    query-item-label='SELECT ?label WHERE {
+                                                                                            ?item crm:P1_is_identified_by ?appellation . 
+                                                                                            ?appellation a crm:E44_Place_Appellation . 
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                        }'
+                                                                
+                                ></semantic-form-tree-picker-input>
                             </div>
                         </div>
 
@@ -100,8 +119,8 @@
                                                     new-subject-template="/E69_Death"  
                                                     fields='[[fieldDefinitions
                                                                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                deathTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/timespan"
-                                                                deathPlace="http://www.researchspace.org/pattern/system/period/took_place_at"
+                                                                deathTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                                deathPlace="http://www.researchspace.org/pattern/system/period/took_place_at_min0max1"
                                                                 deathDescription="http://www.researchspace.org/pattern/system/entity/description"
                                                         ]]'>
     
@@ -131,7 +150,26 @@
                                 </semantic-form-composite-input>
                             </div>
                             <div style="flex: 1;">
-                                <semantic-form-select-input for="deathPlace" label="Place" placeholder="Enter place of death"></semantic-form-select-input>
+                                <semantic-form-tree-picker-input    for="deathPlace" 
+                                                                    label="Place" 
+                                                                    placeholder="Select place" 
+                                                                    close-dropdown-on-selection='true'
+                                                                    tree-patterns='{"scheme": "crm:E53_Place",
+                                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                                        ?appellation a crm:E44_Place_Appellation . 
+                                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
+                                                                                                        ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                                    
+                                                                    nested-form-template='{{> forms:Place nested=true editable=true mode=new }}'
+
+                                                                    query-item-label='SELECT ?label WHERE {
+                                                                                            ?item crm:P1_is_identified_by ?appellation . 
+                                                                                            ?appellation a crm:E44_Place_Appellation . 
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                        }'
+                                                                
+                                ></semantic-form-tree-picker-input>
                             </div>
                         </div>
 
@@ -161,7 +199,7 @@
                     </semantic-form-drag-and-drop-input>
                     </div>
 
-             [[!--       <div class="dragAndDrop-input-container">
+                    <div class="dragAndDrop-input-container">
                         <semantic-form-drag-and-drop-input  for='person_signature' label="Signature" 
                                                             placeholder-item-template="<div class='placeholder-item'>
                                                                                         <i class='fa fa-upload'></i>
@@ -169,7 +207,7 @@
                                                                                     </div>"
                                                             nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
                         </semantic-form-drag-and-drop-input>
-                    </div> --]]
+                    </div>
 
                     <div class="dragAndDrop-input-container">
                         <semantic-form-drag-and-drop-input    for='person_document' label="Documents" 

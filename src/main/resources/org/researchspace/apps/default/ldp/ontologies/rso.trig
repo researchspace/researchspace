@@ -54,6 +54,29 @@
     rdfs:label "Association"@en;
     rdfs:comment "This is a specialisation of Attribute Assignment in order to assign attributes and typing of properties which are sub properties / specialisations of CRM asserted in the British Museum ontology";
     rdfs:subClassOf crm:E13_Attribute_Assignment .
+
+  rs:Relationship a owl:Class;
+    rdfs:label "Relationship"@en;
+    rdfs:comment "This typically models the long-term relationship of two instances of E21 Person. This would indicate interaction that would impact the attitudes or beliefs of the participants. ";
+    rdfs:subClassOf crm:E2_Temporal_Entity . 
+
+  rs:PX_binds a owl:ObjectProperty;
+    rdfs:label "bind"@en;
+    rdfs:domain rs:Relationship;
+    rdfs:range crm:E21_Person;
+    rsdf:comment "Person bound by the relationship."
+
+  rs:PX_to a owl:ObjectProperty;
+    rdfs:label "to"@en;
+    rdfs:domain rs:Relationship;
+    rdfs:range crm:E21_Person;
+    rsdf:comment "Person the relationship is bound to. "
+
+  rs:PX_pupil_of a owl:ObjectProperty;
+    rdfs:label "Pupil of"@en ;
+    rdfs:domain crm:E21_Person;
+    rdfs:comment "This should be considered a shortcut for a CRM teaching activity";
+    rdfs:range crm:E39_Actor .
   
   rs:PX_field_of_activity_of_the_agent a owl:DatatypeProperty;
     rdfs:subPropertyOf crm:P3_has_note;
@@ -252,12 +275,6 @@
     rdfs:range xsd:string;
     rdfs:domain crm:E1_CRM_Entity;
     rdfs:subPropertyOf crm:P3_has_note .
-  
-  rs:PX_pupil_of a owl:ObjectProperty;
-    rdfs:label "Pupil of"@en ;
-    rdfs:domain crm:E21_Person;
-    rdfs:comment "This should be considered a shortcut for a CRM teaching activity";
-    rdfs:range crm:E39_Actor .
   
   rs:PX_property a owl:ObjectProperty;
     rdfs:label "property"@en ;

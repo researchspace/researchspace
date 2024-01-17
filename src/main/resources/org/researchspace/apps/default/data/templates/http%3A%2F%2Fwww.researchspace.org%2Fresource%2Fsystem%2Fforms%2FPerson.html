@@ -21,12 +21,16 @@
                             person_birth="http://www.researchspace.org/pattern/system/person/birth"
                             person_death="http://www.researchspace.org/pattern/system/person/death"
 
+                            person_contact_point="http://www.researchspace.org/pattern/system/actor/contact_point"
+
                             person_profession="http://www.researchspace.org/pattern/system/person/profession"
                             person_field_of_work="http://www.researchspace.org/pattern/system/person/field_of_work"
-                            person_student="http://www.researchspace.org/pattern/system/person/student"
-                            person_student_of="http://www.researchspace.org/pattern/system/person/student_of"
                             person_joining_organisation_range="http://www.researchspace.org/pattern/system/actor/joining_range"
-                            person_member_of="http://www.researchspace.org/pattern/system/actor/P107i_is_current_or_former_member_of"
+                            
+                            person_relationship="http://www.researchspace.org/pattern/system/person/relationship"
+                            person_parent="http://www.researchspace.org/pattern/system/person/parent"
+                            
+                            person_member_of="http://www.researchspace.org/pattern/system/actor/is_current_or_former_member_of"
 
                             person_participated_in_event="http://www.researchspace.org/pattern/system/actor/participated_in_event"
                             person_performed_activity="http://www.researchspace.org/pattern/system/actor/performed_activity"
@@ -224,11 +228,122 @@
         </bs-tab>
 
         <bs-tab event-key="contact" title="Contact details">
+            <semantic-form-composite-input  for="person_contact_point" 
+                                            label="Contact detail"
+                                            new-subject-template="/contact_point/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        contact_point_type="http://www.researchspace.org/pattern/system/contact_point/type"
+                                                        contact_point_text="http://www.researchspace.org/pattern/system/contact_point/text"
+                                                ]]'>
 
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E51_Contact_Point'> </semantic-form-hidden-input>
+            
+                <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <semantic-form-tree-picker-input    for='contact_point_type' 
+                                                            label="Contact point"
+                                                            render-header=false 
+                                                            placeholder="Select type"
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/contact_point_type>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/contact_point_type>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/contact_point_type"
+                                                                                                    entityType="contact type" }}{{{{/raw}}}}'
+                                                                                                    
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/contact_point_type",
+                                                                                        "tooltip": "Open list of contact types"
+                                                                                        }'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                                            }'
+                        ></semantic-form-tree-picker-input>  
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-text-input for='contact_point_text' render-header=false placeholder="Enter contact detail"></semantic-form-text-input>
+                    </div>
+                </div>
+                
+            </semantic-form-composite-input>
         </bs-tab>
 
         <bs-tab event-key="profession" title="Profession">
               <semantic-form-text-input for="person_profession" label="Profession" placeholder="Enter person profession"> </semantic-form-text-input>
+        </bs-tab>
+
+        <bs-tab event-key="relationship" title="Social relationships">
+            <div class="dragAndDrop-input-container">
+                <semantic-form-drag-and-drop-input  for="person_parent" 
+                                                    label="Parents" 
+                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                        <rs-icon icon-type='round' icon-name='person'></rs-icon>
+                                                        <div>Drag existing person or click to create a new one</div>
+                                                        </div>"
+                                                    nested-form-template='{{> forms:Person nested=true editable=true mode=new }}'>
+                </semantic-form-drag-and-drop-input>
+            </div>
+
+            <semantic-form-composite-input  for="person_relationship" 
+                                            label="Relationship"
+                                            new-subject-template="/person_relationship/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        relationship_type="http://www.researchspace.org/pattern/system/relationship/type"
+                                                        relationship_bound_to_person="http://www.researchspace.org/pattern/system/relationship/bound_to_person"
+                                                ]]'>
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E51_Contact_Point'> </semantic-form-hidden-input>
+            
+                <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <semantic-form-tree-picker-input    for='relationship_type' 
+                                                            label="Type"
+                                                            render-header=false 
+                                                            placeholder="Select type"
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/person_relationship_type>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/person_relationship_type>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/person_relationship_type"
+                                                                                                    entityType="relationship type" }}{{{{/raw}}}}'
+                                                                                                    
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/person_relationship_type",
+                                                                                        "tooltip": "Open list of relationship types"
+                                                                                        }'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                                            }'
+                        ></semantic-form-tree-picker-input>  
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-tree-picker-input    for='relationship_bound_to_person' 
+                                                            label="Person"
+                                                            render-header=false 
+                                                            placeholder="Select/add person"
+                                                            tree-patterns='{"scheme": "crm:E21_Person"}'
+
+                                                            nested-form-template='{{> forms:Person nested=true editable=true mode=new }}'
+                                                            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/person_appellation> .
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                            }'
+                        ></semantic-form-tree-picker-input>  
+                    </div>
+                </div>
+                
+            </semantic-form-composite-input>
         </bs-tab>
 
         <bs-tab event-key="event" title="Events">

@@ -53,12 +53,15 @@ import {
 } from './ResourceEditorFormConfig';
 import { InputKind } from './inputs/InputCommpons';
 
+import * as TabsEvents from '../ui/tabs/TabEvents'
+
 interface State {
   readonly model?: CompositeValue;
   readonly modelState?: DataState;
   readonly submitting?: boolean;
   readonly recoveredFromStorage?: boolean;
   readonly error?: string;
+  readonly defaultTab?: any
 }
 
 const BROWSER_PERSISTENCE = BrowserPersistence.adapter<ValuePatch>();
@@ -167,6 +170,16 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
       ).observe({
         value: () => {
           this.onSave();
+        }
+      });
+
+      this.cancellation.map(
+        listen({
+          eventType: TabsEvents.TabSelected,
+        })
+      ).observe({
+        value: (e) => {
+          this.setState({defaultTab: e.data.key})
         }
       });
     }
@@ -396,6 +409,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               subject: finalModel.subject,
               eventProps: { isNewSubject, sourceId: this.props.id },
               queryParams: getPostActionUrlQueryParams(this.props),
+              defaultTabKey: this.state.defaultTab
             });
           },
           error: (error) => {
@@ -577,7 +591,7 @@ function loadTextFileFromInput(file: File): Kefir.Stream<string> {
   return Kefir.stream((emitter) => {
     const reader = new FileReader();
     reader.onload = (event) => {
-      emitter.emit((event.target as FileReader).result as string);
+      emitter.emit((event.target).result as string);
       emitter.end();
     };
     reader.onerror = (event) => {

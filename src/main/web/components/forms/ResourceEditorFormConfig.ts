@@ -29,6 +29,7 @@ import { FieldDefinitionProp } from './FieldDefinition';
 import { TriplestorePersistence } from './persistence/TriplestorePersistence';
 import { CompositeValue } from './FieldValues';
 import * as FormEvents from './FormEvents';
+import { BrowserPersistence } from 'platform/components/utils';
 
 export type PostAction = 'none' | 'reload' | 'redirect' | 'event' | string | ((subject: Rdf.Iri) => void);
 
@@ -102,7 +103,7 @@ export function getPostActionUrlQueryParams(props: ResourceEditorFormProps) {
 
   for (const key in props) {
     if (Object.hasOwnProperty.call(props, key)) {
-      if (key.indexOf(POST_ACTION_QUERY_PARAM_PREFIX) === 0) {
+      if (key.startsWith(POST_ACTION_QUERY_PARAM_PREFIX)) {
         const queryKey = key.substring(POST_ACTION_QUERY_PARAM_PREFIX.length).toLowerCase();
         params[queryKey] = props[key];
       }
@@ -125,8 +126,13 @@ export function performFormPostAction(parameters: {
   subject: Rdf.Iri;
   eventProps: { isNewSubject: boolean; isRemovedSubject?: boolean; sourceId: string };
   queryParams?: { [paramKey: string]: string };
+  defaultTabKey?: any
 }) {
-  const { postAction = 'reload', subject, eventProps, queryParams } = parameters;
+  const { postAction = 'reload', subject, eventProps, queryParams, defaultTabKey } = parameters;
+  const LocalStorageState = BrowserPersistence.adapter<{
+    readonly sourceId?: string;
+    readonly defaultTabKey?: any;
+  }>();
   if (postAction === 'none') {
     return;
   }
@@ -156,6 +162,12 @@ export function performFormPostAction(parameters: {
         eventType: FormEvents.FormResourceUpdated,
         source: eventProps.sourceId,
         data: { iri: subject.value },
+      });
+    }
+    if(defaultTabKey) {
+      LocalStorageState.set('form-default-key',{
+        sourceId: eventProps.sourceId,
+        defaultTabKey: defaultTabKey
       });
     }
     return;

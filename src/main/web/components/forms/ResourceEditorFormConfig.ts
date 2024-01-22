@@ -29,7 +29,7 @@ import { FieldDefinitionProp } from './FieldDefinition';
 import { TriplestorePersistence } from './persistence/TriplestorePersistence';
 import { CompositeValue } from './FieldValues';
 import * as FormEvents from './FormEvents';
-import { BrowserPersistence } from 'platform/components/utils';
+import {localeStorageTabs} from '../../components/ui/tabs/LocalStorageTab'
 
 export type PostAction = 'none' | 'reload' | 'redirect' | 'event' | string | ((subject: Rdf.Iri) => void);
 
@@ -129,10 +129,6 @@ export function performFormPostAction(parameters: {
   defaultTabKey?: any
 }) {
   const { postAction = 'reload', subject, eventProps, queryParams, defaultTabKey } = parameters;
-  const LocalStorageState = BrowserPersistence.adapter<{
-    readonly sourceId?: string;
-    readonly defaultTabKey?: any;
-  }>();
   if (postAction === 'none') {
     return;
   }
@@ -165,10 +161,10 @@ export function performFormPostAction(parameters: {
       });
     }
     if(defaultTabKey) {
-      LocalStorageState.set('form-default-key',{
+      localeStorageTabs.setValues({
         sourceId: eventProps.sourceId,
         defaultTabKey: defaultTabKey
-      });
+      })
     }
     return;
   } else if (typeof postAction === 'function') {

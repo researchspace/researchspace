@@ -2,8 +2,7 @@ import { trigger } from 'platform/api/events/EventsStore';
 import * as React from 'react';
 import { Tabs } from 'react-bootstrap';
 import * as TabsEvents from './TabEvents';
-import { Cancellation } from 'platform/api/async/Cancellation';
-import { BrowserPersistence } from 'platform/components/utils';
+import {localeStorageTabs} from './LocalStorageTab'
 
 interface Props {
   id: string;
@@ -14,12 +13,6 @@ interface Props {
 
 export class RsTabs extends React.Component<Props, {key: any}> {
 
-  private readonly cancellation = new Cancellation();
-  private LocalStorageState = BrowserPersistence.adapter<{
-    readonly sourceId?: string;
-    readonly defaultTabKey?: any;
-  }>();
-
   constructor(props, context) {
     super(props, context);
     this.state = {
@@ -28,17 +21,13 @@ export class RsTabs extends React.Component<Props, {key: any}> {
   }
 
   componentDidMount() {
-    const { defaultTabKey, sourceId } = this.LocalStorageState.get('form-default-key')
+    const { defaultTabKey, sourceId } = localeStorageTabs.getValues()
     if(defaultTabKey && this.props.id === sourceId) {
       this.setState({key: defaultTabKey})
-      this.LocalStorageState.remove('form-default-key')
+      localeStorageTabs.removeKey()
     }
     
     
-  }
-
-  componentWillUnmount() {
-    this.cancellation.cancelAll();
   }
 
   private onTabSelected = (key: any) => {

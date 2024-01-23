@@ -1,0 +1,19 @@
+@prefix repo: <http://www.openrdf.org/config/repository#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ephedra: <http://www.researchspace.org/resource/system/ephedra#> .
+@prefix : <http://www.researchspace.org/resource/system/service/wikidataentity/> .
+
+[] a repo:Repository ;
+   repo:repositoryID "wikidata-entity" ; 
+   rdfs:label "Wikidata entity search service repository" ;
+   repo:repositoryImpl [
+    repo:repositoryType "openrdf:SailRepository" ;
+    sr:sailImpl [
+      sail:sailType "researchspace:RESTSail" ;
+      ephedra:serviceURL "https://www.wikidata.org/w/api.php?action=wbsearchentities&type=item&format=json&" ;
+      ephedra:httpMethod "GET" ;
+      ephedra:implementsService :WikidataEntity
+    ] 
+  ] .

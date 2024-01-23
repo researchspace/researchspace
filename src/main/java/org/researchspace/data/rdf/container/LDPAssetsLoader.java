@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -48,6 +49,8 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -55,6 +58,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
 import org.researchspace.config.Configuration;
+import org.researchspace.kp.KnowledgePatternGenerator;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
 import org.researchspace.services.storage.api.ObjectKind;
@@ -94,6 +98,9 @@ public class LDPAssetsLoader {
 
     @Inject
     private LDPImplManager ldpImplManager;
+
+    @Inject
+    private KnowledgePatternGenerator pg;
 
     public LDPAssetsLoader() {
 
@@ -160,6 +167,52 @@ public class LDPAssetsLoader {
         }
         logger.info("All LDP assets loading finished");
 
+        //generate KPs if they don't already exist
+        String checkIfKPsExistForPreloadedOntologies = "SELECT ?ontology (count(?prop) as ?propCount) (count(?kp) as ?kpCount) {" +
+                             "?ontology a owl:Ontology . " +
+                             "BIND((IF((STRENDS(STR(?ontology),\"/\")),STR(?ontology),CONCAT(STR(?ontology),\"/\"))) as ?ontologyURI)" +
+                             "BIND(IRI(CONCAT(STR(?ontologyURI),\"context\")) as ?ontologyContext)" +
+                             "{" +
+                                "graph ?ontologyContext {" +
+                                "  ?prop a ?owlType . " +
+                                "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty)) " +    
+                                "  FILTER(CONTAINS(STR(?prop),REPLACE(STR(?ontologyContext),\"/context\",\"\"))) " +
+                                "}" +
+                             "}" +
+                             "UNION { " +
+                             "  ?kp <http://www.researchspace.org/resource/system/fields/ontology> ?ontology ." +
+                             "  ?kp a ?owlType ." +
+                             "  FILTER (?owlType IN (owl:DatatypeProperty,owl:ObjectProperty))" +
+                            "}" +
+                          "}" + 
+                          "group by ?ontology";
+ 
+       
+        Repository defaultRepository = repositoryManager.getDefault();
+         
+        // connection and to run the sparql query
+        logger.trace(checkIfKPsExistForPreloadedOntologies);
+         try (RepositoryConnection con = defaultRepository.getConnection()) {
+            try (TupleQueryResult tqr = con.prepareTupleQuery(checkIfKPsExistForPreloadedOntologies).evaluate()) {
+                while (tqr.hasNext()) {
+                    BindingSet bs = tqr.next();
+
+                    int kpCountValue = Integer.parseInt(bs.getBinding("kpCount").getValue().stringValue());
+                    int propCountValue = Integer.parseInt(bs.getBinding("propCount").getValue().stringValue());
+
+                    if (propCountValue != kpCountValue) {
+                        //generate KPs for the current ontology       
+                        IRI ontologyIri = SimpleValueFactory.getInstance().createIRI(bs.getBinding("ontology").getValue().stringValue()); 
+                        logger.trace("start generating knowledge patterns for ");
+                        logger.trace(ontologyIri);               
+                        pg.generateKnowledgePatternsFromOntology(ontologyIri);                        
+                    }                                    
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to run knowledge patterns generator.... \n");
+            logger.error(e.getMessage());           
+        }
     }
 
     private void loadAllToRepository(String repositoryId, Map<String, Map<StoragePath, FindResult>> mapResults)

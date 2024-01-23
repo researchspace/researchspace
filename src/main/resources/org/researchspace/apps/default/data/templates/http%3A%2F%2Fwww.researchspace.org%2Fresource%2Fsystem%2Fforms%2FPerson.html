@@ -51,13 +51,64 @@
         <bs-tab event-key="detail" title="Details">
             <div class="form-2column-container">
                 <div>
-                    <semantic-form-text-input for="person_appellation" label="Full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
+                    {{#if wikidataResourceName}}
+                        <semantic-form-text-input for="person_appellation" label="Full name" placeholder="Enter person full name / known as" default-value="{{wikidataResourceName}}" force-defaults=true> </semantic-form-text-input>
+                    {{else}}
+                        <semantic-form-text-input for="person_appellation" label="Full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
+                    {{/if}}
                     <semantic-form-text-input for="person_alsoKnownAs" label="Also known as" placeholder="Enter person additional name / also known as"> </semantic-form-text-input>
                     <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language"> </semantic-form-text-input>
-                    <semantic-form-text-input for="person_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
-                    <semantic-form-text-input for="person_gender" label="Gender" placeholder="Enter person gender"> </semantic-form-text-input>
-                    <semantic-form-text-input for="person_nationality" label="Nationality" placeholder="Enter person nationality"> </semantic-form-text-input>
+                    
+                    {{#if wikidataResourceDescription}}
+                        <semantic-form-text-input for="person_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{wikidataResourceDescription}}"> </semantic-form-text-input>
+                    {{else}}
+                        <semantic-form-text-input for="person_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                    {{/if}}
 
+                    <semantic-form-tree-picker-input    for="person_gender" 
+                                                        label="Gender"
+                                                        placeholder="Select gender"
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/person_gender>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/person_gender>",
+                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                scheme="http://www.researchspace.org/resource/vocab/person_gender"
+                                                                                                entityType="gender" }}{{{{/raw}}}}'
+                                                                                                
+                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                    "view": "vocabulary-content",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/person_gender",
+                                                                                    "tooltip": "Open list of gender"
+                                                                                    }'
+
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            ?item skos:prefLabel ?label .
+                                                                        }'
+                    ></semantic-form-tree-picker-input>  
+                    
+                    <semantic-form-tree-picker-input    for="person_nationality" 
+                                                        label="Nationality"
+                                                        placeholder="Select nationality"
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/person_nationality>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/person_nationality>",
+                                                                        "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent"}'
+
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                scheme="http://www.researchspace.org/resource/vocab/person_nationality"
+                                                                                                entityType="nationality" }}{{{{/raw}}}}'
+                                                                                                
+                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                    "view": "vocabulary-content",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/person_nationality",
+                                                                                    "tooltip": "Open list of nationalities"
+                                                                                    }'
+
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            ?item skos:prefLabel ?label .
+                                                                        }'
+                    ></semantic-form-tree-picker-input> 
+                    
                     <semantic-form-composite-input  for="person_birth" 
                                                     label="Birth"
                                                     new-subject-template="/E67_Birth"  
@@ -186,6 +237,40 @@
                 </div>
 
                 <div class="form-media-column">
+
+                {{#if wikidataResourceURI}}
+                    <div style="padding-top: 20px;">
+                        <span>Imported from: </span>
+                        <a class="text-link-action" target="_blank" href="{{wikidataResourceURI}}" title="{{wikidataResourceURI}}">{{wikidataResourceURI}}</a>
+                    </div>
+                {{else}}
+                    {{#if node}}
+                        <semantic-query query='SELECT ?resource ?wikidataURI WHERE {
+                                                BIND(<{{node}}> AS ?resource)
+
+                                                ?resource crm:P129i_is_subject_of ?entityFormRecord .
+                                                # ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                                                ?entityFormRecordCreation crm:P134_continued ?importFromOSM .
+                                                ?importFromOSM crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_OSM> .
+                                                ?importFromOSM crmdig:L14_transferred ?wikidataURI .
+                                                ?wikidataURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                            }'
+                                    template='{{> template}}'
+                        >
+                            
+                            <template id='template'>
+                                <div style="padding-top: 20px;">
+                                    <span>Imported from: </span>
+                                    <a class="text-link-action" target="_blank" href="{{bindings.0.wikidataURI.value}}" title="{{bindings.0.wikidataURI.value}}">{{bindings.0.wikidataURI.value}}</a>
+                                </div>
+                            </template>
+                        </semantic-query>
+                    {{/if}}
+                {{/if}}
 
                     <div class="dragAndDrop-input-container">
                         <semantic-form-drag-and-drop-input for='person_image_main_representation' label="Main image" 

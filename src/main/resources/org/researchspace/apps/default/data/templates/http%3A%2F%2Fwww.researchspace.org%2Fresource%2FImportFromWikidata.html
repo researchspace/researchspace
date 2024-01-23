@@ -1,68 +1,63 @@
 <div class="page__section-container">
-  <h5 style="margin: 0px 0 7px;">Search on Wikidata</h5>
+  <h5 style="margin: 0px 0 7px;">Search in Wikidata</h5>
 
   <semantic-search>
-    <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E53_Place>'
+    <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E21_Person>'
                                     placeholder="Search person"
                                     min-search-term-length=2
                                     tokenize-lucene-query=false
                                     escape-lucene-syntax=false
                                     debounce=1000
                                     debounce=500
-                                    query=' SERVICE <https://query.wikidata.org/sparql> {
-                                      ?wikiURI rdfs:label ?name .
-                                      FILTER (lang(?name) = "en")
-                                      OPTIONAL  { ?wikiURI wdt:P18 ?image . }
-                                    
-                                    
-                                    
-                                    PREFIX osm: <http://www.researchspace.org/resource/system/services/osm/>
+                                    query='PREFIX wikidataentity: <http://www.researchspace.org/resource/system/service/wikidataentity/>
                                             SELECT ?subject WHERE { 
-                                              ?subject osm:q ?__token__ .
-                                              ?subject osm:display_name ?placeName.
-                                              ?subject osm:geotext ?geoText.
-                                              ?subject osm:wikidata ?wikidataId .
+                                              ?subject wikidataentity:search ?__token__ .
+                                              ?subject wikidataentity:language "en" .
+                                              ?subject wikidataentity:id ?wikidataId .
+                                              ?subject wikidataentity:concepturi ?concepturi .
+                                              ?subject wikidataentity:label ?wikidataEntityLabel .
+                                              ?subject wikidataentity:description ?description .
                                             }'
     ></semantic-search-query-keyword>
-    
+    <!-- add label-->
     <semantic-search-result-holder>
       <div style="margin-top: 25px;">
         <semantic-search-result>
           <div class="personResultsTable">
-            <semantic-context repository='osm-nominatim-search'>
+            <semantic-context repository='wikidata-entity'>
               <semantic-table id='semantic-search-result-table'
-                              query='SELECT DISTINCT ?subject ?placeName ?wikidataId ?geoText WHERE {
+                              query='SELECT DISTINCT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi WHERE {
                                       BIND(?subject as ?iri) .
                                     } ORDER BY ?subject'
 
-                              options='{"showFilter":false, "resultsPerPage":10}' 
+                              options='{"showFilter":true, "resultsPerPage":10}' 
                               column-configuration='[
-                                      {"displayName": "Name", "cellTemplate": "{{> placeName}}" },
-                                      {"displayName": "Description (from Wikidata)", "cellTemplate": "{{> wikidata}}"},
-                                      {"displayName": "Image", "cellTemplate": "{{> images}}"},
-                                      {"displayName": "Place", "cellTemplate": "{{> placeMap}}" },
-                                      {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
-                                    ]'   
+                                                      {"displayName": "Name", "variableName": "wikidataEntityLabel", "cellTemplate": "{{> resourceName}}" },
+                                                      {"displayName": "Description", "variableName": "description"},
+                                                      {"displayName": "Resource type", "cellTemplate": "{{> type}}"},
+                                                      {"displayName": "Image", "cellTemplate": "{{> images}}"},
+                                                      {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
+                                                    ]'   
               >
 
-                <template id='placeName'>
-                  <div>
-                    {{#if wikidataId.value}}
-                    <a class="text-link-action" 
-                        target="_blank" 
-                        href="http://www.wikidata.org/entity/{{wikidataId.value}}"
-                        title="http://www.wikidata.org/entity/{{wikidataId.value}}">
-                      {{placeName.value}}
-                    </a>
-                    {{else}}
-                      {{placeName.value}}
-                    {{/if}}
-                  </div>
-                </template>
+              <template id='resourceName'>
+                <div>
+                  {{#if wikidataId.value}}
+                  <a class="text-link-action" 
+                      target="_blank" 
+                      href="http://www.wikidata.org/entity/{{wikidataId.value}}"
+                      title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                    {{wikidataEntityLabel.value}}
+                  </a>
+                  {{else}}
+                    {{wikidataEntityLabel.value}}
+                  {{/if}}
+                </div>
+              </template>
 
-                <template id='wikidata'>
+                <template id='type'>
                   <div>
-                    {{#if wikidataId.value}}
+                    {{#if wikidataId.value}} 
                       <semantic-context repository='default'>
                         <semantic-query query='
                                           PREFIX wikibase: <http://wikiba.se/ontology#>
@@ -70,42 +65,32 @@
                                           PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
                                           PREFIX wdt: <http://www.wikidata.org/prop/direct/>
                                           PREFIX wd: <http://www.wikidata.org/entity/>
-                                          PREFIX schema: <http://schema.org/>
-
-                                          SELECT ?description WHERE { 
+                                          
+                                          SELECT ?typeLabel WHERE { 
+                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataEntity) .
                                             SERVICE <https://query.wikidata.org/sparql> {  
-                                              BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlace) .
+                                              # is it a person
+                                              ?wikidataEntity wdt:P31 ?type .
+
                                               SERVICE wikibase:label { 
-                                                bd:serviceParam wikibase:language "en". 
-                                                ?osmPlace rdfs:label ?label .
-                                                ?osmPlace schema:description ?description .
+                                                bd:serviceParam wikibase:language "en".
+                                                ?type rdfs:label ?typeLabel .                                      
                                               }
-                                            }
+                                            } 
                                           }'
-                                        >
+                                        
+                            template='{{> template}}'
+                            no-result-template='{{> noResults}}'>
+
+                            <template id='template'>
+                                <strong>{{bindings.0.typeLabel.value}}</strong>
+                            </template>
+                            <template id='noResults'>
+                              <div></div>
+                            </template>
                         </semantic-query>
                       </semantic-context>
                     {{/if}}
-                  </div>
-                </template>
-
-                <template id='placeMap'>
-                  <div style='height: 230px; width: 370px;'>
-                    <semantic-context repository='default'>
-                      <semantic-map query='SELECT ?wkt WHERE { BIND("{{geoText.value}}" AS ?wkt) }'
-                                    tuple-template='<b style="color:#525156; padding-botto:5px;">{{placeName.value}}</b>
-                                                    {{#if wikidataId.value}}
-                                                      <div>
-                                                        <a style="color:#396EFE;"
-                                                            target="_blank" 
-                                                            href="http://www.wikidata.org/entity/{{wikidataId.value}}"
-                                                            title="http://www.wikidata.org/entity/{{wikidataId.value}}">
-                                                          Open in wikidata
-                                                        </a>
-                                                      </div>
-                                                    {{/if}}'>
-                      </semantic-map>
-                    </semantic-context>
                   </div>
                 </template>
 
@@ -155,58 +140,36 @@
                 
                 <template id='actions'>
                   <div>
-                    {{#if wikidataId.value}}
-                  
+                    {{#if wikidataId.value}} 
                       <semantic-context repository='default'>
-                        <semantic-query query='
-                                          PREFIX wikibase: <http://wikiba.se/ontology#>
-                                          PREFIX bd: <http://www.bigdata.com/rdf#>
-                                          PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                          PREFIX wd: <http://www.wikidata.org/entity/>
-                                          PREFIX schema: <http://schema.org/>
-
-                                          SELECT ?osmPlaceURI ?osmPlaceName ?placeLabel ?placeDescription ?osmGeoCoordinates (SAMPLE(?_image) AS ?placeImage) WHERE { 
-                                            SERVICE <https://query.wikidata.org/sparql> {  
-                                              BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlaceURI) .
-                                              BIND("{{placeName.value}}" as ?osmPlaceName)
-                                              BIND("{{geoText.value}}" as ?osmGeoCoordinates)
-
-                                              OPTIONAL { ?osmPlaceURI wdt:P18 ?_image . }
-                                              SERVICE wikibase:label { 
-                                                bd:serviceParam wikibase:language "en". 
-                                                ?osmPlaceURI rdfs:label ?placeLabel .
-                                                ?osmPlaceURI schema:description ?placeDescription .
+                        <semantic-if query='PREFIX wikibase: <http://wikiba.se/ontology#>
+                                            PREFIX bd: <http://www.bigdata.com/rdf#>
+                                            PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
+                                            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+                                            PREFIX wd: <http://www.wikidata.org/entity/>
+                        
+                                            ASK { 
+                                              SERVICE <https://query.wikidata.org/sparql> { 
+                                                <{{concepturi.value}}> wdt:P31 wd:Q5 
                                               }
-                                            }
-                                          } GROUP BY ?osmPlaceURI ?osmPlaceName ?placeLabel ?placeDescription ?osmGeoCoordinates'
-                                        >
-                          <template id='template'>
-                            <mp-event-trigger id='{{viewId}}-select-osm-place-trigger' 
-                                              type='osmPlaceSelect' 
-                                              data='{"osmPlaceURI": "{{bindings.0.osmPlaceURI.value}}", 
-                                                      "osmPlaceName": "{{bindings.0.osmPlaceName.value}}", 
-                                                      "placeLabel": "{{bindings.0.placeLabel.value}}",
-                                                      "placeDescription": "{{bindings.0.placeDescription.value}}",
-                                                      "osmGeoCoordinates": "{{bindings.0.osmGeoCoordinates.value}}"
+                                            }'
+
+                                      then='{{> then}}'>
+
+                          <template id='then'>
+                            <mp-event-trigger id='{{viewId}}-select-wikidataResource-trigger' 
+                                              type='wikidataResourceSelect' 
+                                              data='{"wikidataResourceURI": "{{concepturi.value}}", 
+                                                      "wikidataResourceName": "{{wikidataEntityLabel.value}}", 
+                                                      "wikidataResourceDescription": "{{description.value}}"
                                                     }' 
                                         >
-                                        <button class="btn btn-action">Select</button>
+                                        <button class="btn btn-action">Select person</button>
                             </mp-event-trigger>
                           </template>
-                        </semantic-query>
+                        </semantic-if>
+
                       </semantic-context>
-            
-                    {{else}}
-                      <mp-event-trigger id='{{viewId}}-select-osm-place-trigger' 
-                                        type='osmPlaceSelect' 
-                                        data='{"osmPlaceName": "{{placeName.value}}", 
-                                              "osmGeoCoordinates": "{{geoText.value}}",
-                                              {{#if scheme}}"scheme": "{{scheme}}",{{/if}}
-                                              "viewId": "{{viewId}}"
-                                              }' >
-                                        <button class="btn btn-action">Select</button>
-                      </mp-event-trigger>
                     {{/if}}
                   </div>
                 </template>

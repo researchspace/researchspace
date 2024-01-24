@@ -1,10 +1,8 @@
-
 <div style="visibility:hidden; height: 0;">
     <semantic-form-composite-input for="entity_formRecord"
                                     render-header=false 
                                     new-subject-template="/entity_form_record" 
-                                    fields='[[
-                                            fieldDefinitions
+                                    fields='[[fieldDefinitions
                                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                             has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                                             entity_formRecord_creation="http://www.researchspace.org/pattern/system/entityFormRecord/formRecord_creation"
@@ -18,14 +16,13 @@
         <semantic-form-composite-input  for="entity_formRecord_creation"
                                         render-header=false 
                                         new-subject-template="/entity_formRecord_creation" 
-                                        fields='[[
-                                                fieldDefinitions
+                                        fields='[[fieldDefinitions
                                                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                                 has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                                                 creation_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
                                                 creation_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
-                                                creation_afterOSMImport="http://www.researchspace.org/pattern/system/activity/continued_data_transfer"
-                                                creation_afterOSMImport_withOsmPlaceURI="http://www.researchspace.org/pattern/system/activity/continued_data_transfer_min1"
+                                                creation_afterDataImport="http://www.researchspace.org/pattern/system/activity/continued_data_transfer"
+                                                creation_afterDataImport_withResourceSourceURI="http://www.researchspace.org/pattern/system/activity/continued_data_transfer_min1"
                                             ]]'
                                         >
                                     
@@ -40,46 +37,47 @@
                 <semantic-form-hidden-input for="creation_carried_out_by" default-value='[[userUri]]' ></semantic-form-hidden-input>
             {{/if}}
 
-            {{#if osmPlaceURI}}
-                <semantic-form-composite-input  for="creation_afterOSMImport_withOsmPlaceURI"
+            {{#if (or osmPlaceURI wikidataResourceURI)}}
+                <semantic-form-composite-input  for="creation_afterDataImport_withResourceSourceURI"
                                                 render-header=false 
-                                                new-subject-template="/import_from_OSM" 
+                                                new-subject-template="/import_from_external_source" 
                                                 fields='[[fieldDefinitions
                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                        importFromOSM_osmURI="http://www.researchspace.org/pattern/system/import_from_OSM/osmURI"
+                                                        import_resourceSourceURI="http://www.researchspace.org/pattern/system/import_from_external_source/sourceURI"
                                                     ]]'
                                                 >
                                         
                     <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D12_Data_Transfer_Event"></semantic-form-hidden-input>
-                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/import_from_OSM'></semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source'></semantic-form-hidden-input>
                 
-                    <semantic-form-hidden-input for="importFromOSM_osmURI" default-value="{{osmPlaceURI}}" force-defaults=true></semantic-form-hidden-input>  
+                    {{#if osmPlaceURI}}
+                        <semantic-form-hidden-input for="import_resourceSourceURI" default-value="{{osmPlaceURI}}" force-defaults=true></semantic-form-hidden-input>  
+                    {{/if}}
+                    {{#if wikidataResourceURI}}
+                        <semantic-form-hidden-input for="import_resourceSourceURI" default-value="{{wikidataResourceURI}}" force-defaults=true></semantic-form-hidden-input>  
+                    {{/if}}
 
                 </semantic-form-composite-input>
             {{/if}}
 
             {{#if node}}
-                <semantic-form-composite-input  for="creation_afterOSMImport"
+                <semantic-form-composite-input  for="creation_afterDataImport"
                                                 render-header=false 
-                                                new-subject-template="/import_from_OSM" 
-                                                fields='[[
-                                                        fieldDefinitions
+                                                new-subject-template="/import_from_external_source" 
+                                                fields='[[fieldDefinitions
                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                        importFromOSM_osmURI="http://www.researchspace.org/pattern/system/import_from_OSM/osmURI"
+                                                        import_resourceSourceURI="http://www.researchspace.org/pattern/system/import_from_external_source/sourceURI"
                                                     ]]'
                                                 >
                                         
                     <semantic-form-hidden-input for="classtype" default-value="http://www.ics.forth.gr/isl/CRMdig/D12_Data_Transfer_Event"></semantic-form-hidden-input>
-                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/import_from_OSM'></semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source'></semantic-form-hidden-input>
                 
-                    <semantic-form-hidden-input for="importFromOSM_osmURI"></semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="import_resourceSourceURI"></semantic-form-hidden-input>
 
                 </semantic-form-composite-input>
-            {{/if}}
-
-            {{#if wikidataResourceURI}}
             {{/if}}
 
         </semantic-form-composite-input>

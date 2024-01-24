@@ -245,27 +245,28 @@
                     </div>
                 {{else}}
                     {{#if node}}
-                        <semantic-query query='SELECT ?resource ?wikidataURI WHERE {
+                        <semantic-query query='SELECT ?resource ?sourceURI WHERE {
                                                 BIND(<{{node}}> AS ?resource)
 
                                                 ?resource crm:P129i_is_subject_of ?entityFormRecord .
-                                                # ?entityFormRecord a crmdig:D1_Digital_Object .
                                                 ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
                                                 ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
                                                 ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
 
-                                                ?entityFormRecordCreation crm:P134_continued ?importFromOSM .
-                                                ?importFromOSM crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_OSM> .
-                                                ?importFromOSM crmdig:L14_transferred ?wikidataURI .
-                                                ?wikidataURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
+                                                ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
                                             }'
                                     template='{{> template}}'
                         >
                             
                             <template id='template'>
-                                <div style="padding-top: 20px;">
-                                    <span>Imported from: </span>
-                                    <a class="text-link-action" target="_blank" href="{{bindings.0.wikidataURI.value}}" title="{{bindings.0.wikidataURI.value}}">{{bindings.0.wikidataURI.value}}</a>
+                                <div>
+                                    <div style="padding-top: 20px;">
+                                        <span>Imported from: </span>
+                                        <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
+                                    </div>
                                 </div>
                             </template>
                         </semantic-query>

@@ -24,6 +24,8 @@
 
                         image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                         more_image="http://www.researchspace.org/pattern/system/entity/images" 
+
+                        place_residence_of_actor="http://www.researchspace.org/pattern/system/place/residence_of_actor"
                ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
@@ -189,6 +191,28 @@
         </div>
       </bs-tab>
 
+      <bs-tab event-key="actor" title="Related actors">
+        <semantic-form-tree-picker-input  for="place_residence_of_actor" 
+                                          label="Residence of"
+                                          placeholder="Select actor"
+                                          close-dropdown-on-selection='true'
+                                          tree-patterns='{"scheme": "crm:E39_Actor",
+                                                          "schemePattern": "?item a crm:E39_Actor",
+                                                          "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                          ?appellation a crm:E41_Appellation . 
+                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> . 
+                                                                          ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                          nested-form-template='{{> forms:Actor nested=true editable=true mode=new }}'
+                                          
+                                          query-item-label='SELECT ?label WHERE {
+                                                              ?item crm:P1_is_identified_by ?appellation .
+                                                              ?appellation a crm:E41_Appellation .
+                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> .
+                                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                                          }'>
+        </semantic-form-tree-picker-input>
+      </bs-tab>
       [[> rsp:FormMetadataTab]]
 
     </bs-tabs>

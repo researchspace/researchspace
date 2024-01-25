@@ -26,7 +26,9 @@
 
                             group_carried_out_by_range="http://www.researchspace.org/pattern/system/actor/PC14_carried_out_by_range"
                             group_participated_in_event="http://www.researchspace.org/pattern/system/actor/PC11_participated_in_event"
-                            group_joining_actor_range="http://www.researchspace.org/pattern/system/actor/joining_range"
+                            group_joining_actor_range="http://www.researchspace.org/pattern/system/group/joining_range"
+
+                            group_joined_by="http://www.researchspace.org/pattern/system/actor/joined_by"
                         ]]'
 >
 
@@ -511,21 +513,21 @@
                 </semantic-form-switch>
             </div>
 
-            <h5 class="customFormHeader">Joined</h5>
+            <h5 class="customFormHeader">Gained member by</h5>
             <semantic-form-composite-input for="group_joining_actor_range"
                                           render-header="false"
                                           new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                           fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                      group_role="http://www.researchspace.org/pattern/system/actor/P144.1_kind_of_member"
-                                                      group_joining_actor_domain="http://www.researchspace.org/pattern/system/actor/joining_domain"
+                                                      joining_with_role="http://www.researchspace.org/pattern/system/PC144_joined_with/P144.1_kind_of_member"
+                                                      joined_joining_domain="http://www.researchspace.org/pattern/system/PC144_joined_with/joining_domain"
                                               ]]'>
 
                 <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
                 
                 <div style="margin-top: -15px;">
-                  <semantic-form-tree-picker-input for='group_role' 
-                                                  label="Role" 
+                  <semantic-form-tree-picker-input for='joining_with_role' 
+                                                  label="Joining with role" 
                                                   placeholder="Select role" 
                                                   close-dropdown-on-selection='false'
                                                   tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
@@ -545,25 +547,25 @@
                   </semantic-form-tree-picker-input>
                 </div>
 
-                <semantic-form-composite-input for="group_joining_actor_domain" 
-                                        render-header="false" 
-                                        new-subject-template="/joining_organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                        fields='[[fieldDefinitions
-                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                <semantic-form-composite-input for="joined_joining_domain" 
+                                              render-header="false" 
+                                              new-subject-template="/joining_actor/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                              fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
-                                                joined_joined_actor="http://www.researchspace.org/pattern/system/joining/joined_actor"
-                                                joining_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                                                joining_description="http://www.researchspace.org/pattern/system/entity/description"
-                                        ]]'>
+                                                      joining_joined_actor="http://www.researchspace.org/pattern/system/joining/joined_actor"
+                                                      joining_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                      joining_description="http://www.researchspace.org/pattern/system/entity/description"
+                                              ]]'>
 
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
                     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/joining_actor'></semantic-form-hidden-input>
         
                     <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
                       <div style="flex: 1;">
-                        <semantic-form-tree-picker-input for="joined_joined_actor" 
-                                                          label="Joined actor/group name" 
+                        <semantic-form-tree-picker-input for="joining_joined_actor" 
+                                                          label="Joining of actor" 
                                                           placeholder="Select actor" 
                                                           close-dropdown-on-selection='false'
                                                           tree-patterns='{"scheme": "crm:E39_Actor",
@@ -590,23 +592,19 @@
                                                       new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                       fields='[[fieldDefinitions
                                                                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                  timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
-                                                                  timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
+                                                                  timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
                                                                   timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
                                                           ]]'>   
 
                           <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
 
                           <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
-                              <div style="flex: 1;">
-                                  <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter start date"></semantic-form-datetime-input>
-                              </div>
-                              <div style="flex: 1;">
-                                  <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter end date"></semantic-form-datetime-input>
-                              </div>
-                              <div style="flex: 1;">
-                                  <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
-                              </div>
+                            <div style="flex: 1;">
+                              <semantic-form-datetime-input for="timespan_date" label="Joining date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
+                            </div>
+                            <div style="flex: 1;">
+                                <semantic-form-text-input for='timespan_text_value' label="Joining date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
+                            </div>
                           </div>
                       </semantic-form-composite-input>
                     </div>
@@ -614,6 +612,104 @@
                 </semantic-form-composite-input>
         
             </semantic-form-composite-input> 
+
+            <h5 class="customFormHeader">Joined group</h5>
+            <semantic-form-composite-input for="group_joined_by" 
+                                            render-header="false" 
+                                            new-subject-template="/joining_actor/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                    joining_domain="http://www.researchspace.org/pattern/system/joining/domain"
+                                                    joining_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                    joining_description="http://www.researchspace.org/pattern/system/entity/description"
+                                            ]]'>
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/joining_group'></semantic-form-hidden-input>
+            
+                <semantic-form-composite-input for="joining_domain"
+                                              render-header="false"
+                                              new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                              fields='[[fieldDefinitions
+                                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                          joining_with_role="http://www.researchspace.org/pattern/system/PC144_joined_with/P144.1_kind_of_member"
+                                                          joining_range="http://www.researchspace.org/pattern/system/PC144_joined_with/joining_range"
+                                                  ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
+                    
+                    <div style="margin-top: -15px; display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                      <div style="flex: 1;">
+                        <semantic-form-tree-picker-input  for="joining_range" 
+                                                          label="Group name" 
+                                                          placeholder="Select group" 
+                                                          close-dropdown-on-selection='false'
+                                                          tree-patterns='{"scheme": "crm:E74_Group",
+                                                                                      "schemePattern": "?item a crm:E74_Group",
+                                                                                      "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                                      ?appellation a crm:E41_Appellation . 
+                                                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
+                                                                                                      ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                                          nested-form-template='{{> forms:Group nested=true editable=true mode=new }}'  
+
+                                                          query-item-label='SELECT ?label WHERE {
+                                                                              ?item crm:P1_is_identified_by ?appellation .
+                                                                              ?appellation a crm:E41_Appellation .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> .
+                                                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                                                          }'
+                        ></semantic-form-tree-picker-input>
+                      </div>
+                      <div style="flex: 1;">
+                        <semantic-form-tree-picker-input for='joining_with_role' 
+                                                        label="Joined with role" 
+                                                        placeholder="Select role" 
+                                                        close-dropdown-on-selection='false'
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                                                                        
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                entityType="role" }}{{{{/raw}}}}'
+
+                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                    "view": "vocabulary-content",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                                    "tooltip": "Open list of roles"
+                                                                                  }'
+                                                        >
+                        </semantic-form-tree-picker-input>
+                      </div>
+                    </div>
+                </semantic-form-composite-input> 
+
+                <semantic-form-composite-input  for="joining_date" 
+                                                render-header="false"
+                                                new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                            timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                    ]]'>   
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                    <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                      <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_date" label="Joined date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
+                      </div>
+                      <div style="flex: 1;">
+                          <semantic-form-text-input for='timespan_text_value' label="Joined date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
+                      </div>
+                    </div>
+                </semantic-form-composite-input>
+
+                <semantic-form-text-input for="joining_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
+            </semantic-form-composite-input>
         </bs-tab>
 
      [[!--   [[> rsp:FormMetadataTab]] --]]

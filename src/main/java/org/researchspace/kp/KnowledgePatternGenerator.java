@@ -18,6 +18,7 @@ import org.researchspace.data.rdf.container.FieldDefinitionContainer;
 import org.researchspace.data.rdf.container.LDPApiInterface;
 import org.researchspace.data.rdf.container.LDPContainer;
 import org.researchspace.data.rdf.container.LDPImplManager;
+import org.researchspace.data.rdf.container.LDPResource;
 import org.researchspace.data.rdf.container.PermissionsAwareLDPApiRegistry;
 import org.researchspace.repository.MpRepositoryProvider;
 import org.researchspace.repository.RepositoryManager;
@@ -123,15 +124,10 @@ public class KnowledgePatternGenerator {
                                                               new MpRepositoryProvider(repositoryManager, RepositoryManager.ASSET_REPOSITORY_ID)
                                                               );
 
-        // check if KP already exist in the repository, if so remove it
-        if(container.containsLDPResource(kpGraph.getPointer())) {
-            logger.trace(
-                         "KP {} already exists in the repository, so removing it.",
-                         kpGraph.getPointer()
-                         );
-            ldpApi().deleteLDPResource(kpGraph.getPointer());
-        }
-        container.add(kpGraph);
+        // check if KP doesn't already exist in the repository, create it
+        if (!container.containsLDPResource(kpGraph.getPointer())) {
+           container.add(kpGraph);
+        }       
     }
 
     private PointedGraph generateOpKp(Model onto, IRI ontoIri, IRI prop) {

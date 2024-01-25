@@ -301,7 +301,7 @@
                                             type="lightbox">
                           <mp-overlay-dialog-trigger>
                             <button class="btn btn-action btn-textAndIcon">
-                              <rs-icon icon-type="round" icon-name="file_upload"></rs-icon>
+                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                               <span>Import from OpenStreetMap</span>
                             </button>
                           </mp-overlay-dialog-trigger>
@@ -316,12 +316,12 @@
                         </mp-overlay-dialog>
                       {{/if}}
                       {{#if (eq resourceOntologyClass "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
-                        <mp-overlay-dialog  id='{{viewId}}-importFromWikidata-dialog' 
+                        <mp-overlay-dialog  id='{{viewId}}-importResourceFromWikidata-dialog' 
                                             title="Import from Wikidata" 
                                             type="lightbox">
                           <mp-overlay-dialog-trigger>
                             <button class="btn btn-action btn-textAndIcon">
-                              <rs-icon icon-type="round" icon-name="file_upload"></rs-icon>
+                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                               <span>Import from Wikidata</span>
                             </button>
                           </mp-overlay-dialog-trigger>
@@ -480,6 +480,11 @@
                                               {{#if osmPlaceURI}}"osmGeoCoordinates": "{{osmGeoCoordinates}}",{{/if}}
                                            [[!--   {{#if placeImage}}"placeImage": "{{placeImage}}",{{/if}} --]]
                                             {{/if}}
+                                            {{#if selectedwikidataResource}}
+                                              {{#if wikidataResourceURI}}"wikidataResourceURI": "{{wikidataResourceURI}}",{{/if}}
+                                              {{#if wikidataResourceURI}}"wikidataResourceName": "{{wikidataResourceName}}",{{/if}}
+                                              {{#if wikidataResourceDescription}}"wikidataResourceDescription": "{{wikidataResourceDescription}}",{{/if}}
+                                            {{/if}}
                                             "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                     }'>
                   </inline-template>
@@ -504,6 +509,21 @@
                           proxy-event-type='Component.TemplateUpdate' 
                           proxy-targets='["{{viewId}}-term-forms"]'
                           additional-data='{"mode": "new", "selectedOsmPlace": "true"}'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-wikidataResource-proxy'
+                          on-event-source='{{viewId}}-select-wikidataResource-trigger' 
+                          on-event-type='wikidataResourceSelect'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{viewId}}-importResourceFromWikidata-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-wikidataResource-proxy'
+                          on-event-source='{{viewId}}-select-wikidataResource-trigger' 
+                          on-event-type='wikidataResourceSelect'
+                          proxy-event-type='Component.TemplateUpdate' 
+                          proxy-targets='["{{viewId}}-term-forms"]'
+                          additional-data='{"mode": "new", "selectedwikidataResource": "true"}'
           ></mp-event-proxy>
 
         </div>

@@ -17,13 +17,19 @@
                           activity_status="http://www.researchspace.org/pattern/system/activity/current_status"
                           activity_priority="http://www.researchspace.org/pattern/system/activity/priority"
 
-                          activity_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
-                          activity_start_date="http://www.researchspace.org/pattern/system/activity/start_date"
-                          activity_end_date="http://www.researchspace.org/pattern/system/activity/end_date"
+                          activity_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                          
                           activity_place="http://www.researchspace.org/pattern/system/period/took_place_at"
-                          activity_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/P01i_is_domain_of"
+                          activity_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/is_domain_of"
 
                           activity_request="http://www.researchspace.org/pattern/system/activity/activity_request"
+                          activity_had_participant="http://www.researchspace.org/pattern/system/event/had_participant"
+
+                          activity_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
+                          activity_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
+
+                          activity_was_continued_by_activity="http://www.researchspace.org/pattern/system/activity/was_continued_by_activity"
+                          activity_continued_activity="http://www.researchspace.org/pattern/system/activity/continued_activity"
                 ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
@@ -126,23 +132,41 @@
               </div>
             </div>
 
-            <div style="display: flex; align-items:flex-start; column-gap:15px;">
-                <div style="flex: 1;">
-                    <semantic-form-datetime-input for="activity_date" label="Activity date (as some time within)" placeholder="Enter date"></semantic-form-datetime-input>
+            <semantic-form-composite-input  for="activity_date" 
+                                            render-header="false"
+                                            new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                        timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
+                                                        timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
+                                                        timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                ]]'>   
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_date" label="Date (date value)"  placeholder="Enter activity date (date value)"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter activity start date"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter activity end date"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter activity date (text value)"></semantic-form-text-input>
+                    </div>
                 </div>
-                <div style="flex: 1;">
-                <semantic-form-datetime-input for='activity_start_date' label="Activity start date" placeholder="Enter start date"></semantic-form-datetime-input>
-              </div>
-              <div style="flex: 1;">
-                <semantic-form-datetime-input for='activity_end_date' label="Activity end date" placeholder="Enter end date"></semantic-form-datetime-input>
-              </div>
-            </div>
+            </semantic-form-composite-input>
 
             <semantic-form-tree-picker-input for="activity_place" 
                                               label="Activity place" 
                                               placeholder="Select place" 
                                               close-dropdown-on-selection='false'
                                               tree-patterns='{"scheme": "crm:E53_Place",
+                                                              "schemePattern": "?item a crm:E53_Place",
                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                                 ?appellation a crm:E44_Place_Appellation . 
                                                                                 ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
@@ -167,8 +191,8 @@
                                               new-subject-template="/PC14_carried_out_by/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                               fields='[[fieldDefinitions
                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                        carried_out_by_actor_range="http://www.researchspace.org/pattern/system/activity/carried_out_by_actor_range"
-                                                        role="http://www.researchspace.org/pattern/system/activity/carried_out_by_role"
+                                                        carried_out_by_actor_range="http://www.researchspace.org/pattern/system/carried_out_by/actor_range"
+                                                        role="http://www.researchspace.org/pattern/system/carried_out_by/role"
                                                 ]]'>
 
                   <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by'> </semantic-form-hidden-input>
@@ -211,16 +235,16 @@
                                                         label="Role" 
                                                         placeholder="Select role" 
                                                         close-dropdown-on-selection='true'
-                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/role>", 
-                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/role>",
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                                                         nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                scheme="http://www.researchspace.org/resource/vocab/role"
+                                                                                scheme="http://www.researchspace.org/resource/vocab/actor_role"
                                                                                 entityType="role" }}{{{{/raw}}}}'
 
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
                                                                                     "view": "vocabulary-content",
-                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/role",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
                                                                                     "tooltip": "Open list of roles"
                                                                                   }'
 
@@ -294,7 +318,7 @@
               <semantic-form-drag-and-drop-input  for='activity_document' 
                                                   label="Documents" 
                                                   placeholder-item-template="<div class='placeholder-item'>
-                                                                                  <i class='fa fa-upload'></i>
+                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                   <div>Drag document or click to upload</div>
                                                                                 </div>"
                                                   nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" 
@@ -307,7 +331,7 @@
             <div class="dragAndDrop-input-container">
               <semantic-form-drag-and-drop-input for='image_main_representation' label="Main image" 
                                                   placeholder-item-template="<div class='placeholder-item'>
-                                                                              <i class='fa fa-upload'></i>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                               <div>Drag main image or click to upload</div>
                                                                             </div>"
                                                   nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -317,7 +341,7 @@
             <div class="dragAndDrop-input-container">
               <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
                                                   placeholder-item-template="<div class='placeholder-item'>
-                                                                              <i class='fa fa-upload'></i>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                               <div>Drag images or click to upload</div>
                                                                             </div>"
                                                   nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -325,6 +349,169 @@
             </div>
 
           </div>
+      </bs-tab>
+
+      {{#if hideParticipantTab}}
+      {{else}}
+        <bs-tab event-key="participant" title="Participants">
+          <div class="inline-form-switch">
+            <semantic-form-switch for="activity_had_participant" 
+                                  switch-on-field="participant_has_range_type" 
+                                  label="Participant">
+
+              <semantic-form-switch-case label="Person">
+                <semantic-form-composite-input  for="activity_had_participant" 
+                                                label="Participants in the event" 
+                                                new-subject-template="/PC11_had_participant/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                            participant_has_range_type="http://www.researchspace.org/pattern/system/participant/has_range_type"
+                                                            participant_has_domain_type="http://www.researchspace.org/pattern/system/participant/has_domain_type"
+                                                            participant_actor="http://www.researchspace.org/pattern/system/participant/actor"
+                                                            participant_role="http://www.researchspace.org/pattern/system/participant/role"
+                                                        ]]'>
+
+                      <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant'> </semantic-form-hidden-input>
+                      <semantic-form-hidden-input for="participant_has_domain_type" 
+                                                  default-value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/activity'> 
+                      </semantic-form-hidden-input>
+                      <semantic-form-hidden-input for="participant_has_range_type" 
+                                                  default-value='http://www.researchspace.org/resource/PC11_had_participant/has_range_type/person'> 
+                      </semantic-form-hidden-input>
+
+                      <div style="display: flex; align-items:flex-start; column-gap:15px; flex-wrap: wrap;">
+                        <div style="flex: 1;">
+                          <semantic-form-tree-picker-input  for="participant_actor" 
+                                                            label="Person"
+                                                            render-header="false"
+                                                            placeholder="Select person"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "crm:E21_Person",
+                                                                            "schemePattern": "?item a crm:E21_Person",
+                                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                            ?appellation a crm:E41_Appellation . 
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/person_appellation> . 
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                                            nested-form-template='{{> forms:Person nested=true editable=true mode=new }}'
+                                                            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/person_appellation> .
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                            }'>
+                          </semantic-form-tree-picker-input>
+                        </div>
+                        <div style="flex: 1;">
+                          <semantic-form-tree-picker-input  for="participant_role" 
+                                                            label="Role" 
+                                                            render-header="false"
+                                                            placeholder="Select role"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                                        "tooltip": "Open list of roles"
+                                                                                      }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                  scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                                  entityType="role" }}{{{{/raw}}}}'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                            }'>
+                          </semantic-form-tree-picker-input>
+                        </div>
+                      </div>
+                </semantic-form-composite-input>
+              </semantic-form-switch-case>
+
+              <semantic-form-switch-case label="Other actor">
+                <semantic-form-composite-input  for="activity_had_participant" 
+                                                label="Participants in the event" 
+                                                new-subject-template="/PC11_had_participant/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                            participant_has_range_type="http://www.researchspace.org/pattern/system/participant/has_range_type"
+                                                            participant_has_domain_type="http://www.researchspace.org/pattern/system/participant/has_domain_type"
+                                                            participant_actor="http://www.researchspace.org/pattern/system/participant/actor"
+                                                            participant_role="http://www.researchspace.org/pattern/system/participant/role"
+                                                        ]]'>
+
+                      <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant'> </semantic-form-hidden-input>
+                      <semantic-form-hidden-input for="participant_has_domain_type" 
+                                                  default-value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/activity'> 
+                      </semantic-form-hidden-input>
+                      <semantic-form-hidden-input for="participant_has_range_type" 
+                                                  default-value='http://www.researchspace.org/resource/PC11_had_participant/has_range_type/actor'> 
+                      </semantic-form-hidden-input>
+
+                      <div style="display: flex; align-items:flex-start; column-gap:15px; flex-wrap: wrap;">
+                        <div style="flex: 1;">
+                          <semantic-form-tree-picker-input  for="participant_actor" 
+                                                            label="Actor"
+                                                            render-header="false"
+                                                            placeholder="Select actor"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "crm:E39_Actor",
+                                                                            "schemePattern": "?item a crm:E39_Actor",
+                                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                            ?appellation a crm:E41_Appellation . 
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> . 
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                                            nested-form-template='{{> forms:Actor nested=true editable=true mode=new }}'
+                                                            
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> .
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                            }'>
+                          </semantic-form-tree-picker-input>
+                        </div>
+                        <div style="flex: 1;">
+                          <semantic-form-tree-picker-input  for="participant_role" 
+                                                            label="Role" 
+                                                            render-header="false"
+                                                            placeholder="Select role"
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                                        "tooltip": "Open list of roles"
+                                                                                      }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                  scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                                  entityType="role" }}{{{{/raw}}}}'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                            }'>
+                          </semantic-form-tree-picker-input>
+                        </div>
+                      </div>
+                </semantic-form-composite-input>
+              </semantic-form-switch-case>
+              
+            </semantic-form-switch>
+          </div>
+        </bs-tab>
+      {{/if}}
+
+      <bs-tab event-key="event" title="Related events/activities">
+
       </bs-tab>
 
       [[> rsp:FormMetadataTab]]

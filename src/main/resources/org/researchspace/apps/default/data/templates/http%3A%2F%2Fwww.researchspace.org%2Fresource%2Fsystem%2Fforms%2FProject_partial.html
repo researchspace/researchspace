@@ -21,9 +21,8 @@
                           project_status="http://www.researchspace.org/pattern/system/activity/current_status"
                           project_priority="http://www.researchspace.org/pattern/system/activity/priority"
 
-                          project_start_date="http://www.researchspace.org/pattern/system/activity/start_date"
-                          project_end_date="http://www.researchspace.org/pattern/system/activity/end_date"
-                          project_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/P01i_is_domain_of"
+                          project_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                          project_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/is_domain_of"
 
                           project_request="http://www.researchspace.org/pattern/system/activity/activity_request"
 
@@ -175,14 +174,30 @@
               </div>
             </div>
 
-            <div style="display: flex; align-items:flex-start; column-gap:15px;">
-              <div style="flex: 1;">
-                <semantic-form-datetime-input for='project_start_date' label="Project start date" placeholder="Enter start date" default-value="{{currentDateTime 'YYYY-MM-DD'}}"></semantic-form-datetime-input>
-              </div>
-              <div style="flex: 1;">
-                <semantic-form-datetime-input for='project_end_date' label="Project end date" placeholder="Enter end date"></semantic-form-datetime-input>
-              </div>
-            </div>
+            <semantic-form-composite-input  for="project_date" 
+                                            render-header="false"
+                                            new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
+                                                        timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
+                                                        timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                ]]'>   
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter start date"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter end date"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter project date (text value)"></semantic-form-text-input>
+                    </div>
+                </div>
+            </semantic-form-composite-input>
 
             <div class="customFormHeader">Project carried out by</div>
             <div class="composite-noBorder-container">
@@ -192,8 +207,8 @@
                                               new-subject-template="/PC14_carried_out_by/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                               fields='[[fieldDefinitions
                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                        carried_out_by_actor_range="http://www.researchspace.org/pattern/system/activity/carried_out_by_actor_range"
-                                                        role="http://www.researchspace.org/pattern/system/activity/carried_out_by_role"
+                                                        carried_out_by_actor_range="http://www.researchspace.org/pattern/system/carried_out_by/actor_range"
+                                                        role="http://www.researchspace.org/pattern/system/carried_out_by/role"
                                                 ]]'>
 
                   <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by'> </semantic-form-hidden-input>
@@ -236,16 +251,16 @@
                                                         label="Role" 
                                                         placeholder="Select role" 
                                                         close-dropdown-on-selection='true'
-                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/role>", 
-                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/role>",
+                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
                                                                         "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
                                                         nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                scheme="http://www.researchspace.org/resource/vocab/role"
+                                                                                scheme="http://www.researchspace.org/resource/vocab/actor_role"
                                                                                 entityType="role" }}{{{{/raw}}}}'
 
                                                         scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
                                                                                     "view": "vocabulary-content",
-                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/role",
+                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
                                                                                     "tooltip": "Open list of roles"
                                                                                   }'
 
@@ -320,7 +335,7 @@
               <semantic-form-drag-and-drop-input  for='project_document' 
                                                   label="Documents" 
                                                   placeholder-item-template="<div class='placeholder-item'>
-                                                                                  <i class='fa fa-upload'></i>
+                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                   <div>Drag document or click to upload</div>
                                                                                 </div>"
                                                   nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" 
@@ -333,7 +348,7 @@
             <div class="dragAndDrop-input-container">
               <semantic-form-drag-and-drop-input for='image_main_representation' label="Main image" 
                                                   placeholder-item-template="<div class='placeholder-item'>
-                                                                              <i class='fa fa-upload'></i>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                               <div>Drag main image or click to upload</div>
                                                                             </div>"
                                                   nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -343,7 +358,7 @@
           <div class="dragAndDrop-input-container">
             <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
                                                 placeholder-item-template="<div class='placeholder-item'>
-                                                                            <i class='fa fa-upload'></i>
+                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                             <div>Drag images or click to upload</div>
                                                                           </div>"
                                                 nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
@@ -358,11 +373,11 @@
           <semantic-form-tree-picker-input for='project_motivated_by_exhibition' label="Related exhibition"
                                             placeholder="Select exhibition title" 
                                             tree-patterns='{"scheme": "crm:E7_Activity",
-                                            "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .",
-                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                              ?appellation crm:P190_has_symbolic_content ?label .
-                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/exhibition_title> ."
-                                            }'
+                                                            "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .",
+                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation .
+                                                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/exhibition_title> ."
+                                                            }'
                                             nested-form-template='{{> forms:Exhibition nested=true editable=true mode=new onlyDetails=true}}'>
           </semantic-form-tree-picker-input>
           {{#if related_exhibition}}

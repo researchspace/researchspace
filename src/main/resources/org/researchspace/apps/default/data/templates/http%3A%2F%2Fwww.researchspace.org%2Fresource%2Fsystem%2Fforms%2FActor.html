@@ -77,22 +77,27 @@
                 ></semantic-form-tree-picker-input> 
 
                 <semantic-form-tree-picker-input  for="actor_member_of" 
-                                                  label="Member of" 
-                                                  placeholder="Select actor" 
+                                                  label="Is member of" 
+                                                  placeholder="Select group" 
                                                   close-dropdown-on-selection='false'
-                                                  tree-patterns='{"scheme": "crm:E39_Actor",
-                                                                              "schemePattern": "?item a crm:E39_Actor",
+                                                  default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
+                                                  tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}crm:E74_Group{{/if}}",
+                                                                              "schemePattern": "{{#if scheme}} ?item crm:P71i_is_listed_in <{{scheme}}> . {{else}}?item a crm:E74_Group{{/if}}",
+                                                                              "relationPattern": "{{#if scheme}}?item crm:P107i_is_current_or_former_member_of ?parent{{else}}{{/if}}",
                                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                                               ?appellation a crm:E41_Appellation . 
-                                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> . 
+                                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
                                                                                               ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-                                                  nested-form-template='{{> forms:Actor nested=true editable=true mode=new }}'
-                                                  
+                                                  nested-form-template='{{#if scheme}}
+                                                                        {{else}}
+                                                                          {{> forms:Group nested=true editable=true mode=new }}
+                                                                        {{/if}}'  
+
                                                   query-item-label='SELECT ?label WHERE {
                                                                       ?item crm:P1_is_identified_by ?appellation .
                                                                       ?appellation a crm:E41_Appellation .
-                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> .
+                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> .
                                                                       ?appellation crm:P190_has_symbolic_content ?label .
                                                                   }'
                 ></semantic-form-tree-picker-input>
@@ -523,15 +528,15 @@
                     <div style="display: flex; align-items:flex-end; column-gap:15px; flex-wrap: wrap;">
                       <div style="flex: 1;">
                         <semantic-form-tree-picker-input for="joined_joined_actor" 
-                                                          label="Actor name" 
+                                                          label="Joined actor/group name" 
                                                           placeholder="Select actor" 
                                                           close-dropdown-on-selection='false'
                                                           tree-patterns='{"scheme": "crm:E39_Actor",
-                                                                                      "schemePattern": "?item a crm:E39_Actor",
-                                                                                      "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                                      ?appellation a crm:E41_Appellation . 
-                                                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> . 
-                                                                                                      ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                                          "schemePattern": "?item a crm:E39_Actor",
+                                                                          "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                          ?appellation a crm:E41_Appellation . 
+                                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/actor_appellation> . 
+                                                                                          ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                                           nested-form-template='{{> forms:Actor nested=true editable=true mode=new }}'
                                                           

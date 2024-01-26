@@ -26,6 +26,7 @@
                             actor_carried_out_by_range="http://www.researchspace.org/pattern/system/actor/PC14_carried_out_by_range"
                             actor_participated_in_event="http://www.researchspace.org/pattern/system/actor/PC11_participated_in_event"
                             actor_joined_by="http://www.researchspace.org/pattern/system/actor/joined_by"
+                            actor_leaving_group="http://www.researchspace.org/pattern/system/actor/leaving_group"
                         ]]'
 >
 
@@ -59,9 +60,13 @@
                                                     placeholder="Select nationality"
                                                     tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/nationality>", 
                                                                     "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/nationality>",
-                                                                    "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent"}'
+                                                                    "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                      ?appellation a crm:E41_Appellation . 
+                                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
+                                                                                      ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new"
                                                                                             scheme="http://www.researchspace.org/resource/vocab/nationality"
                                                                                             entityType="nationality" }}{{{{/raw}}}}'
                                                                                             
@@ -72,7 +77,10 @@
                                                                                 }'
 
                                                     query-item-label='SELECT ?label WHERE {
-                                                                        ?item skos:prefLabel ?label .
+                                                                        ?item crm:P1_is_identified_by ?appellation . 
+                                                                        ?appellation a crm:E41_Appellation . 
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
+                                                                        ?appellation crm:P190_has_symbolic_content ?label .
                                                                     }'
                 ></semantic-form-tree-picker-input> 
 
@@ -510,11 +518,11 @@
                                                       placeholder="Select group" 
                                                       close-dropdown-on-selection='false'
                                                       tree-patterns='{"scheme": "crm:E74_Group",
-                                                                                  "schemePattern": "?item a crm:E74_Group",
-                                                                                  "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                                  ?appellation a crm:E41_Appellation . 
-                                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
-                                                                                                  ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                                      "schemePattern": "?item a crm:E74_Group",
+                                                                      "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                      ?appellation a crm:E41_Appellation . 
+                                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
+                                                                                      ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                                       nested-form-template='{{> forms:Group nested=true editable=true mode=new }}'  
 
@@ -572,6 +580,69 @@
             </semantic-form-composite-input>
 
             <semantic-form-text-input for="joining_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
+        </semantic-form-composite-input>
+
+        <h5 class="customFormHeader">Left group</h5>
+        <semantic-form-composite-input for="actor_leaving_group" 
+                                        render-header="false" 
+                                        new-subject-template="/leaving/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                        fields='[[fieldDefinitions
+                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                leaving_separated_from_group="http://www.researchspace.org/pattern/system/leaving/separated_from_group"
+                                                leaving_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                leaving_description="http://www.researchspace.org/pattern/system/entity/description"
+                                        ]]'>
+
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E86_Leaving'> </semantic-form-hidden-input>
+            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/leaving_group'></semantic-form-hidden-input>
+        
+            <div style="display: flex; align-items: flex-start; column-gap: 20px; margin-top: -15px;">
+              <div style="flex: 1;">
+                <semantic-form-tree-picker-input  for="leaving_separated_from_group" 
+                                                  label="Group name" 
+                                                  placeholder="Select group" 
+                                                  close-dropdown-on-selection='false'
+                                                  tree-patterns='{"scheme": "crm:E74_Group",
+                                                                  "schemePattern": "?item a crm:E74_Group",
+                                                                  "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                  ?appellation a crm:E41_Appellation . 
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
+                                                                                  ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                                  nested-form-template='{{> forms:Group nested=true editable=true mode=new }}'  
+
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item crm:P1_is_identified_by ?appellation .
+                                                                      ?appellation a crm:E41_Appellation .
+                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> .
+                                                                      ?appellation crm:P190_has_symbolic_content ?label .
+                                                                  }'
+                ></semantic-form-tree-picker-input> 
+              </div>
+
+              <semantic-form-composite-input  for="leaving_date" 
+                                              render-header="false"
+                                              new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                              fields='[[fieldDefinitions
+                                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                          timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                          timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                  ]]'>   
+
+                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                  <div style="display: flex; align-items:flex-end; column-gap:20px; flex-wrap: wrap; flex: 1" >
+                    <div style="flex: 1;">
+                      <semantic-form-datetime-input for="timespan_date" label="Leaving date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-text-input for='timespan_text_value' label="Leaving date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
+                    </div>
+                  </div>
+              </semantic-form-composite-input>
+            </div>
+            <semantic-form-text-input for="leaving_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
         </semantic-form-composite-input>
       </bs-tab>
 

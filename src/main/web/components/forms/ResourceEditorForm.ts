@@ -62,6 +62,7 @@ interface State {
   readonly recoveredFromStorage?: boolean;
   readonly error?: string;
   readonly defaultTab?: any
+  readonly tabSource?: any
 }
 
 const BROWSER_PERSISTENCE = BrowserPersistence.adapter<ValuePatch>();
@@ -179,7 +180,7 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
         })
       ).observe({
         value: (e) => {
-          this.setState({defaultTab: e.data.key})
+          this.setState({defaultTab: e.data.key, tabSource: e.data.source})
         }
       });
     }
@@ -409,7 +410,8 @@ export class ResourceEditorForm extends Component<ResourceEditorFormProps, State
               subject: finalModel.subject,
               eventProps: { isNewSubject, sourceId: this.props.id },
               queryParams: getPostActionUrlQueryParams(this.props),
-              defaultTabKey: this.state.defaultTab
+              defaultTabKey: this.state.defaultTab,
+              tabSource: this.state.tabSource
             });
           },
           error: (error) => {

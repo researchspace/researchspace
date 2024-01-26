@@ -22,7 +22,7 @@ export interface TabsEventData {
   /**
    * Event which should be triggered when a tab has been selected
    */
-  'Tab.Selected': { key: any };
+  'Tab.Selected': { key: any; source: any };
 }
 const event: EventMaker<TabsEventData> = EventMaker;
 

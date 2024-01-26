@@ -127,8 +127,9 @@ export function performFormPostAction(parameters: {
   eventProps: { isNewSubject: boolean; isRemovedSubject?: boolean; sourceId: string };
   queryParams?: { [paramKey: string]: string };
   defaultTabKey?: any
+  tabSource?: any
 }) {
-  const { postAction = 'reload', subject, eventProps, queryParams, defaultTabKey } = parameters;
+  const { postAction = 'reload', subject, eventProps, queryParams, defaultTabKey, tabSource } = parameters;
   if (postAction === 'none') {
     return;
   }
@@ -162,7 +163,7 @@ export function performFormPostAction(parameters: {
     }
     if(defaultTabKey) {
       localeStorageTabs.setValues({
-        sourceId: eventProps.sourceId,
+        sourceId: tabSource,
         defaultTabKey: defaultTabKey
       })
     }

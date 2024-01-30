@@ -1,4 +1,7 @@
-<semantic-form [[> rsp:FormDefaults]] 
+<semantic-form 
+                  id='{{viewId}}-vocab-form' 
+                  post-action="event"
+                  subject='{{node}}'
                   persistence='{"type": "sparql", "targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
                   new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/exhibition/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                   fields='[[fieldDefinitions
@@ -41,8 +44,8 @@
 
         <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/exhibition'> </semantic-form-hidden-input>
   
-      <bs-tabs id="form-tabs">
-        <bs-tab event-key="1" title="Details">
+      <rs-tabs id='{{viewId}}-vocab-form-tabs'>
+        <rs-tab event-key="details" title="Details">
           <div class="form-2column-container">
             <div>
                 <semantic-form-text-input for="exhibition_title" label="Exhibition title" placeholder="Enter exhibition title"></semantic-form-text-input>
@@ -152,11 +155,11 @@
               </div>
             </div>
           </div>
-        </bs-tab>
+        </rs-tab>
         
         {{#if onlyDetails}}
         {{else}}
-            <bs-tab event-key="2" title="Organisation">
+            <rs-tab event-key="organisation" title="Organisation">
                 <semantic-form-tree-picker-input    for="exhibition_carried_out_by" 
                                                     label="Exhibition carried out by organisation" 
                                                     placeholder="Select organisation" 
@@ -276,7 +279,7 @@
 
             </semantic-form-composite-input> 
 
-            </bs-tab>
+            </rs-tab>
         
         [[!--  <bs-tab event-key="3" title="Objects on loan">
             <semantic-form-tree-picker-input for='exhibition_items_on_loan' 
@@ -466,7 +469,7 @@
 
         [[> rsp:FormMetadataTab]]
 
-      </bs-tabs>
+      </rs-tabs>
     </div>
   
     <semantic-form-errors></semantic-form-errors>

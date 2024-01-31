@@ -22,7 +22,7 @@
                           project_priority="http://www.researchspace.org/pattern/system/activity/priority"
 
                           project_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                          project_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/is_domain_of"
+                          project_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
 
                           project_request="http://www.researchspace.org/pattern/system/activity/activity_request"
 
@@ -37,8 +37,8 @@
 
     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/project'> </semantic-form-hidden-input>
 
-    <bs-tabs id="form-tabs"> 
-      <bs-tab event-key="detail" title="Details">
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
+      <rs-tab event-key="detail" title="Details">
         {{#if (not node)}}
           <mp-event-target-template-render id='{{viewId}}-documentation-newProject' template='{{> template}}'>
             <template id='template'>
@@ -199,89 +199,10 @@
                 </div>
             </semantic-form-composite-input>
 
-            <!-- <div class="customFormHeader">Project carried out by</div> -->
-            <div class="inline-form-switch">
-              <semantic-form-switch for="project_carried_out_by_domain" 
-                                    switch-on-field="carried_out_by_has_range_type" 
-                                    label="Project carried out by">
-  
-                <semantic-form-switch-case label="Person">
-                  <semantic-form-composite-input for="project_carried_out_by_domain" 
-                                                new-subject-template="/PC14_carried_out_by/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                                fields='[[fieldDefinitions
-                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                            
-                                                            carried_out_by_has_domain_type="http://www.researchspace.org/pattern/system/carried_out_by/has_domain_type"
-                                                            carried_out_by_has_range_type="http://www.researchspace.org/pattern/system/carried_out_by/has_range_type"
-                                                            carried_out_by_actor_range="http://www.researchspace.org/pattern/system/carried_out_by/actor_range"
-                                                            role="http://www.researchspace.org/pattern/system/carried_out_by/role"
-                                                        ]]'>
-  
-                         <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by'> </semantic-form-hidden-input>
-                        
-                        <semantic-form-hidden-input for="carried_out_by_has_domain_type" 
-                                                    default-value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/project'> 
-                        </semantic-form-hidden-input>
-
-                        <semantic-form-hidden-input for="carried_out_by_has_range_type" 
-                                                    default-value='http://www.researchspace.org/resource/PC14_carried_out_by/has_range_type/person'> 
-                        </semantic-form-hidden-input>
-  
-                        <div style="display: flex; align-items:flex-start; column-gap:15px; flex-wrap: wrap;">
-                          <div style="flex: 1;">
-                            <semantic-form-tree-picker-input  for="carried_out_by_actor_range" 
-                                                              label="Person"
-                                                              render-header="false"
-                                                              placeholder="Select person"
-                                                              close-dropdown-on-selection='true'
-                                                              tree-patterns='{"scheme": "crm:E21_Person",
-                                                                              "schemePattern": "?item a crm:E21_Person",
-                                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                              ?appellation a crm:E41_Appellation . 
-                                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/person_appellation> . 
-                                                                                              ?appellation crm:P190_has_symbolic_content ?label ." }'
-  
-                                                              nested-form-template='{{> forms:Person nested=true editable=true mode=new }}'
-                                                              
-                                                              query-item-label='SELECT ?label WHERE {
-                                                                                  ?item crm:P1_is_identified_by ?appellation .
-                                                                                  ?appellation a crm:E41_Appellation .
-                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/person_appellation> .
-                                                                                  ?appellation crm:P190_has_symbolic_content ?label .
-                                                                              }'>
-                            </semantic-form-tree-picker-input>
-                          </div>
-                          <div style="flex: 1;">
-                            <semantic-form-tree-picker-input  for="role" 
-                                                              label="Role" 
-                                                              render-header="false"
-                                                              placeholder="Select role"
-                                                              close-dropdown-on-selection='true'
-                                                              tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
-                                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
-                                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-  
-                                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                          "view": "vocabulary-content",
-                                                                                          "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
-                                                                                          "tooltip": "Open list of roles"
-                                                                                        }'
-                                                              
-                                                              nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                    scheme="http://www.researchspace.org/resource/vocab/actor_role"
-                                                                                                    entityType="role" }}{{{{/raw}}}}'
-  
-                                                              query-item-label='SELECT ?label WHERE {
-                                                                                  ?item skos:prefLabel ?label .
-                                                                              }'>
-                            </semantic-form-tree-picker-input>
-                          </div>
-                        </div>
-                  </semantic-form-composite-input>
-                </semantic-form-switch-case>
-
-              </semantic-form-switch>
-            </div>
+            [[> Platform:formSwitchCarriedOutActor  for_kp='project_carried_out_by_domain'
+                                          subjectLabel='Project'
+                                          carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/project'
+            ]]
 
             <semantic-form-composite-input for="project_request"
                                             label="Project proposal/request"
@@ -374,10 +295,10 @@
           </div>
 
           </div>
-      </bs-tab>
+      </rs-tab>
 
       {{#if (or type_exhibition type_loan)}}
-        <bs-tab event-key="exhibition" title="Exhibition">
+        <rs-tab event-key="exhibition" title="Exhibition">
           <semantic-form-tree-picker-input for='project_motivated_by_exhibition' label="Related exhibition"
                                             placeholder="Select exhibition title" 
                                             tree-patterns='{"scheme": "crm:E7_Activity",
@@ -496,11 +417,11 @@
               </semantic-table>
             </div>
           {{/if}}
-        </bs-tab>
+        </rs-tab>
       {{/if}}
 
       [[> rsp:FormMetadataTab]]
-    </bs-tabs>
+    </rs-tabs>
   </div>
 
   <semantic-form-errors></semantic-form-errors> 

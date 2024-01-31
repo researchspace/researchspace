@@ -174,8 +174,8 @@
                                           } GROUP BY ?osmPlaceURI ?osmPlaceName ?placeLabel ?placeDescription ?osmGeoCoordinates'
                                         >
                           <template id='template'>
-                            <mp-event-trigger id='{{viewId}}-select-osm-place-trigger' 
-                                              type='osmPlaceSelect' 
+                            <mp-event-trigger id='{{#if selectTriggerId}}{{selectTriggerId}}{{else}}{{viewId}}-select-osm-place-trigger{{/if}}' 
+                                              type='{{#if selectTriggerType}}{{selectTriggerType}}{{else}}osmPlaceSelect{{/if}}' 
                                               data='{"osmPlaceURI": "{{bindings.0.osmPlaceURI.value}}", 
                                                       "osmPlaceName": "{{bindings.0.osmPlaceName.value}}", 
                                                       "placeLabel": "{{bindings.0.placeLabel.value}}",
@@ -190,8 +190,8 @@
                       </semantic-context>
             
                     {{else}}
-                      <mp-event-trigger id='{{viewId}}-select-osm-place-trigger' 
-                                        type='osmPlaceSelect' 
+                      <mp-event-trigger id='{{#if selectTriggerId}}{{selectTriggerId}}{{else}}{{viewId}}-select-osm-place-trigger{{/if}}' 
+                                        type='{{#if selectTriggerType}}{{selectTriggerType}}{{else}}osmPlaceSelect{{/if}}' 
                                         data='{"osmPlaceName": "{{placeName.value}}", 
                                               "osmGeoCoordinates": "{{geoText.value}}",
                                               {{#if scheme}}"scheme": "{{scheme}}",{{/if}}

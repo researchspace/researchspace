@@ -1,4 +1,6 @@
-<semantic-form [[> rsp:FormDefaults]] 
+<semantic-form id='{{viewId}}-vocab-form' 
+                post-action="event"
+                subject='{{node}}' 
                 persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[
@@ -25,8 +27,10 @@
                         image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                         more_image="http://www.researchspace.org/pattern/system/entity/images" 
 
+                        place_residence_of_person="http://www.researchspace.org/pattern/system/place/residence_of_person"
+                        place_residence_of_group="http://www.researchspace.org/pattern/system/place/residence_of_group"
                         place_residence_of_actor="http://www.researchspace.org/pattern/system/place/residence_of_actor"
-               ]]'>
+              ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
     <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E53_Place"></semantic-form-hidden-input>
@@ -35,15 +39,67 @@
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
 
-     <bs-tabs id="form-tabs">
-      <bs-tab event-key="detail" title="Details">
+   [[!-- {{#if nested}}
+      <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-osm-nested-place-proxy'
+                      on-event-source='{{viewId}}-select-osm-nested-place-trigger' 
+                      on-event-type='osmNestedPlaceSelect'
+                      proxy-event-type='Component.TemplateUpdate' 
+                      proxy-targets='["{{viewId}}-form-test"]'
+                      additional-data='{"mode": "new", 
+                                        {{#if osmPlaceURI}}"osmPlaceURI": "{{osmPlaceURI}}",{{/if}}
+                                        {{#if osmPlaceName}}"osmPlaceName": "{{osmPlaceName}}",{{/if}}
+                                        {{#if placeLabel}}"placeLabel": "{{placeLabel}}",{{/if}}
+                                        {{#if osmPlaceURI}}"placeDescription": "{{placeDescription}}",{{/if}}
+                                        {{#if osmPlaceURI}}"osmGeoCoordinates": "{{osmGeoCoordinates}}",{{/if}}
+                                        "selectedOsmNestedPlace": "true"
+                                      }'
+      ></mp-event-proxy>
+
+      <mp-event-proxy id='{{viewId}}-closeModal-onSelect-osm-nested-place-proxy'
+                      on-event-source='{{viewId}}-select-osm-nested-place-trigger' 
+                      on-event-type='osmNestedPlaceSelect'
+                      proxy-event-type='OverlayDialog.Close' 
+                      proxy-targets='["{{viewId}}-importNestedOSMPlace-dialog"]'
+      ></mp-event-proxy>
+      
+      <mp-overlay-dialog  id='{{viewId}}-importNestedOSMPlace-dialog' 
+                                                title="Import place from OpenStreetMap" 
+                                                type="lightbox">
+                              <mp-overlay-dialog-trigger>
+                                <button class="btn btn-action btn-textAndIcon">
+                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                  <span>Import from OpenStreetMap</span>
+                                </button>
+                              </mp-overlay-dialog-trigger>
+                              <mp-overlay-dialog-content>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
+                                                  options='{
+                                                            "selectTriggerId": "{{viewId}}-select-osm-nested-place-trigger",
+                                                            "selectTriggerType": "osmNestedPlaceSelect",
+                                                            "mode": "new",
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}-nestedPlace-"
+                                                          }'>
+                                </inline-template>
+                              </mp-overlay-dialog-content>
+      </mp-overlay-dialog>
+    {{/if}}
+    --]]
+    
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+      <rs-tab event-key="detail" title="Details">
         <div class="form-2column-container">
           <div>
-            {{#if osmPlaceName}}
-              <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
+            {{#if placeLabel}}
+              <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{placeLabel}}" force-defaults=true></semantic-form-text-input>
             {{else}}
-              <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
+              {{#if osmPlaceName}}
+                <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
+              {{else}}
+                <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
+              {{/if}}
             {{/if}}
+          
 
             {{#if placeDescription}}
               <semantic-form-text-input for="place_description" default-value="{{placeDescription}}" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
@@ -83,9 +139,11 @@
                                                                               ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                               nested-form-template='{{#if scheme}}
-                                                                      {{else}}
-                                                                        {{> forms:Place nested=true editable=true mode=new }}
-                                                                      {{/if}}'  
+                                                                    {{else}}
+                                                                        {{> forms:Place nested=true editable=true mode=new osmPlaceURI=false 
+                                                                        osmPlaceName=false placeLabel=false placeDescription=false osmGeoCoordinates=false}}
+                                                                    {{/if}}'  
+                                                                
 
                                               query-item-label='SELECT ?label WHERE {
                                                                   ?item crm:P1_is_identified_by ?appellation . 
@@ -110,7 +168,8 @@
 
                                               nested-form-template='{{#if scheme}}
                                                                       {{else}}
-                                                                        {{> forms:Place nested=true editable=true mode=new }}
+                                                                        {{> forms:Place nested=true editable=true mode=new osmPlaceURI=false 
+                                                                        osmPlaceName=false placeLabel=false placeDescription=false osmGeoCoordinates=false}}
                                                                       {{/if}}'  
 
                                               query-item-label='SELECT ?label WHERE {
@@ -136,7 +195,8 @@
 
                                               nested-form-template='{{#if scheme}}
                                                                       {{else}}
-                                                                        {{> forms:Place nested=true editable=true mode=new }}
+                                                                        {{> forms:Place nested=true editable=true mode=new osmPlaceURI=false 
+                                                                        osmPlaceName=false placeLabel=false placeDescription=false osmGeoCoordinates=false}}
                                                                       {{/if}}'  
 
                                               query-item-label='SELECT ?label WHERE {
@@ -161,7 +221,8 @@
 
                                               nested-form-template='{{#if scheme}}
                                                                       {{else}}
-                                                                        {{> forms:Place nested=true editable=true mode=new }}
+                                                                        {{> forms:Place nested=true editable=true mode=new osmPlaceURI=false 
+                                                                        osmPlaceName=false placeLabel=false placeDescription=false osmGeoCoordinates=false}}
                                                                       {{/if}}'  
 
                                               query-item-label='SELECT ?label WHERE {
@@ -283,9 +344,51 @@
             </div>
           </div>
         </div>
-      </bs-tab>
+      </rs-tab>
 
-      <bs-tab event-key="actor" title="Related actors">
+      <rs-tab event-key="actor" title="Related actors">
+
+        <semantic-form-tree-picker-input  for="place_residence_of_person" 
+                                          label="Residence of person"
+                                          placeholder="Select person"
+                                          close-dropdown-on-selection='true'
+                                          tree-patterns='{"scheme": "crm:E21_Person",
+                                                          "schemePattern": "?item a crm:E21_Person",
+                                                          "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                          ?appellation a crm:E41_Appellation . 
+                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/person_appellation> . 
+                                                                          ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                          nested-form-template='{{> forms:Person nested=true editable=true mode=new }}'
+                                          
+                                          query-item-label='SELECT ?label WHERE {
+                                                              ?item crm:P1_is_identified_by ?appellation .
+                                                              ?appellation a crm:E41_Appellation .
+                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/person_appellation> .
+                                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                                          }'>
+        </semantic-form-tree-picker-input>
+
+        <semantic-form-tree-picker-input  for="place_residence_of_group" 
+                                          label="Residence of group"
+                                          placeholder="Select group"
+                                          close-dropdown-on-selection='true'
+                                          tree-patterns='{"scheme": "crm:E74_Group",
+                                                          "schemePattern": "?item a crm:E74_Group",
+                                                          "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                          ?appellation a crm:E41_Appellation . 
+                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> . 
+                                                                          ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                          nested-form-template='{{> forms:Group nested=true editable=true mode=new }}'
+                                          
+                                          query-item-label='SELECT ?label WHERE {
+                                                              ?item crm:P1_is_identified_by ?appellation .
+                                                              ?appellation a crm:E41_Appellation .
+                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/group_appellation> .
+                                                              ?appellation crm:P190_has_symbolic_content ?label .
+                                                          }'>
+        </semantic-form-tree-picker-input>
 
         <semantic-form-tree-picker-input  for="place_residence_of_actor" 
                                           label="Residence of other actor"
@@ -308,12 +411,12 @@
                                                           }'>
         </semantic-form-tree-picker-input>
 
-      </bs-tab>
+      </rs-tab>
       
       [[> rsp:FormMetadataTab]]
 
-    </bs-tabs>
-   
+    </rs-tabs>
+  
   </div>
   
   <semantic-form-errors></semantic-form-errors>

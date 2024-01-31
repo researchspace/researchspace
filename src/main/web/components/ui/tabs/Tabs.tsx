@@ -7,14 +7,21 @@ import {localeStorageTabs} from './LocalStorageTab'
 interface Props {
   id: string;
   defaultActiveKey?: string | number;
+  className?: string;
 }
 
 export class RsTabs extends React.Component<Props, {key: any}> {
 
   constructor(props, context) {
     super(props, context);
+    let firstChildrenPropEventKey = null
+      if (Array.isArray(props.children)) {
+      firstChildrenPropEventKey = props.children[0]?.props?.eventKey
+    } else {
+      firstChildrenPropEventKey = props.children?.props?.eventKey
+    }
       this.state = {
-        key: props.defaultActiveKey || props.children[0].props.eventKey
+        key: props.defaultActiveKey || firstChildrenPropEventKey
       };
   }
 
@@ -36,9 +43,9 @@ export class RsTabs extends React.Component<Props, {key: any}> {
   }
 
   render() {
-    const { id, defaultActiveKey, children } = this.props;
+    const { id, defaultActiveKey, className,children } = this.props;
     const tabs = (
-      <Tabs activeKey={this.state.key} defaultActiveKey={defaultActiveKey} id={id} onSelect={this.onTabSelected}>{children}</Tabs>
+      <Tabs className={className} activeKey={this.state.key} defaultActiveKey={defaultActiveKey} id={id} onSelect={this.onTabSelected}>{children}</Tabs>
     );
     return tabs;
   }

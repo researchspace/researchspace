@@ -18,8 +18,8 @@
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
         <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/Semantic_Narrative'> </semantic-form-hidden-input>
     
-        <bs-tabs id="form-tabs">
-            <bs-tab event-key="1" title="Details">
+        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+            <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
                         <semantic-form-text-input for="narrative_title" label="Narrative title" 
@@ -54,10 +54,10 @@
                         </div>
                     </div>
                 </div>
-            </bs-tab>
+            </rs-tab>
 
             {{#if node}}
-                <bs-tab event-key="metadata" title="Metadata">
+                <rs-tab event-key="metadata" title="Metadata">
     
                     <semantic-query  query='SELECT ?narrative ?modifiedByUser ?modifiedAtTime WHERE {
                                                 BIND(<{{node}}> AS ?narrative)
@@ -97,9 +97,9 @@
                             </div>
                         </template>
                     </semantic-query>
-                </bs-tab>
+                </rs-tab>
             {{/if}}
-        </bs-tabs>
+        </rs-tabs>
     </div>
   
     <semantic-form-errors></semantic-form-errors>

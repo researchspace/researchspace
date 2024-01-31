@@ -41,8 +41,8 @@
     {{/if}}
 
     [[#*inline "userTabsContent"]]
-      <bs-tabs id="form-tabs">
-        <bs-tab event-key="1" title="Details">
+      <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+        <rs-tab event-key="detail" title="Details">
           <div class="form-2column-container">
             <div>
               <semantic-form-text-input for="user_full_name" label="Full name" placeholder="Enter full name"> </semantic-form-text-input>
@@ -214,10 +214,10 @@
               </div>
             </div>
           </div>
-        </bs-tab>
+        </rs-tab>
 
         {{#if (eq user_type "person")}}
-          <bs-tab event-key="2" title="Employment">
+          <rs-tab event-key="personEmployment" title="Employment">
             <h5 style="margin: 25px 0 5px 0px;">Employment details</h5>
             <semantic-form-composite-input for="user_joining_organisation_range"
                                             label="Organisation"
@@ -318,11 +318,11 @@
                     </semantic-form-composite-input>
             
             </semantic-form-composite-input>
-          </bs-tab>
+          </rs-tab>
         {{/if}}
 
         {{#if (or (eq user_type "department") (eq user_type "team"))}}
-          <bs-tab event-key="3" title="Organisation">
+          <rs-tab event-key="groupDetail" title="Organisation">
             <semantic-form-composite-input for="user_joining_organisation_range"
                                             label="{{user_type}} is part of organisation"
                                             new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
@@ -372,11 +372,11 @@
                     </semantic-form-composite-input>
             
             </semantic-form-composite-input>
-          </bs-tab>
+          </rs-tab>
         {{/if}} 
 
         {{#if node}}
-          <bs-tab event-key="4" title="Projects">
+          <rs-tab event-key="project" title="Projects">
             <div style="margin: 25px 0 5px 0px;">
                 <semantic-table id='project-table'
                             query='SELECT ?project ?projectTitle ?projectStatusLabel ?projectPriorityLabel ?dateStart ?dateEnd ?roleLabel (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?projectTypeLabel) WHERE {
@@ -469,10 +469,10 @@
 
                 </semantic-table>
             </div>
-          </bs-tab>
+          </rs-tab>
         {{/if}}
         
-      </bs-tabs>
+      </rs-tabs>
     [[/inline]]
     
   </div>

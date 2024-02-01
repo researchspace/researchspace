@@ -1,0 +1,46 @@
+
+<http://www.researchspace.org/pattern/system/title/translation/context> {
+  <http://www.researchspace.org/pattern/system/title/translation> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/object>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#langString>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-698c6faac09c4140b1ce32ed74ec60f6-8y4oo;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E35_Title>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Title translation";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-698c6faac09c4140b1ce32ed74ec60f6-alcuch;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-698c6faac09c4140b1ce32ed74ec60f6-a8wf3j;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-01T15:39:27.349Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-698c6faac09c4140b1ce32ed74ec60f6-alcuch a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P73_has_translation ?translation .
+  ?translation a crm:E35_Title .
+  ?translation crm:P190_has_symbolic_content $value .
+} WHERE {
+BIND(IRI(CONCAT(str($subject),\"/title_translation/\",STRUUID())) as ?translation)
+}""" .
+  
+  _:genid-698c6faac09c4140b1ce32ed74ec60f6-a8wf3j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P73_has_translation ?translation .
+  ?translation a crm:E35_Title .
+  ?translation crm:P190_has_symbolic_content $value .
+}""" .
+  
+  _:genid-698c6faac09c4140b1ce32ed74ec60f6-8y4oo a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  $subject crm:P73_has_translation ?translation .
+  ?translation a crm:E35_Title .
+  ?translation crm:P190_has_symbolic_content $value .
+}  WHERE {
+  $subject crm:P73_has_translation ?translation .
+  ?translation a crm:E35_Title .
+  ?translation crm:P190_has_symbolic_content $value . 
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/title/translation> .
+}

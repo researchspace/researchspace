@@ -1,50 +1,49 @@
-<semantic-form 
-                  id='{{viewId}}-vocab-form' 
-                  post-action="event"
-                  subject='{{node}}'
-                  persistence='{"type": "sparql", "targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-                  new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/exhibition/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
-                  fields='[[fieldDefinitions
-                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                        inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+<semantic-form id='{{viewId}}-vocab-form' 
+              post-action="event"
+              subject='{{node}}'
+              persistence='{"type": "sparql", "targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+              new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/exhibition/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+              fields='[[fieldDefinitions
+                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                    inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
 
-                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                        entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                    entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
-                        exhibition_document="http://www.researchspace.org/pattern/system/entity/documents"
-                        exhibition_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
-                        exhibition_image="http://www.researchspace.org/pattern/system/entity/images"
+                    exhibition_document="http://www.researchspace.org/pattern/system/entity/documents"
+                    exhibition_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                    exhibition_image="http://www.researchspace.org/pattern/system/entity/images"
 
-                        exhibition_title="http://www.researchspace.org/pattern/system/exhibition/exhibition_title"
-                        exhibition_description="http://www.researchspace.org/pattern/system/entity/description"
+                    exhibition_title="http://www.researchspace.org/pattern/system/exhibition/exhibition_title"
+                    exhibition_description="http://www.researchspace.org/pattern/system/entity/description"
 
-                        exhibition_type="http://www.researchspace.org/pattern/system/exhibition/exhibition_type"
+                    exhibition_type="http://www.researchspace.org/pattern/system/exhibition/exhibition_type"
 
-                        exhibition_status="http://www.researchspace.org/pattern/system/activity/current_status"
-                      
-                        exhibition_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                    exhibition_status="http://www.researchspace.org/pattern/system/activity/current_status"
+                  
+                    exhibition_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
 
-                        exhibition_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
-                        exhibition_took_place_at="http://www.researchspace.org/pattern/system/period/took_place_at"
+                    exhibition_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
+                    exhibition_took_place_at="http://www.researchspace.org/pattern/system/period/took_place_at"
 
-                        exhibition_contact="http://www.researchspace.org/pattern/system/activity/contact_details"
-                        exhibition_additional_contact="http://www.researchspace.org/pattern/system/activity/additional_contact_details"
+                    exhibition_contact="http://www.researchspace.org/pattern/system/activity/contact_details"
+                    exhibition_additional_contact="http://www.researchspace.org/pattern/system/activity/additional_contact_details"
 
-                      exhibition_items_on_loan="http://www.researchspace.org/exhibition/items_on_loan"
-                      exhibition_related_loan_assessment="http://www.researchspace.org/exhibition/related_loan_assessment"
+                    exhibition_items_on_loan="http://www.researchspace.org/exhibition/items_on_loan"
+                    exhibition_related_loan_assessment="http://www.researchspace.org/exhibition/related_loan_assessment"
 
-               ]]'>
+            ]]'>
   
   
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
-        {{#if scheme}}
-            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
-        {{/if}}
+      <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
+      {{#if scheme}}
+          <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+      {{/if}}
 
-        <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/exhibition'> </semantic-form-hidden-input>
-  
-      <rs-tabs id='{{viewId}}-vocab-form-tabs'>
+      <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/exhibition'> </semantic-form-hidden-input>
+
+      <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
         <rs-tab event-key="detail" title="Details">
           <div class="form-2column-container">
             <div>
@@ -159,187 +158,187 @@
         
         {{#if onlyDetails}}
         {{else}}
-            <rs-tab event-key="organisation" title="Organisation">
-                <semantic-form-tree-picker-input    for="exhibition_carried_out_by" 
-                                                    label="Exhibition carried out by organisation" 
-                                                    placeholder="Select organisation" 
-                                                    close-dropdown-on-selection='false'
-                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
-                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
-                                                                    "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                                    ?appellation a crm:E41_Appellation .
-                                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
-                                                                                    ?appellation crm:P190_has_symbolic_content ?label ." }'
+          <rs-tab event-key="organisation" title="Organisation">
+              <semantic-form-tree-picker-input    for="exhibition_carried_out_by" 
+                                                  label="Exhibition carried out by organisation" 
+                                                  placeholder="Select organisation" 
+                                                  close-dropdown-on-selection='false'
+                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
+                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
+                                                                  "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                                  "labelPattern": "?item crm:P1_is_identified_by ?appellation .
+                                                                                  ?appellation a crm:E41_Appellation .
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
+                                                                                  ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
-                                                                                        scheme="http://www.researchspace.org/resource/system/vocab/organisation"
-                                                                                        entityType="organisation" }}{{{{/raw}}}}'
-                                                                                        
-                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
-                                                                            "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
-                                                                            "tooltip": "Open list of organisations"
-                                                                            }'
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
+                                                                                      scheme="http://www.researchspace.org/resource/system/vocab/organisation"
+                                                                                      entityType="organisation" }}{{{{/raw}}}}'
+                                                                                      
+                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                          "view": "vocabulary-content",
+                                                                          "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
+                                                                          "tooltip": "Open list of organisations"
+                                                                          }'
 
-                                                    query-item-label='SELECT ?label WHERE {
-                                                                        ?item crm:P1_is_identified_by ?appellation .
-                                                                        ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
-                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                    }'
-                                                                    
-                ></semantic-form-tree-picker-input> 
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item crm:P1_is_identified_by ?appellation .
+                                                                      ?appellation a crm:E41_Appellation .
+                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
+                                                                      ?appellation crm:P190_has_symbolic_content ?label .
+                                                                  }'
+                                                                  
+              ></semantic-form-tree-picker-input> 
 
-            {{#if node}}
-                <semantic-query query='SELECT DISTINCT ?organisation ?organisationLabel WHERE { 
-                                        <{{node}}> crm:P14_carried_out_by ?organisation . 
-                                        ?organisation a crm:E74_Group .
-                                        ?organisation crm:P1_is_identified_by ?appellation .  
-                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> . 
-                                        ?appellation crm:P190_has_symbolic_content ?organisationLabel .
+          {{#if node}}
+              <semantic-query query='SELECT DISTINCT ?organisation ?organisationLabel WHERE { 
+                                      <{{node}}> crm:P14_carried_out_by ?organisation . 
+                                      ?organisation a crm:E74_Group .
+                                      ?organisation crm:P1_is_identified_by ?appellation .  
+                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> . 
+                                      ?appellation crm:P190_has_symbolic_content ?organisationLabel .
 
-                                    }'>
-                <template id='template'>
-                    <div>
-                    <div style="display: flex; margin-top: 12px; margin-bottom: 10px;">
-                        <span>view: &nbsp;</span> 
-                        {{#each bindings}}
-                        {{#if @first}}{{else}}; &nbsp;{{/if}}
-                            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                            urlqueryparam-view='entity-editor' 
-                                            urlqueryparam-resource-iri='{{organisation.value}}'
-                                            >
-                                <span class="text-link">{{organisationLabel.value}}</span>
-                            </semantic-link>
-                        {{/each}}
-                    </div>
-                    </div>
-                </template>
-                </semantic-query>
-            {{/if}}
+                                  }'>
+              <template id='template'>
+                  <div>
+                  <div style="display: flex; margin-top: 12px; margin-bottom: 10px;">
+                      <span>view: &nbsp;</span> 
+                      {{#each bindings}}
+                      {{#if @first}}{{else}}; &nbsp;{{/if}}
+                          <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                          urlqueryparam-view='entity-editor' 
+                                          urlqueryparam-resource-iri='{{organisation.value}}'
+                                          >
+                              <span class="text-link">{{organisationLabel.value}}</span>
+                          </semantic-link>
+                      {{/each}}
+                  </div>
+                  </div>
+              </template>
+              </semantic-query>
+          {{/if}}
 
-            <div style="display: flex; align-items:flex-start; column-gap:15px; flex-wrap: wrap;">
-                <div style="flex: 1;">
-                <semantic-form-text-input for="exhibition_contact" multiline='true' label="Main contact in the organisation" placeholder="Enter main contact"></semantic-form-text-input>
-                </div>
-                <div style="flex: 1;">
-                <semantic-form-text-input for="exhibition_additional_contact" multiline='true' label="Additional contact in the organisation" placeholder="Enter additional contact"></semantic-form-text-input>
-                </div>
-            </div>
+          <div style="display: flex; align-items:flex-start; column-gap:15px; flex-wrap: wrap;">
+              <div style="flex: 1;">
+              <semantic-form-text-input for="exhibition_contact" multiline='true' label="Main contact in the organisation" placeholder="Enter main contact"></semantic-form-text-input>
+              </div>
+              <div style="flex: 1;">
+              <semantic-form-text-input for="exhibition_additional_contact" multiline='true' label="Additional contact in the organisation" placeholder="Enter additional contact"></semantic-form-text-input>
+              </div>
+          </div>
 
-            <semantic-form-composite-input for="exhibition_took_place_at"
-                                            new-subject-template="/place/exhibition_area/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
-                                            label="Exhibition location"
-                                            render-header='true'
-                                            fields='[[fieldDefinitions
-                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+          <semantic-form-composite-input for="exhibition_took_place_at"
+                                          new-subject-template="/place/exhibition_area/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                          label="Exhibition location"
+                                          render-header='true'
+                                          fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
-                                                        exhibition_area_location="http://www.researchspace.org/pattern/system/place/falls_within_placeMin1Max1"
-                                                        exhibition_area_identifier="http://www.researchspace.org/pattern/system/exhibition_area/identifier"
-                                                ]]'> 
+                                                      exhibition_area_location="http://www.researchspace.org/pattern/system/place/falls_within_placeMin1Max1"
+                                                      exhibition_area_identifier="http://www.researchspace.org/pattern/system/exhibition_area/identifier"
+                                              ]]'> 
 
-                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
-                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/exhibition_area'> </semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/exhibition_area'> </semantic-form-hidden-input>
 
-                    <div style="margin-top: -20px;">
-                        <semantic-form-tree-picker-input  for="exhibition_area_location" 
-                                                        label="Location" 
-                                                        placeholder="Select location" 
-                                                        close-dropdown-on-selection='false'
-                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
-                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
-                                                                "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                                ?appellation a crm:E41_Appellation .
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ." }'
+                  <div style="margin-top: -20px;">
+                      <semantic-form-tree-picker-input  for="exhibition_area_location" 
+                                                      label="Location" 
+                                                      placeholder="Select location" 
+                                                      close-dropdown-on-selection='false'
+                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
+                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
+                                                              "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
+                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation .
+                                                                              ?appellation a crm:E41_Appellation .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
+                                                                              ?appellation crm:P190_has_symbolic_content ?label ." }'
 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
-                                                                                            scheme="http://www.researchspace.org/resource/system/vocab/organisation"
-                                                                                            entityType="organisation" }}{{{{/raw}}}}'
-                                                                                            
-                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
-                                                                                "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
-                                                                                "tooltip": "Open list of organisations"
-                                                                                }'
+                                                      nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
+                                                                                          scheme="http://www.researchspace.org/resource/system/vocab/organisation"
+                                                                                          entityType="organisation" }}{{{{/raw}}}}'
+                                                                                          
+                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                              "view": "vocabulary-content",
+                                                                              "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
+                                                                              "tooltip": "Open list of organisations"
+                                                                              }'
 
-                                                        query-item-label='SELECT ?label WHERE {
-                                                                            ?item crm:P1_is_identified_by ?appellation .
-                                                                            ?appellation a crm:E41_Appellation .
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
-                                                                            ?appellation crm:P190_has_symbolic_content ?label .
-                                                                        }'>
-                        </semantic-form-tree-picker-input>      
-                    </div>
+                                                      query-item-label='SELECT ?label WHERE {
+                                                                          ?item crm:P1_is_identified_by ?appellation .
+                                                                          ?appellation a crm:E41_Appellation .
+                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> .
+                                                                          ?appellation crm:P190_has_symbolic_content ?label .
+                                                                      }'>
+                      </semantic-form-tree-picker-input>      
+                  </div>
 
-                    <semantic-form-text-input for="exhibition_area_identifier" label="Gallery/room" placeholder="Enter gallery/room name or number"> </semantic-form-text-input>
+                  <semantic-form-text-input for="exhibition_area_identifier" label="Gallery/room" placeholder="Enter gallery/room name or number"> </semantic-form-text-input>
 
-            </semantic-form-composite-input> 
+          </semantic-form-composite-input> 
 
-            </rs-tab>
+          </rs-tab>
         
-        [[!--  <bs-tab event-key="3" title="Objects on loan">
-            <semantic-form-tree-picker-input for='exhibition_items_on_loan' 
-                                            label='Objects on loan for the exhibition' 
-                                            close-dropdown-on-selection='false'
-                                            placeholder='Select object(s) on loan by catalogue reference number' 
-                                            tree-patterns='{"scheme": "crm:E22_Human-Made_Object",
-                                                            "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/object> . ",
-                                                            "labelPattern": "   ?item crm:P1_is_identified_by ?identifier . 
-                                                                                ?identifier crm:P2_has_type ?identifierType .
-                                                                                FILTER (?identifierType in (<http://www.researchspace.org/resource/vocab/identifier/crn>,<http://www.researchspace.org/resource/vocab/identifier/collection_item_id>))
-                                                                                ?identifier rdfs:label ?label .  "
-                                                            }'>   
-            </semantic-form-tree-picker-input>
-  
+          [[!--  <bs-tab event-key="3" title="Objects on loan">
+          <semantic-form-tree-picker-input for='exhibition_items_on_loan' 
+                                          label='Objects on loan for the exhibition' 
+                                          close-dropdown-on-selection='false'
+                                          placeholder='Select object(s) on loan by catalogue reference number' 
+                                          tree-patterns='{"scheme": "crm:E22_Human-Made_Object",
+                                                          "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/object> . ",
+                                                          "labelPattern": "   ?item crm:P1_is_identified_by ?identifier . 
+                                                                              ?identifier crm:P2_has_type ?identifierType .
+                                                                              FILTER (?identifierType in (<http://www.researchspace.org/resource/vocab/identifier/crn>,<http://www.researchspace.org/resource/vocab/identifier/collection_item_id>))
+                                                                              ?identifier rdfs:label ?label .  "
+                                                          }'>   
+          </semantic-form-tree-picker-input>
+    
           {{#if node}}
             <div style="margin-top: 15px;" class="objects-table-container">
               <semantic-table id='loan-item-results'
                               query='SELECT DISTINCT ?item ?itemLabel ?catalogueLevelLabel ?description WHERE {
                                 {
-                                 <{{node}}> crm:P117i_includes ?loanTransferOfCustody .
-                                 ?loanTransferOfCustody a crm:E10_Transfer_of_Custody .
-                                 ?loanTransferOfCustody crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/loan> .
-                                 ?loanTransferOfCustody crm:P30_transferred_custody_of ?item .
+                                  <{{node}}> crm:P117i_includes ?loanTransferOfCustody .
+                                  ?loanTransferOfCustody a crm:E10_Transfer_of_Custody .
+                                  ?loanTransferOfCustody crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/loan> .
+                                  ?loanTransferOfCustody crm:P30_transferred_custody_of ?item .
                                   ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/object> .
                                   ?item a crm:E22_Human-Made_Object .
 
-                               } UNION {
-                                   <{{node}}> crm:P117i_includes ?loanAssessment .
-                                   ?loanAssessment crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/loan_assessment> .
-                                   ?loanAssessment crm:P16_used_specific_object ?item .
-                                   ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/object> .
-                                   ?item a crm:E22_Human-Made_Object .
-
-                                 } UNION {
-                                   <{{node}}> crm:P12_occurred_in_the_presence_of ?item .
+                                } UNION {
+                                    <{{node}}> crm:P117i_includes ?loanAssessment .
+                                    ?loanAssessment crm:P2_has_type <http://www.researchspace.org/resource/vocab/conservation_entities/loan_assessment> .
+                                    ?loanAssessment crm:P16_used_specific_object ?item .
                                     ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/object> .
-                                   ?item a crm:E22_Human-Made_Object .
-                                 }
+                                    ?item a crm:E22_Human-Made_Object .
 
-                                 
-                                   ?item crm:P1_is_identified_by ?identifier .
-                                   ?item crm:P1_is_identified_by ?identifier .
-                                   ?identifier crm:P2_has_type ?identifierType .
-  									               FILTER (?identifierType in (<http://www.researchspace.org/resource/vocab/identifier/crn>,<http://www.researchspace.org/resource/vocab/identifier/collection_item_id>))	
-                                   ?identifier rdfs:label ?itemLabel .
-                                 
+                                  } UNION {
+                                    <{{node}}> crm:P12_occurred_in_the_presence_of ?item .
+                                    ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/object> .
+                                    ?item a crm:E22_Human-Made_Object .
+                                  }
 
-                                 OPTIONAL {
-                                   ?item crm:P2_has_type ?catalogueLevel .
-                                   ?catalogueLevel crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/catalogue_reference_number_type>  .
-                                   ?catalogueLevel skos:prefLabel ?catalogueLevelLabel .
-                                 }
+                                  
+                                    ?item crm:P1_is_identified_by ?identifier .
+                                    ?item crm:P1_is_identified_by ?identifier .
+                                    ?identifier crm:P2_has_type ?identifierType .
+                                    FILTER (?identifierType in (<http://www.researchspace.org/resource/vocab/identifier/crn>,<http://www.researchspace.org/resource/vocab/identifier/collection_item_id>))	
+                                    ?identifier rdfs:label ?itemLabel .
+                                  
 
-                                 OPTIONAL {
-                                   ?item crm:P67i_is_referred_to_by ?information .
-                                   ?information a crm:E73_Information_Object .
-                                   ?information crm:P190_has_symbolic_content ?description .
-                                 }
-                             } ORDER BY ASC(?itemLabel)'
+                                  OPTIONAL {
+                                    ?item crm:P2_has_type ?catalogueLevel .
+                                    ?catalogueLevel crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/catalogue_reference_number_type>  .
+                                    ?catalogueLevel skos:prefLabel ?catalogueLevelLabel .
+                                  }
+
+                                  OPTIONAL {
+                                    ?item crm:P67i_is_referred_to_by ?information .
+                                    ?information a crm:E73_Information_Object .
+                                    ?information crm:P190_has_symbolic_content ?description .
+                                  }
+                              } ORDER BY ASC(?itemLabel)'
                             
                               options='{"showFilter":true, "resultsPerPage":9}'
                               column-configuration='[{"displayName": "Object", "variableName": "item", "cellTemplate": "{{> item}}"}, 
@@ -366,7 +365,7 @@
           </bs-tab>
         
           <bs-tab event-key="4" title="Objects - loan assessments">
-       
+        
             <semantic-form-tree-picker-input for='exhibition_related_loan_assessment' label='Loan assessments' close-dropdown-on-selection='false'
                           placeholder='Select loan assessment(s) for the exhibition' 
                           tree-patterns='{"scheme": "crm:E7_Activity",
@@ -376,7 +375,7 @@
                                                           ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/loan_assessment_id> ."
                                         }'>   
             </semantic-form-tree-picker-input>
-     
+      
             {{#if node}}
               <div style="margin-top: 15px;">
                 <semantic-table id='loan-assessment-results'
@@ -395,7 +394,7 @@
                                         ?item crm:P1_is_identified_by ?identifier .
                                         ?item crm:P1_is_identified_by ?identifier .
                                         ?identifier crm:P2_has_type ?identifierType .
-  									                    FILTER (?identifierType in (<http://www.researchspace.org/resource/vocab/identifier/crn>,<http://www.researchspace.org/resource/vocab/identifier/collection_item_id>))
+                                        FILTER (?identifierType in (<http://www.researchspace.org/resource/vocab/identifier/crn>,<http://www.researchspace.org/resource/vocab/identifier/collection_item_id>))
                                         ?identifier rdfs:label ?itemLabel .
 
                                         OPTIONAL {

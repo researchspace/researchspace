@@ -38,6 +38,7 @@ export interface Props {
    * @default false
    */
   renderHidden?: boolean;
+  className?: string;
 }
 
 interface State {
@@ -57,6 +58,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
   public static defaultProps: Props = {
     expanded: true,
     renderHidden: false,
+    className: ''
   };
 
   constructor(props: Props, context: any) {
@@ -67,7 +69,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
   }
 
   render() {
-    const { renderHidden } = this.props;
+    const { renderHidden, className } = this.props;
     const { expanded } = this.state;
 
     const children = Children.toArray(this.props.children);
@@ -79,7 +81,7 @@ export class CollapsibleDivComponent extends Component<Props, State> {
 
     const { expandedClass, collapsedClass } = (Children.only(triggerComponent) as React.ReactElement<any>).props;
     return D.div(
-      {},
+      {className},
       createElement(
         CollapsibleDivTriggerComponent,
         {

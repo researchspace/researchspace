@@ -256,20 +256,23 @@
                                             tree-patterns='{"scheme": "crm:E53_Place",
                                                             "schemePattern": "?item a crm:E53_Place",
                                                             "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                              ?appellation a crm:E44_Place_Appellation . 
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
-                                                                              ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                                                ?appellation a  ?appellationClass . 
+                                                                                ?appellation crm:P2_has_type ?appellationType .
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                FILTER (?appellationClass in (crm:E44_Place_Appellation,  crm:E41_Appellation ))
+                                                                                FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/identifier/place_name>,  <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> ))"
+                                                            }'
                                             
                                             nested-form-template='{{> forms:Place nested=true editable=true mode=new }}'
 
                                             query-item-label='SELECT ?label WHERE {
-                                                                  ?item crm:P1_is_identified_by ?appellation . 
-                                                                  ?appellation a crm:E44_Place_Appellation . 
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
-                                                                  ?appellation crm:P190_has_symbolic_content ?label .
-                                                              }'
-                                          
-          ></semantic-form-tree-picker-input>
+                                                                ?appellation a  ?appellationClass . 
+                                                                ?appellation crm:P2_has_type ?appellationType .
+                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                FILTER (?appellationClass in (crm:E44_Place_Appellation,  crm:E41_Appellation ))
+                                                                FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/identifier/place_name>,  <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> ))
+                                                            }'>
+          </semantic-form-tree-picker-input>
         </rs-tab>
 
         {{#if scheme}}

@@ -17,6 +17,14 @@
                             object_description="http://www.researchspace.org/pattern/system/entity/description"
                             object_current_location="http://www.researchspace.org/pattern/system/object/current_location"
                             
+                            object_type="http://www.researchspace.org/pattern/system/object/type"
+                            object_format="http://www.researchspace.org/pattern/system/object/format"
+                            object_dimension="http://www.researchspace.org/pattern/system/object/dimension"
+
+                            object_media="http://www.researchspace.org/pattern/system/object/media"
+
+                            object_current_owner="http://www.researchspace.org/pattern/system/object/current_owner"
+                            object_current_keeper="http://www.researchspace.org/pattern/system/object/current_keeper"
                         ]]'
             >
 
@@ -127,17 +135,18 @@
                             <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/identifier/object_title'></semantic-form-hidden-input>
                                 
                             <div style="margin-top: -15px;">
-                                <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
+                                <semantic-form-text-input for="title_value" label="Other title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
                             </div>
 
                             <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
                                 <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
                                     <div class="trigger-content color-secondary">
-                                        <span class="trigger-text">Title translations and alternative forms</span>
+                                        <span class="trigger-text">Other title translations and alternative forms</span>
                                         <span class="trigger-icon"></span>
                                     </div>
                                 </mp-collapsible-div-trigger>
                                 <mp-collapsible-div-content>
+                                    
                                     <semantic-form-text-input for="title_translation" label="Title translation" placeholder="Enter title translation" languages='["de","fr","it"]' require-language=true></semantic-form-text-input>
                                     <div class="inline-form-switch">
                                         <semantic-form-switch for="title_alternative_form" 
@@ -185,7 +194,7 @@
                                     </div>
                                 </mp-collapsible-div-content>
                             </mp-collapsible-div>
-                            
+
                         </semantic-form-composite-input>
 
                         <div class="inline-composite-container">
@@ -205,7 +214,7 @@
                                 <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
                                 <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/identifier/object_primary_id'></semantic-form-hidden-input>
                                     
-                                <div style="display: flex; align-items:flex-start; gap:15px; flex-wrap: wrap;">
+                                <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
                                         <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
                                     </div>
@@ -254,7 +263,7 @@
                                 <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
                                 <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/identifier/object_id'></semantic-form-hidden-input>
                                     
-                                <div style="display: flex; align-items:flex-start; gap:15px; flex-wrap: wrap;">
+                                <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
                                         <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
                                     </div>
@@ -309,7 +318,7 @@
                             <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
                             <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/object_current_location'> </semantic-form-hidden-input>
                             
-                            <div style="display: flex; align-items:flex-start; gap:15px; flex-wrap: wrap; margin-top: -15px;">
+                            <div class="form-inline-inputs first-input" style="row-gap:5px;">
                                 <div style="flex: 1;">
                                     <semantic-form-tree-picker-input    for="location_falls_within_place" 
                                                                         label="Place / Organisation" 
@@ -337,8 +346,14 @@
                                     </semantic-form-tree-picker-input>      
                                 </div>
 
-                                <semantic-form-text-input for="museum_location_identifier" label="Gallery/room/display details" placeholder="Enter gallery/room/display details"> </semantic-form-text-input>
-                                <semantic-form-text-input for="storage_location_identifier" label="Storage details" placeholder="Enter storage details"> </semantic-form-text-input>
+                                <div style="flex: 1;">
+                                    <semantic-form-text-input for="museum_location_identifier" label="Gallery/room/display details" placeholder="Enter gallery/room/display details"> </semantic-form-text-input>
+                                </div>
+                                
+                                <div style="flex: 1;">
+                                    <semantic-form-text-input for="storage_location_identifier" label="Storage details" placeholder="Enter storage details"> </semantic-form-text-input>
+                                </div>
+                                
                             </div>
                         </semantic-form-composite-input> 
 
@@ -377,6 +392,139 @@
                         </div>
                     </div>
                     
+                </div>
+            </rs-tab>
+
+            <rs-tab event-key="type" title="Type/Dimensions">
+
+                <semantic-form-tree-picker-input    for="object_type" 
+                                                    label="Object type" 
+                                                    placeholder="Select object type" 
+                                                    close-dropdown-on-selection='false'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_type>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_type>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                    "labelPattern": "?item skos:prefLabel ?label"
+                                                                   }'
+
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/object_type",
+                                                                                "tooltip": "Open list of object types"
+                                                                                }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/object_type"
+                                                                                                    entityType="object type" }}{{{{/raw}}}}'
+
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                    }'>
+                                            
+                </semantic-form-tree-picker-input>
+
+                <semantic-form-tree-picker-input    for="object_format" 
+                                                    label="Object format" 
+                                                    placeholder="Select object format" 
+                                                    close-dropdown-on-selection='false'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_format>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_format>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                    "labelPattern": "?item skos:prefLabel ?label"
+                                                                   }'
+
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/object_format",
+                                                                                "tooltip": "Open list of object format"
+                                                                                }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/object_format"
+                                                                                                    entityType="object format" }}{{{{/raw}}}}'
+
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                    }'>
+                </semantic-form-tree-picker-input>
+
+                <div class="inline-composite-container">
+                    <semantic-form-composite-input for="object_dimension" 
+                                                    label="Dimensions"  
+                                                    placeholder="Enter object dimensions" 
+                                                    new-subject-template="/dimension/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                                    fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                
+                                                                dimension_type="http://www.researchspace.org/pattern/system/dimension/type"
+                                                                dimension_value="http://www.researchspace.org/pattern/system/dimension/value"
+                                                                dimension_unit="http://www.researchspace.org/pattern/system/dimension/unit"
+                                                                dimension_description="http://www.researchspace.org/pattern/system/entity/description"
+                                                            ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'></semantic-form-hidden-input>
+
+                    <div class="form-inline-inputs" style="row-gap:5px;">
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input for="dimension_type" 
+                                                            render-header="false"
+                                                            placeholder="Select dimension type" 
+                                                            close-dropdown-on-selection='false'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/dimension_type>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/dimension_type>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                            "labelPattern": "?item skos:prefLabel ?label"
+                                                                        }'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/dimension_type",
+                                                                                        "tooltip": "Open list of dimension types"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                            scheme="http://www.researchspace.org/resource/vocab/dimension_type"
+                                                                                                            entityType="dimension type" }}{{{{/raw}}}}'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="dimension_value" label="Value" placeholder="Enter measured value" render-header="false"></semantic-form-text-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input for="dimension_unit" 
+                                                            render-header="false"
+                                                            placeholder="Select dimension unit" 
+                                                            close-dropdown-on-selection='false'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/dimension_unit>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/dimension_unit>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                            "labelPattern": "?item skos:prefLabel ?label"
+                                                                        }'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                                                        "tooltip": "Open list of dimension unit"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                            scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
+                                                                                                            entityType="dimension unit" }}{{{{/raw}}}}'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for='dimension_description' render-header="false" placeholder="Enter description/comment"></semantic-form-text-input>
+                        </div>
+                    </div>
+                    </semantic-form-composite-input>
                 </div>
             </rs-tab>
 

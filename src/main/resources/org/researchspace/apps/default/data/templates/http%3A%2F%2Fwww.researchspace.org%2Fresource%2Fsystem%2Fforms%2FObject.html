@@ -51,60 +51,63 @@
                                 <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
                             </div>
 
-                            <mp-collapsible-div expanded=false class-name="test">
-                                <mp-collapsible-div-trigger expanded-class="x" collapsed-class="y">
-                                    <span>more</span>
+                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                                <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
+                                    <div class="trigger-content color-secondary">
+                                        <span class="trigger-text">Title translations and alternative forms</span>
+                                        <span class="trigger-icon"></span>
+                                    </div>
                                 </mp-collapsible-div-trigger>
                                 <mp-collapsible-div-content>
-                                    <semantic-form-text-input for="title_translation" label="Title translation" placeholder="Enter title translation" languages='["de","fr","it"]' require-language=true></semantic-form-text-input> 
+                                    <semantic-form-text-input for="title_translation" label="Title translation" placeholder="Enter title translation" languages='["ar","de","el","es","fr","ga","it","ja","ko","nl","zh","zh-CN","zh-TW"]' require-language=true></semantic-form-text-input> 
+                                    
+                                    <div class="inline-form-switch">
+                                        <semantic-form-switch for="title_alternative_form" 
+                                                                switch-on-field="has_type" 
+                                                                label="Alternative title form">
+        
+                                            <semantic-form-switch-case label="Transcription">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transcription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+        
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transcription'></semantic-form-hidden-input>
+                                                
+                                                    <div style="flex: 1;">
+                                                        <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transcription"></semantic-form-text-input>
+                                                    </div>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+        
+                                            <semantic-form-switch-case label="Transliteration">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transliteration/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+        
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transliteration'></semantic-form-hidden-input>
+                                                
+                                                    <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transliteration"></semantic-form-text-input>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+                                        </semantic-form-switch>
+                                    </div>
                                 </mp-collapsible-div-content>
                             </mp-collapsible-div>
                             
-                            <div class="inline-form-switch">
-                                <semantic-form-switch for="title_alternative_form" 
-                                                        switch-on-field="has_type" 
-                                                        label="Alternative title form">
-
-                                    <semantic-form-switch-case label="Transcription">
-                                        <semantic-form-composite-input for="title_alternative_form" 
-                                                                        new-subject-template="/title_transcription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                                                        fields='[[fieldDefinitions
-                                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-
-                                                                                title_value="http://www.researchspace.org/pattern/system/title/value"
-                                                                        ]]'>
-                                
-                                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
-                                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transcription'></semantic-form-hidden-input>
-                                        
-                                            <div style="flex: 1;">
-                                                <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transcription"></semantic-form-text-input>
-                                            </div>
-                                            
-                                        </semantic-form-composite-input>
-                                    </semantic-form-switch-case>
-
-                                    <semantic-form-switch-case label="Transliteration">
-                                        <semantic-form-composite-input for="title_alternative_form" 
-                                                                        new-subject-template="/title_transliteration/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                                                        fields='[[fieldDefinitions
-                                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-
-                                                                                title_value="http://www.researchspace.org/pattern/system/title/value"
-                                                                        ]]'>
-                                
-                                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
-                                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transliteration'></semantic-form-hidden-input>
-                                        
-                                            <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transliteration"></semantic-form-text-input>
-                                            
-                                        </semantic-form-composite-input>
-                                    </semantic-form-switch-case>
-                                </semantic-form-switch>
-                            </div>
-
                         </semantic-form-composite-input>
 
                         <semantic-form-composite-input  for="object_other_title"
@@ -126,53 +129,63 @@
                             <div style="margin-top: -15px;">
                                 <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
                             </div>
-                            <semantic-form-text-input for="title_translation" label="Title translation" placeholder="Enter title translation" languages='["de","fr","it"]' require-language=true></semantic-form-text-input>
+
+                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                                <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
+                                    <div class="trigger-content color-secondary">
+                                        <span class="trigger-text">Title translations and alternative forms</span>
+                                        <span class="trigger-icon"></span>
+                                    </div>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                    <semantic-form-text-input for="title_translation" label="Title translation" placeholder="Enter title translation" languages='["de","fr","it"]' require-language=true></semantic-form-text-input>
+                                    <div class="inline-form-switch">
+                                        <semantic-form-switch for="title_alternative_form" 
+                                                                switch-on-field="has_type" 
+                                                                label="Alternative title form">
+
+                                            <semantic-form-switch-case label="Transcription">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transcription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transcription'></semantic-form-hidden-input>
+                                                
+                                                    <div style="flex: 1;">
+                                                        <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transcription"></semantic-form-text-input>
+                                                    </div>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+
+                                            <semantic-form-switch-case label="Transliteration">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transliteration/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transliteration'></semantic-form-hidden-input>
+                                                
+                                                    <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transliteration"></semantic-form-text-input>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+                                        </semantic-form-switch>
+                                    </div>
+                                </mp-collapsible-div-content>
+                            </mp-collapsible-div>
                             
-                            <div class="inline-form-switch">
-                                <semantic-form-switch for="title_alternative_form" 
-                                                        switch-on-field="has_type" 
-                                                        label="Alternative title form">
-
-                                    <semantic-form-switch-case label="Transcription">
-                                        <semantic-form-composite-input for="title_alternative_form" 
-                                                                        new-subject-template="/title_transcription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                                                        fields='[[fieldDefinitions
-                                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-
-                                                                                title_value="http://www.researchspace.org/pattern/system/title/value"
-                                                                        ]]'>
-                                
-                                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
-                                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transcription'></semantic-form-hidden-input>
-                                        
-                                            <div style="flex: 1;">
-                                                <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transcription"></semantic-form-text-input>
-                                            </div>
-                                            
-                                        </semantic-form-composite-input>
-                                    </semantic-form-switch-case>
-
-                                    <semantic-form-switch-case label="Transliteration">
-                                        <semantic-form-composite-input for="title_alternative_form" 
-                                                                        new-subject-template="/title_transliteration/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                                                        fields='[[fieldDefinitions
-                                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-
-                                                                                title_value="http://www.researchspace.org/pattern/system/title/value"
-                                                                        ]]'>
-                                
-                                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
-                                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transliteration'></semantic-form-hidden-input>
-                                        
-                                            <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transliteration"></semantic-form-text-input>
-                                            
-                                        </semantic-form-composite-input>
-                                    </semantic-form-switch-case>
-                                </semantic-form-switch>
-                            </div>
-
                         </semantic-form-composite-input>
 
                         <div class="inline-composite-container">
@@ -299,24 +312,28 @@
                             <div style="display: flex; align-items:flex-start; gap:15px; flex-wrap: wrap; margin-top: -15px;">
                                 <div style="flex: 1;">
                                     <semantic-form-tree-picker-input    for="location_falls_within_place" 
-                                                                        label="Place/Organisation" 
+                                                                        label="Place / Organisation" 
                                                                         placeholder="Select location" 
                                                                         close-dropdown-on-selection='true'
                                                                         tree-patterns='{"scheme": "crm:E53_Place",
                                                                                         "schemePattern": "?item a crm:E53_Place",
                                                                                         "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                                            ?appellation a crm:E44_Place_Appellation . 
-                                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
-                                                                                                            ?appellation crm:P190_has_symbolic_content ?label ." }'
+                                                                                                            ?appellation a  ?appellationClass . 
+                                                                                                            ?appellation crm:P2_has_type ?appellationType .
+                                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                                            FILTER (?appellationClass in (crm:E44_Place_Appellation,  crm:E41_Appellation ))
+                                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/identifier/place_name>,  <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> ))"
+                                                                                        }'
                                                                         
                                                                         nested-form-template='{{> forms:Place nested=true editable=true mode=new }}'
 
                                                                         query-item-label='SELECT ?label WHERE {
-                                                                                                ?item crm:P1_is_identified_by ?appellation . 
-                                                                                                ?appellation a crm:E44_Place_Appellation . 
-                                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/identifier/place_name> .
-                                                                                                ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                            }'>
+                                                                                            ?appellation a  ?appellationClass . 
+                                                                                            ?appellation crm:P2_has_type ?appellationType .
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                            FILTER (?appellationClass in (crm:E44_Place_Appellation,  crm:E41_Appellation ))
+                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/identifier/place_name>,  <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> ))
+                                                                                        }'>
                                     </semantic-form-tree-picker-input>      
                                 </div>
 

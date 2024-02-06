@@ -18,6 +18,7 @@ export interface SemanticMapControlsEventData {
   'SemanticMapControls.SendYear': string;
   'SemanticMapControls.SendVectorLevels': {};
   'SemanticMapControls.Register': string;
+  'SemanticMapControls.Unregister': string;
 }
 
 const event: EventMaker<SemanticMapControlsEventData> = EventMaker;
@@ -38,4 +39,5 @@ export const SemanticMapControlsSendToggle3d = event('SemanticMapControls.SendTo
 export const SemanticMapControlsSendYear = event('SemanticMapControls.SendYear');
 export const SemanticMapControlsSendVectorLevels = event('SemanticMapControls.SendVectorLevels');
 export const SemanticMapControlsRegister = event('SemanticMapControls.Register');
+export const SemanticMapControlsUnregister = event('SemanticMapControls.Unregister');
 

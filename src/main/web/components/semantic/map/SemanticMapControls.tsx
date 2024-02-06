@@ -16,10 +16,13 @@ import {
   SemanticMapControlsSendToggle3d,
   SemanticMapControlsSendYear,
   SemanticMapControlsSendVectorLevels,
-  SemanticMapControlsRegister
+  SemanticMapControlsRegister,
+  SemanticMapControlsUnregister
 } from './SemanticMapControlsEvents';
-import * as D from 'react-dom-factories';
-import * as block from 'bem-cn';
+import {
+  SemanticMapRequestControlsRegistration
+} from './SemanticMapEvents'
+import SemanticSlider from './SemanticSlider';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -28,7 +31,6 @@ import reactCSS from 'reactcss';
 import _ = require('lodash');
 import VectorLayer from 'ol/layer/Vector';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { none } from 'ol/centerconstraint';
 
 const sliderbar: CSSProperties = {
   width: '100%',
@@ -38,6 +40,13 @@ interface Filters {
   feature: boolean;
   overlay: boolean;
   basemap: boolean;
+}
+
+interface Timeline {
+  mode: "marked" | "normal";
+  min: number;
+  max: number;
+  default: number;
 }
 
 interface State {
@@ -57,6 +66,8 @@ interface State {
   displayColorPicker: {};
   year: number;
   vectorLevels: {};
+  yearMarks: number[];
+  registeredMap: string;
 }
 
 interface Props {
@@ -65,10 +76,11 @@ interface Props {
   featuresTaxonomies: string;
   featuresColorTaxonomies: string;
   featuresOptionsEnabled: boolean;
-  //TODO: optionals
   filtersInitialization: Filters;
-  showFilters: boolean;
+  showFilters?: boolean;
+  //TODO: optionals and document
   vectorLevels: string[];
+  timeline: Timeline;
 }
 
 export class SemanticMapControls extends Component<Props, State> {
@@ -76,7 +88,7 @@ export class SemanticMapControls extends Component<Props, State> {
   private featuresTaxonomies = [];
   private featuresColorTaxonomies = [];
   private defaultFeaturesColor = 'rgba(200,50,50,0.5)';
-  //TODO: optionals
+  //TODO: fix optionals
   constructor(props: any, context: ComponentContext) {
     super(props, context);
     this.state = {
@@ -89,12 +101,14 @@ export class SemanticMapControls extends Component<Props, State> {
       maskIndex: -1,
       filters: this.props.filtersInitialization,
       selectedFeaturesLabel: '',
-      featuresColorTaxonomy: this.props.featuresTaxonomies.split(',')[0],
+      featuresColorTaxonomy: this.props.featuresTaxonomies ? this.props.featuresTaxonomies.split(',')[0] : '',
       featuresColorGroups: [],
       displayColorPicker: {},
       groupColorAssociations: {},
-      year: 1670,
-      vectorLevels: this.props.vectorLevels ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {}) : {}
+      year: this.props.timeline? this.props.timeline.default : new Date().getFullYear(), // Todo fix optional timeline props.
+      yearMarks: [],
+      vectorLevels: this.props.vectorLevels ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {}) : {},
+      registeredMap: ""
     };
 
     this.handleSelectedLabelChange = this.handleSelectedLabelChange.bind(this);
@@ -109,10 +123,250 @@ export class SemanticMapControls extends Component<Props, State> {
           eventType: SemanticMapSendMapLayers,
         })
       )
-      .onValue(this.initializeMapLayers);
+      .onValue(this.receiveMapLayers);
+
+    this.cancelation.map(listen({
+      eventType: SemanticMapRequestControlsRegistration,
+    }))
+    .onValue(this.handleRequestRegistration);
 
     this.onDragEnd = this.onDragEnd.bind(this);
   }
+
+
+  /** REACT COMPONENT LOGIC */
+  public componentDidMount() {
+    //this.triggerRegisterToMap();
+    //this.triggerSyncFromMap();
+    //TODO: the map will send the first levels autonomously after the registration 
+  }
+
+  public componentWillMount() {
+    if(this.props.featuresColorTaxonomies){
+      this.featuresTaxonomies = this.props.featuresTaxonomies.split(',');
+    }
+    if(this.props.featuresTaxonomies){
+      this.featuresColorTaxonomies = this.props.featuresColorTaxonomies.split(',');
+    }
+    console.log("Filters initialization: ", this.props.filtersInitialization);
+  }
+
+  public componentWillUnmount() {
+    console.log("Will unmount: ", this.props.id)
+    this.triggerUnregisterToMap();
+  }
+
+  public componentDidUpdate(prevProps, prevState) {
+    // TODO: if we care about colors (i.e. historical maps controls don't)
+    if (this.state.groupColorAssociations !== prevState.groupColorAssociations) {
+      console.log("Groupcolors changed. Sending...")
+      this.triggerSendFeaturesColorsAssociationsToMap();
+    } else {
+      // console.log("Groupcolors NOT changed.")
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /** EVENTS */
+
+  private handleRequestRegistration = (event: any) => {
+    if(this.state.registeredMap == ""){
+      this.setState(
+        {
+          registeredMap: event.data
+        },
+        () => {
+          console.log("Controls", this.props.id, "registered map", this.state.registeredMap)
+          //TODO: trigger registrationconfirmation
+          this.triggerRegisterToMap()
+        }
+      )
+    } else {
+      // console.warn("Controls", this.props.id, "already has a registered map")
+    }
+  }
+
+  private receiveMapLayers = (event: any) => {
+    this.setState(
+      {
+        mapLayers: event.data,
+      },
+      () => {
+        console.log("Map Controls: '" + this.props.id + "': layers synced from map '" + this.props.targetMapId + "'");
+        console.log(event.data);
+        this.extractYearMarks(this.getAllVectorLayers());
+        this.triggerSendYear();
+        if(this.props.featuresTaxonomies){
+          this.setFeaturesColorTaxonomy();
+        }
+      }
+    );
+  };
+
+  private triggerRegisterToMap() {
+    console.log("Registration request confirmed. Registering " + this.props.id + " to " + this.props.targetMapId);
+    trigger({
+      eventType: SemanticMapControlsRegister,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+    })
+  }
+
+
+  private triggerUnregisterToMap() {
+    console.log("Asking unregistering of controls" + this.props.id + " to " + this.props.targetMapId);
+    trigger({
+      eventType: SemanticMapControlsUnregister,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+    })
+  }
+
+  // TODO: we're trying to avoid using this
+  private triggerSyncFromMap(){
+    console.log("Syncing " + this.props.id + " from " + this.props.targetMapId);
+    trigger({
+      eventType: SemanticMapControlsSyncFromMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId]
+    });
+  }
+
+  private triggerSendLayers() {
+    trigger({
+      eventType: SemanticMapControlsSendMapLayersToMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: this.state.mapLayers,
+    });
+  }
+
+  private triggerSendYear() {
+    const year = this.state.year;
+    console.log("Sending year " + year + " to map.")
+    trigger({
+      eventType: SemanticMapControlsSendYear,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: year.toString() + "-01-01",
+    });
+  }
+
+  private triggerSendVectorLevelsToMap() {
+    const vectorLevels = this.state.vectorLevels;
+    console.log("Sending vector levels to " + this.props.targetMapId + ". :")
+    console.log(vectorLevels)
+    trigger({
+      eventType: SemanticMapControlsSendVectorLevels,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: vectorLevels,
+    });
+  }
+
+  private triggerSendToggle3d() {
+    console.log('fired 3d');
+    trigger({
+      eventType: SemanticMapControlsSendToggle3d,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: 'toggle',
+    });
+  }
+
+  private triggerSendFeaturesColorsAssociationsToMap() {
+    trigger({
+      eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
+      source: this.props.id,
+      data: this.state.groupColorAssociations,
+      targets: [this.props.targetMapId],
+    });
+  }
+
+  private triggerSendSwipeValue = (swipeValue: number) => {
+    trigger({
+      eventType: SemanticMapControlsOverlaySwipe,
+      source: this.props.id,
+      data: swipeValue,
+      targets: [this.props.targetMapId],
+    });
+  };
+
+  private triggerSendFeaturesLabelToMap() {
+    console.log('SENDING FEATURE TAXONOMY');
+    console.log(this.state.selectedFeaturesLabel);
+    trigger({
+      eventType: SemanticMapControlsSendFeaturesLabelToMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: this.state.selectedFeaturesLabel,
+    });
+  }
+
+  private triggerSendFeaturesColorTaxonomy() {
+    console.log('%cSENDING FEATURE COLOR TAXONOMY', 'color: green');
+    console.log(this.state.featuresColorTaxonomy);
+    trigger({
+      eventType: SemanticMapControlsSendFeaturesColorTaxonomyToMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: this.state.featuresColorTaxonomy,
+    });
+  }
+
+  private triggerVisualization = (visualization: string) => {
+    trigger({
+      eventType: SemanticMapControlsOverlayVisualization,
+      source: this.props.id,
+      data: visualization,
+      targets: [this.props.targetMapId],
+    });
+    switch (visualization) {
+      case 'swipe': {
+        this.triggerSendSwipeValue(this.state.swipeValue);
+      }
+    }
+  };
+
+  private triggerSendMaskIndexToMap(index: number) {
+    trigger({
+      eventType: SemanticMapControlsSendMaskIndexToMap,
+      source: this.props.id,
+      targets: [this.props.targetMapId],
+      data: index,
+    });
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /** UI  */
+
 
   handleSelectedLabelChange(e) {
     this.setState(
@@ -178,7 +432,7 @@ export class SemanticMapControls extends Component<Props, State> {
         mapLayers,
       },
       () => {
-        this.triggerSendLayersToMap();
+        this.triggerSendLayers();
       }
     );
   };
@@ -195,133 +449,6 @@ export class SemanticMapControls extends Component<Props, State> {
       }
     );
   }
- 
-  private triggerSendMaskIndexToMap(index: number) {
-    trigger({
-      eventType: SemanticMapControlsSendMaskIndexToMap,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: index,
-    });
-  }
-
-  private triggerRegisterToMap() {
-    console.log("registering " + this.props.id + " to " + this.props.targetMapId);
-    trigger({
-      eventType: SemanticMapControlsRegister,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-    })
-    this.triggerSendYearToMap()
-  }
-
-  private triggerSendYearToMap() {
-    const year = this.state.year;
-    console.log("Sending year " + year + " to map.")
-    trigger({
-      eventType: SemanticMapControlsSendYear,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: year.toString() + "-01-01",
-    });
-  }
-
-  private triggerSendVectorLevelsToMap() {
-    const vectorLevels = this.state.vectorLevels;
-    console.log("Sending vector levels to " + this.props.targetMapId + ". :")
-    console.log(vectorLevels)
-    trigger({
-      eventType: SemanticMapControlsSendVectorLevels,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: vectorLevels,
-    });
-  }
-
-  public componentDidMount() {
-    this.triggerRegisterToMap();
-    trigger({ eventType: SemanticMapControlsSyncFromMap, source: this.props.id, targets: [this.props.targetMapId] });
-    console.log('MapControls' + this.props.id +' Mounted.');
-  }
-
-  public componentWillMount() {
-    this.featuresTaxonomies = this.props.featuresTaxonomies.split(',');
-    this.featuresColorTaxonomies = this.props.featuresColorTaxonomies.split(',');
-    console.log(this.props.filtersInitialization);
-  }
-
-  public componentWillUnmount() {}
-
-  public componentDidUpdate(prevProps, prevState) {
-      if (this.state.groupColorAssociations !== prevState.groupColorAssociations) {
-        console.log("Groupcolors CHANGED")
-        this.triggerSendFeaturesColorsAssociationsToMap();
-      } else {
-        console.log("Groupcolors NOT changed.")
-      }
-    }
-
-
-
-/*
-  public componentDidUpdate(prevProps, prevState) {
-    //Group Color associations
-    if (JSON.stringify(this.state.groupColorAssociations) !== JSON.stringify(prevState.groupColorAssociations)) {
-      // console.log('%cGroupColors Associations  È Cambiato! Prima era:', 'color: green; font-size: 20px');
-      // console.log(JSON.stringify(prevState.groupColorAssociations));
-      // console.log('Ora è: ');
-      // console.log(JSON.stringify(this.state.groupColorAssociations));
-      // console.log('%c************************', 'color: green; font-size: 20px');
-
-      //this.triggerSendFeaturesColorsAssociationsToMap();
-    } else {
-      // console.log('%cGroupColors Associations NON È Cambiato! Prima era:', 'color: red; font-size: 20px');
-      // console.log(JSON.stringify(prevState.groupColorAssociations));
-      // console.log('Ora è: ');
-      // console.log(JSON.stringify(this.state.groupColorAssociations));
-      // console.log('%c************************', 'color: red; font-size: 20px');
-    }
-
-    //Color Taxonomy
-    if (JSON.stringify(this.state.featuresColorTaxonomy) !== JSON.stringify(prevState.featuresColorTaxonomy)) {
-      //console.log('%cÈ Cambiato! Prima era:', 'color: orange; font-size: 20px');
-      //console.log(prevState.featuresColorTaxonomy);
-      //this.triggerSendFeaturesColorTaxonomy();
-    }
-
-    //Map Layers, check for taxonomyGroups updates
-    //let newFeatures = this.getAllVectorLayers(this.state.mapLayers);
-    //let oldFeatures = this.getAllVectorLayers(prevState.mapLayers);
-    //let newGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, newFeatures);
-    //let oldGroups = this.getGroupsFromTaxonomy(this.state.featuresColorTaxonomy, oldFeatures);
-    /*
-    if (this.arraysMatch(newGroups, oldGroups)) {
-      //console.log('I TAXONOMYGROUPS Sono UGUALI: ');
-    } else {
-      //console.log('I TAXONOMYGROUPS Sono DIVERSI: ');
-    }
-  }
-  */
-
-  /*
-  private arraysMatch(arr1, arr2) {
-    // Check if the arrays are the same length
-    if (arr1.length !== arr2.length) return false;
-
-    arr1 = arr1.sort();
-    arr2 = arr2.sort();
-
-    // Check if all items exist and are in the same order
-    for (var i = 0; i < arr1.length; i++) {
-      if (arr1[i] !== arr2[i]) return false;
-    }
-
-    // Otherwise, return true
-    return true;
-  }
-  */
-
-  //COLOR PICKER
 
   handleColorpickerClick = (group: string) => {
     let displayColorPickerClone = this.state.displayColorPicker;
@@ -339,51 +466,74 @@ export class SemanticMapControls extends Component<Props, State> {
     this.setState({ displayColorPicker: displayColorPickerClone });
   };
 
-  //TODO: MOVE ALL THE STYLING TO RS
+
+
+
+
+
+
+
+
 
   public render() {
     const styles = reactCSS({
-      default: {
-        swatch: {
-          padding: '2px',
-          background: '#fff',
-          borderRadius: '50%',
-          boxShadow: '0 0 0 1px rgba(0,0,0,.1)',
-          display: 'inline-block',
-          cursor: 'pointer',
+        default: {
+            swatch: {
+                padding: '2px',
+                background: '#fff',
+                borderRadius: '50%',
+                boxShadow: '0 0 0 1px rgba(0,0,0,.1)',
+                display: 'inline-block',
+                cursor: 'pointer',
+            },
         },
-      },
     });
 
-    return D.div(
-      null,
-      // <div className={'featuresOptionsContainer'}>
-      //   {/* <h3 className={'mapOptionsSectionTitle'}>3D</h3> */}
-      // </div>,
-      <div className={'timeSliderContainer'}>
-        <input
-          type={'range'}
-          className={'timelineSlider'}
-          min={1500}
-          max={2022}
-          step={1}
-          value={this.state.year}
-          onMouseUp={(event) => {
-              //this.triggerSendYearToMap();
-          }}
-          onChange={(event) => {
-            const input = event.target as HTMLInputElement;
-            const value = parseInt(input.value);
-            this.setState({
-              year: value,
-            }, () => {
-              this.triggerSendYearToMap();
-            });
-          }}
-        ></input>
-        <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
-      </div>,
-      this.props.featuresOptionsEnabled && (
+    return (
+        <div>
+            {this.props.timeline && (
+                <div className={'timeSliderContainer'}>
+                    {this.props.timeline.mode === "marked" && (
+                        <React.Fragment>
+                            <SemanticSlider 
+                            marks={this.state.yearMarks.map(mark => (typeof mark === 'number' ? { value: mark, label: mark.toString() } : mark))}
+                            onChange={(values) => {
+                              // Continuously update to the closest mark
+                              this.setState({
+                                  year: values[0],
+                              }, () => {
+                                this.triggerSendYear();
+                              });
+                            }}                            
+                            />
+                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                        </React.Fragment>
+                    )}
+                    {this.props.timeline.mode === "normal" && (
+                        <React.Fragment>
+                            <input
+                                type={'range'}
+                                className={'timelineSlider'}
+                                min={this.props.timeline.min}
+                                max={this.props.timeline.max}
+                                step={1}
+                                value={this.state.year}
+                                onChange={(event) => {
+                                    const input = event.target as HTMLInputElement;
+                                    const value = parseInt(input.value);
+                                    this.setState({
+                                        year: value,
+                                    }, () => {
+                                        this.triggerSendYear();
+                                    });
+                                }}
+                            />
+                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                        </React.Fragment>
+                    )}
+                </div>
+            )}
+            {this.props.featuresOptionsEnabled && (
         <div className={'featuresOptionsContainer'}>
           {/* <h3 className={'mapOptionsSectionTitle'}>Options</h3> */}
           <div className={'toggle3dBtn'} onClick={() => this.triggerSendToggle3d()} style={{ cursor: 'pointer' }}>
@@ -477,8 +627,8 @@ export class SemanticMapControls extends Component<Props, State> {
             </div>
           </div>
         </div>
-      ),
-      D.br(),
+      )}
+      <br/>
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
@@ -493,7 +643,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     type={'checkbox'}
                     checked={this.state.filters.feature}
                     onChange={(event) => {
-                      this.setState({ filters: { ...this.state.filters, feature: event.target.checked } }, () => {});
+                      this.setState({ filters: { ...this.state.filters, feature: event.target.checked } }, () => { });
                     }}
                   ></input>
                   <label className="fitersLabel">Features</label>
@@ -503,7 +653,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     type={'checkbox'}
                     checked={this.state.filters.overlay}
                     onChange={(event) => {
-                      this.setState({ filters: { ...this.state.filters, overlay: event.target.checked } }, () => {});
+                      this.setState({ filters: { ...this.state.filters, overlay: event.target.checked } }, () => { });
                     }}
                   ></input>
                   <label className="fitersLabel">Overlays</label>
@@ -513,7 +663,7 @@ export class SemanticMapControls extends Component<Props, State> {
                     type={'checkbox'}
                     checked={this.state.filters.basemap}
                     onChange={(event) => {
-                      this.setState({ filters: { ...this.state.filters, basemap: event.target.checked } }, () => {});
+                      this.setState({ filters: { ...this.state.filters, basemap: event.target.checked } }, () => { });
                     }}
                   ></input>
                   <label className="fitersLabel">Basemaps</label>
@@ -563,35 +713,34 @@ export class SemanticMapControls extends Component<Props, State> {
                                 ></input>
                               </div>
                               <div>
-                              {mapLayer instanceof VectorLayer && (
-                                console.log("ITISINSTANCE"),
-                                this.props.vectorLevels.map((vl) => {
-                                  return (
-                                    <div className={'vectorLevelsFilterContainer'}>
-                                      <label>{vl}</label>
-                                      <input
-                                        className="vectorLevelsFilters"
-                                        name={'overlay-visualization'}
-                                        type={'checkbox'}
-                                        checked={this.state.vectorLevels[vl].visible}
-                                        onChange={(event) => {
-                                          this.setState({ 
-                                            vectorLevels: { 
-                                              ...this.state.vectorLevels, 
-                                              [vl]: {
-                                                ...this.state.vectorLevels[vl],
-                                                visible: event.target.checked
+                                {mapLayer instanceof VectorLayer && (
+                                  this.props.vectorLevels.map((vl) => {
+                                    return (
+                                      <div className={'vectorLevelsFilterContainer'}>
+                                        <label>{vl}</label>
+                                        <input
+                                          className="vectorLevelsFilters"
+                                          name={'overlay-visualization'}
+                                          type={'checkbox'}
+                                          checked={this.state.vectorLevels[vl].visible}
+                                          onChange={(event) => {
+                                            this.setState({
+                                              vectorLevels: {
+                                                ...this.state.vectorLevels,
+                                                [vl]: {
+                                                  ...this.state.vectorLevels[vl],
+                                                  visible: event.target.checked
+                                                }
                                               }
-                                            }
-                                          }, () => {
-                                            this.triggerSendVectorLevelsToMap();
-                                          });
-                                        }}
-                                      ></input>
-                                    </div>
-                                  );
-                                })
-                            )}
+                                            }, () => {
+                                              this.triggerSendVectorLevelsToMap();
+                                            });
+                                          }}
+                                        ></input>
+                                      </div>
+                                    );
+                                  })
+                                )}
                               </div>
                             </div>
                           </div>
@@ -693,7 +842,7 @@ export class SemanticMapControls extends Component<Props, State> {
                                     const input = event.target as HTMLInputElement;
                                     const input2 = input.value;
                                     this.setState({ swipeValue: Number(input2) }, () =>
-                                      this.triggerSwipe(this.state.swipeValue)
+                                      this.triggerSendSwipeValue(this.state.swipeValue)
                                     );
                                   }}
                                 ></input>
@@ -709,10 +858,10 @@ export class SemanticMapControls extends Component<Props, State> {
             </div>
           )}
         </Droppable>
-      </DragDropContext>,
-      D.br()
-    );
-  }
+      </DragDropContext>
+      <br/>
+    </div>
+  )}
 
   private reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -720,20 +869,6 @@ export class SemanticMapControls extends Component<Props, State> {
     result.splice(endIndex, 0, removed);
 
     return result;
-  };
-
-  private initializeMapLayers = (event: any) => {
-    this.setState(
-      {
-        mapLayers: event.data,
-      },
-      () => {
-        console.log("Controls '" + this.props.id + "': layers synced from map '" + this.props.targetMapId + "'");
-        console.log(event.data);
-        this.triggerSendYearToMap();
-        this.setFeaturesColorTaxonomy();
-      }
-    );
   };
 
   private setFeaturesColorTaxonomy() {
@@ -757,7 +892,7 @@ export class SemanticMapControls extends Component<Props, State> {
           .getSource()
           .getFeatures()
           .forEach((feature) => {
-            if(feature.get(taxonomy)){
+            if (feature.get(taxonomy)) {
               let grouping = feature.get(taxonomy).value;
               if (!groups.includes(grouping)) {
                 groups.push(grouping);
@@ -823,6 +958,7 @@ export class SemanticMapControls extends Component<Props, State> {
   }
 
   private generateColorPalette() {
+    //TODO: give possibility to set a colorpalette from the props
     let colorNumbers = this.state.featuresColorGroups.length;
     let palette = [
       "rgba(245,185,153,0.6)",
@@ -883,6 +1019,34 @@ export class SemanticMapControls extends Component<Props, State> {
     return vectorLayers;
   }
 
+  private extractYearMarks(vectorLayers){
+    let marks = [];
+    console.log("Extracting year marks for: ", vectorLayers);
+    vectorLayers.forEach((vectorLayer) => {
+      vectorLayer
+        .getSource()
+        .getFeatures()
+        .forEach((feature) => {
+          if (feature.get('bob').value) {
+            marks.push(Number(feature.get('bob').value));
+          }
+        });
+    });
+    console.log("Extracted marks", marks)
+    this.setState({
+      yearMarks: marks.sort()
+    },
+    () => {
+      console.log("Now marks are:", this.state.yearMarks)
+    })
+  }
+
+findClosestMark(value, marks) {
+    return marks.reduce((prev, curr) => {
+        return (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+    });
+}
+
   private capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
@@ -937,95 +1101,11 @@ export class SemanticMapControls extends Component<Props, State> {
     });
 
     this.setState({ mapLayers: mapLayersClone }, () => {
-      this.triggerSendLayersToMap();
+      this.triggerSendLayers();
     });
   }
 
-  private triggerSendToggle3d() {
-    console.log('fired 3d');
-    trigger({
-      eventType: SemanticMapControlsSendToggle3d,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: 'toggle',
-    });
-  }
 
-  private triggerSendFeaturesColorsAssociationsToMap() {
-    trigger({
-      eventType: SemanticMapControlsSendGroupColorsAssociationsToMap,
-      source: this.props.id,
-      data: this.state.groupColorAssociations,
-      targets: [this.props.targetMapId],
-    });
-  }
-  /*
-  private triggerFeatureColor = (color: any) => {
-    let color_rgba = color.rgb;
-    let rgba_string: string;
-    rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
-    trigger({
-      eventType: SemanticMapControlsFeatureColor,
-      source: this.props.id,
-      data: rgba_string,
-      targets: [this.props.targetMapId],
-    });
-  };
-  */
-
-  private triggerSwipe = (swipeValue: number) => {
-    trigger({
-      eventType: SemanticMapControlsOverlaySwipe,
-      source: this.props.id,
-      data: swipeValue,
-      targets: [this.props.targetMapId],
-    });
-  };
-
-  private triggerSendLayersToMap() {
-    trigger({
-      eventType: SemanticMapControlsSendMapLayersToMap,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: this.state.mapLayers,
-    });
-  }
-
-  private triggerSendFeaturesLabelToMap() {
-    console.log('SENDING FEATURE TAXONOMY');
-    console.log(this.state.selectedFeaturesLabel);
-    trigger({
-      eventType: SemanticMapControlsSendFeaturesLabelToMap,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: this.state.selectedFeaturesLabel,
-    });
-  }
-
-  private triggerSendFeaturesColorTaxonomy() {
-    console.log('%cSENDING FEATURE COLOR TAXONOMY', 'color: green');
-    console.log(this.state.featuresColorTaxonomy);
-    trigger({
-      eventType: SemanticMapControlsSendFeaturesColorTaxonomyToMap,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: this.state.featuresColorTaxonomy,
-    });
-  }
-
-  private triggerVisualization = (visualization: string) => {
-    trigger({
-      eventType: SemanticMapControlsOverlayVisualization,
-      source: this.props.id,
-      data: visualization,
-      targets: [this.props.targetMapId],
-    });
-    switch (visualization) {
-      case 'swipe': {
-        this.triggerSwipe(this.state.swipeValue);
-      }
-    }
-  };
 }
 
 export default SemanticMapControls;

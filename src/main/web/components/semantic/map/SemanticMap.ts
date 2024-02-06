@@ -122,7 +122,6 @@ enum Source {
   OSM = 'osm',
 }
 
-//TODO: remove them
 interface ProviderOptions {
   endpoint: string;
   crs: string;
@@ -798,10 +797,10 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
                 let feature_boe = "";
                 let feature_bob = "";
 
-                //TODO: questi valori fissi non dovrebbero essere qui
                 if (feature.get('bob')) {
                   feature_bob = feature.get('bob').value;
                 } else {
+                  // THIS might be different
                   feature_bob = "0";
                 }
                 if (feature.get('eoe')) {

@@ -496,8 +496,8 @@ export class SemanticMapControls extends Component<Props, State> {
                     {this.props.timeline.mode === "marked" && (
                         <React.Fragment>
                             <SemanticSlider 
-                            marks={this.state.yearMarks.map(mark => (typeof mark === 'number' ? { value: mark, label: mark.toString() } : mark))}
-                            onChange={(values) => {
+                              marks={this.state.yearMarks.map(mark => ({ value: mark, label: mark.toString() }))}
+                              onChange={(values) => {
                               // Continuously update to the closest mark
                               this.setState({
                                   year: values[0],

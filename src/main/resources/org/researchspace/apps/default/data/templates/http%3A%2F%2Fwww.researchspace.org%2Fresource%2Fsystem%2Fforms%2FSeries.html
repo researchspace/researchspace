@@ -1,0 +1,568 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/series/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                            has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                            
+                            series_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                            series_image="http://www.researchspace.org/pattern/system/entity/images"
+                            series_document="http://www.researchspace.org/pattern/system/entity/documents"
+
+                            object_title="http://www.researchspace.org/pattern/system/man-made_thing/title"
+                            
+                            object_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            object_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            series_description="http://www.researchspace.org/pattern/system/entity/description"
+                            series_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
+                            
+                            series_type="http://www.researchspace.org/pattern/system/physical_object/type"
+                            series_format="http://www.researchspace.org/pattern/system/physical_object/format"
+                            series_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
+
+                            series_media="http://www.researchspace.org/pattern/system/physical_object/media"
+
+                            series_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
+                            series_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
+
+                            series_right="http://www.researchspace.org/pattern/system/physical_thing/right"
+
+                            series_collection="http://www.researchspace.org/pattern/system/physical_thing/part_of_collection"
+                            series_parts="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
+                        ]]'
+            >
+
+    <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/series'></semantic-form-hidden-input>
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
+
+        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+            <rs-tab event-key="detail" title="Details">
+                <div class="form-2column-container">
+                    <div>
+                        <semantic-form-composite-input  for="object_title"
+                                                        label="Object title"
+                                                        new-subject-template="/object_title" 
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                
+                                                                title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                title_translation="http://www.researchspace.org/pattern/system/title/translation"
+                                                                title_alternative_form="http://www.researchspace.org/pattern/system/title/alternative_form"
+                                                            ]]'
+                                                            >
+                                        
+                            <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E35_Title"></semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/primary_title'></semantic-form-hidden-input>
+                                
+                            <div style="margin-top: -15px;">
+                                <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
+                            </div>
+
+                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                                <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
+                                    <div class="trigger-content color-secondary">
+                                        <span class="trigger-text">Title translations and alternative forms</span>
+                                        <span class="trigger-icon"></span>
+                                    </div>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                    <semantic-form-text-input for="title_translation" label="Title translation" placeholder="Enter title translation" languages='["ar","de","el","es","fr","ga","it","ja","ko","nl","zh","zh-CN","zh-TW"]' require-language=true></semantic-form-text-input> 
+                                    
+                                    <div class="inline-form-switch">
+                                        <semantic-form-switch for="title_alternative_form" 
+                                                                switch-on-field="has_type" 
+                                                                label="Alternative title form">
+        
+                                            <semantic-form-switch-case label="Transcription">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transcription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+        
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transcription'></semantic-form-hidden-input>
+                                                
+                                                    <div style="flex: 1;">
+                                                        <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transcription"></semantic-form-text-input>
+                                                    </div>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+        
+                                            <semantic-form-switch-case label="Transliteration">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transliteration/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+        
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transliteration'></semantic-form-hidden-input>
+                                                
+                                                    <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transliteration"></semantic-form-text-input>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+                                        </semantic-form-switch>
+                                    </div>
+                                </mp-collapsible-div-content>
+                            </mp-collapsible-div>
+                            
+                        </semantic-form-composite-input>
+
+                        <semantic-form-composite-input  for="object_other_title"
+                                                        label="Other object title"
+                                                        new-subject-template="/object_title/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                
+                                                                title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                title_translation="http://www.researchspace.org/pattern/system/title/translation"
+                                                                title_alternative_form="http://www.researchspace.org/pattern/system/title/alternative_form"
+                                                            ]]'
+                                                            >
+                                        
+                            <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E35_Title"></semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/title'></semantic-form-hidden-input>
+                                
+                            <div style="margin-top: -15px;">
+                                <semantic-form-text-input for="title_value" label="Other title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
+                            </div>
+
+                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                                <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
+                                    <div class="trigger-content color-secondary">
+                                        <span class="trigger-text">Other title translations and alternative forms</span>
+                                        <span class="trigger-icon"></span>
+                                    </div>
+                                </mp-collapsible-div-trigger>
+                                <mp-collapsible-div-content>
+                                    
+                                    <semantic-form-text-input for="title_translation" label="Title translation" placeholder="Enter title translation" languages='["de","fr","it"]' require-language=true></semantic-form-text-input>
+                                    <div class="inline-form-switch">
+                                        <semantic-form-switch for="title_alternative_form" 
+                                                                switch-on-field="has_type" 
+                                                                label="Alternative title form">
+
+                                            <semantic-form-switch-case label="Transcription">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transcription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transcription'></semantic-form-hidden-input>
+                                                
+                                                    <div style="flex: 1;">
+                                                        <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transcription"></semantic-form-text-input>
+                                                    </div>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+
+                                            <semantic-form-switch-case label="Transliteration">
+                                                <semantic-form-composite-input for="title_alternative_form" 
+                                                                                new-subject-template="/title_transliteration/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                ]]'>
+                                        
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
+                                                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/vocab/title_type/transliteration'></semantic-form-hidden-input>
+                                                
+                                                    <semantic-form-text-input for="title_value" render-header="false" placeholder="Enter transliteration"></semantic-form-text-input>
+                                                    
+                                                </semantic-form-composite-input>
+                                            </semantic-form-switch-case>
+                                        </semantic-form-switch>
+                                    </div>
+                                </mp-collapsible-div-content>
+                            </mp-collapsible-div>
+
+                        </semantic-form-composite-input>
+
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="object_primary_id"
+                                                            label="Object identifier"
+                                                            
+                                                            new-subject-template="/object_id" 
+                                                            fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                    
+                                                                    identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                                    identifier_object_id_type="http://www.researchspace.org/pattern/system/identifier/object_id_type"
+                                                                ]]'
+                                                            >
+                                        
+                                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/object_primary_id'></semantic-form-hidden-input>
+                                    
+                                <div class="form-inline-inputs" style="row-gap:5px;">
+                                    <div>
+                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <semantic-form-tree-picker-input for="identifier_object_id_type" 
+                                                                        label="Identifier type" 
+                                                                        render-header=false
+                                                                        placeholder="Select identifier type" 
+                                                                        close-dropdown-on-selection='true'
+                                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_identifier>", 
+                                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_identifier>",
+                                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                                    "view": "vocabulary-content",
+                                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/object_identifier",
+                                                                                                    "tooltip": "Open list of identifiers"
+                                                                                                    }'
+                                                                        
+                                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                                scheme="http://www.researchspace.org/resource/vocab/object_identifier"
+                                                                                                                entityType="identifier" }}{{{{/raw}}}}'
+
+                                                                        query-item-label='SELECT ?label WHERE {
+                                                                                            ?item skos:prefLabel ?label .
+                                                                                        }'>
+                                        </semantic-form-tree-picker-input>
+                                    </div>
+                                </div>
+                            </semantic-form-composite-input>
+                        </div>
+
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="object_id"
+                                                            label="Other object identifier"
+                                                            new-subject-template="/object_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                            fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                    
+                                                                    identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                                    identifier_object_id_type="http://www.researchspace.org/pattern/system/identifier/object_id_type"
+                                                                ]]'
+                                                            >
+                                        
+                                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/object_id'></semantic-form-hidden-input>
+                                    
+                                <div class="form-inline-inputs" style="row-gap:5px;">
+                                    <div>
+                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <semantic-form-tree-picker-input for="identifier_object_id_type" 
+                                                                        label="Identifier type" 
+                                                                        render-header=false
+                                                                        placeholder="Select identifier type" 
+                                                                        close-dropdown-on-selection='true'
+                                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_identifier>", 
+                                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_identifier>",
+                                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                                    "view": "vocabulary-content",
+                                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/object_identifier",
+                                                                                                    "tooltip": "Open list of identifiers"
+                                                                                                    }'
+                                                                        
+                                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                                scheme="http://www.researchspace.org/resource/vocab/object_identifier"
+                                                                                                                entityType="identifier" }}{{{{/raw}}}}'
+
+                                                                        query-item-label='SELECT ?label WHERE {
+                                                                                            ?item skos:prefLabel ?label .
+                                                                                        }'>
+                                        </semantic-form-tree-picker-input>
+                                    </div>
+                                </div>
+                            </semantic-form-composite-input>
+                        </div>
+
+                        {{#if wikidataResourceDescription}}
+                            <semantic-form-text-input for="object_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{wikidataResourceDescription}}"> </semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="object_description" label="Object description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                        {{/if}}
+                        
+                        <semantic-form-composite-input for="object_current_location"
+                                                        new-subject-template="/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                                        label="Current location"
+                                                        render-header='true'
+                                                        fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                                    location_falls_within_place="http://www.researchspace.org/pattern/system/place/falls_within_placeMin1Max1"
+                                                                    museum_location_identifier="http://www.researchspace.org/pattern/system/place/museum_location_identifier"
+                                                                    storage_location_identifier="http://www.researchspace.org/pattern/system/place/storage_location_identifier"
+                                                            ]]'> 
+
+                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/object_current_location'> </semantic-form-hidden-input>
+                            
+                            <div class="form-inline-inputs first-input" style="row-gap:5px;">
+                                <div style="flex: 1;">
+                                    <semantic-form-tree-picker-input    for="location_falls_within_place" 
+                                                                        label="Place / Organisation" 
+                                                                        placeholder="Select location" 
+                                                                        close-dropdown-on-selection='true'
+                                                                        tree-patterns='{"scheme": "crm:E53_Place",
+                                                                                        "schemePattern": "?item a crm:E53_Place",
+                                                                                        "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                                            ?appellation a crm:E41_Appellation . 
+                                                                                                            ?appellation crm:P2_has_type ?appellationType .
+                                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))"
+                                                                                        }'
+                                                                        
+                                                                        nested-form-template='{{> forms:Place nested=true editable=true mode=new }}'
+
+                                                                        query-item-label='SELECT ?label WHERE {
+                                                                                            ?appellation a crm:E41_Appellation . 
+                                                                                            ?appellation crm:P2_has_type ?appellationType .
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))
+                                                                                        }'>
+                                    </semantic-form-tree-picker-input>      
+                                </div>
+
+                                <div style="flex: 1;">
+                                    <semantic-form-text-input for="museum_location_identifier" label="Gallery/room/display details" placeholder="Enter gallery/room/display details"> </semantic-form-text-input>
+                                </div>
+                                
+                                <div style="flex: 1;">
+                                    <semantic-form-text-input for="storage_location_identifier" label="Storage details" placeholder="Enter storage details"> </semantic-form-text-input>
+                                </div>
+                                
+                            </div>
+                        </semantic-form-composite-input> 
+
+                    </div>
+
+                    <div class="form-media-column">
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input for='object_image_main_representation' label="Main image" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag main image or click to upload</div>
+                                                                                        </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+            
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='object_image' label="More images" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag images or click to upload</div>
+                                                                                        </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='object_document' label="Documents" 
+                                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                <div>Drag document or click to upload</div>
+                                                                                                </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" docType="http://www.researchspace.org/resource/vocab/document_type/exhibition_report" }}{{{{/raw}}}}'
+                                                                                                >
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+                    </div>
+                    
+                </div>
+            </rs-tab>
+
+            <rs-tab event-key="type" title="Type/Dimensions">
+
+                <semantic-form-tree-picker-input    for="object_type" 
+                                                    label="Object type" 
+                                                    placeholder="Select object type" 
+                                                    close-dropdown-on-selection='false'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_type>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_type>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                    "labelPattern": "?item skos:prefLabel ?label"
+                                                                   }'
+
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/object_type",
+                                                                                "tooltip": "Open list of object types"
+                                                                                }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/object_type"
+                                                                                                    entityType="object type" }}{{{{/raw}}}}'
+
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                    }'>
+                                            
+                </semantic-form-tree-picker-input>
+
+                <semantic-form-tree-picker-input    for="object_format" 
+                                                    label="Object format" 
+                                                    placeholder="Select object format" 
+                                                    close-dropdown-on-selection='false'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_format>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_format>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                    "labelPattern": "?item skos:prefLabel ?label"
+                                                                   }'
+
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/object_format",
+                                                                                "tooltip": "Open list of object format"
+                                                                                }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/object_format"
+                                                                                                    entityType="object format" }}{{{{/raw}}}}'
+
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                    }'>
+                </semantic-form-tree-picker-input>
+
+                <div class="inline-composite-container">
+                    <semantic-form-composite-input for="object_dimension" 
+                                                    label="Dimensions"  
+                                                    placeholder="Enter object dimensions" 
+                                                    new-subject-template="/dimension/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                                    fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                
+                                                                dimension_type="http://www.researchspace.org/pattern/system/dimension/type"
+                                                                dimension_value="http://www.researchspace.org/pattern/system/dimension/value"
+                                                                dimension_unit="http://www.researchspace.org/pattern/system/dimension/unit"
+                                                                dimension_description="http://www.researchspace.org/pattern/system/entity/description"
+                                                            ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'></semantic-form-hidden-input>
+
+                    <div class="form-inline-inputs" style="row-gap:5px;">
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input for="dimension_type" 
+                                                            render-header="false"
+                                                            placeholder="Select dimension type" 
+                                                            close-dropdown-on-selection='false'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/dimension_type>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/dimension_type>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                            "labelPattern": "?item skos:prefLabel ?label"
+                                                                        }'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/dimension_type",
+                                                                                        "tooltip": "Open list of dimension types"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                            scheme="http://www.researchspace.org/resource/vocab/dimension_type"
+                                                                                                            entityType="dimension type" }}{{{{/raw}}}}'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="dimension_value" label="Value" placeholder="Enter measured value" render-header="false"></semantic-form-text-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-tree-picker-input for="dimension_unit" 
+                                                            render-header="false"
+                                                            placeholder="Select dimension unit" 
+                                                            close-dropdown-on-selection='false'
+                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/dimension_unit>", 
+                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/dimension_unit>",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                            "labelPattern": "?item skos:prefLabel ?label"
+                                                                        }'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                                                        "tooltip": "Open list of dimension unit"
+                                                                                        }'
+                                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                            scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
+                                                                                                            entityType="dimension unit" }}{{{{/raw}}}}'
+
+                                                            query-item-label='SELECT ?label WHERE {
+                                                                                ?item skos:prefLabel ?label .
+                                                            }'>
+                            </semantic-form-tree-picker-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for='dimension_description' render-header="false" placeholder="Enter description/comment"></semantic-form-text-input>
+                        </div>
+                    </div>
+                    </semantic-form-composite-input>
+                </div>
+            </rs-tab>
+
+            <rs-tab event-key="partFeature" title="Parts/Features">
+
+            </rs-tab>
+
+            <rs-tab event-key="material" title="Materials">
+
+            </rs-tab>
+
+            <rs-tab event-key="visualItem" title="Visual items">
+
+            </rs-tab>
+
+            <rs-tab event-key="ownership" title="Ownership">
+
+            </rs-tab>
+
+            <rs-tab event-key="event" title="Events">
+
+            </rs-tab>
+
+            <rs-tab event-key="reference" title="Bibliographic references">
+
+            </rs-tab>
+
+            [[> rsp:FormMetadataTab]]
+        </rs-tabs>
+
+    </div>
+
+    <semantic-form-errors></semantic-form-errors>  
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}object{{/if}}']] 
+
+</semantic-form>

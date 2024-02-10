@@ -1,0 +1,132 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/entity/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                            has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                            
+                            entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                            entity_image="http://www.researchspace.org/pattern/system/entity/images"
+                            entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+
+                            entity_appellation="http://www.researchspace.org/pattern/system/entity/appellation"
+                            entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            
+                            entity_description="http://www.researchspace.org/pattern/system/entity/description"
+                            
+                        ]]'
+            >
+
+    <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E1_Entity'></semantic-form-hidden-input>
+        
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
+
+        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+            <rs-tab event-key="detail" title="Details">
+                <div class="form-2column-container">
+                    <div>
+                        <semantic-form-composite-input  for="entity_appellation"
+                                                        label="Name/appellation"
+                                                        new-subject-template="/entity_appellation" 
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                            ]]'
+                                                        >
+                                    
+                            <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E41_Appellation"></semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_appellation'></semantic-form-hidden-input>
+                                
+                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter name/appellation"></semantic-form-text-input>
+
+                        </semantic-form-composite-input>
+
+                        <semantic-form-composite-input  for="entity_preferred_id"
+                                                        label="Preferred identifier"
+                                                        new-subject-template="/entity_id" 
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                            ]]'
+                                                        >
+                                    
+                            <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
+                                
+                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+
+                        </semantic-form-composite-input>
+
+                        <semantic-form-composite-input  for="entity_id"
+                                                        label="Other identifier"
+                                                        new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                        fields='[[fieldDefinitions
+                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                            ]]'
+                                                        >
+                                    
+                            <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
+                                
+                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                        </semantic-form-composite-input>
+
+                        <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+
+                    </div>
+
+                    <div class="form-media-column">
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag main image or click to upload</div>
+                                                                                        </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+            
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag images or click to upload</div>
+                                                                                        </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='entity_document' label="Documents" 
+                                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                <div>Drag document or click to upload</div>
+                                                                                                </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" docType="http://www.researchspace.org/resource/vocab/document_type/exhibition_report" }}{{{{/raw}}}}'
+                                                                                                >
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+                    </div>
+                    
+                </div>
+            </rs-tab>
+
+            [[> rsp:FormMetadataTab]]
+        </rs-tabs>
+
+    </div>
+
+    <semantic-form-errors></semantic-form-errors>  
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}entity{{/if}}']] 
+
+</semantic-form>

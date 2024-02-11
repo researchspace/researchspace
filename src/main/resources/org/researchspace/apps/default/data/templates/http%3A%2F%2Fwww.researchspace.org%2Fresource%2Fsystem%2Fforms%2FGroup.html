@@ -207,50 +207,52 @@
         </rs-tab>
 
         <rs-tab event-key="contact" title="Contact details">
-          <semantic-form-composite-input  for="group_contact_point" 
-                                          label="Contact detail"
-                                          new-subject-template="/contact_point/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                          fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                      contact_point_type="http://www.researchspace.org/pattern/system/contact_point/type"
-                                                      contact_point_text="http://www.researchspace.org/pattern/system/contact_point/text"
-                                              ]]'>
+          <div class="inline-composite-container">
+            <semantic-form-composite-input  for="group_contact_point" 
+                                            label="Contact detail"
+                                            new-subject-template="/contact_point/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                        contact_point_type="http://www.researchspace.org/pattern/system/contact_point/type"
+                                                        contact_point_text="http://www.researchspace.org/pattern/system/contact_point/text"
+                                                ]]'>
 
-              <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E41_Appellation'> </semantic-form-hidden-input>
-              <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/contact_point'> </semantic-form-hidden-input>
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E41_Appellation'> </semantic-form-hidden-input>
+                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/contact_point'> </semantic-form-hidden-input>
 
-              <div class="form-inline-inputs">
-                <div style="flex: 1;">
-                    <semantic-form-tree-picker-input    for='contact_point_type' 
-                                                        label="Contact point"
-                                                        render-header=false 
-                                                        placeholder="Select type"
-                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/contact_point_type>", 
-                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/contact_point_type>",
-                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                <div class="form-inline-inputs">
+                  <div style="flex: 1;">
+                      <semantic-form-tree-picker-input    for='contact_point_type' 
+                                                          label="Contact point"
+                                                          render-header=false 
+                                                          placeholder="Select type"
+                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/contact_point_type>", 
+                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/contact_point_type>",
+                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                scheme="http://www.researchspace.org/resource/vocab/contact_point_type"
-                                                                                                entityType="contact type" }}{{{{/raw}}}}'
-                                                                                                
-                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
-                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/contact_point_type",
-                                                                                    "tooltip": "Open list of contact types"
-                                                                                    }'
+                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                  scheme="http://www.researchspace.org/resource/vocab/contact_point_type"
+                                                                                                  entityType="contact type" }}{{{{/raw}}}}'
+                                                                                                  
+                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                      "view": "vocabulary-content",
+                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/contact_point_type",
+                                                                                      "tooltip": "Open list of contact types"
+                                                                                      }'
 
-                                                        query-item-label='SELECT ?label WHERE {
-                                                                            ?item skos:prefLabel ?label .
-                                                                        }'
-                    ></semantic-form-tree-picker-input>  
+                                                          query-item-label='SELECT ?label WHERE {
+                                                                              ?item skos:prefLabel ?label .
+                                                                          }'
+                      ></semantic-form-tree-picker-input>  
+                  </div>
+                  <div style="flex: 1;">
+                      <semantic-form-text-input for='contact_point_text' render-header=false placeholder="Enter contact detail"></semantic-form-text-input>
+                  </div>
                 </div>
-                <div style="flex: 1;">
-                    <semantic-form-text-input for='contact_point_text' render-header=false placeholder="Enter contact detail"></semantic-form-text-input>
-                </div>
-              </div>
-          </semantic-form-composite-input>
-
+            </semantic-form-composite-input>
+          </div>
+          
           <semantic-form-tree-picker-input for="group_residence" 
                                             label="Residence" 
                                             placeholder="Select place" 
@@ -283,10 +285,11 @@
                                                     has_member_has_domain_type_value='http://www.researchspace.org/resource/PC107_has_current_or_former_member/has_range_type/group'
             ]] 
 
-            <semantic-form-composite-input for="group_is_member_range"
-                                          label="Is member of" 
-                                          new-subject-template="/PC107_has_current_or_former_member/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
-                                            fields='[[fieldDefinitions
+            <div class="inline-composite-container">
+              <semantic-form-composite-input for="group_is_member_range"
+                                              label="Is member of" 
+                                              new-subject-template="/PC107_has_current_or_former_member/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                              fields='[[fieldDefinitions
                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                         
                                                         has_member_has_domain_type="http://www.researchspace.org/pattern/system/has_member/has_domain_type"
@@ -355,8 +358,9 @@
                         </semantic-form-tree-picker-input>
                       </div>
                     </div>
-            </semantic-form-composite-input>
-
+              </semantic-form-composite-input>
+            </div>
+            
             <semantic-form-composite-input for="group_joined_with_range"
                                           label="Gained member by"
                                           new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 

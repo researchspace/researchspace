@@ -83,42 +83,18 @@
                                         fields='[[fieldDefinitions
                                                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                   creation_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
-                                                  creation_author="http://www.researchspace.org/pattern/system/document/creation/author"
+                                                  creation_author="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
                                                 ]]'>
         
             <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E65_Creation'> </semantic-form-hidden-input>
-              
-            <div>
+            
               <semantic-form-datetime-input for='creation_date' label="Document Date" placeholder="Enter date"></semantic-form-datetime-input>        
             
-
-          [[!--    <semantic-form-tree-picker-input for="creation_author" 
-                                                label="Author" 
-                                                placeholder="Select author" 
-                                                close-dropdown-on-selection='false'
-                                                tree-patterns='{"scheme": "<http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>", 
-                                                                "schemePattern": "?item crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>",
-                                                                "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?identifier .
-                                                                                  ?identifier a crm:E41_Appellation .
-                                                                                  ?identifier crm:P190_has_symbolic_content ?label .
-                                                                                  ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/full_name>"}'
-                                                
-                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
-                                                                            "scheme": "http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure",
-                                                                            "tooltip": "Open list of authors"
-                                                                          }'
-                                                nested-form-template='{{{{raw}}}}
-                                                                        {{> forms:User nested=true editable=true mode="new"
-                                                                        scheme="http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure"
-                                                                        entityType="author" }}
-                                                                      {{{{/raw}}}}'
-                                                >
-              </semantic-form-tree-picker-input>
-
-              --]]
-            </div>
+              [[> Platform:formSwitchCarriedOutActor  for_kp='creation_author'
+                                                      subjectLabel='Author'
+                                                      carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/document_creation'
+              ]]
+            
         </semantic-form-composite-input>
 
         <semantic-form-text-input for="document_abstract" multiline='true' label="Document abstract" placeholder="Enter abstract"> </semantic-form-text-input>

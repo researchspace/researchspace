@@ -57,13 +57,10 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
 
     const title = this.props.title || defaultTitleForError(errorMessage);
     const className = `${CLASS_NAME} ${this.props.className || ''}`;
-    const errorHeader = D.p(
-      {},
-      D.i({
-        className: 'fa fa-exclamation-triangle',
-        style: { marginRight: '10px', color: 'red' },
-      }),
-      D.span({}, title)
+    const errorHeader = D.div(
+      {className: `${CLASS_NAME}__title-container` },
+      D.div({className: `${CLASS_NAME}__title`}, title), 
+      D.div({className: `${CLASS_NAME}__more`}, 'see more')
     );
     return Panel(
       {

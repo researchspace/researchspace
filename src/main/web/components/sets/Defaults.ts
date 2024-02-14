@@ -21,7 +21,7 @@ import { Rdf } from 'platform/api/rdf';
 
 import { SetManagementProps, KeywordFilter } from './Configuration';
 
-export const SetKind = Rdf.iri('http://www.researchspace.org/resource/system/Set');
+export const SetKind = Rdf.iri('http://www.researchspace.org/resource/system/vocab/resource_type/set');
 const DefaultSetItemActions = `
   <div class='set-management__item-actions'>
     <bs-dropdown-button pull-right=true bs-style='link' title=''

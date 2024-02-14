@@ -34,6 +34,7 @@ interface Props {
    * parent dropdown is what we can use for that purpose.
    */
   onSelect?: () => void;
+  removeFromView?: boolean;
 }
 
 interface State {
@@ -75,7 +76,11 @@ export class RemoveSetAction extends Component<Props, State> {
 
   private onYesClick = () => {
     this.setState({ isRemoving: true });
-    this.context['mp-set-management'].removeSet(this.context['mp-set-management--set-view'].getCurrentSet());
+    
+    if (this.props.removeFromView)
+      this.context['mp-set-management'].removeSetFromView(this.context['mp-set-management--set-view'].getCurrentSet());
+    else 
+      this.context['mp-set-management'].removeSet(this.context['mp-set-management--set-view'].getCurrentSet());
   };
 
   private onNoClick = () => {

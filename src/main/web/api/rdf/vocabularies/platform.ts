@@ -21,7 +21,7 @@ import * as RDF from '../core/Rdf';
 
 module platform {
   export const _NAMESPACE = 'http://www.researchspace.org/resource/system/';
-
+  export const _NAMESPACE_VOCABULARY_RESOURCE_TYPE = 'http://www.researchspace.org/resource/system/vocab/resource_type/'
   export const SyntheticJsonDatatype = RDF.iri(_NAMESPACE + 'syntheticJson');
 
   // LDP
@@ -40,8 +40,8 @@ module platform {
 
   export const RootContainer = RDF.iri(_NAMESPACE + 'rootContainer');
 
-  export const Set = RDF.iri(_NAMESPACE + 'Set');
-  export const SetItem = RDF.iri(_NAMESPACE + 'SetItem');
+  export const Set = RDF.iri(_NAMESPACE_VOCABULARY_RESOURCE_TYPE + 'set');
+  export const SetItem = RDF.iri(_NAMESPACE_VOCABULARY_RESOURCE_TYPE + 'set_item');
 
   // SET Container can have set-container of resources
   export const containerType = RDF.iri(_NAMESPACE + 'containerType');

@@ -19,6 +19,7 @@
 
 import * as Immutable from 'immutable';
 import * as Kefir from 'kefir';
+import * as maybe from 'data.maybe';
 
 import { Cancellation } from 'platform/api/async';
 import { Rdf } from 'platform/api/rdf';
@@ -227,7 +228,6 @@ export class ViewModel {
     this.loadingSets = this.cancellation.derive();
 
     this.setState({ loadingSets: true });
-
     this.loadingSets
       .map(
         this.rootSetIri().flatMap((rootSet) =>
@@ -465,12 +465,15 @@ export class ViewModel {
 
   private createNewSet(placeholderSetIri: Rdf.Iri, name: string) {
     const { sets } = this.getState();
+
+    const visibleInViewForTemplateWithId = maybe.Just(this.props.id);
+    
     this.setState({
       sets: sets.update(placeholderSetIri.value, (set) => ({ ...set, editing: { type: EditType.ApplyingChanges } })),
     });
 
     this.cancellation
-      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.createSet(name)))
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.createSet(name, maybe.Nothing<string>(), visibleInViewForTemplateWithId)))
       .observe({
         value: () => {
           this.loadSets({ keepItems: true });
@@ -513,7 +516,29 @@ export class ViewModel {
       });
   }
 
-  removeSet(set: Rdf.Iri) {
+  removeSetFromView(set: Rdf.Iri) {
+    const visibleInViewForTemplateWithId = maybe.Just(this.props.id);    
+    this.cancellation
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.updateSet(set, visibleInViewForTemplateWithId.get())))
+      .observe({
+        value: () => {
+          this.setState({ openedSet: undefined });
+          this.loadSets({ keepItems: true });
+          this.trigger(SetManagementEvents.SetRemoved);
+        },
+        error: (error) => {
+          addNotification(
+            {
+              level: 'error',
+              message: `Error removing set`,
+            },
+            error
+          );
+        },
+      });
+  }
+
+  removeSet(set: Rdf.Iri) { 
     this.cancellation
       .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.deleteResource(set)))
       .observe({

@@ -12,6 +12,7 @@
             BIND(?__rootSet__ as ?parent) .
             OPTIONAL { ?itemHolder platform:setItem ?setItem }
             BIND(COALESCE(?setItem, ?itemHolder) AS ?item) .
+            
           } UNION {
             ?uncategorizedSet a platform:Set ;
                               prov:wasAttributedTo ?__useruri__ ;
@@ -64,6 +65,8 @@
           FILTER(?itemHolderType IN (ontodia:Element))
         }
         BIND(COALESCE(?type, ?itemHolderType, platform:SetItem) AS ?kind) .
+
+        ?item <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "clipboard" .
       } ORDER BY ?index DESC(?modificationDate)'
     set-count-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
       PREFIX platform: <http://www.researchspace.org/resource/system/>

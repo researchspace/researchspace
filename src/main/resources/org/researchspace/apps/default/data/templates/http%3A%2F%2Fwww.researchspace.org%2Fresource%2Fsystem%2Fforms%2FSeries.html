@@ -1,36 +1,43 @@
 <semantic-form [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/series/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                            has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                             
-                            object_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
-                            object_image="http://www.researchspace.org/pattern/system/entity/images"
-                            object_document="http://www.researchspace.org/pattern/system/entity/documents"
+                            series_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                            series_image="http://www.researchspace.org/pattern/system/entity/images"
+                            series_document="http://www.researchspace.org/pattern/system/entity/documents"
 
-                            object_title="http://www.researchspace.org/pattern/system/object/title"
-                            object_other_title="http://www.researchspace.org/pattern/system/object/other_title"
-                            object_primary_id="http://www.researchspace.org/pattern/system/object/primary_identifier"
-                            object_id="http://www.researchspace.org/pattern/system/object/identifier"
-                            object_description="http://www.researchspace.org/pattern/system/entity/description"
-                            object_current_location="http://www.researchspace.org/pattern/system/object/current_location"
+                            object_title="http://www.researchspace.org/pattern/system/man-made_thing/title"
                             
-                            object_type="http://www.researchspace.org/pattern/system/object/type"
-                            object_format="http://www.researchspace.org/pattern/system/object/format"
-                            object_dimension="http://www.researchspace.org/pattern/system/object/dimension"
+                            series_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            series_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            series_description="http://www.researchspace.org/pattern/system/entity/description"
+                            series_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
+                            
+                            series_type="http://www.researchspace.org/pattern/system/physical_object/type"
+                            series_format="http://www.researchspace.org/pattern/system/physical_object/format"
+                            series_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
-                            object_media="http://www.researchspace.org/pattern/system/object/media"
+                            series_media="http://www.researchspace.org/pattern/system/physical_object/media"
 
-                            object_current_owner="http://www.researchspace.org/pattern/system/object/current_owner"
-                            object_current_keeper="http://www.researchspace.org/pattern/system/object/current_keeper"
+                            series_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
+                            series_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
+
+                            series_right="http://www.researchspace.org/pattern/system/physical_thing/right"
+
+                            series_collection="http://www.researchspace.org/pattern/system/physical_thing/part_of_collection"
+                            series_parts="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
                         ]]'
             >
 
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object'></semantic-form-hidden-input>
-        
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E19_Physical_Object'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/series'></semantic-form-hidden-input>
         {{#if scheme}}
             <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
         {{/if}}
@@ -53,7 +60,7 @@
                                                             >
                                         
                             <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E35_Title"></semantic-form-hidden-input>
-                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/identifier/object_primary_title'></semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/primary_title'></semantic-form-hidden-input>
                                 
                             <div style="margin-top: -15px;">
                                 <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
@@ -132,7 +139,7 @@
                                                             >
                                         
                             <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E35_Title"></semantic-form-hidden-input>
-                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/identifier/object_title'></semantic-form-hidden-input>
+                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/title'></semantic-form-hidden-input>
                                 
                             <div style="margin-top: -15px;">
                                 <semantic-form-text-input for="title_value" label="Other title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
@@ -212,7 +219,7 @@
                                                             >
                                         
                                 <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/identifier/object_primary_id'></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/object_primary_id'></semantic-form-hidden-input>
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
@@ -261,7 +268,7 @@
                                                             >
                                         
                                 <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/identifier/object_id'></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/object_id'></semantic-form-hidden-input>
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
@@ -327,21 +334,19 @@
                                                                         tree-patterns='{"scheme": "crm:E53_Place",
                                                                                         "schemePattern": "?item a crm:E53_Place",
                                                                                         "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                                            ?appellation a  ?appellationClass . 
+                                                                                                            ?appellation a crm:E41_Appellation . 
                                                                                                             ?appellation crm:P2_has_type ?appellationType .
                                                                                                             ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                                            FILTER (?appellationClass in (crm:E44_Place_Appellation,  crm:E41_Appellation ))
-                                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/identifier/place_name>,  <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> ))"
+                                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))"
                                                                                         }'
                                                                         
                                                                         nested-form-template='{{> forms:Place nested=true editable=true mode=new }}'
 
                                                                         query-item-label='SELECT ?label WHERE {
-                                                                                            ?appellation a  ?appellationClass . 
+                                                                                            ?appellation a crm:E41_Appellation . 
                                                                                             ?appellation crm:P2_has_type ?appellationType .
                                                                                             ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                            FILTER (?appellationClass in (crm:E44_Place_Appellation,  crm:E41_Appellation ))
-                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/identifier/place_name>,  <http://www.researchspace.org/resource/system/vocab/identifier/organisation_name> ))
+                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))
                                                                                         }'>
                                     </semantic-form-tree-picker-input>      
                                 </div>

@@ -41,16 +41,16 @@ export class ValidationMessages extends Component<ValidationMessagesProps, {}> {
   render() {
     const errorClassName = `${VALIDATION_CLASS}__error`;
     return (
-      <ul className={VALIDATION_CLASS}>
+      <div className={VALIDATION_CLASS}>
         {this.props.errors.map((err, index) => (
-          <li
+          <div
             key={index}
             className={classnames(errorClassName, `${errorClassName}--${FieldError.kindToString(err.kind)}`)}
           >
             {err.message}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     );
   }
 }

@@ -2,6 +2,7 @@
  * ResearchSpace
  * Copyright (C) 2020, © Trustees of the British Museum
  * Copyright (C) 2015-2019, metaphacts GmbH
+ * Copyright (C) 2024, Kartography CIC
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +20,13 @@
 
 import * as D from 'react-dom-factories';
 import * as classnames from 'classnames';
+import * as React from 'react';
 
 import { getPreferredLabel } from '../FieldDefinition';
 import { ErrorKind, FieldError, FieldValue, CompositeValue } from '../FieldValues';
 import { StaticComponent, StaticFieldProps } from './StaticComponent';
+import Icon from 'platform/components/ui/icon/Icon';
+import { createElement } from 'react';
 
 export interface FormErrorsProps extends StaticFieldProps {
   hideFieldErrors?: boolean;
@@ -32,19 +36,37 @@ const CLASSNAME = 'semantic-form-errors';
 const ERROR_CLASSNAME = `${CLASSNAME}__error`;
 
 export class FormErrors extends StaticComponent<FormErrorsProps, {}> {
+
   render() {
-    return D.ul(
-      {
-        className: classnames(CLASSNAME, this.props.className),
-        style: this.props.style,
-      },
-      FieldValue.isComposite(this.props.model) ? this.renderErrors(this.props.model) : null
-    );
+    if(FieldValue.isComposite(this.props.model) && this.getErrors(this.props.model).length) {
+      return (
+        <div className={`${CLASSNAME}__container`}>
+          <div className={`${CLASSNAME}__icon-container`}>
+            <Icon iconType='round' iconName='priority_high' />
+          </div>
+          <div>
+            <div className={`${CLASSNAME}__error-title`}>Errors</div>
+            <ul className={classnames(CLASSNAME, this.props.className)} style={this.props.style}>
+              {this.renderErrors(this.getErrors(this.props.model))}
+            </ul>
+          </div>
+            
+        </div>
+        )
+    }
+
+    return null
   }
 
-  private renderErrors(model: CompositeValue) {
+  private getErrors(model: CompositeValue): CollectedError[] {
     const errors: CollectedError[] = [];
     collectErrors([], model, errors);
+    return errors;
+  }
+
+  private renderErrors(errors: CollectedError[]) {
+    // const errors: CollectedError[] = [];
+    // collectErrors([], model, errors);
 
     return errors.map((e, index) =>
       D.li(

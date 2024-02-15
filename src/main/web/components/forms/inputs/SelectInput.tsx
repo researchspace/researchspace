@@ -21,6 +21,9 @@ import { createElement } from 'react';
 import * as D from 'react-dom-factories';
 import ReactSelect from 'react-select';
 import * as Immutable from 'immutable';
+import * as React from 'react';
+import { Button } from 'react-bootstrap';
+import * as _ from 'lodash';
 
 import { Cancellation } from 'platform/api/async/Cancellation';
 import { Rdf } from 'platform/api/rdf';
@@ -32,14 +35,21 @@ import { FieldValue, AtomicValue, EmptyValue, SparqlBindingValue, ErrorKind, Dat
 import { SingleValueInput, AtomicValueInput, AtomicValueInputProps } from './SingleValueInput';
 import { ValidationMessages } from './Decorations';
 import { queryValues } from '../QueryValues';
+import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
+import Icon from 'platform/components/ui/icon/Icon';
+import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 
 export interface SelectInputProps extends AtomicValueInputProps {
   template?: string;
   placeholder?: string;
+  nestedFormTemplate?: string;
+  showLinkResourceButton?: boolean;
 }
 
 interface State {
   valueSet?: Immutable.List<SparqlBindingValue>;
+  nestedForm?: React.ReactElement<any>;
+  nestedFormOpen?: boolean;
 }
 
 const SELECT_TEXT_CLASS = 'select-text-field';
@@ -47,6 +57,7 @@ const OPTION_CLASS = SELECT_TEXT_CLASS + 'option';
 
 export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private readonly cancellation = new Cancellation();
+  private htmlElement = React.createRef<HTMLDivElement>();
 
   private isLoading = true;
 
@@ -54,6 +65,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     super(props, context);
     this.state = {
       valueSet: Immutable.List<SparqlBindingValue>(),
+      nestedFormOpen: false
     };
   }
 
@@ -64,7 +76,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     return DataState.Ready;
   }
 
-  componentDidMount() {
+  private initValueSet() {
     const { definition } = this.props;
     if (definition.valueSetPattern) {
       this.cancellation.map(queryValues(definition.valueSetPattern)).observe({
@@ -91,12 +103,27 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     }
   }
 
+  componentDidMount() {
+    this.initValueSet()
+    tryExtractNestedForm(this.props.children, this.context, this.props.nestedFormTemplate)
+      .then(nestedForm => {
+        if (nestedForm != undefined) {
+          this.setState({nestedForm});
+        }
+      });
+  }
+
   componentWillUnmount() {
     this.cancellation.cancelAll();
   }
 
   private onValueChanged = (value?: SparqlBindingValue) => {
+    this.setState({ nestedFormOpen: false });
     this.setAndValidate(this.parseValue(value));
+  };
+
+  private toggleNestedForm = () => {
+    this.setState((state): State => ({ nestedFormOpen: !state.nestedFormOpen }));
   };
 
   private parseValue(value: SparqlBindingValue): AtomicValue | EmptyValue {
@@ -160,28 +187,67 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     const inputValue = this.props.value;
     const selectedValue = FieldValue.isAtomic(inputValue) ? inputValue : undefined;
 
+    const showCreateNewButton = !_.isEmpty(this.state.nestedForm);
+    const showLinkResourceButton = this.props.showLinkResourceButton ?? true
+
     const placeholder =
       typeof this.props.placeholder === 'undefined'
         ? this.createDefaultPlaceholder(definition)
         : this.props.placeholder;
 
-    return D.div(
-      { className: SELECT_TEXT_CLASS },
-
-      createElement(ReactSelect, {
-        name: definition.id,
-        placeholder: placeholder,
-        onChange: this.onValueChanged,
-        disabled: !this.canEdit(),
-        options: options,
-        value: selectedValue,
-        optionRenderer: this.optionRenderer,
-        valueRenderer: this.valueRenderer,
-      }),
-
-      createElement(ValidationMessages, { errors: FieldValue.getErrors(this.props.value) })
-    );
+    return (
+      <div className={SELECT_TEXT_CLASS} ref={this.htmlElement}>
+        <ReactSelect 
+          name={definition.id}
+          placeholder={placeholder}
+          onChange={this.onValueChanged}
+          disabled={!this.canEdit()}
+          options={options}
+          value={selectedValue}
+          optionRenderer={this.optionRenderer}
+          valueRenderer={this.valueRenderer}
+        />
+        <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
+        {showCreateNewButton ? (
+          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={this.toggleNestedForm}>
+            {selectedValue === undefined ? <Icon iconType='round' iconName='add_box'/> : <Icon iconType='round' iconName='edit'/>}
+            {selectedValue === undefined ? <span>New</span> : <span>Edit</span>}
+          </Button>
+        ) : null}
+        {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
+            <ResourceLinkContainer 
+              uri="http://www.researchspace.org/resource/ThinkingFrames" 
+              urlqueryparam-view="entity-editor"
+              urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
+            >
+              <Button className={`${SELECT_TEXT_CLASS}__open-in-new-tab`} title='Open in new tab'>
+                <Icon iconType='round' iconName='open_in_new' />
+              </Button>
+          </ResourceLinkContainer>
+        }
+          
+        {this.state.nestedFormOpen ? (
+          <NestedModalForm
+            subject={
+            FieldValue.isEmpty(this.props.value) ? null : this.props.value.value as Rdf.Iri
+            }
+            definition={this.props.definition}
+            onSubmit={this.onNestedFormSubmit}
+            onCancel={() => this.setState({ nestedFormOpen: false })}
+            parent={this.htmlElement}
+          >
+            {this.state.nestedForm}
+          </NestedModalForm>
+        ) : null}
+      </div>
+    )
   }
+
+  private onNestedFormSubmit = (value: AtomicValue) => {
+    this.setState({ nestedFormOpen: false });
+    this.setAndValidate(value);
+    this.initValueSet()
+  };
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {
     const fieldName = (getPreferredLabel(definition.label) || 'entity').toLocaleLowerCase();

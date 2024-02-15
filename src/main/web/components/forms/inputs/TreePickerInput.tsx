@@ -90,6 +90,7 @@ export interface TreePickerInputProps extends MultipleValuesProps {
   schemePageButtonConfig?: schemePageButtonConfigProps;
 
   queryItemLabel?: string;
+  openResourceOnClick?: boolean;
 }
 
 interface State {
@@ -197,7 +198,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   };
 
   private renderTreePicker() {
-    const { openDropdownOnFocus, closeDropdownOnSelection, definition, queryItemLabel } = this.props;
+    const { openDropdownOnFocus, closeDropdownOnSelection, definition, queryItemLabel, openResourceOnClick } = this.props;
     const { treeVersionKey, treeQueries, treeSelection } = this.state;
     const { rootsQuery, childrenQuery, parentsQuery, searchQuery } = treeQueries;
 
@@ -248,6 +249,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
           );
         }}
         queryItemLabel={queryItemLabel}
+        openResourceOnClick={openResourceOnClick}
       />
     );
   }

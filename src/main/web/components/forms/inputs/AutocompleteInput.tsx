@@ -32,12 +32,14 @@ import {
 import { createDropAskQueryForField } from '../ValidationHelpers';
 import { ValidationMessages } from './Decorations';
 import Icon from 'platform/components/ui/icon/Icon';
+import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 
 export interface AutocompleteInputProps extends AtomicValueInputProps {
   template?: string;
   placeholder?: string;
   nestedFormTemplate?: string;
   minimumInput?: number;
+  showLinkResourceButton?: boolean;
 }
 
 interface SelectValue {
@@ -118,6 +120,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
           label: Rdf.literal(this.props.value.label || rdfNode.value),
         }
       : undefined;
+    const showLinkResourceButton = this.props.showLinkResourceButton ?? true
 
     return (
       <div className={`${CLASS_NAME}__main-row`}>
@@ -155,6 +158,17 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
             {value === undefined ? <span>New</span> : <span>Edit</span>}
           </Button>
         ) : null}
+        {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
+          <ResourceLinkContainer 
+            uri="http://www.researchspace.org/resource/ThinkingFrames" 
+            urlqueryparam-view="entity-editor"
+            urlqueryparam-resource={(this.props.value.value as Rdf.Iri).value}
+          >
+            <Button className={`${CLASS_NAME}__open-in-new-tab`} title='Open in new tab'>
+              <Icon iconType='round' iconName='open_in_new' />
+            </Button>
+        </ResourceLinkContainer>
+        }
       </div>
     );
   }

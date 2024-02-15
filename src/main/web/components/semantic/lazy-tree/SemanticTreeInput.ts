@@ -44,6 +44,7 @@ import { TreeNode, ForestChange, queryMoreChildren } from './NodeModel';
 import { Node, SparqlNodeModel, sealLazyExpanding } from './SparqlNodeModel';
 import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 import { ItemSelectionChanged } from './SemanticTreeInputEvents';
+import { navigateToResource } from 'platform/api/navigation';
 
 import * as styles from './SemanticTreeInput.scss';
 
@@ -122,6 +123,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * query to retrieve the item label that will be visualized
    */
     queryItemLabel?: string;
+    openResourceOnClick?: boolean;
 }
 
 interface SelectedItem {
@@ -524,6 +526,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
     const selection = this.state.confirmedSelection;
     const selectedItems = TreeSelection.leafs(selection).sortBy((item) => item.label.value);
+    const openResourceOnClick = this.props.openResourceOnClick ?? true
 
     const { onSelectionClick } = this.props;
     return createElement(
@@ -536,7 +539,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
             {
               key: item.iri.value,
               title: item.iri.value,
-              onClick: onSelectionClick ? () => onSelectionClick(selection, item) : undefined,
+              onClick: () => {
+                if (openResourceOnClick) {
+                  const URI = new Rdf.Iri('http://www.researchspace.org/resource/ThinkingFrames')
+                  navigateToResource(URI, {resource: item.iri.value, view: 'entity-editor'}, this.context.semanticContext.repository ?? undefined);
+                }
+                onSelectionClick ? () => onSelectionClick(selection, item) : undefined
+              },
               onRemove: () => {
                 const previous = this.state.confirmedSelection;
                 const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));

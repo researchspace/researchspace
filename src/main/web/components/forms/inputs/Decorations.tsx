@@ -119,7 +119,7 @@ export class InputDecorator extends Component<MultipleValuesProps, {}> {
             placement="left"
             overlay={<Popover id="tooltip">{definition.description}</Popover>}
           >
-            <div className={`${DECORATOR_CLASS}__description-icon btn btn-default btn-input-inline`}>
+            <div className={`${DECORATOR_CLASS}__description-icon btn btn-default`}>
               <Icon iconType='round' iconName='question_mark'/>
             </div>
       </OverlayTrigger>

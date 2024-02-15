@@ -65,7 +65,13 @@ export class FieldEditorLabel extends React.Component<Props, {}> {
         </InputGroup>
         {value.error ? (
           <div className="field-editor__error">
-            <div>{value.error.message}</div>
+            <div className="field-editor__error-icon">
+              <Icon iconType='round' iconName='priority_high' />
+            </div>
+            <div>
+              <div className="field-editor__error-title">Error!</div>
+              <div>{value.error.message}</div>
+            </div>
           </div>
         ) : null}
       </FormGroup>

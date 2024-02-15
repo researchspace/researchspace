@@ -74,7 +74,17 @@ export class FieldEditorRow extends Component<Props, {}> {
                   `Click to add an optional ${label}.`
                 )
           ),
-          error ? D.div({ className: block('error').toString() }, error.message) : null
+          error ? 
+          D.div({ className: block('error').toString() }, 
+            D.div({className:"field-editor__error-icon"}, 
+              D.i({ className: 'material-icons-round' }, 'priority_high')
+            ),
+            D.div({}, 
+              D.div({className:"field-editor__error-title"}, "Error!"),
+              D.div({}, error.message)
+            )
+          ) 
+          : null
         ),
         D.div(
           { style: { display: canBeCollapsed ? undefined : 'none' } },

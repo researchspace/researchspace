@@ -69,7 +69,16 @@ export class ErrorNotification extends Component<ErrorNotificationProps, {}> {
         className,
         defaultExpanded: isTimeout || this.props.defaultExpanded,
       },
-      errorMessage ? createElement(ErrorPresenter, { error: errorMessage }) : this.props.children
+      
+      errorMessage ? 
+      D.div({ className: `${CLASS_NAME}__error`  }, 
+            D.div({className: `${CLASS_NAME}__error-icon`}, 
+              D.i({ className: 'material-icons-round' }, 'priority_high')
+            ),
+            D.div({}, createElement(ErrorPresenter, { error: errorMessage }) )
+            
+          ) 
+      : this.props.children
     );
   }
 }

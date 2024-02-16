@@ -26,10 +26,9 @@ export class RsTabs extends React.Component<Props, {key: any}> {
   }
 
   componentDidMount() {
-    const { defaultTabKey, sourceId } = localeStorageTabs.getValues()
-    if(defaultTabKey && this.props.id === sourceId) {
+    const defaultTabKey = localeStorageTabs.getTabKeyBySource(this.props.id)
+    if (defaultTabKey) {
       this.setState({key: defaultTabKey})
-      localeStorageTabs.removeKey()
     }
   }
 

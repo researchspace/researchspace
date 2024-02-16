@@ -6,7 +6,7 @@ interface StateProp {
 }
 
 export class LocaleStorageTabs {
-  private localStorageState = BrowserPersistence.adapter<StateProp>();
+  private localStorageState = BrowserPersistence.adapter<any>();
 
   private KEY = 'form-default-key'
 
@@ -14,8 +14,14 @@ export class LocaleStorageTabs {
     return this.localStorageState.get(this.KEY)
   }
 
+  getTabKeyBySource(sourceId: string):string {
+    return this.localStorageState.get(this.KEY)[sourceId]
+  }
+
   setValues(values: StateProp) {
-    this.localStorageState.set(this.KEY, values)
+    const newValue = {}
+    newValue[values.sourceId]=values.defaultTabKey
+    this.localStorageState.update(this.KEY, newValue)
   }
 
   removeKey() {

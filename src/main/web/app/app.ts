@@ -56,6 +56,7 @@ import { TemplateItemComponent } from 'platform/components/ui/template';
 customElements.define('mp-template-item', TemplateItemComponent);
 
 import * as Cookies from 'js-cookie';
+import { localeStorageTabs } from 'platform/components/ui/tabs/LocalStorageTab';
 const WINDOW_SESSION_TIMEOUT = 'sessionTimeout';
 const WINDOW_LAST_REQUEST_TIME = 'lastRequestTime';
 const WINDOW_ANONYMOUS_WARNING = 'anonymousWarning';
@@ -125,6 +126,10 @@ export class MainAppComponent extends Component<
   }
 
   public componentDidMount() {
+    
+    // remove key used for form default key from localstorage
+    localeStorageTabs.removeKey()
+
     // get sessionTimeout from backend
     this.getSessionTimeout();
 

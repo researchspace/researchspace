@@ -7,9 +7,8 @@
 </style>
 
 [[#*inline "count"]]
-<semantic-query query='
-										SELECT (COUNT(DISTINCT *) as ?count) WHERE {  { GRAPH ?g { <{{subject.value}}> a owl:Ontology. [[pattern]] FILTER(!isBlank(?item)) .} }}
-									' template='{{> itemCounts}}'>
+<semantic-query query='SELECT (COUNT(DISTINCT *) as ?count) WHERE {  { GRAPH ?g { <{{subject.value}}> a owl:Ontology. [[pattern]] FILTER(!isBlank(?item)) .} }}' 
+                template='{{> itemCounts}}'>
   <template id='itemCounts'>
     <div>
       <span class="badge badge--secondary">
@@ -39,8 +38,24 @@
     <bs-row class="row-center">
       <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
   
-        <div style="margin: 5px 0 15px 0;" class="btn-inline-container">
+        <div style="margin: 5px 0 15px 0; justify-content: space-between;" class="btn-inline-container">
         
+          <div class="btn-inline-container">
+            <semantic-link-container uri="http://www.researchspace.org/resource/OntologyElementsSearch">
+              <button class="btn btn-default btn-textAndIcon">
+                <rs-icon icon-type="round" icon-name="search"></rs-icon>
+                Search ontology elements
+              </button>
+            </semantic-link-container>
+
+            <semantic-link-container uri="http://www.researchspace.org/resource/OntologyPropertiesSearch">
+              <button class="btn btn-default btn-textAndIcon">
+                <rs-icon icon-type="round" icon-name="search"></rs-icon>
+                Search ontology properties
+              </button>
+            </semantic-link-container>
+          </div>
+
           <mp-overlay-dialog id="uploadOntology-dialog"
                               title="Upload ontology" 
                               type="modal" 
@@ -84,12 +99,7 @@
                     proxy-targets='["ontology-search-results"]'>
           ></mp-event-proxy>
         
-          <semantic-link-container uri="http://www.researchspace.org/resource/OntologySearch">
-            <button class="btn btn-default btn-textAndIcon">
-              <rs-icon icon-type="round" icon-name="search"></rs-icon>
-              Search Ontology Elements
-            </button>
-          </semantic-link-container>
+          
         </div>
    
         <mp-event-target-template-render id='ontology-search-results' template='{{> template}}'>

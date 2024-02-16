@@ -1,0 +1,272 @@
+<style>
+  body {
+    font-size: 13px;
+  }
+</style>
+
+<ol class="page-breadcrumb">
+  <li>
+    <mp-link title="Home" url="/">Home</mp-link>
+  </li>
+  <li>
+    <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
+  </li>
+  <li>
+    <semantic-link title="Ontologies" iri="http://www.researchspace.org/resource/assets/Ontologies">Ontologies
+    </semantic-link>
+  </li>
+  <li class="active">Search ontology properties</li>
+</ol>
+
+<div class="page" style="margin-bottom: 30px;">
+
+  [[> rsp:adminPageHeader title="Search ontology properties" materialIcon="search"]]
+
+  <div class="container-fluid">
+    <bs-row class="row-center">
+      <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
+        
+        <h5 style="margin-bottom: 5px;">Select ontology</h5> 
+
+        <semantic-tree-input  id='{{viewId}}-ontology-selection'
+                              close-dropdown-on-selection='true'
+                              open-dropdown-on-focus='true'
+                              multiple-selection='false'
+                              placeholder="Select ontology"
+                              roots-query='SELECT DISTINCT ?item ?label ?hasChildren WHERE {
+                                            {
+                                              ?item  a owl:Ontology .
+                                              ?item  rdfs:label ?label .
+                                              BIND(2 as ?order)
+                                            } UNION {
+                                              VALUES (?item ?label ?order) {
+                                                (<http://www.researchspace.org/resource/system/ontology/allOntologies> "All ontologies" 1)
+                                              }
+                                            }
+                                            BIND(false AS ?hasChildren) .
+                                          } ORDER BY ?order ASC(?item)'
+                              
+                              children-query='SELECT ?item ?label ?hasChildren WHERE {}'
+                              
+                              parents-query='SELECT ?item ?parent ?parentLabel WHERE {}'
+                              
+                              search-query='SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
+                                              {
+                                                ?item  a owl:Ontology .
+                                                ?item  rdfs:label ?label .
+                                                BIND(2 as ?order)
+                                              } UNION {
+                                                VALUES (?item ?label ?order) {
+                                                  (<http://www.researchspace.org/resource/system/ontology/allOntologies> "All ontologies" 1)
+                                                  }
+                                              }
+                                              ?label bds:search ?__token__;
+                                                bds:minRelevance "0.3";
+                                                bds:relevance ?score;
+                                                bds:matchAllTerms "true".
+                                                BIND(false AS ?hasChildren) .
+                                            } ORDER BY DESC (?score) (?item)'
+                          >
+        </semantic-tree-input>
+        
+        <mp-event-proxy id='{{viewId}}-on-ontology-selection-proxy' 
+                        on-event-source='{{viewId}}-ontology-selection'
+                        on-event-types='["SemanticTreeInput.ItemSelectionChanged"]'
+                        proxy-event-type='Component.TemplateUpdate' 
+                        proxy-targets='["{{viewId}}-ontology-properties-search-result-holder"]'>
+        </mp-event-proxy>
+        
+        <mp-event-target-template-render id='{{viewId}}-ontology-properties-search-result-holder' template='{{> template}}'>
+          <template id='template'>
+            {{#if iri}}
+              {{#bind selectedOntology=iri}}
+                <semantic-search>
+                  <semantic-search-form-query query-template='{"queryString": "SELECT DISTINCT ?subject ?property ?superclass
+                                                                                WHERE {
+                                                                                  graph <{{selectedOntology}}context> { 
+                                                                                    ?ontologyclass a owl:Class .                            
+                                                                                    {
+                                                                                      ?ontologyclass rdfs:subClassOf* ?superclass .	
+                                                                                      ?property rdfs:domain ?superclass .
+                                                                                      ?property rdfs:range ?subject.
+
+                                                                                    } UNION {
+
+                                                                                      BIND(?ontologyclass as ?superclass)
+                                                                                      ?property rdf:type owl:ObjectProperty ;
+                                                                                                rdfs:domain ?ontologyclass .
+                                                                                      ?property rdfs:range ?subject.
+                                                                                    }
+                                                                                  }
+                                                                                }",
+
+                                                                "arguments": { "ontologyClass": {"type": "xsd:anyURI"} }
+                                                              }'
+                                              fields='[{
+                                                        "id": "ontologyClass",
+                                                        "label": "Class",
+                                                        "xsdDatatype": "xsd:anyURI",
+                                                        "minOccurs": "0",
+                                                        "maxOccurs": "1",
+                                                        "treePatterns": {
+                                                                          "type": "simple",
+                                                                          "schemePattern":  "?item a owl:Class ",
+                                                                          "relationPattern": "?item rdfs:subClassOf ?parent",
+                                                                          "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
+                                                                                                " 
+                                                                        }
+                                                      }]'>
+
+                            <semantic-query query='SELECT ?ontologyLabel WHERE {
+                                                      BIND(<{{selectedOntology}}> as ?selectedOntology )
+                                                      ?selectedOntology rdfs:label ?ontologyLabel .
+                                                    }'
+                                            template='{{> template}}'
+                                            no-result-template='{{> noResults}}'
+                            >
+                                      
+                                <template id="template">
+                                  <div>
+                                    <h5 style="margin-bottom: 5px; margin-top: 15px;">Select {{bindings.0.ontologyLabel.value}} class</h5>
+                                  </div>
+                                </template>
+
+                                <template id='noResults'>
+                                  <div>
+                                    <h5 style="margin-bottom: 5px; margin-top: 15px;">Select ontology class</h5>
+                                  </div>
+                                </template>
+                            </semantic-query>
+                            
+                            <div class="btn-inline-container" style="align-items: flex-start;">
+                              <div style="flex: 1;">
+                                <semantic-form-tree-picker-input for="ontologyClass" 
+                                                                
+                                                                  render-header="false" 
+                                                                  placeholder='Select class'
+                                                                  show-link-resource-button="false"
+                                                                  close-dropdown-on-selection='true'
+                                                                  tree-patterns='{
+                                                                                  "schemePattern": "?item a owl:Class ",
+                                                                                  "relationPattern": "?item rdfs:subClassOf ?parent",
+                                                                                  "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
+                                                                                  FILTER (lang(?label) = \"en\")" 
+                                                                                  }'
+
+                                                                  query-item-label='SELECT ?label WHERE {
+                                                                                      ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                                                      FILTER (lang(?label) = "en")
+                                                                                    }'>
+                                </semantic-form-tree-picker-input>
+                              </div>
+                              <button type='button' name='submit' class='btn btn-action' style="height: 39px;">Search properties</button>
+                            </div>
+                  </semantic-search-form-query>
+          
+                  <semantic-search-result-holder>
+                    <div style='height: 100%'>
+                      <h3 style="margin-top: 25px;">Class properties</h3> 
+                      <mp-event-target-template-render id='{{viewId}}-ontology-property-table-render' template='{{> template}}'>
+                        <template id='template'>
+                          <semantic-search-result>
+                            <div class="ontology-property-table">
+                              <semantic-table id='ontology-property-table' 
+                                              query="SELECT DISTINCT ?property ?propertyLabel ?propertyOntologyURI ?rangeOntologyURI ?description ?propertyFromClass WHERE {
+                                                      BIND(?subject as ?range) 
+
+                                                      ?property rdfs:label ?propertyLabel .
+                                                      FILTER(LANG(?propertyLabel)='en')
+  
+                                                      BIND (
+                                                        COALESCE(
+                                                          IF(CONTAINS(STR(?property), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?property), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminf:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.ics.forth.gr/isl/CRMsci/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMsci/', 'crmsci:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?property), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.w3.org/2004/02/skos/core/'), REPLACE(STR(?property), 'http://www.w3.org/2004/02/skos/core/', 'skos:'), 1/0),
+                                                          IF(CONTAINS(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                          ?property
+                                                        ) AS ?propertyOntologyURI
+                                                      )
+
+                                                      BIND (
+                                                        COALESCE(
+                                                          IF(CONTAINS(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminf:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMsci/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMsci/', 'crmsci:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?range), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.w3.org/2004/02/skos/core/'), REPLACE(STR(?range), 'http://www.w3.org/2004/02/skos/core/', 'skos:'), 1/0),
+                                                          IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                          ?range
+                                                        ) AS ?rangeOntologyURI
+                                                      )
+
+                                                      BIND (
+                                                        COALESCE(
+                                                          IF(CONTAINS(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminf:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMsci/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMsci/', 'crmsci:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?superclass), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.w3.org/2004/02/skos/core/'), REPLACE(STR(?superclass), 'http://www.w3.org/2004/02/skos/core/', 'skos:'), 1/0),
+                                                          IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                          ?superclass
+                                                        ) AS ?propertyFromClass
+                                                      )
+
+                                                      ?property rdfs:comment ?description .
+
+                                                  } ORDER BY ?propertyOntologyURI"
+                            
+                                            options='{"showFilter":true, "resultsPerPage":30}' 
+                                            no-result-template='{{> noResults}}'
+                                            column-configuration='[
+                                                                    {"displayName": "Property URI", "variableName": "propertyOntologyURI" },
+                                                                 [[!--   {"displayName": "Property name", "variableName": "propertyLabel" }, --]]
+                                                                    {"displayName": "Range class", "variableName": "rangeOntologyURI"},
+                                                                    {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
+                                                                    {"displayName": "Property inherited from class", "variableName": "propertyFromClass"}
+                                                                    
+                                                                  ]'  
+                                            >
+                                          
+                                <template id="noResults">
+                                  <div>No results available</div>
+                                </template>
+
+                                <template id="description">
+                                    <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                      {{description.value}}
+                                    </mp-text-truncate>
+                                </template>
+                                          
+                              </semantic-table>
+                            </div>  
+                          </semantic-search-result>
+                        </template>
+                      </mp-event-target-template-render>
+                    </div>
+                  </semantic-search-result-holder>
+                </semantic-search> 
+              {{/bind}}
+            {{/if}}
+          </template>
+        </mp-event-target-template-render>
+      
+        
+      </bs-col>
+    </bs-row> <!--  close row -->
+  </div>
+
+</div>

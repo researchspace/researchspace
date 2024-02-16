@@ -1,41 +1,51 @@
+
 <http://www.researchspace.org/pattern/system/physical_thing/part_of_collection/context> {
-  
   <http://www.researchspace.org/pattern/system/physical_thing/part_of_collection> a
       <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
       <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-cc3230dcde8a4bc787e43373cb055c56-rsaztjc;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/object>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-5e46414c7c884c2c86830e58f3021051-zvlhig;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-cc3230dcde8a4bc787e43373cb055c56-g3wiio;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-cc3230dcde8a4bc787e43373cb055c56-ic3n5;
     <http://www.w3.org/2000/01/rdf-schema#label> "Part of curated collection";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-5e46414c7c884c2c86830e58f3021051-yfa7cb;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E78_Collection>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-5e46414c7c884c2c86830e58f3021051-61gkd;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-cc3230dcde8a4bc787e43373cb055c56-309qas;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-12T11:44:05.296+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-15T13:25:52.447Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-5e46414c7c884c2c86830e58f3021051-yfa7cb a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject crm:P46i_forms_part_of $value . 
-  $value crm:P46_is_composed_of $subject .  
-  $value a crm:E78_Collection .
-}""" .
-
-  _:genid-5e46414c7c884c2c86830e58f3021051-zvlhig a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P46i_forms_part_of $value . 
-  $value crm:P46_is_composed_of $subject .
-} WHERE {}""" .
-  
-  _:genid-5e46414c7c884c2c86830e58f3021051-61gkd a <http://spinrdf.org/sp#Query>;
+  _:genid-cc3230dcde8a4bc787e43373cb055c56-g3wiio a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
   $subject crm:P46i_forms_part_of $value . 
   $value crm:P46_is_composed_of $subject . 
 } WHERE {
   $subject crm:P46i_forms_part_of $value . 
   $value crm:P46_is_composed_of $subject .
+  $value a crm:E78_Collection .
+}""" .
+  
+  _:genid-cc3230dcde8a4bc787e43373cb055c56-309qas a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E78_Collection .
+  ?value crm:P102_has_title ?title .
+  ?title a crm:E35_Title .
+  ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> .
+  ?title crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-cc3230dcde8a4bc787e43373cb055c56-rsaztjc a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P46i_forms_part_of $value . 
+  $value crm:P46_is_composed_of $subject .
+} WHERE {}""" .
+  
+  _:genid-cc3230dcde8a4bc787e43373cb055c56-ic3n5 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P46i_forms_part_of $value . 
+  $value crm:P46_is_composed_of $subject .  
   $value a crm:E78_Collection .
 }""" .
   

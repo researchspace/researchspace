@@ -123,7 +123,7 @@
                                                     fields='[[fieldDefinitions
                                                                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                 birthTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                                                                birthPlace="http://www.researchspace.org/pattern/system/period/took_place_at_min0max1"
+                                                                birthPlace="http://www.researchspace.org/pattern/system/period/took_place_at_place_min0max1"
                                                                 birthDescription="http://www.researchspace.org/pattern/system/entity/description"
                                                         ]]'>
 
@@ -153,27 +153,11 @@
                                 </semantic-form-composite-input>
                             </div>
                             <div style="flex: 1;">
-                                <semantic-form-tree-picker-input    for="birthPlace" 
-                                                                    label="Place" 
-                                                                    placeholder="Select place" 
-                                                                    close-dropdown-on-selection='true'
-                                                                    tree-patterns='{"scheme": "crm:E53_Place",
-                                                                                    "schemePattern": "?item a crm:E53_Place",
-                                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                                        ?appellation a crm:E41_Appellation . 
-                                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> .
-                                                                                                        ?appellation crm:P190_has_symbolic_content ?label ." }'
-                                                                
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'
-
-                                                                    query-item-label='SELECT ?label WHERE {
-                                                                                            ?item crm:P1_is_identified_by ?appellation . 
-                                                                                            ?appellation a crm:E41_Appellation . 
-                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> .
-                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                        }'
-                                                                
-                                ></semantic-form-tree-picker-input>
+                                <semantic-form-select-input for='birthPlace' 
+                                                            label="Place" 
+                                                            placeholder="Select place" 
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
                             </div>
                         </div>
 
@@ -186,7 +170,7 @@
                                                     fields='[[fieldDefinitions
                                                                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                 deathTimeSpan="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                                                                deathPlace="http://www.researchspace.org/pattern/system/period/took_place_at_min0max1"
+                                                                deathPlace="http://www.researchspace.org/pattern/system/period/took_place_at_place_min0max1"
                                                                 deathDescription="http://www.researchspace.org/pattern/system/entity/description"
                                                         ]]'>
 
@@ -216,27 +200,11 @@
                                 </semantic-form-composite-input>
                             </div>
                             <div style="flex: 1;">
-                                <semantic-form-tree-picker-input    for="deathPlace" 
-                                                                    label="Place" 
-                                                                    placeholder="Select place" 
-                                                                    close-dropdown-on-selection='true'
-                                                                    tree-patterns='{"scheme": "crm:E53_Place",
-                                                                                    "schemePattern": "?item a crm:E53_Place",
-                                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                                        ?appellation a crm:E41_Appellation . 
-                                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> .
-                                                                                                        ?appellation crm:P190_has_symbolic_content ?label ." }'
-                                                                    
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'
-
-                                                                    query-item-label='SELECT ?label WHERE {
-                                                                                            ?item crm:P1_is_identified_by ?appellation . 
-                                                                                            ?appellation a crm:E41_Appellation . 
-                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> .
-                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                        }'
-                                                                
-                                ></semantic-form-tree-picker-input>
+                                <semantic-form-select-input for='deathPlace' 
+                                                            label="Place" 
+                                                            placeholder="Select place" 
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
                             </div>
                         </div>
 
@@ -470,7 +438,7 @@
                                                 fields='[[fieldDefinitions
                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                        activity_place="http://www.researchspace.org/pattern/system/period/took_place_at"
+                                                        activity_place="http://www.researchspace.org/pattern/system/period/took_place_at_organisation"
                                                         activity_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
                                                         activity_description="http://www.researchspace.org/pattern/system/entity/description"
                                                 ]]'>
@@ -478,25 +446,11 @@
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'></semantic-form-hidden-input>
                     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/employment'></semantic-form-hidden-input>
 
-                    <semantic-form-tree-picker-input    for="activity_place" 
-                                                        label="Organisation name" 
-                                                        placeholder="Select organisation" 
-                                                        close-dropdown-on-selection='false'
-                                                        tree-patterns='{"scheme": "crm:E53_Place", 
-                                                                    "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/organisation>",
-                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation .  
-                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> . 
-                                                                                        ?appellation crm:P190_has_symbolic_content ?label ."
-                                                                    }'
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true}}{{{{/raw}}}}' 
-                                                    
-                                                        query-item-label='SELECT ?label WHERE {
-                                                                        ?item crm:P1_is_identified_by ?appellation .
-                                                                        ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
-                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                    }'
-                    ></semantic-form-tree-picker-input>
+                    <semantic-form-select-input for='activity_place' 
+                                                label="Organisation name" 
+                                                placeholder="Select organisation" 
+                                                nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true }}{{{{/raw}}}}'> 
+                    </semantic-form-select-input>
 
                     <semantic-form-composite-input  for="activity_date" 
                                                     render-header="false"

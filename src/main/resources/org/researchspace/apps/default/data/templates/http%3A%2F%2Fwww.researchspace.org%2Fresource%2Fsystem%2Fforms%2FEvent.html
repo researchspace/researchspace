@@ -14,7 +14,7 @@
                           event_title="http://www.researchspace.org/pattern/system/event/event_title"
                           event_description="http://www.researchspace.org/pattern/system/entity/description"
                           event_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                          event_place="http://www.researchspace.org/pattern/system/period/took_place_at"
+                          event_place="http://www.researchspace.org/pattern/system/period/took_place_at_place"
 
                           event_had_participant="http://www.researchspace.org/pattern/system/event/had_participant"
 
@@ -99,28 +99,11 @@
                 </div>
             </semantic-form-composite-input>
 
-            <semantic-form-tree-picker-input for="event_place" 
-                                              label="Event place" 
-                                              placeholder="Select place" 
-                                              close-dropdown-on-selection='false'
-                                              tree-patterns='{"scheme": "crm:E53_Place",
-                                                              "schemePattern": "?item a crm:E53_Place",
-                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                  ?appellation a crm:E41_Appellation . 
-                                                                                  ?appellation crm:P2_has_type ?appellationType .
-                                                                                  ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                  FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))"
-                                                              }'
-                                              
-                                              nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'
-
-                                              query-item-label='SELECT ?label WHERE {
-                                                                  ?appellation a crm:E41_Appellation . 
-                                                                  ?appellation crm:P2_has_type ?appellationType .
-                                                                  ?appellation crm:P190_has_symbolic_content ?label .
-                                                                  FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))
-                                                              }'>
-            </semantic-form-tree-picker-input>
+            <semantic-form-select-input for='event_place' 
+                                        label="Event place" 
+                                        placeholder="Select place"
+                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+            </semantic-form-select-input>
 
           </div>
 

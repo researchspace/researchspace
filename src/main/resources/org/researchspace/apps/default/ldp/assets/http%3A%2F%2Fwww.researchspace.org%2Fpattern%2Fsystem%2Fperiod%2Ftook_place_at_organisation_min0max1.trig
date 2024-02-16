@@ -1,0 +1,52 @@
+
+<http://www.researchspace.org/pattern/system/period/took_place_at_organisation_min0max1/context> {
+  <http://www.researchspace.org/pattern/system/period/took_place_at_organisation_min0max1>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-7e2129636fe14443a375b459216e267d-eki8h9;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E4_Period>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-7e2129636fe14443a375b459216e267d-qvmzck;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-7e2129636fe14443a375b459216e267d-auq4dj;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-7e2129636fe14443a375b459216e267d-kil44a;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Took place at organisation";
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-15T15:15:35.982Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-7e2129636fe14443a375b459216e267d-eki8h9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E53_Place .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-7e2129636fe14443a375b459216e267d-auq4dj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P7_took_place_at $value . 
+  $value crm:P7i_witnessed $subject .
+} WHERE {}""" .
+  
+  _:genid-7e2129636fe14443a375b459216e267d-qvmzck a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P7_took_place_at $value . 
+  $value crm:P7i_witnessed $subject . 
+}""" .
+  
+  _:genid-7e2129636fe14443a375b459216e267d-kil44a a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  $subject crm:P7_took_place_at $value . 
+  $value crm:P7i_witnessed $subject . 
+}  WHERE {
+  $subject crm:P7_took_place_at $value . 
+  $value crm:P7i_witnessed $subject .
+  }""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/period/took_place_at_organisation_min0max1> .
+}

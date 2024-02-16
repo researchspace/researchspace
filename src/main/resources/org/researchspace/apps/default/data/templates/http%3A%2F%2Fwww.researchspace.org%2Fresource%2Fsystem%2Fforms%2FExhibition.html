@@ -243,35 +243,11 @@
                   <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/exhibition_area'> </semantic-form-hidden-input>
 
                   <div style="margin-top: -20px;">
-                      <semantic-form-tree-picker-input  for="exhibition_area_location" 
-                                                      label="Location" 
-                                                      placeholder="Select location" 
-                                                      close-dropdown-on-selection='false'
-                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
-                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
-                                                              "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                              "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                              ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
-                                                                              ?appellation crm:P190_has_symbolic_content ?label ." }'
-
-                                                      nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
-                                                                                          scheme="http://www.researchspace.org/resource/system/vocab/organisation"
-                                                                                          entityType="organisation" }}{{{{/raw}}}}'
-                                                                                          
-                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                              "view": "vocabulary-content",
-                                                                              "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
-                                                                              "tooltip": "Open list of organisations"
-                                                                              }'
-
-                                                      query-item-label='SELECT ?label WHERE {
-                                                                          ?item crm:P1_is_identified_by ?appellation .
-                                                                          ?appellation a crm:E41_Appellation .
-                                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
-                                                                          ?appellation crm:P190_has_symbolic_content ?label .
-                                                                      }'>
-                      </semantic-form-tree-picker-input>      
+                    <semantic-form-select-input for='exhibition_area_location' 
+                                                label="Location" 
+                                                placeholder="Select location" 
+                                                nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                    </semantic-form-select-input>     
                   </div>
 
                   <semantic-form-text-input for="exhibition_area_identifier" label="Gallery/room" placeholder="Enter gallery/room name or number"> </semantic-form-text-input>

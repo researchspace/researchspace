@@ -11,11 +11,13 @@
                             collection_document="http://www.researchspace.org/pattern/system/entity/documents"
 
                             collection_title="http://www.researchspace.org/pattern/system/man-made_thing/title"
-                            collection_id="http://www.researchspace.org/pattern/system/physical_thing/identifier"
+                            collection_id="http://www.researchspace.org/pattern/system/entity/identifier"
                             collection_description="http://www.researchspace.org/pattern/system/entity/description"
-                            collection_location="http://www.researchspace.org/pattern/system/physical_thing/location"
+                            collection_current_location="http://www.researchspace.org/pattern/system/physical_thing/location"
 
+                            collection_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
                             collection_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
+                            collection_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
                             collection_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
                             collection_right="http://www.researchspace.org/pattern/system/physical_thing/right"
 
@@ -56,7 +58,7 @@
                                 <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
                             </div>
 
-                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                     [[!--       <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
                                 <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
                                     <div class="trigger-content color-secondary">
                                         <span class="trigger-text">Title translations and alternative forms</span>
@@ -111,68 +113,49 @@
                                         </semantic-form-switch>
                                     </div>
                                 </mp-collapsible-div-content>
-                            </mp-collapsible-div>
+                            </mp-collapsible-div> --]]
                             
                         </semantic-form-composite-input>
 
-                        {{#if wikidataResourceDescription}}
-                            <semantic-form-text-input for="collection_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{wikidataResourceDescription}}"> </semantic-form-text-input>
-                        {{else}}
-                            <semantic-form-text-input for="collection_description" label="Object description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
-                        {{/if}}
-                        
-                        <semantic-form-composite-input for="object_current_location"
-                                                        new-subject-template="/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
-                                                        label="Current location"
-                                                        render-header='true'
-                                                        fields='[[fieldDefinitions
-                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="collection_id"
+                                                            label="Collection identifier"
+                                                            new-subject-template="/collection_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                            fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                                                     has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-
-                                                                    location_falls_within_place="http://www.researchspace.org/pattern/system/place/falls_within_placeMin1Max1"
-                                                                    museum_location_identifier="http://www.researchspace.org/pattern/system/place/museum_location_identifier"
-                                                                    storage_location_identifier="http://www.researchspace.org/pattern/system/place/storage_location_identifier"
-                                                            ]]'> 
-
-                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
-                            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/object_current_location'> </semantic-form-hidden-input>
-                            
-                            <div class="form-inline-inputs first-input" style="row-gap:5px;">
-                                <div style="flex: 1;">
-                                    <semantic-form-tree-picker-input    for="location_falls_within_place" 
-                                                                        label="Place / Organisation" 
-                                                                        placeholder="Select location" 
-                                                                        close-dropdown-on-selection='true'
-                                                                        tree-patterns='{"scheme": "crm:E53_Place",
-                                                                                        "schemePattern": "?item a crm:E53_Place",
-                                                                                        "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                                            ?appellation a crm:E41_Appellation . 
-                                                                                                            ?appellation crm:P2_has_type ?appellationType .
-                                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))"
-                                                                                        }'
-                                                                        
-                                                                        nested-form-template='{{> forms:Place nested=true editable=true mode=new }}'
-
-                                                                        query-item-label='SELECT ?label WHERE {
-                                                                                            ?appellation a crm:E41_Appellation . 
-                                                                                            ?appellation crm:P2_has_type ?appellationType .
-                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                            FILTER (?appellationType in (<http://www.researchspace.org/resource/system/vocab/appellation/place_name>,  <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> ))
-                                                                                        }'>
-                                    </semantic-form-tree-picker-input>      
+                                                                    
+                                                                    identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                                    identifier_collection_id_type="http://www.researchspace.org/pattern/system/identifier/thing_id_type"
+                                                                ]]'
+                                                            >
+                                        
+                                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/collection_id'></semantic-form-hidden-input>
+                                    
+                                <div class="form-inline-inputs" style="row-gap:5px;">
+                                    <div>
+                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter collection identifier"></semantic-form-text-input>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <semantic-form-select-input for='identifier_collection_id_type' 
+                                                                    label="Identifier type" 
+                                                                    render-header=false
+                                                                    placeholder="Select identifier type" 
+                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                                scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
+                                                                                                                entityType="identifier" }}{{{{/raw}}}}'> 
+                                        </semantic-form-select-input>
+                                    </div>
                                 </div>
+                            </semantic-form-composite-input>
+                        </div>
 
-                                <div style="flex: 1;">
-                                    <semantic-form-text-input for="museum_location_identifier" label="Gallery/room/display details" placeholder="Enter gallery/room/display details"> </semantic-form-text-input>
-                                </div>
-                                
-                                <div style="flex: 1;">
-                                    <semantic-form-text-input for="storage_location_identifier" label="Storage details" placeholder="Enter storage details"> </semantic-form-text-input>
-                                </div>
-                                
-                            </div>
-                        </semantic-form-composite-input> 
+                        {{#if wikidataResourceDescription}}
+                            <semantic-form-text-input for="collection_description" label="Collection description" placeholder="Enter description/comment" multiline='true' default-value="{{wikidataResourceDescription}}"> </semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="collection_description" label="Collection description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                        {{/if}}
 
                     </div>
 
@@ -212,10 +195,66 @@
                 </div>
             </rs-tab>
 
+            <rs-tab event-key="part" title="Parts">
 
+            </rs-tab>
 
-            <rs-tab event-key="partFeature" title="Parts/Features">
+            <rs-tab event-key="location" title="Location, curator">
+                <semantic-form-composite-input for="collection_current_location"
+                                                new-subject-template="/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                                label="Location (former or current)"
+                                                render-header='true'
+                                                fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                            has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
+                                                            location_falls_within_place="http://www.researchspace.org/pattern/system/place/falls_within_placeMin1Max1"
+                                                            museum_location_identifier="http://www.researchspace.org/pattern/system/place/museum_location_identifier"
+                                                            storage_location_identifier="http://www.researchspace.org/pattern/system/place/storage_location_identifier"
+                                                    ]]'> 
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/collection_former_location'> </semantic-form-hidden-input>
+                    
+                    <div class="form-inline-inputs first-input" style="row-gap:5px;">
+                        <div style="flex: 1;">
+                            <semantic-form-select-input for='location_falls_within_place' 
+                                                        label="Place / Organisation" 
+                                                        placeholder="Select location" 
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                            </semantic-form-select-input>     
+                        </div>
+
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="museum_location_identifier" label="Gallery/room/display details" placeholder="Enter gallery/room/display details"> </semantic-form-text-input>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="storage_location_identifier" label="Storage details" placeholder="Enter storage details"> </semantic-form-text-input>
+                        </div>
+                        
+                    </div>
+                </semantic-form-composite-input> 
+
+                <semantic-form-tree-picker-input for="collection_curator" 
+                                                label="Curator (former or current)" 
+                                                placeholder="Select actor" 
+                                                tree-patterns='{"scheme": "crm:E39_Actor",
+                                                                "schemePattern": "?item a crm:E39_Actor",
+                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
+                                                                                ?appellation a crm:E41_Appellation . 
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?label ." }'
+
+                                                nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'
+                                                
+                                                query-item-label='SELECT ?label WHERE {
+                                                                    ?item crm:P1_is_identified_by ?appellation .
+                                                                    ?appellation a crm:E41_Appellation .
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+                                                                    ?appellation crm:P190_has_symbolic_content ?label .
+                                                                }'>
+                </semantic-form-tree-picker-input>
             </rs-tab>
 
             <rs-tab event-key="ownership" title="Ownership, rights">
@@ -236,6 +275,6 @@
     </div>
 
     <semantic-form-errors></semantic-form-errors>  
-    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}object{{/if}}']] 
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}collection{{/if}}']] 
 
 </semantic-form>

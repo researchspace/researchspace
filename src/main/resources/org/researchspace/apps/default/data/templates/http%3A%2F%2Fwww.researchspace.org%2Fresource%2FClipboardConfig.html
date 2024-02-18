@@ -3,7 +3,7 @@
       PREFIX platform: <http://www.researchspace.org/resource/system/>
       PREFIX bds: <http://www.bigdata.com/rdf/search#>
       PREFIX ontodia: <http://ontodia.org/schema/v1#>
-      SELECT ?item ?itemHolder ?parent ?kind WHERE {
+      SELECT distinct ?item ?itemHolder ?parent ?kind WHERE {
         {
           FILTER(!(?__isSearch__)) .
           {
@@ -12,7 +12,10 @@
             BIND(?__rootSet__ as ?parent) .
             OPTIONAL { ?itemHolder platform:setItem ?setItem }
             BIND(COALESCE(?setItem, ?itemHolder) AS ?item) .
-            
+            FILTER ((EXISTS {?itemHolder <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "[[id]]".}) ||
+                    (EXISTS {?parent a platform:Set; rdfs:label "Uncategorized" .}) || 
+                    (EXISTS {?parent <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "[[id]]".}))
+  
           } UNION {
             ?uncategorizedSet a platform:Set ;
                               prov:wasAttributedTo ?__useruri__ ;
@@ -21,10 +24,19 @@
             ?itemHolder platform:setItem ?item .
             platform:ontodiaDiagramContainer ldp:contains ?item .
             BIND(platform:ontodiaDiagramContainer as ?parent) .
+            FILTER (EXISTS {?itemHolder <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "[[id]]".})
           } UNION {
             ?__rootSet__ ontodia:layoutData/ontodia:hasElement ?itemHolder .
             ?itemHolder ontodia:resource ?item .
             BIND(?__rootSet__ as ?parent) .
+          } UNION {
+            ?itemHolder rdf:type Platform:Set;
+                  prov:wasAttributedTo ?__useruri__;
+                  rdfs:label "Uncategorized".
+            BIND(<http://www.researchspace.org/resource/system/user/admin/setContainer> AS ?parent)
+            OPTIONAL { ?itemHolder Platform:setItem ?setItem. }
+            BIND(COALESCE(?setItem, ?itemHolder) AS ?item)
+            
           }
           }
         } UNION {
@@ -45,9 +57,9 @@
               ?itemHolder ontodia:resource ?item .
               BIND(?__setToSearch__ as ?parent) .
               FILTER(?__filterPatterns__)
+          } 
           }
-          }
-        }
+        } 
 
         OPTIONAL {
           ?itemHolder platform:setItemIndex ?i .
@@ -66,7 +78,6 @@
         }
         BIND(COALESCE(?type, ?itemHolderType, platform:SetItem) AS ?kind) .
 
-        ?item <http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id> "clipboard" .
       } ORDER BY ?index DESC(?modificationDate)'
     set-count-query='PREFIX ldp: <http://www.w3.org/ns/ldp#>
       PREFIX platform: <http://www.researchspace.org/resource/system/>

@@ -92,6 +92,11 @@ export class WithTypes extends Component<Props, State> {
         } WHERE {
           BIND(COALESCE(?__iri__, <http://example.com>) AS ?iri) .
           OPTIONAL {
+            ?iri crm:P2_has_type ?resource_type . 
+            #?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resource_type .
+          }
+          BIND(IF(BOUND(?resource_type),?resource_type,?rdfType) as ?t)
+          OPTIONAL {
             ?t rdfs:label ?tEngLabel .
             FILTER(LANG(?tEngLabel) = "en")
           }
@@ -124,7 +129,7 @@ export class WithTypes extends Component<Props, State> {
         type: 'bgp',
         triples: [
           {
-            subject: '?__iri__', predicate: rdf.type.value, object: '?t'
+            subject: '?__iri__', predicate: rdf.type.value, object: '?rdfType'
           } as SparqlJs.Triple,
         ]
       });

@@ -523,8 +523,8 @@ export class ViewModel {
       .observe({
         value: () => {
           this.setState({ openedSet: undefined });
-          this.loadSets({ keepItems: true });
-          this.trigger(SetManagementEvents.SetRemoved);
+          this.loadSets({ keepItems: false });
+          this.trigger(SetManagementEvents.SetRemovedFromView);
         },
         error: (error) => {
           addNotification(

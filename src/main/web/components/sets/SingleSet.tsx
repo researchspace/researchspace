@@ -71,6 +71,7 @@ export class SingleSet extends Component<Props, ViewState> {
     const childContext: SetManagementContext & SetViewContext = {
       'mp-set-management': {
         removeSet: this.model.removeSet,
+        removeSetFromView: this.model.removeSetFromView,
         removeSetItem: this.model.removeSetItem,
         startRenamingSet: this.model.startRenamingSet,
         fetchSetItems: this.model.fetchSetItems,

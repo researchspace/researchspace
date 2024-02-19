@@ -1,7 +1,9 @@
 <style>
-  body {
-    font-size: 13px;
+
+  .SemanticTreeInput--tree {
+    height: 300px;
   }
+  
 </style>
 
 <ol class="page-breadcrumb">
@@ -110,10 +112,10 @@
                                                         "maxOccurs": "1",
                                                         "treePatterns": {
                                                                           "type": "simple",
-                                                                          "schemePattern":  "?item a owl:Class ",
+                                                                          "schemePattern":  "?ontologyclass a owl:Class . ",
                                                                           "relationPattern": "?item rdfs:subClassOf ?parent",
                                                                           "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
-                                                                                                " 
+                                                                                          FILTER (lang(?label) = \"en\")"
                                                                         }
                                                       }]'>
 
@@ -140,6 +142,7 @@
                             
                             <div class="btn-inline-container" style="align-items: flex-start;">
                               <div style="flex: 1;">
+                                <div>{{selectedOntology}}</div>
                                 <semantic-form-tree-picker-input for="ontologyClass" 
                                                                 
                                                                   render-header="false" 
@@ -147,10 +150,11 @@
                                                                   show-link-resource-button="false"
                                                                   close-dropdown-on-selection='true'
                                                                   tree-patterns='{
-                                                                                  "schemePattern": "?item a owl:Class ",
+                                                                                  "schemePattern": "?item a owl:Class .
+                                                                                                    FILTER(contains(str(?item), str(\"{{selectedOntology}}\")))",
                                                                                   "relationPattern": "?item rdfs:subClassOf ?parent",
                                                                                   "labelPattern": "?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label .
-                                                                                  FILTER (lang(?label) = \"en\")" 
+                                                                                                    FILTER (lang(?label) = \"en\")" 
                                                                                   }'
 
                                                                   query-item-label='SELECT ?label WHERE {

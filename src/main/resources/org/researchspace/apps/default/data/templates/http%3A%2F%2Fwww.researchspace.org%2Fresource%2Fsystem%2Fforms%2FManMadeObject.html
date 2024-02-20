@@ -35,6 +35,7 @@
                             object_collection="http://www.researchspace.org/pattern/system/physical_thing/part_of_collection"
                             object_series="http://www.researchspace.org/pattern/system/physical_thing/part_of_series"
                             object_parts="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
+                            
                         ]]'
             >
 
@@ -69,7 +70,7 @@
                                 <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
                             </div>
 
-                       [[!--      <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite" render-hidden=true>
                                 <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
                                     <div class="trigger-content color-secondary">
                                         <span class="trigger-text">Title translations and alternative forms</span>
@@ -91,7 +92,7 @@
                                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
         
-                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value_min0"
                                                                                 ]]'>
                                         
                                                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
@@ -111,7 +112,7 @@
                                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
         
-                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value_min0"
                                                                                 ]]'>
                                         
                                                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
@@ -124,9 +125,9 @@
                                         </semantic-form-switch>
                                     </div>
                                 </mp-collapsible-div-content>
-                            </mp-collapsible-div> --]]
+                            </mp-collapsible-div> 
                             
-                        </semantic-form-composite-input>
+                        </semantic-form-composite-input> 
 
                         <semantic-form-composite-input  for="object_other_title"
                                                         label="Other object title"
@@ -148,7 +149,7 @@
                                 <semantic-form-text-input for="title_value" label="Other title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
                             </div>
 
-                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite" render-hidden=true>
                                 <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
                                     <div class="trigger-content color-secondary">
                                         <span class="trigger-text">Other title translations and alternative forms</span>
@@ -170,7 +171,7 @@
                                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
-                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value_min0"
                                                                                 ]]'>
                                         
                                                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
@@ -190,7 +191,7 @@
                                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
-                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value_min0"
                                                                                 ]]'>
                                         
                                                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
@@ -209,14 +210,14 @@
 
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="object_primary_id"
-                                                            label="Object identifier"
+                                                            label="Object identifier (preferred)"
                                                             new-subject-template="/object_id" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                                                     has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                                                                     
                                                                     identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                                    identifier_object_id_type="http://www.researchspace.org/pattern/system/identifier/object_id_type_test"
+                                                                    identifier_object_id_type="http://www.researchspace.org/pattern/system/identifier/thing_id_type"
                                                                 ]]'
                                                             >
                                         
@@ -228,46 +229,14 @@
                                         <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
                                     </div>
                                     <div style="flex: 1;">
-                                        <semantic-form-tree-picker-input for="identifier_object_id_type" 
-                                                                        label="tree picker Identifier type" 
-                                                                        render-header=false
-                                                                        placeholder="Select identifier type" 
-                                                                        close-dropdown-on-selection='true'
-                                                                        tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/thing_identifier>", 
-                                                                                        "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/thing_identifier>",
-                                                                                        "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-
-                                                                        scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                                    "view": "vocabulary-content",
-                                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/thing_identifier",
-                                                                                                    "tooltip": "Open list of identifiers"
-                                                                                                    }'
-                                                                        
-                                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                                scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
-                                                                                                                entityType="identifier" }}{{{{/raw}}}}'
-
-                                                                        query-item-label='SELECT ?label WHERE {
-                                                                                            ?item skos:prefLabel ?label .
-                                                                                        }'>
-                                        </semantic-form-tree-picker-input> 
-
-                                        <semantic-form-autocomplete-input for='identifier_object_id_type' 
-                                                                            placeholder='placeholder'
-                                                                            label="autocomplete input"
-                                                                            minimum-input="3"
-                                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                                scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
-                                                                                                                entityType="identifier" }}{{{{/raw}}}}'
-                                                                            >
-                                        </semantic-form-autocomplete-input>
-
                                         <semantic-form-select-input for='identifier_object_id_type' 
-                                                                    placeholder='placeholder'
-                                                                    label="select input"
+                                                                    label="Identifier type" 
+                                                                    render-header=false
+                                                                    placeholder="Select identifier type" 
                                                                     nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                                scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
-                                                                                                                entityType="identifier" }}{{{{/raw}}}}'> 
+                                                                                                                    scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
+                                                                                                                    entityType="identifier" }}
+                                                                                            {{{{/raw}}}}'> 
                                         </semantic-form-select-input>
                                     </div>
                                 </div>
@@ -452,7 +421,7 @@
                 </div>
             </rs-tab>
 
-            <rs-tab event-key="part" title="Parts/Features">
+            <rs-tab event-key="collection" title="Collection/Series">
 
                 <semantic-form-select-input for='object_collection' 
                                             label="Part of collection" 
@@ -466,6 +435,10 @@
             </rs-tab>
 
             <rs-tab event-key="visualItem" title="Visual items">
+
+            </rs-tab>
+
+            <rs-tab event-key="collection" title="Parts/Features">
 
             </rs-tab>
 

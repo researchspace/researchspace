@@ -1,5 +1,10 @@
 
 <http://www.researchspace.org/pattern/system/physical_thing/current_keeper/context> {
+  _:genid-8b99bcff10a04670aefb44762d0d901d-81gvvs a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+	$subject crm:P50_has_current_keeper $value . 
+}""" .
+  
   <http://www.researchspace.org/pattern/system/physical_thing/current_keeper> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.w3.org/2000/01/rdf-schema#comment> """Actor who has custody at the time of validity of the record.
@@ -10,23 +15,28 @@
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6ec90ab438724672b32f0e8d33044582-py9tvq;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6ec90ab438724672b32f0e8d33044582-r9p3wp;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6ec90ab438724672b32f0e8d33044582-4c3i1m;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-8b99bcff10a04670aefb44762d0d901d-f2m197;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-8b99bcff10a04670aefb44762d0d901d-b8pudc;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-8b99bcff10a04670aefb44762d0d901d-capau9;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-8b99bcff10a04670aefb44762d0d901d-81gvvs;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-14T10:46:29.470Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-20T18:23:37.658Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-6ec90ab438724672b32f0e8d33044582-r9p3wp a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-	$subject crm:P50_has_current_keeper $value . 
-}""" .
+  _:genid-8b99bcff10a04670aefb44762d0d901d-capau9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ?label""" .
   
-  _:genid-6ec90ab438724672b32f0e8d33044582-4c3i1m a <http://spinrdf.org/sp#Query>;
+  _:genid-8b99bcff10a04670aefb44762d0d901d-f2m197 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P50_has_current_keeper $value . 
 } WHERE {}""" .
   
-  _:genid-6ec90ab438724672b32f0e8d33044582-py9tvq a <http://spinrdf.org/sp#Query>;
+  _:genid-8b99bcff10a04670aefb44762d0d901d-b8pudc a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {   
 	$subject crm:P50_has_current_keeper $value . 
 } WHERE {

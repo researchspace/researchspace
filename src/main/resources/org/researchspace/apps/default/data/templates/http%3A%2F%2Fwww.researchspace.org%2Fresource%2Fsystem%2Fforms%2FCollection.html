@@ -13,17 +13,17 @@
                             collection_title="http://www.researchspace.org/pattern/system/man-made_thing/title"
                             collection_id="http://www.researchspace.org/pattern/system/entity/identifier"
                             collection_description="http://www.researchspace.org/pattern/system/entity/description"
+                            
                             collection_current_location="http://www.researchspace.org/pattern/system/physical_thing/location"
-
-                            collection_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
-                            collection_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
-                            collection_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
-                            collection_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
-                            collection_right="http://www.researchspace.org/pattern/system/physical_thing/right"
-
                             collection_curator="http://www.researchspace.org/pattern/system/collection/curator"
 
                             collection_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
+
+                            collection_right="http://www.researchspace.org/pattern/system/physical_thing/right"
+                            collection_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
+                            collection_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
+                            collection_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
+                            collection_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
                         ]]'
             >
 
@@ -58,7 +58,7 @@
                                 <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
                             </div>
 
-                     [[!--       <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite">
+                            <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite" render-hidden=true>
                                 <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
                                     <div class="trigger-content color-secondary">
                                         <span class="trigger-text">Title translations and alternative forms</span>
@@ -80,7 +80,7 @@
                                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
         
-                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value_min0"
                                                                                 ]]'>
                                         
                                                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
@@ -100,7 +100,7 @@
                                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                                                         has_type="http://www.researchspace.org/pattern/system/entity/has_type"
         
-                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value"
+                                                                                        title_value="http://www.researchspace.org/pattern/system/title/value_min0"
                                                                                 ]]'>
                                         
                                                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E35_Title'> </semantic-form-hidden-input>
@@ -113,7 +113,7 @@
                                         </semantic-form-switch>
                                     </div>
                                 </mp-collapsible-div-content>
-                            </mp-collapsible-div> --]]
+                            </mp-collapsible-div>
                             
                         </semantic-form-composite-input>
 
@@ -135,7 +135,7 @@
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter collection identifier"></semantic-form-text-input>
+                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
                                     </div>
                                     <div style="flex: 1;">
                                         <semantic-form-select-input for='identifier_collection_id_type' 
@@ -199,7 +199,7 @@
 
             </rs-tab>
 
-            <rs-tab event-key="location" title="Location, curator">
+            <rs-tab event-key="location" title="Location/Curator">
                 <semantic-form-composite-input for="collection_current_location"
                                                 new-subject-template="/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
                                                 label="Location (former or current)"
@@ -244,8 +244,47 @@
 
             </rs-tab>
 
-            <rs-tab event-key="ownership" title="Ownership, rights">
+            <rs-tab event-key="ownership" title="Custody/Ownership">
+                <semantic-form-text-input for="collection_right" label="Legal rights" placeholder="Enter legal rights"></semantic-form-text-input>
 
+                <div class="form-section-flexContainer">
+                    <div style="flex: 1;">
+                        <h5 class="customFormHeader">Ownership</h5>
+                        <div class="form-section">
+                            <div class="form-section-first-input">
+                                <semantic-form-select-input for='collection_current_owner' 
+                                                        label="Current owner" 
+                                                        placeholder="Select actor" 
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
+                            </div>
+                            <semantic-form-select-input for='collection_former_owner' 
+                                                    label="Former owner" 
+                                                    placeholder="Select actor" 
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <h5 class="customFormHeader">Custody</h5>
+                        <div class="form-section">
+                            <div class="form-section-first-input">
+                                <semantic-form-select-input for='collection_current_keeper' 
+                                                        label="Current keeper" 
+                                                        placeholder="Select actor" 
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
+                            </div>    
+
+                            <semantic-form-select-input for='collection_former_keeper' 
+                                                    label="Former keeper" 
+                                                    placeholder="Select actor" 
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+                </div>
             </rs-tab>
 
             <rs-tab event-key="event" title="Events">

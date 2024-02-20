@@ -17,8 +17,6 @@
                             object_id="http://www.researchspace.org/pattern/system/entity/identifier"
                             
                             object_description="http://www.researchspace.org/pattern/system/entity/description"
-                            object_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
-                            object_former_location="http://www.researchspace.org/pattern/system/physical_thing/location"
                             
                             object_type="http://www.researchspace.org/pattern/system/physical_object/type"
                             object_format="http://www.researchspace.org/pattern/system/physical_object/format"
@@ -26,16 +24,19 @@
 
                             object_media="http://www.researchspace.org/pattern/system/physical_object/media"
 
-                            object_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
-                            object_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
-                            object_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
-                            object_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
-                            object_right="http://www.researchspace.org/pattern/system/physical_thing/right"
-
                             object_collection="http://www.researchspace.org/pattern/system/physical_thing/part_of_collection"
                             object_series="http://www.researchspace.org/pattern/system/physical_thing/part_of_series"
                             object_parts="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
-                            
+
+                            object_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
+                            object_former_location="http://www.researchspace.org/pattern/system/physical_thing/location"
+
+                            object_right="http://www.researchspace.org/pattern/system/physical_thing/right"
+                            object_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
+                            object_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
+                            object_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
+                            object_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
+
                         ]]'
             >
 
@@ -428,6 +429,12 @@
                                             placeholder="Select collection" 
                                             nested-form-template='{{{{raw}}}}{{> forms:Collection nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
                 </semantic-form-select-input>
+
+                <semantic-form-select-input for='object_series' 
+                                            label="Part of series" 
+                                            placeholder="Select series" 
+                                            nested-form-template='{{{{raw}}}}{{> forms:Series nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                </semantic-form-select-input>
             </rs-tab>
 
             <rs-tab event-key="material" title="Materials">
@@ -438,7 +445,7 @@
 
             </rs-tab>
 
-            <rs-tab event-key="collection" title="Parts/Features">
+            <rs-tab event-key="parts" title="Parts/Features">
 
             </rs-tab>
 
@@ -517,8 +524,48 @@
                 </semantic-form-composite-input>
             </rs-tab>
 
-            <rs-tab event-key="ownership" title="Custody/Ownership">
+            <rs-tab event-key="ownership" title="Ownership/Custody">
                 <semantic-form-text-input for="object_right" label="Legal rights" placeholder="Enter legal rights"></semantic-form-text-input>
+
+                <div class="form-section-flexContainer">
+                    <div style="flex: 1;">
+                        <h5 class="customFormHeader">Ownership</h5>
+                        <div class="form-section">
+                            <div class="form-section-first-input">
+                                <semantic-form-select-input for='object_current_owner' 
+                                                        label="Current owner" 
+                                                        placeholder="Select actor" 
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
+                            </div>
+                            <semantic-form-select-input for='object_former_owner' 
+                                                    label="Former owner" 
+                                                    placeholder="Select actor" 
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <h5 class="customFormHeader">Custody</h5>
+                        <div class="form-section">
+                            <div class="form-section-first-input">
+                                <semantic-form-select-input for='object_current_keeper' 
+                                                        label="Current keeper" 
+                                                        placeholder="Select actor" 
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
+                            </div>    
+
+                            <semantic-form-select-input for='object_former_keeper' 
+                                                    label="Former keeper" 
+                                                    placeholder="Select actor" 
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+                </div>
+
             </rs-tab>
 
             <rs-tab event-key="event" title="Events">

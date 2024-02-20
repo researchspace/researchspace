@@ -78,7 +78,12 @@
             <semantic-form-text-input for="activity_title" label="Activity title" placeholder="Enter activity title"></semantic-form-text-input>
 
             <semantic-form-text-input for="activity_description" multiline="true" label="Activity description" placeholder="Enter activity description"></semantic-form-text-input>
-            <semantic-form-text-input for="activity_research_question" multiline="true" label="Activity research question" placeholder="Enter the activity research question"></semantic-form-text-input>
+            
+            <semantic-form-select-input for='activity_research_question' 
+                                        label="Activity research question" 
+                                        placeholder="Enter the activity research question"
+                                        nested-form-template='{{{{raw}}}}{{> forms:ResearchQuestion nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+            </semantic-form-select-input> 
 
             <div class="form-inline-inputs">
            
@@ -86,7 +91,9 @@
                 <semantic-form-select-input for='activity_status' 
                                             label="Activity status" 
                                             placeholder="Select activity status" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"}}{{{{/raw}}}}'> 
+                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                            scheme="http://www.researchspace.org/resource/vocab/status"
+                                            entityType="status" }}{{{{/raw}}}}'> 
                 </semantic-form-select-input>
               </div>
 
@@ -148,22 +155,25 @@
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                       has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
-                                                      request_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
                                                       request_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
+                                                      request_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
                                                       request_description="http://www.researchspace.org/pattern/system/entity/description"
                                           ]]'>
 
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
                     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/activity_request'> </semantic-form-hidden-input>
         
-                    <div class="form-inline-inputs first-input">
-                      <semantic-form-datetime-input for="request_date" label="Proposal/request date" placeholder="Enter proposal/request date"></semantic-form-datetime-input>
-    
-                      <div style="flex: 1;">
-                        [[> Platform:formSwitchCarriedOutActor  for_kp='request_carried_out_by_domain'
-                                                    subjectLabel='Request carried out by'
-                                                    carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity_request'
-                        ]]
+                    <div class="composite-first-input">
+                      [[> Platform:formSwitchCarriedOutActor  for_kp='request_carried_out_by_domain'
+                                                              subjectLabel='Request carried out by'
+                                                              carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity_request'
+                      ]]
+                    </div>
+                    
+                    <div class="form-inline-inputs">
+                      <semantic-form-datetime-input for="request_date" label="Proposal/request date" placeholder="Enter date"></semantic-form-datetime-input>
+                      <div style="flex: 1;"> 
+                        <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input>   
                       </div>
                     </div>
                     

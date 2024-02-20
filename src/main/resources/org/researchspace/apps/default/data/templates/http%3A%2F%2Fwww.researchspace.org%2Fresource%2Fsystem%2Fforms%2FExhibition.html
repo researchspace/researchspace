@@ -23,7 +23,7 @@
                   
                     exhibition_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
 
-                    exhibition_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
+                    exhibition_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by_organisation"
                     exhibition_took_place_at="http://www.researchspace.org/pattern/system/period/took_place_at"
 
                     exhibition_contact="http://www.researchspace.org/pattern/system/activity/contact_details"
@@ -73,28 +73,13 @@
                                                                 }'
                 ></semantic-form-tree-picker-input>  
 
-                <semantic-form-tree-picker-input  for='exhibition_status' 
-                                                label="Exhibition status" 
-                                                close-dropdown-on-selection='true'
-                                                placeholder="Select exhibition status" 
-                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/status>", 
-                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/status>",
-                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-                                            
-                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                    scheme="http://www.researchspace.org/resource/vocab/status"
-                                                                                    entityType="status" }}{{{{/raw}}}}'
-
-                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                            "view": "vocabulary-content",
-                                                                            "scheme": "http://www.researchspace.org/resource/vocab/status",
-                                                                            "tooltip": "Open list of status"
-                                                                        }'
-
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item skos:prefLabel ?label .
-                                                                }'
-                ></semantic-form-tree-picker-input>
+                <semantic-form-select-input for='exhibition_status' 
+                                            label="Exhibition status" 
+                                            placeholder="Select exhibition status" 
+                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                            scheme="http://www.researchspace.org/resource/vocab/status"
+                                                                                            entityType="status" }}{{{{/raw}}}}'> 
+                </semantic-form-select-input>
             
                 <semantic-form-composite-input  for="exhibition_date" 
                                                 render-header="false"
@@ -159,36 +144,13 @@
         {{#if onlyDetails}}
         {{else}}
           <rs-tab event-key="organisation" title="Organisation">
-              <semantic-form-tree-picker-input    for="exhibition_carried_out_by" 
-                                                  label="Exhibition carried out by organisation" 
-                                                  placeholder="Select organisation" 
-                                                  close-dropdown-on-selection='false'
-                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
-                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
-                                                                  "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                                  "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                                  ?appellation a crm:E41_Appellation .
-                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
-                                                                                  ?appellation crm:P190_has_symbolic_content ?label ." }'
-
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
-                                                                                      scheme="http://www.researchspace.org/resource/system/vocab/organisation"
-                                                                                      entityType="organisation" }}{{{{/raw}}}}'
-                                                                                      
-                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                          "view": "vocabulary-content",
-                                                                          "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
-                                                                          "tooltip": "Open list of organisations"
-                                                                          }'
-
-                                                  query-item-label='SELECT ?label WHERE {
-                                                                      ?item crm:P1_is_identified_by ?appellation .
-                                                                      ?appellation a crm:E41_Appellation .
-                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
-                                                                      ?appellation crm:P190_has_symbolic_content ?label .
-                                                                  }'
-                                                                  
-              ></semantic-form-tree-picker-input> 
+            <semantic-form-select-input for='exhibition_carried_out_by' 
+                                        label="Exhibition carried out by organisation" 
+                                        placeholder="Select organisation" 
+                                        nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
+                                                                                                scheme="http://www.researchspace.org/resource/system/vocab/organisation"
+                                                                                                entityType="organisation" }}{{{{/raw}}}}'> 
+            </semantic-form-select-input>
 
           {{#if node}}
               <semantic-query query='SELECT DISTINCT ?organisation ?organisationLabel WHERE { 
@@ -273,7 +235,7 @@
           {{#if node}}
             <div style="margin-top: 15px;" class="objects-table-container">
               <semantic-table id='loan-item-results'
-                              query='SELECT DISTINCT ?item ?itemLabel ?catalogueLevelLabel ?description WHERE {
+                              query='SELECT DISTINCT ?item ?itemLabel ?description WHERE {
                                 {
                                   <{{node}}> crm:P117i_includes ?loanTransferOfCustody .
                                   ?loanTransferOfCustody a crm:E10_Transfer_of_Custody .
@@ -304,12 +266,6 @@
                                   
 
                                   OPTIONAL {
-                                    ?item crm:P2_has_type ?catalogueLevel .
-                                    ?catalogueLevel crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/catalogue_reference_number_type>  .
-                                    ?catalogueLevel skos:prefLabel ?catalogueLevelLabel .
-                                  }
-
-                                  OPTIONAL {
                                     ?item crm:P67i_is_referred_to_by ?information .
                                     ?information a crm:E73_Information_Object .
                                     ?information crm:P190_has_symbolic_content ?description .
@@ -318,7 +274,6 @@
                             
                               options='{"showFilter":true, "resultsPerPage":9}'
                               column-configuration='[{"displayName": "Object", "variableName": "item", "cellTemplate": "{{> item}}"}, 
-                                                      {"displayName": "Catalogue level", "variableName": "catalogueLevelLabel" },
                                                       {"displayName": "Description", "variableName": "description" }
                                                     ]'
                                 >

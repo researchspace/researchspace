@@ -236,25 +236,12 @@
                     </div>
                 </semantic-form-composite-input> 
 
-                <semantic-form-tree-picker-input for="collection_curator" 
-                                                label="Curator (former or current)" 
-                                                placeholder="Select actor" 
-                                                tree-patterns='{"scheme": "crm:E39_Actor",
-                                                                "schemePattern": "?item a crm:E39_Actor",
-                                                                "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
-                                                                                ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> . 
-                                                                                ?appellation crm:P190_has_symbolic_content ?label ." }'
+                <semantic-form-select-input for='collection_curator' 
+                                            label="Curator (former or current)" 
+                                            placeholder="Select actor" 
+                                            nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                </semantic-form-select-input> 
 
-                                                nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'
-                                                
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?appellation .
-                                                                    ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
-                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                }'>
-                </semantic-form-tree-picker-input>
             </rs-tab>
 
             <rs-tab event-key="ownership" title="Ownership, rights">

@@ -1,36 +1,46 @@
 
 <http://www.researchspace.org/pattern/system/person/parent/context> {
+  _:genid-987e9f2626f24f9398247cc916735525-3c2uar a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E21_Person .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/person_appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ?label""" .
+  
   <http://www.researchspace.org/pattern/system/person/parent> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-987e9f2626f24f9398247cc916735525-3c2uar;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-70350673db5b40c092638f14855551ab-as7ah;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-987e9f2626f24f9398247cc916735525-hvjdv;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-987e9f2626f24f9398247cc916735525-pi01s;
     <http://www.w3.org/2000/01/rdf-schema#label> "Person parent";
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-70350673db5b40c092638f14855551ab-jrn0o;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/person>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-70350673db5b40c092638f14855551ab-ndtlr5;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-987e9f2626f24f9398247cc916735525-iwycs8;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-17T18:48:50.887Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-20T10:17:21.316Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-70350673db5b40c092638f14855551ab-ndtlr5 a <http://spinrdf.org/sp#Query>;
+  _:genid-987e9f2626f24f9398247cc916735525-hvjdv a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P152_has_parent $value .
+} WHERE {}""" .
+  
+  _:genid-987e9f2626f24f9398247cc916735525-pi01s a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE { 
   $subject crm:P152_has_parent $value .
 } WHERE {
   $subject crm:P152_has_parent $value .
 }""" .
   
-  _:genid-70350673db5b40c092638f14855551ab-as7ah a <http://spinrdf.org/sp#Query>;
+  _:genid-987e9f2626f24f9398247cc916735525-iwycs8 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
   $subject crm:P152_has_parent $value .
 }""" .
-  
-  _:genid-70350673db5b40c092638f14855551ab-jrn0o a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P152_has_parent $value .
-} WHERE {}""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/person/parent> .

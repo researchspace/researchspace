@@ -1,36 +1,31 @@
-
 <http://www.researchspace.org/pattern/system/participant/event/context> {
   <http://www.researchspace.org/pattern/system/participant/event> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-53af6d070abc4fb48b5a653882dd4ab7-sqnzrf;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/actor>,
       <http://www.researchspace.org/resource/system/category/person>;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant>;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-86720502f51540e5a5e148524e472d55-8rf1vc;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E5_Event>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-53af6d070abc4fb48b5a653882dd4ab7-n2fab;
     <http://www.w3.org/2000/01/rdf-schema#label> "Participant event";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-53af6d070abc4fb48b5a653882dd4ab7-vpv6gd;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-86720502f51540e5a5e148524e472d55-5b07cte;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-86720502f51540e5a5e148524e472d55-9e6ujp;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-86720502f51540e5a5e148524e472d55-cz8xe6;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-01-22T15:56:27.456Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-19T15:31:11.132Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-53af6d070abc4fb48b5a653882dd4ab7-sqnzrf a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-    $subject crm:P01_has_domain $value . 
-    $value crm:P01i_is_domain_of $subject .
-} WHERE {}""" .
+  _:genid-86720502f51540e5a5e148524e472d55-cz8xe6 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E5_Event .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/event_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ?label""" .
   
-  _:genid-53af6d070abc4fb48b5a653882dd4ab7-n2fab a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-    $subject crm:P01_has_domain $value . 
-    $value crm:P01i_is_domain_of $subject .
-	$subject a crm:PC11_had_participant .
-    $value a crm:E5_Event .
-}""" .
-  
-  _:genid-53af6d070abc4fb48b5a653882dd4ab7-vpv6gd a <http://spinrdf.org/sp#Query>;
+  _:genid-86720502f51540e5a5e148524e472d55-9e6ujp a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE { 
     $subject crm:P01_has_domain $value . 
     $value crm:P01i_is_domain_of $subject .
@@ -40,6 +35,20 @@
 	$subject a crm:PC11_had_participant .
     $value a crm:E5_Event .
 }""" .
+  
+  _:genid-86720502f51540e5a5e148524e472d55-8rf1vc a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    $subject crm:P01_has_domain $value . 
+    $value crm:P01i_is_domain_of $subject .
+	$subject a crm:PC11_had_participant .
+    $value a crm:E5_Event .
+}""" .
+  
+  _:genid-86720502f51540e5a5e148524e472d55-5b07cte a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P01_has_domain $value . 
+    $value crm:P01i_is_domain_of $subject .
+} WHERE {}""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/participant/event> .

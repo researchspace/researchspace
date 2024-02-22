@@ -77,7 +77,7 @@ class InvalidateCacheButton extends Component<{}, State> {
             rootClose: true,
             overlay: Popover({ id: 'help' }, PopupContent),
           },
-          D.div({className:'btn btn-default'},   D.i({className: 'material-icons-round'}, 'question_mark'))
+          D.div({className:'btn btn-default', style: { width: 'min-content' }},   D.i({className: 'material-icons-round'}, 'question_mark'))
         ),
       ),
       D.div({ style: { paddingTop: '10px' } },

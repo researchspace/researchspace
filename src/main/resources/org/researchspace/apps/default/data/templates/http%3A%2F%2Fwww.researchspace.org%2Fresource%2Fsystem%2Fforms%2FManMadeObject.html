@@ -23,19 +23,24 @@
                             object_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
 
                             object_media="http://www.researchspace.org/pattern/system/physical_object/media"
+                            object_material="http://www.researchspace.org/pattern/system/physical_thing/material"
 
                             object_collection="http://www.researchspace.org/pattern/system/physical_thing/part_of_collection"
                             object_series="http://www.researchspace.org/pattern/system/physical_thing/part_of_series"
-                            object_parts="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
+                            object_part_of_man-made_object="http://www.researchspace.org/pattern/system/physical_thing/part_of_man-made_object"
+                            object_manMadeObject_part="http://www.researchspace.org/pattern/system/physical_thing/composed_of_man-made_object"
+                            object_biologicalObject_part="http://www.researchspace.org/pattern/system/physical_thing/composed_of_biological_object"
 
-                            object_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
-                            object_former_location="http://www.researchspace.org/pattern/system/physical_thing/location"
-
+                            object_part_addition="http://www.researchspace.org/pattern/system/physical_man-made_thing/part_addition"
+                            object_part_removal="http://www.researchspace.org/pattern/system/physical_man-made_thing/part_removal"
+                            
                             object_right="http://www.researchspace.org/pattern/system/physical_thing/right"
                             object_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
                             object_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
                             object_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
                             object_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
+                            object_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
+                            object_former_location="http://www.researchspace.org/pattern/system/physical_thing/location"
 
                         ]]'
             >
@@ -52,7 +57,7 @@
                 <div class="form-2column-container">
                     <div>
                         <semantic-form-composite-input  for="object_title"
-                                                        label="Object title"
+                                                        label="Object title/name"
                                                         new-subject-template="/object_title" 
                                                         fields='[[fieldDefinitions
                                                                 classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -86,7 +91,7 @@
                                                                 switch-on-field="has_type" 
                                                                 label="Alternative title form">
         
-                                            <semantic-form-switch-case label="Transcription">
+                                            <semantic-form-switch-case label="Transcription1">
                                                 <semantic-form-composite-input for="title_alternative_form" 
                                                                                 new-subject-template="/title_transcription/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                                                 fields='[[fieldDefinitions
@@ -106,7 +111,7 @@
                                                 </semantic-form-composite-input>
                                             </semantic-form-switch-case>
         
-                                            <semantic-form-switch-case label="Transliteration">
+                                            <semantic-form-switch-case label="Transliteration1">
                                                 <semantic-form-composite-input for="title_alternative_form" 
                                                                                 new-subject-template="/title_transliteration/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                                                 fields='[[fieldDefinitions
@@ -323,7 +328,244 @@
                 </div>
             </rs-tab>
 
-            <rs-tab event-key="type" title="Type/Dimensions">
+            <rs-tab event-key="components" title="Part of/Components">
+
+                <div class="hierarchyView-form-container">
+                    <mp-event-target-template-render id='{{viewId}}-manMadeObject-componentsView' template='{{> objectComponents}}'>
+                        <template id='objectComponents'>
+                          <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0; margin-top: 20px; display: flex; flex-direction: column; min-width: 350px;">
+                            <div class="form-header-withButtons">
+                              <h4 style="margin: 0; align-self: end;">Object components view</h4>
+                              <div class="btn-form-actions"> 
+                                <mp-event-trigger id='{{viewId}}-manMadeObject-componentsView-refresh-trigger' 
+                                                  type='Component.TemplateUpdate' 
+                                                  targets='["{{viewId}}-manMadeObject-componentsView"]'
+                                                  >
+                                  <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                    <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                      Refresh
+                                  </button>
+                                </mp-event-trigger>
+                              </div>
+                            </div>
+                            <div style="flex: 1; padding: 18px 2px;">
+                                {{#if node}}
+                                    {{#bind object=node }}
+                                        <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                                BIND(<{{object}}> as ?object)
+                                                                
+                                                                { ?object crm:P46_is_composed_of ?node . }
+                                                                UNION
+                                                                { ?object crm:P46i_forms_part_of ?parent . }
+                                                                
+                                                                ?node crm:P46i_forms_part_of ?parent .
+
+                                                                FILTER(ISIRI(?node))
+                                                            }
+                                                            ORDER BY (?node)' 
+
+                                                        tuple-template='{{> nodeTemplate}}'
+                                                        no-result-template='{{> noResults}}'>
+                                                        
+                                            <template id='nodeTemplate'>
+
+                                                <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                            BIND (<{{node.value}}> as ?node)
+                                                                            { ?node crm:P1_is_identified_by ?appellation . 
+                                                                                ?appellation a crm:E41_Appellation . 
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/series_title> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?nodeLabel .  }
+                                                                            UNION 
+                                                                            { ?node crm:P102_has_title ?title . 
+                                                                                ?title a crm:E35_Title . 
+                                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                                ?title crm:P190_has_symbolic_content ?nodeLabel .
+                                                                            }
+                                                                        }'
+                                                                template='{{> template}}'>
+                                                    
+                                                    <template id='template'>
+                                                        <div>
+                                                            {{#ifCond bindings.0.node.value "===" object}}
+                                                                <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                            {{else}}
+                                                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                urlqueryparam-view='entity-editor' 
+                                                                                urlqueryparam-resource-iri='{{node.value}}'
+                                                                                >
+                                                                    <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                </semantic-link>
+                                                            {{/ifCond}}
+                                                        </div>
+                                                    </template>
+                                                </semantic-query>
+                                            </template>  
+                            
+                                            <template id='noResults'>
+                                            <div>Object has no parts</div>
+                                            </template>
+                                        </semantic-tree>
+                                    {{/bind}}
+                                {{/if}}
+                            </div>
+                          </div>
+                        </template>
+                      </mp-event-target-template-render>
+
+                      <div class="page__section-container" style="padding-top: 7px; margin-bottom: 0; margin-top: 20px; display: flex; flex-direction: column; min-width: 350px;">
+                        
+                            <bs-tabs id="{{viewId}}-component-form-tabs" class-name="form-tabs">
+                                <bs-tab event-key="{{viewId}}-objComponents" title="Object part of/components">
+                                    <semantic-form-select-input for='object_series' 
+                                                                label="Part of series" 
+                                                                placeholder="Select series" 
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Series nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    </semantic-form-select-input>
+
+                                    <semantic-form-select-input for='object_part_of_man-made_object' 
+                                                                label="Part of object (man-made object)" 
+                                                                placeholder="Select object" 
+                                                                nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    </semantic-form-select-input>
+
+                                    <semantic-form-select-input for='object_manMadeObject_part' 
+                                                                label="Object component (man-made object)" 
+                                                                placeholder="Select component" 
+                                                                nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    </semantic-form-select-input>
+
+                                    <semantic-form-select-input for='object_biologicalObject_part' 
+                                                            label="Object component (biological object)" 
+                                                            placeholder="Select component" 
+                                                            nested-form-template='{{{{raw}}}}{{> forms:BiologicalObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    </semantic-form-select-input>
+                                </bs-tab>
+                                <bs-tab event-key="{{viewId}}-objPartAdditionRemoval" title="Part addition/removal">
+                                    <semantic-form-composite-input  for="object_part_addition"
+                                                                    label="Part addition"
+                                                                    new-subject-template="/part_addition/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                    fields='[[
+                                                                        fieldDefinitions
+                                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                            
+                                                                            addition_added_part="http://www.researchspace.org/pattern/system/part_addition/added_man-made_object"
+                                                                            addition_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                                            addition_carried_out_by="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
+                                                                            addition_description="http://www.researchspace.org/pattern/system/entity/description"
+                                                                        ]]'
+                                                                    >
+                                                            
+                                        <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E79_Part_Addition"></semantic-form-hidden-input>
+                                        
+                                        <div class="composite-first-input form-inline-inputs"> 
+                                            <div style="flex: 1;">
+                                                <semantic-form-select-input for='addition_added_part' 
+                                                                            label="Part added (man-made object)" 
+                                                                            placeholder="Select object" 
+                                                                            nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                </semantic-form-select-input>
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <semantic-form-composite-input  for="addition_at_some_time_within" 
+                                                                                render-header="false"
+                                                                                new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                            timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                                                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                                                    ]]'>   
+
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                                                    <div class="form-inline-inputs" style="align-items:flex-end;">
+                                                        <div style="flex: 1;">
+                                                            <semantic-form-datetime-input for="timespan_date" label="Addition date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
+                                                        </div>
+                                                        <div style="flex: 1;">
+                                                            <semantic-form-text-input for='timespan_text_value' label="Addition date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
+                                                        </div>
+                                                    </div>
+                                                </semantic-form-composite-input>
+                                            </div>
+                                        </div>
+
+                                        [[> Platform:formSwitchCarriedOutActor  for_kp='addition_carried_out_by'
+                                                                                subjectLabel='Addition carried out by'
+                                                                                carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/part_addition'
+                                        ]]
+
+                                        <semantic-form-text-input for="addition_description" label="Addition description/comment" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                                    </semantic-form-composite-input>
+
+                                    <semantic-form-composite-input  for="object_part_removal"
+                                                                    label="Part removal"
+                                                                    new-subject-template="/part_removal/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                    fields='[[
+                                                                            fieldDefinitions
+                                                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                                
+                                                                                removal_removed_part="http://www.researchspace.org/pattern/system/part_removal/removed_man-made_object"
+                                                                                removal_at_some_time_within="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                                                removal_carried_out_by="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
+                                                                                removal_description="http://www.researchspace.org/pattern/system/entity/description"
+                                                                            ]]'
+                                                                    >
+                                                            
+                                        <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E80_Part_Removal"></semantic-form-hidden-input>
+                                        
+                                        <div class="composite-first-input form-inline-inputs"> 
+                                            <div style="flex: 1;">
+                                                <semantic-form-select-input for='removal_removed_part' 
+                                                                            label="Part added (man-made object)" 
+                                                                            placeholder="Select object" 
+                                                                            nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                </semantic-form-select-input>
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <semantic-form-composite-input  for="removal_at_some_time_within" 
+                                                                                render-header="false"
+                                                                                new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                                                fields='[[fieldDefinitions
+                                                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                                            timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
+                                                                                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                                                    ]]'>   
+
+                                                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                                                    <div class="form-inline-inputs" style="align-items:flex-end;">
+                                                        <div style="flex: 1;">
+                                                            <semantic-form-datetime-input for="timespan_date" label="Removal date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
+                                                        </div>
+                                                        <div style="flex: 1;">
+                                                            <semantic-form-text-input for='timespan_text_value' label="Removal date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
+                                                        </div>
+                                                    </div>
+                                                </semantic-form-composite-input>
+                                            </div>
+                                        </div>
+
+                                        [[> Platform:formSwitchCarriedOutActor  for_kp='removal_carried_out_by'
+                                                                                subjectLabel='Removal carried out by'
+                                                                                carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/part_removal'
+                                        ]]
+                                                                                
+                                        <semantic-form-text-input for="removal_description" label="Removal description/comment" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                                    </semantic-form-composite-input>
+                                </bs-tab>
+                            </bs-tabs>
+
+                        </div>
+                   
+                </div>
+
+            </rs-tab>
+
+            <rs-tab event-key="feature" title="Features">
+
+            </rs-tab>
+
+            <rs-tab event-key="type" title="Type/Dimensions/Materials">
 
                 <semantic-form-tree-picker-input    for="object_type" 
                                                     label="Object type" 
@@ -420,36 +662,72 @@
                     </div>
                     </semantic-form-composite-input>
                 </div>
-            </rs-tab>
 
-            <rs-tab event-key="collection" title="Collection/Series">
-
-                <semantic-form-select-input for='object_collection' 
-                                            label="Part of collection" 
-                                            placeholder="Select collection" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Collection nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                <semantic-form-select-input for='object_material' 
+                                            label="Object material" 
+                                            placeholder="Select material" 
+                                            nested-form-template='{{{{raw}}}}{{> forms:Material nested=true editable=true mode="new"
+                                                                                scheme="http://www.researchspace.org/resource/vocab/object_material"
+                                                                                entityType="material" }}
+                                                                    {{{{/raw}}}}'> 
                 </semantic-form-select-input>
-
-                <semantic-form-select-input for='object_series' 
-                                            label="Part of series" 
-                                            placeholder="Select series" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Series nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-                </semantic-form-select-input>
-            </rs-tab>
-
-            <rs-tab event-key="material" title="Materials">
-
             </rs-tab>
 
             <rs-tab event-key="visualItem" title="Visual items">
 
             </rs-tab>
 
-            <rs-tab event-key="parts" title="Parts/Features">
+            <rs-tab event-key="production" title="Production">
 
             </rs-tab>
 
-            <rs-tab event-key="location" title="Location">
+            <rs-tab event-key="ownership" title="Ownership/Custody/Location">
+                <semantic-form-text-input for="object_right" label="Legal rights" placeholder="Enter legal rights"></semantic-form-text-input>
+
+                <div class="form-section-flexContainer">
+                    <div style="flex: 1;">
+                        <h5 class="customFormHeader">Ownership</h5>
+                        <div class="form-section">
+                            <div class="form-section-first-input">
+                                <semantic-form-select-input for='object_current_owner' 
+                                                        label="Current owner" 
+                                                        placeholder="Select actor" 
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
+                            </div>
+                            <semantic-form-select-input for='object_former_owner' 
+                                                    label="Former owner" 
+                                                    placeholder="Select actor" 
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <h5 class="customFormHeader">Custody</h5>
+                        <div class="form-section">
+                            <div class="form-section-first-input">
+                                <semantic-form-select-input for='object_current_keeper' 
+                                                        label="Current keeper" 
+                                                        placeholder="Select actor" 
+                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                </semantic-form-select-input>
+                            </div>    
+
+                            <semantic-form-select-input for='object_former_keeper' 
+                                                    label="Former keeper" 
+                                                    placeholder="Select actor" 
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+                </div>
+
+                <semantic-form-select-input for='object_collection' 
+                                            label="Part of collection" 
+                                            placeholder="Select collection" 
+                                            nested-form-template='{{{{raw}}}}{{> forms:Collection nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                </semantic-form-select-input>
 
                 <semantic-form-composite-input for="object_current_location"
                                                 new-subject-template="/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
@@ -522,49 +800,6 @@
                         
                     </div>
                 </semantic-form-composite-input>
-            </rs-tab>
-
-            <rs-tab event-key="ownership" title="Ownership/Custody">
-                <semantic-form-text-input for="object_right" label="Legal rights" placeholder="Enter legal rights"></semantic-form-text-input>
-
-                <div class="form-section-flexContainer">
-                    <div style="flex: 1;">
-                        <h5 class="customFormHeader">Ownership</h5>
-                        <div class="form-section">
-                            <div class="form-section-first-input">
-                                <semantic-form-select-input for='object_current_owner' 
-                                                        label="Current owner" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-                                </semantic-form-select-input>
-                            </div>
-                            <semantic-form-select-input for='object_former_owner' 
-                                                    label="Former owner" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-                            </semantic-form-select-input>
-                        </div>
-                    </div>
-
-                    <div style="flex: 1;">
-                        <h5 class="customFormHeader">Custody</h5>
-                        <div class="form-section">
-                            <div class="form-section-first-input">
-                                <semantic-form-select-input for='object_current_keeper' 
-                                                        label="Current keeper" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-                                </semantic-form-select-input>
-                            </div>    
-
-                            <semantic-form-select-input for='object_former_keeper' 
-                                                    label="Former keeper" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-                            </semantic-form-select-input>
-                        </div>
-                    </div>
-                </div>
 
             </rs-tab>
 

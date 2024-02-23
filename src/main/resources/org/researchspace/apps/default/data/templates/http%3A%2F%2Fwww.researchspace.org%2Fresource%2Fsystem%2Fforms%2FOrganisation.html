@@ -39,146 +39,146 @@
         <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
-                <div>
-                    {{#if osmPlaceName}}
-                        <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
-                    {{else}}
-                        <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name"></semantic-form-text-input>
-                    {{/if}}
-
-                    {{#if placeDescription}}
-                        <semantic-form-text-input for="organisation_description" default-value="{{placeDescription}}" multiline="true" label="Organisation description" placeholder="Enter Organisation description"></semantic-form-text-input>
-                    {{else}}
-                        <semantic-form-text-input for="organisation_description" multiline="true" label="Organisation description" placeholder="Enter organisation description"></semantic-form-text-input>
-                    {{/if}}
-
-                    <semantic-form-text-input for="organisation_address_line1" label="Address line 1" placeholder="Enter address line 1"></semantic-form-text-input>
-                    <semantic-form-text-input for="organisation_address_line2" label="Address line 2" placeholder="Enter address line 2"></semantic-form-text-input>
-
-                    <div class="form-inline-inputs">
-                    <div style="flex: 1;">
-                        <semantic-form-text-input for="organisation_city" label="City" placeholder="Enter city"></semantic-form-text-input>
-                    </div>
-                    <div style="flex: 1;">
-                        <semantic-form-text-input for="organisation_county" label="State/province" placeholder="Enter state/province"></semantic-form-text-input>
-                    </div>
                     <div>
-                        <semantic-form-text-input for="organisation_postcode" label="Postcode" placeholder="Enter postcode"></semantic-form-text-input>
-                    </div>
-                    </div>
-
-                    <semantic-form-text-input for="organisation_country" label="Country" placeholder="Enter country"> </semantic-form-text-input>
-
-                    {{#if osmGeoCoordinates}}
-                        <semantic-form-text-input for="organisation_geo_coordinates" default-value='{{osmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
-                    {{else}}
-                        <semantic-form-text-input for="organisation_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
-                    {{/if}}
-                </div>
-
-                <div class="form-media-column">
-                    
-                    {{#if osmGeoCoordinates}}
-                        <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
-                            <semantic-map query='SELECT ?wkt WHERE { BIND("{{osmGeoCoordinates}}" AS ?wkt) }'
-                                        tuple-template='{{#if osmPlaceName}}<b style="color:#525156; padding-bottom:5px;">{{osmPlaceName}}</b>{{/if}}
-                                                        {{#if osmPlaceURI}}
-                                                            <div>
-                                                            <a style="color:#396EFE;"
-                                                                target="_blank" 
-                                                                href="{{osmPlaceURI}}"
-                                                                title="{{osmPlaceURI}}">
-                                                                Open in wikidata
-                                                            </a>
-                                                            </div>
-                                                        {{/if}}'>
-                            </semantic-map>
-                        </div>
-                    {{/if}}
-                    
-                    {{#if osmPlaceURI}}
-                        <div style="padding-top: 5px;">
-                            <span>Imported from: </span>
-                            <a class="text-link-action" target="_blank" href="{{osmPlaceURI}}" title="{{osmPlaceURI}}">{{osmPlaceURI}}</a>
-                        </div>
-                    {{else}}
-                        {{#if node}}
-                            <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
-                                                    BIND(<{{node}}> AS ?place)
-
-                                                    ?place crm:P129i_is_subject_of ?entityFormRecord .
-                                                    # ?entityFormRecord a crmdig:D1_Digital_Object .
-                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
-                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
-                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
-
-                                                    ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
-                                                    # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
-                                                    ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
-
-                                                    ?importFromExternalSource crmdig:L14_transferred ?osmURI .
-                    
-                                                    # ?osmURI a crmdig:D1_Digital_Object .
-                                                    ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
-
-                                                    ?place crm:P1_is_identified_by ?appellation . 
-                                                    # ?appellation a crm:E41_Appellation . 
-                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> . 
-                                                    ?appellation crm:P190_has_symbolic_content ?placeName .
-                                                }'
-                                        template='{{> template}}'
-                            >
-                                
-                            <template id='template'>
-                                <div>
-                                <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
-                                    <semantic-map query='SELECT ?wkt WHERE { 
-                                                            <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
-                                                            # ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                                            ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/osm_geographic_coordinates> .
-                                                            ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
-                                                        }'
-                                                tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
-                                                                <div>
-                                                                    <a style="color:#396EFE;"
-                                                                        target="_blank" 
-                                                                        href="{{bindings.0.osmURI.value}}"
-                                                                        title="{{bindings.0.osmURI.value}}">
-                                                                    Open in wikidata
-                                                                    </a>
-                                                                </div>'>
-                                    </semantic-map>
-                                </div>
-                                <div style="padding-top: 5px;">
-                                    <span>Imported from: </span>
-                                    <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
-                                </div>
-                                </div>
-                            </template>
-                            </semantic-query>
+                        {{#if osmPlaceName}}
+                            <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name"></semantic-form-text-input>
                         {{/if}}
-                    {{/if}}
 
-                    <div class="dragAndDrop-input-container">
-                        <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
-                                                            placeholder-item-template="<div class='placeholder-item'>
-                                                                                        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                        <div>Drag main image or click to upload</div>
-                                                                                        </div>"
-                                                            nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                        </semantic-form-drag-and-drop-input>
+                        {{#if placeDescription}}
+                            <semantic-form-text-input for="organisation_description" default-value="{{placeDescription}}" multiline="true" label="Organisation description" placeholder="Enter Organisation description"></semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="organisation_description" multiline="true" label="Organisation description" placeholder="Enter organisation description"></semantic-form-text-input>
+                        {{/if}}
+
+                        <semantic-form-text-input for="organisation_address_line1" label="Address line 1" placeholder="Enter address line 1"></semantic-form-text-input>
+                        <semantic-form-text-input for="organisation_address_line2" label="Address line 2" placeholder="Enter address line 2"></semantic-form-text-input>
+
+                        <div class="form-inline-inputs">
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="organisation_city" label="City" placeholder="Enter city"></semantic-form-text-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="organisation_county" label="State/province" placeholder="Enter state/province"></semantic-form-text-input>
+                        </div>
+                        <div>
+                            <semantic-form-text-input for="organisation_postcode" label="Postcode" placeholder="Enter postcode"></semantic-form-text-input>
+                        </div>
+                        </div>
+
+                        <semantic-form-text-input for="organisation_country" label="Country" placeholder="Enter country"> </semantic-form-text-input>
+
+                        {{#if osmGeoCoordinates}}
+                            <semantic-form-text-input for="organisation_geo_coordinates" default-value='{{osmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="organisation_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+                        {{/if}}
                     </div>
 
-                    <div class="dragAndDrop-input-container">
-                        <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
-                                                            placeholder-item-template="<div class='placeholder-item'>
-                                                                                        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                        <div>Drag images or click to upload</div>
-                                                                                        </div>"
-                                                            nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-                        </semantic-form-drag-and-drop-input>
+                    <div class="form-media-column">
+                        
+                        {{#if osmGeoCoordinates}}
+                            <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
+                                <semantic-map query='SELECT ?wkt WHERE { BIND("{{osmGeoCoordinates}}" AS ?wkt) }'
+                                            tuple-template='{{#if osmPlaceName}}<b style="color:#525156; padding-bottom:5px;">{{osmPlaceName}}</b>{{/if}}
+                                                            {{#if osmPlaceURI}}
+                                                                <div>
+                                                                <a style="color:#396EFE;"
+                                                                    target="_blank" 
+                                                                    href="{{osmPlaceURI}}"
+                                                                    title="{{osmPlaceURI}}">
+                                                                    Open in wikidata
+                                                                </a>
+                                                                </div>
+                                                            {{/if}}'>
+                                </semantic-map>
+                            </div>
+                        {{/if}}
+                        
+                        {{#if osmPlaceURI}}
+                            <div style="padding-top: 5px;">
+                                <span>Imported from: </span>
+                                <a class="text-link-action" target="_blank" href="{{osmPlaceURI}}" title="{{osmPlaceURI}}">{{osmPlaceURI}}</a>
+                            </div>
+                        {{else}}
+                            {{#if node}}
+                                <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
+                                                        BIND(<{{node}}> AS ?place)
+
+                                                        ?place crm:P129i_is_subject_of ?entityFormRecord .
+                                                        # ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                        # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+
+                                                        ?importFromExternalSource crmdig:L14_transferred ?osmURI .
+                        
+                                                        # ?osmURI a crmdig:D1_Digital_Object .
+                                                        ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
+                                                        ?place crm:P1_is_identified_by ?appellation . 
+                                                        # ?appellation a crm:E41_Appellation . 
+                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> . 
+                                                        ?appellation crm:P190_has_symbolic_content ?placeName .
+                                                    }'
+                                            template='{{> template}}'
+                                >
+                                    
+                                <template id='template'>
+                                    <div>
+                                    <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
+                                        <semantic-map query='SELECT ?wkt WHERE { 
+                                                                <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                                                # ?osm_geoCoordinates a crm:E94_Space_Primitive .
+                                                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/osm_geographic_coordinates> .
+                                                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                                            }'
+                                                    tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
+                                                                    <div>
+                                                                        <a style="color:#396EFE;"
+                                                                            target="_blank" 
+                                                                            href="{{bindings.0.osmURI.value}}"
+                                                                            title="{{bindings.0.osmURI.value}}">
+                                                                        Open in wikidata
+                                                                        </a>
+                                                                    </div>'>
+                                        </semantic-map>
+                                    </div>
+                                    <div style="padding-top: 5px;">
+                                        <span>Imported from: </span>
+                                        <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
+                                    </div>
+                                    </div>
+                                </template>
+                                </semantic-query>
+                            {{/if}}
+                        {{/if}}
+
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag main image or click to upload</div>
+                                                                                            </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag images or click to upload</div>
+                                                                                            </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
                     </div>
-                </div>
                 </div>
             </rs-tab>
 

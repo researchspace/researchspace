@@ -40,39 +40,7 @@
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
       <rs-tab event-key="detail" title="Details">
-        {{#if (not node)}}
-          <mp-event-target-template-render id='{{viewId}}-documentation-newActivity' template='{{> template}}'>
-            <template id='template'>
-              {{#if hideMessage}}
-              {{else}}
-                <div style="padding-top: 15px;">
-                  <div class="documentation-section documentation-section-withIcon">
-                    <div class="documentation-section-icon-container">
-                      <i class="fa fa-info"></i>
-                    </div>
 
-                    <div style="flex: 1;"> 
-                      <div class="documentation-section-title">CREATE NEW ACTIVITY</div>
-                      <div class="documentation-section-content">
-                        Create and save the new activity.
-                      </div>
-                    </div>
-                    <mp-event-trigger id='{{viewId}}-documentation-newActivity-trigger'
-                                      type='Component.TemplateUpdate'
-                                      data='{ "hideMessage": "true" }'
-                                      targets='["{{viewId}}-documentation-newActivity"]'
-                                >
-                      <button class="btn btn-documentation">
-                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
-                      </button>
-                    </mp-event-trigger>
-                  </div> 
-                </div>
-
-              {{/if}}
-            </template>
-          </mp-event-target-template-render>
-        {{/if}}
         <div class="form-2column-container">
           <div>
             <semantic-form-text-input for="activity_title" label="Activity title" placeholder="Enter activity title"></semantic-form-text-input>
@@ -219,24 +187,26 @@
             </div>
 
           </div>
+        </div>
       </rs-tab>
+     
+        {{#if hideParticipantTab}}
+        {{else}}
+          <rs-tab event-key="participant" title="Participants" disabled="{{#if node}}false{{else}}true{{/if}}">
+            [[> Platform:formSwitchParticipantActor for_kp='activity_had_participant'
+                                                    subjectLabel='Participant'
+                                                    had_participant_has_domain_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/activity'
+            ]]
+          </rs-tab>
+        {{/if}}
 
-      {{#if hideParticipantTab}}
-      {{else}}
-        <rs-tab event-key="participant" title="Participants">
-          [[> Platform:formSwitchParticipantActor for_kp='activity_had_participant'
-                                                  subjectLabel='Participant'
-                                                  had_participant_has_domain_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/activity'
-          ]]
+        <rs-tab event-key="event" title="Related events/activities" disabled="{{#if node}}false{{else}}true{{/if}}">
+
         </rs-tab>
-      {{/if}}
-
-      <rs-tab event-key="event" title="Related events/activities">
-
-      </rs-tab>
 
       [[> rsp:FormMetadataTab]]
-    </rs-tabs>
+    </rs-tabs>  
+
   </div>
 
   <semantic-form-errors></semantic-form-errors> 

@@ -39,7 +39,8 @@
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
       <rs-tab event-key="detail" title="Details">
-        {{#if (not node)}}
+        
+        [[!-- {{#if (not node)}}
           <mp-event-target-template-render id='{{viewId}}-documentation-newProject' template='{{> template}}'>
             <template id='template'>
               {{#if hideMessage}}
@@ -71,7 +72,8 @@
               {{/if}}
             </template>
           </mp-event-target-template-render>
-        {{/if}}
+        {{/if}} --]]
+        
         <div class="form-2column-container">
           <div>
             <semantic-form-text-input for="project_title" label="Project title" placeholder="Enter project title"></semantic-form-text-input>
@@ -102,75 +104,32 @@
 
             <semantic-form-text-input for="project_description" multiline="true" label="Project description" placeholder="Enter project description"></semantic-form-text-input>
             
-            <semantic-form-tree-picker-input  for="project_research_question" 
-                                              label="Project research question" 
-                                              placeholder="Enter the project research question"
-                                              close-dropdown-on-selection="true"
-                                              tree-patterns='{"scheme": "crm:E89_Propositional_Object",
-                                                              "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/research_question> .",
-                                                              "labelPattern": "?item crm:P67i_is_referred_to_by ?information_object  .
-                                                                                ?information_object a crm:E73_Information_Object .
-                                                                                ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                                                ?information_object crm:P190_has_symbolic_content ?label ."
-                                                              }'
-                                              nested-form-template='{{{{raw}}}}{{> forms:ResearchQuestion nested=true editable=true mode="new" }}{{{{/raw}}}}'
-                                              query-item-label='SELECT ?label WHERE {
-                                                                ?item crm:P67i_is_referred_to_by ?information_object  .
-                                                                ?information_object a crm:E73_Information_Object .
-                                                                ?information_object crm:P2_has_type <http://www.researchspace.org/resource/vocab/text_type/description> .
-                                                                ?information_object crm:P190_has_symbolic_content ?label .
-                                                              }'
-            ></semantic-form-tree-picker-input>
+            <semantic-form-select-input for='project_research_question' 
+                                        label="Project research question" 
+                                        placeholder="Enter the project research question"
+                                        nested-form-template='{{{{raw}}}}{{> forms:ResearchQuestion nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+            </semantic-form-select-input> 
 
             <div class="form-inline-inputs">
            
               <div style="flex: 1;">
-                <semantic-form-tree-picker-input  for='project_status' 
-                                                  label="Project status" 
-                                                  close-dropdown-on-selection='true'
-                                                  placeholder="Select project status" 
-                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/status>", 
-                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/status>",
-                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-                                                
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                      scheme="http://www.researchspace.org/resource/vocab/status"
-                                                                                      entityType="status" }}{{{{/raw}}}}'
-
-                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                              "view": "vocabulary-content",
-                                                                              "scheme": "http://www.researchspace.org/resource/vocab/status",
-                                                                              "tooltip": "Open list of status"
-                                                                            }'
-
-                                                  query-item-label='SELECT ?label WHERE {
-                                                                      ?item skos:prefLabel ?label .
-                                                                    }'
-                ></semantic-form-tree-picker-input>
+                <semantic-form-select-input for='project_status' 
+                                            label="Project status" 
+                                            placeholder="Select project status" 
+                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                scheme="http://www.researchspace.org/resource/vocab/status"
+                                                                                entityType="status" }}{{{{/raw}}}}'> 
+                </semantic-form-select-input>
               </div>
 
               <div style="flex: 1;">
-                <semantic-form-tree-picker-input  for='project_priority' 
-                                                  label="Project priority"
-                                                  placeholder="Select project priority"
-                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/priority>", 
-                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/priority>",
-                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                        scheme="http://www.researchspace.org/resource/vocab/priority"
-                                                                                        entityType="priority" }}{{{{/raw}}}}'
-                                                                                        
-                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                          "view": "vocabulary-content",
-                                                                          "scheme": "http://www.researchspace.org/resource/vocab/priority",
-                                                                          "tooltip": "Open list of priorities"
-                                                                        }'
-
-                                                  query-item-label='SELECT ?label WHERE {
-                                                                      ?item skos:prefLabel ?label .
-                                                                    }'
-                ></semantic-form-tree-picker-input>   
+                <semantic-form-select-input for='project_priority' 
+                                label="Activity priority" 
+                                placeholder="Select activity priority" 
+                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                    scheme="http://www.researchspace.org/resource/vocab/priority"
+                                                                    entityType="priority" }}{{{{/raw}}}}'> 
+                </semantic-form-select-input>   
               </div>
             </div>
 
@@ -211,49 +170,28 @@
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                       has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
+                                                      request_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
                                                       request_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
-                                                      request_carried_out_by="http://www.researchspace.org/pattern/system/activity/carried_out_by"
                                                       request_description="http://www.researchspace.org/pattern/system/entity/description"
                                           ]]'>
 
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
                     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/activity_request'> </semantic-form-hidden-input>
         
-                    <div class="form-inline-inputs first-input">
-                      <semantic-form-datetime-input for="request_date" label="Proposal/request date" placeholder="Enter proposal/request date"></semantic-form-datetime-input>
-    
-                      <div style="flex: 1;">
-                        <semantic-form-tree-picker-input  for="request_carried_out_by" 
-                                                          label="Proposal/request carried out by" 
-                                                          placeholder="Select person / team" 
-                                                          close-dropdown-on-selection='false'
-                                                          tree-patterns='{"scheme": "<http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>", 
-                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure>",
-                                                                          "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
-                                                                          "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                                            ?appellation a crm:E41_Appellation .
-                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/identifier/full_name> .
-                                                                                            ?appellation crm:P190_has_symbolic_content ?label ." }'
-                                                          nested-form-template='{{{{raw}}}}{{> forms:User nested=true editable=true mode="new"
-                                                                                                scheme="http://ccd-tna.kartography.cloud/resource/vocab/tna_organisational_structure"
-                                                                                                entityType="user" }}{{{{/raw}}}}'
-                                                                                                
-                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                    "view": "vocabulary-content",
-                                                                                    "scheme": "http://www.researchspace.org/resource/vocab/priority",
-                                                                                    "tooltip": "Open list of priorities"
-                                                                                  }'
+                    <div class="composite-first-input">
+                      [[> Platform:formSwitchCarriedOutActor  for_kp='request_carried_out_by_domain'
+                                                              subjectLabel='Request carried out by'
+                                                              carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/project_request'
+                      ]]
+                    </div>
 
-                                                          query-item-label='SELECT ?label WHERE {
-                                                                            ?item skos:prefLabel ?label .
-                                                                          }'
-                                                                          
-                        ></semantic-form-tree-picker-input> 
+                    <div class="form-inline-inputs">
+                      <semantic-form-datetime-input for="request_date" label="Proposal/request date" placeholder="Enter date"></semantic-form-datetime-input>
+                      <div style="flex: 1;"> 
+                        <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input>   
                       </div>
                     </div>
                     
-                    <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input> 
-
             </semantic-form-composite-input> 
           </div>
 
@@ -295,20 +233,17 @@
           </div>
 
           </div>
+        </div>
       </rs-tab>
 
       {{#if (or type_exhibition type_loan)}}
         <rs-tab event-key="exhibition" title="Exhibition">
-          <semantic-form-tree-picker-input for='project_motivated_by_exhibition' label="Related exhibition"
-                                            placeholder="Select exhibition title" 
-                                            tree-patterns='{"scheme": "crm:E7_Activity",
-                                                            "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .",
-                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation .
-                                                                              ?appellation crm:P190_has_symbolic_content ?label .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> ."
-                                                            }'
-                                            nested-form-template='{{{{raw}}}}{{> forms:Exhibition nested=true editable=true mode="new" onlyDetails=true}}{{{{/raw}}}}'>
-          </semantic-form-tree-picker-input>
+          <semantic-form-select-input for='project_motivated_by_exhibition' 
+                                      label="Related exhibition"
+                                      placeholder="Select exhibition title" 
+                                      nested-form-template='{{{{raw}}}}{{> forms:Exhibition nested=true editable=true mode="new"}}{{{{/raw}}}}'> 
+          </semantic-form-select-input> 
+
           {{#if related_exhibition}}
             <div style="margin-top: 10px;">
               <semantic-table id='exhibition-table'
@@ -328,7 +263,7 @@
 
                                   OPTIONAL {
                                   ?exhibition crm:P2_has_type ?exhibitionTypeURI .
-                                  ?exhibitionTypeURI crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/exhibition_type> .
+                                  ?exhibitionTypeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/exhibition_type> .
                                   ?exhibitionTypeURI skos:prefLabel ?exhibitionType .
                                   }
 
@@ -386,11 +321,12 @@
 
                   <template id='organisation'>
                       <semantic-query query='SELECT DISTINCT ?organisation ?organisationLabel WHERE {
-                                              <{{exhibition.value}}>  crm:P14_carried_out_by ?organisation .
-                                              ?organisation crm:P71i_is_listed_in <http://ccd-tna.kartography.cloud/resource/vocab/tna_organisation> .
-                                              ?organisation crm:P1_is_identified_by ?org_appellation .  
-                                              ?org_appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/address_type/name> . 
-                                              ?org_appellation crm:P190_has_symbolic_content ?organisationLabel .
+                                              <{{exhibition.value}}> crm:P14_carried_out_by ?organisation .
+                                              ?organisation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/organisation> .
+                                              ?organisation crm:P1_is_identified_by ?appellation .
+                                              ?appellation a crm:E41_Appellation .
+                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
+                                              ?appellation crm:P190_has_symbolic_content ?organisationLabel .
                                               
                                               } ORDER BY ASC(?organisationLabel)'
                                       >

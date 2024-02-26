@@ -9,24 +9,26 @@
                             has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
+                            research_question_title="http://www.researchspace.org/pattern/system/research_question/research_question_title"
+                            research_question_disciplinary_subject='http://www.researchspace.org/pattern/system/research_question/disciplinary_subject'
                             research_question_description="http://www.researchspace.org/pattern/system/entity/description"
-                            disciplinary_subject='http://www.researchspace.org/pattern/system/research_question/disciplinary_subject'
+                            
                   ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
 
     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E89_Propositional_Object'> </semantic-form-hidden-input>
+    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/research_question'> </semantic-form-hidden-input>
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
 
-    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/research_question'> </semantic-form-hidden-input>
-
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
       <rs-tab event-key="detail" title="Details">
-        <semantic-form-text-input for="research_question_description" multiline="true" label="Research question" placeholder="Enter research question description"> </semantic-form-text-input>
+        
+        <semantic-form-text-input for="research_question_title" label="Research question title" placeholder="Enter research question title"></semantic-form-text-input>
 
-        <semantic-form-tree-picker-input  for='disciplinary_subject' 
+        <semantic-form-tree-picker-input  for='research_question_disciplinary_subject' 
                                           label="Disciplinary subject" 
                                           placeholder="Select disciplinary subject" 
                                           close-dropdown-on-selection='false'
@@ -49,7 +51,9 @@
                                           query-item-label='SELECT ?label WHERE {
                                                               ?item skos:prefLabel ?label .
                                                             }'
-          ></semantic-form-tree-picker-input>
+        ></semantic-form-tree-picker-input>
+
+        <semantic-form-text-input for="research_question_description" multiline="true" label="Description/comment" placeholder="Enter research question description/comment"> </semantic-form-text-input>
       </rs-tab>
 
       [[> rsp:FormMetadataTab]]

@@ -111,6 +111,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
   openDropdownOnFocus?: boolean;
   /** Allow forced search with query less than MIN_SEARCH_TERM_LENGTH by pressing Enter **/
   allowForceSuggestion?: boolean;
+  closeDropdownOnClickOutside?: boolean;
 
   /**
    * Closes the dropdown when some value is selected.
@@ -309,6 +310,8 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       }
       this.setInitialSelection(selection).onValue(() => {this.onSelectionChanged});
     }
+
+    document.addEventListener('click', this.handleClickOutside, true);
   }
 
   componentWillReceiveProps(nextProps: SemanticTreeInputProps) {
@@ -389,6 +392,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
+    document.removeEventListener('click', this.handleClickOutside, true);
+  }
+
+  private handleClickOutside = (event: Event) => {
+    if(this.props.closeDropdownOnClickOutside && this.overlayHolder && !this.overlayHolder.contains(event.target as HTMLDivElement)) {
+      this.closeDropdown({ saveSelection: false })
+    }
   }
 
   render() {

@@ -125,10 +125,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     let config = props.definition.treePatterns;
     let newConfig: TreeQueriesConfig;
 
-    if (this.props.treePatterns && "rootQuery" in this.props.treePatterns && 
-        "childenQuery" in this.props.treePatterns &&
-        "parentsQuery" in this.props.treePatterns && 
-        "searchQuery" in this.props.treePatterns) {
+    if (this.props.treePatterns) {
       if (this.props.treePatterns["rootsQuery"] && 
           this.props.treePatterns["childrenQuery"] && 
           this.props.treePatterns["parentsQuery"] &&

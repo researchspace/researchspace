@@ -38,7 +38,7 @@
 
             <semantic-form-text-input for="period_description" multiline="true" label="Period description" placeholder="Enter period description"></semantic-form-text-input>
 
-            <semantic-form-composite-input  for="period_date" 
+          [[!--  <semantic-form-composite-input  for="period_date" 
                                             label="Period timespan"
                                             new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                             fields='[[fieldDefinitions
@@ -121,14 +121,23 @@
                     </div>
                   </semantic-form-composite-input>
                 </div>
-            </semantic-form-composite-input>
+            </semantic-form-composite-input>--]]
+
+            <semantic-form-select-input for='period_date' 
+                                        label="Period timespan" 
+                                        placeholder="Select timespan" 
+                                        nested-form-template='{{{{raw}}}}{{> forms:Timespan nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+            </semantic-form-select-input> 
+
+            {{#if node}}
+              [[> Platform:formTimespanTable]]
+            {{/if}}
 
             <semantic-form-select-input for='period_place' 
                                         label="Period place" 
                                         placeholder="Select place"
                                         nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
             </semantic-form-select-input>
-
           </div>
 
           <div class="form-media-column">
@@ -171,11 +180,29 @@
         </div>
       </rs-tab>
 
-      <rs-tab event-key="event" title="Related events/activities" disabled="{{#if node}}false{{else}}true{{/if}}">
+      <rs-tab event-key="event" title="Related events/activities" >
+
+        <semantic-form-select-input for='period_consist_of_event' 
+                                    label="Period consist of" 
+                                    placeholder="Select event" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Period nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='period_forms_part_of_event' 
+                                    label="Period forms part of" 
+                                    placeholder="Select event" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Period nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
 
       </rs-tab>
 
-      <rs-tab event-key="things" title="Related physical things" disabled="{{#if node}}false{{else}}true{{/if}}">
+      <rs-tab event-key="things" title="Related physical things">
+
+        <semantic-form-select-input for='period_took_place_on_physical_thing' 
+                                    label="Period took place on or within" 
+                                    placeholder="Select thing" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
 
       </rs-tab>
 

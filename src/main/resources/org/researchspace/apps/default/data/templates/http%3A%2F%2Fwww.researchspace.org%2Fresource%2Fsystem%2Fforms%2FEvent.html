@@ -13,7 +13,7 @@
 
                           event_title="http://www.researchspace.org/pattern/system/event/event_title"
                           event_description="http://www.researchspace.org/pattern/system/entity/description"
-                          event_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                          event_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespanMin0"
                           event_place="http://www.researchspace.org/pattern/system/period/took_place_at_place"
 
                           event_had_participant="http://www.researchspace.org/pattern/system/event/had_participant"
@@ -21,6 +21,9 @@
                           event_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
                           event_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
 
+                          event_took_place_on_physical_thing="http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing"
+
+                          event_occurred_in_the_presence_of="http://www.researchspace.org/pattern/system/event/occurred_in_the_presence_of"
                 ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
@@ -38,34 +41,15 @@
 
             <semantic-form-text-input for="event_description" multiline="true" label="Event description" placeholder="Enter event description"></semantic-form-text-input>
 
-            <semantic-form-composite-input  for="event_date" 
-                                            render-header="false"
-                                            new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                            fields='[[fieldDefinitions
-                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                        timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
-                                                        timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
-                                                        timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
-                                                        timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
-                                                ]]'>   
+            <semantic-form-select-input for='event_date' 
+                                        label="Event timespan/date" 
+                                        placeholder="Select timespan" 
+                                        nested-form-template='{{{{raw}}}}{{> forms:Timespan nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+            </semantic-form-select-input> 
 
-                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
-
-                <div class="form-inline-inputs" style="align-items:flex-end;">
-                    <div style="flex: 1;">
-                        <semantic-form-datetime-input for="timespan_date" label="Date (date value)"  placeholder="Enter event date (date value)"></semantic-form-datetime-input>
-                    </div>
-                    <div style="flex: 1;">
-                        <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter event start date"></semantic-form-datetime-input>
-                    </div>
-                    <div style="flex: 1;">
-                        <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter event end date"></semantic-form-datetime-input>
-                    </div>
-                    <div style="flex: 1;">
-                        <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter event date (text value)"></semantic-form-text-input>
-                    </div>
-                </div>
-            </semantic-form-composite-input>
+            {{#if node}}
+              [[> Platform:formTimespanTable]]
+            {{/if}}
 
             <semantic-form-select-input for='event_place' 
                                         label="Event place" 
@@ -126,6 +110,32 @@
       {{/if}}
 
       <rs-tab event-key="event" title="Related events/activities">
+        <semantic-form-select-input for='event_consist_of_event' 
+                                    label="Event consist of" 
+                                    placeholder="Select event" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='event_forms_part_of_event' 
+                                    label="Event forms part of" 
+                                    placeholder="Select event" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+      </rs-tab>
+
+      <rs-tab event-key="things" title="Related things/actors">
+
+        <semantic-form-select-input for='event_occurred_in_the_presence_of' 
+                                    label="Event occurred in the presence of" 
+                                    placeholder="Select thing/actor" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='event_took_place_on_physical_thing' 
+                                    label="Event took place on or within" 
+                                    placeholder="Select thing" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
 
       </rs-tab>
 

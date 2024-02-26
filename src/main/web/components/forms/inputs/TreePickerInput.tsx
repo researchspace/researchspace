@@ -47,6 +47,7 @@ import Icon from 'platform/components/ui/icon/Icon';
 
 import { ResourceLinkComponent, ResourceLinkContainer } from 'platform/api/navigation/components';
 import { Overlay, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { ValidatedTreeConfig } from '../field-editor/FieldEditorState';
 
 interface schemePageButtonConfigProps {
   iri: string;
@@ -73,7 +74,7 @@ export interface TreePickerInputProps extends MultipleValuesProps {
   /**
    * Override Tree Patterns from the Field Definition.
    */
-  treePatterns?: LightwightTreePatterns
+  treePatterns?: LightwightTreePatterns | ComplexTreePatterns;
 
   /**
    * Override scheme from Field Definitions. Overrides the scheme from tree-patterns.
@@ -91,6 +92,7 @@ export interface TreePickerInputProps extends MultipleValuesProps {
 
   queryItemLabel?: string;
   openResourceOnClick?: boolean;
+  
 }
 
 interface State {
@@ -121,6 +123,28 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
   constructor(props: TreePickerInputProps, context: any) {
     super(props, context);
     let config = props.definition.treePatterns;
+    let newConfig: TreeQueriesConfig;
+
+    if (this.props.treePatterns && "rootQuery" in this.props.treePatterns && 
+        "childenQuery" in this.props.treePatterns &&
+        "parentsQuery" in this.props.treePatterns && 
+        "searchQuery" in this.props.treePatterns) {
+      if (this.props.treePatterns["rootsQuery"] && 
+          this.props.treePatterns["childrenQuery"] && 
+          this.props.treePatterns["parentsQuery"] &&
+          this.props.treePatterns["searchQuery"]) {
+        
+        newConfig = {
+          type: 'full',
+          rootsQuery: this.props.treePatterns["rootsQuery"],
+          childrenQuery: this.props.treePatterns["childrenQuery"],
+          parentsQuery: this.props.treePatterns["parentsQuery"],
+          searchQuery: this.props.treePatterns["searchQuery"],
+        };
+      }
+    }
+    
+    if (!newConfig) {
     if (props.treePatterns) {
       config = Object.assign(
         {},
@@ -132,7 +156,10 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
     } else if (props.scheme && config.type === 'simple') {
       config.scheme = props.scheme;
     }
+    } else {config = newConfig;};
+
     const treeQueries: ComplexTreePatterns = config?.type === 'full' ? config : createDefaultTreeQueries(config);
+    
     this.state = { treeVersionKey: 0, treeQueries };
   }
 
@@ -211,7 +238,7 @@ export class TreePickerInput extends MultipleValuesInput<TreePickerInputProps, S
       typeof this.props.allowForceSuggestion === 'boolean'
         ? this.props.allowForceSuggestion
         : false;
-
+   
     return (
       <SemanticTreeInput
         key={treeVersionKey}

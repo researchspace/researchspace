@@ -301,13 +301,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   componentDidMount() {
     const { initialSelection } = this.props;
     let selection: ReadonlyArray<Rdf.Iri>;
-    if (initialSelection && initialSelection.length !== 0) {
+    if (initialSelection && initialSelection.length !== 0) { 
       if (typeof initialSelection[0] == 'string') {
         selection = (initialSelection as ReadonlyArray<string>).map(s => Rdf.iri(s));
       } else {
         selection = initialSelection as ReadonlyArray<Rdf.Iri>;
       }
-      this.setInitialSelection(selection).onValue(() => {this.onSelectionChanged});
+      this.setInitialSelection(selection).onValue((value) => {this.onSelectionChanged(value);});
     }
   }
 
@@ -459,25 +459,30 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   private onSelectionChanged = (selection: TreeSelection<Node>) => {
-    
     this.updateLabelField(selection)
 
     if (this.props.onSelectionChanged) {
       this.props.onSelectionChanged(selection);
     }
 
-
     /**
      * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
      */
+    
+    let iris  = Object.keys(selection.nodes.toJS())
+                      .filter(item => item !== "SparqlNode:root")
+                      .map(item => Rdf.iri(item));
+         
     if (this.props.id && selection.nodes.size <=2 ) {
       const iri = selection.nodes.size == 1 ? undefined : selection.nodes.last().first().iri.value;
       trigger({
-        eventType: ItemSelectionChanged, source: this.props.id, data: {iri}
+        eventType: ItemSelectionChanged, source: this.props.id, data: {iri,iris}
       });
-    }
-
-    
+    } else if (this.props.id && selection.nodes.size > 2) { 
+        trigger({
+          eventType: ItemSelectionChanged, source: this.props.id, data: {"iris": iris}
+        });
+    } 
 
   }
 

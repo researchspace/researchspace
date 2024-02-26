@@ -36,33 +36,26 @@
                               multiple-selection='true'
                               initial-selection='["http://www.researchspace.org/ontology/","http://www.cidoc-crm.org/cidoc-crm/CRMsci/","http://www.ics.forth.gr/isl/CRMdig/","http://www.ics.forth.gr/isl/CRMinf/","http://www.cidoc-crm.org/cidoc-crm/","http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/","http://www.ics.forth.gr/isl/CRMgeo/","http://www.cidoc-crm.org/cidoc-crm/CRMba/","http://iflastandards.info/ns/fr/frbr/frbroo/","http://www.w3.org/2004/02/skos/core"]'
                               placeholder="Select ontology"
+
                               roots-query='SELECT DISTINCT ?item ?label ?hasChildren WHERE {
-                                            {
-                                              ?item  a owl:Ontology .
-                                              ?item  rdfs:label ?label .
-                                            } 
+                                          {  ?item a owl:Ontology .
+                                            ?item rdfs:label ?label .}
                                             BIND(false AS ?hasChildren) .
-                                          } ORDER BY  ASC(?item)'
+                                          } ORDER BY ASC(?item)'
                               
                               children-query='SELECT ?item ?label ?hasChildren WHERE {}'
                               
                               parents-query='SELECT ?item ?parent ?parentLabel WHERE {}'
                               
                               search-query='SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
-                                              {
-                                                ?item  a owl:Ontology .
-                                                ?item  rdfs:label ?label .
-                                                BIND(2 as ?order)
-                                              } UNION {
-                                                VALUES (?item ?label ?order) {
-                                                  (<http://www.researchspace.org/resource/system/ontology/allOntologies> "All ontologies" 1)
-                                                  }
-                                              }
+                                              ?item a owl:Ontology .
+                                              ?item rdfs:label ?label .
+                                            
                                               ?label bds:search ?__token__;
-                                                bds:minRelevance "0.3";
-                                                bds:relevance ?score;
-                                                bds:matchAllTerms "true".
-                                                BIND(false AS ?hasChildren) .
+                                              bds:minRelevance "0.3";
+                                              bds:relevance ?score;
+                                              bds:matchAllTerms "true".
+                                              BIND(false AS ?hasChildren) .
                                             } ORDER BY DESC (?score) (?item)'
                           >
         </semantic-tree-input>
@@ -98,8 +91,7 @@
                                                                                     BIND(REPLACE(STR(?property), \"(.*)/.*$\", \"$1\") AS ?prefix)
                                                                                     BIND(IF(CONTAINS(STR(?property), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?propertyOntologyString)
                                                                                     BIND(URI(?propertyOntologyString) as ?propertyOntology)
-                                                                                    FILTER(?propertyOntology IN ({{selectedOntology}}))                                        
-                                                                                
+                                                                                    FILTER(?propertyOntology IN ({{selectedOntology}}))   
                                                                                 }",
 
                                                                 "arguments": { "ontologyclass": {"type": "xsd:anyURI"} }
@@ -120,7 +112,6 @@
                                                       }]'>
 
                             <semantic-query query='SELECT ?ontologyLabel WHERE {
-                                                      
                                                       ?selectedOntology rdfs:label ?ontologyLabel .
                                                       FILTER (?selectedOntology in ({{selectedOntology}}))
                                                     }'
@@ -130,8 +121,9 @@
                                       
                                 <template id="template">
                                   <div> [[!-- {{bindings.0.ontologyLabel.value}} --]]
-      {{selectedOntology}}
+                                    {{selectedOntology}}
                                     <h5 style="margin-bottom: 5px; margin-top: 15px;">Select class</h5>
+                                    {{bindings.0.ontologyLabel.value}}
                                   </div>
                                 </template>
 
@@ -140,8 +132,10 @@
                                     <h5 style="margin-bottom: 5px; margin-top: 15px;">Select ontology class</h5>
                                   </div>
                                 </template>
-                            </semantic-query>
+                            </semantic-query> 
                             
+                            <h5 style="margin-bottom: 5px; margin-top: 15px;">Select ontology class</h5>
+
                             <div class="btn-inline-container" style="align-items: flex-start;">
                               <div style="flex: 1;">                               
                                 <semantic-form-tree-picker-input for="ontologyclass" 
@@ -174,6 +168,7 @@
                                                                                   }
                                                                                   ORDER BY (?order) (?label)
                                                                                   LIMIT 200", 
+
                                                                     "childrenQuery":"SELECT DISTINCT ?item ?label ?hasChildren WHERE {
                                                                                       ?item rdfs:subClassOf ?parent.
                                                                                       ?item rdf:type owl:Class.
@@ -191,16 +186,18 @@
                                                                                       OPTIONAL { BIND(?label AS ?order) }
                                                                                     }
                                                                                     ORDER BY (?order) (?label)",
-                                                                    "parentsQuery":"SELECT DISTINCT ?item ?parent ?parentLabel WHERE {
-                                                                      ?item rdfs:subClassOf ?parent.
-                                                                      BIND(REPLACE(STR(?parent), \"(.*)/.*$\", \"$1\") AS ?prefix)
-                                                                      BIND(IF(CONTAINS(STR(?parent), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
-                                                                      BIND(URI(?ontologyString) as ?ontology)
-                                                                      FILTER(?ontology IN ( {{selectedOntology}}))
 
-                                                                      ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.
-                                                                      FILTER((LANG(?parentLabel)) = \"en\")
-                                                                    }",
+                                                                    "parentsQuery":"SELECT DISTINCT ?item ?parent ?parentLabel WHERE {
+                                                                                      ?item rdfs:subClassOf ?parent.
+                                                                                      BIND(REPLACE(STR(?parent), \"(.*)/.*$\", \"$1\") AS ?prefix)
+                                                                                      BIND(IF(CONTAINS(STR(?parent), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?ontologyString)
+                                                                                      BIND(URI(?ontologyString) as ?ontology)
+                                                                                      FILTER(?ontology IN ( {{selectedOntology}}))
+
+                                                                                      ?parent ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?parentLabel.
+                                                                                      FILTER((LANG(?parentLabel)) = \"en\")
+                                                                                    }",
+
                                                                     "searchQuery":"SELECT DISTINCT ?item ?label ?score ?hasChildren WHERE {
                                                                                     ?item rdf:type owl:Class.
                                                                                     BIND(REPLACE(STR(?item), \"(.*)/.*$\", \"$1\") AS ?prefix)
@@ -212,18 +209,20 @@
                                                                                       bds:minRelevance \"0.3\";
                                                                                       bds:relevance ?score;
                                                                                       bds:matchAllTerms \"true\".
+                                                                                    
                                                                                     OPTIONAL { ?child rdfs:subClassOf ?item. 
                                                                                       BIND(REPLACE(STR(?child), \"(.*)/.*$\", \"$1\") AS ?childPrefix)
                                                                                       BIND(IF(CONTAINS(STR(?child), \"skos\"), CONCAT(?prefix, \"/core\"), CONCAT(STR(?prefix), \"/\")) AS ?childOntologyString)
                                                                                       BIND(URI(?childOntologyString) as ?childOntology)
                                                                                       FILTER(?childOntology IN ({{selectedOntology}})) 
+                                                                                      }
+                                                                                      BIND(BOUND(?child) AS ?hasChildren)
+                                                                                      OPTIONAL { BIND(?label AS ?order) }
                                                                                     }
-                                                                                    BIND(BOUND(?child) AS ?hasChildren)
-                                                                                    OPTIONAL { BIND(?label AS ?order) }
-                                                                                  }
-                                                                                  ORDER BY DESC (?score) (?order) (?label)
-                                                                                  LIMIT 200"
-                                                                                }'
+                                                                                    ORDER BY DESC (?score) (?order) (?label)
+                                                                                    LIMIT 200"
+                                                                                  }'
+
                                                                   query-item-label='SELECT ?label WHERE {
                                                                                       ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
                                                                                       FILTER (lang(?label) = "en")
@@ -235,7 +234,7 @@
                   </semantic-search-form-query>
           
                   <semantic-search-result-holder>
-                    <div style='height: 100%'>
+                    <div style='height: 100%'> 
                       <h3 style="margin-top: 25px;">Class properties</h3> 
                       <mp-event-target-template-render id='{{viewId}}-ontology-property-table-render' template='{{> template}}'>
                         <template id='template'>
@@ -267,6 +266,7 @@
 
                                                       BIND (
                                                         COALESCE(
+                                                          IF(CONTAINS(STR(?range), 'http://www.w3.org/2001/XMLSchema#'), REPLACE(STR(?range), 'http://www.w3.org/2001/XMLSchema#', ''), 1/0),
                                                           IF(CONTAINS(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
                                                           IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
                                                           IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
@@ -306,8 +306,7 @@
                                             options='{"showFilter":true, "resultsPerPage":30}' 
                                             no-result-template='{{> noResults}}'
                                             column-configuration='[
-                                                                    {"displayName": "Property URI", "variableName": "propertyOntologyURI" },
-                                                                 [[!--   {"displayName": "Property name", "variableName": "propertyLabel" }, --]]
+                                                                    {"displayName": "Property URI", "variableName": "propertyOntologyURI", "cellTemplate": "{{> propertyURI}}" },
                                                                     {"displayName": "Range class", "variableName": "rangeOntologyURI"},
                                                                     {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
                                                                     {"displayName": "Property inherited from class", "variableName": "propertyFromClass"}
@@ -317,6 +316,12 @@
                                           
                                 <template id="noResults">
                                   <div>No results available</div>
+                                </template>
+
+                                <template id="propertyURI">
+                                  <semantic-link iri="{{property.value}}" target="_blank">
+                                    <div>{{propertyOntologyURI.value}}</div>
+                                  </semantic-link>
                                 </template>
 
                                 <template id="description">

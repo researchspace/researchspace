@@ -18,20 +18,26 @@
                           activity_priority="http://www.researchspace.org/pattern/system/activity/priority"
 
                           activity_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespanMin0"
-                          
                           activity_place="http://www.researchspace.org/pattern/system/period/took_place_at_place"
+                          
                           activity_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
-
-                          activity_request="http://www.researchspace.org/pattern/system/activity/activity_request"
                           activity_had_participant="http://www.researchspace.org/pattern/system/event/had_participant"
 
-                          activity_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
-                          activity_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
                           activity_took_place_on_physical_thing="http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing"
                           activity_occurred_in_the_presence_of="http://www.researchspace.org/pattern/system/event/occurred_in_the_presence_of"
 
+                          activity_request="http://www.researchspace.org/pattern/system/activity/activity_request"
+                          activity_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
+                          activity_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
                           activity_was_continued_by_activity="http://www.researchspace.org/pattern/system/activity/was_continued_by_activity"
                           activity_continued_activity="http://www.researchspace.org/pattern/system/activity/continued_activity"
+                          activity_done_in_preparation_of="http://www.researchspace.org/pattern/system/activity/had_specific_purpose_event"
+                          
+                          activity_had_general_purpose_type="http://www.researchspace.org/pattern/system/activity/had_general_purpose_type"
+                          activity_used_general_technique_type="http://www.researchspace.org/pattern/system/activity/used_general_technique"
+                          activity_used_specific_technique_procedure="http://www.researchspace.org/pattern/system/activity/used_specific_technique"
+                          activity_used_object_of_type="http://www.researchspace.org/pattern/system/activity/used_object_of_type"
+                          
                 ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
@@ -94,43 +100,6 @@
                                         nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
             </semantic-form-select-input> 
 
-            [[> Platform:formSwitchCarriedOutActor  for_kp='activity_carried_out_by_domain'
-                                                    subjectLabel='Activity carried out by'
-                                                    carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity'
-            ]]
-
-            <semantic-form-composite-input for="activity_request"
-                                            label="Activity proposal/request"
-                                            new-subject-template="/activity_request/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
-                                            fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-
-                                                      request_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
-                                                      request_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
-                                                      request_description="http://www.researchspace.org/pattern/system/entity/description"
-                                          ]]'>
-
-                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
-                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/activity_request'> </semantic-form-hidden-input>
-        
-                    <div class="composite-first-input">
-                      [[> Platform:formSwitchCarriedOutActor  for_kp='request_carried_out_by_domain'
-                                                              subjectLabel='Request carried out by'
-                                                              carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity_request'
-                      ]]
-                    </div>
-                    
-                    <div class="form-inline-inputs">
-                      <semantic-form-datetime-input for="request_date" label="Proposal/request date" placeholder="Enter date"></semantic-form-datetime-input>
-                      <div style="flex: 1;"> 
-                        <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input>   
-                      </div>
-                    </div>
-                    
-                    <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input> 
-
-            </semantic-form-composite-input> 
           </div>
 
           <div class="form-media-column">
@@ -172,46 +141,142 @@
           </div>
         </div>
       </rs-tab>
-     
-        {{#if hideParticipantTab}}
-        {{else}}
-          <rs-tab event-key="participant" title="Participants" disabled="{{#if node}}false{{else}}true{{/if}}">
-            [[> Platform:formSwitchParticipantActor for_kp='activity_had_participant'
-                                                    subjectLabel='Participant'
-                                                    had_participant_has_domain_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/activity'
-            ]]
-          </rs-tab>
-        {{/if}}
 
-        <rs-tab event-key="event" title="Related events/activities">
-          <semantic-form-select-input for='activity_consist_of_event' 
-                                      label="Activity consist of" 
-                                      placeholder="Select event" 
-                                      nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-          </semantic-form-select-input> 
-  
-          <semantic-form-select-input for='activity_forms_part_of_event' 
-                                      label="Activity forms part of" 
-                                      placeholder="Select event" 
-                                      nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-          </semantic-form-select-input> 
-        </rs-tab>
-  
-        <rs-tab event-key="things" title="Related things/actors">
-  
-          <semantic-form-select-input for='activity_occurred_in_the_presence_of' 
-                                      label="Activity occurred in the presence of" 
-                                      placeholder="Select thing/actor" 
-                                      nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-          </semantic-form-select-input> 
+      <rs-tab event-key="actor" title="Related actors">
 
-          <semantic-form-select-input for='activity_took_place_on_physical_thing' 
-                                      label="Activity took place on or within" 
-                                      placeholder="Select thing" 
-                                      nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-          </semantic-form-select-input> 
-  
-        </rs-tab>
+        [[> Platform:formSwitchCarriedOutActor  for_kp='activity_carried_out_by_domain'
+                                                subjectLabel='Activity carried out by'
+                                                carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity'
+        ]]
+
+        [[> Platform:formSwitchParticipantActor for_kp='activity_had_participant'
+                                                subjectLabel='Participant in the activity'
+                                                had_participant_has_domain_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/activity'
+        ]]
+
+        <semantic-form-select-input for='activity_occurred_in_the_presence_of' 
+                                    label="Activity occurred in the presence of" 
+                                    placeholder="Select actor" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+
+
+      </rs-tab>
+
+      <rs-tab event-key="thing" title="Related things">
+
+        <semantic-form-select-input for='activity_took_place_on_physical_thing' 
+                                    label="Activity took place on or within" 
+                                    placeholder="Select thing" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='activity_occurred_in_the_presence_of' 
+                                    label="Activity occurred in the presence of" 
+                                    placeholder="Select thing" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+      </rs-tab>
+
+      <rs-tab event-key="type" title="Related types/techniques">
+
+        <semantic-form-select-input for='activity_used_general_technique_type' 
+                                    label="Technique" 
+                                    placeholder="Select technique" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                        scheme="http://www.researchspace.org/resource/vocab/status"
+                                                                        entityType="technique" }}
+                                                          {{{{/raw}}}}'> 
+        </semantic-form-select-input>
+
+        <semantic-form-select-input for='activity_had_general_purpose_type' 
+                                    label="General purpose (type)" 
+                                    placeholder="Select type" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='activity_used_specific_technique_procedure' 
+                                    label="Specific procedure" 
+                                    placeholder="Select procedure" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:DesignOrProcedure nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='activity_used_object_of_type' 
+                                    label="Used object of type" 
+                                    placeholder="Select object type" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                        scheme="http://www.researchspace.org/resource/vocab/object_type"
+                                                                        entityType="technique" }}
+                                                          {{{{/raw}}}}'> 
+        </semantic-form-select-input>
+      </rs-tab>
+
+      <rs-tab event-key="event" title="Related events/activities">
+
+        <semantic-form-composite-input for="activity_request"
+                                        label="Activity proposal/request"
+                                        new-subject-template="/activity_request/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                        fields='[[fieldDefinitions
+                                                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                  has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                  request_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by_domain"
+                                                  request_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
+                                                  request_description="http://www.researchspace.org/pattern/system/entity/description"
+                                      ]]'>
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
+                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/activity_request'> </semantic-form-hidden-input>
+    
+                <div class="composite-first-input">
+                  [[> Platform:formSwitchCarriedOutActor  for_kp='request_carried_out_by_domain'
+                                                          subjectLabel='Request carried out by'
+                                                          carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity_request'
+                  ]]
+                </div>
+                
+                <div class="form-inline-inputs">
+                  <semantic-form-datetime-input for="request_date" label="Proposal/request date" placeholder="Enter date"></semantic-form-datetime-input>
+                  <div style="flex: 1;"> 
+                    <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input>   
+                  </div>
+                </div>
+                
+                <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input> 
+
+        </semantic-form-composite-input> 
+
+        <semantic-form-select-input for='activity_consist_of_event' 
+                                    label="Activity consist of" 
+                                    placeholder="Select event" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='activity_forms_part_of_event' 
+                                    label="Activity forms part of" 
+                                    placeholder="Select event" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='activity_was_continued_by_activity' 
+                                    label="Activity was continued by activity" 
+                                    placeholder="Select activity" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='activity_continued_activity' 
+                                    label="Activity continued activity" 
+                                    placeholder="Select activity" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='activity_done_in_preparation_of' 
+                                    label="Activity done in preparation of" 
+                                    placeholder="Select activity" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+      </rs-tab>
 
       [[> rsp:FormMetadataTab]]
     </rs-tabs>  

@@ -11,12 +11,6 @@ import javax.inject.Inject;
 import org.junit.After;
 import org.junit.Test;
 import org.researchspace.junit.AbstractIntegrationTest;
-import org.researchspace.secrets.MapSecretResolver;
-import org.researchspace.secrets.Secret;
-import org.researchspace.secrets.SecretLookup;
-import org.researchspace.secrets.SecretResolver;
-import org.researchspace.secrets.SecretsHelper;
-import org.researchspace.secrets.SecretsStore;
 
 public class SecretsTest extends AbstractIntegrationTest {
 
@@ -93,9 +87,10 @@ public class SecretsTest extends AbstractIntegrationTest {
     public void testEnvironmentSecretResolver() {
         // Create Envinronmet variable with secret
         System.setProperty("secret.test.password", "password123");
+        EnvironmentSecretResolver resolver = new EnvironmentSecretResolver();
 
         // Resolve secret
-        Optional<String> secret = SecretsHelper.resolveSecretAsString(secretResolver, "${test.password}");
+        Optional<String> secret = SecretsHelper.resolveSecretAsString(resolver, "${test.password}");
 
         assertTrue(secret.isPresent());
         assertEquals("password123", secret.get());

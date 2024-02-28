@@ -88,6 +88,19 @@ public class SecretsTest extends AbstractIntegrationTest {
         assertTrue(SecretsHelper.isResolvableSecret("${-FZ7LEt#.T8W}"));
     }
 
+
+    @Test
+    public void testEnvironmentSecretResolver() {
+        // Create Envinronmet variable with secret
+        System.setProperty("secret.test.password", "password123");
+
+        // Resolve secret
+        Optional<String> secret = SecretsHelper.resolveSecretAsString(secretResolver, "${test.password}");
+
+        assertTrue(secret.isPresent());
+        assertEquals("password123", secret.get());
+    }
+
     @Test
     public void testKeyValue() {
         assertEquals("abc", SecretLookup.getLookupKey("${abc}").orElse("XXX"));

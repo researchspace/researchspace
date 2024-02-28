@@ -88,6 +88,7 @@ public class RESTSailConfig extends AbstractServiceWrappingSailConfig {
     }
 
     public static final String JSON = "JSON";
+    public static final String XML = "XML";
 
     private String httpMethod;
 

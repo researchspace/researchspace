@@ -1,0 +1,72 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/production/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+
+                fields='[[fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                          inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                          entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                          production_document="http://www.researchspace.org/pattern/system/entity/documents"
+                          image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                          more_image="http://www.researchspace.org/pattern/system/entity/images"
+
+                          production_title="http://www.researchspace.org/pattern/system/activity/activity_title"
+                          production_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                          production_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespanMin0"
+                          production_place="http://www.researchspace.org/pattern/system/period/took_place_at_place"
+                          
+                          production_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by"
+                          production_had_participant="http://www.researchspace.org/pattern/system/event/had_participant"
+
+                          production_has_produced_mmThing="http://www.researchspace.org/pattern/system/production/has_produced_mmThing"
+                          production_has_modified_physical_thing="http://www.researchspace.org/pattern/system/modification/has_modified_physical_thing"
+                          production_employed_material="http://www.researchspace.org/pattern/system/modification/employed_material"
+
+                          production_took_place_on_physical_thing="http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing"
+                          production_occurred_in_the_presence_of="http://www.researchspace.org/pattern/system/event/occurred_in_the_presence_of"
+
+                          production_had_general_purpose_type="http://www.researchspace.org/pattern/system/activity/had_general_purpose_type"
+                          production_used_general_technique_type="http://www.researchspace.org/pattern/system/activity/used_general_technique"
+                          production_used_specific_technique_procedure="http://www.researchspace.org/pattern/system/activity/used_specific_technique"
+                          production_used_object_of_type="http://www.researchspace.org/pattern/system/activity/used_object_of_type"
+                          production_used_specific_object_domain="http://www.researchspace.org/pattern/system/activity/PC16_used_specific_object"
+                          production_was_intended_use_of_domain="http://www.researchspace.org/pattern/system/activity/PC19_was_intended_use_of"
+
+                          production_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
+                          production_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
+                          production_was_continued_by_activity="http://www.researchspace.org/pattern/system/activity/was_continued_by_activity"
+                          production_continued_activity="http://www.researchspace.org/pattern/system/activity/continued_activity"
+                          production_done_in_preparation_of="http://www.researchspace.org/pattern/system/activity/had_specific_purpose_event"
+
+                          production_motivated_by="http://www.researchspace.org/pattern/system/activity/motivated_by"
+                          production_influenced_by="http://www.researchspace.org/pattern/system/activity/influenced_by"
+                          
+                ]]'>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E12_Production'> </semantic-form-hidden-input>
+
+    {{#if type}}
+      <semantic-form-hidden-input for="has_type" default-value="{{scheme}}"></semantic-form-hidden-input>
+    {{else}}
+      <semantic-form-hidden-input for="has_type"></semantic-form-hidden-input>
+    {{/if}}
+    
+    {{#if scheme}}<semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>{{/if}}
+
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
+
+
+      [[> rsp:FormMetadataTab]]
+    </rs-tabs>
+
+  </div>
+
+  <semantic-form-errors></semantic-form-errors> 
+    
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}production{{/if}}']]
+
+</semantic-form>

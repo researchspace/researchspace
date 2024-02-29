@@ -165,7 +165,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
       return;
     }
 
-    let valueSet = this.state.valueSet;
+    const valueSet = this.state.valueSet;
     if (valueSet) {
       // try to find the selected value in the pre-computed valueSet
       const bindingValue = valueSet.find((setValue) => setValue.value.equals(v.value));

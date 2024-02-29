@@ -1,0 +1,63 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/part_addition/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+
+                fields='[[fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                          inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                          entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                          part_addition_document="http://www.researchspace.org/pattern/system/entity/documents"
+                          image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                          more_image="http://www.researchspace.org/pattern/system/entity/images"
+
+                          part_addition_added_thing="http://www.researchspace.org/pattern/system/part_addition/added_physical_thing"
+                          part_addition_augmented_mmThing="http://www.researchspace.org/pattern/system/part_addition/augmented_mmThing"
+                          part_addition_carried_out_by="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by"
+
+                          part_addition_has_modified_physical_thing="http://www.researchspace.org/pattern/system/modification/has_modified_physical_thing"
+                          part_addition_employed_material="http://www.researchspace.org/pattern/system/modification/employed_material"
+                          
+                ]]'>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E79_Part_Addition'> </semantic-form-hidden-input>
+
+    {{#if type}}
+      <semantic-form-hidden-input for="has_type" default-value="{{scheme}}"></semantic-form-hidden-input>
+    {{else}}
+      <semantic-form-hidden-input for="has_type"></semantic-form-hidden-input>
+    {{/if}}
+    
+    {{#if scheme}}<semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>{{/if}}
+
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
+
+      [[> Platform:formSwitchCarriedOutActor  for_kp='part_addition_carried_out_by'
+                                              subjectLabel='Addition carried out by'
+                                              carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/part_addition'
+      ]]
+
+      <semantic-form-select-input for='part_addition_added_thing' 
+                                  label="Part added (man-made object)" 
+                                  placeholder="Select part/object" 
+                                  nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+      </semantic-form-select-input>
+
+      <semantic-form-select-input for='part_addition_augmented_mmThing' 
+                                  label="Object/thing augmented by the addition" 
+                                  placeholder="Select object" 
+                                  nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+      </semantic-form-select-input>
+
+      [[> rsp:FormMetadataTab]]
+    </rs-tabs>
+
+  </div>
+
+  <semantic-form-errors></semantic-form-errors> 
+    
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}part addition{{/if}}']]
+
+</semantic-form>

@@ -4,6 +4,7 @@
 
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                           inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                           entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
@@ -28,9 +29,13 @@
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E5_Event'> </semantic-form-hidden-input>
-    {{#if scheme}}
-      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    
+    {{#if type}}
+      <semantic-form-hidden-input for="has_type" default-value="{{scheme}}"></semantic-form-hidden-input>
+    {{else}}
+      <semantic-form-hidden-input for="has_type"></semantic-form-hidden-input>
     {{/if}}
+    {{#if scheme}}<semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>{{/if}}
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
       <rs-tab event-key="detail" title="Details">
@@ -99,17 +104,36 @@
         </div>
       </rs-tab>
 
-      {{#if hideParticipantTab}}
-      {{else}}
-        <rs-tab event-key="participant" title="Participants">
-          [[> Platform:formSwitchParticipantActor for_kp='event_had_participant'
-                                                  subjectLabel='Participant'
-                                                  had_participant_has_domain_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/event'
-          ]]
-        </rs-tab>
-      {{/if}}
+      <rs-tab event-key="actor" title="Actors">
+        [[> Platform:formSwitchParticipantActor for_kp='event_had_participant'
+                                                subjectLabel='Participant'
+                                                had_participant_has_domain_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/event'
+        ]]
 
-      <rs-tab event-key="event" title="Related events/activities">
+        <semantic-form-select-input for='event_occurred_in_the_presence_of' 
+                                    label="Event occurred in the presence of" 
+                                    placeholder="Select actor" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+      </rs-tab>
+
+      <rs-tab event-key="thing" title="Things">
+
+        <semantic-form-select-input for='event_occurred_in_the_presence_of' 
+                                    label="Event occurred in the presence of" 
+                                    placeholder="Select thing" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='event_took_place_on_physical_thing' 
+                                    label="Event took place on or within" 
+                                    placeholder="Select thing" 
+                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+        </semantic-form-select-input> 
+
+      </rs-tab>
+
+      <rs-tab event-key="event" title="Events/activities">
         <semantic-form-select-input for='event_consist_of_event' 
                                     label="Event consist of" 
                                     placeholder="Select event" 
@@ -121,22 +145,6 @@
                                     placeholder="Select event" 
                                     nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
         </semantic-form-select-input> 
-      </rs-tab>
-
-      <rs-tab event-key="things" title="Related things/actors">
-
-        <semantic-form-select-input for='event_occurred_in_the_presence_of' 
-                                    label="Event occurred in the presence of" 
-                                    placeholder="Select thing/actor" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-        </semantic-form-select-input> 
-
-        <semantic-form-select-input for='event_took_place_on_physical_thing' 
-                                    label="Event took place on or within" 
-                                    placeholder="Select thing" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-        </semantic-form-select-input> 
-
       </rs-tab>
 
       [[> rsp:FormMetadataTab]]

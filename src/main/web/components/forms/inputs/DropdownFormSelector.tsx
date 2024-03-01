@@ -39,6 +39,7 @@ import { queryValues } from '../QueryValues';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
 import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 type formData = {
   label?: string,
@@ -62,6 +63,31 @@ interface State {
 
 const SELECT_TEXT_CLASS = 'select-text-field';
 const OPTION_CLASS = SELECT_TEXT_CLASS + 'option';
+
+const SPARQL_QUERY = SparqlUtil.Sparql`SELECT DISTINCT ?config ?resourceName ?resourceFormIRI WHERE {
+  {
+    ?__resourceIri__ a/rdfs:subClassOf* ?resourceOntologyClass  .
+   
+    ?config a <http://www.researchspace.org/resource/system/resource_configuration> .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+   
+    FILTER NOT EXISTS {
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+  }
+   
+  } UNION {
+    ?__resourceIri__ rdf:type ?resourceOntologyClass  ;
+    crm:P2_has_type ?resourceP2Type .
+
+    ?config a <http://www.researchspace.org/resource/system/resource_configuration> .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+    ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+  }
+} LIMIT 1`;
 
 export class RsDropdownFormSelector extends AtomicValueInput<SelectInputProps, State> {
   private readonly cancellation = new Cancellation();
@@ -113,7 +139,6 @@ export class RsDropdownFormSelector extends AtomicValueInput<SelectInputProps, S
 
   componentDidMount() {
     this.initValueSet()
-      //LabelsService.getLabel
     // tryExtractNestedForm(this.props.children, this.context, this.props.nestedFormTemplate)
     //   .then(nestedForm => {
     //     if (nestedForm != undefined) {
@@ -201,7 +226,21 @@ export class RsDropdownFormSelector extends AtomicValueInput<SelectInputProps, S
   }
 
   private onEditHandler(selectedValue: AtomicValue) {
-    console.log(selectedValue)
+    if(!FieldValue.isEmpty(selectedValue)) {
+      const iri = selectedValue.value as Rdf.Iri
+      const query = SparqlClient.setBindings(SPARQL_QUERY, { __resourceIri__: iri});
+      const q = SparqlClient.select(query, {context: this.context.semanticContext});
+      q.onValue((r) => {
+        const resourceForm = r.results.bindings[0].resourceFormIRI.value.split('/').filter(Boolean).pop()
+        tryExtractNestedForm(this.props.children, this.context, `{{> forms:${resourceForm} nested=true editable=true mode="new" }}`)
+        .then(nestedForm => {
+          if (nestedForm != undefined) {
+            this.setState({nestedForm});
+            this.toggleNestedForm()
+          }
+        });
+      })
+    }
   }
 
   render() {

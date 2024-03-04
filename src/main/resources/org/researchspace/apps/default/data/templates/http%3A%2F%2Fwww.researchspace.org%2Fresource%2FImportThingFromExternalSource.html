@@ -1,6 +1,6 @@
 <semantic-search>
-  <semantic-search-query-keyword  domain='<{{domain}}>'
-                                  placeholder="Search {{label}}"
+  <semantic-search-query-keyword  domain='<http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object>'
+                                  placeholder="Search object/thing"
                                   min-search-term-length=2
                                   tokenize-lucene-query=false
                                   escape-lucene-syntax=false
@@ -20,7 +20,7 @@
   <semantic-search-result-holder>
     <div style="margin-top: 25px;">
       <semantic-search-result>
-        <div class="{{label}}ResultsTable">
+        <div class="personResultsTable">
           <semantic-context repository='wikidata-entity'>
             <semantic-table id='semantic-search-result-table'
                             query='SELECT DISTINCT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi WHERE {
@@ -67,9 +67,7 @@
                                           BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataEntity) .
                                           SERVICE <https://query.wikidata.org/sparql> {  
                                             # is it a person
-                                            {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
                                             ?wikidataEntity wdt:P31 ?type .
-                                            {{/if}}
 
                                             SERVICE wikibase:label { 
                                               bd:serviceParam wikibase:language "en".
@@ -163,7 +161,7 @@
                                                     "wikidataResourceDescription": "{{description.value}}"
                                                   }' 
                                       >
-                                      <button class="btn btn-action">Select {{label}}</button>
+                                      <button class="btn btn-action">Select person</button>
                           </mp-event-trigger>
                         </template>
                       </semantic-if>

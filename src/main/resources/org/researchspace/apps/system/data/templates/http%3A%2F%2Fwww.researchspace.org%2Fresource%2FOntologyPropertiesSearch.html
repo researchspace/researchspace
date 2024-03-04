@@ -237,121 +237,135 @@
                               <button type='button' name='submit' class='btn btn-action' style="height: 39px;">Search properties</button>
                             </div>
                   </semantic-search-form-query>
-                  <div data-flex-layout="row stretch-stretch">
-                      <div data-flex-self="size-1of3" style="flex: 0 0 20px;">
-                        <semantic-search-facet id="facets"></semantic-search-facet>
-                      </div>
-                  <semantic-search-result-holder>
-                    <div style='height: 100%'> 
-                      <h3 style="margin-top: 25px;">Class properties</h3> 
-                      <mp-event-target-template-render id='{{viewId}}-ontology-property-table-render' template='{{> template}}'>
-                        <template id='template'>
-                          <semantic-search-result>
-                            <div class="ontology-property-table">
-                              <semantic-table id='ontology-property-table' 
-                                              query="SELECT DISTINCT ?property ?propertyLabel ?propertyOntologyURI ?rangeOntologyURI ?description ?propertyFromClass 
-
-                                                    
-                                                    WHERE {
-                                                      BIND(?subject as ?property) 
-
-                                                      ?property rdfs:label ?propertyLabel .
-                                                      FILTER(LANG(?propertyLabel)='en')
+                  
+                    <semantic-search-result-holder>
+                      <div>
+                        <h3 style="margin: 25px 0 15px 0;">Class properties</h3> 
+                        <div style="display: flex;">
+                          <div style="height: inherit;">
+                            <semantic-search-facet id="facets"></semantic-search-facet>
+                          </div>
+                          <div style='height: inherit; flex: 1;'> 
+                            <semantic-search-facet-breadcrumbs></semantic-search-facet-breadcrumbs>
+                            <mp-event-target-template-render id='{{viewId}}-ontology-property-table-render' template='{{> template}}'>
+                              <template id='template'>
+                                <semantic-search-result>
+                                  <div class="ontology-property-table">
+                                    <semantic-table id='ontology-property-table' 
+                                                    query="SELECT DISTINCT ?property ?propertyLabel ?propertyOntologyURI ?rangeOntologyURI ?description ?propertyFromClass 
+                                                           WHERE {
+                                                            BIND(?subject as ?property) 
   
-                                                      BIND (
-                                                        COALESCE(
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?property), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?property), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
-                                                          IF(CONTAINS(STR(?propertyOntology), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?property), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
-                                                          IF((CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
-                                                          ?property
-                                                        ) AS ?propertyOntologyURI
-                                                      )
-
-                                                      BIND (
-                                                        COALESCE(
-                                                          
-                                                          IF(CONTAINS(STR(?range), 'http://www.opengis.net/ont/geosparql#'), REPLACE(STR(?range), 'http://www.opengis.net/ont/geosparql#', ''), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.w3.org/2001/XMLSchema#'), REPLACE(STR(?range), 'http://www.w3.org/2001/XMLSchema#', ''), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                          IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?range), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
-                                                          IF(CONTAINS(STR(?range), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?range), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
-                                                          IF((CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
-                                                          ?range
-                                                        ) AS ?rangeOntologyURI
-                                                      )
-
-                                                      BIND (
-                                                        COALESCE(
-                                                          IF(CONTAINS(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?superclass), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
-                                                          IF(CONTAINS(STR(?superclass), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?superclass), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
-                                                          IF((CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/') && !CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/')), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
-                                                          ?superclass
-                                                        ) AS ?propertyFromClass
-                                                      )
-
-                                                      OPTIONAL {?property rdfs:comment ?description .}
-
-                                                  } ORDER BY ?propertyOntologyURI"
-                            
-                                            options='{"showFilter":true, "resultsPerPage":30}' 
-                                            no-result-template='{{> noResults}}'
-                                            column-configuration='[
-                                                                    {"displayName": "Property URI", "variableName": "propertyOntologyURI", "cellTemplate": "{{> propertyURI}}" },
-                                                                    {"displayName": "Range class", "variableName": "rangeOntologyURI"},
-                                                                    {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
-                                                                    {"displayName": "Property inherited from class", "variableName": "propertyFromClass"}
-                                                                    
-                                                                  ]'  
-                                            >
-                                          
-                                <template id="noResults">
-                                  <div>No results available</div>
-                                </template>
-
-                                <template id="propertyURI">
-                                  <semantic-link iri="{{property.value}}" target="_blank">
-                                    <div>{{propertyOntologyURI.value}}</div>
-                                  </semantic-link>
-                                </template>
-
-                                <template id="description">
-                                    <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
-                                      {{description.value}}
-                                    </mp-text-truncate>
-                                </template>
-                                          
-                              </semantic-table>
-                            </div>  
-                          </semantic-search-result>
-                          
-                        </template>
-                      </mp-event-target-template-render>
-                    </div>
-                   </div>
-                  </semantic-search-result-holder>
+                                                            ?property rdfs:label ?propertyLabel .
+                                                            FILTER(LANG(?propertyLabel)='en')
+        
+                                                            BIND (
+                                                              COALESCE(
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?property), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?property), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?property), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                                IF(CONTAINS(STR(?propertyOntology), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?property), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
+                                                                IF((CONTAINS(STR(?propertyOntology), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?property), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                                ?property
+                                                              ) AS ?propertyOntologyURI
+                                                            )
+  
+                                                            BIND (
+                                                              COALESCE(
+                                                                
+                                                                IF(CONTAINS(STR(?range), 'http://www.opengis.net/ont/geosparql#'), REPLACE(STR(?range), 'http://www.opengis.net/ont/geosparql#', ''), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.w3.org/2001/XMLSchema#'), REPLACE(STR(?range), 'http://www.w3.org/2001/XMLSchema#', ''), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?range), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?range), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
+                                                                IF(CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?range), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                                IF(CONTAINS(STR(?range), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?range), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
+                                                                IF((CONTAINS(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/')), REPLACE(STR(?range), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                                ?range
+                                                              ) AS ?rangeOntologyURI
+                                                            )
+  
+                                                            BIND (
+                                                              COALESCE(
+                                                                IF(CONTAINS(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/'), REPLACE(STR(?superclass), 'http://iflastandards.info/ns/fr/frbr/frbroo/', 'frbroo:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMarchaeo/', 'crmarchaeo:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMba/', 'crmba:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMdig/', 'crmdig:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMgeo/', 'crmgeo:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMinf/'), REPLACE(STR(?superclass), 'http://www.ics.forth.gr/isl/CRMinf/', 'crminf:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/influence/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/influence/', 'crminfluence:'), 1/0),                                                
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/'), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/', 'crmsci:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.researchspace.org/ontology/'), REPLACE(STR(?superclass), 'http://www.researchspace.org/ontology/', 'rso:'), 1/0),
+                                                                IF(CONTAINS(STR(?superclass), 'http://www.w3.org/2004/02/skos/core#'), REPLACE(STR(?superclass), 'http://www.w3.org/2004/02/skos/core#', 'skos:'), 1/0),
+                                                                IF((CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/') && !CONTAINS(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/CRMsci/')), REPLACE(STR(?superclass), 'http://www.cidoc-crm.org/cidoc-crm/', 'crm:'), 1/0),
+                                                                ?superclass
+                                                              ) AS ?propertyFromClass
+                                                            )
+  
+                                                            OPTIONAL {?property rdfs:comment ?description .}
+  
+                                                        } ORDER BY ?propertyOntologyURI"
+                                  
+                                                  options='{"showFilter":true, "resultsPerPage":20}' 
+                                                  no-result-template='{{> noResults}}'
+                                                  column-configuration='[
+                                                                          {"displayName": "Property URI", "variableName": "propertyOntologyURI", "cellTemplate": "{{> propertyURI}}" },
+                                                                          {"displayName": "Range class", "variableName": "rangeOntologyURI"},
+                                                                          {"displayName": "Description/Examples", "variableName": "description", "cellTemplate": "{{> description}}"},
+                                                                          {"displayName": "Property inherited from class", "variableName": "propertyFromClass"}
+                                                                          
+                                                                        ]'  
+                                                  >
+                                                
+                                      <template id="noResults">
+                                        <div>No results available</div>
+                                      </template>
+  
+                                      <template id="propertyURI">
+                                        <semantic-link iri="{{property.value}}" target="_blank">
+                                          <div>{{propertyOntologyURI.value}}</div>
+                                        </semantic-link>
+                                      </template>
+  
+                                      <template id="description">
+                                          <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                            {{description.value}}
+                                          </mp-text-truncate>
+                                          <mp-overlay-dialog  id='ontology-property-example-dialog' 
+                                                              title="Example for property '{{propertyLabel.value}}' " 
+                                                              type="lightbox">
+                                              <mp-overlay-dialog-trigger>
+                                                <div class="text-link">Examples</div>
+                                              </mp-overlay-dialog-trigger>
+                                              <mp-overlay-dialog-content>
+                                                  <div>
+                                                    content
+                                                  </div>
+                                              </mp-overlay-dialog-content>
+                                          </mp-overlay-dialog>
+                                      </template>
+                                                
+                                    </semantic-table>
+                                  </div>  
+                                </semantic-search-result>
+                              </template>
+                            </mp-event-target-template-render>
+                          </div>
+                        </div>
+                      </div>
+                    </semantic-search-result-holder>
+                 
                 </semantic-search> 
               {{/bind}}
             {{/if}}

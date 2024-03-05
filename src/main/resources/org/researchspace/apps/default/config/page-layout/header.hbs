@@ -76,27 +76,93 @@
 
                   <semantic-link-container uri="http://www.researchspace.org/resource/ThinkingFrames" 
                                             urlqueryparam-view='vocabulary'>
-                                            <bs-menu-item>
+                    <bs-menu-item>
                       <div class="dropdown-item-iconContainer">
-                        <rs-icon icon-type="round" icon-name="edit_note" style="color: #55A6FF;"></rs-icon>
+                        <rs-icon icon-type="round" icon-name="image" style="color: #55A6FF;"></rs-icon>
                       </div>
                       <div>
-                        <div class="dropdown-item-title">Resource</div>
-                        <div class="dropdown-item-description">Creare and author a resource through custom forms.</div>
+                        <div class="dropdown-item-title">Image view and annotation</div>
+                        <div class="dropdown-item-description">View, compare and annotate high-resolution images.</div>
                       </div>
                     </bs-menu-item>
-                  </semantic-link-container>
+                  </semantic-link-container> 
 
                 </div>
               </bs-dropdown-menu>
             </bs-dropdown>
           </li>
         </mp-anonymous-hidden>
+
+        <mp-anonymous-hidden>
+          <li>
+            <mp-overlay-dialog title="New resource" type="lightbox">
+              <mp-overlay-dialog-trigger>
+                <button class="btn btn-default btn-textAndIcon" style="margin-left: 30px;">
+                  <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
+                  <span>New resource</span>
+                </button>
+              </mp-overlay-dialog-trigger>
+              <mp-overlay-dialog-content>
+                <semantic-query query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI WHERE {
+                                        ?resourceConfig a Platform:resource_configuration . 
+                                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                      
+                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
+                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
+                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
+                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
+                                      } ORDER BY ASC(?resourceName)'
+                                
+                                template='\{{> newResource}}'>
+
+                  <template id='newResource'>
+                    <bs-tab-container id="new-resource-tab-container" default-active-key="all">
+                      <bs-tabs mount-on-enter="true">
+                        <bs-tab event-key="all" title="All resources">
+                          <div class="all-resources-container">
+                            \{{#each bindings}}
+                              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                             urlqueryparam-view='entity-editor' 
+                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
+                                            urlqueryparam-mode='new'
+                              >
+                                <div class="resource-card">
+                                  <rs-icon icon-type="round" icon-name="image"></rs-icon>
+                                  <div>\{{resourceName.value}}</div>
+                              </semantic-link>
+                            \{{/each}}
+                          </div>
+                        </bs-tab>
+                        <bs-tab event-key="general" title="Generic">
+
+                        </bs-tab>
+                        <bs-tab event-key="actor" title="Actors">
+
+                        </bs-tab>
+                        <bs-tab event-key="thing" title="Things">
+
+                        </bs-tab>
+                        <bs-tab event-key="event" title="Events">
+
+                        </bs-tab>
+                      </bs-tabs>
+                    </bs-tab-container>
+                  </template>
+
+                </semantic-query>
+              </mp-overlay-dialog-content>
+            </mp-overlay-dialog>
+          </li>
+        </mp-anonymous-hidden>
+
         <mp-anonymous-hidden>
           <li>
             <mp-overlay-dialog title="Create a new reseach project" type="modal" class="modal-xlSize">
               <mp-overlay-dialog-trigger>
-                <button class="btn btn-action btn-textAndIcon" style="margin-left: 50px;">
+                <button class="btn btn-action btn-textAndIcon" >
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
                   <span>New Project</span>
                 </button>
@@ -540,7 +606,7 @@
                       query='SELECT ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
                       template='\{{> template}}'>
                       <template id='template'>
-                          <div >\{{bindings.0.userName.value}}</div>
+                          <div>\{{bindings.0.userName.value}}</div>
                       </template>
                     </semantic-query>
                 </div>
@@ -615,5 +681,6 @@
       </ul>
     </div>
   </div>
+</nav>
 
 

@@ -45,7 +45,10 @@
         </mp-overlay-dialog-content>
     </mp-overlay-dialog> 
 {{else}}
-    <semantic-if query='ASK { <{{resourceOntologyClass}}> rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing . }'
+    <semantic-if query='ASK WHERE {
+                            BIND(<{{resourceOntologyClass}}> as ?type)
+                            FILTER EXISTS{?type rdfs:subClassOf+ crm:E18_Physical_Thing }
+                        }'
                  then='{{> importExternalThing}}'>
 
         <template id='importExternalThing'>

@@ -1,0 +1,87 @@
+<semantic-search>
+  <semantic-search-query-keyword  domain='<{{domain}}>'
+                                  placeholder="Search {{label}}"
+                                  min-search-term-length=4
+                                  tokenize-lucene-query=false
+                                  escape-lucene-syntax=false
+                                  debounce=1000
+                                  debounce=500
+                                  query='PREFIX met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
+                                         SELECT ?subject ?objectid WHERE { 
+                                           service met:METCollectionSearchService {
+                                             ?subject met:q ?__token__ .
+                                             ?subject met:objectIDs ?objectid.                                                                                       
+                                           }
+                                         }'
+  ></semantic-search-query-keyword>
+  <!-- add label-->
+  <semantic-search-result-holder>
+    <div style="margin-top: 25px;">
+      <semantic-search-result>
+        <div class="{{label}}ResultsTable">
+          <semantic-context repository='ephedra'>
+            <semantic-table id='semantic-search-result-table'
+                            query='prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
+                                   SELECT DISTINCT ?subject ?id ?name ?title ?primaryImageSmall  WHERE {
+                                    BIND(?objectid as ?id)
+                                    BIND(?subject as ?iri) .
+                                    service met:METObjectDescriptionService {                                           
+                                        ?subject met:objectid ?id .
+                                        ?subject met:objectName ?name .
+                                        ?subject met:title ?title .
+                                        ?subject met:primaryImage ?primaryImage .
+                                        ?subject met:primaryImageSmall ?primaryImageSmall .
+                                        ?subject met:objectWikidata_URL ?objectWikidata_URL .
+                                    }
+                                  } ORDER BY ?subject'
+
+                            options='{"showFilter":false, "resultsPerPage":10}' 
+                            column-configuration='[
+                                                    {"displayName": "Name", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
+                                                     {"displayName": "Image", "cellTemplate": "{{> images}}"}
+                                                  ]'   
+            >
+
+            <template id='resourceName'>
+              <div>
+                {{#if title.value}}
+                <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://www.metmuseum.org/art/collection/search/{{id.value}}"
+                    title="https://www.metmuseum.org/art/collection/search/{{id.value}}">
+                  {{title.value}} 
+                </a>
+                {{else}}
+                  <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://www.metmuseum.org/art/collection/search/{{id.value}}"
+                    title="https://www.metmuseum.org/art/collection/search/{{id.value}}">
+                  {{id.value}} 
+                </a>
+                {{/if}}
+                         
+              </div>
+            </template>
+            
+            <template id='images'>
+                <div>
+                  {{#if primaryImageSmall.value}}
+                    <a href="[[decodeUriComponent '{{primaryImageSmall.value}}']]"
+                    title="[[decodeUriComponent '{{primaryImageSmall.value}}']]"
+                    target="_blank">
+                    
+                    <img src="[[decodeUriComponent '{{primaryImageSmall.value}}']]" 
+                        width="auto" height="180" style="max-width: 200px; object-fit: contain;">
+                    </a>
+                   {{/if}}
+                </div>
+                    
+            </template>
+          </semantic-context>
+        </div>
+      </semantic-search-result>
+    </div>
+  </semantic-search-result-holder>
+  
+</semantic-search>
+

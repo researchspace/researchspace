@@ -1,0 +1,97 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/metcollectiononline/>
+
+:METObjectDescriptionService a ephedra:Service ;    
+    sail:sailType "researchspace:RESTSail" ;
+    rdfs:label "A wrapper for the MET museum API service." ;
+
+    ephedra:hasSPARQLPattern (
+      [
+           sp:subject :_results ;
+           sp:predicate :objectid ;
+           sp:object :_objectid
+        ]  
+
+        [
+           sp:subject :_results ;
+           sp:predicate :title ;
+           sp:object :_title
+        ]
+
+        [
+           sp:subject :_results ;
+           sp:predicate :objectName ;
+           sp:object :_objectName
+        ]
+
+        [
+           sp:subject :_results ;
+           sp:predicate :primaryImage ;
+           sp:object :_primaryImage
+        ]
+
+        [
+           sp:subject :_results ;
+           sp:predicate :primaryImageSmall ;
+           sp:object :_primaryImageSmall
+        ]
+
+        [
+           sp:subject :_results ;
+           sp:predicate :objectWikidata_URL ;
+           sp:object :_objectWikidata_URL
+        ]
+    );
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "search by object id" ;
+        spl:predicate :_objectid ;
+        spl:valueType xsd:string
+    ] ;
+    
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Title" ;
+        spl:predicate :_title ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.title"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Object Name" ;
+        spl:predicate :_objectName ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.objectName"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Primary Image" ;
+        spl:predicate :_primaryImage ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.primaryImage"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Primary Image Small" ;
+        spl:predicate :_primaryImageSmall ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.primaryImageSmall"
+    ] ; 
+
+    spin:column [
+      a spin:Column ;
+        rdfs:comment "Object Wikidata URL" ;
+        spl:predicate :_objectWikidata_URL ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.objectWikidata_URL"   
+    ]
+.

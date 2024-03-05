@@ -1,0 +1,88 @@
+<semantic-search>
+  <semantic-search-query-keyword  domain='<{{domain}}>'
+                                  placeholder="Search {{label}}"
+                                  min-search-term-length=4
+                                  tokenize-lucene-query=false
+                                  escape-lucene-syntax=false
+                                  debounce=1000
+                                  debounce=500
+                                  query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
+                                         SELECT ?subject ?objectid {
+                                           service vam:vam {
+                                             ?subject vam:hasQuery ?__token__.
+                                             ?subject vam:hasPageSize "100" .
+                                             ?subject vam:hasPrimaryTitle ?title .
+                                             ?subject vam:hasObjectType ?objectType .
+                                             ?subject vam:hasSystemNumber ?objectid.
+                                             ?subject vam:hasIIIFImageUrl ?objectImageUrl .
+                                            } 
+                                         }'
+  ></semantic-search-query-keyword>
+  <!-- add label-->
+  <semantic-search-result-holder>
+    <div style="margin-top: 25px;">
+      <semantic-search-result>
+        <div class="{{label}}ResultsTable">
+          <semantic-context repository='ephedra'>
+            <semantic-table id='semantic-search-result-table'
+                            query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
+                                   SELECT DISTINCT ?subject ?id ?objectType ?title ?objectImageUrl ?description  WHERE {
+                                    BIND(?objectid as ?id)
+                                    BIND(?subject as ?iri) .
+                                    service vam:VamObject {
+                                        ?subject vam:objectid ?id .
+                                        ?subject vam:summaryDescription ?description .
+                                    }
+                                  } ORDER BY ?subject'
+
+                            options='{"showFilter":false, "resultsPerPage":10}' 
+                            column-configuration='[
+                                                    {"displayName": "Name", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
+                                                     {"displayName": "Image", "cellTemplate": "{{> images}}"}
+                                                  ]'   
+            >
+
+            <template id='resourceName'>
+              <div>
+                {{#if title.value}}
+                  <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://collections.vam.ac.uk/item/{{id.value}}"
+                    title="https://collections.vam.ac.uk/item/{{id.value}}">
+                  {{title.value}}                
+                  </a>
+                  {{#if description.value}} {{description.value}} {{/if}}
+                {{else}}
+                  <a class="text-link-action" 
+                    target="_blank" 
+                    href="https://collections.vam.ac.uk/item/{{id.value}}"
+                    title="https://collections.vam.ac.uk/item/{{id.value}}">
+                  {{id.value}} 
+                </a>
+                {{/if}}
+                         
+              </div>
+            </template>
+            
+            <template id='images'>
+                <div>
+                  {{#if objectImageUrl.value}}
+                    <a href="[[decodeUriComponent '{{objectImageUrl.value}}/full/!250,/0/default.jpg']]"
+                    title="[[decodeUriComponent '{{objectImageUrl.value}}/full/!250,/0/default.jpg']]"
+                    target="_blank">
+                    
+                    <img src="[[decodeUriComponent '{{objectImageUrl.value}}/full/!250,/0/default.jpg']]" 
+                        width="auto" height="180" style="max-width: 200px; object-fit: contain;">
+                    </a>
+                   {{/if}}
+                </div>
+                    
+            </template>
+          </semantic-context>
+        </div>
+      </semantic-search-result>
+    </div>
+  </semantic-search-result-holder>
+  
+</semantic-search>
+

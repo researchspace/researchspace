@@ -234,8 +234,8 @@ export class RsDropdownFormSelector extends AtomicValueInput<SelectInputProps, S
     const RESOURCE_FORM_IRI_QUERY = this.buildResourceFormIriQuery(queryResultBindings, iri)
     SparqlClient.select(RESOURCE_FORM_IRI_QUERY, {context: this.context.semanticContext})
     .onValue((fr) => {
-      const resourceForm = fr.results.bindings[0].resourceFormIRI.value.split('/').filter(Boolean).pop()
-      this.openSelectedNestedForm(`{{> forms:${resourceForm} nested=true editable=true mode="new" }}`)      
+      const resourceFormIri = fr.results.bindings[0].resourceFormIRI.value
+      this.openSelectedNestedForm(`{{> "${resourceFormIri}" nested=true editable=true mode="new" }}`)      
       })
     .onError((err) => console.error('Error during resource form query execution ',err))
   }

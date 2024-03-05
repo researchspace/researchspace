@@ -38,63 +38,20 @@
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
-
-   [[!-- {{#if nested}}
-      <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-osm-nested-place-proxy'
-                      on-event-source='{{viewId}}-select-osm-nested-place-trigger' 
-                      on-event-type='osmNestedPlaceSelect'
-                      proxy-event-type='Component.TemplateUpdate' 
-                      proxy-targets='["{{viewId}}-form-test"]'
-                      additional-data='{"mode": "new", 
-                                        {{#if osmPlaceURI}}"osmPlaceURI": "{{osmPlaceURI}}",{{/if}}
-                                        {{#if osmPlaceName}}"osmPlaceName": "{{osmPlaceName}}",{{/if}}
-                                        {{#if placeLabel}}"placeLabel": "{{placeLabel}}",{{/if}}
-                                        {{#if osmPlaceURI}}"placeDescription": "{{placeDescription}}",{{/if}}
-                                        {{#if osmPlaceURI}}"osmGeoCoordinates": "{{osmGeoCoordinates}}",{{/if}}
-                                        "selectedOsmNestedPlace": "true"
-                                      }'
-      ></mp-event-proxy>
-
-      <mp-event-proxy id='{{viewId}}-closeModal-onSelect-osm-nested-place-proxy'
-                      on-event-source='{{viewId}}-select-osm-nested-place-trigger' 
-                      on-event-type='osmNestedPlaceSelect'
-                      proxy-event-type='OverlayDialog.Close' 
-                      proxy-targets='["{{viewId}}-importNestedOSMPlace-dialog"]'
-      ></mp-event-proxy>
-      
-      <mp-overlay-dialog  id='{{viewId}}-importNestedOSMPlace-dialog' 
-                                                title="Import place from OpenStreetMap" 
-                                                type="lightbox">
-                              <mp-overlay-dialog-trigger>
-                                <button class="btn btn-action btn-textAndIcon">
-                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                  <span>Import from OpenStreetMap</span>
-                                </button>
-                              </mp-overlay-dialog-trigger>
-                              <mp-overlay-dialog-content>
-                                <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
-                                                  options='{
-                                                            "selectTriggerId": "{{viewId}}-select-osm-nested-place-trigger",
-                                                            "selectTriggerType": "osmNestedPlaceSelect",
-                                                            "mode": "new",
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}-nestedPlace-"
-                                                          }'>
-                                </inline-template>
-                              </mp-overlay-dialog-content>
-      </mp-overlay-dialog>
-    {{/if}}
-    --]]
     
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
       <rs-tab event-key="detail" title="Details">
         <div class="form-2column-container">
           <div>
             {{#if placeLabel}}
-              <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{placeLabel}}" force-defaults=true></semantic-form-text-input>
+              <div class="focused-input-container">
+                <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{placeLabel}}" force-defaults=true></semantic-form-text-input>
+              </div>
             {{else}}
               {{#if osmPlaceName}}
-                <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
+                <div class="focused-input-container">
+                  <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
+                </div>
               {{else}}
                 <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
               {{/if}}
@@ -102,7 +59,9 @@
           
 
             {{#if placeDescription}}
-              <semantic-form-text-input for="place_description" default-value="{{placeDescription}}" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
+              <div class="focused-input-container">
+                <semantic-form-text-input for="place_description" default-value="{{placeDescription}}" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
+              </div>
             {{else}}
               <semantic-form-text-input for="place_description" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
             {{/if}}
@@ -234,7 +193,9 @@
             ></semantic-form-tree-picker-input>
 
             {{#if osmGeoCoordinates}}
-              <semantic-form-text-input for="place_geo_coordinates" default-value='{{osmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
+              <div class="focused-input-container">
+                <semantic-form-text-input for="place_geo_coordinates" default-value='{{osmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
+              </div>
             {{else}}
               <semantic-form-text-input for="place_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
             {{/if}}

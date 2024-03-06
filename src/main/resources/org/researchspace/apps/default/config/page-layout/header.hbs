@@ -95,7 +95,14 @@
 
         <mp-anonymous-hidden>
           <li>
-            <mp-overlay-dialog title="New resource" type="lightbox">
+            <mp-event-proxy id='closeModal-onSelect-newResource-proxy'
+                          on-event-source='openResourceForm-in-new-frame-trigger' 
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["newResource-form-dialog"]'
+            ></mp-event-proxy>
+
+            <mp-overlay-dialog title="New resource" type="lightbox" id="newResource-form-dialog">
               <mp-overlay-dialog-trigger>
                 <button class="btn btn-default btn-textAndIcon" style="margin-left: 30px;">
                   <rs-icon icon-type="round" icon-name="add_box"></rs-icon>
@@ -103,56 +110,374 @@
                 </button>
               </mp-overlay-dialog-trigger>
               <mp-overlay-dialog-content>
-                <semantic-query query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI WHERE {
-                                        ?resourceConfig a Platform:resource_configuration . 
-                                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
-                                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
-                                        ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
-                                      
-                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
-                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
-                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
-                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
-                                        FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
-                                      } ORDER BY ASC(?resourceName)'
-                                
-                                template='\{{> newResource}}'>
+                <bs-tab-container id="new-resource-tab-container" default-active-key="all">
+                  <bs-tabs mount-on-enter="true">
 
-                  <template id='newResource'>
-                    <bs-tab-container id="new-resource-tab-container" default-active-key="all">
-                      <bs-tabs mount-on-enter="true">
-                        <bs-tab event-key="all" title="All resources">
-                          <div class="all-resources-container">
-                            \{{#each bindings}}
-                              <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                             urlqueryparam-view='entity-editor' 
-                                            urlqueryparam-entity-type-config='\{{resourceConfig.value}}'
-                                            urlqueryparam-mode='new'
-                              >
-                                <div class="resource-card">
+                    <bs-tab event-key="all" title="All resources">
+                      <div class="resources-tab-container">
+                        <semantic-table  id='newResource-tab-results'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI WHERE {
+                                                ?resourceConfig a Platform:resource_configuration . 
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                              
+                                                OPTIONAL {
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                }
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
+                                              } ORDER BY ASC(?resourceName)'
+
+                                        tuple-template='\{{> newResourceCard}}',
+                                        options='{"showFilter":true, "resultsPerPage":50}'
+                      >
+                        <template id='newResourceCard'>
+                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
+                                            type='Dashboard.AddFrame'
+                                            data='{"viewId":"entity-editor", 
+                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
+                                                  "editable": true,
+                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
+                                                  "mode":"new"}' 
+                                            targets='["thinking-frames"]'>
+
+                              <div class="resource-card">
+                                \{{#if resourceIcon}}
+                                  <rs-icon icon-type="round" icon-name="\{{resourceIcon.value}}"></rs-icon>
+                                \{{else}}
                                   <rs-icon icon-type="round" icon-name="image"></rs-icon>
-                                  <div>\{{resourceName.value}}</div>
-                              </semantic-link>
-                            \{{/each}}
-                          </div>
-                        </bs-tab>
-                        <bs-tab event-key="general" title="Generic">
+                                \{{/if}}
+                                <div>\{{resourceName.value}}</div>
+                              </div>
+                          </mp-event-trigger>
+                        </template>
+                        </semantic-table>
+                      </div>
+                    </bs-tab>
 
-                        </bs-tab>
-                        <bs-tab event-key="actor" title="Actors">
+                    <bs-tab event-key="general" title="Generic">
+                      <div class="resources-tab-container">
+                        <semantic-table  id='newResource-tab-results'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
+                                                ?resourceConfig a Platform:resource_configuration . 
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                                
+                                                OPTIONAL {
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                }
+                                              
+                                                FILTER (?resourceConfig NOT IN (
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                )
 
-                        </bs-tab>
-                        <bs-tab event-key="thing" title="Things">
+                                                  FILTER (EXISTS {?resourceOntologyClass rdfs:subClassOf crm:E1_CRM_Entity} || (?resourceOntologyClass = crm:E1_CRM_Entity)) 
 
-                        </bs-tab>
-                        <bs-tab event-key="event" title="Events">
+                                              } ORDER BY ASC(?resourceName)'
 
-                        </bs-tab>
-                      </bs-tabs>
-                    </bs-tab-container>
-                  </template>
+                                        tuple-template='\{{> newResourceCard}}',
+                                        options='{"showFilter":true, "resultsPerPage":50}'
+                      >
+                        <template id='newResourceCard'>
+                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
+                                            type='Dashboard.AddFrame'
+                                            data='{"viewId":"entity-editor", 
+                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
+                                                  "editable": true,
+                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
+                                                  "mode":"new"}' 
+                                            targets='["thinking-frames"]'>
 
-                </semantic-query>
+                              <div class="resource-card">
+                                \{{#if resourceIcon}}
+                                  <rs-icon icon-type="round" icon-name="\{{resourceIcon.value}}"></rs-icon>
+                                \{{else}}
+                                  <rs-icon icon-type="round" icon-name="image"></rs-icon>
+                                \{{/if}}
+                                <div>\{{resourceName.value}}</div>
+                              </div>
+                          </mp-event-trigger>
+                        </template>
+                        </semantic-table>
+                      </div>
+                    </bs-tab>
+
+                    <bs-tab event-key="thing" title="Things">
+                      <div class="resources-tab-container">
+                        <semantic-table  id='newResource-tab-results'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
+                                                ?resourceConfig a Platform:resource_configuration . 
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                              
+                                                OPTIONAL {
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                }
+
+                                                FILTER (?resourceConfig NOT IN (
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
+
+                                                  #removed person, because subClass of Biological object
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Person>)
+                                                )
+
+                                                FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E18_Physical_Thing} 
+
+                                              } ORDER BY ASC(?resourceName)'
+
+                                        tuple-template='\{{> newResourceCard}}',
+                                        options='{"showFilter":true, "resultsPerPage":50}'
+                      >
+                        <template id='newResourceCard'>
+                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
+                                            type='Dashboard.AddFrame'
+                                            data='{"viewId":"entity-editor", 
+                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
+                                                  "editable": true,
+                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
+                                                  "mode":"new"}' 
+                                            targets='["thinking-frames"]'>
+
+                              <div class="resource-card">
+                                \{{#if resourceIcon}}
+                                  <rs-icon icon-type="round" icon-name="\{{resourceIcon.value}}"></rs-icon>
+                                \{{else}}
+                                  <rs-icon icon-type="round" icon-name="image"></rs-icon>
+                                \{{/if}}
+                                <div>\{{resourceName.value}}</div>
+                              </div>
+                          </mp-event-trigger>
+                        </template>
+                        </semantic-table>
+                      </div>
+                    </bs-tab>
+
+                    <bs-tab event-key="actor" title="Actors">
+                      <div class="resources-tab-container">
+                        <semantic-table  id='newResource-tab-results'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
+                                                ?resourceConfig a Platform:resource_configuration . 
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                              
+                                                OPTIONAL {
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                }
+                                                FILTER (?resourceConfig NOT IN (
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                )
+
+                                                FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E39_Actor} 
+
+                                              } ORDER BY ASC(?resourceName)'
+
+                                        tuple-template='\{{> newResourceCard}}',
+                                        options='{"showFilter":true, "resultsPerPage":50}'
+                      >
+                        <template id='newResourceCard'>
+                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
+                                            type='Dashboard.AddFrame'
+                                            data='{"viewId":"entity-editor", 
+                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
+                                                  "editable": true,
+                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
+                                                  "mode":"new"}' 
+                                            targets='["thinking-frames"]'>
+
+                              <div class="resource-card">
+                                \{{#if resourceIcon}}
+                                  <rs-icon icon-type="round" icon-name="\{{resourceIcon.value}}"></rs-icon>
+                                \{{else}}
+                                  <rs-icon icon-type="round" icon-name="recent_actors"></rs-icon>
+                                \{{/if}}
+                                <div>\{{resourceName.value}}</div>
+                              </div>
+                          </mp-event-trigger>
+                        </template>
+                        </semantic-table>
+                      </div>
+                    </bs-tab>
+
+                    <bs-tab event-key="event" title="Events">
+                      <div class="resources-tab-container">
+                        <semantic-table  id='newResource-tab-results'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
+                                                ?resourceConfig a Platform:resource_configuration . 
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                              
+                                                OPTIONAL {
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                }
+                                                FILTER (?resourceConfig NOT IN (
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                )
+
+                                                FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E2_Temporal_Entity} 
+
+                                              } ORDER BY ASC(?resourceName)'
+
+                                        tuple-template='\{{> newResourceCard}}',
+                                        options='{"showFilter":true, "resultsPerPage":50}'
+                      >
+                        <template id='newResourceCard'>
+                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
+                                            type='Dashboard.AddFrame'
+                                            data='{"viewId":"entity-editor", 
+                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
+                                                  "editable": true,
+                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
+                                                  "mode":"new"}' 
+                                            targets='["thinking-frames"]'>
+
+                              <div class="resource-card">
+                                \{{#if resourceIcon}}
+                                  <rs-icon icon-type="round" icon-name="\{{resourceIcon.value}}"></rs-icon>
+                                \{{else}}
+                                  <rs-icon icon-type="round" icon-name="event"></rs-icon>
+                                \{{/if}}
+                                <div>\{{resourceName.value}}</div>
+                              </div>
+                          </mp-event-trigger>
+                        </template>
+                        </semantic-table>
+                      </div>
+                    </bs-tab>
+
+                    <bs-tab event-key="concepts" title="Conceptual objects">
+                      <div class="resources-tab-container">
+                        <semantic-table  id='newResource-tab-results'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceOntologyClass ?resourceFormIRI ?resourceIcon WHERE {
+                                                ?resourceConfig a Platform:resource_configuration . 
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                              
+                                                OPTIONAL {
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                }
+
+                                                FILTER (?resourceConfig NOT IN (
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
+
+                                                  #following resources are removed as listed in System resources
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication>)
+                                                )
+
+                                                FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E28_Conceptual_Object} 
+
+                                              } ORDER BY ASC(?resourceName)'
+
+                                        tuple-template='\{{> newResourceCard}}',
+                                        options='{"showFilter":true, "resultsPerPage":50}'
+                      >
+                        <template id='newResourceCard'>
+                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
+                                            type='Dashboard.AddFrame'
+                                            data='{"viewId":"entity-editor", 
+                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
+                                                  "editable": true,
+                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
+                                                  "mode":"new"}' 
+                                            targets='["thinking-frames"]'>
+
+                              <div class="resource-card">
+                                \{{#if resourceIcon}}
+                                  <rs-icon icon-type="round" icon-name="\{{resourceIcon.value}}"></rs-icon>
+                                \{{else}}
+                                  <rs-icon icon-type="round" icon-name="image"></rs-icon>
+                                \{{/if}}
+                                <div>\{{resourceName.value}}</div>
+                              </div>
+                          </mp-event-trigger>
+                        </template>
+                        </semantic-table>
+                      </div>
+                    </bs-tab>
+
+                    <bs-tab event-key="system" title="System resources">
+                      <div class="resources-tab-container">
+                        <semantic-table  id='newResource-tab-results'
+                                        query='SELECT ?resourceConfig ?resourceName ?resourceFormIRI ?resourceIcon WHERE {
+                                                VALUES (?resourceConfig) { 
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Document>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Image_annotation>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Publication>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
+                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
+                                                }
+
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .
+                                                ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+                                                OPTIONAL {
+                                                  ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_card_icon> ?resourceIcon .
+                                                }
+                                              } ORDER BY ASC(?resourceName)'
+
+                                        tuple-template='\{{> newResourceCard}}',
+                                        options='{"showFilter":true, "resultsPerPage":50}'
+                      >
+                        <template id='newResourceCard'>
+                          <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
+                                            type='Dashboard.AddFrame'
+                                            data='{"viewId":"entity-editor", 
+                                                  "entityTypeConfig": "\{{resourceConfig.value}}", 
+                                                  "editable": true,
+                                                  "resourceEditorLabel": "New \{{resourceName.value}}",
+                                                  "mode":"new"}' 
+                                            targets='["thinking-frames"]'>
+
+                              <div class="resource-card">
+                                \{{#if resourceIcon}}
+                                  <rs-icon icon-type="round" icon-name="\{{resourceIcon.value}}"></rs-icon>
+                                \{{else}}
+                                  <rs-icon icon-type="round" icon-name="image"></rs-icon>
+                                \{{/if}}
+                                <div>\{{resourceName.value}}</div>
+                              </div>
+                          </mp-event-trigger>
+                        </template>
+                        </semantic-table>
+                      </div>
+                    </bs-tab>
+
+                  </bs-tabs>
+                </bs-tab-container>
+
               </mp-overlay-dialog-content>
             </mp-overlay-dialog>
           </li>

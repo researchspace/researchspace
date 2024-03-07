@@ -182,13 +182,12 @@ export class PrintComponent extends Component<Props, State> {
 
     sections.forEach((section) => {
       const id = section.props.id;
-
       const group = _.find(groups, { id });
 
       if (group) {
         group.sections.push(section);
       } else {
-        groups.push({ id, sections: [section] });
+        groups[id] = ({ id, sections: [section] });
       }
     });
 

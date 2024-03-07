@@ -22,16 +22,15 @@ import * as classnames from 'classnames';
 
 export interface IconProps extends HTMLAttributes<HTMLElement> {
   className?: string;
+  symbol?: boolean; // set to true if you want to use Material symbol instead of Material icon
   iconName: string;
   iconType: string;
 }
 
-const CLASS_NAME = 'material-icons-';
-
 export class Icon extends React.Component<IconProps> {
-
   render() {
-    const {iconName, iconType, className, ...iconProps} = this.props
+    const {symbol, iconName, iconType, className, ...iconProps} = this.props
+    const CLASS_NAME = symbol ? 'material-symbols-' : 'material-icons-';
     const controlClass = classnames(`${CLASS_NAME}${iconType}`, className);
     return (
         <i className={`${controlClass}`} {...iconProps} aria-hidden="true">{iconName}</i>

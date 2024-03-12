@@ -38,8 +38,26 @@ PREFIX : <http://www.researchspace.org/resource/system/service/vam/>
 
     [
       sp:subject :_results ;
+      sp:predicate :hasAccessionNumber ;
+      sp:object :_accessionNumber
+    ] 
+
+    [
+      sp:subject :_results ;
       sp:predicate :hasPrimaryTitle ;
       sp:object :_primaryTitle
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasPrimaryMaker ;
+      sp:object :_primaryMakerName
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :hasPrimaryMakerInTheRole ;
+      sp:object :_primaryMakerAssociation
     ]
 
     [
@@ -86,6 +104,30 @@ PREFIX : <http://www.researchspace.org/resource/system/service/vam/>
     spl:predicate :_objectType ;
     spl:valueType xsd:String ;
     ephedra:jsonPath "$.objectType"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "Accession Number" ;
+    spl:predicate :_accessionNumber ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$.accessionNumber"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "Primary Maker Name" ;
+    spl:predicate :_primaryMakerName ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$._primaryMaker.name"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "Primary Maker Association" ;
+    spl:predicate :_primaryMakerAssociation ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$._primaryMaker.association"
   ] ;
 
   spin:column [

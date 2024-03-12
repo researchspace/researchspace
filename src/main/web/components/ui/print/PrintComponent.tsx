@@ -188,8 +188,10 @@ export class PrintComponent extends Component<Props, State> {
       if (group) {
         group.sections.push(section);
       } else {
-        //groups.push({ id, sections: [section] });
-        groups[id] = ({ id, sections: [section] });
+          if (id !== null)
+            groups[id] = ({ id, sections: [section] });
+          else  
+            groups.push({ id, sections: [section] });
       }
     });
 
@@ -264,6 +266,7 @@ export class PrintComponent extends Component<Props, State> {
       ...sections[index],
       isSelected: e.target.checked,
     };
+    
     const newSections = [...sections];
     newSections.splice(index, 1, updatedSection);
     this.setState({ sections: newSections });
@@ -294,8 +297,8 @@ export class PrintComponent extends Component<Props, State> {
     let aside: ReactElement<any>;
     let preview: ReactElement<any>;
 
-    const sections = this.state.sections.filter(Boolean);
-
+    const sections = this.state.sections.filter(element => element !== undefined);
+    
     const selectedSections = sections
       .filter((section) => { 
         return section.isSelected;
@@ -324,6 +327,7 @@ export class PrintComponent extends Component<Props, State> {
     if (sections.length > 1) {
       const checkboxlist = sections.map((section, index) => {
         const { id, label } = section.content.props;
+        let sectionId = id?id:index;
         return D.div(
           { className: 'checkbox', key: id },
           D.label(
@@ -332,7 +336,7 @@ export class PrintComponent extends Component<Props, State> {
               type: 'checkbox',
               value: label,
               checked: section.isSelected,
-              onChange: this.handleCheck.bind(this, index),
+              onChange: this.handleCheck.bind(this, sectionId),
             }),
             label
           )

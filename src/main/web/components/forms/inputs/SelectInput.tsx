@@ -24,6 +24,7 @@ import * as Immutable from 'immutable';
 import * as React from 'react';
 import { Button } from 'react-bootstrap';
 import * as _ from 'lodash';
+import { DropdownButton, MenuItem } from 'react-bootstrap';
 
 import { Cancellation } from 'platform/api/async/Cancellation';
 import { Rdf } from 'platform/api/rdf';
@@ -38,22 +39,52 @@ import { queryValues } from '../QueryValues';
 import { NestedModalForm, tryExtractNestedForm } from './NestedModalForm';
 import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
+import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
+
+type formData = {
+  label?: string,
+  nestedForm?: string  
+}
 
 export interface SelectInputProps extends AtomicValueInputProps {
   template?: string;
   placeholder?: string;
   nestedFormTemplate?: string;
   showLinkResourceButton?: boolean;
+  formsData?: formData[];
 }
 
 interface State {
   valueSet?: Immutable.List<SparqlBindingValue>;
   nestedForm?: React.ReactElement<any>;
   nestedFormOpen?: boolean;
+  activeForm?: string;
+  nestedFormsData?: formData[];
 }
 
 const SELECT_TEXT_CLASS = 'select-text-field';
 const OPTION_CLASS = SELECT_TEXT_CLASS + 'option';
+
+const SPARQL_QUERY = SparqlUtil.Sparql`
+  SELECT DISTINCT ?config ?resourceRestrictionPattern WHERE {
+    {
+      ?__resourceIri__ (rdf:type/(rdfs:subClassOf*)) ?resourceOntologyClass.
+      ?config rdf:type Platform:resource_configuration;
+        <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass.
+      FILTER(NOT EXISTS { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type. })
+      OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
+    }
+    UNION
+    {
+      ?__resourceIri__ rdf:type ?resourceOntologyClass;
+        crm:P2_has_type ?resourceP2Type.
+      ?config rdf:type Platform:resource_configuration;
+        <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
+        <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
+    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
+    }
+  }
+`
 
 export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private readonly cancellation = new Cancellation();
@@ -65,7 +96,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     super(props, context);
     this.state = {
       valueSet: Immutable.List<SparqlBindingValue>(),
-      nestedFormOpen: false
+      nestedFormOpen: false,
+      nestedFormsData: []
     };
   }
 
@@ -105,12 +137,23 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
   componentDidMount() {
     this.initValueSet()
-    tryExtractNestedForm(this.props.children, this.context, this.props.nestedFormTemplate)
-      .then(nestedForm => {
-        if (nestedForm != undefined) {
-          this.setState({nestedForm});
-        }
-      });
+    
+    if(!_.isEmpty(this.props.formsData)) {
+      this.setState({
+        nestedFormsData: this.props.formsData
+      })
+    }
+    
+    
+    if (!_.isEmpty(this.props.nestedFormTemplate)) {
+      const nestedForms = [{
+        label: 'default',
+        nestedForm: this.props.nestedFormTemplate
+      }]
+      this.setState({
+        nestedFormsData: nestedForms
+      })
+    }
   }
 
   componentWillUnmount() {
@@ -165,7 +208,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
       return;
     }
 
-    let valueSet = this.state.valueSet;
+    const valueSet = this.state.valueSet;
     if (valueSet) {
       // try to find the selected value in the pre-computed valueSet
       const bindingValue = valueSet.find((setValue) => setValue.value.equals(v.value));
@@ -180,6 +223,57 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     return D.span({ id: v.label, className: OPTION_CLASS }, v.label || v.value.value);
   };
 
+  private openSelectedNestedForm(formTemplate: string) {
+    tryExtractNestedForm(this.props.children, this.context, formTemplate)
+      .then(nestedForm => {
+        if (nestedForm != undefined) {
+         this.setState({nestedForm});
+          this.toggleNestedForm()
+        }
+      });
+  }
+
+  private buildResourceFormIriQuery(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri) {
+    const UNION_QUERY = []
+    _.forEach(queryResultBindings, (b) => {
+      UNION_QUERY.push(
+        `{ 
+          BIND(${iri} AS ?item)
+            BIND(<${b.config.value}> AS ?config)
+            ${b.resourceRestrictionPattern ? b.resourceRestrictionPattern.value : ''}
+            ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
+        }`
+      )
+    })
+
+    return `SELECT ?resourceFormIRI WHERE { ${UNION_QUERY.join('UNION')} }`
+  }
+
+  private findAndOpenNestedForm(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri) {
+    const RESOURCE_FORM_IRI_QUERY = this.buildResourceFormIriQuery(queryResultBindings, iri)
+    SparqlClient.select(RESOURCE_FORM_IRI_QUERY, {context: this.context.semanticContext})
+    .onValue((fr) => {
+      const resourceFormIri = fr.results.bindings[0].resourceFormIRI.value
+      this.openSelectedNestedForm(`{{> "${resourceFormIri}" nested=true editable=true mode="new" }}`)      
+      })
+    .onError((err) => console.error('Error during resource form query execution ',err))
+  }
+
+  private onEditHandler(selectedValue: AtomicValue) {
+    if(!FieldValue.isEmpty(selectedValue)) {
+      const iri = selectedValue.value as Rdf.Iri
+      const query = SparqlClient.setBindings(SPARQL_QUERY, { __resourceIri__: iri});
+      SparqlClient.select(query, {context: this.context.semanticContext})
+        .onValue((r) => this.findAndOpenNestedForm(r.results.bindings, iri))
+        .onError((err) => console.error('Error during query execution ',err))
+    }
+  }
+
+  private onDropdownSelectHandler(label: string) {
+    const nestedFormTemplateSelected = this.state.nestedFormsData.filter((e) => e.label === label)[0].nestedForm
+    this.openSelectedNestedForm(nestedFormTemplateSelected)
+  }
+
   render() {
     const definition = this.props.definition;
     const options = this.state.valueSet ? this.state.valueSet.toArray() : new Array<SparqlBindingValue>();
@@ -187,8 +281,11 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     const inputValue = this.props.value;
     const selectedValue = FieldValue.isAtomic(inputValue) ? inputValue : undefined;
 
-    const showCreateNewButton = !_.isEmpty(this.state.nestedForm);
     const showLinkResourceButton = this.props.showLinkResourceButton ?? true
+
+    const showEditButton = selectedValue !== undefined
+    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormsData) && this.state.nestedFormsData.length > 1 && !showEditButton;
+    const showCreateNewButton = !_.isEmpty(this.state.nestedFormsData) && this.state.nestedFormsData.length === 1 && !showEditButton;
 
     const placeholder =
       typeof this.props.placeholder === 'undefined'
@@ -208,12 +305,26 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
           valueRenderer={this.valueRenderer}
         />
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
-        {showCreateNewButton ? (
-          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={this.toggleNestedForm}>
-            {selectedValue === undefined ? <Icon iconType='round' iconName='add_box'/> : <Icon iconType='round' iconName='edit'/>}
-            {selectedValue === undefined ? <span>New</span> : <span>Edit</span>}
+        { showCreateNewButton && (
+          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={() => this.onDropdownSelectHandler(this.state.nestedFormsData[0].label)}>
+            <Icon iconType='round' iconName='add_box'/>
+            <span>New</span>
           </Button>
-        ) : null}
+        )}
+        { showCreateNewDropdown && (
+          <DropdownButton title="New" id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
+            {this.state.nestedFormsData.map((e) => {
+                return (<MenuItem key={e.label} eventKey={e.label}>{e.label}</MenuItem>)
+              }
+            )}
+          </DropdownButton>
+        )}
+        { showEditButton && 
+          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={() => {this.onEditHandler(selectedValue)}}>
+            <Icon iconType='round' iconName='edit'/>
+            <span>Edit</span>
+          </Button>
+        }
         {showLinkResourceButton && !FieldValue.isEmpty(this.props.value) && 
             <ResourceLinkContainer 
               uri="http://www.researchspace.org/resource/ThinkingFrames" 

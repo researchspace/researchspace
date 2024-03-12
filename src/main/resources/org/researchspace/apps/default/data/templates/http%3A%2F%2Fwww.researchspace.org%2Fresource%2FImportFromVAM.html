@@ -14,6 +14,7 @@
                                              ?subject vam:hasPrimaryTitle ?title .
                                              ?subject vam:hasObjectType ?objectType .
                                              ?subject vam:hasSystemNumber ?objectid.
+                                             ?subject vam:hasAccessionNumber ?accessionNumber .
                                              ?subject vam:hasIIIFImageUrl ?objectImageUrl .
                                             } 
                                          }'
@@ -26,7 +27,7 @@
           <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
                             query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
-                                   SELECT DISTINCT ?subject ?id ?objectType ?title ?objectImageUrl ?description  WHERE {
+                                   SELECT DISTINCT ?subject ?id ?objectType ?title ?objectImageUrl ?description ?accessionNumber WHERE {
                                     BIND(?objectid as ?id)
                                     BIND(?subject as ?iri) .
                                     service vam:VamObject {
@@ -52,6 +53,7 @@
                   {{title.value}}                
                   </a>
                   {{#if description.value}} {{description.value}} {{/if}}
+                  {{#if accessionNumber.value}} {{accessionNumber.value}} {{/if}}
                 {{else}}
                   <a class="text-link-action" 
                     target="_blank" 

@@ -22,7 +22,7 @@
           <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
                             query='prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
-                                   SELECT DISTINCT ?subject ?id ?name ?title ?primaryImageSmall  WHERE {
+                                   SELECT DISTINCT ?subject ?id ?name ?title ?primaryImageSmall ?accessionNumber WHERE {
                                     BIND(?objectid as ?id)
                                     BIND(?subject as ?iri) .
                                     service met:METObjectDescriptionService {                                           
@@ -32,6 +32,7 @@
                                         ?subject met:primaryImage ?primaryImage .
                                         ?subject met:primaryImageSmall ?primaryImageSmall .
                                         ?subject met:objectWikidata_URL ?objectWikidata_URL .
+                                        ?subject met:accessionNumber ?accessionNumber .
                                     }
                                   } ORDER BY ?subject'
 
@@ -49,14 +50,14 @@
                     target="_blank" 
                     href="https://www.metmuseum.org/art/collection/search/{{id.value}}"
                     title="https://www.metmuseum.org/art/collection/search/{{id.value}}">
-                  {{title.value}} 
+                  {{title.value}} and {{accessionNumber.value}}
                 </a>
                 {{else}}
                   <a class="text-link-action" 
                     target="_blank" 
                     href="https://www.metmuseum.org/art/collection/search/{{id.value}}"
                     title="https://www.metmuseum.org/art/collection/search/{{id.value}}">
-                  {{id.value}} 
+                  {{id.value}} and {{accessionNumber.value}}
                 </a>
                 {{/if}}
                          

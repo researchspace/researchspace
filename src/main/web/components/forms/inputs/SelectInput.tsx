@@ -41,17 +41,57 @@ import Icon from 'platform/components/ui/icon/Icon';
 import ResourceLinkContainer from 'platform/api/navigation/components/ResourceLinkContainer';
 import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
-type formData = {
+type nestedFormEl = {
   label?: string,
   nestedForm?: string  
 }
 
 export interface SelectInputProps extends AtomicValueInputProps {
   template?: string;
+  
   placeholder?: string;
-  nestedFormTemplate?: string;
+  
   showLinkResourceButton?: boolean;
-  formsData?: formData[];
+  
+  /**
+   * List of form templates used to create a new instance
+   * Each form element needs to have a form template and a label
+   *
+   * If there is only 1 element, then a "New" button will be displayed
+   * Otherwise, in case of more than 1 element, the "New" will be rendered as dropdown
+   * 
+   * @example this will render a dropdown with two labels, Actor and Group
+   * 
+   *  <semantic-form-select-input
+   *     for='object_current_owner'
+   *     for='object_current_owner'
+   *     nested-form-templates='[
+   *         {
+   *             "label": "Actor",
+   *             "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Actor\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+   *         },
+   *         {
+   *             "label": "Group",
+   *             "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+   *         }
+   *     ]'>
+   *   </semantic-form-select-input>
+   * 
+   * * @example this will render a "New" button
+   * 
+   *  <semantic-form-select-input
+   *     for='object_current_owner'
+   *     for='object_current_owner'
+   *     nested-form-templates='[
+   *         {
+   *             "label": "Group",
+   *             "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+   *         }
+   *     ]'>
+   *   </semantic-form-select-input>
+   *
+   */
+  nestedFormTemplates?: nestedFormEl[];
 }
 
 interface State {
@@ -59,7 +99,8 @@ interface State {
   nestedForm?: React.ReactElement<any>;
   nestedFormOpen?: boolean;
   activeForm?: string;
-  nestedFormsData?: formData[];
+  nestedFormTemplates?: nestedFormEl[];
+  labelFormSelected?: string;
 }
 
 const SELECT_TEXT_CLASS = 'select-text-field';
@@ -97,7 +138,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     this.state = {
       valueSet: Immutable.List<SparqlBindingValue>(),
       nestedFormOpen: false,
-      nestedFormsData: []
+      nestedFormTemplates: []
     };
   }
 
@@ -138,20 +179,9 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   componentDidMount() {
     this.initValueSet()
     
-    if(!_.isEmpty(this.props.formsData)) {
+    if(!_.isEmpty(this.props.nestedFormTemplates)) {
       this.setState({
-        nestedFormsData: this.props.formsData
-      })
-    }
-    
-    
-    if (!_.isEmpty(this.props.nestedFormTemplate)) {
-      const nestedForms = [{
-        label: 'default',
-        nestedForm: this.props.nestedFormTemplate
-      }]
-      this.setState({
-        nestedFormsData: nestedForms
+        nestedFormTemplates: this.props.nestedFormTemplates
       })
     }
   }
@@ -254,7 +284,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     SparqlClient.select(RESOURCE_FORM_IRI_QUERY, {context: this.context.semanticContext})
     .onValue((fr) => {
       const resourceFormIri = fr.results.bindings[0].resourceFormIRI.value
-      this.openSelectedNestedForm(`{{> "${resourceFormIri}" nested=true editable=true mode="new" }}`)      
+      this.openSelectedNestedForm(`{{> "${resourceFormIri}" nested=true editable=true mode="edit" }}`)      
       })
     .onError((err) => console.error('Error during resource form query execution ',err))
   }
@@ -270,13 +300,17 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   }
 
   private onDropdownSelectHandler(label: string) {
-    const nestedFormTemplateSelected = this.state.nestedFormsData.filter((e) => e.label === label)[0].nestedForm
+    const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
+    this.setState({
+      labelFormSelected: label
+    })
     this.openSelectedNestedForm(nestedFormTemplateSelected)
   }
 
   render() {
     const definition = this.props.definition;
     const options = this.state.valueSet ? this.state.valueSet.toArray() : new Array<SparqlBindingValue>();
+    let formSelected = null
 
     const inputValue = this.props.value;
     const selectedValue = FieldValue.isAtomic(inputValue) ? inputValue : undefined;
@@ -284,8 +318,8 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     const showLinkResourceButton = this.props.showLinkResourceButton ?? true
 
     const showEditButton = selectedValue !== undefined
-    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormsData) && this.state.nestedFormsData.length > 1 && !showEditButton;
-    const showCreateNewButton = !_.isEmpty(this.state.nestedFormsData) && this.state.nestedFormsData.length === 1 && !showEditButton;
+    const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !showEditButton;
+    const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !showEditButton;
 
     const placeholder =
       typeof this.props.placeholder === 'undefined'
@@ -306,14 +340,14 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
         />
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         { showCreateNewButton && (
-          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={() => this.onDropdownSelectHandler(this.state.nestedFormsData[0].label)}>
+          <Button className={`${SELECT_TEXT_CLASS}__create-button btn-textAndIcon`} onClick={() => this.onDropdownSelectHandler(this.state.nestedFormTemplates[0].label)}>
             <Icon iconType='round' iconName='add_box'/>
             <span>New</span>
           </Button>
         )}
         { showCreateNewDropdown && (
-          <DropdownButton title="New" id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
-            {this.state.nestedFormsData.map((e) => {
+          <DropdownButton title="New" pullRight id="add-form" onSelect={(label) => this.onDropdownSelectHandler(label)}>
+            {this.state.nestedFormTemplates.map((e) => {
                 return (<MenuItem key={e.label} eventKey={e.label}>{e.label}</MenuItem>)
               }
             )}
@@ -342,6 +376,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
             subject={
             FieldValue.isEmpty(this.props.value) ? null : this.props.value.value as Rdf.Iri
             }
+            title={selectedValue?.label ?? this.state.labelFormSelected}
             definition={this.props.definition}
             onSubmit={this.onNestedFormSubmit}
             onCancel={() => this.setState({ nestedFormOpen: false })}

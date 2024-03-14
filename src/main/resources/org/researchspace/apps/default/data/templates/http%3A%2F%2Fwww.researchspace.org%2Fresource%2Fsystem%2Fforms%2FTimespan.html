@@ -74,9 +74,15 @@
                         <semantic-form-select-input for='dimension_time_unit' 
                                                     render-header="false"
                                                     placeholder="Select time unit" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                        scheme="http://www.researchspace.org/resource/vocab/time_unit"
-                                                                                        entityType="time unit" }}{{{{/raw}}}}'> 
+                                                    nested-form-templates='[ 
+                                                                              {
+                                                                                "label": "Time unit",
+                                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                                scheme=\"http://www.researchspace.org/resource/vocab/time_unit\"
+                                                                                                                entityType=\"time unit\" }}
+                                                                                               {{{{/raw}}}}"
+                                                                              }
+                                                                            ]'> 
                         </semantic-form-select-input>
                     </div>
                     <div style="flex: 1;">
@@ -89,7 +95,14 @@
             <semantic-form-select-input for='timespan_falls_within_timespan' 
                                         label="Timespan falls within timespan" 
                                         placeholder="Select timespan" 
-                                        nested-form-template='{{{{raw}}}}{{> forms:Timespan nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Timespan",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'> 
             </semantic-form-select-input>   
 
             <semantic-form-text-input for="timespan_description" multiline="true" label="Timespan description/comment" placeholder="Enter description/comment"></semantic-form-text-input>

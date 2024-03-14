@@ -76,9 +76,15 @@
                 <semantic-form-select-input for='exhibition_status' 
                                             label="Exhibition status" 
                                             placeholder="Select exhibition status" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                            scheme="http://www.researchspace.org/resource/vocab/status"
-                                                                                            entityType="status" }}{{{{/raw}}}}'> 
+                                            nested-form-templates='[ 
+                                              {
+                                                "label": "Status",
+                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                scheme=\"http://www.researchspace.org/resource/vocab/status\"
+                                                                                entityType=\"status\" }}
+                                                              {{{{/raw}}}}"
+                                              }
+                                            ]'> 
                 </semantic-form-select-input>
             
                 <semantic-form-composite-input  for="exhibition_date" 
@@ -147,9 +153,15 @@
             <semantic-form-select-input for='exhibition_carried_out_by' 
                                         label="Exhibition carried out by organisation" 
                                         placeholder="Select organisation" 
-                                        nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true 
-                                                                                                scheme="http://www.researchspace.org/resource/system/vocab/organisation"
-                                                                                                entityType="organisation" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Organisation",
+                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Organisation\" onlyDetails=true nested=true editable=true mode=\"new\" 
+                                                                            scheme=\"http://www.researchspace.org/resource/system/vocab/organisation\"
+                                                                            entityType=\"organisation\" }}
+                                                            {{{{/raw}}}}"
+                                          }
+                                        ]'> 
             </semantic-form-select-input>
 
           {{#if node}}
@@ -208,7 +220,7 @@
                     <semantic-form-select-input for='exhibition_area_location' 
                                                 label="Location" 
                                                 placeholder="Select location" 
-                                                nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_places]]'> 
                     </semantic-form-select-input>     
                   </div>
 

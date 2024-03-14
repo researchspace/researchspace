@@ -142,9 +142,15 @@
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                                scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
-                                                                                                                entityType="identifier" }}{{{{/raw}}}}'> 
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                        scheme=\"http://www.researchspace.org/resource/vocab/thing_identifier\"
+                                                                                                        entityType=\"identifier\" }}
+                                                                                        {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'>
                                         </semantic-form-select-input>
                                     </div>
                                 </div>
@@ -223,7 +229,7 @@
                             <semantic-form-select-input for='location_falls_within_place' 
                                                         label="Place / Organisation" 
                                                         placeholder="Select location" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_places]]'> 
                             </semantic-form-select-input>     
                         </div>
 
@@ -240,8 +246,8 @@
 
                 <semantic-form-select-input for='collection_curator' 
                                             label="Curator (former or current)" 
-                                            placeholder="Select actor" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                            placeholder="Select person/group/actor" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                 </semantic-form-select-input> 
 
             </rs-tab>
@@ -255,15 +261,15 @@
                         <div class="form-section">
                             <div class="form-section-first-input">
                                 <semantic-form-select-input for='collection_current_owner' 
-                                                        label="Current owner" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                            label="Current owner" 
+                                                            placeholder="Select person/group/actor" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-select-input>
                             </div>
                             <semantic-form-select-input for='collection_former_owner' 
-                                                    label="Former owner" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        label="Former owner" 
+                                                        placeholder="Select person/group/actor" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-select-input>
                         </div>
                     </div>
@@ -273,16 +279,16 @@
                         <div class="form-section">
                             <div class="form-section-first-input">
                                 <semantic-form-select-input for='collection_current_keeper' 
-                                                        label="Current keeper" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                            label="Current keeper" 
+                                                            placeholder="Select person/group/actor" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-select-input>
                             </div>    
 
                             <semantic-form-select-input for='collection_former_keeper' 
-                                                    label="Former keeper" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        label="Former keeper" 
+                                                        placeholder="Select person/group/actor" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-select-input>
                         </div>
                     </div>

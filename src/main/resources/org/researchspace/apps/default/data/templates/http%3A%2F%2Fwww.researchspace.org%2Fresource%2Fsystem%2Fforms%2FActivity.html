@@ -68,7 +68,14 @@
             <semantic-form-select-input for='activity_research_question' 
                                         label="Activity research question" 
                                         placeholder="Enter the activity research question"
-                                        nested-form-template='{{{{raw}}}}{{> forms:ResearchQuestion nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Research question",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/ResearchQuestion\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'>  
             </semantic-form-select-input> 
 
             
@@ -78,9 +85,15 @@
                 <semantic-form-select-input for='activity_status' 
                                             label="Activity status" 
                                             placeholder="Select activity status" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                scheme="http://www.researchspace.org/resource/vocab/status"
-                                                                                entityType="status" }}{{{{/raw}}}}'> 
+                                            nested-form-templates='[ 
+                                              {
+                                                "label": "Status",
+                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                scheme=\"http://www.researchspace.org/resource/vocab/status\"
+                                                                                entityType=\"status\" }}
+                                                              {{{{/raw}}}}"
+                                              }
+                                            ]'> 
                 </semantic-form-select-input>
               </div>
 
@@ -88,9 +101,15 @@
                 <semantic-form-select-input for='activity_priority' 
                                             label="Activity priority" 
                                             placeholder="Select activity priority" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                scheme="http://www.researchspace.org/resource/vocab/priority"
-                                                                                entityType="priority" }}{{{{/raw}}}}'> 
+                                            nested-form-templates='[ 
+                                              {
+                                                "label": "Priority",
+                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                scheme=\"http://www.researchspace.org/resource/vocab/priority\"
+                                                                                entityType=\"priority\" }}
+                                                               {{{{/raw}}}}"
+                                              }
+                                            ]'> 
                 </semantic-form-select-input>  
               </div>
             </div>
@@ -98,7 +117,14 @@
             <semantic-form-select-input for='activity_date' 
                                         label="Activity timespan/date" 
                                         placeholder="Select timespan" 
-                                        nested-form-template='{{{{raw}}}}{{> forms:Timespan nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Timespan",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'> 
             </semantic-form-select-input> 
 
             {{#if node}}
@@ -108,7 +134,7 @@
             <semantic-form-select-input for='activity_place' 
                                         label="Activity place" 
                                         placeholder="Select place" 
-                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>  
             </semantic-form-select-input> 
 
           </div>
@@ -167,8 +193,8 @@
 
         <semantic-form-select-input for='activity_occurred_in_the_presence_of' 
                                     label="Activity occurred in the presence of" 
-                                    placeholder="Select actor" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    placeholder="Select person/group/actor" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-select-input> 
 
 
@@ -190,13 +216,13 @@
         <semantic-form-select-input for='activity_took_place_on_physical_thing' 
                                     label="Activity took place on or within" 
                                     placeholder="Select thing" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='activity_occurred_in_the_presence_of' 
                                     label="Activity occurred in the presence of" 
                                     placeholder="Select thing" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
         </semantic-form-select-input> 
 
 
@@ -233,13 +259,27 @@
         <semantic-form-select-input for='activity_had_general_purpose_type' 
                                     label="General purpose (type)" 
                                     placeholder="Select type" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[ 
+                                      {
+                                        "label": "Type",
+                                        "nestedForm": "{{{{raw}}}}
+                                                          {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
+                                                       {{{{/raw}}}}"
+                                      }
+                                    ]'> 
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='activity_used_specific_technique_procedure' 
                                     label="Specific procedure" 
                                     placeholder="Select procedure" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:DesignOrProcedure nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[ 
+                                      {
+                                        "label": "Design or procedure",
+                                        "nestedForm": "{{{{raw}}}}
+                                                          {{> \"http://www.researchspace.org/resource/system/forms/DesignOrProcedure\" nested=true editable=true mode=\"new\"}}
+                                                       {{{{/raw}}}}"
+                                      }
+                                    ]'>
         </semantic-form-select-input> 
 
         <semantic-form-tree-picker-input  for="activity_used_object_of_type" 
@@ -275,31 +315,31 @@
         <semantic-form-select-input for='activity_consist_of_event' 
                                     label="Activity consist of" 
                                     placeholder="Select event" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'>
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='activity_forms_part_of_event' 
                                     label="Activity forms part of" 
                                     placeholder="Select event" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='activity_was_continued_by_activity' 
                                     label="Activity was continued by activity" 
                                     placeholder="Select activity" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='activity_continued_activity' 
                                     label="Activity continued activity" 
                                     placeholder="Select activity" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='activity_done_in_preparation_of' 
                                     label="Activity done in preparation of" 
                                     placeholder="Select activity" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
         </semantic-form-select-input> 
       </rs-tab>
 
@@ -308,14 +348,13 @@
         <semantic-form-select-input for='activity_motivated_by' 
                                     label="Activity motivated by" 
                                     placeholder="Select entity" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true 
-                                                                         mode="new" type="http://www.researchspace.org/resource/system/vocab/resource_type/activity_request"}}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='activity_influenced_by' 
                                     label="Activity influenced by" 
                                     placeholder="Select entity" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new"}}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
         </semantic-form-select-input> 
       </rs-tab>
 

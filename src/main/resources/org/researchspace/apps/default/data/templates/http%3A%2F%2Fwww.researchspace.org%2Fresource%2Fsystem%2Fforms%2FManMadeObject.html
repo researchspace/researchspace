@@ -29,7 +29,6 @@
                             object_series="http://www.researchspace.org/pattern/system/physical_thing/part_of_series"
                             object_part_of_man-made_object="http://www.researchspace.org/pattern/system/physical_thing/part_of_man-made_object"
                             object_manMadeObject_part="http://www.researchspace.org/pattern/system/physical_thing/composed_of_man-made_object"
-                            object_biologicalObject_part="http://www.researchspace.org/pattern/system/physical_thing/composed_of_biological_object"
 
                             object_part_addition="http://www.researchspace.org/pattern/system/physical_man-made_thing/part_addition"
                             object_part_removal="http://www.researchspace.org/pattern/system/physical_man-made_thing/part_removal"
@@ -238,10 +237,15 @@
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                                    scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
-                                                                                                                    entityType="identifier" }}
-                                                                                            {{{{/raw}}}}'> 
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                            "label": "Identifier",
+                                                                            "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                            scheme=\"http://www.researchspace.org/resource/vocab/thing_identifier\"
+                                                                                                            entityType=\"identifier\" }}
+                                                                                            {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'>
                                         </semantic-form-select-input>
                                     </div>
                                 </div>
@@ -273,10 +277,15 @@
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                                    scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
-                                                                                                                    entityType="identifier" }}
-                                                                                            {{{{/raw}}}}'> 
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                        scheme=\"http://www.researchspace.org/resource/vocab/thing_identifier\"
+                                                                                                        entityType=\"identifier\" }}
+                                                                                        {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'>
                                         </semantic-form-select-input>
                                     </div>
                                 </div>
@@ -316,12 +325,11 @@
 
                         <div class="dragAndDrop-input-container">
                             <semantic-form-drag-and-drop-input  for='object_document' label="Documents" 
-                                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                placeholder-item-template="<div class='placeholder-item'>
                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                 <div>Drag document or click to upload</div>
-                                                                                                </div>"
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" docType="http://www.researchspace.org/resource/vocab/document_type/exhibition_report" }}{{{{/raw}}}}'
-                                                                                                >
+                                                                                            </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" docType="http://www.researchspace.org/resource/vocab/document_type/exhibition_report" }}{{{{/raw}}}}'>
                             </semantic-form-drag-and-drop-input>
                         </div>
                     </div>
@@ -420,25 +428,26 @@
                                     <semantic-form-select-input for='object_series' 
                                                                 label="Part of series" 
                                                                 placeholder="Select series" 
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Series nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                                nested-form-templates='[ 
+                                                                    {
+                                                                        "label": "Series",
+                                                                        "nestedForm": "{{{{raw}}}}
+                                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Series\" nested=true editable=true mode=\"new\"}}
+                                                                                    {{{{/raw}}}}"
+                                                                    }
+                                                                ]'> 
                                     </semantic-form-select-input>
 
                                     <semantic-form-select-input for='object_part_of_man-made_object' 
-                                                                label="Part of object (man-made object)" 
+                                                                label="Part of object" 
                                                                 placeholder="Select object" 
-                                                                nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
                                     </semantic-form-select-input>
 
                                     <semantic-form-select-input for='object_manMadeObject_part' 
-                                                                label="Object component (man-made object)" 
+                                                                label="Object component" 
                                                                 placeholder="Select component" 
-                                                                nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-                                    </semantic-form-select-input>
-
-                                    <semantic-form-select-input for='object_biologicalObject_part' 
-                                                            label="Object component (biological object)" 
-                                                            placeholder="Select component" 
-                                                            nested-form-template='{{{{raw}}}}{{> forms:BiologicalObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
                                     </semantic-form-select-input>
                                 </bs-tab>
                                 <bs-tab event-key="{{viewId}}-objPartAdditionRemoval" title="Part addition/removal">
@@ -463,7 +472,7 @@
                                                 <semantic-form-select-input for='addition_added_part' 
                                                                             label="Part added (man-made object)" 
                                                                             placeholder="Select object" 
-                                                                            nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
                                                 </semantic-form-select-input>
                                             </div>
                                             <div style="flex: 1;">
@@ -517,9 +526,9 @@
                                         <div class="composite-first-input form-inline-inputs"> 
                                             <div style="flex: 1;">
                                                 <semantic-form-select-input for='removal_removed_part' 
-                                                                            label="Part added (man-made object)" 
+                                                                            label="Part removed" 
                                                                             placeholder="Select object" 
-                                                                            nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
                                                 </semantic-form-select-input>
                                             </div>
                                             <div style="flex: 1;">
@@ -636,9 +645,15 @@
                             <semantic-form-select-input for='dimension_type' 
                                                         render-header="false"
                                                         placeholder="Select dimension type" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                            scheme="http://www.researchspace.org/resource/vocab/dimension_type"
-                                                                                            entityType="dimension type" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                            "label": "Dimension type",
+                                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                            scheme=\"http://www.researchspace.org/resource/vocab/dimension_type\"
+                                                                                            entityType=\"dimension type\" }}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'> 
                             </semantic-form-select-input>
                         </div>
                         <div style="flex: 1;">
@@ -648,9 +663,15 @@
                             <semantic-form-select-input for='dimension_unit' 
                                                         render-header="false"
                                                         placeholder="Select dimension unit" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                            scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
-                                                                                            entityType="dimension unit" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                            "label": "Dimension unit",
+                                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                            scheme=\"http://www.researchspace.org/resource/vocab/dimension_unit\"
+                                                                                            entityType=\"dimension unit\" }}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>
                             </semantic-form-select-input>
                         </div>
                         <div style="flex: 1;">
@@ -663,10 +684,15 @@
                 <semantic-form-select-input for='object_material' 
                                             label="Object material" 
                                             placeholder="Select material" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Material nested=true editable=true mode="new"
-                                                                                scheme="http://www.researchspace.org/resource/vocab/object_material"
-                                                                                entityType="material" }}
-                                                                    {{{{/raw}}}}'> 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Material",
+                                                    "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Material\" nested=true editable=true mode=\"new\" 
+                                                                                    scheme=\"http://www.researchspace.org/resource/vocab/object_material\"
+                                                                                    entityType=\"material\" }}
+                                                                    {{{{/raw}}}}"
+                                                }
+                                            ]'> 
                 </semantic-form-select-input>
             </rs-tab>
 
@@ -683,29 +709,16 @@
                         <h5 class="customFormHeader">Ownership</h5>
                         <div class="form-section">
                             <div class="form-section-first-input">
-                                <semantic-form-select-input
-                                    for='object_current_owner'
-                                    forms-data='[
-                                        {
-                                            "label": "Actor",
-                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Actor\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
-                                        },
-                                        {
-                                            "label": "Group",
-                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
-                                        }
-                                    ]'>
-                                </semantic-form-select-input>
-                                <semantic-form-select-input for='object_current_owner' 
-                                                        label="Current owner" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                <semantic-form-select-input for='object_current_owner'
+                                                            label="Current owner"
+                                                            placeholder="Select person/group/actor" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-select-input>
                             </div>
                             <semantic-form-select-input for='object_former_owner' 
-                                                    label="Former owner" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        label="Former owner" 
+                                                        placeholder="Select person/group/actor" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-select-input>
                         </div>
                     </div>
@@ -715,16 +728,16 @@
                         <div class="form-section">
                             <div class="form-section-first-input">
                                 <semantic-form-select-input for='object_current_keeper' 
-                                                        label="Current keeper" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                            label="Current keeper" 
+                                                            placeholder="Select person/group/actor"
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-select-input>
                             </div>    
 
                             <semantic-form-select-input for='object_former_keeper' 
-                                                    label="Former keeper" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        label="Former keeper" 
+                                                        placeholder="Select person/group/actor"
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-select-input>
                         </div>
                     </div>
@@ -733,7 +746,14 @@
                 <semantic-form-select-input for='object_collection' 
                                             label="Part of collection" 
                                             placeholder="Select collection" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Collection nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Collection",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Collection\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'> 
                 </semantic-form-select-input>
 
                 <semantic-form-composite-input for="object_current_location"
@@ -757,7 +777,7 @@
                             <semantic-form-select-input for='location_falls_within_place' 
                                                         label="Place / Organisation" 
                                                         placeholder="Select location" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_places]]'> 
                             </semantic-form-select-input>     
                         </div>
 
@@ -793,7 +813,7 @@
                             <semantic-form-select-input for='location_falls_within_place' 
                                                         label="Place / Organisation" 
                                                         placeholder="Select location" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_places]]'> 
                             </semantic-form-select-input>    
                         </div>
 

@@ -49,7 +49,14 @@
             <semantic-form-select-input for='event_date' 
                                         label="Event timespan/date" 
                                         placeholder="Select timespan" 
-                                        nested-form-template='{{{{raw}}}}{{> forms:Timespan nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Timespan",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'>  
             </semantic-form-select-input> 
 
             {{#if node}}
@@ -59,7 +66,14 @@
             <semantic-form-select-input for='event_place' 
                                         label="Event place" 
                                         placeholder="Select place"
-                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Place",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'> 
             </semantic-form-select-input>
 
           </div>
@@ -112,23 +126,23 @@
 
         <semantic-form-select-input for='event_occurred_in_the_presence_of' 
                                     label="Event occurred in the presence of" 
-                                    placeholder="Select actor" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    placeholder="Select person/group/actor" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
         </semantic-form-select-input> 
       </rs-tab>
 
       <rs-tab event-key="thing" title="Things">
 
-        <semantic-form-select-input for='event_occurred_in_the_presence_of' 
-                                    label="Event occurred in the presence of" 
-                                    placeholder="Select thing" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
-        </semantic-form-select-input> 
-
         <semantic-form-select-input for='event_took_place_on_physical_thing' 
                                     label="Event took place on or within" 
                                     placeholder="Select thing" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='event_occurred_in_the_presence_of' 
+                                    label="Event occurred in the presence of" 
+                                    placeholder="Select thing" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
         </semantic-form-select-input> 
 
       </rs-tab>
@@ -137,13 +151,13 @@
         <semantic-form-select-input for='event_consist_of_event' 
                                     label="Event consist of" 
                                     placeholder="Select event" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'>
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='event_forms_part_of_event' 
                                     label="Event forms part of" 
                                     placeholder="Select event" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Event nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
         </semantic-form-select-input> 
       </rs-tab>
 

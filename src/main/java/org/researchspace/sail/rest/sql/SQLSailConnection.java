@@ -107,8 +107,7 @@ public class SQLSailConnection extends AbstractServiceWrappingSailConnection<SQL
 
                 IRI type = entry.getValue().getType();
                 String name = entry.getValue().getName();
-                String value = parametersHolder.getInputParameters().get(name);
-
+                String value = parametersHolder.getInputParameters().get(name);     
                 if (value == null || value.isEmpty())
                     throw new SailException("The variable " + name + " is missing.");
 
@@ -184,15 +183,15 @@ public class SQLSailConnection extends AbstractServiceWrappingSailConnection<SQL
         List<BindingSet> bindingSets = Lists.newArrayList();
 
         // Convert inputStream to list of binding sets
-
+        
         try {
             while (resultSet.next()) {
 
                 MapBindingSet mapBindingSet = new MapBindingSet();
                 for (Map.Entry<IRI, String> outputParameter : parametersHolder.getOutputVariables().entrySet()) {
-
+                    
                     Parameter parameter = getSail().getServiceDescriptor().getOutputParameters()
-                            .get(outputParameter.getKey().getLocalName());
+                            .get(outputParameter.getValue());
                     IRI type = parameter.getValueType();
 
                     String strObj = resultSet.getString(outputParameter.getValue());

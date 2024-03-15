@@ -22,10 +22,8 @@
                             object_media="http://www.researchspace.org/pattern/system/physical_object/media"
                             object_material="http://www.researchspace.org/pattern/system/physical_thing/material"
 
-                            object_collection="http://www.researchspace.org/pattern/system/physical_thing/part_of_collection"
-                            object_series="http://www.researchspace.org/pattern/system/physical_thing/part_of_series"
-                            object_part_of_man-made_object="http://www.researchspace.org/pattern/system/physical_thing/part_of_man-made_object"
-                            object_manMadeObject_part="http://www.researchspace.org/pattern/system/physical_thing/composed_of_man-made_object"
+                            object_part_of="http://www.researchspace.org/pattern/system/physical_thing/part_of_physical_thing"
+                            object_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of_physical_thing"
                             
                             object_right="http://www.researchspace.org/pattern/system/physical_thing/right"
                             object_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
@@ -262,28 +260,16 @@
                         
                             <bs-tabs id="{{viewId}}-component-form-tabs" class-name="form-tabs">
                                 <bs-tab event-key="{{viewId}}-objComponents" title="Object part of/components">
-                                    <semantic-form-select-input for='object_series' 
-                                                                label="Part of series" 
-                                                                placeholder="Select series" 
-                                                                nested-form-templates='[ 
-                                                                    {
-                                                                        "label": "Series",
-                                                                        "nestedForm": "{{{{raw}}}}
-                                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Series\" nested=true editable=true mode=\"new\"}}
-                                                                                    {{{{/raw}}}}"
-                                                                    }
-                                                                ]'>
-                                    </semantic-form-select-input>
 
-                                    <semantic-form-select-input for='object_part_of_man-made_object' 
-                                                                label="Part of object" 
-                                                                placeholder="Select object" 
+                                    <semantic-form-select-input for='object_part_of' 
+                                                                label="Part of" 
+                                                                placeholder="Select the item that the object is part of" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
                                     </semantic-form-select-input>
 
-                                    <semantic-form-select-input for='object_manMadeObject_part' 
-                                                                label="Object component" 
-                                                                placeholder="Select component" 
+                                    <semantic-form-select-input for='object_component' 
+                                                                label="Components" 
+                                                                placeholder="Select object component" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
                                     </semantic-form-select-input>
 
@@ -467,19 +453,6 @@
                         </div>
                     </div>
                 </div>
-
-                <semantic-form-select-input for='object_collection' 
-                                            label="Part of collection" 
-                                            placeholder="Select collection" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Collection",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Collection\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'> 
-                </semantic-form-select-input>
 
                 <semantic-form-composite-input for="object_current_location"
                                                 new-subject-template="/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  

@@ -4,7 +4,6 @@
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
-                            has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
                             
                             entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
@@ -14,8 +13,20 @@
                             entity_appellation="http://www.researchspace.org/pattern/system/entity/appellation"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
-                            
+                            entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                             entity_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                            entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
+                            entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
+                            entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
+
+                            entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
+                            entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
+                            entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
+                            entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
+                            entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+
+                            entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                             
                         ]]'
             >
@@ -33,7 +44,7 @@
                     <div>
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="entity_appellation"
-                                                            label="Name/appellation"
+                                                            label="Entity name/appellation"
                                                             new-subject-template="/entity_appellation" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -52,7 +63,7 @@
 
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="entity_preferred_id"
-                                                            label="Preferred identifier"
+                                                            label="Entity preferred identifier"
                                                             new-subject-template="/entity_id" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -71,7 +82,7 @@
 
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="entity_id"
-                                                            label="Other identifier"
+                                                            label="Entity other identifier"
                                                             new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -87,7 +98,19 @@
                             </semantic-form-composite-input>
                         </div>
                         
-                        <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                        <semantic-form-select-input for='entity_has_type' 
+                                                    label="Entity type"
+                                                    placeholder="Select type" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Type",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                        </semantic-form-select-input>
+                        <semantic-form-text-input for="entity_description" label="Entity description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
 
                     </div>
 
@@ -125,6 +148,103 @@
                     </div>
                     
                 </div>
+            </rs-tab>
+
+            <rs-tab event-key="thing" title="Things">
+
+                <semantic-form-select-input for='entity_depicted_by' 
+                                            label="Entity depicted by"
+                                            placeholder="Select what depicts the entity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
+                </semantic-form-select-input>
+
+                <semantic-form-select-input for='entity_subject_of' 
+                                            label="Entity subject of"
+                                            placeholder="Select what is about the entity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                </semantic-form-select-input>
+
+                <semantic-form-select-input for='entity_referred_to_by' 
+                                            label="Entity referred to by"
+                                            placeholder="Select what refers to the entity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                </semantic-form-select-input>
+
+            </rs-tab>
+
+            <rs-tab event-key="event" title="Events">
+                <semantic-form-select-input for='entity_measurement' 
+                                            label="Entity measurement"
+                                            placeholder="Select measurement" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Measurement",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                                ]'>  
+                </semantic-form-select-input>
+
+                <semantic-form-select-input for='entity_influenced_activity' 
+                                            label="Entity influenced"
+                                            placeholder="Select activity influenced by the entity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                </semantic-form-select-input>
+
+                <semantic-form-select-input for='entity_motivated_activity' 
+                                            label="Entity motivated"
+                                            placeholder="Select activity motivated by the entity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                </semantic-form-select-input>
+
+                <semantic-form-select-input for='entity_attributed_by_attribute_assignment' 
+                                            label="Entity attributed by"
+                                            placeholder="Select what assigned attribute to the entity" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Attribute assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                                ]'>  
+                </semantic-form-select-input>
+
+                <semantic-form-select-input for='entity_assigned_by_attribute_assignment' 
+                                            label="Entity assigned by"
+                                            placeholder="Select what assigned the entity" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Attribute assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                                ]'>  
+                </semantic-form-select-input>
+            </rs-tab>
+
+            <rs-tab event-key="representation" title="Representations/Documents" tab-class-name="tab-right">
+
+                <semantic-form-select-input for='entity_image_main_representation' 
+                                            label="Entity main image"
+                                            placeholder="Select image" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Image",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'> 
+                </semantic-form-select-input>
+
+                <semantic-form-select-input for='entity_has_representation' 
+                                            label="Entity other representation"
+                                            placeholder="Select representation" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'> 
+                </semantic-form-select-input>
             </rs-tab>
 
             [[> rsp:FormMetadataTab]]

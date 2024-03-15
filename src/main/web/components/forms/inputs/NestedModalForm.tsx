@@ -40,6 +40,7 @@ import { CapturedContext } from 'platform/api/services/template';
 
 export interface NestedModalFormProps {
   subject?: Rdf.Iri
+  title?: string
   definition: FieldDefinition;
   onSubmit: (value: AtomicValue) => void;
   onCancel: () => void;
@@ -55,7 +56,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 
   render() {
-    const { definition, onSubmit, onCancel, children, subject, parent } = this.props;
+    const { definition, title, onSubmit, onCancel, children, subject, parent } = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
@@ -76,6 +77,8 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
         });
       },
     };
+
+    const modalTitle = title ?? `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
     return (
       <Modal
         show={true}
@@ -87,8 +90,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
-            (subject ? 'New ' : '') +
-                        `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
+            (subject ? '' : 'New ') + `${modalTitle}`
           }</Modal.Title>
         </Modal.Header>
         <Modal.Body>{cloneElement(children, propsOverride)}</Modal.Body>

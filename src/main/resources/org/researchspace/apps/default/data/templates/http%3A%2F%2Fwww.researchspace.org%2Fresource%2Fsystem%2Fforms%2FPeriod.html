@@ -41,7 +41,14 @@
             <semantic-form-select-input for='period_date' 
                                         label="Period timespan" 
                                         placeholder="Select timespan" 
-                                        nested-form-template='{{{{raw}}}}{{> forms:Timespan nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Timespan",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'>  
             </semantic-form-select-input> 
 
             {{#if node}}
@@ -51,7 +58,14 @@
             <semantic-form-select-input for='period_place' 
                                         label="Period place" 
                                         placeholder="Select place"
-                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Place",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'> 
             </semantic-form-select-input>
           </div>
 
@@ -100,7 +114,7 @@
         <semantic-form-select-input for='period_took_place_on_physical_thing' 
                                     label="Period took place on or within" 
                                     placeholder="Select thing" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:ManMadeObject nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
         </semantic-form-select-input> 
 
       </rs-tab>
@@ -110,13 +124,13 @@
         <semantic-form-select-input for='period_consist_of_event' 
                                     label="Period consist of" 
                                     placeholder="Select event" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Period nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
         </semantic-form-select-input> 
 
         <semantic-form-select-input for='period_forms_part_of_event' 
                                     label="Period forms part of" 
                                     placeholder="Select event" 
-                                    nested-form-template='{{{{raw}}}}{{> forms:Period nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
         </semantic-form-select-input> 
 
       </rs-tab>

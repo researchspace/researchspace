@@ -83,7 +83,14 @@
             <semantic-form-select-input for='related_term' 
                                         label="Related {{#if entityType}}{{entityType}}{{else}}term{{/if}}" 
                                         placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}term{{/if}}"
-                                        nested-form-template='{{{{raw}}}}{{> forms:Term nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Term",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Term\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                          }
+                                        ]'> 
             </semantic-form-select-input> 
             
             <semantic-form-text-input for="skos_scopeNote" multiline=true label="Term scope note" 

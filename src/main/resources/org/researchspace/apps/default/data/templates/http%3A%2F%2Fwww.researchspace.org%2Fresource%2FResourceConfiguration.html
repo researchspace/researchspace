@@ -67,7 +67,7 @@
                               then='{{> useAsVocabularyType}}'
                             >
                               <template id='useAsVocabularyType'>
-                                <span class="badge badge--secondary" style="height: 28px;">Vocabulary / Authority</span>
+                                <span class="badge badge--secondary" style="height: 28px;">Voc. / Auth.</span>
                               </template>
                             </semantic-if>
 
@@ -84,35 +84,25 @@
                               </template>
                             </semantic-if>
 
-                [[!--            <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                           <semantic-if query='ASK { <{{iri}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
                                           then='{{> system}}'
-                                          else='{{> noSystem}}'
                             >
                                 <template id='system'>
                                   <span class="badge badge--secondary" style="height: 28px; width: 54px;">System</span>
-                                  <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
-                                                    type='Component.TemplateUpdate'
-                                                    data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "view" }' 
-                                                    targets='["{{viewId}}-resource-config-term-forms"]'>
-                                    <span class='tree-item-action'>
-                                      <rs-icon icon-type="round" icon-name="article" title="View configuration"></rs-icon>
-                                    </span>
-                                  </mp-event-trigger>
                                 </template>
+                            </semantic-if> 
 
-                                <template id='noSystem'>  --]]
-                                  <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
-                                                    type='Component.TemplateUpdate'
-                                                    data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
-                                                    targets='["{{viewId}}-resource-config-term-forms"]'>
-                                    <span class='tree-item-action'>
-                                      <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
-                                    </span>
-                                  </mp-event-trigger>
-                    [[!--            </template>
-                            </semantic-if> --]]
+                            <mp-event-trigger id='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
+                                              type='Component.TemplateUpdate'
+                                              data='{"iri":"{{iri}}", "label": "{{label}}", "mode": "edit" }' 
+                                              targets='["{{viewId}}-resource-config-term-forms"]'>
+                              <span class='tree-item-action'>
+                                <rs-icon icon-type="round" icon-name="edit" title="Edit configuration"></rs-icon>
+                              </span>
+                            </mp-event-trigger>
 
                           </div>
+                          
                           <mp-event-proxy id='{{viewId}}-resource-config-focus-tree-element' 
                                           on-event-source='{{viewId}}-resource-config-form-edit-trigger--{{iri}}' 
                                           proxy-event-type='LazyTree.Focus' 

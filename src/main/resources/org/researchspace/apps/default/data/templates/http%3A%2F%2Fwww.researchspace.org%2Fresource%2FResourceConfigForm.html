@@ -1,6 +1,10 @@
 {{#if node}}
-  <semantic-query query='SELECT ?resourceConfiguration ?useAsVocabularyType ?displayInFinder ?navigationMenuItem WHERE { 
+  <semantic-query query='SELECT ?resourceConfiguration ?systemConfig ?useAsVocabularyType ?displayInFinder ?navigationMenuItem WHERE { 
                           BIND(<{{node}}> as ?resourceConfiguration)
+                          OPTIONAL {
+                            ?resourceConfiguration crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> .
+                            BIND(true as ?systemConfig)
+                          }
                           OPTIONAL {
                             ?resourceConfiguration <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?useAsVocabularyType .
                           }
@@ -12,7 +16,8 @@
                                     }
                         }'>
     <template id='template'>
-      {{> rsp:ResourceConfigFormPartial use_as_vocabulary_type=bindings.0.useAsVocabularyType.value 
+      {{> rsp:ResourceConfigFormPartial system_resource_config=bindings.0.systemConfig.value
+                                        use_as_vocabulary_type=bindings.0.useAsVocabularyType.value 
                                         display_in_finder=bindings.0.displayInFinder.value 
                                         navigation_menu_item=bindings.0.navigationMenuItem.value 
       }}

@@ -3,33 +3,47 @@
   <http://www.researchspace.org/pattern/system/image/label> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/image>;
-     
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-2b8b68aab5e64ff2b89524616a8370fb-i1yyst;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#langString>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6c736d70144d44bf9a1401bf357c660d-fdzuch;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6c736d70144d44bf9a1401bf357c660d-710t8g;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Image label";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6c736d70144d44bf9a1401bf357c660d-cwir8;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Image name";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.researchspace.org/ontology/EX_Digital_Image>,
+      <http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item>;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-2b8b68aab5e64ff2b89524616a8370fb-0ibs4j;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-2b8b68aab5e64ff2b89524616a8370fb-imeg3i;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2023-10-25T11:11:56.673+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-18T16:33:10.585Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-6c736d70144d44bf9a1401bf357c660d-cwir8 a <http://spinrdf.org/sp#Query>;
+  _:genid-2b8b68aab5e64ff2b89524616a8370fb-0ibs4j a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
-  $subject <http://www.w3.org/2000/01/rdf-schema#label> $value .
-} WHERE {}""" .
-  
-  _:genid-6c736d70144d44bf9a1401bf357c660d-fdzuch a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
-  $subject <http://www.w3.org/2000/01/rdf-schema#label> $value .
+  $appellation a crm:E41_Appellation .
+  $subject crm:P1_is_identified_by $appellation .
+  $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/image_name> .
+  $appellation crm:P190_has_symbolic_content $value .  
 } WHERE {
-  $subject <http://www.w3.org/2000/01/rdf-schema#label> $value .
+  BIND(URI(concat(str($subject), \"/image_name\") ) as $appellation)
 }""" .
   
-  _:genid-6c736d70144d44bf9a1401bf357c660d-710t8g a <http://spinrdf.org/sp#Query>;
+  _:genid-2b8b68aab5e64ff2b89524616a8370fb-imeg3i a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject <http://www.w3.org/2000/01/rdf-schema#label> ?value.
+  $appellation a crm:E41_Appellation .
+  $subject crm:P1_is_identified_by $appellation .
+  $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/image_name> .
+  $appellation crm:P190_has_symbolic_content $value .  
+}""" .
+  
+  _:genid-2b8b68aab5e64ff2b89524616a8370fb-i1yyst a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $appellation a crm:E41_Appellation .
+  $subject crm:P1_is_identified_by $appellation .
+  $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/image_name> .
+  $appellation crm:P190_has_symbolic_content $value .  
+} WHERE {
+  $appellation a crm:E41_Appellation .
+  $subject crm:P1_is_identified_by $appellation .
+  $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/image_name> .
+  $appellation crm:P190_has_symbolic_content $value .  
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

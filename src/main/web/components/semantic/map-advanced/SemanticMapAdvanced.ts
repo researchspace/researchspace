@@ -214,7 +214,7 @@ export interface SemanticMapAdvancedConfig {
    */
   yearFiltering?: boolean;
   /**
-   *  Lists the possible levels of features in the map (Eg. terrain, buildings, waterways, etc.)
+   *  Lists the possible levels of features (geometries) in the map (Eg. terrain, buildings, waterways, etc.)
    */
   vectorLevels?: []
 }
@@ -514,6 +514,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
       if (feature) {
         console.log("Clicked feature.")
         console.log(feature)
+        // TODO: if this does not have a subject, it raises an error. FIX
         this.setState({ selectedFeatures: Array.from(this.state.selectedFeatures).concat([feature.values_.subject.value]) }, () => {
           // console.log(this.state.selectedFeatures)
         })
@@ -557,7 +558,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
 
   startRegistrationProcess() {
     this.registrationIntervalId = setInterval(() => {
-      console.log(this.props.id, "triggering loop for registration...")
+      // console.log(this.props.id, "triggering loop for registration...")
       trigger({
         eventType: SemanticMapRequestControlsRegistration,
         data: this.props.id,
@@ -894,8 +895,6 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private areArraysEqual(arr1: string[], arr2: string[]): boolean {
-    console.log(arr1);
-    console.log(arr2);
     return arr1.every(item => arr2.includes(item)) && arr2.every(item => arr1.includes(item));
   }
 
@@ -988,6 +987,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
         tilesLayers.push(tileslayer);
       }
     });
+    console.log("Map ", this.props.id, " loaded tileslayers from template: ", tilesLayers);
     return tilesLayers;
   }
 

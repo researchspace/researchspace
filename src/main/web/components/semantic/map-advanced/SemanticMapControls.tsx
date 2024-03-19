@@ -98,7 +98,7 @@ export class SemanticMapControls extends Component<Props, State> {
       setColor: 'rgba(200,50,50,0.5)',
       mapLayers: [],
       maskIndex: -1,
-      filters: this.props.filtersInitialization,
+      filters: this.props.filtersInitialization ? this.props.filtersInitialization : {"feature":true,"overlay":true,"basemap":true},
       selectedFeaturesLabel: '',
       featuresColorTaxonomy: this.props.featuresTaxonomies ? this.props.featuresTaxonomies.split(',')[0] : '',
       featuresColorGroups: [],
@@ -207,7 +207,11 @@ export class SemanticMapControls extends Component<Props, State> {
       () => {
         console.log("Map Controls: '" + this.props.id + "': layers synced from map '" + this.props.targetMapId + "'");
         console.log(event.data);
-        this.extractYearMarks(this.getAllVectorLayers());
+        if(this.props.timeline){
+          if(this.props.timeline.mode == "marked"){
+            this.extractYearMarks(this.getAllVectorLayers());
+          }
+        }
         this.triggerSendYear();
         if(this.props.featuresTaxonomies){
           this.setFeaturesColorTaxonomy();
@@ -524,6 +528,7 @@ export class SemanticMapControls extends Component<Props, State> {
             {this.props.featuresOptionsEnabled && (
         <div className={'featuresOptionsContainer'}>
           {/* <h3 className={'mapOptionsSectionTitle'}>Options</h3> */}
+          {/* TODO: move toggle3d button outside features option enabling */}
           <div className={'toggle3dBtn'} onClick={() => this.triggerSendToggle3d()} style={{ cursor: 'pointer' }}>
             <i className="fa fa-cube" aria-hidden="true"></i> Toggle 3d
           </div>

@@ -66,6 +66,7 @@ const SELECT_TEXT_CLASS = 'select-text-field';
 const OPTION_CLASS = SELECT_TEXT_CLASS + 'option';
 
 const SPARQL_QUERY = SparqlUtil.Sparql`
+  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   SELECT DISTINCT ?config ?resourceRestrictionPattern WHERE {
     {
       ?__resourceIri__ (rdf:type/(rdfs:subClassOf*)) ?resourceOntologyClass.
@@ -84,7 +85,7 @@ const SPARQL_QUERY = SparqlUtil.Sparql`
     OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
     }
   }
-`
+`;
 
 export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private readonly cancellation = new Cancellation();

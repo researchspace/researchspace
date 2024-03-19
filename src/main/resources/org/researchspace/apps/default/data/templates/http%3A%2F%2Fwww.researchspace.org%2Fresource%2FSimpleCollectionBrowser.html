@@ -433,18 +433,12 @@
                                             "mode": "{{mode}}",
                                             "viewId": "{{viewId}}",
                                             {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
-                                            {{#if selectedOsmPlace}}
-                                              {{#if osmPlaceURI}}"osmPlaceURI": "{{osmPlaceURI}}",{{/if}}
-                                              {{#if osmPlaceName}}"osmPlaceName": "{{osmPlaceName}}",{{/if}}
-                                              {{#if placeLabel}}"placeLabel": "{{placeLabel}}",{{/if}}
-                                              {{#if osmPlaceURI}}"placeDescription": "{{placeDescription}}",{{/if}}
-                                              {{#if osmPlaceURI}}"osmGeoCoordinates": "{{osmGeoCoordinates}}",{{/if}}
-                                           [[!--   {{#if placeImage}}"placeImage": "{{placeImage}}",{{/if}} --]]
-                                            {{/if}}
-                                            {{#if selectedwikidataResource}}
-                                              {{#if wikidataResourceURI}}"wikidataResourceURI": "{{wikidataResourceURI}}",{{/if}}
-                                              {{#if wikidataResourceURI}}"wikidataResourceName": "{{wikidataResourceName}}",{{/if}}
-                                              {{#if wikidataResourceDescription}}"wikidataResourceDescription": "{{wikidataResourceDescription}}",{{/if}}
+                                            {{#if selectedApiResource}}
+                                              {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}
+                                              {{#if apiResourceName}}"apiResourceName": "{{apiResourceName}}",{{/if}}
+                                              {{#if apiResourceLabel}}"apiResourceLabel": "{{apiResourceLabel}}",{{/if}}
+                                              {{#if apiResourceDescription}}"apiResourceDescription": "{{apiResourceDescription}}",{{/if}}
+                                              {{#if apiResourceosmGeoCoordinates}}"apiResourceosmGeoCoordinates": "{{apiResourceosmGeoCoordinates}}",{{/if}}
                                             {{/if}}
                                             "resourceBroaderProperty": {{#if resourceBroaderProperty}}"{{resourceBroaderProperty}}"{{else}}null{{/if}}
                                     }'>
@@ -457,34 +451,26 @@
             </template>
           </mp-event-target-template-render>
           
-          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-osm-place-proxy'
-                          on-event-source='{{viewId}}-select-osm-place-trigger' 
-                          on-event-type='osmPlaceSelect'
+          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
+                          on-event-source='{{viewId}}-select-api-resource-trigger' 
+                          on-event-type='apiResourceSelect'
                           proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{viewId}}-importOSMPlace-dialog"]'
+                          proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
           ></mp-event-proxy>
 
-          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-osm-place-proxy'
-                          on-event-source='{{viewId}}-select-osm-place-trigger' 
-                          on-event-type='osmPlaceSelect'
+          <mp-event-proxy id='{{viewId}}-closeModal-onOpen-existing-place-proxy'
+                          on-event-source='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
+                          on-event-type='Dashboard.AddFrame'
+                          proxy-event-type='OverlayDialog.Close' 
+                          proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
+          ></mp-event-proxy>
+
+          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
+                          on-event-source='{{viewId}}-select-api-resource-trigger' 
+                          on-event-type='apiResourceSelect'
                           proxy-event-type='Component.TemplateUpdate' 
                           proxy-targets='["{{viewId}}-term-forms"]'
-                          additional-data='{"mode": "new", "selectedOsmPlace": "true"}'
-          ></mp-event-proxy>
-
-          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-wikidataResource-proxy'
-                          on-event-source='{{viewId}}-select-wikidataResource-trigger' 
-                          on-event-type='wikidataResourceSelect'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["{{viewId}}-importResourceFromWikidata-dialog"]'
-          ></mp-event-proxy>
-
-          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-wikidataResource-proxy'
-                          on-event-source='{{viewId}}-select-wikidataResource-trigger' 
-                          on-event-type='wikidataResourceSelect'
-                          proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}-term-forms"]'
-                          additional-data='{"mode": "new", "selectedwikidataResource": "true"}'
+                          additional-data='{"mode": "new", "selectedApiResource": "true"}'
           ></mp-event-proxy>
 
         </div>

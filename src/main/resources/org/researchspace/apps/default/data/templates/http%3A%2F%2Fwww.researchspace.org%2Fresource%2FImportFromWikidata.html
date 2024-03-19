@@ -40,12 +40,12 @@
             <template id='resourceName'>
               <div>
                 {{#if wikidataId.value}}
-                <a class="text-link-action" 
-                    target="_blank" 
-                    href="http://www.wikidata.org/entity/{{wikidataId.value}}"
-                    title="http://www.wikidata.org/entity/{{wikidataId.value}}">
-                  {{wikidataEntityLabel.value}}
-                </a>
+                  <a class="text-link-action" 
+                      target="_blank" 
+                      href="http://www.wikidata.org/entity/{{wikidataId.value}}"
+                      title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                    {{wikidataEntityLabel.value}}
+                  </a>
                 {{else}}
                   {{wikidataEntityLabel.value}}
                 {{/if}}
@@ -66,11 +66,7 @@
                                         SELECT ?typeLabel WHERE { 
                                           BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataEntity) .
                                           SERVICE <https://query.wikidata.org/sparql> {  
-                                            # is it a person
-                                            {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
                                               ?wikidataEntity wdt:P31 ?type .
-                                            {{/if}}
-
                                             SERVICE wikibase:label { 
                                               bd:serviceParam wikibase:language "en".
                                               ?type rdfs:label ?typeLabel .                                      
@@ -107,8 +103,8 @@
 
                                         SELECT (SAMPLE(?_image) AS ?image) WHERE { 
                                           SERVICE <https://query.wikidata.org/sparql> {  
-                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlaceURI) .
-                                            ?osmPlaceURI wdt:P18 ?_image .
+                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataResourceURI) .
+                                            ?wikidataResourceURI wdt:P18 ?_image .
                                           }
                                         } LIMIT 1'
 
@@ -124,12 +120,6 @@
                                                     width="auto" height="180" style="max-width: 200px; object-fit: contain;">
                                               </a>
                                             </div>
-                                            
-                                        [[!--    <mp-resource-thumbnail iri='[[decodeUriComponent "{{bindings.0.image.value}}"]]' class=''>
-                                              <mp-resource-thumbnail-fallback>
-                                                  <div>No image available</div>
-                                              </mp-resource-thumbnail-fallback>
-                                          </mp-resource-thumbnail> --]]
                                           </template>
                                         </semantic-query>
                     </semantic-context>
@@ -149,22 +139,67 @@
                       
                                           ASK { 
                                             SERVICE <https://query.wikidata.org/sparql> { 
-                                              <{{concepturi.value}}> wdt:P31 wd:Q5 
+                                              {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
+                                                <{{concepturi.value}}> wdt:P31 wd:Q5 .
+                                              {{else}}
+                                                <{{concepturi.value}}> wdt:P31 ?type .
+                                              {{/if}}
                                             }
                                           }'
 
                                     then='{{> then}}'>
 
-                        <template id='then'>
-                          <mp-event-trigger id='{{viewId}}-select-wikidataResource-trigger' 
-                                            type='wikidataResourceSelect' 
-                                            data='{"wikidataResourceURI": "{{concepturi.value}}", 
-                                                    "wikidataResourceName": "{{wikidataEntityLabel.value}}", 
-                                                    "wikidataResourceDescription": "{{description.value}}"
-                                                  }' 
-                                      >
-                                      <button class="btn btn-action">Select {{label}}</button>
-                          </mp-event-trigger>
+                        <template id='then'> 
+                          <semantic-query query='SELECT DISTINCT ?wikidataResourceURI ?wikidataResourceName ?wikidataResourceDescription ?existingRecord WHERE {
+                                                  BIND(<{{concepturi.value}}> as ?wikidataResourceURI)
+
+                                                  BIND("{{wikidataEntityLabel.value}}" as ?wikidataResourceName)
+                                                  BIND("{{description.value}}" as ?wikidataResourceDescription)
+
+                                                  OPTIONAL {
+                                                    ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                                    ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                    ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                    ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                    ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                    ?importFromExternalSource crmdig:L14_transferred ?wikidataResourceURI .
+                                                    ?wikidataResourceURI a crmdig:D1_Digital_Object .
+                                                    ?wikidataResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                  }
+                                                }'
+                                                
+                                          template='{{> template}}'>
+                                  
+                                    <template id='template'>
+                                      <div> 
+                                        {{#if bindings.0.existingRecord.value}}
+                                          <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                            type='Dashboard.AddFrame'
+                                                            data='{"viewId":"entity-editor", 
+                                                                  "resourceIri":"{{bindings.0.existingRecord.value}}",
+                                                                  "entityTypeConfig": "{{domainConfig}}",
+                                                                  "editable": true,
+                                                                  "mode":"edit" }' 
+                                                            targets='["thinking-frames"]'>
+                                              <button class="btn btn-default" title="Open {{label}} record">Open record</button>
+                                          </mp-event-trigger>
+                                        {{else}}
+                                          <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                                            type='apiResourceSelect' 
+                                                            data='{"apiResourceURI": "{{bindings.0.wikidataResourceURI.value}}", 
+                                                                    "apiResourceName": "{{bindings.0.wikidataResourceName.value}}", 
+                                                                    "apiResourceDescription": "{{bindings.0.wikidataResourceDescription.value}}"
+                                                                  }' 
+                                                      >
+                                            <button class="btn btn-action" title="Import {{label}}">Import {{label}}</button>
+                                          </mp-event-trigger>
+                                        {{/if}}
+                                      </div>
+                                    </template>
+                          </semantic-query>
                         </template>
                       </semantic-if>
 

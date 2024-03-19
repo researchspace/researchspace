@@ -22,23 +22,31 @@
           <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
                             query='prefix met: <http://www.researchspace.org/resource/system/services/metcollectiononline/>
-                                   SELECT DISTINCT ?subject ?id ?name ?title ?primaryImageSmall ?accessionNumber WHERE {
+                                   SELECT DISTINCT ?subject ?id ?name ?title ?objectType ?primaryImageSmall ?accessionNumber ?artistName ?artistRole  WHERE {
                                     BIND(?objectid as ?id)
                                     BIND(?subject as ?iri) .
                                     service met:METObjectDescriptionService {                                           
                                         ?subject met:objectid ?id .
-                                        ?subject met:objectName ?name .
+                                        ?subject met:objectName ?objectType .
                                         ?subject met:title ?title .
                                         ?subject met:primaryImage ?primaryImage .
                                         ?subject met:primaryImageSmall ?primaryImageSmall .
                                         ?subject met:objectWikidata_URL ?objectWikidata_URL .
                                         ?subject met:accessionNumber ?accessionNumber .
+
+                                        ?subject met:artistDisplayName ?artistName .
+                                        ?subject met:artistRole ?artistRole .
+                                         
                                     }
-                                  } ORDER BY ?subject'
+                                  } ORDER BY ?title'
 
                             options='{"showFilter":false, "resultsPerPage":10}' 
                             column-configuration='[
                                                     {"displayName": "Name", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
+                                                    {"displayName": "Type", "variableName": "objectType" },
+                                                    {"displayName": "Accession number", "variableName": "accessionNumber" },
+                                                    {"displayName": "Artist name", "variableName": "artistName" },
+                                                    {"displayName": "Artist role", "variableName": "artistRole" },
                                                      {"displayName": "Image", "cellTemplate": "{{> images}}"}
                                                   ]'   
             >
@@ -50,7 +58,7 @@
                     target="_blank" 
                     href="https://www.metmuseum.org/art/collection/search/{{id.value}}"
                     title="https://www.metmuseum.org/art/collection/search/{{id.value}}">
-                  {{title.value}} and {{accessionNumber.value}}
+                  {{title.value}}
                 </a>
                 {{else}}
                   <a class="text-link-action" 

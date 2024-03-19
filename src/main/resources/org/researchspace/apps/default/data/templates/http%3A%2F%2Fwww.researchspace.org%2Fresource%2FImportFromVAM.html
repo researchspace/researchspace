@@ -16,6 +16,10 @@
                                              ?subject vam:hasSystemNumber ?objectid.
                                              ?subject vam:hasAccessionNumber ?accessionNumber .
                                              ?subject vam:hasIIIFImageUrl ?objectImageUrl .
+
+                                             ?subject vam:hasPrimaryMaker ?artistName .
+                                             ?subject vam:hasPrimaryMakerInTheRole ?artistRole .
+                                              
                                             } 
                                          }'
   ></semantic-search-query-keyword>
@@ -27,19 +31,24 @@
           <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
                             query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
-                                   SELECT DISTINCT ?subject ?id ?objectType ?title ?objectImageUrl ?description ?accessionNumber WHERE {
+                                   SELECT DISTINCT ?subject ?id ?objectType ?title ?objectImageUrl ?description ?accessionNumber ?artistName ?artistRole WHERE {
                                     BIND(?objectid as ?id)
                                     BIND(?subject as ?iri) .
                                     service vam:VamObject {
                                         ?subject vam:objectid ?id .
                                         ?subject vam:summaryDescription ?description .
                                     }
-                                  } ORDER BY ?subject'
+                                  } ORDER BY ?title ?id'
 
                             options='{"showFilter":false, "resultsPerPage":10}' 
                             column-configuration='[
                                                     {"displayName": "Name", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
-                                                     {"displayName": "Image", "cellTemplate": "{{> images}}"}
+                                                    {"displayName": "Type", "variableName": "objectType" },
+                                                    {"displayName": "Accession number", "variableName": "accessionNumber" },
+                                                    {"displayName": "Description", "variableName": "description" },
+                                                    {"displayName": "Primary artist name", "variableName": "artistName" },
+                                                    {"displayName": "Primary artist role", "variableName": "artistRole" },
+                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"}
                                                   ]'   
             >
 
@@ -52,8 +61,6 @@
                     title="https://collections.vam.ac.uk/item/{{id.value}}">
                   {{title.value}}                
                   </a>
-                  {{#if description.value}} {{description.value}} {{/if}}
-                  {{#if accessionNumber.value}} {{accessionNumber.value}} {{/if}}
                 {{else}}
                   <a class="text-link-action" 
                     target="_blank" 

@@ -40,14 +40,14 @@
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
-                        {{#if osmPlaceName}}
-                            <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name" default-value="{{osmPlaceName}}" force-defaults=true></semantic-form-text-input>
+                        {{#if apiResourceName}}
+                            <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
                         {{else}}
                             <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name"></semantic-form-text-input>
                         {{/if}}
 
-                        {{#if placeDescription}}
-                            <semantic-form-text-input for="organisation_description" default-value="{{placeDescription}}" multiline="true" label="Organisation description" placeholder="Enter Organisation description"></semantic-form-text-input>
+                        {{#if apiResourceDescription}}
+                            <semantic-form-text-input for="organisation_description" default-value="{{apiResourceDescription}}" multiline="true" label="Organisation description" placeholder="Enter Organisation description"></semantic-form-text-input>
                         {{else}}
                             <semantic-form-text-input for="organisation_description" multiline="true" label="Organisation description" placeholder="Enter organisation description"></semantic-form-text-input>
                         {{/if}}
@@ -69,8 +69,8 @@
 
                         <semantic-form-text-input for="organisation_country" label="Country" placeholder="Enter country"> </semantic-form-text-input>
 
-                        {{#if osmGeoCoordinates}}
-                            <semantic-form-text-input for="organisation_geo_coordinates" default-value='{{osmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
+                        {{#if apiResourceosmGeoCoordinates}}
+                            <semantic-form-text-input for="organisation_geo_coordinates" default-value='{{apiResourceosmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
                         {{else}}
                             <semantic-form-text-input for="organisation_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
                         {{/if}}
@@ -78,16 +78,16 @@
 
                     <div class="form-media-column">
                         
-                        {{#if osmGeoCoordinates}}
+                        {{#if apiResourceosmGeoCoordinates}}
                             <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
-                                <semantic-map query='SELECT ?wkt WHERE { BIND("{{osmGeoCoordinates}}" AS ?wkt) }'
-                                            tuple-template='{{#if osmPlaceName}}<b style="color:#525156; padding-bottom:5px;">{{osmPlaceName}}</b>{{/if}}
-                                                            {{#if osmPlaceURI}}
+                                <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
+                                            tuple-template='{{#if apiResourceName}}<b style="color:#525156; padding-bottom:5px;">{{apiResourceName}}</b>{{/if}}
+                                                            {{#if apiResourceURI}}
                                                                 <div>
                                                                 <a style="color:#396EFE;"
                                                                     target="_blank" 
-                                                                    href="{{osmPlaceURI}}"
-                                                                    title="{{osmPlaceURI}}">
+                                                                    href="{{apiResourceURI}}"
+                                                                    title="{{apiResourceURI}}">
                                                                     Open in wikidata
                                                                 </a>
                                                                 </div>
@@ -96,10 +96,10 @@
                             </div>
                         {{/if}}
                         
-                        {{#if osmPlaceURI}}
+                        {{#if apiResourceURI}}
                             <div style="padding-top: 5px;">
                                 <span>Imported from: </span>
-                                <a class="text-link-action" target="_blank" href="{{osmPlaceURI}}" title="{{osmPlaceURI}}">{{osmPlaceURI}}</a>
+                                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
                             </div>
                         {{else}}
                             {{#if node}}

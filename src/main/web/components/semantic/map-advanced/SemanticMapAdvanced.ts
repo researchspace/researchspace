@@ -243,7 +243,7 @@ interface MapState {
 const MAP_REF = 'researchspace-map-widget';
 
 export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, MapState> {
-  private layers: { [id: string]: VectorLayer };
+  private layers: { [id: string]: VectorLayer<any> };
   private map: Map;
   private cancelation = new Cancellation();
   private mousePosition = null;
@@ -251,7 +251,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   registrationIntervalId: number | null = null;
 
   private source: VectorSource;
-  private vector: VectorLayer;
+  private vector: VectorLayer<any>;
   private modify: Modify;
 
   private draw: Interaction;
@@ -894,6 +894,8 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   }
 
   private areArraysEqual(arr1: string[], arr2: string[]): boolean {
+    console.log(arr1);
+    console.log(arr2);
     return arr1.every(item => arr2.includes(item)) && arr2.every(item => arr1.includes(item));
   }
 
@@ -925,7 +927,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return geometries;
   };
 
-  private createLayer = (features: Feature[], type: string): VectorLayer => {
+  private createLayer = (features: Feature[], type: string): VectorLayer<any> => {
     console.log("Create Layer")
     const source = new Vector({ features });
     if (type === 'Point') {
@@ -1362,7 +1364,7 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
   *
   */
     // It updates only the last layer, assuming it contains the features
-    const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer;
+    const layer = this.map.getLayers().getArray().slice(-1).pop() as VectorLayer<any>;
 
     event.data['features'].forEach((feature) => {
       const i = this.getIndexBySubject(feature.subject, layer.getSource().getFeatures());

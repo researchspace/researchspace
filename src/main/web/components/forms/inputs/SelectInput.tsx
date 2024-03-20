@@ -109,17 +109,17 @@ const OPTION_CLASS = SELECT_TEXT_CLASS + 'option';
 const SPARQL_QUERY = SparqlUtil.Sparql`
   SELECT DISTINCT ?config ?resourceRestrictionPattern WHERE {
     {
-      ?__resourceIri__ (rdf:type/(rdfs:subClassOf*)) ?resourceOntologyClass.
-      ?config rdf:type Platform:resource_configuration;
+      ?__resourceIri__ (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) ?resourceOntologyClass.
+      ?config <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/resource_configuration>;
         <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass.
       FILTER(NOT EXISTS { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type. })
       OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
     }
     UNION
     {
-      ?__resourceIri__ rdf:type ?resourceOntologyClass;
-        crm:P2_has_type ?resourceP2Type.
-      ?config rdf:type Platform:resource_configuration;
+      ?__resourceIri__ <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?resourceOntologyClass;
+        <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?resourceP2Type.
+      ?config <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/resource_configuration>;
         <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
         <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
     OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }

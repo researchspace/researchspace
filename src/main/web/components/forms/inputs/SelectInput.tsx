@@ -66,26 +66,25 @@ const SELECT_TEXT_CLASS = 'select-text-field';
 const OPTION_CLASS = SELECT_TEXT_CLASS + 'option';
 
 const SPARQL_QUERY = SparqlUtil.Sparql`
-  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   SELECT DISTINCT ?config ?resourceRestrictionPattern WHERE {
     {
-      ?__resourceIri__ (rdf:type/(rdfs:subClassOf*)) ?resourceOntologyClass.
-      ?config rdf:type Platform:resource_configuration;
+      ?__resourceIri__ (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) ?resourceOntologyClass.
+      ?config <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/resource_configuration>;
         <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass.
       FILTER(NOT EXISTS { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type. })
       OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
     }
     UNION
     {
-      ?__resourceIri__ rdf:type ?resourceOntologyClass;
-        crm:P2_has_type ?resourceP2Type.
-      ?config rdf:type Platform:resource_configuration;
+      ?__resourceIri__ <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?resourceOntologyClass;
+        <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> ?resourceP2Type.
+      ?config <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.researchspace.org/resource/system/resource_configuration>;
         <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass;
         <http://www.researchspace.org/pattern/system/resource_configuration/resource_type> ?resourceP2Type .
     OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern . }
     }
   }
-`;
+`
 
 export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private readonly cancellation = new Cancellation();
@@ -245,9 +244,9 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
             ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
         }`
       )
-    })
+    });
 
-    return `SELECT ?resourceFormIRI WHERE { ${UNION_QUERY.join('UNION')} }`
+    return `SELECT ?resourceFormIRI WHERE { ${UNION_QUERY.join('UNION')} }`;
   }
 
   private findAndOpenNestedForm(queryResultBindings: SparqlClient.Bindings, iri: Rdf.Iri) {
@@ -257,7 +256,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
       const resourceFormIri = fr.results.bindings[0].resourceFormIRI.value
       this.openSelectedNestedForm(`{{> "${resourceFormIri}" nested=true editable=true mode="new" }}`)      
       })
-    .onError((err) => console.error('Error during resource form query execution ',err))
+    .onError((err) => console.error('Error during resource form query execution ',err));
   }
 
   private onEditHandler(selectedValue: AtomicValue) {
@@ -266,13 +265,13 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
       const query = SparqlClient.setBindings(SPARQL_QUERY, { __resourceIri__: iri});
       SparqlClient.select(query, {context: this.context.semanticContext})
         .onValue((r) => this.findAndOpenNestedForm(r.results.bindings, iri))
-        .onError((err) => console.error('Error during query execution ',err))
+        .onError((err) => console.error('Error during query execution ',err));
     }
   }
 
   private onDropdownSelectHandler(label: string) {
     const nestedFormTemplateSelected = this.state.nestedFormsData.filter((e) => e.label === label)[0].nestedForm
-    this.openSelectedNestedForm(nestedFormTemplateSelected)
+    this.openSelectedNestedForm(nestedFormTemplateSelected);
   }
 
   render() {
@@ -282,7 +281,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
     const inputValue = this.props.value;
     const selectedValue = FieldValue.isAtomic(inputValue) ? inputValue : undefined;
 
-    const showLinkResourceButton = this.props.showLinkResourceButton ?? true
+    const showLinkResourceButton = this.props.showLinkResourceButton ?? true;
 
     const showEditButton = selectedValue !== undefined
     const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormsData) && this.state.nestedFormsData.length > 1 && !showEditButton;
@@ -358,7 +357,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   private onNestedFormSubmit = (value: AtomicValue) => {
     this.setState({ nestedFormOpen: false });
     this.setAndValidate(value);
-    this.initValueSet()
+    this.initValueSet();
   };
 
   private createDefaultPlaceholder(definition: FieldDefinition): string {

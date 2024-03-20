@@ -1,0 +1,66 @@
+<semantic-search>
+    <semantic-search-form-query query-template='{"queryString": "PREFIX tnadiscovery: <http://www.researchspace.org/resource/system/services/tnadiscovery/>
+                                                                SELECT ?subject WHERE {
+                                                                    BIND(CONCAT(\"\\\"\", ?query, \"\\\"\") AS ?q) .
+                                                                    SERVICE tnadiscovery:TNADiscoverySearchRecordService {
+                                                                    ?subject tnadiscovery:q ?q;
+                                                                    tnadiscovery:sps.catalogueLevels ?catalogueLevelInput;
+                                                                    tnadiscovery:sps.resultsPageSize 20;
+                                                                    tnadiscovery:sps.heldByCode \"TNA\";
+                                                                    tnadiscovery:sps.sortByOption \"REFERENCE_ASCENDING\";
+                                                                    tnadiscovery:sps.returnHighlighted true;
+                                                                    tnadiscovery:hasReference ?reference;
+                                                                    tnadiscovery:hasId ?hasId;
+                                                                    tnadiscovery:hasDescription ?description;
+                                                                    tnadiscovery:hasCatalogueLevel ?catalogueLevel ;
+                                                                    tnadiscovery:hasScore ?score.
+                                                                    }
+                                                                }",
+                                                "arguments": {"query": {"type": "xsd:string"},
+                                                              "catalogueLevelInput": {"type": "xsd:string", "optional": true}
+                                                             }
+                                                }'
+                                fields='[
+                                            {
+                                            "id": "query",
+                                            "label": "Search for",
+                                            "description": "Search in TNA catalogue by catalogue reference number or description",
+                                            "xsdDatatype": "xsd:string",
+                                            "minOccurs": "1",
+                                            "maxOccurs": "1"
+                                            },
+                                            {
+                                            "id": "catalogueLevelInput",
+                                            "label": "Catalogue level",
+                                            "xsdDatatype": "xsd:string",
+                                            "minOccurs": "0",
+                                            "maxOccurs": "1",
+                                            "valueSetPattern": "SELECT ?value ?label { VALUES(?value ?label) { (\"Level3\" \"Series\") (\"Level6\" \"Piece\") (\"Level7\" \"Item\") } }"
+                                            }
+                                        ]'>
+        
+
+    <div style="display: flex; align-items: flex-start; gap: 20px; width: 100%; flex: 1; {{#if addToProject}}margin-top: -9px;{{/if}}">
+        <div style="flex: 1;">
+            <semantic-form-text-input for="query" label='Search TNA catalogue for' placeholder="Search by catalogue reference number or description"></semantic-form-text-input>
+        </div>
+        <div style="flex: 1;">
+            <semantic-form-select-input for="catalogueLevelInput" label='Catalogue level' placeholder='Select catalogue level'></semantic-form-select-input>
+        </div>
+        <button type='button' name='submit' className='btn btn-action' style="height: 39px; margin-top: 48px;">Search object</button>
+    </div>
+
+        
+    </semantic-search-form-query>
+    <div class='rs-result-holder' style="padding-top: 10px;">
+        <semantic-search-result-holder>
+            <semantic-search-result id='table'> 
+                <semantic-context repository='ephedra'>
+                    <div class="collection-items-api-table-container">
+                        {{> rsp:TnaApiSearchResultsTable orderBy="" initial=true}} 
+                    </div>
+                </semantic-context>
+            </semantic-search-result>
+        </semantic-search-result-holder>
+    </div>
+</semantic-search>

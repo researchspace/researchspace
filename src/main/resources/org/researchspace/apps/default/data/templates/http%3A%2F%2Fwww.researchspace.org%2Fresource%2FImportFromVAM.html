@@ -27,7 +27,7 @@
   <semantic-search-result-holder>
     <div style="margin-top: 25px;">
       <semantic-search-result>
-        <div class="{{label}}ResultsTable">
+        <div class="VAMResultsTable">
           <semantic-context repository='ephedra'>
             <semantic-table id='semantic-search-result-table'
                             query='PREFIX vam: <http://www.researchspace.org/resource/system/service/vam/>
@@ -42,13 +42,14 @@
 
                             options='{"showFilter":false, "resultsPerPage":10}' 
                             column-configuration='[
-                                                    {"displayName": "Name", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
-                                                    {"displayName": "Type", "variableName": "objectType" },
+                                                    {"displayName": "Title", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
                                                     {"displayName": "Accession number", "variableName": "accessionNumber" },
+                                                    {"displayName": "Type", "variableName": "objectType" },
                                                     {"displayName": "Description", "variableName": "description" },
                                                     {"displayName": "Primary artist name", "variableName": "artistName" },
                                                     {"displayName": "Primary artist role", "variableName": "artistRole" },
-                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"}
+                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"},
+                                                    {"displayName": "Actions", "cellTemplate": "{{> actions}}"}
                                                   ]'   
             >
 
@@ -81,12 +82,68 @@
                     target="_blank">
                     
                     <img src="[[decodeUriComponent '{{objectImageUrl.value}}/full/!250,/0/default.jpg']]" 
-                        width="auto" height="180" style="max-width: 200px; object-fit: contain;">
+                        width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
                     </a>
                    {{/if}}
                 </div>
                     
             </template>
+
+            <template id='actions'>
+              <semantic-context repository='default'>
+                <semantic-query query='SELECT DISTINCT ?VAMResourceURI ?existingRecord WHERE {
+
+                                        BIND(IRI(CONCAT("https://collections.vam.ac.uk/item/", STR("{{id.value}}"))) AS ?VAMResourceURI)
+
+                                        OPTIONAL {
+                                          ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                          ?entityFormRecord a crmdig:D1_Digital_Object .
+                                          ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                          ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                          ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                          ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                          ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                          ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                          ?importFromExternalSource crmdig:L14_transferred ?VAMResourceURI .
+                                          ?VAMResourceURI a crmdig:D1_Digital_Object .
+                                          ?VAMResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                        }
+                                      }'
+                                      
+                                template='{{> template}}'>
+                        
+                          <template id='template'>
+                            <div>
+                              {{#if bindings.0.existingRecord.value}}
+                                <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                  type='Dashboard.AddFrame'
+                                                  data='{"viewId":"entity-editor", 
+                                                        "resourceIri":"{{bindings.0.existingRecord.value}}",
+                                                        "entityTypeConfig": "{{domainConfig}}",
+                                                        "editable": true,
+                                                        "mode":"edit" }' 
+                                                  targets='["thinking-frames"]'>
+                                    <button class="btn btn-default" title="Open {{label}} record">Open record</button>
+                                </mp-event-trigger>
+                              {{else}}
+                                <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                                  type='apiResourceSelect' 
+                                                  data='{"apiResourceURI": "{{bindings.0.VAMResourceURI.value}}", 
+                                                          "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
+                                                          "apiResourceMuseumId": "{{accessionNumber.value}}",
+                                                          "apiResourceDescription": "{{description.value}}",
+                                                          "apiResourceArtistName": "{{artistName.value}}",
+                                                          "apiResourceArtistRole": "{{artistRole.value}}"
+                                                        }' 
+                                            >
+                                  <button class="btn btn-action" title="Import {{label}}">Import {{label}}</button>
+                                </mp-event-trigger>
+                              {{/if}}
+                            </div>
+                          </template>
+                </semantic-query>
+              </semantic-context>
+        </template>
           </semantic-context>
         </div>
       </semantic-search-result>

@@ -20,7 +20,7 @@
   <semantic-search-result-holder>
     <div style="margin-top: 25px;">
       <semantic-search-result>
-        <div class="{{label}}ResultsTable">
+        <div class="wikipediaResultsTable">
           <semantic-context repository='wikidata-entity'>
             <semantic-table id='semantic-search-result-table'
                             query='SELECT DISTINCT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi WHERE {
@@ -117,7 +117,7 @@
                                                 target="_blank">
                                                 
                                                 <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
-                                                    width="auto" height="180" style="max-width: 200px; object-fit: contain;">
+                                                    width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
                                               </a>
                                             </div>
                                           </template>
@@ -141,6 +141,9 @@
                                             SERVICE <https://query.wikidata.org/sparql> { 
                                               {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
                                                 <{{concepturi.value}}> wdt:P31 wd:Q5 .
+                                              {{else if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E74_Group")}}
+                                                <{{concepturi.value}}> wdt:P31 ?group .
+                                                ?group wdt:P279 wd:Q16334295 .
                                               {{else}}
                                                 <{{concepturi.value}}> wdt:P31 ?type .
                                               {{/if}}

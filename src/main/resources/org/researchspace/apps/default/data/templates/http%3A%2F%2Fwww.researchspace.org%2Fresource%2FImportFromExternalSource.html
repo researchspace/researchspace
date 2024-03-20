@@ -1,181 +1,240 @@
-{{#if (eq resourceOntologyClass "http://www.cidoc-crm.org/cidoc-crm/E53_Place")}}
-    <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                        title="Import place from OpenStreetMap" 
-                        type="lightbox">
-        <mp-overlay-dialog-trigger>
-            <button class="btn btn-action btn-textAndIcon">
-                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                <span>Import from OpenStreetMap</span>
-            </button>
-        </mp-overlay-dialog-trigger>
-        <mp-overlay-dialog-content>
-            <div class="page__section-container">
-                <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
-                <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
-                                    options='{
-                                            "scheme": "{{collection}}", 
-                                            "viewId": "{{viewId}}"
-                                    }'>
-                </inline-template>
-            </div>
-        </mp-overlay-dialog-content>
-    </mp-overlay-dialog>
-{{else if (eq resourceOntologyClass "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
-    <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                        title="Import from Wikidata" 
-                        type="lightbox">
-        <mp-overlay-dialog-trigger>
-            <button class="btn btn-action btn-textAndIcon">
-                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                <span>Import from Wikidata</span>
-            </button>
-        </mp-overlay-dialog-trigger>
-        <mp-overlay-dialog-content>
-            <div class="page__section-container">
-                <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
-                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
-                                    options='{
-                                            "scheme": "{{collection}}", 
-                                            "viewId": "{{viewId}}",
-                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E21_Person",
-                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person",
-                                            "label": "person"
-                                    }'>
-                </inline-template>
-            </div>
-        </mp-overlay-dialog-content>
-    </mp-overlay-dialog> 
-{{else}}
-    <semantic-if query='ASK WHERE {
-                            BIND(<{{resourceOntologyClass}}> as ?type)
-                            FILTER EXISTS{?type rdfs:subClassOf+ crm:E18_Physical_Thing }
-                        }'
-                 then='{{> importExternalThing}}'>
+<semantic-if query='ASK WHERE {
+                        BIND(<{{resourceOntologyClass}}> as ?type)
+                        FILTER EXISTS{?type rdfs:subClassOf+ crm:E18_Physical_Thing }
+                        FILTER(?type != crm:E21_Person )
+                        FILTER(?type != frbroo:F10_Person )
+                    }'
+                then='{{> importExternalThing}}'
+                else='{{> else}}'>
 
-        <template id='importExternalThing'>
-            <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                                title="Import from external source" 
-                                type="lightbox">
-                <mp-overlay-dialog-trigger>
-                    <button class="btn btn-action btn-textAndIcon">
-                        <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                        <span>Import from external source</span>
-                    </button>
-                </mp-overlay-dialog-trigger>
-                <mp-overlay-dialog-content>
-                    <div class="page__section-container" style="padding-top: 0px;">
-                        <bs-tab-container id="{{viewId}}-import-thing-tabs-container" default-active-key="1">
-                            <div>
-                            <bs-nav bs-style="tabs">
-                                <bs-nav-item event-key="1">Wikipedia</bs-nav-item>
-                                <bs-nav-dropdown event-key="2" title="Museum collections" id="nav-dropdown-within-tab">
-                                    <bs-menu-item event-key="2.1">MET collection</bs-menu-item>
-                                    <bs-menu-item event-key="2.2">V&A collection</bs-menu-item>
-                                </bs-nav-dropdown>
+    <template id='importExternalThing'>
+        <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                            title="Import from external source" 
+                            type="lightbox">
+            <mp-overlay-dialog-trigger>
+                <button class="btn btn-action btn-textAndIcon">
+                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                    <span>Import from external source</span>
+                </button>
+            </mp-overlay-dialog-trigger>
+            <mp-overlay-dialog-content>
+                <div class="page__section-container" style="padding-top: 0px;">
+                    <bs-tab-container id="{{viewId}}-import-thing-tabs-container" default-active-key="1">
+                        <div>
+                        <bs-nav bs-style="tabs">
+                            <bs-nav-item event-key="1">Wikipedia</bs-nav-item>
+                            <bs-nav-dropdown event-key="2" title="Museum collections" id="nav-dropdown-within-tab">
+                                <bs-menu-item event-key="2.1">MET collection</bs-menu-item>
+                                <bs-menu-item event-key="2.2">V&A collection</bs-menu-item>
+                            </bs-nav-dropdown>
 
-                                <bs-nav-dropdown event-key="3" title="Archives" id="nav-dropdown-within-tab">
-                                    <bs-menu-item event-key="3.1">The National archives</bs-menu-item>
-                                </bs-nav-dropdown>
+                            <bs-nav-dropdown event-key="3" title="Archives" id="nav-dropdown-within-tab">
+                                <bs-menu-item event-key="3.1">The National archives</bs-menu-item>
+                            </bs-nav-dropdown>
 
-                                <bs-nav-dropdown event-key="4" title="ResearchSpace projects" id="nav-dropdown-within-tab">
-                                    <bs-menu-item event-key="4.1">Late Hokusai</bs-menu-item>
-                                    <bs-menu-item event-key="4.2">Amara West</bs-menu-item>
-                                </bs-nav-dropdown>
-                            </bs-nav>
+                            <bs-nav-dropdown event-key="4" title="ResearchSpace projects" id="nav-dropdown-within-tab">
+                                <bs-menu-item event-key="4.1">Late Hokusai</bs-menu-item>
+                                <bs-menu-item event-key="4.2">Amara West</bs-menu-item>
+                            </bs-nav-dropdown>
+                        </bs-nav>
 
-                            <bs-tab-content animation>
-                                <bs-tab-pane event-key="1">
-                                    <h6>Search in Wikidata</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
-                                                        options='{
-                                                                "scheme": "{{collection}}", 
-                                                                "viewId": "{{viewId}}",
-                                                                "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                                "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                                "label": "object/thing"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                                <bs-tab-pane event-key="2.1">
-                                    <h6>Search in MET collection</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromMET"]]' 
-                                                        options='{
-                                                                "scheme": "{{collection}}", 
-                                                                "viewId": "{{viewId}}",
-                                                                "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                                "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                                "label": "object/thing"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                                <bs-tab-pane event-key="2.2">
-                                    <h6>Search in Victoria and Albert Museum collection</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromVAM"]]' 
-                                                        options='{
-                                                                "scheme": "{{collection}}", 
-                                                                "viewId": "{{viewId}}",
-                                                                "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                                "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                                "label": "object/thing"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                                <bs-tab-pane event-key="3.1">
-                                    <h6>Search in The National Archives catalogue</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromTNA"]]' 
-                                                        options='{
-                                                                "scheme": "{{collection}}", 
-                                                                "viewId": "{{viewId}}",
-                                                                "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                                "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                                "label": "object/thing"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                                <bs-tab-pane event-key="4.1">
-                                    <h6>Search in Late Hokusai</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromLateHokusai"]]' 
-                                                        options='{
-                                                                "scheme": "{{collection}}", 
-                                                                "viewId": "{{viewId}}",
-                                                                "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                                "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                                "label": "object/thing"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                                <bs-tab-pane event-key="4.2">
-                                    <h6>Search in Amara West</h6>
-                                    <inline-template template-iri='[[resolvePrefix "rsp:ImportFromAmaraWest"]]' 
-                                                        options='{
-                                                                "scheme": "{{collection}}", 
-                                                                "viewId": "{{viewId}}",
-                                                                "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                                "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                                "label": "object/thing"
-                                                        }'>
-                                    </inline-template>
-                                </bs-tab-pane>
-                            </bs-tab-content>
-                            </div>
-                        </bs-tab-container>
-                    </div>
-                </mp-overlay-dialog-content>
-            </mp-overlay-dialog>
-        </template>
+                        <bs-tab-content animation>
+                            <bs-tab-pane event-key="1">
+                                <h6>Search in Wikidata</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
+                                                            "label": "object/thing"
+                                                    }'>
+                                </inline-template>
+                            </bs-tab-pane>
+                            <bs-tab-pane event-key="2.1">
+                                <h6>Search in MET collection</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromMET"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
+                                                            "label": "object/thing"
+                                                    }'>
+                                </inline-template>
+                            </bs-tab-pane>
+                            <bs-tab-pane event-key="2.2">
+                                <h6>Search in Victoria and Albert Museum collection</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromVAM"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
+                                                            "label": "object/thing"
+                                                    }'>
+                                </inline-template>
+                            </bs-tab-pane>
+                            <bs-tab-pane event-key="3.1">
+                                <h6>Search in The National Archives catalogue</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromTNA"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
+                                                            "label": "object/thing"
+                                                    }'>
+                                </inline-template>
+                            </bs-tab-pane>
+                            <bs-tab-pane event-key="4.1">
+                                <h6>Search in Late Hokusai</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromLateHokusai"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
+                                                            "label": "object/thing"
+                                                    }'>
+                                </inline-template>
+                            </bs-tab-pane>
+                            <bs-tab-pane event-key="4.2">
+                                <h6>Search in Amara West</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromAmaraWest"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
+                                                            "label": "object/thing"
+                                                    }'>
+                                </inline-template>
+                            </bs-tab-pane>
+                        </bs-tab-content>
+                        </div>
+                    </bs-tab-container>
+                </div>
+            </mp-overlay-dialog-content>
+        </mp-overlay-dialog>
+    </template>
 
-    </semantic-if>  
-{{/if}}
+    <template id='else'>
+        <semantic-switch query='SELECT ?resourceClass {
+                                BIND(<{{resourceOntologyClass}}> as ?resourceClass)
+                            }'>
 
-[[!-- <semantic-switch query='SELECT ?resourceClass {
-                            BIND(<{{resourceOntologyClass}}> as ?resourceClass)
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E53_Place'>
+                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                    title="Import place from OpenStreetMap" 
+                                    type="lightbox">
+                    <mp-overlay-dialog-trigger>
+                        <button class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                            <span>Import from OpenStreetMap</span>
+                        </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                        <div class="page__section-container">
+                            <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
+                                                options='{
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}"
+                                                }'>
+                            </inline-template>
+                        </div>
+                    </mp-overlay-dialog-content>
+                </mp-overlay-dialog>
+            </template>
 
-                            OPTIONAL {
-                                ?resourceClass rdfs:subClassOf* crm:E18_Physical_Thing .
-                            }
-                        }'>
-    <template id='red'><div></div></template>
-    <template id='*'><div></div></template>
-    <template id='default'><div></div></template>
-  </semantic-switch>
---]]
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E39_Actor'>
+                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                    title="Import from Wikidata" 
+                                    type="lightbox">
+                    <mp-overlay-dialog-trigger>
+                        <button class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                            <span>Import from Wikidata</span>
+                        </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                        <div class="page__section-container">
+                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                options='{
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
+                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor",
+                                                        "label": "actor"
+                                                }'>
+                            </inline-template>
+                        </div>
+                    </mp-overlay-dialog-content>
+                </mp-overlay-dialog> 
+            </template>
+
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E74_Group'>
+                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                    title="Import from Wikidata" 
+                                    type="lightbox">
+                    <mp-overlay-dialog-trigger>
+                        <button class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                            <span>Import from Wikidata</span>
+                        </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                        <div class="page__section-container">
+                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                options='{
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E74_Group",
+                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Group",
+                                                        "label": "group"
+                                                }'>
+                            </inline-template>
+                        </div>
+                    </mp-overlay-dialog-content>
+                </mp-overlay-dialog> 
+            </template>
+
+            <template id='http://www.cidoc-crm.org/cidoc-crm/E21_Person'>
+                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                    title="Import from Wikidata" 
+                                    type="lightbox">
+                    <mp-overlay-dialog-trigger>
+                        <button class="btn btn-action btn-textAndIcon">
+                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                            <span>Import from Wikidata</span>
+                        </button>
+                    </mp-overlay-dialog-trigger>
+                    <mp-overlay-dialog-content>
+                        <div class="page__section-container">
+                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
+                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                options='{
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E21_Person",
+                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Person",
+                                                        "label": "person"
+                                                }'>
+                            </inline-template>
+                        </div>
+                    </mp-overlay-dialog-content>
+                </mp-overlay-dialog> 
+            </template>
+
+            <template id='default'><div></div></template>
+
+        </semantic-switch>
+    </template>
+
+</semantic-if>  
+
+
+

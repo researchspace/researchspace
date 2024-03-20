@@ -50,7 +50,14 @@
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
-                        <semantic-form-text-input for="series_title" label="Series title/name" placeholder="Enter series title"></semantic-form-text-input>
+                        {{#if apiResourceName}}
+                            <div class="focused-input-container">
+                                <semantic-form-text-input for="series_title" label="Series title/name" placeholder="Enter series title" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
+                            </div>
+                        {{else}}
+                            <semantic-form-text-input for="series_title" label="Series title/name" placeholder="Enter series title"></semantic-form-text-input>
+                        {{/if}}
+                        
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="series_primary_id"
                                                             label="Series identifier (preferred)"
@@ -69,7 +76,13 @@
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{#if apiResourceMuseumId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceMuseumId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{/if}}
                                     </div>
                                     <div style="flex: 1;">
                                         <semantic-form-select-input for='identifier_series_id_type' 
@@ -142,6 +155,42 @@
                     </div>
 
                     <div class="form-media-column">
+
+                        {{#if apiResourceURI}}
+                            <div style="padding-top: 20px;">
+                                <span>Imported from: </span>
+                                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
+                            </div>
+                        {{else}}
+                            {{#if node}}
+                                <semantic-query query='SELECT ?resource ?sourceURI WHERE {
+                                                        BIND(<{{node}}> AS ?resource)
+        
+                                                        ?resource crm:P129i_is_subject_of ?entityFormRecord .
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+        
+                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                        ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
+                                                        ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                    }'
+                                            template='{{> template}}'
+                                >
+                                    
+                                    <template id='template'>
+                                        <div>
+                                            <div style="padding-top: 20px;">
+                                                <span>Imported from: </span>
+                                                <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </semantic-query>
+                            {{/if}}
+                        {{/if}}
+                        
                         <div class="dragAndDrop-input-container">
                             <semantic-form-drag-and-drop-input for='series_image_main_representation' label="Main image" 
                                                                 placeholder-item-template="<div class='placeholder-item'>

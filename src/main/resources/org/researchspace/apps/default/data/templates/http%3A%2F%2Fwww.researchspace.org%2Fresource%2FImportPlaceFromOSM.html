@@ -19,7 +19,7 @@
   <semantic-search-result-holder>
     <div style="margin-top: 25px;">
       <semantic-search-result>
-        <div class="OSMresultsTable">
+        <div class="wikipediaResultsTable">
           <semantic-context repository='osm-nominatim-search'>
             <semantic-table id='semantic-search-result-table'
                             query='SELECT DISTINCT ?subject ?placeName ?wikidataId ?geoText WHERE {
@@ -28,10 +28,10 @@
 
                             options='{"showFilter":false, "resultsPerPage":6}' 
                             column-configuration='[
-                                    {"displayName": "Name", "cellTemplate": "{{> placeName}}" },
+                                    {"displayName": "Place name", "cellTemplate": "{{> placeName}}" },
                                     {"displayName": "Description (from Wikidata)", "cellTemplate": "{{> wikidata}}"},
                                     {"displayName": "Image", "cellTemplate": "{{> images}}"},
-                                    {"displayName": "Place", "cellTemplate": "{{> placeMap}}" },
+                                    {"displayName": "Map", "cellTemplate": "{{> placeMap}}" },
                                     {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
                                   ]'   
             >
@@ -81,7 +81,7 @@
               </template>
 
               <template id='placeMap'>
-                <div style='height: 230px; width: 370px;'>
+                <div style='height: 210px; width: 20vw;'>
                   <semantic-context repository='default'>
                     <semantic-map query='SELECT ?wkt WHERE { BIND("{{geoText.value}}" AS ?wkt) }'
                                   tuple-template='<b style="color:#525156; padding-botto:5px;">{{placeName.value}}</b>
@@ -128,7 +128,7 @@
                                                 target="_blank">
                                                 
                                                 <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
-                                                    width="auto" height="180" style="max-width: 200px; object-fit: contain;">
+                                                    width="auto" height="180" style="max-width: 15vw; object-fit: contain;">
                                               </a>
                                             </div>
                                             
@@ -222,7 +222,7 @@
                                                                       "apiResourceosmGeoCoordinates": "{{bindings.0.osmGeoCoordinates.value}}"
                                                                     }' 
                                                         >
-                                                        <button class="btn btn-action" title="Import place">Import</button>
+                                                        <button class="btn btn-action" title="Import place">Import place</button>
                                             </mp-event-trigger>
                                           {{/if}}
                                         </div>
@@ -241,7 +241,7 @@
                                             {{#if scheme}}"scheme": "{{scheme}}",{{/if}}
                                             "viewId": "{{viewId}}"
                                             }' >
-                      <button class="btn btn-action" title="Import place">Import</button>
+                      <button class="btn btn-action" title="Import place">Import place</button>
                     </mp-event-trigger>
                   {{/if}}
                 </div>

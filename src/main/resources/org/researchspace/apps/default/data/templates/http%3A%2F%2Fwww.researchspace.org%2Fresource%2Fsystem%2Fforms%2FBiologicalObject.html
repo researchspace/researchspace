@@ -11,7 +11,9 @@
                             object_document="http://www.researchspace.org/pattern/system/entity/documents"
 
                             object_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            object_primary_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             object_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            object_id_min1="http://www.researchspace.org/pattern/system/entity/identifier_min1"
                             
                             object_description="http://www.researchspace.org/pattern/system/entity/description"
                             
@@ -47,7 +49,7 @@
                 <div class="form-2column-container">
                     <div>
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="object_primary_id"
+                            <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}object_primary_id_min1{{else}}object_primary_id{{/if}}"
                                                             label="Object identifier (preferred)"
                                                             new-subject-template="/object_id" 
                                                             fields='[[fieldDefinitions
@@ -72,11 +74,12 @@
                                             <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
                                         {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_object_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
-                                                                    placeholder="Select identifier type" 
+                                                                    placeholder="Select identifier type"
+                                                                    default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}" 
                                                                     nested-form-templates='[ 
                                                                         {
                                                                         "label": "Identifier",
@@ -93,7 +96,7 @@
                         </div>
 
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="object_id"
+                            <semantic-form-composite-input  for="{{#if apiResourceSystemId}}object_id_min1{{else}}object_id{{/if}}"
                                                             label="Other object identifier"
                                                             new-subject-template="/object_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                             fields='[[fieldDefinitions
@@ -110,13 +113,20 @@
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
+                                        {{#if apiResourceSystemId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
+                                        {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceSystemId}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_object_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/vocab/thing_identifier/system_id{{/if}}"
                                                                     nested-form-templates='[ 
                                                                         {
                                                                         "label": "Identifier",
@@ -260,30 +270,27 @@
                             </div>
                           </div>
                         </template>
-                      </mp-event-target-template-render>
+                    </mp-event-target-template-render>
 
-                      <div class="page__section-container" style="padding-top: 7px; margin-bottom: 0; margin-top: 20px; display: flex; flex-direction: column; min-width: 350px;">
-                        
-                            <bs-tabs id="{{viewId}}-component-form-tabs" class-name="form-tabs">
-                                <bs-tab event-key="{{viewId}}-objComponents" title="Object part of/components">
+                    <div class="page__section-container" style="padding-top: 7px; margin-bottom: 0; margin-top: 20px; display: flex; flex-direction: column; min-width: 350px;">
+                        <bs-tabs id="{{viewId}}-component-form-tabs" class-name="form-tabs">
+                            <bs-tab event-key="{{viewId}}-objComponents" title="Object part of/components">
 
-                                    <semantic-form-select-input for='object_part_of' 
-                                                                label="Part of" 
-                                                                placeholder="Select the item that the object is part of" 
-                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-                                    </semantic-form-select-input>
+                                <semantic-form-select-input for='object_part_of' 
+                                                            label="Part of" 
+                                                            placeholder="Select the item that the object is part of" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                                </semantic-form-select-input>
 
-                                    <semantic-form-select-input for='object_component' 
-                                                                label="Components" 
-                                                                placeholder="Select object component" 
-                                                                nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
-                                    </semantic-form-select-input>
+                                <semantic-form-select-input for='object_component' 
+                                                            label="Components" 
+                                                            placeholder="Select object component" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
+                                </semantic-form-select-input>
 
-                                </bs-tab>
-                            </bs-tabs>
-
-                        </div>
-                   
+                            </bs-tab>
+                        </bs-tabs>
+                    </div>
                 </div>
 
             </rs-tab>

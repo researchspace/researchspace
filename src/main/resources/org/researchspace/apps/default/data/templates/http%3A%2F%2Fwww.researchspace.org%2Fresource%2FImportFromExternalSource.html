@@ -1,11 +1,12 @@
-<semantic-if query='ASK WHERE {
-                        BIND(<{{resourceOntologyClass}}> as ?type)
-                        FILTER EXISTS{?type rdfs:subClassOf+ crm:E18_Physical_Thing }
-                        FILTER(?type != crm:E21_Person )
-                        FILTER(?type != frbroo:F10_Person )
-                    }'
-                then='{{> importExternalThing}}'
-                else='{{> else}}'>
+<semantic-query query='SELECT ?ontologyClass WHERE {
+                        BIND(<{{resourceOntologyClass}}> as ?ontologyClass)
+                        FILTER EXISTS{?ontologyClass rdfs:subClassOf+ crm:E18_Physical_Thing }
+                        FILTER(?ontologyClass != crm:E21_Person )
+                        FILTER(?ontologyClass != frbroo:F10_Person )
+                    } LIMIT 1'
+                    
+                    template='{{> importExternalThing}}'
+				    no-result-template='{{> else}}'>
 
     <template id='importExternalThing'>
         <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
@@ -45,9 +46,9 @@
                                                     options='{
                                                             "scheme": "{{collection}}", 
                                                             "viewId": "{{viewId}}",
-                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                            "label": "object/thing"
+                                                            "domain": "{{resourceOntologyClass}}",
+                                                            "domainConfig": "{{resourceConfiguration}}",
+                                                            "label": "{{resourceName}}"
                                                     }'>
                                 </inline-template>
                             </bs-tab-pane>
@@ -55,11 +56,11 @@
                                 <h6>Search in MET collection</h6>
                                 <inline-template template-iri='[[resolvePrefix "rsp:ImportFromMET"]]' 
                                                     options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                            "label": "object/thing"
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "{{resourceOntologyClass}}",
+                                                        "domainConfig": "{{resourceConfiguration}}",
+                                                        "label": "{{resourceName}}"
                                                     }'>
                                 </inline-template>
                             </bs-tab-pane>
@@ -67,11 +68,11 @@
                                 <h6>Search in Victoria and Albert Museum collection</h6>
                                 <inline-template template-iri='[[resolvePrefix "rsp:ImportFromVAM"]]' 
                                                     options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                            "label": "object/thing"
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "{{resourceOntologyClass}}",
+                                                        "domainConfig": "{{resourceConfiguration}}",
+                                                        "label": "{{resourceName}}"
                                                     }'>
                                 </inline-template>
                             </bs-tab-pane>
@@ -79,11 +80,11 @@
                                 <h6>Search in The National Archives catalogue</h6>
                                 <inline-template template-iri='[[resolvePrefix "rsp:ImportFromTNA"]]' 
                                                     options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                            "label": "object/thing"
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "{{resourceOntologyClass}}",
+                                                        "domainConfig": "{{resourceConfiguration}}",
+                                                        "label": "{{resourceName}}"
                                                     }'>
                                 </inline-template>
                             </bs-tab-pane>
@@ -91,11 +92,11 @@
                                 <h6>Search in Late Hokusai</h6>
                                 <inline-template template-iri='[[resolvePrefix "rsp:ImportFromLateHokusai"]]' 
                                                     options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                            "label": "object/thing"
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "{{resourceOntologyClass}}",
+                                                        "domainConfig": "{{resourceConfiguration}}",
+                                                        "label": "{{resourceName}}"
                                                     }'>
                                 </inline-template>
                             </bs-tab-pane>
@@ -103,11 +104,11 @@
                                 <h6>Search in Amara West</h6>
                                 <inline-template template-iri='[[resolvePrefix "rsp:ImportFromAmaraWest"]]' 
                                                     options='{
-                                                            "scheme": "{{collection}}", 
-                                                            "viewId": "{{viewId}}",
-                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E22_Man-Made_Object",
-                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Man-made_object",
-                                                            "label": "object/thing"
+                                                        "scheme": "{{collection}}", 
+                                                        "viewId": "{{viewId}}",
+                                                        "domain": "{{resourceOntologyClass}}",
+                                                        "domainConfig": "{{resourceConfiguration}}",
+                                                        "label": "{{resourceName}}"
                                                     }'>
                                 </inline-template>
                             </bs-tab-pane>
@@ -234,7 +235,8 @@
         </semantic-switch>
     </template>
 
-</semantic-if>  
+</semantic-query
+>  
 
 
 

@@ -13,8 +13,11 @@
                             series_document="http://www.researchspace.org/pattern/system/entity/documents"
 
                             series_title="http://www.researchspace.org/pattern/system/series/series_title"
+                            
                             series_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            series_primary_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             series_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            series_id_min1="http://www.researchspace.org/pattern/system/entity/identifier_min1"
                             
                             series_description="http://www.researchspace.org/pattern/system/entity/description"
                             
@@ -24,8 +27,8 @@
 
                             series_media="http://www.researchspace.org/pattern/system/physical_object/media"
 
-                            series_collection="http://www.researchspace.org/pattern/system/physical_thing/part_of_collection"
-                            series_parts="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
+                            series_part_of="http://www.researchspace.org/pattern/system/physical_thing/part_of_physical_thing"
+                            series_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of_physical_thing"
 
                             series_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
                             series_former_location="http://www.researchspace.org/pattern/system/physical_thing/location"
@@ -59,7 +62,7 @@
                         {{/if}}
                         
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="series_primary_id"
+                            <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}series_primary_id_min1{{else}}series_primary_id{{/if}}"
                                                             label="Series identifier (preferred)"
                                                             new-subject-template="/series_id" 
                                                             fields='[[fieldDefinitions
@@ -84,11 +87,12 @@
                                             <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
                                         {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_series_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}"
                                                                     nested-form-templates='[ 
                                                                         {
                                                                         "label": "Identifier",
@@ -105,7 +109,7 @@
                         </div>
 
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="series_id"
+                            <semantic-form-composite-input  for="{{#if apiResourceSystemId}}series_id_min1{{else}}series_id{{/if}}"
                                                             label="Other series identifier"
                                                             new-subject-template="/series_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                             fields='[[fieldDefinitions
@@ -122,13 +126,20 @@
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{#if apiResourceSystemId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceSystemId}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_series_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
-                                                                    placeholder="Select identifier type" 
+                                                                    placeholder="Select identifier type"
+                                                                    default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/vocab/thing_identifier/system_id{{/if}}" 
                                                                     nested-form-templates='[ 
                                                                         {
                                                                         "label": "Identifier",
@@ -337,20 +348,7 @@
                 </div>
             </rs-tab>
 
-            <rs-tab event-key="collection" title="Collection">
-
-                <semantic-form-select-input for='series_collection' 
-                                            label="Part of collection" 
-                                            placeholder="Select collection" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Collection",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Collection\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'> 
-                </semantic-form-select-input>
+            <rs-tab event-key="components" title="Part of/Components">
 
             </rs-tab>
 
@@ -358,11 +356,7 @@
 
             </rs-tab>
 
-            <rs-tab event-key="visualItem" title="Visual items">
-
-            </rs-tab>
-
-            <rs-tab event-key="parts" title="Parts/Features">
+            <rs-tab event-key="visualItem" title="Visual items/Features">
 
             </rs-tab>
 

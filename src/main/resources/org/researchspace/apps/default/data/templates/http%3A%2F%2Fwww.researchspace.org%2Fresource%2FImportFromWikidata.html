@@ -30,27 +30,33 @@
                             options='{"showFilter":true, "resultsPerPage":10}' 
                             column-configuration='[
                                                     {"displayName": "Name", "variableName": "wikidataEntityLabel", "cellTemplate": "{{> resourceName}}" },
-                                                    {"displayName": "Description", "variableName": "description"},
+                                                    {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
                                                     {"displayName": "Resource type", "cellTemplate": "{{> type}}"},
                                                     {"displayName": "Image", "cellTemplate": "{{> images}}"},
                                                     {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
                                                   ]'   
             >
 
-            <template id='resourceName'>
-              <div>
-                {{#if wikidataId.value}}
-                  <a class="text-link-action" 
-                      target="_blank" 
-                      href="http://www.wikidata.org/entity/{{wikidataId.value}}"
-                      title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+              <template id='resourceName'>
+                <div>
+                  {{#if wikidataId.value}}
+                    <a class="text-link-action" 
+                        target="_blank" 
+                        href="http://www.wikidata.org/entity/{{wikidataId.value}}"
+                        title="http://www.wikidata.org/entity/{{wikidataId.value}}">
+                      {{wikidataEntityLabel.value}}
+                    </a>
+                  {{else}}
                     {{wikidataEntityLabel.value}}
-                  </a>
-                {{else}}
-                  {{wikidataEntityLabel.value}}
-                {{/if}}
-              </div>
-            </template>
+                  {{/if}}
+                </div>
+              </template>
+
+              <template id='description'>
+                <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                    {{description.value}}
+                </mp-text-truncate>
+              </template>
 
               <template id='type'>
                 <div>

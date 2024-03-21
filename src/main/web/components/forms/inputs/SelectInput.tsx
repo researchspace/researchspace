@@ -92,6 +92,7 @@ export interface SelectInputProps extends AtomicValueInputProps {
    *
    */
   nestedFormTemplates?: nestedFormEl[];
+  showEditButton?: boolean;
 }
 
 interface State {
@@ -317,7 +318,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
     const showLinkResourceButton = this.props.showLinkResourceButton ?? true
 
-    const showEditButton = selectedValue !== undefined
+    const showEditButton = selectedValue !== undefined && (this.props.showEditButton ?? true)
     const showCreateNewDropdown = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length > 1 && !showEditButton;
     const showCreateNewButton = !_.isEmpty(this.state.nestedFormTemplates) && this.state.nestedFormTemplates.length === 1 && !showEditButton;
 

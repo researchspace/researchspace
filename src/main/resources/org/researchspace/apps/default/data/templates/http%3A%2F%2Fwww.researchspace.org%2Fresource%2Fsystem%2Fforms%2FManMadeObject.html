@@ -14,7 +14,9 @@
                             object_other_title="http://www.researchspace.org/pattern/system/man-made_thing/other_title"
 
                             object_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            object_primary_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             object_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            object_id_min1="http://www.researchspace.org/pattern/system/entity/identifier_min1"
                             
                             object_description="http://www.researchspace.org/pattern/system/entity/description"
                             
@@ -217,7 +219,7 @@
                         </semantic-form-composite-input>
 
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="object_primary_id"
+                            <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}object_primary_id_min1{{else}}object_primary_id{{/if}}"
                                                             label="Object identifier (preferred)"
                                                             new-subject-template="/object_id" 
                                                             fields='[[fieldDefinitions
@@ -242,11 +244,12 @@
                                             <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
                                         {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_object_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}"
                                                                     nested-form-templates='[ 
                                                                         {
                                                                             "label": "Identifier",
@@ -263,7 +266,7 @@
                         </div>
 
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="object_id"
+                            <semantic-form-composite-input  for="{{#if apiResourceSystemId}}object_id_min1{{else}}object_id{{/if}}"
                                                             label="Other object identifier"
                                                             new-subject-template="/object_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                             fields='[[fieldDefinitions
@@ -280,13 +283,20 @@
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
+                                        {{#if apiResourceSystemId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter object identifier"></semantic-form-text-input>
+                                        {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceSystemId}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_object_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/vocab/thing_identifier/system_id{{/if}}"
                                                                     nested-form-templates='[ 
                                                                         {
                                                                         "label": "Identifier",
@@ -357,7 +367,6 @@
                                                                                         </div>"
                                                                 nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
                             </semantic-form-drag-and-drop-input>
-                            <img src="" />
                         </div>
             
                         <div class="dragAndDrop-input-container">
@@ -735,7 +744,6 @@
             <rs-tab event-key="visualItem" title="Visual items/Features">
 
             </rs-tab>
-
 
             <rs-tab event-key="ownership" title="Ownership/Custody/Location">
                 <semantic-form-text-input for="object_right" label="Legal rights" placeholder="Enter legal rights"></semantic-form-text-input>

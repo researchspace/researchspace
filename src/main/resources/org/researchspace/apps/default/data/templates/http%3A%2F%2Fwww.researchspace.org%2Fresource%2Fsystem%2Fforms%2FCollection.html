@@ -11,13 +11,19 @@
                             collection_document="http://www.researchspace.org/pattern/system/entity/documents"
 
                             collection_title="http://www.researchspace.org/pattern/system/man-made_thing/title"
+                            
+                            collection_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            collection_primary_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             collection_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            collection_id_min1="http://www.researchspace.org/pattern/system/entity/identifier_min1"
+
                             collection_description="http://www.researchspace.org/pattern/system/entity/description"
                             
                             collection_current_location="http://www.researchspace.org/pattern/system/physical_thing/location"
                             collection_curator="http://www.researchspace.org/pattern/system/collection/curator"
 
-                            collection_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
+                            collection_part_of="http://www.researchspace.org/pattern/system/physical_thing/part_of_physical_thing"
+                            collection_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of_physical_thing"
 
                             collection_right="http://www.researchspace.org/pattern/system/physical_thing/right"
                             collection_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
@@ -124,8 +130,55 @@
                         </semantic-form-composite-input>
 
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="collection_id"
-                                                            label="Collection identifier"
+                            <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}collection_primary_id_min1{{else}}collection_primary_id{{/if}}"
+                                                            label="Collection identifier (preferred)"
+                                                            new-subject-template="/collection_id" 
+                                                            fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                    
+                                                                    identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                                    identifier_collection_id_type="http://www.researchspace.org/pattern/system/identifier/thing_id_type"
+                                                                ]]'
+                                                            >
+                                        
+                                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/collection_primary_id'></semantic-form-hidden-input>
+                                    
+                                <div class="form-inline-inputs" style="row-gap:5px;">
+                                    <div>
+                                        {{#if apiResourceMuseumId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceMuseumId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{/if}}
+                                    </div>
+                                    <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
+                                        <semantic-form-select-input for='identifier_collection_id_type' 
+                                                                    label="Identifier type" 
+                                                                    render-header=false
+                                                                    placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}"
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                        scheme=\"http://www.researchspace.org/resource/vocab/thing_identifier\"
+                                                                                                        entityType=\"identifier\" }}
+                                                                                        {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'> 
+                                        </semantic-form-select-input>
+                                    </div>
+                                </div>
+                            </semantic-form-composite-input>
+                        </div>
+
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="{{#if apiResourceSystemId}}collection_id_min1{{else}}collection_id{{/if}}"
+                                                            label="Collection other identifier"
                                                             new-subject-template="/collection_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -141,19 +194,20 @@
                                     
                                 <div class="form-inline-inputs" style="row-gap:5px;">
                                     <div>
-                                        {{#if apiResourceMuseumId}}
+                                        {{#if apiResourceSystemId}}
                                             <div class="focused-input-container">
-                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceMuseumId}}" force-defaults=true></semantic-form-text-input>
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
                                             </div>
                                         {{else}}
                                             <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
                                         {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceSystemId}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_collection_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/vocab/thing_identifier/system_id{{/if}}" 
                                                                     nested-form-templates='[ 
                                                                         {
                                                                         "label": "Identifier",
@@ -251,7 +305,7 @@
                 </div>
             </rs-tab>
 
-            <rs-tab event-key="part" title="Parts">
+            <rs-tab event-key="components" title="Part of/Components">
 
             </rs-tab>
 

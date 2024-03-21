@@ -45,7 +45,7 @@
                                                     {"displayName": "Title", "variableName": "title", "cellTemplate": "{{> resourceName}}" },
                                                     {"displayName": "Accession number", "variableName": "accessionNumber" },
                                                     {"displayName": "Type", "variableName": "objectType" },
-                                                    {"displayName": "Description", "variableName": "description" },
+                                                    {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}" },
                                                     {"displayName": "Primary artist name", "variableName": "artistName" },
                                                     {"displayName": "Primary artist role", "variableName": "artistRole" },
                                                     {"displayName": "Image", "cellTemplate": "{{> images}}"},
@@ -72,6 +72,12 @@
                 {{/if}}
                          
               </div>
+            </template>
+
+            <template id='description'>
+              <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                  {{description.value}}
+              </mp-text-truncate>
             </template>
             
             <template id='images'>
@@ -131,6 +137,8 @@
                                                   data='{"apiResourceURI": "{{bindings.0.VAMResourceURI.value}}", 
                                                           "apiResourceName": "{{#if title.value}}{{title.value}}{{else}}{{objectType.value}}{{/if}}", 
                                                           "apiResourceMuseumId": "{{accessionNumber.value}}",
+                                                          "apiResourceMuseumIdType": "http://www.researchspace.org/resource/vocab/thing_identifier/accession_number", 
+                                                          "apiResourceSystemId": "{{id.value}}",
                                                           "apiResourceDescription": "{{description.value}}",
                                                           "apiResourceArtistName": "{{artistName.value}}",
                                                           "apiResourceArtistRole": "{{artistRole.value}}"

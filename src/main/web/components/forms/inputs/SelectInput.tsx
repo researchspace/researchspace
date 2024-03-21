@@ -311,7 +311,6 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
   render() {
     const definition = this.props.definition;
     const options = this.state.valueSet ? this.state.valueSet.toArray() : new Array<SparqlBindingValue>();
-    let formSelected = null
 
     const inputValue = this.props.value;
     const selectedValue = FieldValue.isAtomic(inputValue) ? inputValue : undefined;

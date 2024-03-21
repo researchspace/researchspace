@@ -90,7 +90,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
       >
         <Modal.Header closeButton={true}>
           <Modal.Title>{
-            (subject ? '' : 'New ') + `${modalTitle}`
+            <span>{(subject ? '' : 'New ') + `${modalTitle}`}</span>
           }</Modal.Title>
         </Modal.Header>
         <Modal.Body>{cloneElement(children, propsOverride)}</Modal.Body>

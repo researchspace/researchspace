@@ -9,7 +9,8 @@
                             entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                             entity_image="http://www.researchspace.org/pattern/system/entity/images"
                             entity_document="http://www.researchspace.org/pattern/system/entity/documents"
-
+                            entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
+                            
                             entity_appellation="http://www.researchspace.org/pattern/system/entity/appellation"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
@@ -26,7 +27,6 @@
                             entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
                             entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
 
-                            entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                             
                         ]]'
             >
@@ -134,17 +134,6 @@
                                                                 nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
                             </semantic-form-drag-and-drop-input>
                         </div>
-
-                        <div class="dragAndDrop-input-container">
-                            <semantic-form-drag-and-drop-input  for='entity_document' label="Documents" 
-                                                                    placeholder-item-template="<div class='placeholder-item'>
-                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                                <div>Drag document or click to upload</div>
-                                                                                                </div>"
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" docType="http://www.researchspace.org/resource/vocab/document_type/exhibition_report" }}{{{{/raw}}}}'
-                                                                                                >
-                            </semantic-form-drag-and-drop-input>
-                        </div>
                     </div>
                     
                 </div>
@@ -226,26 +215,132 @@
                 </semantic-form-select-input>
             </rs-tab>
 
-            <rs-tab event-key="representation" title="Representations/Documents" tab-class-name="tab-right">
+            <rs-tab event-key="asset" title="Images/Documents" tab-class-name="tab-right">
+                
+                <h5 class="customFormHeader">More images</h5>
+                <bs-tab-container id="{{viewId}}-form-image-tabs" default-active-key="thumbnailView" class="form-image-tabs">
+                    <div style="position: relative;">
+                        {{#if node}}
+                            <div style="position: absolute; top: 0; right: 0; display: flex; gap:5px">
+                                <button class="btn btn-icon" title="preview">
+                                    <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                </button>
+                                <button class="btn btn-icon" title="download">
+                                    <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                </button>
 
-                <semantic-form-select-input for='entity_image_main_representation' 
-                                            label="Entity main image"
-                                            placeholder="Select image" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Image",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'> 
-                </semantic-form-select-input>
+                                <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                                      type='Dashboard.AddFrame' 
+                                                      data='{"resourceIri": "{{node}}", 
+                                                              "viewId": "objectImageObservation", 
+                                                              "objectIri": "{{node}}",
+                                                              "frameId": "{{viewId}}"}' 
+                                                      targets='["thinking-frames"]'>
+                                    <button class="btn btn-icon" title="View/Annotations">
+                                        <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                    </button>
+                                </mp-event-trigger>
+                            </div>
+                        {{/if}}
+                        
+                        <bs-nav bs-style="icon-tabs">
+                            <bs-nav-item event-key="thumbnailView" title="thumbnail view">
+                                <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                            </bs-nav-item>
+                            <bs-nav-item event-key="listView" title="list view">
+                                <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                            </bs-nav-item>
+                        </bs-nav>
+            
+                        <bs-tab-content>
+                            <bs-tab-pane event-key="thumbnailView">
+                                <div class="dragAndDrop-input-container">
+                                    <semantic-form-drag-and-drop-input  for='entity_image' label="More images" render-header=false
+                                                                        placeholder-item-template="<div class='placeholder-item'>
+                                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                    <div>Drag images from 
+                                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                                        or click to upload</div>
+                                                                                                </div>"
+                                                                        nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                                    </semantic-form-drag-and-drop-input>
+                                </div>
+                            </bs-tab-pane>
 
+                            <bs-tab-pane event-key="listView">
+                                <div class="form-section form-image-tab_list-view">
+                                    <semantic-form-select-input for='entity_image' 
+                                                                label="More images"
+                                                                render-header=false
+                                                                placeholder="Select image" 
+                                                                nested-form-templates='[ 
+                                                                                            {
+                                                                                                "label": "Image",
+                                                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+                                                                                            }
+                                                                                        
+                                                                                        ]'> 
+                                    </semantic-form-select-input>
+                                </div>
+                            </bs-tab-pane>
+                        </bs-tab-content>
+                        
+                    </div>
+                </bs-tab-container>
+
+
+
+                <div class="form-2column-container">
+                    <div>
+                        <semantic-form-select-input for='entity_image_main_representation' 
+                                                    label="Main image"
+                                                    placeholder="Select image" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Image",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'> 
+                        </semantic-form-select-input>
+
+
+                    </div>
+
+                    <div class="form-media-column">
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag main image or click to upload</div>
+                                                                                        </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+            
+                       
+
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='entity_document' label="Documents" 
+                                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                <div>Drag document or click to upload</div>
+                                                                                                </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" docType="http://www.researchspace.org/resource/vocab/document_type/exhibition_report" }}{{{{/raw}}}}'
+                                                                                                >
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+                    </div>
+                    
+                </div>   
                 <semantic-form-select-input for='entity_has_representation' 
-                                            label="Entity other representation"
-                                            placeholder="Select representation" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'> 
-                </semantic-form-select-input>
+                label="Entity representation"
+                placeholder="Select representation" 
+                nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'>  
+</semantic-form-select-input>
+                
             </rs-tab>
 
             [[> rsp:FormMetadataTab]]

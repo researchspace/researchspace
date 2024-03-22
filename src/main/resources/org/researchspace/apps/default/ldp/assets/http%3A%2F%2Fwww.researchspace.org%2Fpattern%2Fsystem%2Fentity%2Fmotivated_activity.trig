@@ -2,21 +2,22 @@
 <http://www.researchspace.org/pattern/system/entity/motivated_activity/context> {
   <http://www.researchspace.org/pattern/system/entity/motivated_activity> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f29805a5ef5945eab274430a217a63f6-upsp4;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-f1bc5s;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
     <http://www.w3.org/2000/01/rdf-schema#label> "Entity motivated activity";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-oey9mt;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f29805a5ef5945eab274430a217a63f6-85jg3;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-g2vbj;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-jn2a7;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f29805a5ef5945eab274430a217a63f6-d70xjp;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-tmsbnt;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f29805a5ef5945eab274430a217a63f6-9he22w;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-18T10:38:38.315Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-22T10:00:17.708Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-f29805a5ef5945eab274430a217a63f6-upsp4 a <http://spinrdf.org/sp#Query>;
+  _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-g2vbj a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a ?ontologyClass .
   ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
@@ -27,12 +28,19 @@
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(?label)""" .
   
-  _:genid-f29805a5ef5945eab274430a217a63f6-d70xjp a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject crm:P17i_motivated $value . 
-}""" .
+  _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-oey9mt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E7_Activity .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type ?type . 
+  ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label) LIMIT 10 """ .
   
-  _:genid-f29805a5ef5945eab274430a217a63f6-85jg3 a <http://spinrdf.org/sp#Query>;
+  _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-f1bc5s a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
   $subject crm:P17i_motivated $value . 
   $value crm:P17_was_motivated_by $subject .
@@ -41,7 +49,12 @@
   $value crm:P17_was_motivated_by $subject .
 }""" .
   
-  _:genid-f29805a5ef5945eab274430a217a63f6-9he22w a <http://spinrdf.org/sp#Query>;
+  _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-jn2a7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P17i_motivated $value . 
+}""" .
+  
+  _:genid-bc04e31cfb0e4f36b8898f8fe2f68b76-tmsbnt a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P17i_motivated $value . 
   $value crm:P17_was_motivated_by $subject .

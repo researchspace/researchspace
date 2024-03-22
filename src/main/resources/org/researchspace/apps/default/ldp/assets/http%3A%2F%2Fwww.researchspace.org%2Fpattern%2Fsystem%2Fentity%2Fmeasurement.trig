@@ -1,27 +1,48 @@
 
 <http://www.researchspace.org/pattern/system/entity/measurement/context> {
+  _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-z8645t a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E16_Measurement .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/measurement_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label) LIMIT 10""" .
+  
   <http://www.researchspace.org/pattern/system/entity/measurement> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-50a20ca11a29429991ba24275b1d38ea-tvxk0v;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E16_Measurement>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-50a20ca11a29429991ba24275b1d38ea-tkxkmb;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-z8645t;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-zqg3me;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-5fg37j;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-b7jv7l;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-50a20ca11a29429991ba24275b1d38ea-jxzvsj;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-50a20ca11a29429991ba24275b1d38ea-x7ppf;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-klt9wt;
     <http://www.w3.org/2000/01/rdf-schema#label> "Entity measurement";
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-18T10:43:21.199Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-22T09:58:56.170Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-50a20ca11a29429991ba24275b1d38ea-jxzvsj a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject crm:P39i_was_measured_by $value .
+  _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-klt9wt a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P39i_was_measured_by $value . 
+  $value crm:P39_measured $subject .
+} WHERE {}""" .
+  
+  _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-b7jv7l a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  $subject crm:P39i_was_measured_by $value . 
+  $value crm:P39_measured $subject .
+} WHERE {
+  $subject crm:P39i_was_measured_by $value . 
+  $value crm:P39_measured $subject .
 }""" .
   
-  _:genid-50a20ca11a29429991ba24275b1d38ea-tkxkmb a <http://spinrdf.org/sp#Query>;
+  _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-zqg3me a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E16_Measurement .
   ?value crm:P1_is_identified_by ?appellation .
@@ -30,19 +51,9 @@
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(?label)""" .
   
-  _:genid-50a20ca11a29429991ba24275b1d38ea-tvxk0v a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P39i_was_measured_by $value . 
-  $value crm:P39_measured $subject .
-} WHERE {}""" .
-  
-  _:genid-50a20ca11a29429991ba24275b1d38ea-x7ppf a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
-  $subject crm:P39i_was_measured_by $value . 
-  $value crm:P39_measured $subject .
-} WHERE {
-  $subject crm:P39i_was_measured_by $value . 
-  $value crm:P39_measured $subject .
+  _:genid-28fc1e83ff504fc4b5df2804f43ea2b6-5fg37j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P39i_was_measured_by $value .
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

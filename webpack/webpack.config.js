@@ -151,6 +151,7 @@ module.exports = function(isProd) {
                                 sourceMap: true,
                                 sassOptions: {
                                     outputStyle: 'expanded',
+                                    quietDeps: true,
                                 }
                             }
                         }
@@ -176,7 +177,8 @@ module.exports = function(isProd) {
                                 sourceMap: true,
                                 sassOptions: {
                                     // we need to use expanded to not lose selectors with no styles for which we also need to generate typescript typings
-                                    outputStyle: 'expanded'
+                                    outputStyle: 'expanded',
+                                    quietDeps: true
                                 }
                             }
                         }

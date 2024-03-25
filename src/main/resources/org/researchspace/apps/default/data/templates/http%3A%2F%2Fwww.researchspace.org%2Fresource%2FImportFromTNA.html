@@ -8,7 +8,6 @@
                                                                     tnadiscovery:sps.resultsPageSize 20;
                                                                     tnadiscovery:sps.heldByCode \"TNA\";
                                                                     tnadiscovery:sps.sortByOption \"REFERENCE_ASCENDING\";
-                                                                    tnadiscovery:sps.returnHighlighted true;
                                                                     tnadiscovery:hasReference ?reference;
                                                                     tnadiscovery:hasId ?id;
                                                                     tnadiscovery:hasDescription ?description;
@@ -55,11 +54,9 @@
                 <semantic-context repository='ephedra'>
                     <div class="TNAapiResultsTable">
                         <semantic-table id='semantic-search-result-table'
-                                        query='SELECT DISTINCT ?reference ?description ?catalogueLevel ?id ?descriptionWithoutHighlight ?citableReference
+                                        query='SELECT DISTINCT ?reference ?description ?catalogueLevel ?id
                                                 WHERE {
                                                     FILTER(?catalogueLevel in (3, 6, 7)) .
-                                                    BIND(REPLACE(REPLACE(REPLACE(?description, "</span>", ""), "<span class=\"highlight\">", ""), "\"", "`") AS ?descriptionWithoutHighlight) .
-                                                    BIND(REPLACE(REPLACE(?reference, "</span>", ""), "<span class=\"highlight\">", "") AS ?citableReference) .
                                                 } ORDER BY ?reference'
 
                                         number-of-displayed-rows=20
@@ -76,7 +73,7 @@
                                     target="_blank" 
                                     href="https://discovery.nationalarchives.gov.uk/details/r/{{id.value}}"
                                     title="https://discovery.nationalarchives.gov.uk/details/r/{{id.value}}">
-                                    {{{reference.value}}}
+                                    {{reference.value}}
                                 </a> 
                             </div>
                             
@@ -84,7 +81,7 @@
 
                         <template id='description'>
                             <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
-                                {{{{raw}}}}{{{description.value}}}{{{{/raw}}}}
+                                {{description.value}}
                             </mp-text-truncate>
                         </template>
                         
@@ -139,15 +136,15 @@
                                                         targets='["thinking-frames"]'>
                                             <button class="btn btn-default" title="Open {{label}} record">Open record</button>
                                         </mp-event-trigger>
-                                    {{else}}
+                                    {{else}} {{log 'this' this}}
                                         <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
                                                         type='apiResourceSelect' 
                                                         data='{"apiResourceURI": "{{bindings.0.TNAResourceURI.value}}", 
-                                                                "apiResourceName": "{{citableReference.value}}", 
-                                                                "apiResourceMuseumId": "{{citableReference.value}}", 
+                                                                "apiResourceName": "{{reference.value}}", 
+                                                                "apiResourceMuseumId": "{{reference.value}}", 
                                                                 "apiResourceMuseumIdType": "http://www.researchspace.org/resource/vocab/thing_identifier/catalogue_reference_number", 
                                                                 "apiResourceSystemId": "{{id.value}}",
-                                                                "apiResourceDescription": "{{descriptionWithoutHighlight.value}}"
+                                                                "apiResourceDescription": "{{description.value}}"
                                                               }' 
                                                     >
                                         <button class="btn btn-action" title="Import {{label}}">Import {{label}}</button>

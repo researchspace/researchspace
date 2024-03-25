@@ -9,7 +9,7 @@
 </ol>
 
 <div class="page rs-logs">
-  [[> rsp:adminPageHeader title="Logs" icon="rs-icon rs-icon-terminal"]]
+  [[> rsp:adminPageHeader title="Logs" materialIcon="terminal"]]
 
   <div class="container-fluid" style="margin-top: 10px; margin-bottom: 3%;">
     <bs-row class="row-center">
@@ -17,9 +17,9 @@
         <div id="rs-logs-tabs">
           <bs-tabs unmount-on-exit="true">
             <bs-tab event-key="1" title="Log Browser">
-              <p style="padding-top: 15px; padding-bottom: 10px;">
+              <div class="page__section-container" style="margin-top: 10px;">
                 Select one of the available log files to view the logs in the log browser.
-              </p>
+            </div>
               <div data-flex-layout="row top-top">
                 <div style="padding-right: 20px;">
                   <mp-json-renderer get-url="/rest/admin/logs" template="{{> x}}">
@@ -29,20 +29,18 @@
 
                         <div style="padding-left: 5px; padding-top: 5px;">
                           {{#each this as |e|}}
-
-                          <mp-event-trigger
-                            id="event-trigger"
-                            type="Component.TemplateUpdate"
-                            data='{"relativePath": "{{e.relativePath}}"}'
-                            targets='["event-target"]'
-                          >
-                            <a>{{e.name}}</a>
-                          </mp-event-trigger>
-                          &nbsp;<a href="/rest/admin/logs/{{e.relativePath}}?download=true" target="_BLANK"
-                            ><i class="fa fa-download"></i
-                          ></a>
-                          <br />
-
+                            <div>
+                              <mp-event-trigger
+                                id="event-trigger"
+                                type="Component.TemplateUpdate"
+                                data='{"relativePath": "{{e.relativePath}}"}'
+                                targets='["event-target"]'
+                              >
+                                <a>{{e.name}}</a>
+                              </mp-event-trigger>
+                              &nbsp;
+                              <a href="/rest/admin/logs/{{e.relativePath}}?download=true"  class="text-underline" target="_BLANK">Download</a>
+                            </div>
                           {{/each}}
                         </div>
                       </div>
@@ -67,11 +65,12 @@
 
             <bs-tab event-key="2" title="Logging Configuration">
               <div>
-                <p style="padding-top: 10px;">
-                  Use the following control to activate a different logging profile (e.g. for debugging purposes).
-                </p>
-
-                <p><i>Note: the configuration is not permanent and will be reset after restarting the service</i></p>
+                <div class="page__section-container" style="margin-top: 10px;">
+                  <p>
+                    Use the following control to activate a different logging profile (e.g. for debugging purposes).
+                  </p>
+                  Note: the configuration is not permanent and will be reset after restarting the service.
+                </div>
 
                 <p style="padding-top: 10px;">
                   Current profile:&nbsp;

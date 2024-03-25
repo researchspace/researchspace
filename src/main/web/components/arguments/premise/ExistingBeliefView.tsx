@@ -26,6 +26,7 @@ import { TemplateItem } from 'platform/components/ui/template';
 import { ArgumentsBelief, ArgumentsBeliefTypeAssertionKind, ArgumentsBeliefTypeFieldKind } from '../ArgumentsApi';
 
 import * as styles from './PremiseComponent.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 export interface ExistingBeliefViewProps {
   belief: ArgumentsBelief;
@@ -45,7 +46,7 @@ export class ExistingBeliefView extends Component<ExistingBeliefViewProps, {}> {
       <div className={styles.evidenceCustom}>
         {onCancel ? (
           <div className={styles.evidenceCustomDeleteButton}>
-            <i className="fa fa-times" onClick={onCancel} />
+            <Icon iconType='round' iconName='close' onClick={onCancel}/>
           </div>
         ) : null}
         <TemplateItem
@@ -60,7 +61,7 @@ export class ExistingBeliefView extends Component<ExistingBeliefViewProps, {}> {
 
   render() {
     const { belief, onCancel, assertionBasedBeliefTemplate, fieldBasedBeliefTemplate } = this.props;
-    const close = onCancel ? <i className="fa fa-times pull-right" onClick={onCancel} /> : null;
+    const close = onCancel ? <Icon iconType='round' iconName='close' className='pull-right' onClick={onCancel}/> : null;
     if (belief.argumentBeliefType === ArgumentsBeliefTypeAssertionKind) {
       if (assertionBasedBeliefTemplate) {
         return this.renderCustomBeliefTemplate(belief, assertionBasedBeliefTemplate);

@@ -188,7 +188,10 @@ export class PrintComponent extends Component<Props, State> {
       if (group) {
         group.sections.push(section);
       } else {
-        groups.push({ id, sections: [section] });
+          if (id !== null)
+            groups[id] = ({ id, sections: [section] });
+          else  
+            groups.push({ id, sections: [section] });
       }
     });
 
@@ -258,11 +261,12 @@ export class PrintComponent extends Component<Props, State> {
   };
 
   private handleCheck = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const sections = this.state.sections;
+    const sections = this.state.sections.filter(Boolean);
     const updatedSection: Section = {
       ...sections[index],
       isSelected: e.target.checked,
     };
+    
     const newSections = [...sections];
     newSections.splice(index, 1, updatedSection);
     this.setState({ sections: newSections });
@@ -293,10 +297,10 @@ export class PrintComponent extends Component<Props, State> {
     let aside: ReactElement<any>;
     let preview: ReactElement<any>;
 
-    const sections = this.state.sections;
-
+    const sections = this.state.sections.filter(element => element !== undefined);
+    
     const selectedSections = sections
-      .filter((section) => {
+      .filter((section) => { 
         return section.isSelected;
       })
       .map((section) => {
@@ -323,6 +327,7 @@ export class PrintComponent extends Component<Props, State> {
     if (sections.length > 1) {
       const checkboxlist = sections.map((section, index) => {
         const { id, label } = section.content.props;
+        let sectionId = id?id:index;
         return D.div(
           { className: 'checkbox', key: id },
           D.label(
@@ -331,7 +336,7 @@ export class PrintComponent extends Component<Props, State> {
               type: 'checkbox',
               value: label,
               checked: section.isSelected,
-              onChange: this.handleCheck.bind(this, index),
+              onChange: this.handleCheck.bind(this, sectionId),
             }),
             label
           )
@@ -346,7 +351,7 @@ export class PrintComponent extends Component<Props, State> {
           { className: 'panel-footer ' + b('select-footer').toString() },
           D.button(
             {
-              className: 'btn btn-primary',
+              className: 'btn btn-action',
               onClick: this.handlePrint,
               title:
                 'Recommended option for native or PDF printing. Uses native browser print ' +
@@ -358,7 +363,7 @@ export class PrintComponent extends Component<Props, State> {
           this.props.htmlToPdf && this.state.html2pdfLoaded
             ? D.button(
                 {
-                  className: 'btn btn-primary',
+                  className: 'btn btn-action',
                   onClick: this.handleExportAsPDF,
                   title: 'Client-side export to PDF. Only recommended if no PDF print driver' + 'is available.',
                 },
@@ -375,9 +380,9 @@ export class PrintComponent extends Component<Props, State> {
         D.div({ className: b('body-content').toString() }, iframe),
         D.div(
           { className: 'panel-footer ' + b('body-footer').toString() },
-          D.button({ className: 'btn btn-primary', onClick: this.handlePrint }, 'Print'),
+          D.button({ className: 'btn btn-action', onClick: this.handlePrint }, 'Print'),
           ' ',
-          D.button({ className: 'btn btn-primary', onClick: this.handleExportAsPDF }, 'Export as PDF')
+          D.button({ className: 'btn btn-action', onClick: this.handleExportAsPDF }, 'Export as PDF')
         )
       );
     }

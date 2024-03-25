@@ -33,15 +33,15 @@ export class ConfirmationDialog extends React.Component<Props, {}> {
         <Modal.Body>
           <Modal.Title>{message}</Modal.Title>
         </Modal.Body>
-        <Modal.Footer>
-          <ButtonGroup>
-            <Button bsStyle="danger" onClick={(e) => onConfirm(false)}>
+        <Modal.Footer className='confirmation-dialog-footer'>
+          <div className='confirmation-dialog-footer-btns'>
+            <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Cancel
             </Button>
-            <Button bsStyle="success" onClick={(e) => onConfirm(true)}>
+            <Button bsStyle="action" onClick={(e) => onConfirm(true)}>
               Confirm
             </Button>
-          </ButtonGroup>
+          </div>
         </Modal.Footer>
       </Modal>
     );

@@ -1,0 +1,281 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                fields='[[
+                        fieldDefinitions
+                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+
+                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                        entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                        organisation_name="http://www.researchspace.org/pattern/system/organisation/name"
+                        organisation_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                        organisation_address_line1="http://www.researchspace.org/pattern/system/place/address_line1"
+                        organisation_address_line2="http://www.researchspace.org/pattern/system/place/address_line2"
+                        organisation_city="http://www.researchspace.org/pattern/system/place/city"
+                        organisation_county="http://www.researchspace.org/pattern/system/place/county"
+                        organisation_country="http://www.researchspace.org/pattern/system/place/country"
+                        organisation_postcode="http://www.researchspace.org/pattern/system/place/postcode" 
+
+                        organisation_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_geo_coordinates"
+
+                        image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                        more_image="http://www.researchspace.org/pattern/system/entity/images"
+
+                        organisation_exhibition="http://www.researchspace.org/pattern/system/organisation/performed_exhibition"
+                            
+               ]]'>
+
+    <div class="form-scroll-area {{#if (or nested onlyDetails)}}nested-form{{/if}}">
+        <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E74_Group","http://www.cidoc-crm.org/cidoc-crm/E53_Place"]'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/organisation'> </semantic-form-hidden-input>
+    
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
+
+        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+            <rs-tab event-key="detail" title="Details">
+                <div class="form-2column-container">
+                    <div>
+                        {{#if apiResourceName}}
+                            <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="organisation_name" label="Organisation name" placeholder="Enter organisation name"></semantic-form-text-input>
+                        {{/if}}
+
+                        {{#if apiResourceDescription}}
+                            <semantic-form-text-input for="organisation_description" default-value="{{apiResourceDescription}}" multiline="true" label="Organisation description" placeholder="Enter Organisation description"></semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="organisation_description" multiline="true" label="Organisation description" placeholder="Enter organisation description"></semantic-form-text-input>
+                        {{/if}}
+
+                        <semantic-form-text-input for="organisation_address_line1" label="Address line 1" placeholder="Enter address line 1"></semantic-form-text-input>
+                        <semantic-form-text-input for="organisation_address_line2" label="Address line 2" placeholder="Enter address line 2"></semantic-form-text-input>
+
+                        <div class="form-inline-inputs">
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="organisation_city" label="City" placeholder="Enter city"></semantic-form-text-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-text-input for="organisation_county" label="State/province" placeholder="Enter state/province"></semantic-form-text-input>
+                        </div>
+                        <div>
+                            <semantic-form-text-input for="organisation_postcode" label="Postcode" placeholder="Enter postcode"></semantic-form-text-input>
+                        </div>
+                        </div>
+
+                        <semantic-form-text-input for="organisation_country" label="Country" placeholder="Enter country"> </semantic-form-text-input>
+
+                        {{#if apiResourceosmGeoCoordinates}}
+                            <semantic-form-text-input for="organisation_geo_coordinates" default-value='{{apiResourceosmGeoCoordinates}}' label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true></semantic-form-text-input>
+                        {{else}}
+                            <semantic-form-text-input for="organisation_geo_coordinates" label="Geographic coordinates (OpenStreetMap)" placeholder="Enter OSM geographic coordinates" multiline=true> </semantic-form-text-input>
+                        {{/if}}
+                    </div>
+
+                    <div class="form-media-column">
+                        
+                        {{#if apiResourceosmGeoCoordinates}}
+                            <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
+                                <semantic-map query='SELECT ?wkt WHERE { BIND("{{apiResourceosmGeoCoordinates}}" AS ?wkt) }'
+                                            tuple-template='{{#if apiResourceName}}<b style="color:#525156; padding-bottom:5px;">{{apiResourceName}}</b>{{/if}}
+                                                            {{#if apiResourceURI}}
+                                                                <div>
+                                                                <a style="color:#396EFE;"
+                                                                    target="_blank" 
+                                                                    href="{{apiResourceURI}}"
+                                                                    title="{{apiResourceURI}}">
+                                                                    Open in wikidata
+                                                                </a>
+                                                                </div>
+                                                            {{/if}}'>
+                                </semantic-map>
+                            </div>
+                        {{/if}}
+                        
+                        {{#if apiResourceURI}}
+                            <div style="padding-top: 5px;">
+                                <span>Imported from: </span>
+                                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
+                            </div>
+                        {{else}}
+                            {{#if node}}
+                                <semantic-query query='SELECT ?place ?placeName ?osmURI WHERE {
+                                                        BIND(<{{node}}> AS ?place)
+
+                                                        ?place crm:P129i_is_subject_of ?entityFormRecord .
+                                                        # ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+
+                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                        # ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+
+                                                        ?importFromExternalSource crmdig:L14_transferred ?osmURI .
+                        
+                                                        # ?osmURI a crmdig:D1_Digital_Object .
+                                                        ?osmURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+
+                                                        ?place crm:P1_is_identified_by ?appellation . 
+                                                        # ?appellation a crm:E41_Appellation . 
+                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> . 
+                                                        ?appellation crm:P190_has_symbolic_content ?placeName .
+                                                    }'
+                                            template='{{> template}}'
+                                >
+                                    
+                                <template id='template'>
+                                    <div>
+                                    <div style='height: 330px; width: 100%; margin: 43px 0 0;'>
+                                        <semantic-map query='SELECT ?wkt WHERE { 
+                                                                <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
+                                                                # ?osm_geoCoordinates a crm:E94_Space_Primitive .
+                                                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/osm_geographic_coordinates> .
+                                                                ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
+                                                            }'
+                                                    tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
+                                                                    <div>
+                                                                        <a style="color:#396EFE;"
+                                                                            target="_blank" 
+                                                                            href="{{bindings.0.osmURI.value}}"
+                                                                            title="{{bindings.0.osmURI.value}}">
+                                                                        Open in wikidata
+                                                                        </a>
+                                                                    </div>'>
+                                        </semantic-map>
+                                    </div>
+                                    <div style="padding-top: 5px;">
+                                        <span>Imported from: </span>
+                                        <a class="text-link-action" target="_blank" href="{{bindings.0.osmURI.value}}" title="{{bindings.0.osmURI.value}}">{{bindings.0.osmURI.value}}</a>
+                                    </div>
+                                    </div>
+                                </template>
+                                </semantic-query>
+                            {{/if}}
+                        {{/if}}
+
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag main image or click to upload</div>
+                                                                                            </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+
+                        <div class="dragAndDrop-input-container">
+                            <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                            <div>Drag images or click to upload</div>
+                                                                                            </div>"
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                            </semantic-form-drag-and-drop-input>
+                        </div>
+                    </div>
+                </div>
+            </rs-tab>
+
+            {{#if onlyDetails}}
+            {{else}}
+                <rs-tab event-key="exhibition" title="Exhibitions">
+                    <semantic-form-select-input for='organisation_exhibition' 
+                                                label="Exhibition at the organisation"
+                                                placeholder="Select exhibition title" 
+                                                nested-form-templates='[ 
+                                                    {
+                                                        "label": "Exhibition",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Exhibition\" nested=true editable=true mode=\"new\"}}
+                                                                    {{{{/raw}}}}"
+                                                    }
+                                                ]'> 
+                    </semantic-form-select-input> 
+
+                    {{#if node}}
+                        <div style="margin-top: 20px;">
+                            <semantic-table id='exhibition-table'
+                                            query='SELECT DISTINCT ?exhibition ?exhibitionTitle ?statusLabel 
+                                                                    (CONCAT(STR(DAY(?startDate)),"-",STR(MONTH(?startDate)),"-",STR(YEAR(?startDate))) as ?finalStartDate)
+                                                                    (CONCAT(STR(DAY(?endDate)),"-",STR(MONTH(?endDate)),"-",STR(YEAR(?endDate))) as ?finalEndDate)
+                                                                    (GROUP_CONCAT(?exhibitionType;SEPARATOR=", ") AS ?types)
+                                                    WHERE {
+                                                        BIND(<{{node}}> as ?organisation) .
+                                                        ?exhibition crm:P14_carried_out_by ?organisation .
+
+                                                        ?exhibition crm:P1_is_identified_by ?appellation .
+                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> .
+                                                        ?appellation crm:P190_has_symbolic_content ?exhibitionTitle .  
+
+                                                        OPTIONAL {
+                                                        ?exhibition crm:P2_has_type ?exhibitionTypeURI .
+                                                        ?exhibitionTypeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/exhibition_type> .
+                                                        ?exhibitionTypeURI skos:prefLabel ?exhibitionType .
+                                                        }
+
+                                                        OPTIONAL {
+                                                        ?exhibition crm:P2_has_type ?status .
+                                                        ?status crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                                        ?status skos:prefLabel ?statusLabel .
+                                                        }
+
+                                                        OPTIONAL {
+                                                        ?exhibition crm:P4_has_time-span ?timespanStart .
+                                                        ?timespanStart crm:P82a_begin_of_the_begin ?startDate .
+                                                        }
+                                                        
+                                                        OPTIONAL {
+                                                        ?exhibition crm:P4_has_time-span ?timespanEnd .
+                                                        ?timespanEnd crm:P82b_end_of_the_end ?endDate .
+                                                        }
+                                                    } GROUP BY ?exhibition ?exhibitionTitle ?statusLabel ?startDate ?endDate
+                                                    ORDER BY ASC( ?exhibitionTitle)'
+                                            
+                                            number-of-displayed-rows=5
+                                            options='{"showFilter": true}'
+                                            column-configuration='[
+                                                                    {"variableName": "exhibitionTitle", "displayName": "Exhibition title", "cellTemplate": "{{> title}}"},
+                                                                    {"variableName": "types", "displayName": "Exhibition type" },
+                                                                    {"variableName": "statusLabel", "displayName": "Status" },
+                                                                    {"variableName": "finalStartDate", "displayName": "Start date" },
+                                                                    {"variableName": "finalEndDate", "displayName": "End date" }
+                                                                ]'   >
+
+                                <template id='title'>
+                                    <mp-draggable iri='{{exhibition.value}}'>
+                                    <div style="display: flex; align-items: center; cursor: grab;">
+                                        <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                                        <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
+                                                        urlqueryparam-resource='{{exhibition.value}}' 
+                                                        urlqueryparam-view='entity-editor' 
+                                                        class='a-draggable'
+                                                        >
+                                            <div style="display: flex; align-items: center;">
+                                            {{exhibitionTitle.value}}
+                                        </div>
+                                        </semantic-link>
+                                    </div>
+                                    </mp-draggable>
+                                </template>
+
+                            </semantic-table>
+                        </div>
+                    {{/if}}
+                </rs-tab>
+            {{/if}}
+
+            [[> rsp:FormMetadataTab]]
+
+        </rs-tabs>
+   
+    </div>
+  
+  <semantic-form-errors></semantic-form-errors>
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}organisation{{/if}}']]
+</semantic-form>

@@ -167,7 +167,7 @@ export class LangLiteral extends Component<LiteralProps, State> {
     const others = `
       <mp-popover title="Other languages">
         <mp-popover-trigger placement="right" trigger='["hover","click","focus"]'>
-          <i class="fa fa-language hidden-print" style="margin-left: 10px;" aria-hidden="true"></i>
+          <rs-icon icon-type="round" icon-name="translate" style="margin-left: 10px;" class="hidden-print"></rs-icon>
         </mp-popover-trigger>
         <mp-popover-content style="background: white;">
           {{#each others}}

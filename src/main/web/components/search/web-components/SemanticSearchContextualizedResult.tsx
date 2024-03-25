@@ -69,7 +69,7 @@ interface State {
 class SemanticSearchContextualizedResultInner extends React.Component<InnerProps, State> {
   static defaultProps = {
     tupleTemplate: `
-        <span title="{{label}}" style="display: flex; align-items: center; height: 40px;">
+        <span title="{{label}}" style="display: flex; align-items: center; height:30px;">
           {{label}}
           {{#ifCond hasRange.thumbnail.length '>' 0}}
           <img style="margin-left: auto; width: 30px; margin-right: 10px"

@@ -11,10 +11,6 @@
 </ol>
 
 <div class="page system-assets">
-
-[[#>rsp:ClipboardSidebar]]
-[[#> rsp:DetailsSidebar]]
-
   <div class='page__body--borderless page__body--borderless-pd'>
 
   <div class="container-fluid adminPage-header-container">
@@ -22,7 +18,7 @@
       <bs-col xs=12 sm=11 md=11 lg=11 class="rs-col-xl-10 adminPage-header--col">
         <div class="adminPage-header--content">
           <div class='adminPage-header--thumbnail'>
-            <i class="rs-icon rs-icon-images"></i>
+            <rs-icon icon-type="round" icon-name="burst_mode"></rs-icon>
           </div>
           <div class='adminPage-header--body'>
             <h2>Project - Images 
@@ -30,8 +26,8 @@
               [[#if (hasPermission "forms:ldp:*")]]
               <mp-overlay-dialog title="Image Upload" type="modal" bs-size="large">
                 <mp-overlay-dialog-trigger>
-                  <button class="btn btn-header-right pull-right">
-                   <i class="fa fa-upload"></i>
+                  <button class="btn btn-default btn-textAndIcon">
+                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                    <div>Upload image</div>
                  </button>
                 </mp-overlay-dialog-trigger>
@@ -59,11 +55,11 @@
                                                   name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
                                                   media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
                                                   resource-query='
-                                                     PREFIX rso: <http://www.researchspace.org/ontology/>
+                                                     PREFIX rs: <http://www.researchspace.org/ontology/>
                                                      CONSTRUCT {
-                                                       ?__resourceIri__ a rso:EX_File.
-                                                       ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
-                                                       ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                                       ?__resourceIri__ a rs:EX_File.
+                                                       ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                       ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
                                                      } WHERE {}
          
                                                  '
@@ -79,7 +75,7 @@
          
                         <div class='form-btn-group'>
                           <button name="reset" class="btn btn-default">Reset</button>
-                          <button name="submit" class="btn btn-primary">Save</button>
+                          <button name="submit" class="btn btn-action">Save</button>
                         </div>
                       </semantic-form>
                     </semantic-context>
@@ -99,12 +95,12 @@
     <bs-row class="row-center">
         <bs-col xs=12 sm=11 md=11 lg=11 class='rs-col-xl-10'>
           <semantic-search>
-            <div class="system-assets__filter-actions">
+            <div>
               
               <semantic-search-query-keyword 
                   query='
                     SELECT ?subject WHERE { 
-                      ?subject a rso:EX_Digital_Image .
+                      ?subject a rs:EX_Digital_Image .
                       ?subject rdfs:label ?label .
                       ?label bds:search ?__token__ ;
                                   bds:minRelevance "0.3" ;
@@ -113,7 +109,7 @@
                   '
                   default-query='
                     SELECT ?subject WHERE {
-                      ?subject a rso:EX_Digital_Image .
+                      ?subject a rs:EX_Digital_Image .
                     }
                   '
                   debounce=500
@@ -168,7 +164,7 @@
                                       container='http://www.researchspace.org/resource/system/formContainer'
                                     >
                                       <button type="button" name='delete' class="rs-button" title="Delete">
-                                        <i class="fa fa-trash-o" style="font-size: 23px;"></i>
+                                        <rs-icon icon-type="round" icon-name="delete" style="font-size: 23px;"></rs-icon>
                                       </button>
                                     </mp-ldp-remove-from-container-action>
                                   </div>
@@ -192,7 +188,4 @@
   </div>
   
   </div>
-  
-[[/rsp:DetailsSidebar]]
-[[/rsp:ClipboardSidebar]]
 </div>

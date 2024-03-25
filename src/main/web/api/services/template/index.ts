@@ -49,6 +49,15 @@ export function getFooter(cb: (html: string) => void): void {
     });
 }
 
+export function getSidebar(cb: (html: string) => void): void {
+  request
+    .get(TEMPLATE_SERVICE_URL + 'sidebar')
+    .accept('text/html')
+    .end((err, res) => {
+      cb(res.text);
+    });
+}
+
 export function getNoPermissionsPage(cb: (html: string) => void): void {
   request
     .get(TEMPLATE_SERVICE_URL + 'noPermissionsPage')

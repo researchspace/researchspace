@@ -1,11 +1,11 @@
 <div class="page__grid-container">
   <div class="rs-latest-activity page__content-container">
-    <h1 class="rs-main-title">Latest Activities</h1>
+    <h1 class="headline">Latest Activities</h1>
     <div class="table-responsive rs-dashboard-table">
       <semantic-table query='prefix ontodia: <http://ontodia.org/schema/v1#>
                 SELECT * WHERE {
                   {
-                    ?page a rso:Semantic_Narrative .
+                    ?page crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
                      OPTIONAL {
                       ?page rdfs:label ?title .
                      }
@@ -58,25 +58,25 @@
         <template id='title'>
           {{#ifCond content_type.value "===" "Knowledge Map"}} 
           <div style="display: flex; align-items: center;">
-                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
-                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                    data='{"resourceIri": "{{page.value}}", "viewId": "knowledge-map"}' 
-                    targets='["thinking-frames"]'>
-                   <div style="display: flex; align-items: center;">
-                      <span>{{title.value}}</span>
-                   </div>
-              </mp-event-trigger>
-              </div>
+            <rs-icon icon-type="round" icon-name="drag_indicator" style="margin-right: 12px;"></rs-icon>
+            <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                data='{"resourceIri": "{{page.value}}", "viewId": "knowledge-map"}' 
+                targets='["thinking-frames"]'>
+                <div style="display: flex; align-items: center;">
+                  <span>{{title.value}}</span>
+                </div>
+            </mp-event-trigger>
+          </div>
          {{/ifCond}}
           {{#ifCond content_type.value "===" "Semantic Narrative"}} 
             <div style="display: flex; align-items: center;">
-                <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
-                <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
-                    data='{"resourceIri": "{{page.value}}", "viewId": "semantic-narrative"}' 
-                    targets='["thinking-frames"]'>
-                   <div style="display: flex; align-items: center;">
-                      <span>{{title.value}}</span>
-                   </div>
+              <rs-icon icon-type="round" icon-name="drag_indicator" style="margin-right: 12px;"></rs-icon>
+              <mp-event-trigger id='set-action__reading-add-add-frame' type='Dashboard.AddFrame' 
+                                data='{"resourceIri": "{{page.value}}", "viewId": "semantic-narrative"}' 
+                                targets='["thinking-frames"]'>
+                <div style="display: flex; align-items: center;">
+                  <span>{{title.value}}</span>
+                </div>
               </mp-event-trigger>
               </div>
              {{/ifCond}}
@@ -84,7 +84,7 @@
 
         <template id='user'>
           <div class="text-truncate">
-            <i class="fa fa-user"></i>
+            <rs-icon icon-type="round" icon-name="account_box"></rs-icon>
             <semantic-link class="rs-dashboard--a" uri="{{user.value}}"></semantic-link>
           </div>
         </template>
@@ -97,7 +97,7 @@
         </template>
 
         <template id='type'>
-            <span class="rs-tag {{tag_cssClass.value}} rs-dashboard-tag">{{content_type.value}}</span>
+            <span class="tag {{tag_cssClass.value}}">{{content_type.value}}</span>
         </template>
 
         <template id="data_download">
@@ -124,7 +124,8 @@
                 header="text/csv" filename="myDiagramEntities.csv">
                 <div>
                   <a href="#" title="Download data" class="rs-dashboard--a">
-                    <i class="fa fa-download"></i></a>
+                    <rs-icon icon-type="round" icon-name="file_download"></rs-icon>
+                  </a>
                 </div>
               </mp-sparql-download>
           {{/ifCond}}

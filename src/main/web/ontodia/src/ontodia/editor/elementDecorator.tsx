@@ -156,10 +156,10 @@ export class ElementDecorator extends React.Component<ElementDecoratorProps, Sta
       let title: string;
 
       if (state.deleted) {
-        statusText = 'Delete';
+        statusText = 'Deleting';
         title = 'Revert deletion of the element';
       } else if (!state.before) {
-        statusText = 'New';
+        statusText = 'Creating new';
         title = 'Revert creation of the element';
       } else {
         statusText = 'Change';
@@ -168,13 +168,12 @@ export class ElementDecorator extends React.Component<ElementDecoratorProps, Sta
 
       if (statusText && title) {
         renderedState = (
-          <span>
-            <span className={`${CLASS_NAME}__state-label`}>{statusText}</span>[
-            <span className={`${CLASS_NAME}__state-cancel`} onClick={onCancel} title={title}>
-              cancel
-            </span>
-            ]
-          </span>
+          <div style={{display:'flex', alignItems:'center'}}>
+            <span className={`${CLASS_NAME}__state-label`}>{statusText}</span>
+            <button className={`${CLASS_NAME}__state-cancel btn btn-default`} onClick={onCancel} title={title}>
+              Cancel
+            </button>
+          </div>
         );
       }
 

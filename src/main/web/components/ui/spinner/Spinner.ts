@@ -79,7 +79,7 @@ export class SpinnerComponent extends Component<SpinnerProps, SpinnerState> {
         className: classNames('system-spinner', this.props.className),
         style: this.props.style,
       },
-      this.state.showSpinner ? D.i({ className: 'system-spinner__icon' }) : null,
+      this.state.showSpinner ? D.i({ className: 'system-spinner__icon material-icons-round' }, 'settings') : null,
       this.state.showMessage ? D.span({ className: 'system-spinner__message' }, 'Please wait...') : null
     );
   }

@@ -106,7 +106,7 @@ export class LoggingProfileSelector extends React.Component<void, LoggingProfile
             disabled={isSubmitted && !submitting}
             title={isSubmitted ? 'Profile is already submitted' : 'Submit  profile'}
             onClick={this.onSubmit}
-            className='btn btn-primary'
+            className='btn btn-action'
           >
             Submit
           </button>

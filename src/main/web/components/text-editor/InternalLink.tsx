@@ -29,6 +29,7 @@ import { DropArea } from 'platform/components/dnd/DropArea';
 import { Inline, RESOURCE_MIME_TYPE } from './EditorSchema';
 
 import * as styles from './TextEditor.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface InternalLinkProps extends RenderNodeProps {
   editor: Slate.Editor
@@ -106,7 +107,7 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
               <div className={styles.linkPopover}>
                 <DropArea
                   onDrop={this.onResourceDrop}
-                  dropMessage='Drop here resource from Clipboard to make a link.'
+                  dropMessage='Drop here resource to make a link'
                   alwaysVisible={isNoHref}
                 >
                   {
@@ -116,8 +117,8 @@ export class InternalLink extends React.Component<InternalLinkProps, InternalLin
                     <ResourceLinkComponent key={dataAttributes.href} iri={dataAttributes.href} />
                   }
                 </DropArea>
-                <Button bsClass='btn-grey' onMouseDown={this.onUnlink}>
-                  <i className='fa fa-chain-broken' aria-hidden='true'></i>
+                <Button bsClass='btn-default' className='btn-default-icon' onMouseDown={this.onUnlink}>
+                  <Icon iconType='round' iconName='link_off'/>
                 </Button>
               </div>
             </Popover>

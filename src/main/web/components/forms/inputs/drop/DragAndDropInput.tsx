@@ -112,9 +112,10 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
     dropAreaTemplate: '<span>Drop item here to add it</span>',
     placeholderItemTemplate: `
       <div class='DragAndDropInput--placeholderContainer'>
-        Drop item here
+        <rs-icon icon-type="round" icon-name="upload_file"></rs-icon>
+        <div>Drag and drop here</div>
         {{#if canCreateNew}}
-          or click to create a new item
+        <div>or click to Upload</div>
         {{/if}}
       </div>
     `,
@@ -124,7 +125,7 @@ export class DragAndDropInput extends MultipleValuesInput<DragAndDropInputProps,
             <div class="rs-default-card__hover-icon">
               <mp-event-trigger type='Form.DragAndDropInput.RemoveItem' targets='["{{inputId}}"]' data='{"iri": "{{iri}}"}'>
                 <button type="button" class="rs-button" title="Remove Value">
-                  <i class="rs-icon rs-icon-delete_round"></i>
+                  <Icon iconType='round' iconName='cancel'/>
                 </button>
               </mp-event-trigger>
             </div>

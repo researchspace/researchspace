@@ -543,7 +543,7 @@ export class EditorController {
         onCancel={onCancel}
       />
     );
-    this.showDialog({ target, dialogType, content, caption: 'Establish New Connection', onClose: onCancel });
+    this.showDialog({ target, dialogType, content, caption: 'Create new connection', onClose: onCancel });
   }
 
   showEditLinkForm(link: Link) {
@@ -584,7 +584,7 @@ export class EditorController {
         onCancel={onCancel}
       />
     );
-    const caption = this.temporaryState.links.has(link.data) ? 'Establish New Connection' : 'Edit Connection';
+    const caption = this.temporaryState.links.has(link.data) ? 'Create new Connection' : 'Edit Connection';
     this.showDialog({
       target: link,
       dialogType,

@@ -173,16 +173,18 @@ export class EditElementTypeForm extends React.Component<Props, State> {
           ) : null}
         </div>
         <div className={`${CLASS_NAME}__controls`}>
+          <button className="btn btn-default" onClick={this.props.onCancel}>
+            Cancel
+          </button>
+
           <button
-            className={`ontodia-btn ontodia-btn-success ${CLASS_NAME}__apply-button`}
+            className={`btn btn-action ${CLASS_NAME}__apply-button`}
             onClick={() => this.props.onApply(elementValue.value, elementValue.isNew, linkValue.value.link)}
             disabled={elementValue.loading || !isValid || isValidating}
           >
-            Apply
+            Create
           </button>
-          <button className="ontodia-btn ontodia-btn-danger" onClick={this.props.onCancel}>
-            Cancel
-          </button>
+          
         </div>
       </div>
     );

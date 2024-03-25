@@ -142,12 +142,12 @@ const defaultAnnotationViewerTemplate = globalHandlebars.compile(
             <div>
               {{#if showUpdate}}
                 <a href="#edit" class="edit">
-                  <i class="fa fa-pencil"></i>
+                  <rs-icon icon-type="round" icon-name="edit"></rs-icon>
                 </a>
               {{/if}}
               {{#if showDelete}}
                 <a href="#delete" class="delete">
-                  <i class="fa fa-trash-o"></i>
+                <rs-icon icon-type="round" icon-name="delete"></rs-icon>
                 </a>
               {{/if}}
             </div>

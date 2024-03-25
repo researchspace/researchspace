@@ -47,6 +47,7 @@ import { ExternalLink } from './ExternalLink';
 import { InternalLink } from './InternalLink';
 import * as styles from './TextEditor.scss';
 import { ResourceBlock } from './ResourceBlock';
+import Icon from '../ui/icon/Icon';
 
 
 interface TextEditorProps {
@@ -93,6 +94,11 @@ interface TextEditorProps {
 
 }
 
+interface BlockEmbeddedState {
+  resourceIri: Rdf.Iri;
+  embedded: boolean;
+}
+
 interface TextEditorState {
   value: Slate.Value
   title: string
@@ -100,6 +106,7 @@ interface TextEditorState {
   fileName?: string
   anchorBlock?: Slate.Block
   availableTemplates: { [objectIri: string]: ResourceTemplateConfig[] }
+  blockEmbedReferences?: BlockEmbeddedState[]
   loading: boolean
   saving: boolean
 }
@@ -132,16 +139,16 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       PREFIX mp: <http://www.researchspace.org/resource/system/>
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMdig/>
-      PREFIX rso: <http://www.researchspace.org/ontology/>
+      PREFIX rs: <http://www.researchspace.org/ontology/>
 
       CONSTRUCT {
         ?__resourceIri__ a crm:E33_Linguistic_Object,
-                crmdig:D1_Digital_Object,
-                rso:Semantic_Narrative.
+                crmdig:D1_Digital_Object.
 
         ?__resourceIri__ mp:fileName ?__fileName__.
         ?__resourceIri__ mp:mediaType "text/html".
         ?__resourceIri__ rdfs:label ?__label__ .
+        ?__resourceIri__ crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/semantic_narrative> .
       } WHERE {}
     `,
     generateIriQuery: `
@@ -167,6 +174,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     availableTemplates: {},
     loading: true,
     saving: false,
+    blockEmbedReferences:[]
   };
 
   constructor(props: TextEditorProps, context) {
@@ -199,6 +207,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
   onResourceDrop = (node: Slate.Node) => (drop: Rdf.Iri) => {
     const editor = this.editorRef.current;
+
     editor
       .moveToRangeOfNode(node)
       .setBlocks({
@@ -235,6 +244,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
   // - drag and drop
 
   emptyBlock = (props: RenderNodeProps) => {
+    console.log("removing block");
     return (
       <div {...props.attributes}>
       {
@@ -339,7 +349,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     if (this.props.documentIri) {
       const documentIri = Rdf.iri(this.props.documentIri);
       this.cancellation.map(
-        this.fetchDocument(documentIri)
+        this.fetchDocument(documentIri)        
       ).observe({
         value: this.onDocumentLoad,
         error: error => console.error(error)
@@ -386,7 +396,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
                 {this.state.documentIri ? (
                 <Draggable iri={this.state.documentIri}>
                   <span className={styles.draggableGripper} title='drag narrative'>
-                    <i className='rs-icon rs-icon-drag_points'></i>
+                    <Icon iconType='round' iconName='drag_indicator'/>
                   </span>
                 </Draggable>
               ) : null}
@@ -436,7 +446,7 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
       });
 
     const value = slateHtml.deserialize(content, { toJSON: true });
-
+  
     // load templates for embeds
     const embeds =
       value.document.nodes
@@ -498,6 +508,20 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     );
   }
 
+  private addRefersToStatementsToConstructQuery = () => {
+      const indexOfBracket = this.props.resourceQuery.indexOf('}');
+      if (indexOfBracket === -1) {
+        return this.props.resourceQuery; // Return the original text if no comma is found
+      }
+      let referredStatements = '';
+      this.state.blockEmbedReferences.forEach(block => {
+        referredStatements += "?__resourceIri__ crm:P67_refers_to <" + block.resourceIri.value + "> .";
+      })
+      // Split the text at the first comma, insert the string, and rejoin
+      return this.props.resourceQuery.slice(0, indexOfBracket) + 
+             referredStatements + 
+             this.props.resourceQuery.slice(indexOfBracket);
+    };
 
   private onDocumentSave = () => {
     this.setState({saving: true});
@@ -507,6 +531,17 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
     const content =
       this.wrapInHtml(title, html.serialize(value));
 
+    this.state.blockEmbedReferences = [];
+    // load templates for embeds
+    const embeds =
+      value.document.nodes
+        .filter(
+          n => n.object === 'block' && n.type === Block.embed
+        ).forEach(block => {
+            this.state.blockEmbedReferences
+                  .push({resourceIri:Rdf.iri(block.data["_root"]["entries"]["0"]["1"]["src"]),
+                         embedded:true});})  
+ 
     const blob = new Blob([content]);
     const fileName =
       this.state.fileName || title.replace(/[^a-z0-9_\-]/gi, '_') + '.html';
@@ -514,8 +549,9 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
 
     const parsedResouercQuery =
       SparqlUtil.parseQuery(
-        this.props.resourceQuery
+        this.addRefersToStatementsToConstructQuery()
       );
+    
     const resourceQuery =
       SparqlUtil.serializeQuery(
         SparqlClient.setBindings(
@@ -523,6 +559,32 @@ export class TextEditor extends Component<TextEditorProps, TextEditorState> {
         )
       );
 
+/*
+    this.cancellation
+      .map(getSetServiceForUser(this.getContext()).flatMap((service) => service.addToExistingSet(targetSet, item)))
+      .observe({
+        value: () => {
+          // This is ugly hack to fully reload all sets if we add something to the
+          // Uncategorized set, we need this to fetch Knowledg Maps when they are added
+          // to the clipboard
+          if (targetSet.equals(this.getState().defaultSet)) {
+            this.loadSets({keepItems: false});
+          } else {
+            this.trigger(SetManagementEvents.ItemAdded);
+            this.loadSetItems(targetSet, {forceReload: true});
+          }
+        },
+        error: (error) => {
+          addNotification(
+            {
+              level: 'error',
+              message: 'Error adding item to set',
+            },
+            error
+          );
+        },
+      });
+*/
     this.cancellation.map(
       this.getFileManager().uploadFileAsResource({
         file,

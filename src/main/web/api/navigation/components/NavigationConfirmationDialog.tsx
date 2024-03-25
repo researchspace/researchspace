@@ -40,14 +40,14 @@ export class NavigationConfirmationDialog extends React.Component<Props, {}> {
           <p>{message}</p>
         </Modal.Body>
         <Modal.Footer>
-          <ButtonGroup>
-            <Button bsStyle="primary" onClick={(e) => onConfirm(false)}>
+          <div>
+            <Button bsStyle="default" onClick={(e) => onConfirm(false)}>
               Stay
             </Button>
-            <Button bsStyle="danger" onClick={(e) => onConfirm(true)}>
+            <Button bsStyle="action" onClick={(e) => onConfirm(true)}>
               Leave
             </Button>
-          </ButtonGroup>
+          </div>
         </Modal.Footer>
       </Modal>
     );

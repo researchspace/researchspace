@@ -1,12 +1,6 @@
 declare namespace ItemSelectorScssNamespace {
   export interface IItemSelectorScss {
-    active: string;
-    badge: string;
-    disabled: string;
     dropdown: string;
-    'dropdown-toggle': string;
-    dropdownToggle: string;
-    focus: string;
     itemHolder: string;
     itemSelector: string;
     'itemSelector--active': string;
@@ -15,7 +9,6 @@ declare namespace ItemSelectorScssNamespace {
     itemSelectorActive: string;
     itemSelectorDropdownToggle: string;
     itemSelectorFocus: string;
-    open: string;
   }
 }
 

@@ -8,7 +8,7 @@ uses client-side templates:
        <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://www.researchspace.org/ontology/Knowledge_Map> .
   '
   image-iris='["http://www.researchspace.org/ontology/PX_has_main_representation"]'
-  save-diagram-label="Save Knowledge Map" settings=nostats post-saving=none add-to-default-set=true
+  save-diagram-label="Save Map" settings=nostats post-saving=none add-to-default-set=true
   collapse-navigator=true
   request-links-on-init='{{#if miradorVariable}}true{{else}}{{#if diagram}}false{{else}}true{{/if}}{{/if}}'
   default-edge-style='{"editable": true}'
@@ -74,7 +74,23 @@ uses client-side templates:
                             force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
 >
 
-    <rs-ontodia-metadata-from-fields></rs-ontodia-metadata-from-fields>
+    [[!-- <http://www.researchspace.org/category/generic/summary> --]]
+
+    <rs-ontodia-metadata-from-fields
+      fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
+        SELECT DISTINCT ?field WHERE { { ?field a <http://www.researchspace.org/resource/system/fields/Field> . ?field  <http://www.researchspace.org/resource/system/fields/category> ?category . 
+          FILTER (?category in (<http://www.researchspace.org/vocab/pattern_category/object>,<http://www.researchspace.org/category/generic/summary>))}
+          UNION {
+            VALUES (?value){(<http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation>)
+                            (<http://www.w3.org/2000/01/rdf-schema#label>)
+                      (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)
+                      (<http://www.researchspace.org/ontology/PX_has_main_representation>)
+                    }
+            BIND(?value as ?field)
+          } 
+        }
+    '>
+  </rs-ontodia-metadata-from-fields>
     
     <ontodia-field-input-override for-field="http://www.researchspace.org/ontology/PX_has_main_representation">
       <semantic-form-autocomplete-input for='http://www.researchspace.org/ontology/PX_has_main_representation'>
@@ -99,11 +115,11 @@ uses client-side templates:
                                                     name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
                                                     media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
                                                     resource-query='
-                                                        PREFIX rso: <http://www.researchspace.org/ontology/>
+                                                        PREFIX rs: <http://www.researchspace.org/ontology/>
                                                         CONSTRUCT {
-                                                        ?__resourceIri__ a rso:EX_File.
-                                                        ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
-                                                        ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
+                                                        ?__resourceIri__ a rs:EX_File.
+                                                        ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                        ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
                                                         } WHERE {}
                                                         '
                                                     generate-iri-query='
@@ -115,7 +131,7 @@ uses client-side templates:
                           <semantic-form-text-input for='label'></semantic-form-text-input>
                           <semantic-form-text-input for='P3_has_note' multiline=true></semantic-form-text-input>
 
-                          <button name="submit" class="btn btn-sm btn-success pull-right">Save</button>
+                          <button name="submit" class="btn btn-sm btn-action pull-right">Save</button>
                           <button name="reset" class="btn btn-sm btn-default pull-right">Reset</button>
                           <div style="clear: both;"></div>
           </semantic-form>
@@ -130,7 +146,7 @@ uses client-side templates:
     <template id='scopeNote'>
       <mp-popover title="Scope Note">
         <mp-popover-trigger placement="right" trigger='["click"]'>
-          <i style='margin-left: 10px;' class="fa fa-question-circle" aria-hidden="true"></i>
+          <rs-icon icon-type="round" icon-name="help" style='margin-left: 10px;'></rs-icon>
         </mp-popover-trigger>
         <mp-popover-content>
           <div style='height: 200px; width: 250px; overflow: auto;'>
@@ -148,7 +164,7 @@ uses client-side templates:
   <div class="rs-KM-card-container" style="width: 180px; height:230px">
         {{#> rsp:itemCardTemplate autosize=true cardMargin=0}}
           {{#*inline "customFooter"}}
-            <span class="rs-body-s-M">{{label}}</span>
+            <span class="text-s">{{label}}</span>
           {{/inline}}
 
           {{#*inline "additionalActions"}}
@@ -163,12 +179,12 @@ uses client-side templates:
             [[#if (hasPermission "forms:ldp:*")]]
               <div class="rs-default-card__hover-icon">
                 <button type="button" name='edit' class="rs-button" title="Edit">
-                  <i class="fa fa-pencil"></i>
+                  <rs-icon icon-type="round" icon-name="edit"></rs-icon>
                 </button>
               </div>
               <div class="rs-default-card__hover-icon">
                 <button type="button" name='delete' class="rs-button" title="Delete">
-                  <i class="fa fa-trash-o"></i>
+                  <rs-icon icon-type="round" icon-name="delete"></rs-icon>
                 </button>
               </div>
             [[/if]]

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReactElement, createElement, ReactNode, Children, Props as ReactProps } from 'react';
+import { ReactElement, createElement, ReactNode, Children, Props as ReactProps, cloneElement } from 'react';
 import * as D from 'react-dom-factories';
 import { findDOMNode } from 'react-dom';
 import * as Kefir from 'kefir';
@@ -44,6 +44,7 @@ import { TreeNode, ForestChange, queryMoreChildren } from './NodeModel';
 import { Node, SparqlNodeModel, sealLazyExpanding } from './SparqlNodeModel';
 import { LazyTreeSelector, LazyTreeSelectorProps } from './LazyTreeSelector';
 import { ItemSelectionChanged } from './SemanticTreeInputEvents';
+import { navigateToResource } from 'platform/api/navigation';
 
 import * as styles from './SemanticTreeInput.scss';
 
@@ -85,7 +86,7 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * This component is an uncontrolled component, but this property can be used to specify
    * array of nodes that should be initially selected.
    */
-  initialSelection?: ReadonlyArray<Rdf.Iri | String>;
+  initialSelection?: ReadonlyArray<Rdf.Iri | string>;
 
   /** Allows to drop entity if it satisfies ASK-query */
   droppable?: {
@@ -110,7 +111,6 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
   openDropdownOnFocus?: boolean;
   /** Allow forced search with query less than MIN_SEARCH_TERM_LENGTH by pressing Enter **/
   allowForceSuggestion?: boolean;
-
   /**
    * Closes the dropdown when some value is selected.
    *
@@ -122,6 +122,12 @@ export interface SemanticTreeInputProps extends ComplexTreePatterns {
    * query to retrieve the item label that will be visualized
    */
     queryItemLabel?: string;
+    openResourceOnClick?: boolean;
+}
+
+interface SelectedItem {
+  key: string; // iri
+  value: string; // label
 }
 
 const ITEMS_LIMIT = 200;
@@ -144,6 +150,7 @@ interface State {
   searchResult?: SearchResult;
 
   mode?: DropdownMode;
+  labelToDisplay?: SelectedItem[];
 }
 
 type DropdownMode = { type: 'collapsed' } | ExpandedMode;
@@ -239,11 +246,17 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       mode: { type: 'collapsed' },
       forest: Node.readyToLoadForest,
       confirmedSelection: TreeSelection.empty(Node.emptyForest),
+      labelToDisplay: []
     };
   }
 
-  componentDidMount() {
-    const { initialSelection } = this.props;
+  /**
+   * If the attributes initial_selection and query_item_label are specified
+   * For each of the selected items the query will be fired and
+   * and the label will be saved in the state, ready to be rendered
+   */
+  initLabelInitialSelection() {
+    const { initialSelection, queryItemLabel } = this.props;
     let selection: ReadonlyArray<Rdf.Iri>;
     if (initialSelection && initialSelection.length !== 0) {
       if (typeof initialSelection[0] == 'string') {
@@ -251,8 +264,51 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       } else {
         selection = initialSelection as ReadonlyArray<Rdf.Iri>;
       }
-      this.setInitialSelection(selection).onValue(() => {this.onSelectionChanged});
+
+      if (queryItemLabel && queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
+        selection.map((selectedItem) => {
+          
+          SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.value}>`)).onValue(
+            (result) => {
+              const prev = this.state.labelToDisplay
+              this.setState(
+                {
+                  labelToDisplay: 
+                  [
+                    ...prev, 
+                    {
+                      key: selectedItem.value,
+                      value: result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value
+                    }
+                  ]
+                }
+              );
+              return
+            }
+          )
+        });
+      }
     }
+}
+
+  // initialize the initial selection item labels 
+  // before component is rendered
+  componentWillMount() {
+    this.initLabelInitialSelection()
+  }
+
+  componentDidMount() {
+    const { initialSelection } = this.props;
+    let selection: ReadonlyArray<Rdf.Iri>;
+    if (initialSelection && initialSelection.length !== 0) { 
+      if (typeof initialSelection[0] == 'string') {
+        selection = (initialSelection as ReadonlyArray<string>).map(s => Rdf.iri(s));
+      } else {
+        selection = initialSelection as ReadonlyArray<Rdf.Iri>;
+      }
+      this.setInitialSelection(selection).onValue((value) => {this.onSelectionChanged(value);});
+    }
+    document.addEventListener('click', this.handleClickOutside, true);
   }
 
   componentWillReceiveProps(nextProps: SemanticTreeInputProps) {
@@ -261,7 +317,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       props.rootsQuery === nextProps.rootsQuery &&
       props.childrenQuery === nextProps.childrenQuery &&
       props.parentsQuery === nextProps.parentsQuery &&
-      props.searchQuery === nextProps.searchQuery;
+      props.searchQuery === nextProps.searchQuery
     if (!sameQueries) {
       this.setState(this.createQueryModel(nextProps));
     }
@@ -289,6 +345,29 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
    * But in addition to that we also need to fetch labels for selected items using LabelsService.
    */
   private setInitialSelection = (initialSelection: ReadonlyArray<Rdf.Iri>) => {
+    const {queryItemLabel} = this.props;
+    // if queryItemLabel is passed by, then use that pattern to retrieve the item label
+    if(queryItemLabel) {
+      return this.cancellation
+      .map(SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${initialSelection[0].value}>`)))
+      .flatMap((result) => {
+        const bindings = initialSelection.map((iri) => ({
+          item: iri,
+          label: Rdf.literal(result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value),
+          hasChildren: Rdf.literal(true),
+        }));
+        return this.restoreTreeFromLeafNodes(bindings);
+      })
+      .map(
+        (forest) => {
+          const confirmedSelection = forest as TreeSelection<Node>;
+          this.setState({ confirmedSelection });
+          return confirmedSelection;
+        }
+      );
+    }
+
+    // otherwise use the default one
     return this.cancellation
       .map(LabelsService.getLabels(initialSelection))
       .flatMap((labels) => {
@@ -310,6 +389,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   componentWillUnmount() {
     this.cancellation.cancelAll();
+    document.removeEventListener('click', this.handleClickOutside, true);
+  }
+
+  private handleClickOutside = (event: Event) => {
+    if(this.overlayHolder && !this.overlayHolder.contains(event.target as HTMLDivElement)) {
+      this.closeDropdown({ saveSelection: false })
+    }
   }
 
   render() {
@@ -359,7 +445,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
       const selectedItems = TreeSelection.leafs(selection);
       if (queryItemLabel.indexOf(ITEM_INPUT_VARIABLE) > 0) {
         selectedItems.map((selectedItem) => {
-
           SparqlClient.select(queryItemLabel.replace(`?${ITEM_INPUT_VARIABLE}`, `<${selectedItem.iri.value}>`)).onValue(
             (result) => {
               const label = Rdf.literal(result.results.bindings[0][ITEM_OUTPUT_VARIABLE].value);
@@ -381,26 +466,39 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
   }
 
   private onSelectionChanged = (selection: TreeSelection<Node>) => {
-    
     this.updateLabelField(selection)
 
     if (this.props.onSelectionChanged) {
       this.props.onSelectionChanged(selection);
     }
 
-
     /**
      * selection always has one empty root node, so if selection is 1 then in reality there is nothing selected.
      */
+    
+    let iris  = Object.keys(selection.nodes.toJS())
+                      .filter(item => item !== "SparqlNode:root")
+                      .map(item => Rdf.iri(item));
+         
     if (this.props.id && selection.nodes.size <=2 ) {
       const iri = selection.nodes.size == 1 ? undefined : selection.nodes.last().first().iri.value;
       trigger({
-        eventType: ItemSelectionChanged, source: this.props.id, data: {iri}
+        eventType: ItemSelectionChanged, source: this.props.id, data: {iri,iris}
       });
-    }
+    } else if (this.props.id && selection.nodes.size > 2) { 
+        trigger({
+          eventType: ItemSelectionChanged, source: this.props.id, data: {"iris": iris}
+        });
+    } 
 
-    
+  }
 
+  private getLabelNoteToDisplay(selectedNode: SelectionNode<Node>) {
+    // search if the selected node has an entry in labelToDisplay mapping
+    const mappedLabels = this.state.labelToDisplay?.filter((b:any) => b.key === selectedNode.iri.value)
+    // if it does, return the mapped label value 
+    // otherwise the selectedNode already has a label value
+    return mappedLabels[0]?.value ?? selectedNode.label.value
   }
 
   private renderTextField() {
@@ -440,6 +538,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
     const selection = this.state.confirmedSelection;
     const selectedItems = TreeSelection.leafs(selection).sortBy((item) => item.label.value);
+    const openResourceOnClick = this.props.openResourceOnClick ?? true
 
     const { onSelectionClick } = this.props;
     return createElement(
@@ -452,7 +551,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
             {
               key: item.iri.value,
               title: item.iri.value,
-              onClick: onSelectionClick ? () => onSelectionClick(selection, item) : undefined,
+              onClick: () => {
+                if (openResourceOnClick) {
+                  const URI = new Rdf.Iri('http://www.researchspace.org/resource/ThinkingFrames')
+                  navigateToResource(URI, {resource: item.iri.value, view: 'entity-editor'}, this.context.semanticContext.repository ?? undefined);
+                }
+                onSelectionClick ? () => onSelectionClick(selection, item) : undefined
+              },
               onRemove: () => {
                 const previous = this.state.confirmedSelection;
                 const newSelection = TreeSelection.unselect(previous, previous.keyOf(item));
@@ -461,7 +566,7 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
                 });
               },
             },
-            item.label.value
+            this.getLabelNoteToDisplay(item)
           )
         )
         .toArray()
@@ -553,10 +658,13 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
             }
           },
         },
-        D.span({
-          className: 'fa fa-angle-down',
-          ['aria-hidden' as any]: true,
-        })
+ 
+/*           D.span({}, 'Filter'), */
+          D.span({
+            className: 'material-icons-round',
+            ['aria-hidden' as any]: true,
+          }, 'expand_more')
+        
       )
     );
   }
@@ -642,7 +750,6 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
 
   private renderScrollableDropdownContent(mode: ExpandedMode): ReactElement<any> {
     let limitMessage: ReactElement<any> = null;
-    let noResultsMessage: ReactElement<any> = null;
 
     if (mode.type === 'search') {
       const { matchedCount, matchLimit, forest } = this.state.searchResult;
@@ -677,11 +784,11 @@ export class SemanticTreeInput extends Component<SemanticTreeInputProps, State> 
         Button,
         {
           className: styles.dropdownButton,
-          bsStyle: 'primary',
+          bsStyle: 'action',
           disabled: !enableSelectionSave,
           onClick: () => this.closeDropdown({ saveSelection: true }),
         },
-        'Select'
+        'Done'
       )
     );
   }

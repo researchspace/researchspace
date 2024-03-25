@@ -39,6 +39,7 @@ import { EmptyValue, CompositeValue, AtomicValue, FieldValue, ErrorKind } from '
 import FileVisualizer from './FileVisualizer';
 
 import * as styles from './FileManager.scss';
+import Icon from 'platform/components/ui/icon/Icon';
 
 interface FileInputConfig {
   /** Target storage ID. */
@@ -195,39 +196,50 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
     const temporaryIri = resourceIri && FileManager.isTemporaryResource(resourceIri);
 
     return (
-      <div className={styles.FileManager}>
+      <div className={styles.FileManagerContainer}>
         <div className={styles.header}>
           {this.state.progress ? (
             <ProgressBar
+              style={{ marginBottom: '10px' }}
               active={true}
               min={0}
               max={100}
               now={this.state.progress}
               label={this.state.progressText}
             ></ProgressBar>
-          ) : resourceIri && !temporaryIri ? (
-            <a className={styles.uploadedImageIri} title={resourceIri.value} href={resourceIri.value}>
-              {resourceIri.value}
-            </a>
-          ) : resourceIri ? (
-            <div className={styles.uploadedImageIri} title="File is loaded">
-              File is loaded
+          ) /*: resourceIri && !temporaryIri ? (
+            <div className={`${styles.uploadedImageIri}`} 
+             title={resourceIri.value} href={resourceIri.value} 
+            >
+              <div>Filename: </div>
+              <div>{resourceIri.value}</div>
             </div>
-          ) : null}
+          ) : resourceIri ? (
+            <div className={`${styles.uploadedImageIri} alert-component alert-component__success`} title="File loaded">
+              <Icon iconType='round' iconName='done' className='icon-left'/>
+              File <span>{resourceIri.value}</span> loaded.
+            </div>
+          ) */ : null}
         </div>
-        {resourceIri ? (
-          <div className={styles.fileContainer}>
-            <FileVisualizer
-              iri={resourceIri.value}
-              storage={temporaryIri ? this.props.tempStorage : this.props.storage}
-              namePredicateIri={this.props.namePredicateIri}
-              mediaTypePredicateIri={this.props.mediaTypePredicateIri}
-            ></FileVisualizer>
-            <span className={`${styles.caRemoveFile} fa fa-times`} onClick={this.removeFile}></span>
-          </div>
-        ) : (
-          this.renderBody()
-        )}
+        
+        <div className={resourceIri ? styles.FileManagerUploaded : styles.FileManager}>
+          {resourceIri ? (
+            <div className={styles.fileContainer}>
+              <FileVisualizer
+                iri={resourceIri.value}
+                storage={temporaryIri ? this.props.tempStorage : this.props.storage}
+                namePredicateIri={this.props.namePredicateIri}
+                mediaTypePredicateIri={this.props.mediaTypePredicateIri}
+              ></FileVisualizer>
+              <button className={`btn btn-default`} style={{ minHeight: '38px' }}>
+                  <Icon iconType='round' iconName='delete' onClick={this.removeFile} />
+                </button>
+            </div>
+          ) : (
+            this.renderBody()
+          )}
+        </div>
+        
       </div>
     );
   }
@@ -261,7 +273,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderDropZone() {
     const alert = this.state.alertState ? <Alert {...this.state.alertState}></Alert> : null;
-    const placeholder = this.props.placeholder || 'Please drag&drop your file here';
+    const placeholder = this.props.placeholder || 'Drag file or click to upload';
     return (
       <div className={styles.FileUploader}>
         <Dropzone
@@ -271,7 +283,10 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           noClick={Boolean(this.state.progress)}
         >
           {(this.props.children as JSX.Element | JSX.Element[]) || (
-            <div className={styles.mpDropZonePlaceHolder}>{placeholder}</div>
+            <div className='placeholder-item'>
+              <Icon iconType='round' iconName='file_upload' />
+              <div>{placeholder}</div>
+            </div>
           )}
         </Dropzone>
         {alert ? <div className={styles.alertComponent}>{alert}</div> : null}
@@ -288,8 +303,8 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
         <div className={styles.urlInputHolder}>
           <FormControl inputRef={ref => { this.urlInputRef = ref; }}
-            type='text' placeholder='Please type file URL here' />
-          <Button bsStyle='primary' type='submit'
+            type='text' placeholder='Enter file URL' />
+          <Button bsStyle='action' type='submit'
             onClick={this.fetchFileFromUrl}
           >Fetch</Button>
         </div>
@@ -299,12 +314,12 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
 
   renderInputSelector = () => {
     return (
-      <FormGroup>
+      <div className={styles.selectorContainer}>
         <Radio name='inputSelector' inline
           checked={!this.state.selectUrl}
           onClick={ () => this.setState({selectUrl: false}) }
         >
-          File Upload
+          File upload
         </Radio>{' '}
         <Radio name='inputSelector' inline
           checked={this.state.selectUrl}
@@ -312,7 +327,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
         >
           URL
         </Radio>{' '}
-      </FormGroup>
+      </div>
     );
   }
 
@@ -338,7 +353,7 @@ export class FileInput extends AtomicValueInput<FileInputProps, State> {
           this.setState({
             alertState: {
               alert: AlertType.WARNING,
-              message: e.message + ' Please, try to upload the file manually.',
+              message: e.message + ' Try to upload the file manually.',
             }
           });
         });

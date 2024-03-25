@@ -1,0 +1,90 @@
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/services/tnadiscovery/>
+
+:TNADiscoverySearchRangeService a ephedra:Service ;    
+    sail:sailType "researchspace:TnaDiscoveryApiRangeSearchSail" ;
+    rdfs:label "A wrapper for the TNA Discovery API service for range search" ;
+
+    ephedra:hasSPARQLPattern (
+        [
+            sp:subject :_results ;
+            sp:predicate :crns ;
+            sp:object :_crns
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :isFound ;
+            sp:object :_isFound
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :hasCitableReference ;
+            sp:object :_hasCitableReference
+            ]
+        [
+           sp:subject :_results ;
+           sp:predicate :sps.catalogueLevels ;
+           sp:object :_sps.catalogueLevels
+        ]
+        [
+           sp:subject :_results ;
+           sp:predicate :hasCatalogueLevel ;
+           sp:object :_hasCatalogueLevel
+            ]
+        [
+            sp:subject :_results ;
+            sp:predicate :hasDescription ;
+            sp:object :_hasDescription
+            ]
+    );
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "List of new line separated CRNs" ;
+        spl:predicate :_crns ;
+        spl:valueType xsd:string ;
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "citableReference" ;
+        spl:predicate :_hasCitableReference ;
+        spl:valueType xsd:string ;
+        ephedra:jsonPath "$.citableReference"
+        ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "true if item was found in discovery" ;
+        spl:predicate :_isFound ;
+        spl:valueType xsd:boolean ;
+        ephedra:jsonPath "$.isfound"
+        ] ;
+
+    spin:constraint [
+        a spl:Argument ;
+        rdfs:comment "Catalogue Levels" ;
+        spl:predicate :_sps.catalogueLevels ;
+        spl:valueType xsd:string
+        ] ; 
+        
+    spin:column [
+        a spin:Column ;
+        rdfs:comment "Catalogue Level" ;    
+        spl:predicate :_hasCatalogueLevel ;
+        spl:valueType xsd:integer;
+        ephedra:jsonPath "$.catalogueLevel"
+    ] ;
+
+    spin:column [
+        a spin:Column ;
+        rdfs:comment  "Description";
+        spl:predicate :_hasDescription ;
+        spl:valueType xsd:string;
+        ephedra:jsonPath "$.description"
+        ] .

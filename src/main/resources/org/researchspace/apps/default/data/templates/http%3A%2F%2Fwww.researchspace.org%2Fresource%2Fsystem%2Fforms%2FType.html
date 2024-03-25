@@ -1,0 +1,135 @@
+<semantic-form [[> rsp:FormDefaults]] 
+               persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}{{else}}/E55_Type/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+               fields='[[
+                fieldDefinitions
+                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                  entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                  prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
+                  altLabel="http://www.researchspace.org/pattern/system/entity/skos_altLabel"
+
+                  broader="http://www.researchspace.org/pattern/system/type/broader"
+                  narrower="http://www.researchspace.org/pattern/system/type/narrower"
+
+                  related_type="http://www.researchspace.org/pattern/system/type/related_type"
+
+                  description="http://www.researchspace.org/pattern/system/entity/description"
+                  scopeNote="http://www.researchspace.org/pattern/system/entity/skos_scopeNote"
+                  
+                  image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                  more_image="http://www.researchspace.org/pattern/system/entity/images"
+               ]]'
+>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E55_Type"]'></semantic-form-hidden-input>
+    {{#if scheme}}
+      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{/if}}
+
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+      <rs-tab event-key="detail" title="Details">
+        <div class="form-2column-container">
+          <div>
+            <semantic-form-text-input for="prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
+                                      placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
+            </semantic-form-text-input>
+            <semantic-form-text-input for="altLabel" label="Alternative {{#if entityType}}{{entityType}}{{/if}} name" 
+                                      placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} alternative name"> 
+            </semantic-form-text-input>
+
+            <semantic-form-tree-picker-input for="broader" 
+                                            label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                            placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                            close-dropdown-on-selection='false'
+                                            default-values='{{#if scheme}}[{{#if broader}}"{{broader}}"{{/if}}]{{else}}{{/if}}'
+
+                                            tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}crm:E55_Type{{/if}}",
+                                                            "schemePattern": "{{#if scheme}}?item crm:P71i_is_listed_in <{{scheme}}>{{else}}?item a crm:E55_Type{{/if}}",
+                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
+
+                                            nested-form-template='{{#if scheme}}
+                                                                    {{else}}
+                                                                      {{> forms:Type nested=true editable=true mode=new }}
+                                                                    {{/if}}'  
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                    ?item skos:prefLabel ?label .
+                                                              }'
+            ></semantic-form-tree-picker-input>
+
+            <semantic-form-tree-picker-input  for="narrower" 
+                                              label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                              close-dropdown-on-selection='false'
+                                              
+                                              tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}crm:E55_Type{{/if}}",
+                                                            "schemePattern": "{{#if scheme}}?item crm:P71i_is_listed_in <{{scheme}}>{{else}}?item a crm:E55_Type{{/if}}",
+                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
+
+                                              nested-form-template='{{#if scheme}}
+                                                                      {{else}}
+                                                                        {{> forms:Type nested=true editable=true mode=new }}
+                                                                      {{/if}}'  
+
+                                              query-item-label='SELECT ?label WHERE {
+                                                                      ?item skos:prefLabel ?label .
+                                                                }'
+            ></semantic-form-tree-picker-input>
+
+            <semantic-form-select-input for='related_type' 
+                                        label="Related {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                        placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Type",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'>  
+            </semantic-form-select-input> 
+            
+            <semantic-form-text-input for="description" multiline=true label="Description/comment" 
+                                      placeholder="Enter {{#if entityType}}{{entityType}}{{else}}type{{/if}} description"> 
+            </semantic-form-text-input>
+
+            <semantic-form-text-input for="scopeNote" multiline=true label="Scope note" 
+                                      placeholder="Enter {{#if entityType}}{{entityType}}{{else}}type{{/if}} scope note"> 
+            </semantic-form-text-input>
+          </div>
+
+          <div class="form-media-column">
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                              <div>Drag main image or click to upload</div>
+                                                                            </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+              </semantic-form-drag-and-drop-input>
+            </div>
+
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                              <div>Drag images or click to upload</div>
+                                                                            </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+              </semantic-form-drag-and-drop-input>
+            </div>
+          </div>
+        
+        </div>
+      </rs-tab>
+    </rs-tabs>
+  </div>
+  
+  <semantic-form-errors></semantic-form-errors>
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}type{{/if}}']] 
+</semantic-form>

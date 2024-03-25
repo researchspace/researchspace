@@ -88,10 +88,10 @@ export class ClassTree extends React.Component<ClassTreeProps, State> {
               onChange={this.onSearchTextChange}
             />
             {editor.inAuthoringMode ? (
-              <label className={`${CLASS_NAME}__only-creatable`}>
+              <div className={`${CLASS_NAME}__only-creatable`}>
                 <input type="checkbox" checked={showOnlyConstructible} onChange={this.onShowOnlyCreatableChange} /> Show
                 only constructible
-              </label>
+              </div>
             ) : null}
           </div>
         </div>

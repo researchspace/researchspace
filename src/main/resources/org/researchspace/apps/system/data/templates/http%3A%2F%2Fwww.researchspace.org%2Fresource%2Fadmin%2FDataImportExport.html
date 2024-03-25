@@ -5,18 +5,18 @@
   <li>
     <semantic-link title="Administration" iri='[[resolvePrefix "rsp:admin"]]'>Administration</semantic-link>
   </li>
-  <li class="active">Data Import and Export</li>
+  <li class="active">Data import and download</li>
 </ol>
 
 <div class="page rs-import-exp">
 
-  [[> rsp:adminPageHeader title="Data Import and Export" icon="fa fa-upload fa-lg"]]
+  [[> rsp:adminPageHeader title="Data import and download" materialIcon="import_export"]]
 
   <div class="container-fluid" style="margin-bottom: 40px;">
     <bs-row class="row-center">
       <bs-col xs=12 sm=11 md=10 lg=9 class="rs-col-xl-8">
 
-        <h1>Data Import</h1>
+        <h1>Data import</h1>
         <hr style="margin-top:0px;" />
         [[#if (hasPermission "sparql:update")]]
         <bs-alert bs-style="info">
@@ -41,7 +41,7 @@
         [[/if]]
 
 
-        <h1 style="margin-top: 30px;">Data Export &amp; Deletion</h1>
+        <h1 style="margin-top: 30px;">All named graphs</h1>
         <hr style="margin-top:0px;" />
 
         <mp-event-proxy id='{{viewId}}-dataImport-upload-success-proxy' 
@@ -60,7 +60,7 @@
           <div>
             <semantic-query
               query='SELECT (COUNT(*) as ?number) WHERE { { SELECT DISTINCT ?g WHERE{ GRAPH ?g {?s ?p ?o} } LIMIT 1000 } }'
-              template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <bs-alert bs-style="info"> The repository contains <strong>{{number.value}}</strong> distinct named graphs.</bs-alert> {{/ifCond}}{{/each}}'>
+              template='{{#each bindings}}{{#ifCond number.value ">=" 1000}}<bs-alert bs-style="warning"> The following table is limited to show only <strong>1000</strong> named graphs.</bs-alert> {{else}} <div class="page__section-container"> The repository contains <strong> {{number.value}} </strong> distinct named graphs.</div> {{/ifCond}}{{/each}}'>
             </semantic-query>
             
             <semantic-table query='SELECT ?graph WHERE {
@@ -70,26 +70,14 @@
                                         } LIMIT 1000
                                       }
                                   }' 
-                            column-configuration='[
-                                {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
-                                {"displayName":"Triples", "cellTemplate":"{{> count}}"}
-                                [[#if (hasPermission "sparql:graphstore:get")]]
-                                  ,{"displayName":"Export", "cellTemplate": "{{> export}}" }
-                                [[/if]]
-                                [[#if (hasPermission "sparql:graphstore:delete")]]
-                                  ,{"displayName":"Delete", "cellTemplate": "{{> delete}}" }
-                                [[/if]]
-                              ]'>
+                            column-configuration='[ {"variableName":"graph", "displayName":"Named Graph", "cellTemplate":"{{> link}}"},
+                                                    {"displayName":"Triples", "cellTemplate":"{{> count}}"},
+                                                    {"displayName":"Actions", "cellTemplate": "{{> actions}}"}
+                                                  ]'>
 
               <template id='link'>
                 <semantic-link iri='[[resolvePrefix "Admin:NamedGraphs"]]' urlqueryparam-graph="{{graph.value}}">
                   {{graph.value}}</semantic-link>
-              </template>
-
-              <template id='delete'>
-                <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}"><i
-                    class="fa fa-trash-o"></i>
-                </mp-graph-store-action>
               </template>
 
               <template id='count'>
@@ -105,30 +93,53 @@
                 '></semantic-query>
               </template>
 
+              <template id='actions'>
+                <div class="btn-inline-container">
+                  [[#if (hasPermission "sparql:graphstore:get")]]
+                    <bs-dropdown id="download">
+                      <bs-dropdown-toggle>
+                          <rs-icon icon-type="round" icon-name="file_download"></rs-icon>
+                          Download
+                      </bs-dropdown-toggle>
+                      <bs-dropdown-menu>
+                        <bs-menu-item event-key=1>
+                          <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig"
+                            >TRIG</mp-graph-store-action>
+                        </bs-menu-item>
+                        <bs-menu-item event-key=2>
+                          <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl"
+                            >TURTLE</mp-graph-store-action>
+                        </bs-menu-item>
+                        <bs-menu-item event-key=3>
+                          <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt"
+                            >NTRIPLES</mp-graph-store-action>
+                        </bs-menu-item>
+                        <bs-menu-item event-key=4>
+                          <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf"
+                            >RDF/XML</mp-graph-store-action>
+                        </bs-menu-item>
+                        <bs-menu-item event-key=4>
+                          <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl"
+                            >OWL</mp-graph-store-action>
+                        </bs-menu-item>
+                      </bs-dropdown-menu>
+                    </bs-dropdown>
+                  [[/if]]
+                  [[#if (hasPermission "sparql:graphstore:delete")]]
+                    <mp-graph-store-action title="Delete" action="DELETE CUSTOM" graphuri="{{graph.value}}" graph-description="{{graph.value}}">
+                      <button class="btn btn-default btn-textAndIcon" style="margin-right:8px;">
+                        <rs-icon icon-type="round" icon-name="delete"></rs-icon>Delete
+                      </button>
+                    </mp-graph-store-action>
+                  [[/if]]
+                </div>
+              </template>
+
               <template id='export'>
-                <bs-dropdown-button id="download" bs-size="xsmall" title="" class="mp-rdf-graph-action__download-dropdown"
-                  no-caret="true">
-                  <bs-menu-item event-key=1>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="trig"
-                      class="mp-rdf-graph-action__download-dropdown-item">TRIG</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=2>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="ttl"
-                      class="mp-rdf-graph-action__download-dropdown-item">TURTLE</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=3>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="nt"
-                      class="mp-rdf-graph-action__download-dropdown-item">NTRIPLES</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=4>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="rdf"
-                      class="mp-rdf-graph-action__download-dropdown-item">RDF/XML</mp-graph-store-action>
-                  </bs-menu-item>
-                  <bs-menu-item event-key=4>
-                    <mp-graph-store-action title="Download" action="GET" graphuri="{{graph.value}}" file-ending="owl"
-                      class="mp-rdf-graph-action__download-dropdown-item">OWL</mp-graph-store-action>
-                  </bs-menu-item>
-                </bs-dropdown-button>
+                
+              </template>
+
+              <template id='delete'>
               </template>
 
             </semantic-table>

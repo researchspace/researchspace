@@ -56,35 +56,46 @@ export class FieldEditorRow extends Component<Props, {}> {
     const { onCollapse, expanded, label, error } = this.props;
     const children = this.props.element || this.props.children;
     const canBeCollapsed = expanded && onCollapse;
-    return row(
+    return D.div(
       { className: block('row').toString() },
-      col({ md: 3, onClick: () => this.toggle({ expand: true }) }, D.span({}, label)),
-      col(
-        { md: canBeCollapsed ? 8 : 9 },
-        row(
-          {},
-          expanded
-            ? children
-            : D.i(
-                {
-                  className: block('expand').toString(),
-                  onClick: () => this.toggle({ expand: true }),
-                },
-                `Click to add an optional ${label}.`
-              )
+      D.div({ className:block('input-header').toString(), onClick: () => this.toggle({ expand: true }) }, D.span({}, label)),
+      D.div({ className:'inputAndButton-wrapper'}, 
+        D.div(
+          { style: { flex: '1' }  },
+          D.div(
+            {},
+            expanded
+              ? children
+              : D.div(
+                  {
+                    className: block('expand').toString(),
+                    onClick: () => this.toggle({ expand: true }),
+                  },
+                  `Click to add an optional ${label}.`
+                )
+          ),
+          error ? 
+          D.div({ className: block('error').toString() }, 
+            D.div({className:"field-editor__error-icon"}, 
+              D.i({ className: 'material-icons-round' }, 'priority_high')
+            ),
+            D.div({}, 
+              D.div({className:"field-editor__error-title"}, "Error!"),
+              D.div({}, error.message)
+            )
+          ) 
+          : null
         ),
-        error ? row({ className: block('error').toString() }, error.message) : null
-      ),
-      col(
-        { md: 1, style: { display: canBeCollapsed ? undefined : 'none' } },
-        createElement(
-          Button,
-          {
-            className: block('collapse').toString(),
-            bsSize: 'sm',
-            onClick: () => this.toggle({ expand: false }),
-          },
-          D.span({ className: 'fa fa-times' })
+        D.div(
+          { style: { display: canBeCollapsed ? undefined : 'none' } },
+          createElement(
+            Button,
+            {
+              className: block('collapse').toString(),
+              onClick: () => this.toggle({ expand: false }),
+            },
+            D.span({className: 'material-icons-round'}, 'close')
+          )
         )
       )
     );

@@ -182,7 +182,10 @@ class SemanticSearchFacetInner extends React.Component<InnerProps, State> {
             }),
             onClick: this.toggleFilter,
           },
-          this.state.showFacets ? 'Hide Filter' : 'Show Filter'
+          D.div(
+            { className: 'show-facet-button__label'},
+            this.state.showFacets ? 'Hide Filter' : 'Show Filter',
+          ),
         )
       );
     } else {

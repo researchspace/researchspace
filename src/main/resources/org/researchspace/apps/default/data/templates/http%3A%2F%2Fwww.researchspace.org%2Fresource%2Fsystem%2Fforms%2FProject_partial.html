@@ -1,0 +1,393 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/project/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+
+                fields='[[fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+
+                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                          entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                          project_document="http://www.researchspace.org/pattern/system/entity/documents"
+                          image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                          more_image="http://www.researchspace.org/pattern/system/entity/images"
+                          project_data_folder="http://www.researchspace.org/pattern/system/activity/data_folder_link"
+
+                          project_title="http://www.researchspace.org/pattern/system/project/project_title"
+                          project_description="http://www.researchspace.org/pattern/system/entity/description"
+                          project_research_question="http://www.researchspace.org/pattern/system/activity/research_question"
+                          project_type="http://www.researchspace.org/pattern/system/project/project_type"
+                          project_status="http://www.researchspace.org/pattern/system/activity/current_status"
+                          project_priority="http://www.researchspace.org/pattern/system/activity/priority"
+
+                          project_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                          project_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by"
+
+                          project_request="http://www.researchspace.org/pattern/system/activity/activity_request"
+
+                          project_motivated_by_exhibition="http://www.researchspace.org/pattern/system/project/motivated_by_exhibition"
+                ]]'>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
+    {{#if scheme}}
+      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{/if}}
+
+    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/project'> </semantic-form-hidden-input>
+
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
+      <rs-tab event-key="detail" title="Details">
+        
+        [[!-- {{#if (not node)}}
+          <mp-event-target-template-render id='{{viewId}}-documentation-newProject' template='{{> template}}'>
+            <template id='template'>
+              {{#if hideMessage}}
+              {{else}}
+                <div style="padding-top: 15px;">
+                  <div class="documentation-section documentation-section-withIcon">
+                    <div class="documentation-section-icon-container">
+                      <i class="fa fa-info"></i>
+                    </div>
+
+                    <div style="flex: 1;"> 
+                      <div class="documentation-section-title">CREATE NEW PROJECT</div>
+                      <div class="documentation-section-content">
+                        Create and save the new project.
+                      </div>
+                    </div>
+                    <mp-event-trigger id='{{viewId}}-documentation-newProject-trigger'
+                                      type='Component.TemplateUpdate'
+                                      data='{ "hideMessage": "true" }'
+                                      targets='["{{viewId}}-documentation-newProject"]'
+                                >
+                      <button class="btn btn-documentation">
+                        <rs-icon icon-type="round" icon-name="close"></rs-icon>
+                      </button>
+                    </mp-event-trigger>
+                  </div> 
+                </div>
+
+              {{/if}}
+            </template>
+          </mp-event-target-template-render>
+        {{/if}} --]]
+        
+        <div class="form-2column-container">
+          <div>
+            <semantic-form-text-input for="project_title" label="Project title" placeholder="Enter project title"></semantic-form-text-input>
+
+            <semantic-form-tree-picker-input for="project_type" 
+                                              label="Project type" 
+                                              placeholder="Select project type" 
+                                              close-dropdown-on-selection='false'
+                                              tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/project_type>", 
+                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/project_type>",
+                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                          "view": "vocabulary-content",
+                                                                          "scheme": "http://www.researchspace.org/resource/vocab/project_type",
+                                                                          "tooltip": "Open list of project types"
+                                                                        }'
+                                              
+                                              nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                    scheme="http://www.researchspace.org/resource/vocab/project_type"
+                                                                                    entityType="project type" }}{{{{/raw}}}}'
+
+                                              query-item-label='SELECT ?label WHERE {
+                                                                  ?item skos:prefLabel ?label .
+                                                                }'
+                                            
+            ></semantic-form-tree-picker-input>
+
+            <semantic-form-text-input for="project_description" multiline="true" label="Project description" placeholder="Enter project description"></semantic-form-text-input>
+            
+            <semantic-form-select-input for='project_research_question' 
+                                        label="Project research question" 
+                                        placeholder="Enter the project research question"
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Research question",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/ResearchQuestion\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'> 
+            </semantic-form-select-input> 
+
+            <div class="form-inline-inputs">
+           
+              <div style="flex: 1;">
+                <semantic-form-select-input for='project_status' 
+                                            label="Project status" 
+                                            placeholder="Select project status" 
+                                            nested-form-templates='[ 
+                                              {
+                                                "label": "Status",
+                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                scheme=\"http://www.researchspace.org/resource/vocab/status\"
+                                                                                entityType=\"status\" }}
+                                                              {{{{/raw}}}}"
+                                              }
+                                            ]'>
+                </semantic-form-select-input>
+              </div>
+
+              <div style="flex: 1;">
+                <semantic-form-select-input for='project_priority' 
+                                            label="Activity priority" 
+                                            placeholder="Select activity priority" 
+                                            nested-form-templates='[ 
+                                              {
+                                                "label": "Priority",
+                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                scheme=\"http://www.researchspace.org/resource/vocab/priority\"
+                                                                                entityType=\"priority\" }}
+                                                               {{{{/raw}}}}"
+                                              }
+                                            ]'> 
+                </semantic-form-select-input>   
+              </div>
+            </div>
+
+            <semantic-form-composite-input  for="project_date" 
+                                            render-header="false"
+                                            new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                            fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                        timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
+                                                        timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
+                                                        timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                ]]'>   
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                <div class="form-inline-inputs" style="align-items:flex-end;">
+                    <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter start date"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter end date"></semantic-form-datetime-input>
+                    </div>
+                    <div style="flex: 1;">
+                        <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter project date (text value)"></semantic-form-text-input>
+                    </div>
+                </div>
+            </semantic-form-composite-input>
+
+            [[> Platform:formSwitchCarriedOutActor  for_kp='project_carried_out_by_domain'
+                                                    subjectLabel='Project carried out by'
+                                                    carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/project'
+            ]]
+
+            <semantic-form-composite-input for="project_request"
+                                            label="Project proposal/request"
+                                            new-subject-template="/project_request/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"  
+                                            fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
+                                                      request_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by"
+                                                      request_date="http://www.researchspace.org/pattern/system/temporal_entity/at_some_time_within"
+                                                      request_description="http://www.researchspace.org/pattern/system/entity/description"
+                                          ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/activity_request'> </semantic-form-hidden-input>
+        
+                    <div class="composite-first-input">
+                      [[> Platform:formSwitchCarriedOutActor  for_kp='request_carried_out_by_domain'
+                                                              subjectLabel='Request carried out by'
+                                                              carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/project_request'
+                      ]]
+                    </div>
+
+                    <div class="form-inline-inputs">
+                      <semantic-form-datetime-input for="request_date" label="Proposal/request date" placeholder="Enter date"></semantic-form-datetime-input>
+                      <div style="flex: 1;"> 
+                        <semantic-form-text-input for='request_description' multiline='true' label="Proposal/request description" placeholder="Enter proposal/request description"></semantic-form-text-input>   
+                      </div>
+                    </div>
+                    
+            </semantic-form-composite-input> 
+          </div>
+
+          <div class="form-media-column">
+            <semantic-form-text-input for='project_data_folder' label="Data folder" placeholder="Enter data folder link"></semantic-form-text-input> 
+
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input  for='project_document' 
+                                                  label="Documents" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                  <div>Drag document or click to upload</div>
+                                                                                </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" 
+                                                                                        docType="http://www.researchspace.org/resource/vocab/document_type/project_report" }}{{{{/raw}}}}'
+                                                                                >
+                  </semantic-form-drag-and-drop-input>
+
+            </div>
+
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input for='image_main_representation' label="Main image" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                              <div>Drag main image or click to upload</div>
+                                                                            </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+              </semantic-form-drag-and-drop-input>
+          </div>
+
+          <div class="dragAndDrop-input-container">
+            <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                placeholder-item-template="<div class='placeholder-item'>
+                                                                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                            <div>Drag images or click to upload</div>
+                                                                          </div>"
+                                                nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+            </semantic-form-drag-and-drop-input>
+          </div>
+
+          </div>
+        </div>
+      </rs-tab>
+
+      {{#if (or type_exhibition type_loan)}}
+        <rs-tab event-key="exhibition" title="Exhibition">
+          <semantic-form-select-input for='project_motivated_by_exhibition' 
+                                      label="Related exhibition"
+                                      placeholder="Select exhibition title" 
+                                      nested-form-templates='[ 
+                                          {
+                                            "label": "Exhibition",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Exhibition\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'> 
+          </semantic-form-select-input> 
+
+          {{#if related_exhibition}}
+            <div style="margin-top: 10px;">
+              <semantic-table id='exhibition-table'
+                          query='SELECT DISTINCT ?exhibition ?exhibitionTitle ?statusLabel 
+                                                  (CONCAT(STR(DAY(?startDate)),"-",STR(MONTH(?startDate)),"-",STR(YEAR(?startDate))) as ?finalStartDate)
+                                                  (CONCAT(STR(DAY(?endDate)),"-",STR(MONTH(?endDate)),"-",STR(YEAR(?endDate))) as ?finalEndDate)
+                                                  (GROUP_CONCAT(?exhibitionType;SEPARATOR=", ") AS ?types)
+                              WHERE {
+                                  
+                                  BIND(<{{node}}> as ?project) .
+                                  ?project crm:P17_was_motivated_by ?exhibition .
+                                  ?exhibition crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .
+
+                                  ?exhibition crm:P1_is_identified_by ?appellation .
+                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> .
+                                  ?appellation crm:P190_has_symbolic_content ?exhibitionTitle .  
+
+                                  OPTIONAL {
+                                  ?exhibition crm:P2_has_type ?exhibitionTypeURI .
+                                  ?exhibitionTypeURI crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/exhibition_type> .
+                                  ?exhibitionTypeURI skos:prefLabel ?exhibitionType .
+                                  }
+
+                                  OPTIONAL {
+                                  ?exhibition crm:P2_has_type ?status .
+                                  ?status crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/status> .
+                                  ?status skos:prefLabel ?statusLabel .
+                                  }
+
+                                  OPTIONAL {
+                                  ?exhibition crm:P4_has_time-span ?timespanStart .
+                                  ?timespanStart crm:P82a_begin_of_the_begin ?startDate .
+                                  }
+                                  
+                                  OPTIONAL {
+                                  ?exhibition crm:P4_has_time-span ?timespanEnd .
+                                  ?timespanEnd crm:P82b_end_of_the_end ?endDate .
+                                  }
+                              } GROUP BY ?exhibition ?exhibitionTitle ?statusLabel ?startDate ?endDate'
+                          
+                          number-of-displayed-rows=5
+                          no-result-template='{{> noResults}}'
+                          options='{"showFilter":false}' 
+                          column-configuration='[
+                                                  {"variableName": "exhibitionTitle", "displayName": "Exhibition title", "cellTemplate": "{{> exhibition}}"},
+                                                  {"variableName": "types", "displayName": "Exhibition type" },
+                                                  {"variableName": "statusLabel", "displayName": "Status" },
+                                                  {"variableName": "finalStartDate", "displayName": "Start date" },
+                                                  {"variableName": "finalEndDate", "displayName": "End date" },
+                                                  {"displayName": "Organisation", "cellTemplate": "{{> organisation}}"}
+                                              ]'   >
+
+                  <template id="noResults">
+                    <div style="padding: 12px 8px">
+                        No exhibition selected
+                    </div>
+                  </template>
+
+                  <template id='exhibition'>
+                      <mp-draggable iri='{{exhibition.value}}'>
+                          <div style="display: flex; align-items: center; cursor: grab;">
+                          <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                          <semantic-link iri='[[resolvePrefix "rsp:ThinkingFrames"]]' 
+                                          urlqueryparam-resource='{{exhibition.value}}' 
+                                          urlqueryparam-view='entity-editor' 
+                                          class='a-draggable'
+                                          >
+                              <div style="display: flex; align-items: center;">
+                              {{exhibitionTitle.value}}
+                              </div>
+                          </semantic-link>
+                          </div>
+                      </mp-draggable>
+                  </template>
+
+                  <template id='organisation'>
+                      <semantic-query query='SELECT DISTINCT ?organisation ?organisationLabel WHERE {
+                                              <{{exhibition.value}}> crm:P14_carried_out_by ?organisation .
+                                              ?organisation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/organisation> .
+                                              ?organisation crm:P1_is_identified_by ?appellation .
+                                              ?appellation a crm:E41_Appellation .
+                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
+                                              ?appellation crm:P190_has_symbolic_content ?organisationLabel .
+                                              
+                                              } ORDER BY ASC(?organisationLabel)'
+                                      >
+                          <template id='template'>
+                          <div>
+                              {{#each bindings}}
+                              <mp-draggable iri='{{organisation.value}}'>
+                              <div style="display: flex; align-items: center; cursor: grab;">
+                                  <i class="rs-icon rs-icon-drag_points" style="margin-right: 12px;"></i>
+                                  <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames" draggable='false'
+                                                  urlqueryparam-view='entity-editor' urlqueryparam-resource-iri='{{organisation.value}}'
+                                                  class='a-draggable' title='{{organisationLabel.value}}'
+                                                  >
+                                  {{organisationLabel.value}}
+                                  </semantic-link>
+                              </div>
+                              </mp-draggable>
+                              {{/each}}
+                          </div>
+                          </template>
+                      </semantic-query>
+                  </template>
+
+              </semantic-table>
+            </div>
+          {{/if}}
+        </rs-tab>
+      {{/if}}
+
+      [[> rsp:FormMetadataTab]]
+    </rs-tabs>
+  </div>
+
+  <semantic-form-errors></semantic-form-errors> 
+    
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}project{{/if}}']]
+
+</semantic-form>

@@ -1,0 +1,52 @@
+<http://www.researchspace.org/pattern/system/carried_out_by/project_domain/context> {
+  <http://www.researchspace.org/pattern/system/carried_out_by/project_domain> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/actor>,
+      <http://www.researchspace.org/resource/system/category/person>;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-2a463824039047bf8189839945b2dc88-4h3mx9;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-2a463824039047bf8189839945b2dc88-15n06g;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Carried out by project domain";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-2a463824039047bf8189839945b2dc88-thvo52h;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-2a463824039047bf8189839945b2dc88-jadkh;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-19T15:37:39.012Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-2a463824039047bf8189839945b2dc88-4h3mx9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P01_has_domain $value . 
+  $value crm:P01i_is_domain_of $subject .  
+}""" .
+  
+  _:genid-2a463824039047bf8189839945b2dc88-15n06g a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E7_Activity .
+  ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/project> .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/project_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ?label""" .
+  
+  _:genid-2a463824039047bf8189839945b2dc88-jadkh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P01_has_domain $value . 
+  $value crm:P01i_is_domain_of $subject .  
+} WHERE {
+  $subject crm:P01_has_domain $value . 
+  $value crm:P01i_is_domain_of $subject .  
+}""" .
+  
+  _:genid-2a463824039047bf8189839945b2dc88-thvo52h a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P01_has_domain $value . 
+  $value crm:P01i_is_domain_of $subject .    
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/carried_out_by/project_domain> .
+}

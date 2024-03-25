@@ -1,39 +1,150 @@
-<semantic-form [[> rsp:FormDefaults]] 
-               persistence='{"type": "sparql", "targetGraphIri": "http://www.researchspace.org/assets/images"}'
-               new-subject-template='/EX_Digital_Image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
-               fields='[[fieldDefinitions
-                             label="http://www.w3.org/2000/01/rdf-schema#label"
-                             P3_has_note="http://www.cidoc-crm.org/cidoc-crm/P3_has_note"
-                             P1_is_identified_by="http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by"
-                             type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                      ]]'
->
-  <div class="form-scroll-area">
-    <semantic-form-hidden-input for='type' default-values='["http://www.researchspace.org/ontology/EX_Digital_Image"]'> </semantic-form-hidden-input>
-    <semantic-form-file-input for='P1_is_identified_by' 
-                              accept-pattern='image/*' 
-                              storage='images'
-                              temp-storage='tmp'
-                              placeholder='Please drag&drop your image file here.'
-                              name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
-                              media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
-                              resource-query='
-                                PREFIX rso: <http://www.researchspace.org/ontology/>
-                                CONSTRUCT {
-                                  ?__resourceIri__ a rso:EX_File.
-                                  ?__resourceIri__ rso:PX_has_file_name ?__fileName__.
-                                  ?__resourceIri__ rso:PX_has_media_type ?__mediaType__.
-                                } WHERE {}
-                              '
-                              generate-iri-query='
-                                SELECT ?resourceIri {
-                                  BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
-                                }
-                              '
-    ></semantic-form-file-input>
-    <semantic-form-text-input for='label'></semantic-form-text-input>
-    <semantic-form-text-input for='P3_has_note' multiline=true></semantic-form-text-input>
+<semantic-form id='{{#if formId}}{{formId}}{{else}}{{viewId}}-vocab-form{{/if}}' 
+                post-action="event"
+                subject='{{node}}'
+                persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/assets/images{{/if}}"}'
+                new-subject-template='/EX_Digital_Image/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
+
+                fields='[[fieldDefinitions
+                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                            inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                            entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                            
+                            image_id="http://www.researchspace.org/pattern/system/image/identifier"
+                            image_name="http://www.researchspace.org/pattern/system/image/label"
+                            image_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                            image_represents_entity="http://www.researchspace.org/pattern/system/image/represents_entity"
+                            image_main_represents_entity="http://www.researchspace.org/pattern/system/image/main_represents_entity"
+                          ]]'
+              >
+              
+    <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+        <semantic-form-hidden-input for='classtype' default-value='http://www.researchspace.org/ontology/EX_Digital_Image'> </semantic-form-hidden-input>
+        {{#if scheme}}
+            <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+        {{/if}}
+
+        <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
+            {{#if node}}
+                <rs-tab event-key="detail" title="Details">
+            {{else}}
+                <rs-tab event-key="upload" title="Upload">
+            {{/if}}
+
+                {{#ifCond mode "===" "new"}}
+                    {{#if object}}
+                        <semantic-form-hidden-input for="image_represents_entity" default-value='{{object}}'> </semantic-form-hidden-input>
+                    
+                        <div style="margin-top: 25px;">
+                        <b>Object: </b>
+                        <mp-draggable iri='{{object}}'>
+                            <span>
+                            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                            urlqueryparam-view='entity-editor' urlqueryparam-resource-iri='{{object}}' draggable='false'> 
+                                <mp-label iri="{{object}}" class='text-underline'></mp-label>
+                            </semantic-link>
+                            </span>
+                        </mp-draggable>
+                        </div>
+                    {{/if}}
+                {{/ifCond}} 
+
+                {{#ifCond mode "===" "edit"}}
+                    <semantic-query query='SELECT DISTINCT ?entity WHERE {
+                                                ?entity <http://www.researchspace.org/ontology/PX_has_main_representation> <{{node}}> .
+                                            }'
+                                    template='{{> template}}'>
+                                
+                        <template id='template'>
+                            <div>
+                            <div style="display: flex; align-items: baseline; column-gap: 5px;padding: 25px 0 5px 0px;">
+                                <h5 style="margin: 0;">Image is main representation of:</h5>
+                                {{#each bindings}}
+                                {{#if @first}}{{else}}; &nbsp;{{/if}}
+                                <span>
+                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                        urlqueryparam-view='entity-editor' 
+                                                        urlqueryparam-resource-iri='{{entity.value}}'
+                                                        >
+                                        <mp-label iri="{{entity.value}}" class='text-link'></mp-label>
+                                    </semantic-link>
+                                </span>
+                                {{/each}}
+                            </div>
+                            </div>
+                        </template>
+                    </semantic-query>
+
+                    <semantic-query query='SELECT DISTINCT ?entity WHERE {
+                                                ?entity crm:P138i_has_representation <{{node}}>   .
+                                            }'
+                                    template='{{> template}}'>
+                                
+                        <template id='template'>
+                            <div>
+                            <div style="display: flex; align-items: baseline; column-gap: 5px;padding: 25px 0 5px 0px;">
+                                <h5 style="margin: 0;">Image represents:</h5>
+                                {{#each bindings}}
+                                {{#if @first}}{{else}}; &nbsp;{{/if}}
+                                <span>
+                                    <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                        urlqueryparam-view='entity-editor' 
+                                                        urlqueryparam-resource-iri='{{entity.value}}'
+                                                        >
+                                        <mp-label iri="{{entity.value}}" class='text-link'></mp-label>
+                                    </semantic-link>
+                                </span>
+                                {{/each}}
+                            </div>
+                            </div>
+                        </template>
+                    </semantic-query>
+                {{/ifCond}}
+            
+                <div style="display: flex; align-items:stretch; column-gap:30px; flex-wrap: wrap;">
+                    <div class="FileUploader-container">
+                        <semantic-form-file-input   for='image_id' 
+                                                    label='Image file'
+                                                    from-url-or-drop='true'
+                                                    accept-pattern='image/*' 
+                                                    storage='images'
+                                                    temp-storage='tmp'
+                                                    name-predicate-iri='http://www.researchspace.org/ontology/PX_has_file_name'
+                                                    media-type-predicate-iri='http://www.researchspace.org/ontology/PX_has_media_type'
+                                                    resource-query='PREFIX rs: <http://www.researchspace.org/ontology/>
+                                                                    CONSTRUCT {
+                                                                        ?__resourceIri__ a rs:EX_File.
+                                                                        ?__resourceIri__ rs:PX_has_file_name ?__fileName__.
+                                                                        ?__resourceIri__ rs:PX_has_media_type ?__mediaType__.
+                                                                    } WHERE {}'
+                                                    generate-iri-query='SELECT ?resourceIri {
+                                                                            BIND(IRI(CONCAT(STR(Default:), "EX_File/", ?__fileName__)) AS ?resourceIri) .
+                                                                        }'
+                        >
+                        <div className='placeholder-item'>
+                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                            <div>Drag image or click to upload</div>
+                        </div>
+                        </semantic-form-file-input>
+                    </div>
+                <div style="flex: 1;">
+                    <semantic-form-text-input for='image_name' label='Image name' placeholder='Enter image name'></semantic-form-text-input>
+                    <semantic-form-text-input for='image_description' label='Image description' placeholder='Enter image description' multiline='true'></semantic-form-text-input>
+                </div>
+                </div>
+            </rs-tab>
+
+            [[> rsp:FormMetadataTab]]
+            
+        </rs-tabs>
+    </div>
+  
     <semantic-form-errors></semantic-form-errors>
- </div>
- [[> rsp:FormDefaultActions assetForm=true assetStorage='tmp']] 
+
+    {{#ifCond mode "===" "new"}}
+        [[> rsp:FormDefaultActions actionType='Upload' formEntity='image' assetForm=true assetStorage='tmp']]
+    {{else}}
+        [[> rsp:FormDefaultActions formEntity='image' assetForm=true assetStorage='tmp']]
+    {{/ifCond}}
+  
 </semantic-form>

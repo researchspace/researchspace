@@ -1,0 +1,146 @@
+<semantic-form [[> rsp:FormDefaults]] 
+                persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/period/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+
+                fields='[[fieldDefinitions
+                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                          inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
+                          entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+
+                          period_document="http://www.researchspace.org/pattern/system/entity/documents"
+                          image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                          more_image="http://www.researchspace.org/pattern/system/entity/images"
+
+                          period_name="http://www.researchspace.org/pattern/system/period/period_name"
+                          period_description="http://www.researchspace.org/pattern/system/entity/description"
+                          period_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespanMin0"
+                          period_place="http://www.researchspace.org/pattern/system/period/took_place_at_place"
+
+                          period_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
+                          period_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
+
+                          period_took_place_on_physical_thing="http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing"
+
+                ]]'>
+
+  <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E4_Period'> </semantic-form-hidden-input>
+    {{#if scheme}}
+      <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
+    {{/if}}
+
+    <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
+      <rs-tab event-key="detail" title="Details">
+
+        <div class="form-2column-container">
+          <div>
+            <semantic-form-text-input for="period_name" label="Period name" placeholder="Enter period name"></semantic-form-text-input>
+
+            <semantic-form-text-input for="period_description" multiline="true" label="Period description" placeholder="Enter period description"></semantic-form-text-input>
+
+            <semantic-form-select-input for='period_date' 
+                                        label="Period timespan" 
+                                        placeholder="Select timespan" 
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Timespan",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'>  
+            </semantic-form-select-input> 
+
+            {{#if node}}
+              [[> Platform:formTimespanTable]]
+            {{/if}}
+
+            <semantic-form-select-input for='period_place' 
+                                        label="Period place" 
+                                        placeholder="Select place"
+                                        nested-form-templates='[ 
+                                          {
+                                            "label": "Place",
+                                            "nestedForm": "{{{{raw}}}}
+                                                              {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"}}
+                                                          {{{{/raw}}}}"
+                                          }
+                                        ]'> 
+            </semantic-form-select-input>
+          </div>
+
+          <div class="form-media-column">
+
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input  for='period_document' 
+                                                  label="Documents" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                  <div>Drag document or click to upload</div>
+                                                                                </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" 
+                                                                                        docType="http://www.researchspace.org/resource/vocab/document_type/report" }}{{{{/raw}}}}'
+                                                                                >
+                  </semantic-form-drag-and-drop-input>
+
+            </div>
+
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input for='image_main_representation' label="Main image" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                              <div>Drag main image or click to upload</div>
+                                                                            </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+              </semantic-form-drag-and-drop-input>
+            </div>
+
+            <div class="dragAndDrop-input-container">
+              <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
+                                                  placeholder-item-template="<div class='placeholder-item'>
+                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                              <div>Drag images or click to upload</div>
+                                                                            </div>"
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+              </semantic-form-drag-and-drop-input>
+            </div>
+
+          </div>
+        </div>
+      </rs-tab>
+
+      <rs-tab event-key="things" title="Things">
+
+        <semantic-form-select-input for='period_took_place_on_physical_thing' 
+                                    label="Period took place on or within" 
+                                    placeholder="Select thing" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+        </semantic-form-select-input> 
+
+      </rs-tab>
+
+      <rs-tab event-key="event" title="Events/activities" >
+
+        <semantic-form-select-input for='period_consist_of_event' 
+                                    label="Period consist of" 
+                                    placeholder="Select event" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
+        </semantic-form-select-input> 
+
+        <semantic-form-select-input for='period_forms_part_of_event' 
+                                    label="Period forms part of" 
+                                    placeholder="Select event" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
+        </semantic-form-select-input> 
+
+      </rs-tab>
+
+      [[> rsp:FormMetadataTab]]
+    </rs-tabs>
+  </div>
+
+  <semantic-form-errors></semantic-form-errors> 
+    
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}period{{/if}}']]
+
+</semantic-form>

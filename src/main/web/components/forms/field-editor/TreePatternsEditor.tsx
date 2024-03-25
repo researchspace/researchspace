@@ -40,7 +40,7 @@ export class TreePatternsEditor extends Component<TreePatternsEditorProps, {}> {
     const typeSwitchClass = `${CLASS_NAME}__type-switch`;
     return (
       <div className={CLASS_NAME}>
-        <FieldEditorRow label="type" expanded={true}>
+        <FieldEditorRow label="Type" expanded={true}>
           <label className={typeSwitchClass}>
             <input type="radio" value="simple" checked={config.type === 'simple'} onChange={this.changeConfigType} />{' '}
             Simple
@@ -78,7 +78,7 @@ export class TreePatternsEditor extends Component<TreePatternsEditorProps, {}> {
     return (
       <div key="simple" className={`${CLASS_NAME}__simple-config`}>
         <FieldEditorRow
-          label="scheme pattern"
+          label="Scheme pattern"
           expanded={Boolean(config.schemePattern)}
           onExpand={() =>
             this.changeConfig(config, {
@@ -95,7 +95,7 @@ export class TreePatternsEditor extends Component<TreePatternsEditorProps, {}> {
           />
         </FieldEditorRow>
         <FieldEditorRow
-          label="relation pattern"
+          label="Relation pattern"
           expanded={Boolean(config.relationPattern)}
           onExpand={() =>
             this.changeConfig(config, {

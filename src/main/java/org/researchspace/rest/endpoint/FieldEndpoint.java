@@ -19,8 +19,10 @@
 package org.researchspace.rest.endpoint;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -37,10 +39,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.rio.helpers.NTriplesUtil;
+import org.researchspace.cache.LabelCache;
+import org.researchspace.data.json.JsonUtil;
+import org.researchspace.repository.RepositoryManager;
 import org.researchspace.services.fields.FieldDefinition;
 import org.researchspace.services.fields.FieldDefinitionManager;
+import org.researchspace.services.fields.FieldsBasedSearch;
+import org.researchspace.services.fields.SearchRelation;
 
 /**
  * Endpoint for retrieval of {@link FieldDefinition}s
@@ -63,6 +72,15 @@ public class FieldEndpoint {
 
     @Inject
     private FieldDefinitionManager fieldDefinitionManager;
+
+    @Inject
+    private RepositoryManager repositoryManager;
+
+    @Inject
+    private FieldsBasedSearch fieldsBasedSearch;
+
+    @Inject
+    private LabelCache labelCache;
 
     @POST()
     @Path("definitions")
@@ -88,6 +106,33 @@ public class FieldEndpoint {
         List<Map<String, Object>> json = definitions.values().stream()
                 .map(field -> fieldDefinitionManager.jsonFromField(field)).collect(Collectors.toList());
         return Response.ok(json).build();
+    }
+
+    @POST()
+    @Path("generateSearchConfigForFields")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String generateSearchConfigForFields(List<String> fieldIris) {
+        Map<IRI, FieldDefinition> fields = fieldDefinitionManager.queryFieldDefinitions(asIRIs(fieldIris));
+
+        Map<String, SearchRelation> relations = new LinkedHashMap<>();
+        for (FieldDefinition field : fields.values()) {
+
+            Optional<Literal> label = labelCache.getLabel(field.getIri(), repositoryManager.getAssetRepository(), null);
+
+            String fieldLabel = LabelCache.resolveLabelWithFallback(label, field.getIri());
+
+            SearchRelation relation = this.fieldsBasedSearch.relationFromField(field, fieldLabel);
+            if (!relation.domain.isEmpty() && !relation.range.isEmpty()) {
+                relations.put(NTriplesUtil.toNTriplesString(relation.id), relation);
+            } else {
+                throw new RuntimeException("Domain or Range is unknown for the field - " + relation.id);
+            }
+        }
+
+        Map<String, Object> result = this.fieldsBasedSearch.generateSearchConfig(relations, null);
+
+        return JsonUtil.prettyPrintJson(result);
     }
 
     private List<IRI> asIRIs(List<String> input) throws IllegalArgumentException {

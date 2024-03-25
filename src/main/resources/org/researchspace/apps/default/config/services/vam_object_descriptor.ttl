@@ -1,0 +1,51 @@
+
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spl#>
+PREFIX ephedra: <http://www.researchspace.org/resource/system/ephedra#>
+PREFIX sail: <http://www.openrdf.org/config/sail#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://www.researchspace.org/resource/system/service/vam/>
+
+:VamObject a ephedra:Service ;
+	sail:sailType "researchspace:RESTSail" ;
+	rdfs:label "A wrapper for the V&M object service.";
+	ephedra:hasSPARQLPattern (
+
+    [
+      sp:subject :_results ;
+      sp:predicate :objectid ;
+      sp:object :_objectid
+    ]
+
+    [
+      sp:subject :_results ;
+      sp:predicate :summaryDescription ;
+      sp:object :_summary_description
+    ]
+    
+  );
+
+  spin:constraint [
+    a spl:Argument ;
+    rdfs:comment "search term" ;
+    spl:predicate :_objectid ;
+    spl:valueType xsd:string
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "results" ;
+    spl:predicate :_results ;
+    spl:valueType rdfs:Resource;
+    ephedra:jsonPath "$.record"
+  ] ;
+
+  spin:column [
+    a spin:Column ;
+    rdfs:comment "Summary Description" ;
+    spl:predicate :_summary_description ;
+    spl:valueType xsd:String ;
+    ephedra:jsonPath "$.summaryDescription"
+  ] .
+      

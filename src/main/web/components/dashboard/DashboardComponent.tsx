@@ -37,6 +37,7 @@ import { Rdf } from 'platform/api/rdf';
 const DEFAULT_ITEM_LABEL_TEMPLATE = `<mp-label iri='{{iri}}'></mp-label>`;
 import * as LabelsService from 'platform/api/services/resource-label';
 import * as Kefir from 'kefir';
+import Icon from '../ui/icon/Icon';
 
 export interface Item {
   readonly id: string;
@@ -73,7 +74,13 @@ export interface DashboardLinkedViewConfig {
    */
   image?: string;
   /**
-   * Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
+   * 
+   * Name of the material-design icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute isn't specified.
+   */
+  iconName?: string;
+  /**
+   * 
+   * Class of the icon that will be used as the representation of the specific View in the Dashboard Item. It will be applied if the <code>image</code> attribute and <code>iconName</code> attribute aren't specified.
    */
   iconClass?: string;
   /**
@@ -158,6 +165,7 @@ export class DashboardComponent extends Component<Props, State> {
   }
 
   private onAddNewItemHandler = (data: AddFrameEventData, label?: string) => {
+    
     this.onAddNewItem({
       ...this.frameLabel(label),
       ...(data as AddFrameEventData),
@@ -171,20 +179,19 @@ export class DashboardComponent extends Component<Props, State> {
       items: [],
       layout: FlexLayout.Model.fromJson({
         global: { 
-          "borderBarSize": 33,
+          "borderBarSize": 36,
           "tabSetTabStripHeight": 36,
           "splitterSize": 6 ,
         },
         borders: [
           {
-            type: 'border',
-	          location: 'left',
-            children: []
+		        "type": "border",
+             "location": "left",
+			      "children": []
           },
-          
-          {
-	          "type": "border",
-	 	      "location": "right",
+		      {
+		        "type": "border",
+		 	      "location": "right",
 			      "children": []
 		      },
 
@@ -228,7 +235,7 @@ export class DashboardComponent extends Component<Props, State> {
         )
         .observe({
           value: ({ data }) => {
-            const {viewId, resourceIri, entityEditorLabel} = data as AddFrameEventData
+            const {viewId, resourceIri, resourceEditorLabel} = data as AddFrameEventData
 
             if(resourceIri) {
               this.subscription = LabelsService.getLabel(Rdf.iri(resourceIri)).observe({
@@ -240,8 +247,8 @@ export class DashboardComponent extends Component<Props, State> {
                   this.onAddNewItemHandler(data)
                 },
               })
-            } else if (entityEditorLabel) { 
-              this.onAddNewItemHandler(data, entityEditorLabel)
+            } else if (resourceEditorLabel) { 
+              this.onAddNewItemHandler(data, resourceEditorLabel)
             } else {
               const view = viewId ? this.props.views.find(({ id }) => id === viewId) : undefined;
               this.onAddNewItemHandler(data, view?.label)
@@ -283,7 +290,7 @@ export class DashboardComponent extends Component<Props, State> {
               .getBorders()
               .find(b => b.getLocation() === DockLocation.RIGHT)
               .getId(),
-              {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': panelConfig.class }
+          {'type': 'tab', 'name': panelConfig.label, 'component': "rightItem", 'config': i,  'enableClose': false, 'className': panelConfig.class }
         )
       );
     }
@@ -361,7 +368,7 @@ export class DashboardComponent extends Component<Props, State> {
         },
         () => {
           this.layoutRef.current.addTabToActiveTabSet(
-            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id, 'className': viewConfig?.iconClass || 'empty-frame-button', 'icon': 'add'}
+            {'type': 'tab', 'name': item.label, 'component': "item", 'config': item.id, 'className': viewConfig?.iconName || viewConfig?.iconClass || 'no-icon-button', 'icon': 'add'}
           );
           this.onSelectView({
             itemId: item.id,
@@ -373,53 +380,52 @@ export class DashboardComponent extends Component<Props, State> {
     }
   };
 
-  private renderLabel(item: Item) {
-    const { focus } = this.state;
-    const isFocused = focus === item.id;
-    const focusedClassName = isFocused ? styles.itemLabelActive : '';
+  // private renderLabel(item: Item) {
+  //   const { focus } = this.state;
+  //   const isFocused = focus === item.id;
+  //   const focusedClassName = isFocused ? styles.itemLabelActive : '';
+  //   const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
+  //   if (view && item.resourceIri) {
+  //     let icon = <span>[{view.label}]&nbsp;</span>;
+  //     if (view.iconClass) {
+  //       icon =  <Icon iconType='round' iconName={view.iconClass} />;
+  //     } else if (view.image) {
+  //       icon = <img src={view.image} className={styles.itemImage} alt={view.label} />;
+  //     }
+  //     return (
+  //       <span className={`${styles.itemLabel} ${focusedClassName}`}>
+  //         <span className={styles.itemIcon}>{icon}</span>
+  //          <span>
+  //           <TemplateItem
+  //             key={item.id}
+  //             template={{
+  //               source: view.itemLabelTemplate || DEFAULT_ITEM_LABEL_TEMPLATE,
+  //               options: { iri: item.resourceIri, dashboardId: item.id },
+  //             }}
+  //           />
+  //         </span>
+  //         <button
+  //           className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
+  //           onClick={() => this.onRemoveItem(item)}
+  //         >
+  //           <Icon iconType='round' iconName='close'/>
+  //         </button>
+  //       </span>
+  //     );
+  //   }
 
-    const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
-    if (view && item.resourceIri) {
-      let icon = <span>[{view.label}]&nbsp;</span>;
-      if (view.iconClass) {
-        icon = <i className={view.iconClass} />;
-      } else if (view.image) {
-        icon = <img src={view.image} className={styles.itemImage} alt={view.label} />;
-      }
-      return (
-        <span className={`${styles.itemLabel} ${focusedClassName}`}>
-          <span className={styles.itemIcon}>{icon}</span>
-           <span>
-            <TemplateItem
-              key={item.id}
-              template={{
-                source: view.itemLabelTemplate || DEFAULT_ITEM_LABEL_TEMPLATE,
-                options: { iri: item.resourceIri, dashboardId: item.id },
-              }}
-            />
-          </span>
-          <button
-            className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
-            onClick={() => this.onRemoveItem(item)}
-          >
-            <i className="fa fa-times" />
-          </button>
-        </span>
-      );
-    }
-
-    return (
-      <span className={`${styles.itemLabel} ${focusedClassName}`}>
-        Frame {item.index}
-        <button
-          className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
-          onClick={() => this.onRemoveItem(item)}
-        >
-          <i className="fa fa-times" />
-        </button>
-      </span>
-    );
-  }
+  //   return (
+  //     <span className={`${styles.itemLabel} ${focusedClassName}`}>
+  //       Frame {item.index}
+  //       <button
+  //         className={`btn btn-xs pull-right ${styles.deleteItemButton}`}
+  //         onClick={() => this.onRemoveItem(item)}
+  //       >
+  //         <Icon iconType='round' iconName='close'/>
+  //       </button>
+  //     </span>
+  //   );
+  // }
 
   private renderBody(item: Item) {
     const view = item.viewId ? this.props.views.find(({ id }) => id === item.viewId) : undefined;
@@ -552,6 +558,7 @@ export class DashboardComponent extends Component<Props, State> {
         label: linkedView.label,
         template: '',
         image: linkedView.image,
+        iconName: linkedView.iconName,
         iconClass: linkedView.iconClass,
         description: linkedView.description,
         checkQuery: linkedView.checkQuery,
@@ -599,16 +606,16 @@ export class DashboardComponent extends Component<Props, State> {
     }
   }
 
-  private titleFactory = (node: TabNode) => {
-    console.log(this.state.items)
-    console.log(node.getConfig())
-    const item = this.state.items.find(item => item.id === node.getConfig());
-    if (item) {
-      return this.renderLabel(item);
-    } else {
-      return "Frame " + node.getConfig();
-    }
-  }
+  // private titleFactory = (node: TabNode) => {
+  //   console.log(this.state.items)
+  //   console.log(node.getConfig())
+  //   const item = this.state.items.find(item => item.id === node.getConfig());
+  //   if (item) {
+  //     return this.renderLabel(item);
+  //   } else {
+  //     return "Frame " + node.getConfig();
+  //   }
+  // }
 
   private onRenderTabSet = (node: TabSetNode, renderValues: {stickyButtons: React.ReactNode[]}) => {
     renderValues.stickyButtons.push(
@@ -617,7 +624,7 @@ export class DashboardComponent extends Component<Props, State> {
         onClick={(event) => {
           this.onAddNewItem();
         }}>
-        <i className="fa fa-plus" />
+        <Icon iconType='round' iconName='add'/>
       </button>
     );
   }
@@ -631,10 +638,11 @@ export class DashboardComponent extends Component<Props, State> {
         onRenderTabSet={this.onRenderTabSet}
         icons={
           {
-            'close': <i className="fa fa-times"></i>,
-            'maximize': <i className="fa fa-expand"></i>,
-            'restore': <i className="fa  fa-compress"></i>,
-            'more': <i className="fa fa-caret-down"></i>,
+            'close': <Icon iconType='round' iconName='close'/>,
+            'maximize': <Icon iconType='round' iconName='fullscreen'/>,
+            'restore': <Icon iconType='round' iconName='close_fullscreen'/>,
+            'more': <Icon iconType='round' iconName='arrow_drop_down'/>,
+
           }
         }
       />

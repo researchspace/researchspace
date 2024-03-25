@@ -213,41 +213,35 @@ export class PageManager extends Component<{}, PageAdminState> {
 
       display: 'grid',
       gridTemplateColumns: '1fr 1.5fr fit-content(100px)',
-      alignItems: 'center',
-      marginTop: '10px',
+      alignItems: 'stretch',
+      marginTop: '5px',
+      marginBottom: '10px',
       width: '100%',
+      gap:'10px',
     };
     const colStyle: CSSProperties = {
       display: 'flex',
       alignItems: 'center',
-      paddingRight: '20px',
+      gap:'5px',
     };
     const selectContainer: CSSProperties = {
       flexGrow: 1,
     };
     const title: CSSProperties = {
-      paddingRight: '20px',
+      paddingRight: '5px',
     };
     const toolbarStyle: CSSProperties = {
       display: 'flex',
-      paddingLeft: '20px',
+      height: '100%',
     };
 
     return D.div(
       { className: 'mph-page-admin-widget', onChange: this.onChange.bind(this) },
-      createElement(Table, {
-        ref: 'table-ref',
-        key: 'table',
-        numberOfDisplayedRows: maybe.Just(10),
-        data: Either.Left<any[], SparqlClient.SparqlSelectResult>(this.state.data as any[]),
-        columnConfiguration: columnConfig,
-        layout: maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() }),
-      }),
       D.div(
         { style: rowStyle, key: 'selected-pages' },
         D.div({ style: colStyle }, 
           D.div({style: title}, 'Selected pages:'),
-          D.b({}, this.state.selectedPages.length)
+          D.b({className:'color-action'}, this.state.selectedPages.length)
         ),
         D.div({}, 
           D.div({style: colStyle, key: '1'}, 'Select pages: ',
@@ -261,26 +255,37 @@ export class PageManager extends Component<{}, PageAdminState> {
             Button(
               {
                 type: 'submit',
-                bsSize: 'small',
                 bsStyle: 'default',
-                onClick: this.onClickDeleteSelected,
-                disabled: this.state.selectedPages.length === this.state.data.length,
+                className: 'btn-textAndIcon',
+                onClick: this.onClickExportSelected,
               },
-              'Delete Selected'
+              D.i({ className: 'material-icons-round' }, 'download'),
+              D.span({ }, 'Download selected')
             ),
             Button(
               {
                 type: 'submit',
-                bsSize: 'small',
-                bsStyle: 'primary',
-                onClick: this.onClickExportSelected,
+                bsStyle: 'default',
+                className: 'btn-textAndIcon',
+                onClick: this.onClickDeleteSelected,
+                disabled: this.state.selectedPages.length === this.state.data.length,
               },
-              'Export Selected'
+              D.i({ className: 'material-icons-round' }, 'delete'),
+              D.span({ }, 'Delete selected')
             )
           ),
       ),
       createElement(Alert, this.state.alert.map((config) => config).getOrElse({ alert: AlertType.NONE, message: '' })),
-      ) 
+      ),
+
+      createElement(Table, {
+        ref: 'table-ref',
+        key: 'table',
+        numberOfDisplayedRows: maybe.Just(10),
+        data: Either.Left<any[], SparqlClient.SparqlSelectResult>(this.state.data as any[]),
+        columnConfiguration: columnConfig,
+        layout: maybe.Just<{}>({ options: griddleOptions, tupleTemplate: maybe.Nothing<string>() }),
+      })
     );
   };
 

@@ -145,7 +145,7 @@ export class OntodiaAnnotationEndpoint implements AnnotationEndpoint {
 const REGION_QUERY = `prefix oa: <http://www.w3.org/ns/oa#>
 prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-prefix rso: <http://www.researchspace.org/ontology/>
+prefix rs: <http://www.researchspace.org/ontology/>
 prefix dcmit: <http://purl.org/dc/dcmitype/>
 prefix cnt: <http://www.w3.org/2011/content#>
 prefix dc: <http://purl.org/dc/elements/1.1/>
@@ -163,8 +163,8 @@ CONSTRUCT {
     _:specificResource a oa:SpecificResource ;
             oa:hasSource ?img ;
             oa:hasSelector _:selector ;
-            rso:viewport ?viewport ;
-            rso:boundingBox ?boundingBox .
+            rs:viewport ?viewport ;
+            rs:boundingBox ?boundingBox .
 
     _:selector a oa:Choice ;
                oa:default _:fragmentSelector ;

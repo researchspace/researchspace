@@ -25,6 +25,7 @@ import { Overlay, Popover, FormControl, ButtonGroup, Button } from 'react-bootst
 import { Inline } from './EditorSchema';
 
 import * as styles from './TextEditor.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface ExternalLinkProps extends RenderNodeProps {
   editor: Slate.Editor
@@ -130,15 +131,15 @@ export class ExternalLink extends React.Component<ExternalLinkProps, ExternalLin
                   this.state.edit
                     ?
                     <Button bsClass='btn-success' onMouseDown={this.onHrefSaved} disabled={this.state.href === ''}>
-                      <i className='fa fa-floppy-o' aria-hidden='true'></i>
+                      <Icon iconType='round' iconName='save'/>
                     </Button>
                     :
-                    <Button bsClass='btn-grey' onMouseDown={this.onEdit}>
-                      <i className='fa fa-pencil' aria-hidden='true'></i>
+                    <Button bsClass='btn-default' onMouseDown={this.onEdit}>
+                      <Icon iconType='round' iconName='edit' />
                     </Button>
                 }
-                <Button bsClass='btn-grey' onMouseDown={this.onUnlink}>
-                  <i className='fa fa-chain-broken' aria-hidden='true'></i>
+                <Button bsClass='btn-default' onMouseDown={this.onUnlink}>
+                  <Icon iconType='round' iconName='link_off' />
                 </Button>
               </ButtonGroup>
             </div>

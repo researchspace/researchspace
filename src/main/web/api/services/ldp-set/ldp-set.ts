@@ -22,23 +22,35 @@ import * as maybe from 'data.maybe';
 import * as Immutable from 'immutable';
 import * as request from 'platform/api/http';
 
-import { Rdf, vocabularies } from 'platform/api/rdf';
+import { Rdf, turtle, vocabularies } from 'platform/api/rdf';
 import { trigger } from 'platform/api/events';
 import { getLabel } from 'platform/api/services/resource-label';
 import { LdpService, LdpServiceContext } from '../ldp';
 import { Util as SecurityUtil, UserI } from '../security';
 import { SetManagementEvents } from './SetManagementEvents';
+import { validateAsk } from 'platform/components/forms/field-editor/Validation';
 
 const { rdf, rdfs, VocabPlatform, ldp, xsd } = vocabularies;
 
 export class SetService extends LdpService {
-  createSet(name: string, slug = maybe.Nothing<string>()): Kefir.Property<Rdf.Iri> {
+  createSet(name: string, slug = maybe.Nothing<string>(), visibleInViewForTemplateWithId = maybe.Nothing<string>()): Kefir.Property<Rdf.Iri> {
     const generatedIri = Rdf.iri('');
-    const set = Rdf.graph([
+    let setTriples = [
       Rdf.triple(generatedIri, rdfs.label, Rdf.literal(name)),
       Rdf.triple(generatedIri, rdf.type, ldp.Container),
-      Rdf.triple(generatedIri, rdf.type, VocabPlatform.Set),
-    ]);
+      Rdf.triple(generatedIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P2_has_type"), VocabPlatform.Set),
+      Rdf.triple(generatedIri, rdf.type, Rdf.iri("http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object")),
+    ];
+
+    let visibilityResourceIri = "";
+    if (visibleInViewForTemplateWithId.isJust) {
+      setTriples.push(Rdf.triple(generatedIri, 
+                      Rdf.iri("http://www.researchspace.org/pattern/system/resource_configuration/set_visible_in_group_with_id"), 
+                      Rdf.literal(visibleInViewForTemplateWithId.get())));
+    }
+    
+    const set = Rdf.graph(setTriples);
+    
     return this.addResource(set, slug);
   }
 
@@ -56,6 +68,25 @@ export class SetService extends LdpService {
       .toProperty();
   }
 
+  filterSetTriples(setIri: Rdf.Iri, visibleInViewForTemplateWithId: string):Kefir.Property<Rdf.Graph> {
+    const set = new LdpService(setIri.value, this.context);
+    return set.get(setIri)
+              .map((graph) => {return graph.triples.filter((t) => !t.o.equals(Rdf.literal(visibleInViewForTemplateWithId))).toArray(); })
+              .map(a => {return Rdf.graph(a);})
+              .onValue(g => g);
+  }
+
+  updateSet(
+    setIri: Rdf.Iri,
+    visibleInViewForTemplateWithId: string   
+  ): Kefir.Property<void> {
+    const set = new LdpService(setIri.value, this.context);
+    return this.filterSetTriples(setIri, visibleInViewForTemplateWithId)
+      .flatMap((graph) => set.update(setIri,graph))
+      .map(() => {})
+      .toProperty();   
+  }
+  
   reorderItems(setIri: Rdf.Iri, holders: Immutable.List<HolderWithItem>): Kefir.Property<void> {
     const set = new LdpService(setIri.value, this.context);
     return Kefir.zip(
@@ -83,7 +114,9 @@ function createItemHolderGraph(holderIri: Rdf.Iri, itemIri: Rdf.Iri, index?: num
   return getLabel(itemIri).map((label) => {
     const triples: Rdf.Triple[] = [
       Rdf.triple(holderIri, VocabPlatform.setItem, itemIri),
-      Rdf.triple(holderIri, rdf.type, VocabPlatform.SetItem),
+      Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P67_refers_to"), itemIri),
+      Rdf.triple(holderIri, Rdf.iri("http://www.cidoc-crm.org/cidoc-crm/P2_has_type"), VocabPlatform.SetItem),
+      Rdf.triple(holderIri, rdf.type, Rdf.iri("http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object")),
     ];
     triples.push(Rdf.triple(holderIri, rdfs.label, Rdf.literal(label)));
     if (typeof index === 'number') {

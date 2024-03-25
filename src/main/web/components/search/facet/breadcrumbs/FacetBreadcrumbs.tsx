@@ -87,7 +87,7 @@ export class FacetBreadcrumbsComponent extends Component<FacetBreadcrumbsProps, 
           {disjuncts}
         </div>
         <button
-          className={classNames(styles.cancelButton, 'btn')}
+          className={classNames(styles.cancelButton, 'btn btn-xs')}
           onClick={() => this.props.actions.removeConjunct(conjunct)}
         >
           <i />

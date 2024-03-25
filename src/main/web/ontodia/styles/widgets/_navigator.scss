@@ -1,8 +1,8 @@
 .ontodia-navigator {
   display: block;
   position: absolute;
-  bottom: 25px;
-  right: 25px;
+  bottom: 10px;
+  right: 10px;
   overflow: hidden;
 
   // increase specificity to override default box-sizing,
@@ -12,17 +12,22 @@
   }
 
   background: $color-white;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 15px 7px rgba(51, 51, 51, 0.05);
+  border: 1px solid $color-border;
+  box-shadow: 2px 2px 3px 0px #95959f;
 
   $transition: 0.3s;
   transition: width $transition, height $transition;
 
   &--collapsed {
-    width: 32px;
-    height: 32px;
-    border-radius: 3px;
-    background-color: $color-dark;
+    width: 30px;
+    height: 30px;
+    border-radius: $border-radius;
+    background-color: $color-secondary-light;
+    border-color: $color-secondary-light;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   > canvas {
@@ -36,9 +41,8 @@
     background: transparent;
     border: none;
     outline: none;
-    padding: 4px;
 
-    opacity: 0.5;
+    opacity: 0.6;
     transition: opacity 0.3s;
 
     &:hover {
@@ -49,23 +53,28 @@
   &--expanded &__toggle {
     top: 5px;
     left: 5px;
+    padding: 4px;
   }
   &--collapsed &__toggle {
-    top: 3px;
-    left: 3px;
+
     opacity: 1;
+    color: $color-white;
   }
 
   &__toggle-icon {
-    width: 18px;
-    height: 18px;
-    background-size: 18px 18px;
-    background-repeat: no-repeat;
+  //  width: 18px;
+  //  height: 18px;
+  //  background-size: 18px 18px;
+  //  background-repeat: no-repeat;
   }
-  &--expanded &__toggle-icon {
-    background-image: url('/assets/images/icons/minus_dark.svg');
+  &--expanded &__toggle-icon::before {
+    @include materialIcon('\f1cf', 18px);
+
+ //   background-image: url('/assets/images/icons/minus_dark.svg');
   }
-  &--collapsed &__toggle-icon {
-    background-image: url('/assets/images/icons/plus_white.svg');
+  &--collapsed &__toggle-icon::before {
+    
+    @include materialIcon('\f1ce', 18px);
+ //   background-image: url('/assets/images/icons/plus_white.svg');
   }
 }

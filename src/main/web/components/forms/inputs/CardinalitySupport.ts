@@ -124,7 +124,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
       this.renderChildren(canRemoveValue),
 
       canAddValue
-        ? D.a(
+        ? D.div(
             {
               className: classnames({
                 [`${COMPONENT_NAME}__add-value`]: true,
@@ -133,7 +133,10 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
               }),
               onClick: this.addNewValue,
             },
-            `+ Add ${fieldLabel}`
+            D.button ({className:`btn btn-secondary btn-textAndIcon ${COMPONENT_NAME}__add-value-btn`},
+              D.i ({className: 'material-icons-round'}, 'add_box'),
+              D.span ({}, fieldLabel)
+            )
           )
         : null
     );
@@ -182,7 +185,7 @@ export class CardinalitySupport extends MultipleValuesInput<CardinalitySupportPr
                 className: COMPONENT_NAME + '__remove-value',
                 onClick: () => this.removeValue(index),
               },
-              D.span({ className: 'fa fa-times' })
+              D.span({className: 'material-icons-round'}, 'close')
             )
           : undefined
       )

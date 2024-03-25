@@ -22,17 +22,14 @@
         position: absolute;
     }
 }
-
-.modal-backdrop.in {
-    opacity: 0.7;
-}
   
  
  /* Modal */
 .modal .close, 
 .panel-default .close {
 
-    color: $color-dark;
+    color: $color-btn-default;
+    opacity: 1;
 
     &:focus {
 
@@ -41,32 +38,68 @@
 }
 
 .modal-backdrop {
-    background-color: #cfcddd;
+    background-color: $color-secondary;
+
+    &.in {
+        opacity: 0.88;
+    }
 }
+
+.overlay-lightbox.fade.in.modal {
+
+    background-color: $color-secondary;
+}
+
 
 .modal-xlSize .modal-dialog {
 
     width: 100%;
-    height: 100%;
-
     max-width: 55vw;
+}
 
-    margin-top: 8vh !important;
+.modal-centered__dialog {
+
+    display: flex !important;
+    align-items: center;
+    min-height: calc(100% - 0rem);
+    margin: 0 auto;
+
+    .modal-content {
+
+        flex: 1;
+    }
+}
+
+.modal-dialog {
+    overflow: auto;
 }
 
 .modal-content {
 
+  //  background: $color-body-bg;
+    border-color: $color-medium;
+
     .modal-header {
 
-        padding: 22px 22px 14px 22px;
+        padding: 22px 25px 14px;
+        border-bottom: 1px solid $color-border;
     }
 
     .modal-title {
 
-        font-size: 16px;
-        font-weight: 600;
-        letter-spacing: 0.3px;
+        font-size: 18px;
+        text-transform: lowercase;
+
+        &::first-letter {
+     
+            text-transform: uppercase;
+        }
     }
+}
+
+.overlay-lightbox__dialog .modal-content {
+
+    background: $color-body-bg;
 }
 
 .modal-body {
@@ -76,13 +109,7 @@
         min-height: 100%;
     }
 
-    padding: 30px;
-
-    & .btn {
-        font-size: 13px;
-        letter-spacing: 0.1px;
-        padding: 7px 10px;
-    }
+    padding: 25px;
 
     & > p:last-child {
 
@@ -175,13 +202,13 @@
         .semantic-carousel>.slick-slider .slick-next::before, 
         .semantic-carousel>.slick-slider>.slick-prev::before {
 
-            color: #a4a3a3;
+            color: $color-btn-default;
             opacity: 1;
 
             &:hover,
             &:focus {
 
-                color: #808080;
+                color: $color-btn-default;
             }
         }
 
@@ -195,11 +222,11 @@
           
             background: $color-white;
             border-radius: 50%;
-            border: 1px solid #a4a3a3;
+            border: 1px solid $color-base;
 
             &:hover {
 
-                border: 1px solid #808080;
+                border: 1px solid $color-secondary;
             }
           
           }
@@ -249,54 +276,35 @@
     }
 
    /*  Semantic form inside a modal */
-    .semantic-form {
-
-      /*   .FileManager--urlInputHolder .btn.btn-primary {
-
-            background-color: transparent;
-            border-color: $color-primary-50;
-            color: $color-dark;
-        } */
-    }
-
     .form-inline {
 
         display: flex;
         align-items: baseline;
-
     }
 
-    .confirm-message {
+    /* .newVocabulary-confirm-message {
 
-        padding: 20px;
-        margin-top: 15px;
+        position: relative;
+        margin-bottom: 0;
         display: flex;
-        align-items: center;
-        line-height: 1.35;
-        font-size: 14.5px;
-        background-color: $color-off-white;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    } */
+}
 
-        .composite-input {
+.modal-btn-group {
 
-            display: flex;
-        }
-    }
+    width: 100%;
+    margin-top: 25px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .modal-footer {
 
-    border-top: 1px solid #f0eded;
-
-    .btn {
-
-        padding: 6px 10px;
-        font-size: 13px;
-        border-radius: 3px;
-
-        & + .btn {
-            margin-left: 5px;
-        }
-    } 
+    border-top: 1px solid $color-lighter;
 }
 
 // documentation modal 
@@ -338,7 +346,7 @@
         display: flex;
         align-items: center;
         padding: 20px 0;
-        color: $color-info;
+        color: $color-action;
         font-size: 15px;
         font-weight: 600;
 
@@ -354,17 +362,11 @@
         }
     }
 
-/*     h1 {
-        font-size: 2.5em;
-    } */
-
     h2 {
-    //    font-size: 18px;
         margin-bottom: 15px;
     }
 
     h3 {
-    //    font-size: 16px;
         margin: 25px 3px 12px 3px;
     }
 
@@ -376,6 +378,67 @@
     }
 }
 
+.save-as-dataset-modal {
+
+    .save-as-dataset-modal__form__collection-name {
+
+        flex: 1;
+    }
+}
+
+.save-as-dataset-modal__form__save-button {
+
+    margin-left: 3px;
+}
 
 
+.newVocabulary-modal__dialog,
+.editVocabulary-modal__dialog {
 
+  //  max-height: calc(100vh - 60px);
+    overflow: hidden;
+
+    .newVocabulary-modal__body.modal-body,
+    .editVocabulary-modal__body.modal-body {
+
+        padding-top: 0;
+    }
+
+    .vocabulary-search-form {
+
+        display: flex;
+        flex-direction: column;
+
+/*         button {
+            align-self: flex-end;
+        } */
+    }
+
+    .vocabularyType-checklist-input-container {
+
+        max-height: 35vh;
+        overflow: auto;
+    }
+
+}
+
+.importVocabulary-modal {
+
+    .dropzone-area {
+
+        height: auto;
+    }
+}
+
+.confirmation-dialog-footer-btns {
+
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 6px;
+
+    .btn {
+
+        margin: 0 !important;
+    }
+}

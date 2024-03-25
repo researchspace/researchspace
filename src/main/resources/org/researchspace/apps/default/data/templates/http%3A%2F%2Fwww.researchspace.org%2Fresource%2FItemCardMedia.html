@@ -11,37 +11,37 @@
                                             WHERE {
                                               {
                                                 <[[this]]> a ?type ;
-                                                FILTER(?type != rso:EX_Digital_Image) .
+                                                FILTER(?type != rs:EX_Digital_Image) .
                                                 ?representationProp rdfs:subPropertyOf* crm:P138i_has_representation .
                                                 <[[this]]> ?representationProp ?representation .
 
                                                 OPTIONAL {
                                                   <[[this]]> ?representationProp ?representation .
-                                                  ?representation a rso:EX_Digital_Image ;
-                                                                  crm:P1_is_identified_by/rso:PX_has_file_name ?fileName.
+                                                  ?representation a rs:EX_Digital_Image ;
+                                                                  crm:P1_is_identified_by/rs:PX_has_file_name ?fileName.
                                                   BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
                                                 }
                                             
                                                 OPTIONAL {
                                                   <[[this]]> ?representationProp ?representation .
-                                                  ?representation a rso:EX_Digital_Image .
+                                                  ?representation a rs:EX_Digital_Image .
                                                   BIND(REPLACE(STR(?representation), "^.*/(.*)$", "$1") as ?imageID) .
                                                   BIND(?imageID as ?imgIiifId)
                                                   BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
                                                 }
                                                 
                                                 BIND(COALESCE(?uploadIiifUrl, ?iiifUrl, ?representation) AS ?imgURL)
-                                                BIND(IF(?representationProp = rso:PX_has_main_represenation, true, false) AS ?isMainRep)
+                                                BIND(IF(?representationProp = rs:PX_has_main_represenation, true, false) AS ?isMainRep)
                                               } UNION {
-                                                <[[this]]> a rso:EX_Digital_Image ;
+                                                <[[this]]> a rs:EX_Digital_Image ;
                                                 OPTIONAL {
-                                                  <[[this]]> a rso:EX_Digital_Image ;
-                                                  crm:P1_is_identified_by/rso:PX_has_file_name ?fileName. 
+                                                  <[[this]]> a rs:EX_Digital_Image ;
+                                                  crm:P1_is_identified_by/rs:PX_has_file_name ?fileName. 
                                                   BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?fileName, "/full/!640,480/0/default.jpg") AS ?uploadIiifUrl)
                                                 }
                                                     
                                                 OPTIONAL {
-                                                  <[[this]]> a rso:EX_Digital_Image ;
+                                                  <[[this]]> a rs:EX_Digital_Image ;
                                                   BIND(REPLACE(STR(<[[this]]>), "^.*/(.*)$", "$1") as ?imageID) .
                                                   BIND(CONCAT("/proxy/iiif-server/iiif/2/", ?imageID, "/full/!640,480/0/default.jpg") AS ?iiifUrl)
                                                 }
@@ -72,10 +72,10 @@
 
             <bs-tab event-key="videos" title="Videos">
               <div class="carousel-container">
-                <semantic-carousel query='PREFIX rso: <http://www.researchspace.org/ontology/>
+                <semantic-carousel query='PREFIX rs: <http://www.researchspace.org/ontology/>
                                             SELECT DISTINCT ?video 
                                             WHERE {
-                                                <[[this]]> rso:PX_has_video ?video .
+                                                <[[this]]> rs:PX_has_video ?video .
                                                 }'
             
                                     options='{"fade": true }'

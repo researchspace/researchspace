@@ -35,6 +35,7 @@ import { AlignmentMatch, AlignmentMetadata } from './AlignmentNodeModel';
 import { serializeAlignment } from './Serialization';
 
 import * as styles from './AlignmentTool.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface CreateAlignmentActionProps extends MenuProps {
   selection: Array<string>;
@@ -112,7 +113,7 @@ class CreateAlignmentDialog extends React.Component<DialogProps, AlignmentMetada
                 title="Swap source and target terminologies"
                 onClick={this.swapTerminologies}
               >
-                <span className="fa fa-exchange fa-flip-vertical"></span>
+                <Icon iconType='round' iconName='sync_alt' className='fa-flip-vertical'/>
               </Button>
             </InputGroup.Button>
           </InputGroup>

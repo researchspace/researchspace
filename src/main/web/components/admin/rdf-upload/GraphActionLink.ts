@@ -99,16 +99,20 @@ export class GraphActionLink extends Component<Props, State> {
           bsSize: 'lg',
           onHide,
           children: D.div(
-            { style: { textAlign: 'left' } },
-            D.p({}, `Are you sure that you want to delete the named graph "${this.props.graphuri}"?`),
-            D.p(
-              {},
-              `Please note that for larger named graphs (> 1 million statements), the deletion may typically take a few seconds (or even minutes) to be finally processed by the database.`
+            { style: { textAlign: 'left' } }, 
+            D.p({}, 
+              D.span({}, 'Are you sure that you want to delete "'),
+              D.b({}, this.props.graphuri),
+              D.span({}, '"?'),
+            ),
+            D.div(
+              {className: 'alert alert-info', style: { marginTop: '20px'}},
+              D.p({},'Please note that for larger named graphs (> 1 million statements), the deletion may typically take a few seconds (or even minutes) to be finally processed by the database.')
             ),
             ButtonToolbar(
-              { style: { display: 'flex', paddingTop: '10px', justifyContent: 'end' } },
+              { className: 'modal-btn-group' },
               Button({ bsStyle: 'default', onClick: onHide }, 'Cancel'),
-              Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete')
+              Button({ bsStyle: 'action', onClick: onSubmit }, 'Delete graph')
             )
           ),
         })
@@ -117,7 +121,6 @@ export class GraphActionLink extends Component<Props, State> {
         if (!this.props.eventOverlayId) {
           /* When there is no id set for the modal dialog, skip creating a modal window and run the delete */
           this.deleteGraphWithoutRefresh();
-          console.log("delete without refresh");
         } else {
             const dialogRef = this.props.eventOverlayId;
             const onHide = () => getOverlaySystem().hide(dialogRef);

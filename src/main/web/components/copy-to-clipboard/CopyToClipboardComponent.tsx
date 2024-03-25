@@ -37,7 +37,7 @@ export interface Props {
  * @example
  * <mp-copy-to-clipboard text='text'>
  *     <button class='btn btn-default'>
- *         <i class='fa fa-copy'></i>
+ *         <rs-icon icon-type="round" icon-name="content_copy"></rs-icon>
  *     </button>
  * </mp-copy-to-clipboard>
  */

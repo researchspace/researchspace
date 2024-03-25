@@ -21,7 +21,7 @@ import { Rdf } from 'platform/api/rdf';
 
 import { SetManagementProps, KeywordFilter } from './Configuration';
 
-export const SetKind = Rdf.iri('http://www.researchspace.org/resource/system/Set');
+export const SetKind = Rdf.iri('http://www.researchspace.org/resource/system/vocab/resource_type/set');
 const DefaultSetItemActions = `
   <div class='set-management__item-actions'>
     <bs-dropdown-button pull-right=true bs-style='link' title=''
@@ -67,16 +67,16 @@ export const SetListTemplate = `
 export const ItemListTemplate = `
   <div style='display: flex; align-items: center; justify-content: space-between;'>
     <div style='overflow: hidden;'>
-      <mp-resource-link-container uri="{{iri.value}}" draggable=false>
+      <semantic-link-container uri="{{iri.value}}" draggable=false>
         ${DefaultItemLabel}
-      </mp-resource-link-container>
+      </semantic-link-container>
     </div>
     ${DefaultSetItemActions}
   </div>
 `;
 
 export const KeywordSearch: KeywordFilter = {
-  placeholder: 'Search all...',
+  placeholder: 'Search in clipboard...',
   placeholderInSet: 'Search in the set...',
   queryPattern: `
     ?itemHolder ?__preferredLabel__ ?itemLabel .

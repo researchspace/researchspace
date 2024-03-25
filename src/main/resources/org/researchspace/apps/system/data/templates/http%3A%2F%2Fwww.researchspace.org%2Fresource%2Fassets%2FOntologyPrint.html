@@ -11,7 +11,7 @@
             {{#if (isIri item)}}
               <semantic-link iri='{{item.value}}'>
                 <span>
-                  <mp-label iri='{{item.value}}'></mp-label>
+                  <mp-label iri='{{item.value}}' class="text-underline"></mp-label>
                   <sup title="[[type]]" style='cursor: help; color: [[color]];'>
                     [[type]]
                   </sup>
@@ -27,7 +27,7 @@
                     {{#each bindings}}
                       <semantic-link iri='{{unionItem.value}}'>
                         <span>
-                          <mp-label iri='{{unionItem.value}}'></mp-label>
+                          <mp-label iri='{{unionItem.value}}' class="text-underline"></mp-label>
                           <sup title="[[type]]" style='cursor: help; color: [[color]];'>
                             [[type]]
                           </sup>
@@ -54,7 +54,7 @@
       <h1>
         <mp-label iri='[[this]]'></mp-label>
       </h1>
-      <p><b>URI</b>: <i style="font-size: 12px;">[[this]]</i></p>
+      <p><b>URI</b>: <span style="font-size: 12px;">[[this]]</span></p>
 
       <!--Version, usually only applicable for owl elements and will not be rendered otherwise -->
       <semantic-query 
@@ -90,37 +90,34 @@
       <hr />
     </mp-print-section>
     <mp-print-section id="2" label="Classes">
-      <br>
-      <semantic-query 
-        query='
-          SELECT DISTINCT ?Class WHERE { 
-            ?Class rdf:type owl:Class .
-            GRAPH ?g { { ?Class rdf:type ?type } UNION { ?Class rdfs:subClassOf ?class . }  . <[[this]]> rdf:type owl:Ontology  } 
-            FILTER(!isBlank(?Class))
-          } ORDER BY ?Class
-        ' 
-            template='{{> classes}}'
-            no-result-template='<h2>Classes (0)</h2>'
+    
+      <semantic-query query='SELECT DISTINCT ?Class WHERE { 
+                              ?Class rdf:type owl:Class .
+                              GRAPH ?g { { ?Class rdf:type ?type } UNION { ?Class rdfs:subClassOf ?class . }  . <[[this]]> rdf:type owl:Ontology  } 
+                              FILTER(!isBlank(?Class))
+                            } ORDER BY ?Class' 
+                        template='{{> classes}}'
+                        no-result-template='<h2>Classes (0)</h2>'
       >
         <template id='classes'>
           <div>
-            <h2>Classes ({{bindings.length}}) </h2>  
-            {{#each bindings}}
-              <mp-anchor to="#{{Class.value}}">
-                <mp-label iri="{{Class.value}}"></mp-label>
-              </mp-anchor>
-              {{#if @last}}{{else}}, {{/if}}
-            {{/each}}
-            <br>
-            <br>
+            <h3>Classes ({{bindings.length}}) </h3>  
+            <p>
+              {{#each bindings}}
+                <mp-anchor to="#{{Class.value}}" class="text-underline">
+                  <mp-label iri="{{Class.value}}"></mp-label>
+                </mp-anchor>
+                {{#if @last}}{{else}}, {{/if}}
+              {{/each}}
+            </p>
             {{#each bindings}}
               <section id="{{Class.value}}"></section>
               <mp-panel>
                 <mp-panel-header>
-                  <h3>
+                  <h4 style="margin: 0;">
                      <mp-label iri='{{Class.value}}'></mp-label>
                      <sup title="class" style='cursor: help; color: orange;'>c</sup>
-                  </h3>
+                  </h4>
                 </mp-panel-header>
                 <mp-panel-body>
                   <div>
@@ -154,37 +151,34 @@
     </mp-print-section>
     
     <mp-print-section id="3" label="Object Properties">
-      <semantic-query 
-          query='
-            SELECT DISTINCT ?ObjectProperty WHERE { 
-              GRAPH ?g { 
-                ?ObjectProperty rdf:type owl:ObjectProperty . <[[this]]> rdf:type owl:Ontology 
-              } 
-            } ORDER BY ?ObjectProperty
-          ' 
-          template='{{> properties}}'
-          no-result-template='<h2>Object Properties (0)</h2>'
+      <semantic-query query='SELECT DISTINCT ?ObjectProperty WHERE { 
+                              GRAPH ?g { 
+                                ?ObjectProperty rdf:type owl:ObjectProperty . <[[this]]> rdf:type owl:Ontology 
+                              } 
+                            } ORDER BY ?ObjectProperty' 
+                        template='{{> properties}}'
+                        no-result-template='<h2>Object Properties (0)</h2>'
       >
         <template id='properties'>
           <div>
-            <h2>Object Properties ({{bindings.length}})</h2> 
-            {{#each bindings}}
-              <mp-anchor to="#{{ObjectProperty.value}}">
-                <mp-label iri="{{ObjectProperty.value}}"></mp-label>
-              </mp-anchor>
-              {{#if @last}}{{else}}, {{/if}}
-            {{/each}}
-            <br>
-            <br>
+            <h3>Object Properties ({{bindings.length}})</h3> 
+            <p>
+              {{#each bindings}}
+                <mp-anchor to="#{{ObjectProperty.value}}" class="text-underline">
+                  <mp-label iri="{{ObjectProperty.value}}"></mp-label>
+                </mp-anchor>
+                {{#if @last}}{{else}}, {{/if}}
+              {{/each}}
+            </p>
             
             {{#each bindings}}
               <section id="{{ObjectProperty.value}}"></section>
               <mp-panel>
                 <mp-panel-header>
-                  <h3>
+                  <h4 style="margin: 0;">
                      <mp-label iri='{{ObjectProperty.value}}'></mp-label>
                      <sup title="object property" style='cursor: help; color: navy;'>op</sup>
-                  </h3>
+                  </h4>
                 </mp-panel-header>
                 <mp-panel-body>
                   <div>
@@ -215,38 +209,35 @@
     </mp-print-section>
     
     <mp-print-section id="4" label="Datatype Properties">
-      <semantic-query 
-        query='
-          SELECT DISTINCT ?DatatypeProperty WHERE { 
-            GRAPH ?g { 
-              ?DatatypeProperty rdf:type owl:DatatypeProperty . 
-              <[[this]]> rdf:type owl:Ontology
-            } 
-          } ORDER BY ?DatatypeProperty
-        ' 
-        template='{{> properties}}'
-        no-result-template='<h2>Object Properties (0)</h2>'
+      <semantic-query query='SELECT DISTINCT ?DatatypeProperty WHERE { 
+                              GRAPH ?g { 
+                                ?DatatypeProperty rdf:type owl:DatatypeProperty . 
+                                <[[this]]> rdf:type owl:Ontology
+                              } 
+                            } ORDER BY ?DatatypeProperty' 
+                      template='{{> properties}}'
+                      no-result-template='<h2>Object Properties (0)</h2>'
       >
         <template id='properties'>
           <div>
-            <h2>Datatype Properties ({{bindings.length}}) </h2> 
-            {{#each bindings}}
-              <mp-anchor to="#{{DatatypeProperty.value}}">
-                <mp-label iri="{{DatatypeProperty.value}}"></mp-label>
-              </mp-anchor>
-              {{#if @last}}{{else}}, {{/if}}
-            {{/each}}
-            <br>
-            <br>
+            <h3>Datatype Properties ({{bindings.length}}) </h3> 
+            <p>
+              {{#each bindings}}
+                <mp-anchor to="#{{DatatypeProperty.value}}" class="text-underline">
+                  <mp-label iri="{{DatatypeProperty.value}}"></mp-label>
+                </mp-anchor>
+                {{#if @last}}{{else}}, {{/if}}
+              {{/each}}
+            </p>
 
             {{#each bindings}}
               <section id="{{DatatypeProperty.value}}"></section>
               <mp-panel>
                 <mp-panel-header>
-                  <h3>
+                  <h4 style="margin: 0;">
                      <mp-label iri='{{DatatypeProperty.value}}'></mp-label>
                      <sup title="data property" style='cursor: help; color: green;'>dp</sup>
-                  </h3>
+                  </h4>
                 </mp-panel-header>
                 <mp-panel-body>
                   <div>

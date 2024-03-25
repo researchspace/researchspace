@@ -58,6 +58,7 @@ import {
   SimpleBeliefValue,
 } from './ArgumentsApi';
 import * as styles from './AssertionsComponent.scss';
+import Icon from '../ui/icon/Icon';
 
 export interface AssertionsProps {
   title: string;
@@ -173,7 +174,7 @@ export class AssertionsComponent extends Component<AssertionsProps, State> {
         {this.noBeliefs() ? (
           <Alert bsStyle="warning">
             <p>
-              <i className="fa fa-exclamation-triangle"></i>
+              <Icon iconType='round' iconName='report_problem'></Icon>
               <strong>Please add an opinion to at least one value!</strong> Opinions are required for newly asserted
               values.
             </p>

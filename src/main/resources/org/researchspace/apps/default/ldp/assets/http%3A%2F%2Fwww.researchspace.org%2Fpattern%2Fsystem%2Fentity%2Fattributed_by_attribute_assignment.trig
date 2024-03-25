@@ -6,30 +6,40 @@
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/entity>;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-41ef2a1818674d22b46cd34563e17ed5-vo03n;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-41ef2a1818674d22b46cd34563e17ed5-behcvi;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-1d7717b29c124dd793904c545fdea21f-pvq3bs;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
     <http://www.w3.org/2000/01/rdf-schema#label> "Entity attributed by";
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1d7717b29c124dd793904c545fdea21f-10mm5d;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-1d7717b29c124dd793904c545fdea21f-p2si6u;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-1d7717b29c124dd793904c545fdea21f-g1bko8;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-41ef2a1818674d22b46cd34563e17ed5-owmqro;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-41ef2a1818674d22b46cd34563e17ed5-kc95zf;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-41ef2a1818674d22b46cd34563e17ed5-q0oob;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-1d7717b29c124dd793904c545fdea21f-5e989m;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-22T10:00:47.161Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-25T18:31:07.037Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-41ef2a1818674d22b46cd34563e17ed5-behcvi a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject crm:P140i_was_attributed_by $value .
-}""" .
-  
-  _:genid-41ef2a1818674d22b46cd34563e17ed5-kc95zf a <http://spinrdf.org/sp#Query>;
+  _:genid-1d7717b29c124dd793904c545fdea21f-5e989m a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P140i_was_attributed_by $value . 
   $value crm:P140_assigned_attribute_to $subject .
 } WHERE {}""" .
   
-  _:genid-41ef2a1818674d22b46cd34563e17ed5-vo03n a <http://spinrdf.org/sp#Query>;
+  _:genid-1d7717b29c124dd793904c545fdea21f-g1bko8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  $subject crm:P140i_was_attributed_by $value . 
+  $value crm:P140_assigned_attribute_to $subject . 
+} WHERE {
+  $subject crm:P140i_was_attributed_by $value . 
+  $value crm:P140_assigned_attribute_to $subject .
+      
+  ?value a crm:E13_Attribute_Assignment .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/attribute_assignment_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-1d7717b29c124dd793904c545fdea21f-p2si6u a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
   ?value a crm:E13_Attribute_Assignment .
   ?value crm:P1_is_identified_by ?appellation .
@@ -38,16 +48,7 @@
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ASC(?label)""" .
   
-  _:genid-41ef2a1818674d22b46cd34563e17ed5-q0oob a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
-  $subject crm:P140i_was_attributed_by $value . 
-  $value crm:P140_assigned_attribute_to $subject . 
-} WHERE {
-  $subject crm:P140i_was_attributed_by $value . 
-  $value crm:P140_assigned_attribute_to $subject .
-}""" .
-  
-  _:genid-41ef2a1818674d22b46cd34563e17ed5-owmqro a <http://spinrdf.org/sp#Query>;
+  _:genid-1d7717b29c124dd793904c545fdea21f-pvq3bs a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a crm:E13_Attribute_Assignment .
   ?value crm:P1_is_identified_by ?appellation .
@@ -56,6 +57,17 @@
   ?appellation crm:P190_has_symbolic_content ?label .
   FILTER REGEX(STR(?label), \"?token\")
 } ORDER BY ASC(?label) LIMIT 10""" .
+  
+  _:genid-1d7717b29c124dd793904c545fdea21f-10mm5d a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P140i_was_attributed_by $value .
+     
+  ?value a crm:E13_Attribute_Assignment .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/attribute_assignment_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment> .

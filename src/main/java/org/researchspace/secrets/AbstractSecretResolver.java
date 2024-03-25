@@ -39,11 +39,11 @@ public abstract class AbstractSecretResolver implements SecretResolver {
 
     private String prefix;
 
-    public AbstractSecretResolver() {
+    protected AbstractSecretResolver() {
         this(null);
     }
 
-    public AbstractSecretResolver(@Nullable String prefix) {
+    protected AbstractSecretResolver(@Nullable String prefix) {
         this.prefix = prefix;
     }
 

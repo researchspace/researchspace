@@ -97,11 +97,10 @@ export interface DashboardViewConfig {
   unique?: boolean;
 
   /**
-   * Define the view type that will be use to display it in the specific area of the dashboard layout (search, view, authoring areas)
+   * Define the view type that will be use to display it in the specific area of the dashboard layout (search, view, authoring areas, hidden)
    * * @default 'authoring'
    * */
   type?: string;
-
 }
 
 export interface DashboardItemProps {
@@ -306,7 +305,10 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
     return (
       <div className={`${styles.defaultDashboard} container-fluid`} onClick={this.onFocus}>
         <Row>
-          {views.map((view) => {
+          {
+            // we don't render 'hidden' viewes, because they are used
+            // only as part of linkedViewes and shouldn't not be used on their own
+            views.filter(view => view.type !== 'hidden').map((view) => {
             let image: React.ReactNode | undefined;
             if (view.image) {
               image = <img src={view.image} className={`media-object ${styles.image}`} alt={view.label} />;

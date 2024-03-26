@@ -562,7 +562,10 @@ export class SemanticMapControls extends Component<Props, State> {
   #visualizationModeContainer label input {
       margin-left: 4px;
   }
-  
+
+  .timeSliderContainer {
+    margin: 10px;
+  }
   
   .mapLayersTitle {
       margin-left: 1%;
@@ -708,42 +711,6 @@ export class SemanticMapControls extends Component<Props, State> {
       background-clip: padding-box, border-box;
     }
   
-    .timelineSlider {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 2px;
-      background-image: linear-gradient(to right, var(--color-dark), var(--color-dark));
-      outline: none;
-      -webkit-transition: .2s;
-      transition: opacity .2s;
-    }
-  
-  
-    .timelineSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 15px;
-      height: 15px;
-      background: var(--color-dark);
-      border: 1px solid var(--color-dark);
-      border-radius: 50%;
-      cursor: pointer;
-      background-image: linear-gradient(var(--color-dark), var(--color-dark)), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
-      background-attachment: fixed, fixed;
-      background-clip: padding-box, border-box;
-    }
-    
-    .timelineSlider::-moz-range-thumb {
-      width: 15px;
-      height: 15px;
-      background: var(--color-dark);
-      border: 1px solid var(--color-dark);
-      border-radius: 50%;
-      cursor: pointer;
-      background-image: linear-gradient(white, white), linear-gradient(to right, rgba(255,250,250, 0.00), rgb(0,60,51));
-      background-attachment: fixed, fixed;
-      background-clip: padding-box, border-box;
-    }
   
   
     .cesium-credit-logoContainer {
@@ -789,37 +756,6 @@ export class SemanticMapControls extends Component<Props, State> {
     return (
         <div>
             <style>{controlsStyles}</style>
-            {this.props.timeline && (
-                <div className={'timeSliderContainer'}>
-                    {this.props.timeline.mode === "marked" && (
-                        <React.Fragment>
-                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
-                        </React.Fragment>
-                    )}
-                    {this.props.timeline.mode === "normal" && (
-                        <React.Fragment>
-                            <input
-                                type={'range'}
-                                className={'timelineSlider'}
-                                min={this.props.timeline.min}
-                                max={this.props.timeline.max}
-                                step={1}
-                                value={this.state.year}
-                                onChange={(event) => {
-                                    const input = event.target as HTMLInputElement;
-                                    const value = parseInt(input.value);
-                                    this.setState({
-                                        year: value,
-                                    }, () => {
-                                        this.triggerSendYear();
-                                    });
-                                }}
-                            />
-                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
-                        </React.Fragment>
-                    )}
-                </div>
-            )}
             {this.props.featuresOptionsEnabled && (
         <div className={'featuresOptionsContainer'}>
           {/* <h3 className={'mapOptionsSectionTitle'}>Options</h3> */}
@@ -916,6 +852,37 @@ export class SemanticMapControls extends Component<Props, State> {
           </div>
         </div>
       )}
+                  {this.props.timeline && (
+                <div className={'timeSliderContainer'}>
+                    {this.props.timeline.mode === "marked" && (
+                        <React.Fragment>
+                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                        </React.Fragment>
+                    )}
+                    {this.props.timeline.mode === "normal" && (
+                        <React.Fragment>
+                            <input
+                                type={'range'}
+                                className={'timelineSlider'}
+                                min={this.props.timeline.min}
+                                max={this.props.timeline.max}
+                                step={1}
+                                value={this.state.year}
+                                onChange={(event) => {
+                                    const input = event.target as HTMLInputElement;
+                                    const value = parseInt(input.value);
+                                    this.setState({
+                                        year: value,
+                                    }, () => {
+                                        this.triggerSendYear();
+                                    });
+                                }}
+                            />
+                            <div className={'yearLabel'} style={{ position: 'fixed', bottom: '10', left: '10', fontSize: '20pt' }}>{this.state.year}</div>
+                        </React.Fragment>
+                    )}
+                </div>
+            )}
       <br/>
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Droppable droppableId="droppable">

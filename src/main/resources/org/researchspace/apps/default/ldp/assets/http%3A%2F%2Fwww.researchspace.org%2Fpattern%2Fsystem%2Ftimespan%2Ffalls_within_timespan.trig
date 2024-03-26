@@ -1,34 +1,23 @@
 
 <http://www.researchspace.org/pattern/system/timespan/falls_within_timespan/context> {
-  _:genid-bd66ff6575d94807925963f6049999c4-w96pw a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
-  	$subject crm:P86_falls_within $value . 
-}  WHERE {
-	$subject crm:P86_falls_within $value . 
-}""" .
-  
-  _:genid-bd66ff6575d94807925963f6049999c4-xoxvfu a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-	$subject crm:P86_falls_within $value . 
-}""" .
-  
   <http://www.researchspace.org/pattern/system/timespan/falls_within_timespan> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.w3.org/2000/01/rdf-schema#label> "Timespan falls within timespan";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-199c5110962a427f93868bfed36422a2-j6tet2;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-199c5110962a427f93868bfed36422a2-stmr2o;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-bd66ff6575d94807925963f6049999c4-w96pw;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-bd66ff6575d94807925963f6049999c4-qrnce;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-199c5110962a427f93868bfed36422a2-x20vxo;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/timespan>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-bd66ff6575d94807925963f6049999c4-867mjb;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-bd66ff6575d94807925963f6049999c4-xoxvfu;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-199c5110962a427f93868bfed36422a2-dpblf;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-199c5110962a427f93868bfed36422a2-2k7qm9;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-25T17:12:27.705Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-26T14:59:34.905Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-bd66ff6575d94807925963f6049999c4-qrnce a <http://spinrdf.org/sp#Query>;
+  _:genid-199c5110962a427f93868bfed36422a2-stmr2o a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   	?value a crm:E52_Time-Span .
 	?value crm:P170i_time_is_defined_by ?timePrimitive .
@@ -37,10 +26,46 @@
   	?timePrimitive crm:P190_has_symbolic_content ?label .
 }""" .
   
-  _:genid-bd66ff6575d94807925963f6049999c4-867mjb a <http://spinrdf.org/sp#Query>;
+  _:genid-199c5110962a427f93868bfed36422a2-2k7qm9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+	$subject crm:P86_falls_within $value . 
+    ?value a crm:E52_Time-Span .
+	?value crm:P170i_time_is_defined_by ?timePrimitive .
+  	?timePrimitive a crm:E61_Time_Primitive .
+  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  	?timePrimitive crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-199c5110962a427f93868bfed36422a2-j6tet2 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P86_falls_within $value . 
+    $value crm:P86i_contains $subject .
 } WHERE {}""" .
+  
+  _:genid-199c5110962a427f93868bfed36422a2-dpblf a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+  	$subject crm:P86_falls_within $value . 
+    $value crm:P86i_contains $subject .
+}  WHERE {
+	$subject crm:P86_falls_within $value . 
+    $value crm:P86i_contains $subject . 
+      
+    ?value a crm:E52_Time-Span .
+	?value crm:P170i_time_is_defined_by ?timePrimitive .
+  	?timePrimitive a crm:E61_Time_Primitive .
+  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  	?timePrimitive crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-199c5110962a427f93868bfed36422a2-x20vxo a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  	?value a crm:E52_Time-Span .
+	?value crm:P170i_time_is_defined_by ?timePrimitive .
+  	?timePrimitive a crm:E61_Time_Primitive .
+  	?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  	?timePrimitive crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label) LIMIT 10""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/timespan/falls_within_timespan> .

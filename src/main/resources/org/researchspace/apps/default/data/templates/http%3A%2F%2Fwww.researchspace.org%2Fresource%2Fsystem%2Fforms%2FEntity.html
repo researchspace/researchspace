@@ -17,17 +17,16 @@
                             entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                             entity_description="http://www.researchspace.org/pattern/system/entity/description"
 
+                            entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
+                            entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                            entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
+                            entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
+                            entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
+
                             entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
                             entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                             entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
 
-                            entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
-                            entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
-                            entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
-                            entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
-                            entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
-
-                            
                         ]]'
             >
 
@@ -145,56 +144,10 @@
                 </div>
             </rs-tab>
 
-            <rs-tab event-key="thing" title="Things">
-
-                <semantic-form-autocomplete-input   for='entity_depicted_by' 
-                                                    label="Entity depicted by"
-                                                    placeholder="Select what depicts the entity" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input for='entity_subject_of' 
-                                            label="Entity subject of"
-                                            placeholder="Select what is about the entity" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input for='entity_referred_to_by' 
-                                            label="Entity referred to by"
-                                            placeholder="Select what refers to the entity" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-                </semantic-form-autocomplete-input>
-
-            </rs-tab>
-
             <rs-tab event-key="event" title="Events">
-                <semantic-form-select-input for='entity_measurement' 
-                                            label="Entity measurement"
-                                            placeholder="Select measurement" 
-                                            nested-form-templates='[ 
-                                                {
-                                                    "label": "Measurement",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                            ]'>  
-                </semantic-form-select-input>
-
-                <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                                    label="Entity influenced"
-                                                    placeholder="Select activity influenced by the entity" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-                </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                                    label="Entity motivated"
-                                                    placeholder="Select activity motivated by the entity" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-                </semantic-form-autocomplete-input>
 
                 <semantic-form-select-input for='entity_attributed_by_attribute_assignment' 
-                                            label="Entity attributed by"
+                                            label="Attributed by"
                                             placeholder="Select what assigned attribute to the entity" 
                                             nested-form-templates='[ 
                                                 {
@@ -207,7 +160,7 @@
                 </semantic-form-select-input>
 
                 <semantic-form-select-input for='entity_assigned_by_attribute_assignment' 
-                                            label="Entity assigned by"
+                                            label="Assigned by"
                                             placeholder="Select what assigned the entity" 
                                             nested-form-templates='[ 
                                                 {
@@ -218,6 +171,53 @@
                                                 }
                                             ]'>  
                 </semantic-form-select-input>
+
+                <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                                    label="Influenced"
+                                                    placeholder="Select activity influenced by the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                                    label="Motivated"
+                                                    placeholder="Select activity motivated by the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-select-input for='entity_measurement' 
+                                            label="Measurement"
+                                            placeholder="Select measurement" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Measurement",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+                </semantic-form-select-input>
+            </rs-tab>
+
+            <rs-tab event-key="thing" title="Things">
+
+                <semantic-form-autocomplete-input   for='entity_depicted_by' 
+                                                    label="Depicted by"
+                                                    placeholder="Select what depicts the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input for='entity_subject_of' 
+                                            label="Subject of"
+                                            placeholder="Select what is about the entity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input for='entity_referred_to_by' 
+                                            label="Referred to by"
+                                            placeholder="Select what refers to the entity" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                </semantic-form-autocomplete-input>
+
             </rs-tab>
 
             [[> rsp:FormMetadataTab]]
@@ -227,7 +227,6 @@
                 <bs-tab-container   id="{{viewId}}-formResourceAsset-tabs" 
                                     class="bs-left-vertical-tabs form-tabs-subtabs form-asset-tabs" 
                                     default-active-key="{{viewId}}-resourceForm-images">
-                  
                     <div>
                         <bs-nav bs-style="tabs" stacked="true" class="form-tabs-subtabs-triggers-container" 
                                 style="min-width: 170px; margin: 0;padding: 0 15px;">
@@ -489,7 +488,7 @@
                                             <bs-tab-pane event-key="listView">
                                                 <div style="padding:20px;">
                                                     <semantic-form-select-input for='entity_has_representation' 
-                                                                                label="Entity representation"
+                                                                                label="Representation"
                                                                                 render-header=false
                                                                                 placeholder="Select representation" 
                                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'>  
@@ -507,12 +506,8 @@
                     </div>
                 </bs-tab-container>
                 
-                
-
-                
             </rs-tab>
 
-            
         </rs-tabs>
 
     </div>

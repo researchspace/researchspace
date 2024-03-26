@@ -7,9 +7,10 @@
                           inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                           entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
-                          timespan_document="http://www.researchspace.org/pattern/system/entity/documents"
-                          image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
-                          more_image="http://www.researchspace.org/pattern/system/entity/images"
+                          entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                          entity_image="http://www.researchspace.org/pattern/system/entity/images"
+                          entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                          entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
                           timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellationMin1"
                           timespan_beginning="http://www.researchspace.org/pattern/system/timespan/beginning"
@@ -18,8 +19,27 @@
                           timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
                           timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
                           timespan_falls_within_timespan="http://www.researchspace.org/pattern/system/timespan/falls_within_timespan"
+                          timespan_contains_timespan="http://www.researchspace.org/pattern/system/timespan/contains_timespan"
+                          timespan_ongoing_throughout="http://www.researchspace.org/pattern/system/timespan/ongoing_throughout"
+                          timespan_end_of_the_begin="http://www.researchspace.org/pattern/system/timespan/end_of_the_begin"
+                          timespan_begin_of_the_end="http://www.researchspace.org/pattern/system/timespan/begin_of_the_end"
                           timespan_duration="http://www.researchspace.org/pattern/system/timespan/duration"
-                          timespan_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                          entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                          entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                          entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                          entity_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                          timespan_is_time-span_of="http://www.researchspace.org/pattern/system/timespan/is_time-span_of"
+                          entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
+                          entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                          entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
+                          entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
+                          entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
+
+                          entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
+                          entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
+                          entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
                 ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
@@ -30,14 +50,20 @@
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs"> 
       <rs-tab event-key="detail" title="Details">
-
         <div class="form-2column-container">
           <div>
             <semantic-form-text-input for='timespan_text_value' label="Timespan (text value)"  placeholder="Enter timespan (text value)"></semantic-form-text-input>
             
-            <semantic-form-text-input for='timespan_beginning' label="Timespan beginning"  placeholder="Enter timespan"></semantic-form-text-input>
-            <semantic-form-text-input for='timespan_end' label="Timespan end"  placeholder="Enter timespan"></semantic-form-text-input>
-            <div class="form-inline-inputs" style="align-items:flex-start;">
+            <div class="form-inline-inputs">
+              <div style="flex: 1;">
+                <semantic-form-text-input for='timespan_beginning' label="Timespan beginning"  placeholder="Enter timespan"></semantic-form-text-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-text-input for='timespan_end' label="Timespan end"  placeholder="Enter timespan"></semantic-form-text-input>
+              </div>
+            </div>
+
+            <div class="form-inline-inputs">
               <div style="flex: 1;">
                 <semantic-form-datetime-input for="timespan_date" label="Date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
               </div>
@@ -46,6 +72,18 @@
               </div>
               <div style="flex: 1;">
                 <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter end date"></semantic-form-datetime-input>
+              </div>
+            </div>
+
+            <div class="form-inline-inputs">
+              <div style="flex: 1;">
+                <semantic-form-text-input for="timespan_ongoing_throughout" label="Timespan ongoing throughout"  placeholder="Enter value"></semantic-form-text-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-datetime-input for="timespan_end_of_the_begin" label="End of the begin"  placeholder="Enter date"></semantic-form-datetime-input>
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-datetime-input for="timespan_begin_of_the_end" label="Begin of the end"  placeholder="Enter date"></semantic-form-datetime-input>
               </div>
             </div>
             
@@ -64,9 +102,9 @@
                                                       ]]'>
 
                 <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'></semantic-form-hidden-input>
-                <semantic-form-hidden-input for="classtype" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/timespan_duration'></semantic-form-hidden-input>
+                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/timespan_duration'></semantic-form-hidden-input>
 
-                <div class="form-inline-inputs" style="row-gap:5px;">
+                <div class="form-inline-inputs">
                     <div style="flex: 1;">
                         <semantic-form-text-input for="dimension_value" label="Value" placeholder="Enter value" render-header="false"></semantic-form-text-input>
                     </div>
@@ -91,68 +129,606 @@
                 </div>
               </semantic-form-composite-input>
             </div>
-            
-            <semantic-form-select-input for='timespan_falls_within_timespan' 
-                                        label="Timespan falls within timespan" 
-                                        placeholder="Select timespan" 
-                                        nested-form-templates='[ 
-                                          {
-                                            "label": "Timespan",
-                                            "nestedForm": "{{{{raw}}}}
-                                                              {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
-                                                          {{{{/raw}}}}"
-                                          }
-                                        ]'> 
-            </semantic-form-select-input>   
 
-            <semantic-form-text-input for="timespan_description" multiline="true" label="Timespan description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
+            <div class="inline-composite-container">
+              <semantic-form-composite-input  for="entity_preferred_id"
+                                              label="Timespan preferred identifier"
+                                              new-subject-template="/entity_id" 
+                                              fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                  ]]'
+                                              >
+                          
+                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
+                      
+                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+
+              </semantic-form-composite-input>
+          </div>
+
+          <div class="inline-composite-container">
+              <semantic-form-composite-input  for="entity_id"
+                                              label="Timespan other identifier"
+                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                              fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                  ]]'
+                                              >
+                          
+                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
+                      
+                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+              </semantic-form-composite-input>
+          </div>
+
+            <semantic-form-text-input for="entity_description" multiline="true" label="Timespan description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
           </div>
 
           <div class="form-media-column">
-
             <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='timespan_document' 
-                                                  label="Documents" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                                  <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                                  <div>Drag document or click to upload</div>
+                <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
+                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                    <div>Drag main image from 
+                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                        or click to upload</div>
                                                                                 </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" 
-                                                                                        docType="http://www.researchspace.org/resource/vocab/document_type/report" }}{{{{/raw}}}}'
-                                                                                >
-                  </semantic-form-drag-and-drop-input>
-
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                </semantic-form-drag-and-drop-input>
             </div>
 
             <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input for='image_main_representation' label="Main image" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                              <div>Drag main image or click to upload</div>
-                                                                            </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
+                <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
+                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                    <div>Drag images from 
+                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                        or click to upload</div>
+                                                                                </div>"
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                </semantic-form-drag-and-drop-input>
             </div>
-
-            <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                              <div>Drag images or click to upload</div>
-                                                                            </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
-            </div>
-
-          </div>
+        </div>
         </div>
       </rs-tab>
 
-      <rs-tab event-key="event" title="Related events">
+      <rs-tab event-key="timespan" title="Timespans">
+        {{#if scheme}}
+            <semantic-form-tree-picker-input  for='timespan_falls_within_timespan' 
+                                                label="Falls within timespan" 
+                                                placeholder="Select timespan" 
+                                                default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
+                                                tree-patterns='{"scheme": "{{scheme}}",
+                                                                "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                                "relationPattern": "?item crm:P86_falls_within ?parent",
+                                                                "labelPattern": "?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                                ?timePrimitive a crm:E61_Time_Primitive .
+                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                                ?timePrimitive crm:P190_has_symbolic_content ?label ."}'
+
+                                                query-item-label='SELECT ?label WHERE {
+                                                                    ?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                    ?timePrimitive a crm:E61_Time_Primitive .
+                                                                    ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                    ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                }'> 
+            </semantic-form-tree-picker-input>   
+
+            <semantic-form-tree-picker-input for='timespan_contains_timespan' 
+                                            label="Contains timespan" 
+                                            placeholder="Select timespan"
+                                            tree-patterns='{"scheme": "{{scheme}}",
+                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                            "relationPattern": "?item crm:P86_falls_within ?parent",
+                                                            "labelPattern": "?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                                ?timePrimitive a crm:E61_Time_Primitive .
+                                                                                ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                                ?timePrimitive crm:P190_has_symbolic_content ?label ."}'
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                    ?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                    ?timePrimitive a crm:E61_Time_Primitive .
+                                                                    ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                    ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                            }'>
+            </semantic-form-tree-picker-input> 
+        {{else}}
+            <div class="hierarchyView-form-container">
+                <mp-event-target-template-render id='{{viewId}}-timespan-componentsView' template='{{> timespanComponents}}'>
+                <template id='timespanComponents'>
+                    <div class="page__section-container formHierarchyView-container">
+                    <div class="form-header-withButtons">
+                        <h4 style="margin: 0; align-self: end;">Timespan components view</h4>
+                        <div class="btn-form-actions"> 
+                        <mp-event-trigger id='{{viewId}}-timespan-componentsView-refresh-trigger' 
+                                            type='Component.TemplateUpdate' 
+                                            targets='["{{viewId}}-timespan-componentsView"]'
+                                            >
+                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                            <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                Refresh
+                            </button>
+                        </mp-event-trigger>
+                        </div>
+                    </div>
+                    <div style="flex: 1; padding: 18px 2px;">
+                        {{#if node}}
+                            {{#bind timespan=node }}
+                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                    BIND(<{{node}}> as ?timespan)
+                                                    
+                                                    { ?timespan crm:P86i_contains ?node . }
+                                                    UNION
+                                                    { ?timespan crm:P86_falls_within ?parent . }
+                                                    
+                                                    ?node crm:P86_falls_within ?parent .
+
+                                                    FILTER(ISIRI(?node))
+                                                }
+                                                ORDER BY (?node)' 
+
+                                            tuple-template='{{> nodeTemplate}}'>
+                                            
+                                <template id='nodeTemplate'>
+                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                            BIND (<{{node.value}}> as ?node)
+                                                            ?node crm:P170i_time_is_defined_by ?timePrimitive .
+                                                            ?timePrimitive a crm:E61_Time_Primitive .
+                                                            ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                            ?timePrimitive crm:P190_has_symbolic_content ?nodeLabel .  
+                                                            }'
+                                                    template='{{> template}}'>
+                                        
+                                        <template id='template'>
+                                            <div>
+                                                {{#ifCond bindings.0.node.value "===" timespan}}
+                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                {{else}}
+                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='entity-editor' 
+                                                                    urlqueryparam-resource-iri='{{node.value}}'
+                                                                    >
+                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                    </semantic-link>
+                                                {{/ifCond}}
+                                            </div>
+                                        </template>
+                                    </semantic-query>
+                                </template>  
+                            </semantic-tree>
+                            {{/bind}}
+                        {{/if}}
+                    </div>
+                    </div>
+                </template>
+                </mp-event-target-template-render>
+
+                <div class="page__section-container formHierarchyInputs-container">
+                    <semantic-form-tree-picker-input  for='timespan_falls_within_timespan' 
+                                                        label="Falls within timespan" 
+                                                        placeholder="Select timespan"
+                                                        tree-patterns='{"scheme": "crm:E52_Time-Span",
+                                                                        "schemePattern": "?item a crm:E52_Time-Span",
+                                                                        "relationPattern": "?item crm:P86_falls_within ?parent",
+                                                                        "labelPattern": "?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                                        ?timePrimitive a crm:E61_Time_Primitive .
+                                                                                        ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                                        ?timePrimitive crm:P190_has_symbolic_content ?label ."}'
+
+                                                        nested-form-template='{{> forms:Timespan nested=true editable=true mode=new}}' 
+
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            ?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                            ?timePrimitive a crm:E61_Time_Primitive .
+                                                                            ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                            ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                        }'> 
+                    </semantic-form-tree-picker-input>   
+
+                    <semantic-form-tree-picker-input for='timespan_contains_timespan' 
+                                                    label="Contains timespan" 
+                                                    placeholder="Select timespan"
+                                                    tree-patterns='{"scheme": "crm:E52_Time-Span",
+                                                                    "schemePattern": "?item a crm:E52_Time-Span",
+                                                                    "relationPattern": "?item crm:P86_falls_within ?parent",
+                                                                    "labelPattern": "?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                                        ?timePrimitive a crm:E61_Time_Primitive .
+                                                                                        ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                                        ?timePrimitive crm:P190_has_symbolic_content ?label ."}'
+
+                                                    nested-form-template='{{> forms:Timespan nested=true editable=true mode=new}}'
+
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                            ?item crm:P170i_time_is_defined_by ?timePrimitive .
+                                                                            ?timePrimitive a crm:E61_Time_Primitive .
+                                                                            ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+                                                                            ?timePrimitive crm:P190_has_symbolic_content ?label .
+                                                                    }'>
+                    </semantic-form-tree-picker-input> 
+                </div>
+            </div>
+        {{/if}}
+      </rs-tab>
+
+      <rs-tab event-key="event" title="Events">
+
+        <semantic-form-autocomplete-input for='timespan_is_time-span_of' 
+                                          label="Is timespan of"
+                                          placeholder="Select the temporal event on-going during the timespan" 
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_temporalEntities]]'> 
+        </semantic-form-autocomplete-input>
+  
+        <semantic-form-select-input for='entity_attributed_by_attribute_assignment' 
+                                    label="Attributed by"
+                                    placeholder="Select what assigned attribute to the timespan" 
+                                    nested-form-templates='[ 
+                                        {
+                                            "label": "Attribute assignment",
+                                            "nestedForm": "{{{{raw}}}}
+                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                        {{{{/raw}}}}"
+                                        }
+                                    ]'>  
+        </semantic-form-select-input>
+  
+        <semantic-form-select-input for='entity_assigned_by_attribute_assignment' 
+                                    label="Assigned by"
+                                    placeholder="Select what assigned the timespan" 
+                                    nested-form-templates='[ 
+                                        {
+                                            "label": "Attribute assignment",
+                                            "nestedForm": "{{{{raw}}}}
+                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                        {{{{/raw}}}}"
+                                        }
+                                    ]'>  
+        </semantic-form-select-input>
+  
+        <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                            label="Influenced"
+                                            placeholder="Select activity influenced by the timespan" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+  
+        <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                            label="Motivated"
+                                            placeholder="Select activity motivated by the timespan" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+  
+        <semantic-form-select-input for='entity_measurement' 
+                                    label="Measurement"
+                                    placeholder="Select measurement" 
+                                    nested-form-templates='[ 
+                                        {
+                                            "label": "Measurement",
+                                            "nestedForm": "{{{{raw}}}}
+                                                            {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                        {{{{/raw}}}}"
+                                        }
+                                    ]'>  
+        </semantic-form-select-input>
+  
+      </rs-tab>
+
+      <rs-tab event-key="thing" title="Things">
+
+        <semantic-form-autocomplete-input   for='entity_depicted_by' 
+                                            label="Depicted by"
+                                            placeholder="Select what depicts the timespan" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input for='entity_subject_of' 
+                                    label="Subject of"
+                                    placeholder="Select what is about the timespan" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input for='entity_referred_to_by' 
+                                    label="Referred to by"
+                                    placeholder="Select what refers to the timespan" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+        </semantic-form-autocomplete-input>
 
       </rs-tab>
 
       [[> rsp:FormMetadataTab]]
+
+      <rs-tab event-key="asset" title="Resources" tab-class-name="tab-right">
+
+          <bs-tab-container   id="{{viewId}}-formResourceAsset-tabs" 
+                              class="bs-left-vertical-tabs form-tabs-subtabs form-asset-tabs" 
+                              default-active-key="{{viewId}}-resourceForm-images">
+              <div>
+                  <bs-nav bs-style="tabs" stacked="true" class="form-tabs-subtabs-triggers-container" 
+                          style="min-width: 170px; margin: 0;padding: 0 15px;">
+                      <bs-nav-item event-key="{{viewId}}-resourceForm-images" class='form-tabs-subtabs-trigger'>
+                          Images
+                      </bs-nav-item>
+                      <bs-nav-item event-key="{{viewId}}-resourceForm-docs" class='form-tabs-subtabs-trigger'>
+                          Documents
+                      </bs-nav-item>
+                      <bs-nav-item event-key="{{viewId}}-resourceForm-representations" class='form-tabs-subtabs-trigger'>
+                          Representations
+                      </bs-nav-item>
+                  </bs-nav>
+                      
+                  <bs-tab-content animation="true">
+
+                      <bs-tab-pane event-key="{{viewId}}-resourceForm-images" class="form-tabs-subtabs-content">
+                          <bs-tab-container id="{{viewId}}-form-image-tabs" default-active-key="thumbnailView" class="form-assetView-tabs">
+                              <div>
+                                  <div class="form-tabs-subtabs-content--title">
+                                      <h4 style="padding-bottom: 2px;">Images</h4>
+
+                                      <div>
+                                          {{#if node}}
+                                              <div class="form-tabs-subtabs-content--title-actions">
+                                                  <button class="btn btn-icon" title="preview">
+                                                      <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                  </button>
+                                                  <button class="btn btn-icon" title="download">
+                                                      <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                                  </button>
+                  
+                                                  <mp-event-trigger id='{{viewId}}-image-annotation-add-frame-trigger' 
+                                                                      type='Dashboard.AddFrame' 
+                                                                      data='{"resourceIri": "{{node}}", 
+                                                                              "viewId": "objectImageObservation", 
+                                                                              "objectIri": "{{node}}",
+                                                                              "frameId": "{{viewId}}"}' 
+                                                                      targets='["thinking-frames"]'>
+                                                      <button class="btn btn-icon" title="View/Annotations">
+                                                          <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                                      </button>
+                                                  </mp-event-trigger>
+                                              </div>
+                                          {{/if}}
+                                      
+                                          <bs-nav bs-style="icon-tabs">
+                                              <bs-nav-item event-key="thumbnailView" title="thumbnail view">
+                                                  <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                                              </bs-nav-item>
+                                              <bs-nav-item event-key="listView" title="list view">
+                                                  <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                                              </bs-nav-item>
+                                          </bs-nav>
+                                      </div>
+                                  </div>
+                                  <bs-tab-content>
+                                      <bs-tab-pane event-key="thumbnailView">
+                                          <div style="padding: 0 20px 20px;">
+                                              <div class="dragAndDrop-input-container">
+                                                  <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
+                                                                                      placeholder-item-template="<div class='placeholder-item'>
+                                                                                                                      <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                                      <div>Drag main image from 
+                                                                                                                          <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                          class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                                                          or click to upload</div>
+                                                                                                                  </div>"
+                                                                                      nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                                                  </semantic-form-drag-and-drop-input>
+                                              </div>
+                                              <div class="dragAndDrop-input-container">
+                                                  <semantic-form-drag-and-drop-input  for='entity_image' label="More images"
+                                                                                      placeholder-item-template="<div class='placeholder-item'>
+                                                                                                                      <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                                      <div>Drag images from 
+                                                                                                                          <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                          class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                                                          or click to upload</div>
+                                                                                                                  </div>"
+                                                                                      nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                                                  </semantic-form-drag-and-drop-input>
+                                              </div>
+                                          </div>
+                                      </bs-tab-pane>
+          
+                                      <bs-tab-pane event-key="listView">
+                                          <div style="padding: 0 20px 20px;">
+                                        
+                                              <semantic-form-select-input for='entity_image_main_representation' 
+                                                                          label="Main image"
+                                                                          placeholder="Select image" 
+                                                                          nested-form-templates='[ 
+                                                                              {
+                                                                                  "label": "Image",
+                                                                                  "nestedForm": "{{{{raw}}}}
+                                                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\"}}
+                                                                                              {{{{/raw}}}}"
+                                                                              }
+                                                                          ]'> 
+                                              </semantic-form-select-input>
+                                        
+                                              <semantic-form-select-input for='entity_image' 
+                                                                          label="More images"
+                                                                          placeholder="Select image" 
+                                                                          nested-form-templates='[ 
+                                                                              {
+                                                                                  "label": "Image",
+                                                                                  "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Image\" nested=true editable=true mode=\"new\" }}{{{{/raw}}}}"
+                                                                              }
+                                                                          
+                                                                          ]'> 
+                                              </semantic-form-select-input>
+                                          </div>
+                                      </bs-tab-pane>
+                                  </bs-tab-content>
+                                  
+                              </div>
+                          </bs-tab-container>
+                      </bs-tab-pane>
+
+                      <bs-tab-pane event-key="{{viewId}}-resourceForm-docs" class="form-tabs-subtabs-content">
+                          <bs-tab-container id="{{viewId}}-form-document-tabs" default-active-key="thumbnailView" class="form-assetView-tabs">
+                              <div>
+                                  <div class="form-tabs-subtabs-content--title">
+                                      <h4 style="padding-bottom: 2px;">Documents</h4>
+                                      <div>
+                                          {{#if node}}
+                                              <div class="form-tabs-subtabs-content--title-actions">
+                                                  <button class="btn btn-icon" title="preview">
+                                                      <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                  </button>
+                                                  <button class="btn btn-icon" title="download">
+                                                      <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                                  </button>
+                      
+                                                  <mp-event-trigger id='{{viewId}}-document-annotation-add-frame-trigger' 
+                                                                          type='Dashboard.AddFrame' 
+                                                                          data='{"resourceIri": "{{node}}", 
+                                                                                  "viewId": "objectImageObservation", 
+                                                                                  "objectIri": "{{node}}",
+                                                                                  "frameId": "{{viewId}}"}' 
+                                                                          targets='["thinking-frames"]'>
+                                                      <button class="btn btn-icon" title="View/Annotations">
+                                                          <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                                      </button>
+                                                  </mp-event-trigger>
+                                              </div>
+                                          {{/if}}
+                                  
+                                          <bs-nav bs-style="icon-tabs">
+                                              <bs-nav-item event-key="thumbnailView" title="thumbnail view">
+                                                  <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                                              </bs-nav-item>
+                                              <bs-nav-item event-key="listView" title="list view">
+                                                  <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                                              </bs-nav-item>
+                                          </bs-nav>
+                                      </div>
+                                  </div>
+                      
+                                  <bs-tab-content>
+                                      <bs-tab-pane event-key="thumbnailView">
+                                          <div style="padding:20px;">
+                                              <div class="dragAndDrop-input-container">
+                                                  <semantic-form-drag-and-drop-input  for='entity_document' label="Documents" render-header=false
+                                                                                      placeholder-item-template="<div class='placeholder-item'>
+                                                                                                                      <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                                      <div>Drag document from 
+                                                                                                                          <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                                                          class='text-link-action' urlqueryparam-view='system-assets'>Document Library</semantic-link>
+                                                                                                                          or click to upload</div>
+                                                                                                                  </div>"
+                                                                                      nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new"}}{{{{/raw}}}}'
+                                                                                                                  >
+                                                  </semantic-form-drag-and-drop-input>
+                                              </div>
+                                          </div>
+                                      </bs-tab-pane>
+          
+                                      <bs-tab-pane event-key="listView">
+                                          <div style="padding:20px;">
+                                              <semantic-form-select-input for='entity_document' 
+                                                                          label="Documents"
+                                                                          render-header="false"
+                                                                          placeholder="Select document" 
+                                                                          nested-form-templates='[ 
+                                                                              {
+                                                                                  "label": "Document",
+                                                                                  "nestedForm": "{{{{raw}}}}
+                                                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Document\" nested=true editable=true mode=\"new\"}}
+                                                                                              {{{{/raw}}}}"
+                                                                              }
+                                                                          ]'> 
+                                              </semantic-form-select-input>
+                                          </div>
+                                      </bs-tab-pane>
+                                  </bs-tab-content>
+                                  
+                              </div>
+                          </bs-tab-container>
+                      </bs-tab-pane>
+
+                      <bs-tab-pane event-key="{{viewId}}-resourceForm-representations" class="form-tabs-subtabs-content">
+                          <bs-tab-container id="{{viewId}}-form-document-tabs" default-active-key="thumbnailView" class="form-assetView-tabs">
+                              <div>
+                                  <div class="form-tabs-subtabs-content--title">
+                                      <h4 style="padding-bottom: 2px;">Representations</h4>
+                                      <div>
+                                          {{#if node}}
+                                              <div class="form-tabs-subtabs-content--title-actions">
+                                                  <button class="btn btn-icon" title="preview">
+                                                      <rs-icon icon-type="round" icon-name="fullscreen"></rs-icon>
+                                                  </button>
+                                                  <button class="btn btn-icon" title="download">
+                                                      <rs-icon icon-type="round" icon-name="download"></rs-icon>
+                                                  </button>
+                      
+                                                  <mp-event-trigger id='{{viewId}}-representation-annotation-add-frame-trigger' 
+                                                                          type='Dashboard.AddFrame' 
+                                                                          data='{"resourceIri": "{{node}}", 
+                                                                                  "viewId": "objectImageObservation", 
+                                                                                  "objectIri": "{{node}}",
+                                                                                  "frameId": "{{viewId}}"}' 
+                                                                          targets='["thinking-frames"]'>
+                                                      <button class="btn btn-icon" title="View/Annotations">
+                                                          <rs-icon icon-type="round" icon-name="photo_size_select_large"></rs-icon>
+                                                      </button>
+                                                  </mp-event-trigger>
+                                              </div>
+                                          {{/if}}
+                                  
+                                          <bs-nav bs-style="icon-tabs">
+                                              <bs-nav-item event-key="thumbnailView" title="thumbnail view">
+                                                  <rs-icon icon-type="round" icon-name="view_module"></rs-icon>
+                                              </bs-nav-item>
+                                              <bs-nav-item event-key="listView" title="list view">
+                                                  <rs-icon icon-type="round" icon-name="view_list"></rs-icon>
+                                              </bs-nav-item>
+                                          </bs-nav>
+                                      </div>
+                                  </div>
+                      
+                                  <bs-tab-content>
+                                      <bs-tab-pane event-key="thumbnailView">
+                                          <div style="padding:20px;">
+                                              <div class="dragAndDrop-input-container">
+                                                  <semantic-form-drag-and-drop-input  for='entity_has_representation' label="Representations" render-header=false
+                                                                                      placeholder-item-template="<div class='placeholder-item'>
+                                                                                                                      <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                                                      <div>Drag representation</div>
+                                                                                                                  </div>"
+                                                                                                                  >
+                                                  </semantic-form-drag-and-drop-input>
+                                              </div>
+                                          </div>
+                                      </bs-tab-pane>
+          
+                                      <bs-tab-pane event-key="listView">
+                                          <div style="padding:20px;">
+                                              <semantic-form-select-input for='entity_has_representation' 
+                                                                          label="Representation"
+                                                                          render-header=false
+                                                                          placeholder="Select representation" 
+                                                                          nested-form-templates='[[> Platform:NestedFormTemplates_visualItems]]'>  
+                                              </semantic-form-select-input>
+                                          </div>
+                                      </bs-tab-pane>
+                                  </bs-tab-content>
+                                  
+                              </div>
+                          </bs-tab-container>
+
+                      </bs-tab-pane>
+
+                  </bs-tab-content>
+              </div>
+          </bs-tab-container>
+          
+      </rs-tab>
+      
     </rs-tabs>
   </div>
 

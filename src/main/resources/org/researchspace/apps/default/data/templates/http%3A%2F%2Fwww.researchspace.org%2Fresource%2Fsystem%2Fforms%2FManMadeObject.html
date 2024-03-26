@@ -234,7 +234,7 @@
                                 <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
                                 <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/object_primary_id'></semantic-form-hidden-input>
                                     
-                                <div class="form-inline-inputs" style="row-gap:5px;">
+                                <div class="form-inline-inputs">
                                     <div>
                                         {{#if apiResourceMuseumId}}
                                             <div class="focused-input-container">
@@ -281,7 +281,7 @@
                                 <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
                                 <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/object_id'></semantic-form-hidden-input>
                                     
-                                <div class="form-inline-inputs" style="row-gap:5px;">
+                                <div class="form-inline-inputs">
                                     <div>
                                         {{#if apiResourceSystemId}}
                                             <div class="focused-input-container">
@@ -395,90 +395,85 @@
 
             <rs-tab event-key="components" title="Part of/Components">
 
-                <div class="hierarchyView-form-container">
-                    <mp-event-target-template-render id='{{viewId}}-manMadeObject-componentsView' template='{{> objectComponents}}'>
-                        <template id='objectComponents'>
-                          <div class="page__section-container" style="padding-top: 10px; margin-bottom: 0; margin-top: 20px; display: flex; flex-direction: column; min-width: 350px;">
-                            <div class="form-header-withButtons">
-                              <h4 style="margin: 0; align-self: end;">Object components view</h4>
-                              <div class="btn-form-actions"> 
-                                <mp-event-trigger id='{{viewId}}-manMadeObject-componentsView-refresh-trigger' 
-                                                  type='Component.TemplateUpdate' 
-                                                  targets='["{{viewId}}-manMadeObject-componentsView"]'
-                                                  >
-                                  <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                    <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                                      Refresh
-                                  </button>
-                                </mp-event-trigger>
-                              </div>
-                            </div>
-                            <div style="flex: 1; padding: 18px 2px;">
-                                {{#if node}}
-                                    {{#bind object=node }}
-                                        <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                                BIND(<{{object}}> as ?object)
+                {{#if scheme}}
+                {{else}}
+                    <div class="hierarchyView-form-container">
+                        <mp-event-target-template-render id='{{viewId}}-manMadeObject-componentsView' template='{{> objectComponents}}'>
+                            <template id='objectComponents'>
+                                <div class="page__section-container formHierarchyView-container">
+                                    <div class="form-header-withButtons">
+                                    <h4 style="margin: 0; align-self: end;">Object components view</h4>
+                                    <div class="btn-form-actions"> 
+                                        <mp-event-trigger id='{{viewId}}-manMadeObject-componentsView-refresh-trigger' 
+                                                        type='Component.TemplateUpdate' 
+                                                        targets='["{{viewId}}-manMadeObject-componentsView"]'
+                                                        >
+                                        <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                                            <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                            Refresh
+                                        </button>
+                                        </mp-event-trigger>
+                                    </div>
+                                    </div>
+                                    <div style="flex: 1; padding: 18px 2px;">
+                                        {{#if node}}
+                                            {{#bind object=node }}
+                                                <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                                        BIND(<{{object}}> as ?object)
+                                                                        
+                                                                        { ?object crm:P46_is_composed_of ?node . }
+                                                                        UNION
+                                                                        { ?object crm:P46i_forms_part_of ?parent . }
+                                                                        
+                                                                        ?node crm:P46i_forms_part_of ?parent .
+
+                                                                        FILTER(ISIRI(?node))
+                                                                    }
+                                                                    ORDER BY (?node)' 
+
+                                                                tuple-template='{{> nodeTemplate}}'>
                                                                 
-                                                                { ?object crm:P46_is_composed_of ?node . }
-                                                                UNION
-                                                                { ?object crm:P46i_forms_part_of ?parent . }
-                                                                
-                                                                ?node crm:P46i_forms_part_of ?parent .
+                                                    <template id='nodeTemplate'>
+                                                        <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                                    BIND (<{{node.value}}> as ?node)
+                                                                                    { ?node crm:P1_is_identified_by ?appellation . 
+                                                                                        ?appellation a crm:E41_Appellation . 
+                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/series_title> . 
+                                                                                        ?appellation crm:P190_has_symbolic_content ?nodeLabel .  }
+                                                                                    UNION 
+                                                                                    { ?node crm:P102_has_title ?title . 
+                                                                                        ?title a crm:E35_Title . 
+                                                                                        ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                                        ?title crm:P190_has_symbolic_content ?nodeLabel .
+                                                                                    }
+                                                                                }'
+                                                                        template='{{> template}}'>
+                                                            
+                                                            <template id='template'>
+                                                                <div>
+                                                                    {{#ifCond bindings.0.node.value "===" object}}
+                                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                    {{else}}
+                                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                                        urlqueryparam-view='entity-editor' 
+                                                                                        urlqueryparam-resource-iri='{{node.value}}'
+                                                                                        >
+                                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                                        </semantic-link>
+                                                                    {{/ifCond}}
+                                                                </div>
+                                                            </template>
+                                                        </semantic-query>
+                                                    </template>  
+                                                </semantic-tree>
+                                            {{/bind}}
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </template>
+                        </mp-event-target-template-render>
 
-                                                                FILTER(ISIRI(?node))
-                                                            }
-                                                            ORDER BY (?node)' 
-
-                                                        tuple-template='{{> nodeTemplate}}'
-                                                        no-result-template='{{> noResults}}'>
-                                                        
-                                            <template id='nodeTemplate'>
-
-                                                <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                            BIND (<{{node.value}}> as ?node)
-                                                                            { ?node crm:P1_is_identified_by ?appellation . 
-                                                                                ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/series_title> . 
-                                                                                ?appellation crm:P190_has_symbolic_content ?nodeLabel .  }
-                                                                            UNION 
-                                                                            { ?node crm:P102_has_title ?title . 
-                                                                                ?title a crm:E35_Title . 
-                                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                                ?title crm:P190_has_symbolic_content ?nodeLabel .
-                                                                            }
-                                                                        }'
-                                                                template='{{> template}}'>
-                                                    
-                                                    <template id='template'>
-                                                        <div>
-                                                            {{#ifCond bindings.0.node.value "===" object}}
-                                                                <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                            {{else}}
-                                                                <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                                urlqueryparam-view='entity-editor' 
-                                                                                urlqueryparam-resource-iri='{{node.value}}'
-                                                                                >
-                                                                    <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                                </semantic-link>
-                                                            {{/ifCond}}
-                                                        </div>
-                                                    </template>
-                                                </semantic-query>
-                                            </template>  
-                            
-                                            <template id='noResults'>
-                                            <div>Object has no parts</div>
-                                            </template>
-                                        </semantic-tree>
-                                    {{/bind}}
-                                {{/if}}
-                            </div>
-                          </div>
-                        </template>
-                      </mp-event-target-template-render>
-
-                      <div class="page__section-container" style="padding-top: 7px; margin-bottom: 0; margin-top: 20px; display: flex; flex-direction: column; min-width: 350px;">
-                        
+                        <div class="page__section-container formHierarchyInputs-container">    
                             <bs-tabs id="{{viewId}}-component-form-tabs" class-name="form-tabs">
                                 <bs-tab event-key="{{viewId}}-objComponents" title="Object part of/components">
                                     <semantic-form-select-input for='object_part_of' 
@@ -609,10 +604,9 @@
                                     </semantic-form-composite-input>
                                 </bs-tab>
                             </bs-tabs>
-
                         </div>
-                   
-                </div>
+                    </div>
+                {{/if}}
 
             </rs-tab>
 
@@ -685,7 +679,7 @@
 
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'></semantic-form-hidden-input>
 
-                    <div class="form-inline-inputs" style="row-gap:5px;">
+                    <div class="form-inline-inputs">
                         <div style="flex: 1;">
                             <semantic-form-select-input for='dimension_type' 
                                                         render-header="false"
@@ -803,7 +797,7 @@
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
                     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/object_current_location'> </semantic-form-hidden-input>
                     
-                    <div class="form-inline-inputs first-input" style="row-gap:5px;">
+                    <div class="form-inline-inputs first-input">
                         <div style="flex: 1;">
                             <semantic-form-select-input for='location_falls_within_place' 
                                                         label="Place / Organisation" 
@@ -839,7 +833,7 @@
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
                     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/object_former_location'> </semantic-form-hidden-input>
                     
-                    <div class="form-inline-inputs first-input" style="row-gap:5px;">
+                    <div class="form-inline-inputs first-input">
                         <div style="flex: 1;">
                             <semantic-form-select-input for='location_falls_within_place' 
                                                         label="Place / Organisation" 

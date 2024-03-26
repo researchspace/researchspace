@@ -53,7 +53,7 @@ module.exports = function(isProd) {
         resolveLoader: {
             modules: [path.resolve(ROOT_DIR, 'node_modules'), __dirname]
         },
-        cache: false,
+        cache: true,
         entry: {
             'app': path.join(SRC, 'app/app.ts'),
             'page-renderer': path.join(SRC, 'app/external/PageRenderer.ts')

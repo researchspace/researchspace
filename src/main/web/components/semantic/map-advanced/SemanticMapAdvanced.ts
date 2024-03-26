@@ -1034,18 +1034,18 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
               },
             }).extend([new AnnotateControl()]),
             // TODO: If we want to allow templating to disable interactions with map, we could read a prop and enable this: 
-            //interactions: interaction.defaults({ mouseWheelZoom: false }),
+            // interactions: interaction.defaults({ mouseWheelZoom: false }),
             interactions: interactionDefaults({}),
-
+          
             //TODO: Extent property management
             layers: Object.values(this.state.mapLayers),
             target: node,
             view: new View({
               center: this.transformToMercator(parseFloat(center.lng), parseFloat(center.lat)),
               zoom: 3,
-              //extent: props.mapOptions.extent,
+              ...(this.getInputExtent() ? { extent: this.getInputExtent() } : {}),
             }),
-          });
+          });          
           console.log("Map ", this.props.id, " setting layers", layers, " and map ", map)
           this.layers = layers;
           this.map = map;
@@ -1405,6 +1405,12 @@ export class SemanticMapAdvanced extends Component<SemanticMapAdvancedProps, Map
     return this.props.mapOptions === undefined || this.props.mapOptions.crs === undefined
       ? 'EPSG:3857'
       : this.props.mapOptions.crs;
+  }
+
+  private getInputExtent() {
+    return this.props.mapOptions === undefined || this.props.mapOptions.extent === undefined
+    ? false
+    : this.props.mapOptions.extent;
   }
 
   private getIndexBySubject(subject: string, features: any) {

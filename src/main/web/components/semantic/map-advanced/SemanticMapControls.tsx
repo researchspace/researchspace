@@ -64,7 +64,6 @@ interface State {
   groupColorAssociations: {};
   displayColorPicker: {};
   year: number;
-  vectorLevels: {};
   yearMarks: number[];
   registeredMap: string;
 }
@@ -78,7 +77,6 @@ interface Props {
   filtersInitialization: Filters;
   showFilters?: boolean;
   //TODO: optionals and document
-  vectorLevels: string[];
   timeline: Timeline;
 }
 
@@ -106,7 +104,6 @@ export class SemanticMapControls extends Component<Props, State> {
       groupColorAssociations: {},
       year: this.props.timeline? this.props.timeline.default : new Date().getFullYear(), // Todo fix optional timeline props.
       yearMarks: [],
-      vectorLevels: this.props.vectorLevels ? this.props.vectorLevels.reduce((acc, val, id) => ({ ...acc, [val]: { id, visible: true } }), {}) : {},
       registeredMap: ""
     };
 
@@ -269,17 +266,6 @@ export class SemanticMapControls extends Component<Props, State> {
     });
   }
 
-  private triggerSendVectorLevelsToMap() {
-    const vectorLevels = this.state.vectorLevels;
-    console.log("Sending vector levels to " + this.props.targetMapId + ". :")
-    console.log(vectorLevels)
-    trigger({
-      eventType: SemanticMapControlsSendVectorLevels,
-      source: this.props.id,
-      targets: [this.props.targetMapId],
-      data: vectorLevels,
-    });
-  }
 
   private triggerSendToggle3d() {
     console.log('fired 3d');
@@ -704,36 +690,6 @@ export class SemanticMapControls extends Component<Props, State> {
                                     this.setMapLayerProperty(mapLayer.get('identifier'), 'opacity', capped);
                                   }}
                                 ></input>
-                              </div>
-                              <div>
-                                {mapLayer instanceof VectorLayer && (
-                                  this.props.vectorLevels.map((vl) => {
-                                    return (
-                                      <div className={'vectorLevelsFilterContainer'}>
-                                        <label>{vl}</label>
-                                        <input
-                                          className="vectorLevelsFilters"
-                                          name={'overlay-visualization'}
-                                          type={'checkbox'}
-                                          checked={this.state.vectorLevels[vl].visible}
-                                          onChange={(event) => {
-                                            this.setState({
-                                              vectorLevels: {
-                                                ...this.state.vectorLevels,
-                                                [vl]: {
-                                                  ...this.state.vectorLevels[vl],
-                                                  visible: event.target.checked
-                                                }
-                                              }
-                                            }, () => {
-                                              this.triggerSendVectorLevelsToMap();
-                                            });
-                                          }}
-                                        ></input>
-                                      </div>
-                                    );
-                                  })
-                                )}
                               </div>
                             </div>
                           </div>

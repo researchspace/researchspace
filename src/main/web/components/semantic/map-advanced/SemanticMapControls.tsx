@@ -665,7 +665,18 @@ export class SemanticMapControls extends Component<Props, State> {
                             <i className="fa fa-bars"></i>
                           </div>
                           <div style={{ verticalAlign: 'middle', display: 'inline-block' }}>
-                            <img src={mapLayer.get('thumbnail')} className={'layerThumbnail'}></img>
+                            <img
+                              src={mapLayer.get('thumbnail')}
+                              className={'layerThumbnail'}
+                              style={{
+                                borderRadius: '50%',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                height: '60px',
+                                width: '60px',
+                                objectFit: 'cover',
+                                marginLeft: '5px',
+                              }}
+                            /> 
                           </div>
                           <div style={{ display: 'inline-block', verticalAlign: 'middle', padding: '10px' }}>
                             <div style={{ width: '250px' }}>

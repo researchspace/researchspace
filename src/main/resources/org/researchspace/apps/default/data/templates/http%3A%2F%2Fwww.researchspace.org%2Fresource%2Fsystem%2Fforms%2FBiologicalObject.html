@@ -10,6 +10,7 @@
                             object_image="http://www.researchspace.org/pattern/system/entity/images"
                             object_document="http://www.researchspace.org/pattern/system/entity/documents"
 
+                            biological_object_title="http://www.researchspace.org/pattern/system/biological_object/title"
                             object_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             object_primary_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             object_id="http://www.researchspace.org/pattern/system/entity/identifier"
@@ -48,6 +49,13 @@
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
+                        {{#if apiResourceName}}
+                            <div class="focused-input-container">
+                                <semantic-form-text-input for="biological_object_title" label="Biological object title/name" placeholder="Enter object title/name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
+                            </div>
+                        {{else}}
+                            <semantic-form-text-input for="biological_object_title" label="Biological object title/name" placeholder="Enter object title/name"></semantic-form-text-input>
+                        {{/if}}
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}object_primary_id_min1{{else}}object_primary_id{{/if}}"
                                                             label="Object identifier (preferred)"

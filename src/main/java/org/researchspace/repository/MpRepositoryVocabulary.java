@@ -55,6 +55,11 @@ public class MpRepositoryVocabulary {
     public static final String FEDERATION_NAMESPACE = "http://www.researchspace.org/resource/system/ephedra#";
 
     /**
+     * Namespace for the SQL configuration properties of custom services.
+     */
+    public static final String SQL_NAMESPACE = "http://www.researchspace.org/resource/system/sql#";
+
+    /**
      * For each federation member declared in the federation descriptor,
      * delegateRepositoryID points to its repository ID.
      */
@@ -126,6 +131,11 @@ public class MpRepositoryVocabulary {
     public static final IRI AUTHORIZATION_KEY = VF.createIRI(FEDERATION_NAMESPACE, "authKey");
     public static final IRI AUTHORIZATION_VALUE = VF.createIRI(FEDERATION_NAMESPACE, "authValue");
     public static final IRI AUTHORIZATION_LOCATION = VF.createIRI(FEDERATION_NAMESPACE, "authLocation");
+
+    // SQL authorization
+    public static final IRI INCLUDE_SQL_QUERY = VF.createIRI(SQL_NAMESPACE, "includesSQLQuery");
+    public static final IRI HAS_QUERY_ID = VF.createIRI(SQL_NAMESPACE, "hasQueryId");
+    public static final IRI HAS_QUERY_TEXT = VF.createIRI(SQL_NAMESPACE, "text");
 
     public static final Set<IRI> queryHints = Sets.newHashSet(EXECUTE_FIRST, EXECUTE_LAST, DISABLE_JOIN_REORDERING);
 

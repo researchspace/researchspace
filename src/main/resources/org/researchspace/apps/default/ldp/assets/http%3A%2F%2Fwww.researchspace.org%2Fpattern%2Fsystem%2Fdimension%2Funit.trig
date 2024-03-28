@@ -3,37 +3,55 @@
   <http://www.researchspace.org/pattern/system/dimension/unit> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.w3.org/2000/01/rdf-schema#label> "Dimension unit";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-ddb952535a0c45a690e2f230b44f6852-848l49;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-92f8d44b96fa49c3925feccad16f2172-0c0y9;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-ddb952535a0c45a690e2f230b44f6852-5bc3oi;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-ddb952535a0c45a690e2f230b44f6852-84oip;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-ddb952535a0c45a690e2f230b44f6852-eupnv9;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-92f8d44b96fa49c3925feccad16f2172-cvl79e;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/dimension>;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E58_Measurement_Unit>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-92f8d44b96fa49c3925feccad16f2172-g4cvbf;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-92f8d44b96fa49c3925feccad16f2172-9ajcl7;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-92f8d44b96fa49c3925feccad16f2172-g1usj;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-26T11:29:47.235Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-28T16:16:42.045Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-ddb952535a0c45a690e2f230b44f6852-84oip a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {
-    $subject crm:P91_has_unit $value .
-}  WHERE {
-    $subject crm:P91_has_unit $value .
+  _:genid-92f8d44b96fa49c3925feccad16f2172-g4cvbf a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P91_has_unit $value .
+     
+  ?value a crm:E55_Type .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .
+  ?value skos:prefLabel ?label .
 }""" .
   
-  _:genid-ddb952535a0c45a690e2f230b44f6852-5bc3oi a <http://spinrdf.org/sp#Query>;
+  _:genid-92f8d44b96fa49c3925feccad16f2172-cvl79e a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P91_has_unit $value . 
 } WHERE {}""" .
   
-  _:genid-ddb952535a0c45a690e2f230b44f6852-848l49 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-  $subject crm:P91_has_unit $value . 
+  _:genid-92f8d44b96fa49c3925feccad16f2172-0c0y9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+    $subject crm:P91_has_unit $value .
+}  WHERE {
+    $subject crm:P91_has_unit $value .
+      
+    ?value a crm:E55_Type .
+    ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .
+    ?value skos:prefLabel ?label .
 }""" .
   
-  _:genid-ddb952535a0c45a690e2f230b44f6852-eupnv9 a <http://spinrdf.org/sp#Query>;
+  _:genid-92f8d44b96fa49c3925feccad16f2172-9ajcl7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E55_Type .
+  ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .
+  ?value skos:prefLabel ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ?label
+  LIMIT 10""" .
+  
+  _:genid-92f8d44b96fa49c3925feccad16f2172-g1usj a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a crm:E55_Type .
   ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .

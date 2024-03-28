@@ -66,7 +66,29 @@
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
       <rs-tab event-key="detail" title="Details">
 
-
+        {{#if nested}}
+          <mp-overlay-dialog  id='OSMnested-importResourceFromAPI-dialog' 
+                              title="Import place from OpenStreetMap" 
+                              type="lightbox">
+              <mp-overlay-dialog-trigger>
+                  <button class="btn btn-action btn-textAndIcon" style="margin-top: 15px; width: 100%;">
+                      <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                      <span>Import from OpenStreetMap</span>
+                  </button>
+              </mp-overlay-dialog-trigger>
+              <mp-overlay-dialog-content>
+                  <div class="page__section-container">
+                      <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
+                      <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
+                                          options='{
+                                                  "scheme": "{{collection}}", 
+                                                  "viewId": "OSMnested"
+                                          }'>
+                      </inline-template>
+                  </div>
+              </mp-overlay-dialog-content>
+          </mp-overlay-dialog>
+        {{/if}}
 
         <div class="form-2column-container">
           <div>
@@ -118,7 +140,8 @@
                                                     "nestedForm": "{{{{raw}}}}
                                                                     {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
                                                                     apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
-                                                                {{{{/raw}}}}"
+                                                                {{{{/raw}}}}",
+                                                    "modalId":"pippo"
                                                 }
                                               ]'>
             </semantic-form-autocomplete-input>

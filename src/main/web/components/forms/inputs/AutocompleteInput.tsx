@@ -40,7 +40,8 @@ import { RdfLiteral } from 'platform/ontodia/src/ontodia';
 
 type nestedFormEl = {
   label?: string,
-  nestedForm?: string  
+  nestedForm?: string
+  modalId?: string
 }
 
 export interface AutocompleteInputProps extends AtomicValueInputProps {
@@ -63,7 +64,7 @@ interface State {
   activeForm?: string;
   nestedFormTemplates?: nestedFormEl[];
   labelFormSelected?: string;
-  
+  modalId?: string
 }
 
 const CLASS_NAME = 'autocomplete-text-field';
@@ -164,8 +165,10 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
 
   private onDropdownSelectHandler(label: string) {
     const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
+    const modalId = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].modalId
     this.setState({
-      labelFormSelected: label
+      labelFormSelected: label,
+      modalId
     })
     this.openSelectedNestedForm(nestedFormTemplateSelected)
   }
@@ -184,6 +187,7 @@ export class AutocompleteInput extends AtomicValueInput<AutocompleteInputProps, 
         <ValidationMessages errors={FieldValue.getErrors(this.props.value)} />
         {this.state.nestedFormOpen ? (
           <NestedModalForm
+            modalId={this.state.modalId}
             subject={
             FieldValue.isEmpty(this.props.value) ? null : this.props.value.value as Rdf.Iri
             }

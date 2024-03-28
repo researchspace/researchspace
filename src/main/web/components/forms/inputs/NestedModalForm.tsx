@@ -46,6 +46,7 @@ export interface NestedModalFormProps {
   onCancel: () => void;
   children: ReactElement<ResourceEditorFormProps> | undefined;
   parent: React.RefObject<HTMLElement>;
+  modalId?: string
 }
 
 export class NestedModalForm extends Component<NestedModalFormProps, {}> {
@@ -56,7 +57,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
   }
 
   render() {
-    const { definition, title, onSubmit, onCancel, children, subject, parent } = this.props;
+    const { definition, title, onSubmit, onCancel, children, subject, parent, modalId } = this.props;
     const propsOverride: Partial<ResourceEditorFormProps> = {
       id: children.props.id,
       browserPersistence: false,
@@ -81,6 +82,7 @@ export class NestedModalForm extends Component<NestedModalFormProps, {}> {
     const modalTitle = title ?? `${getPreferredLabel(definition.label) || definition.id || 'Value'}`
     return (
       <Modal
+        id={modalId}
         show={true}
         onHide={onCancel}
         container={

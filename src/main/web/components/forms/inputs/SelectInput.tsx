@@ -43,7 +43,8 @@ import { SparqlClient, SparqlUtil } from 'platform/api/sparql';
 
 type nestedFormEl = {
   label?: string,
-  nestedForm?: string  
+  nestedForm?: string
+  modalId?: string
 }
 
 export interface SelectInputProps extends AtomicValueInputProps {
@@ -102,6 +103,7 @@ interface State {
   activeForm?: string;
   nestedFormTemplates?: nestedFormEl[];
   labelFormSelected?: string;
+  modalId?: string
 }
 
 const SELECT_TEXT_CLASS = 'select-text-field';
@@ -302,8 +304,10 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
 
   private onDropdownSelectHandler(label: string) {
     const nestedFormTemplateSelected = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].nestedForm
+    const modalId = this.state.nestedFormTemplates.filter((e) => e.label === label)[0].modalId
     this.setState({
-      labelFormSelected: label
+      labelFormSelected: label,
+      modalId
     })
     this.openSelectedNestedForm(nestedFormTemplateSelected)
   }
@@ -373,6 +377,7 @@ export class SelectInput extends AtomicValueInput<SelectInputProps, State> {
           
         {this.state.nestedFormOpen ? (
           <NestedModalForm
+            modalId={this.state.modalId}
             subject={
             FieldValue.isEmpty(this.props.value) ? null : this.props.value.value as Rdf.Iri
             }

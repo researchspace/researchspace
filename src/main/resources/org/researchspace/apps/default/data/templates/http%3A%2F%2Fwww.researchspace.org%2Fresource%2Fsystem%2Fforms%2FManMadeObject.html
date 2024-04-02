@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/man-made-object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/man_made_object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -415,7 +415,7 @@
                                         </mp-event-trigger>
                                     </div>
                                     </div>
-                                    <div style="flex: 1; padding: 18px 2px;">
+                                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                                         {{#if node}}
                                             {{#bind object=node }}
                                                 <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
@@ -699,19 +699,27 @@
                             <semantic-form-text-input for="dimension_value" label="Value" placeholder="Enter measured value" render-header="false"></semantic-form-text-input>
                         </div>
                         <div style="flex: 1;">
-                            <semantic-form-select-input for='dimension_unit' 
-                                                        render-header="false"
-                                                        placeholder="Select dimension unit" 
-                                                        nested-form-templates='[ 
-                                                            {
-                                                            "label": "Dimension unit",
-                                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                            scheme=\"http://www.researchspace.org/resource/vocab/dimension_unit\"
-                                                                                            entityType=\"dimension unit\" }}
-                                                                            {{{{/raw}}}}"
-                                                            }
-                                                        ]'>
-                            </semantic-form-select-input>
+                            <semantic-form-tree-picker-input    for='dimension_unit' 
+                                                                label="Dimension unit"
+                                                                placeholder="Select dimension unit" 
+                                                                close-dropdown-on-selection='true'
+                                                                tree-patterns='{"scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                                                "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .",
+                                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                                "labelPattern": "?item skos:prefLabel ?label"
+                                                                            }'
+
+                                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                            "view": "vocabulary-content",
+                                                                            "scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                                            "tooltip": "Open list of dimension units"
+                                                                            }'
+                                                
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
+                                                                                                    entityType="dimension unit" }}{{{{/raw}}}}'
+                                                >
+                            </semantic-form-tree-picker-input>
                         </div>
                         <div style="flex: 1;">
                             <semantic-form-text-input for='dimension_description' render-header="false" placeholder="Enter description/comment"></semantic-form-text-input>

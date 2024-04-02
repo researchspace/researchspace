@@ -1,0 +1,74 @@
+
+<http://www.researchspace.org/pattern/system/temporal_entity/has_timespan/context> {
+  <http://www.researchspace.org/pattern/system/temporal_entity/has_timespan> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Has timespan";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/period>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f42b0bf464004d73a8ae243d62bc58eb-likh29;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f42b0bf464004d73a8ae243d62bc58eb-syqh8;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f42b0bf464004d73a8ae243d62bc58eb-340mul;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E2_Temporal_Entity>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f42b0bf464004d73a8ae243d62bc58eb-16e8kj;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f42b0bf464004d73a8ae243d62bc58eb-mpy6r;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-02T14:56:37.578+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f42b0bf464004d73a8ae243d62bc58eb-syqh8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  $subject crm:P4_has_time-span $value . 
+  $value crm:P4i_is_time-span_of $subject .
+}  WHERE {
+  $subject crm:P4_has_time-span $value . 
+  $value crm:P4i_is_time-span_of $subject .
+   
+  ?value a crm:E52_Time-Span .
+  ?value crm:P170i_time_is_defined_by ?timePrimitive .
+  ?timePrimitive a crm:E61_Time_Primitive .
+  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  ?timePrimitive crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-f42b0bf464004d73a8ae243d62bc58eb-likh29 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E52_Time-Span .
+  ?value crm:P170i_time_is_defined_by ?timePrimitive .
+  ?timePrimitive a crm:E61_Time_Primitive .
+  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  ?timePrimitive crm:P190_has_symbolic_content ?label .
+} ORDER BY ?label""" .
+  
+  _:genid-f42b0bf464004d73a8ae243d62bc58eb-mpy6r a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P4_has_time-span $value . 
+  
+  ?value a crm:E52_Time-Span .
+  ?value crm:P170i_time_is_defined_by ?timePrimitive .
+  ?timePrimitive a crm:E61_Time_Primitive .
+  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  ?timePrimitive crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-f42b0bf464004d73a8ae243d62bc58eb-16e8kj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E52_Time-Span .
+  ?value crm:P170i_time_is_defined_by ?timePrimitive .
+  ?timePrimitive a crm:E61_Time_Primitive .
+  ?timePrimitive crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/time_appellation> .
+  ?timePrimitive crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-f42b0bf464004d73a8ae243d62bc58eb-340mul a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P4_has_time-span $value . 
+  $value crm:P4i_is_time-span_of $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/temporal_entity/has_timespan> .
+}

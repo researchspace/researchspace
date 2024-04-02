@@ -1,0 +1,75 @@
+
+<http://www.researchspace.org/pattern/system/condition_state/identified_by_assessment/context> {
+  <http://www.researchspace.org/pattern/system/condition_state/identified_by_assessment>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-9a51967586f64016bf116b82c8d81e8c-3mjvm;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/condition_state>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-9a51967586f64016bf116b82c8d81e8c-jrvr8k;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-9a51967586f64016bf116b82c8d81e8c-nmcl2x;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Identified by condition assessment";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E14_Condition_Assessment>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-9a51967586f64016bf116b82c8d81e8c-kqzxb;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E3_Condition_State>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-9a51967586f64016bf116b82c8d81e8c-wvn8ae;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-02T17:49:28.475+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-9a51967586f64016bf116b82c8d81e8c-wvn8ae a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  	$subject crm:P35i_was_identified_by $value . 
+  	$value crm:P35_has_identified $subject .
+} WHERE {
+  	$subject crm:P35i_was_identified_by $value . 
+  	$value crm:P35_has_identified $subject .
+      
+    ?value a crm:E14_Condition_Assessment .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_assessment_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-9a51967586f64016bf116b82c8d81e8c-3mjvm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  	$subject crm:P35i_was_identified_by $value . 
+
+    ?value a crm:E14_Condition_Assessment .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_assessment_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-9a51967586f64016bf116b82c8d81e8c-nmcl2x a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  	$subject crm:P35i_was_identified_by $value . 
+  	$value crm:P35_has_identified $subject .
+} WHERE {}""" .
+  
+  _:genid-9a51967586f64016bf116b82c8d81e8c-jrvr8k a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E14_Condition_Assessment .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_assessment_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(?label)""" .
+  
+  _:genid-9a51967586f64016bf116b82c8d81e8c-kqzxb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E14_Condition_Assessment .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_assessment_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/condition_state/identified_by_assessment> .
+}

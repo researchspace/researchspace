@@ -95,33 +95,39 @@
                                               fields='[[fieldDefinitions
                                                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                                                           
-                                                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                                                           dimension_value="http://www.researchspace.org/pattern/system/dimension/value"
                                                           dimension_unit="http://www.researchspace.org/pattern/system/dimension/unit"
                                                           dimension_description="http://www.researchspace.org/pattern/system/entity/description"
                                                       ]]'>
 
                 <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'></semantic-form-hidden-input>
-                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/timespan_duration'></semantic-form-hidden-input>
 
                 <div class="form-inline-inputs">
                     <div style="flex: 1;">
                         <semantic-form-text-input for="dimension_value" label="Value" placeholder="Enter value" render-header="false"></semantic-form-text-input>
                     </div>
                     <div style="flex: 1;">
-                        <semantic-form-select-input for='dimension_unit' 
-                                                    render-header="false"
-                                                    placeholder="Select time unit" 
-                                                    nested-form-templates='[ 
-                                                                              {
-                                                                                "label": "Time unit",
-                                                                                "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                                                scheme=\"http://www.researchspace.org/resource/vocab/time_unit\"
-                                                                                                                entityType=\"time unit\" }}
-                                                                                               {{{{/raw}}}}"
-                                                                              }
-                                                                            ]'> 
-                        </semantic-form-select-input>
+                        <semantic-form-tree-picker-input    for='dimension_unit' 
+                                                            render-header="false"
+                                                            placeholder="Select time unit" 
+                                                            close-dropdown-on-selection='true'
+                                                            tree-patterns='{"scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                                            "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .",
+                                                                            "relationPattern": "?item crm:P127_has_broader_term <http://www.researchspace.org/resource/vocab/dimension_unit/time>",
+                                                                            "labelPattern": "?item skos:prefLabel ?label"
+                                                                        }'
+
+                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                        "view": "vocabulary-content",
+                                                                                        "scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
+                                                                                        "tooltip": "Open list of time units"
+                                                                                        }'
+                                            
+                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
+                                                                                                entityType="dimension unit" }}{{{{/raw}}}}'
+                                            >
+                        </semantic-form-tree-picker-input>
                     </div>
                     <div style="flex: 1;">
                         <semantic-form-text-input for='dimension_description' render-header="false" placeholder="Enter description/comment"></semantic-form-text-input>
@@ -259,7 +265,7 @@
                         </mp-event-trigger>
                         </div>
                     </div>
-                    <div style="flex: 1; padding: 18px 2px;">
+                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                         {{#if node}}
                             {{#bind timespan=node }}
                             <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
@@ -393,19 +399,19 @@
         </semantic-form-select-input>
   
         <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                            label="Influenced"
+                                            label="Influenced by"
                                             placeholder="Select activity influenced by the timespan" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
   
         <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                            label="Motivated"
+                                            label="Motivated by"
                                             placeholder="Select activity motivated by the timespan" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
   
         <semantic-form-select-input for='entity_measurement' 
-                                    label="Measurement"
+                                    label="Measured by"
                                     placeholder="Select measurement" 
                                     nested-form-templates='[ 
                                         {

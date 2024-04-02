@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/period/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/condition_state/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
 
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -12,25 +12,25 @@
                           entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                          period_name="http://www.researchspace.org/pattern/system/period/period_name"
-                          period_description="http://www.researchspace.org/pattern/system/entity/description"
+                          condition_state_name="http://www.researchspace.org/pattern/system/condition_state/condition_state_name"
+                          condition_state_description="http://www.researchspace.org/pattern/system/entity/description"
                           temporal_entity_date="http://www.researchspace.org/pattern/system/temporal_entity/has_timespan"
-                          period_place="http://www.researchspace.org/pattern/system/period/took_place_at_place"
 
                           entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                           entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                           entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
 
-                          period_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
-                          period_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
+                          condition_state_forms_part_of="http://www.researchspace.org/pattern/system/condition_state/forms_part_of"
+                          condition_state_consist_of="http://www.researchspace.org/pattern/system/condition_state/consist_of"
 
+                          condition_state_identified_by_assessment="http://www.researchspace.org/pattern/system/condition_state/identified_by_assessment"
                           entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
                           entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                           entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
                           entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
                           entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
-                          period_took_place_on_physical_thing="http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing"
+                          condition_state_condition_of_physical_thing="http://www.researchspace.org/pattern/system/condition_state/condition_of_physical_thing"
                           entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
                           entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                           entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
@@ -38,7 +38,7 @@
                 ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E4_Period'> </semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E3_Condition_State'> </semantic-form-hidden-input>
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
@@ -48,12 +48,12 @@
 
         <div class="form-2column-container">
           <div>
-            <semantic-form-text-input for="period_name" label="Period name" placeholder="Enter period name"></semantic-form-text-input>
+            <semantic-form-text-input for="condition_state_name" label="Condition state name/title" placeholder="Enter condition state name/title"></semantic-form-text-input>
 
-            <semantic-form-text-input for="period_description" multiline="true" label="Period description" placeholder="Enter period description"></semantic-form-text-input>
-
+            <semantic-form-text-input for="condition_state_description" multiline="true" label="Condition state description" placeholder="Enter condition state description"></semantic-form-text-input>
+            
             <semantic-form-autocomplete-input for='temporal_entity_date' 
-                                              label="Period timespan" 
+                                              label="Condition state timespan" 
                                               placeholder="Select timespan" 
                                               nested-form-templates='[ 
                                                 {
@@ -69,23 +69,9 @@
               [[> Platform:formTimespanTable]]
             {{/if}}
 
-            <semantic-form-autocomplete-input for="period_place" 
-                                              label="Period place" 
-                                              placeholder="Select place"
-                                              nested-form-templates='[ 
-                                                {
-                                                    "label": "Place",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Place\" nested=true editable=true mode=\"new\"
-                                                                    apiResourceURI=false apiResourceName=false apiResourceLabel=false apiResourceDescription=false apiResourceosmGeoCoordinates=false}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'>
-            </semantic-form-autocomplete-input>
-
             <div class="inline-composite-container">
               <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Period preferred identifier"
+                                              label="Condition state preferred identifier"
                                               new-subject-template="/entity_id" 
                                               fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -104,7 +90,7 @@
 
             <div class="inline-composite-container">
               <semantic-form-composite-input  for="entity_id"
-                                              label="Period other identifier"
+                                              label="Condition state other identifier"
                                               new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                               fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -153,58 +139,58 @@
         </div>
       </rs-tab>
 
-      <rs-tab event-key="period" title="Periods">
+      <rs-tab event-key="condition_state" title="Condition states">
 
         {{#if scheme}}
-            <semantic-form-tree-picker-input    for='period_forms_part_of_event' 
-                                                label="Forms part of period" 
-                                                placeholder="Select period" 
+            <semantic-form-tree-picker-input    for='condition_state_forms_part_of' 
+                                                label="Forms part of condition state" 
+                                                placeholder="Select condition state" 
                                                 default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
                                                 tree-patterns='{"scheme": "{{scheme}}",
                                                                 "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                                "relationPattern": "?item crm:P9i_forms_part_of ?parent",
+                                                                "relationPattern": "?item crm:P5i_forms_part_of ?parent",
                                                                 "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                                 ?appellation a crm:E41_Appellation .
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/period_name> .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> .
                                                                                 ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                                 query-item-label='SELECT ?label WHERE {
                                                                     ?item crm:P1_is_identified_by ?appellation .
                                                                     ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/period_name> .
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> .
                                                                     ?appellation crm:P190_has_symbolic_content ?label .
                                                                 }'> 
             </semantic-form-tree-picker-input>   
 
-            <semantic-form-tree-picker-input    for='period_consist_of_event' 
-                                                label="Consists of period" 
-                                                placeholder="Select period"
+            <semantic-form-tree-picker-input    for='condition_state_consist_of' 
+                                                label="Consists of condition state" 
+                                                placeholder="Select condition state"
                                                 tree-patterns='{"scheme": "{{scheme}}",
                                                                 "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                                "relationPattern": "?item crm:P9i_forms_part_of ?parent",
+                                                                "relationPattern": "?item crm:P5i_forms_part_of ?parent",
                                                                 "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                                 ?appellation a crm:E41_Appellation .
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/period_name> .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> .
                                                                                 ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                                 query-item-label='SELECT ?label WHERE {
                                                                     ?item crm:P1_is_identified_by ?appellation .
                                                                     ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/period_name> .
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> .
                                                                     ?appellation crm:P190_has_symbolic_content ?label .
                                                                 }'>
             </semantic-form-tree-picker-input> 
         {{else}}
             <div class="hierarchyView-form-container">
-                <mp-event-target-template-render id='{{viewId}}-period-componentsView' template='{{> periodComponents}}'>
-                <template id='periodComponents'>
+                <mp-event-target-template-render id='{{viewId}}-state-componentsView' template='{{> stateComponents}}'>
+                <template id='stateComponents'>
                     <div class="page__section-container formHierarchyView-container">
                         <div class="form-header-withButtons">
-                            <h4 style="margin: 0; align-self: end;">Period components view</h4>
+                            <h4 style="margin: 0; align-self: end;">Condition state components view</h4>
                             <div class="btn-form-actions"> 
-                            <mp-event-trigger id='{{viewId}}-period-componentsView-refresh-trigger' 
+                            <mp-event-trigger id='{{viewId}}-state-componentsView-refresh-trigger' 
                                                 type='Component.TemplateUpdate' 
-                                                targets='["{{viewId}}-period-componentsView"]'
+                                                targets='["{{viewId}}-state-componentsView"]'
                                                 >
                                 <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
                                 <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
@@ -215,15 +201,15 @@
                         </div>
                         <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
                             {{#if node}}
-                                {{#bind period=node }}
+                                {{#bind state=node }}
                                     <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                            BIND(<{{node}}> as ?period)
+                                                            BIND(<{{node}}> as ?state)
                                                             
-                                                            { ?period crm:P9_consists_of ?node . }
+                                                            { ?state crm:P5_consists_of ?node . }
                                                             UNION
-                                                            { ?period crm:P9i_forms_part_of ?parent . }
+                                                            { ?state crm:P5i_forms_part_of ?parent . }
                                                             
-                                                            ?node crm:P9i_forms_part_of ?parent .
+                                                            ?node crm:P5i_forms_part_of ?parent .
 
                                                             FILTER(ISIRI(?node))
                                                         }
@@ -234,19 +220,17 @@
                                         <template id='nodeTemplate'>
                                             <semantic-query query='SELECT ?node ?nodeLabel WHERE {
                                                                     BIND (<{{node.value}}> as ?node)
-                                                                    ?node a ?ontologyClass .
-                                                                    ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+                                                                    ?node a crm:E3_Condition_State .
                                                                     ?node crm:P1_is_identified_by ?appellation .
                                                                     ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type ?type . 
-                                                                    ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/condition_state_title> . 
                                                                     ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
                                                                 }'
                                                             template='{{> template}}'>
                                                 
                                                 <template id='template'>
                                                     <div>
-                                                        {{#ifCond bindings.0.node.value "===" period}}
+                                                        {{#ifCond bindings.0.node.value "===" state}}
                                                             <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
                                                         {{else}}
                                                             <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
@@ -269,16 +253,30 @@
                 </mp-event-target-template-render>
 
                 <div class="page__section-container formHierarchyInputs-container">
-                    <semantic-form-autocomplete-input   for='period_forms_part_of_event' 
-                                                        label="Forms part of" 
-                                                        placeholder="Select period/event" 
-                                                        nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
+                    <semantic-form-autocomplete-input   for='condition_state_forms_part_of' 
+                                                        label="Forms part of condition state" 
+                                                        placeholder="Select condition state" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Condition state",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/ConditionState\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
                     </semantic-form-autocomplete-input> 
 
-                    <semantic-form-autocomplete-input   for='period_consist_of_event' 
-                                                        label="Consists of" 
-                                                        placeholder="Select period/event" 
-                                                        nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'> 
+                    <semantic-form-autocomplete-input   for='condition_state_consist_of' 
+                                                        label="Consists of condition state" 
+                                                        placeholder="Select condition state" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Condition state",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                {{> \"http://www.researchspace.org/resource/system/forms/ConditionState\" nested=true editable=true mode=\"new\"}}
+                                                                            {{{{/raw}}}}"
+                                                            }
+                                                        ]'>  
                     </semantic-form-autocomplete-input> 
                 </div>
             </div>
@@ -288,9 +286,22 @@
 
       <rs-tab event-key="event" title="Events">
 
+        <semantic-form-autocomplete-input   for='condition_state_identified_by_assessment' 
+                                            label="Identified by condition assessment"
+                                            placeholder="Select condition assessment" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Condition assessment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/ConditionAssessment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input>
+
         <semantic-form-select-input for='entity_attributed_by_attribute_assignment' 
                                     label="Attributed by"
-                                    placeholder="Select what assigned attribute to the period" 
+                                    placeholder="Select what assigned attribute to the condition state" 
                                     nested-form-templates='[ 
                                         {
                                             "label": "Attribute assignment",
@@ -303,7 +314,7 @@
 
         <semantic-form-select-input for='entity_assigned_by_attribute_assignment' 
                                     label="Assigned by"
-                                    placeholder="Select what assigned the period" 
+                                    placeholder="Select what assigned the condition state" 
                                     nested-form-templates='[ 
                                         {
                                             "label": "Attribute assignment",
@@ -316,13 +327,13 @@
 
         <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                             label="Influenced by"
-                                            placeholder="Select activity influenced by the period" 
+                                            placeholder="Select activity influenced by the condition state" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_motivated_activity' 
                                             label="Motivated by"
-                                            placeholder="Select activity motivated by the period" 
+                                            placeholder="Select activity motivated by the condition state" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
@@ -342,27 +353,27 @@
 
       <rs-tab event-key="things" title="Things">
 
-        <semantic-form-autocomplete-input   for='period_took_place_on_physical_thing' 
-                                            label="Took place on or within" 
-                                            placeholder="Select thing" 
+        <semantic-form-autocomplete-input   for='condition_state_condition_of_physical_thing' 
+                                            label="Is condition of"
+                                            placeholder="Select thing/object" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-        </semantic-form-autocomplete-input> 
+        </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_depicted_by' 
                                             label="Depicted by"
-                                            placeholder="Select what depicts the period" 
+                                            placeholder="Select what depicts the condition state" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_subject_of' 
                                             label="Subject of"
-                                            placeholder="Select what is about the period" 
+                                            placeholder="Select what is about the condition state" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_referred_to_by' 
                                             label="Referred to by"
-                                            placeholder="Select what refers to the period" 
+                                            placeholder="Select what refers to the condition state" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
         </semantic-form-autocomplete-input>
 
@@ -658,6 +669,6 @@
 
   <semantic-form-errors></semantic-form-errors> 
     
-  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}period{{/if}}']]
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}condition state{{/if}}']]
 
 </semantic-form>

@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/activity/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/acquisition/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
 
                 fields='[[fieldDefinitions
                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -12,7 +12,7 @@
                           entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                          activity_title="http://www.researchspace.org/pattern/system/activity/activity_title"
+                          acquisition_title="http://www.researchspace.org/pattern/system/acquisition/acquisition_title"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
                           activity_research_question="http://www.researchspace.org/pattern/system/activity/research_question"
                           activity_status="http://www.researchspace.org/pattern/system/activity/current_status"
@@ -26,6 +26,8 @@
                           period_forms_part_of_event="http://www.researchspace.org/pattern/system/period/forms_part_of_period"
                           period_consist_of_event="http://www.researchspace.org/pattern/system/period/consist_of_period"
                           
+                          acquisition_transferred_title_from="http://www.researchspace.org/pattern/system/acquisition/transferred_title_from"
+                          acquisition_transferred_title_to="http://www.researchspace.org/pattern/system/acquisition/transferred_title_to"
                           activity_carried_out_by_domain="http://www.researchspace.org/pattern/system/activity/PC14_carried_out_by"
                           event_had_participant="http://www.researchspace.org/pattern/system/event/had_participant"
                           event_occurred_in_the_presence_of_actor="http://www.researchspace.org/pattern/system/event/occurred_in_the_presence_of_actor"
@@ -47,6 +49,7 @@
                           activity_used_specific_technique_procedure="http://www.researchspace.org/pattern/system/activity/used_specific_technique"
                           activity_used_object_of_type="http://www.researchspace.org/pattern/system/activity/used_object_of_type"
 
+                          acquisition_transferred_title_of="http://www.researchspace.org/pattern/system/acquisition/transferred_title_of"
                           activity_used_specific_object_domain="http://www.researchspace.org/pattern/system/activity/PC16_used_specific_object"
                           activity_was_intended_use_of_domain="http://www.researchspace.org/pattern/system/activity/PC19_was_intended_use_of"
                           event_occurred_in_the_presence_of_thing="http://www.researchspace.org/pattern/system/event/occurred_in_the_presence_of_thing"
@@ -58,7 +61,7 @@
                 ]]'>
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E7_Activity'> </semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition'> </semantic-form-hidden-input>
 
     {{#if type}}
       <semantic-form-hidden-input for="entity_has_type" default-value="{{type}}"></semantic-form-hidden-input>
@@ -73,29 +76,16 @@
 
         <div class="form-2column-container">
           <div>
-            <semantic-form-text-input for="activity_title" label="Activity title" placeholder="Enter activity title"></semantic-form-text-input>
+            <semantic-form-text-input for="acquisition_title" label="Acquisition title" placeholder="Enter acquisition title"></semantic-form-text-input>
 
-            <semantic-form-text-input for="entity_description" multiline="true" label="Activity description" placeholder="Enter activity description"></semantic-form-text-input>
-            
-            <semantic-form-select-input for='activity_research_question' 
-                                        label="Activity research question" 
-                                        placeholder="Enter the activity research question"
-                                        nested-form-templates='[ 
-                                          {
-                                            "label": "Research question",
-                                            "nestedForm": "{{{{raw}}}}
-                                                              {{> \"http://www.researchspace.org/resource/system/forms/ResearchQuestion\" nested=true editable=true mode=\"new\"}}
-                                                          {{{{/raw}}}}"
-                                          }
-                                        ]'>  
-            </semantic-form-select-input> 
+            <semantic-form-text-input for="entity_description" multiline="true" label="Acquisition description" placeholder="Enter acquisition description"></semantic-form-text-input>
 
             <div class="form-inline-inputs">
            
               <div style="flex: 1;">
                 <semantic-form-select-input for='activity_status' 
-                                            label="Activity status" 
-                                            placeholder="Select activity status" 
+                                            label="Acquisition status" 
+                                            placeholder="Select acquisition status" 
                                             nested-form-templates='[ 
                                               {
                                                 "label": "Status",
@@ -110,8 +100,8 @@
 
               <div style="flex: 1;">
                 <semantic-form-select-input for='activity_priority' 
-                                            label="Activity priority" 
-                                            placeholder="Select activity priority" 
+                                            label="Acquisition priority" 
+                                            placeholder="Select acquisition priority" 
                                             nested-form-templates='[ 
                                               {
                                                 "label": "Priority",
@@ -126,7 +116,7 @@
             </div>
 
             <semantic-form-autocomplete-input for='temporal_entity_date' 
-                                              label="Activity timespan/date" 
+                                              label="Acquisition timespan/date" 
                                               placeholder="Select timespan" 
                                               nested-form-templates='[ 
                                                 {
@@ -143,7 +133,7 @@
             {{/if}}
             
             <semantic-form-autocomplete-input for="period_place" 
-                                              label="Activity place" 
+                                              label="Acquisition place" 
                                               placeholder="Select place"
                                               nested-form-templates='[ 
                                                 {
@@ -158,7 +148,7 @@
 
             <div class="inline-composite-container">
               <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Activity preferred identifier"
+                                              label="Acquisition preferred identifier"
                                               new-subject-template="/entity_id" 
                                               fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -177,7 +167,7 @@
 
             <div class="inline-composite-container">
               <semantic-form-composite-input  for="entity_id"
-                                              label="Activity other identifier"
+                                              label="Acquisition other identifier"
                                               new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                               fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -228,40 +218,40 @@
 
         {{#if scheme}}
           <semantic-form-tree-picker-input    for='period_forms_part_of_event' 
-                                              label="Forms part of activity" 
-                                              placeholder="Select activity" 
+                                              label="Forms part of acquisition" 
+                                              placeholder="Select acquisition" 
                                               default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                               ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/activity_title> .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> .
                                                                               ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                               query-item-label='SELECT ?label WHERE {
                                                                   ?item crm:P1_is_identified_by ?appellation .
                                                                   ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/activity_title> .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> .
                                                                   ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'> 
           </semantic-form-tree-picker-input>   
 
           <semantic-form-tree-picker-input    for='period_consist_of_event' 
-                                              label="Consists of activity" 
-                                              placeholder="Select activity"
+                                              label="Consists of acquisition" 
+                                              placeholder="Select acquisition"
                                               tree-patterns='{"scheme": "{{scheme}}",
                                                               "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                               "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                               ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/activity_title> .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> .
                                                                               ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                               query-item-label='SELECT ?label WHERE {
                                                                   ?item crm:P1_is_identified_by ?appellation .
                                                                   ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/activity_title> .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> .
                                                                   ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'>
           </semantic-form-tree-picker-input> 
@@ -271,7 +261,7 @@
                 <template id='periodComponents'>
                     <div class="page__section-container formHierarchyView-container">
                         <div class="form-header-withButtons">
-                            <h4 style="margin: 0; align-self: end;">Activity components view</h4>
+                            <h4 style="margin: 0; align-self: end;">Components view</h4>
                             <div class="btn-form-actions"> 
                             <mp-event-trigger id='{{viewId}}-period-componentsView-refresh-trigger' 
                                                 type='Component.TemplateUpdate' 
@@ -359,6 +349,18 @@
 
       <rs-tab event-key="actor" title="Actors">
 
+        <semantic-form-autocomplete-input   for='acquisition_transferred_title_from' 
+                                            label="Transferred title from" 
+                                            placeholder="Select actor who relinquish ownership with the acquisition" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for='acquisition_transferred_title_to' 
+                                            label="Transferred title to" 
+                                            placeholder="Select actor that acquires the ownership after the acquisition" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
+        </semantic-form-autocomplete-input> 
+
         [[> Platform:formSwitchCarriedOutActor  for_kp='activity_carried_out_by_domain'
                                                 subjectLabel='Carried out by'
                                                 carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity'
@@ -381,43 +383,43 @@
 
         <semantic-form-autocomplete-input for='activity_continued_activity' 
                                           label="Continued" 
-                                          placeholder="Select what the activity continued" 
+                                          placeholder="Select what the acquisition continued" 
                                           nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
         </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input for='activity_was_continued_by_activity' 
                                           label="Was continued by" 
-                                          placeholder="Select what the activity was continued by" 
+                                          placeholder="Select what the acquisition was continued by" 
                                           nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
         </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input for='activity_done_in_preparation_of' 
                                           label="Done in preparation of" 
-                                          placeholder="Select what has been done in preparation of the activity" 
+                                          placeholder="Select what has been done in preparation of the acquisition" 
                                           nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
         </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input   for='event_purpose_of_activity' 
                                             label="Purpose of"
-                                            placeholder="Select activity that was purpose of the activity" 
+                                            placeholder="Select activity that was purpose of the acquisition" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                             label="Influenced by"
-                                            placeholder="Select activity influenced by the activity" 
+                                            placeholder="Select activity influenced by the acquisition" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_motivated_activity' 
                                             label="Motivated by"
-                                            placeholder="Select activity motivated by the activity" 
+                                            placeholder="Select activity motivated by the acquisition" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-select-input for='entity_attributed_by_attribute_assignment' 
                                     label="Attributed by"
-                                    placeholder="Select what assigned attribute to the activity" 
+                                    placeholder="Select what assigned attribute to the acquisition" 
                                     nested-form-templates='[ 
                                         {
                                             "label": "Attribute assignment",
@@ -430,7 +432,7 @@
 
         <semantic-form-select-input for='entity_assigned_by_attribute_assignment' 
                                     label="Assigned by"
-                                    placeholder="Select what assigned the activity" 
+                                    placeholder="Select what assigned the acquisition" 
                                     nested-form-templates='[ 
                                         {
                                             "label": "Attribute assignment",
@@ -456,6 +458,12 @@
       </rs-tab>
 
       <rs-tab event-key="thing" title="Things">
+
+        <semantic-form-autocomplete-input   for='acquisition_transferred_title_of' 
+                                            label="Transferred title of" 
+                                            placeholder="Select thing transferred in the acquisition" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
+        </semantic-form-autocomplete-input> 
 
         <div class="inline-composite-container">
           <semantic-form-composite-input  for="activity_used_specific_object_domain" 
@@ -570,19 +578,19 @@
 
         <semantic-form-autocomplete-input   for='entity_depicted_by' 
                                             label="Depicted by"
-                                            placeholder="Select what depicts the activity" 
+                                            placeholder="Select what depicts the acquisition" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_subject_of' 
                                             label="Subject of"
-                                            placeholder="Select what is about the activity" 
+                                            placeholder="Select what is about the acquisition" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_referred_to_by' 
                                             label="Referred to by"
-                                            placeholder="Select what refers to the activity" 
+                                            placeholder="Select what refers to the acquisition" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
         </semantic-form-autocomplete-input>
 
@@ -673,7 +681,7 @@
 
         <semantic-form-autocomplete-input for='activity_motivated_by' 
                                           label="Motivated by" 
-                                          placeholder="Select item that is regarded as a reason for carrying out the activity" 
+                                          placeholder="Select item that is regarded as a reason for carrying out the acquisition" 
                                           nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -691,6 +699,6 @@
 
   <semantic-form-errors></semantic-form-errors> 
     
-  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}activity{{/if}}']]
+  [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}acquisition{{/if}}']]
 
 </semantic-form>

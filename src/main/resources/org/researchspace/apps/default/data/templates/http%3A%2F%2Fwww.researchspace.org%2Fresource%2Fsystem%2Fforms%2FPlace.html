@@ -15,7 +15,7 @@
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
                         place_name="http://www.researchspace.org/pattern/system/place/name"
-                        place_description="http://www.researchspace.org/pattern/system/entity/description"
+                        entity_description="http://www.researchspace.org/pattern/system/entity/description"
                         place_address_line1="http://www.researchspace.org/pattern/system/place/address_line1"
                         place_address_line2="http://www.researchspace.org/pattern/system/place/address_line2"
                         place_city="http://www.researchspace.org/pattern/system/place/city"
@@ -36,13 +36,13 @@
                         place_residence_of_actor="http://www.researchspace.org/pattern/system/place/residence_of_actor"
 
                         place_witnessed_period="http://www.researchspace.org/pattern/system/place/witnessed_period"
-                        place_destination_of_move="http://www.researchspace.org/pattern/system/place/destination_of_move"
                         place_origin_of_move="http://www.researchspace.org/pattern/system/place/origin_of_move"
+                        place_destination_of_move="http://www.researchspace.org/pattern/system/place/destination_of_move"
                         entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
                         entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                        entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
                         entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
                         entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
-                        entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
                         place_current_permanent_location_of="http://www.researchspace.org/pattern/system/place/current_permanent_location_of"
                         place_currently_holds="http://www.researchspace.org/pattern/system/place/currently_holds"
@@ -66,30 +66,6 @@
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
       <rs-tab event-key="detail" title="Details">
 
-        {{#if nested}}
-          <mp-overlay-dialog  id='OSMnested-importResourceFromAPI-dialog' 
-                              title="Import place from OpenStreetMap" 
-                              type="lightbox">
-              <mp-overlay-dialog-trigger>
-                  <button class="btn btn-action btn-textAndIcon" style="margin-top: 15px; width: 100%;">
-                      <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                      <span>Import from OpenStreetMap</span>
-                  </button>
-              </mp-overlay-dialog-trigger>
-              <mp-overlay-dialog-content>
-                  <div class="page__section-container">
-                      <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
-                      <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
-                                          options='{
-                                                  "scheme": "{{collection}}", 
-                                                  "viewId": "OSMnested"
-                                          }'>
-                      </inline-template>
-                  </div>
-              </mp-overlay-dialog-content>
-          </mp-overlay-dialog>
-        {{/if}}
-
         <div class="form-2column-container">
           <div>
             {{#if apiResourceLabel}}
@@ -108,10 +84,10 @@
           
             {{#if apiResourceDescription}}
               <div class="focused-input-container">
-                <semantic-form-text-input for="place_description" default-value="{{apiResourceDescription}}" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
+                <semantic-form-text-input for="entity_description" default-value="{{apiResourceDescription}}" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
               </div>
             {{else}}
-              <semantic-form-text-input for="place_description" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
+              <semantic-form-text-input for="entity_description" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
             {{/if}}
 
             <semantic-form-text-input for="place_address_line1" label="Address line 1" placeholder="Enter address line 1"></semantic-form-text-input>
@@ -280,7 +256,7 @@
         </div>
       </rs-tab>
 
-      <rs-tab event-key="place" title="Places">
+      <rs-tab event-key="component" title="Components">
         {{#if scheme}}
           <semantic-form-tree-picker-input  for="place_falls_within_place" 
                                             label="Falls within place" 
@@ -474,9 +450,9 @@
                                           nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'>  
         </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='place_destination_of_move' 
-                                    label="Destination of move"
-                                    placeholder="Select move/movement that moved to the place" 
+        <semantic-form-select-input for='place_origin_of_move' 
+                                    label="Origin of move"
+                                    placeholder="Select move/movement that moved from the place" 
                                     nested-form-templates='[ 
                                         {
                                             "label": "Move",
@@ -487,9 +463,9 @@
                                     ]'>  
         </semantic-form-select-input>
 
-        <semantic-form-select-input for='place_origin_of_move' 
-                                    label="Origin of move"
-                                    placeholder="Select move/movement that moved from the place" 
+        <semantic-form-select-input for='place_destination_of_move' 
+                                    label="Destination of move"
+                                    placeholder="Select move/movement that moved to the place" 
                                     nested-form-templates='[ 
                                         {
                                             "label": "Move",
@@ -526,18 +502,6 @@
                                     ]'>  
         </semantic-form-select-input>
 
-        <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                            label="Influenced by"
-                                            placeholder="Select activity influenced by the place" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                            label="Motivated by"
-                                            placeholder="Select activity motivated by the place" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-        </semantic-form-autocomplete-input>
-
         <semantic-form-select-input for='entity_measurement' 
                                     label="Measured by"
                                     placeholder="Select measurement" 
@@ -550,6 +514,20 @@
                                         }
                                     ]'>  
         </semantic-form-select-input>
+
+        <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                            label="Influenced by"
+                                            placeholder="Select activity influenced by the place" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                            label="Motivated by"
+                                            placeholder="Select activity motivated by the place" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+
+
       </rs-tab>
 
       <rs-tab event-key="thing" title="Things">
@@ -905,3 +883,47 @@
   <semantic-form-errors></semantic-form-errors>
   [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}place{{/if}}']]
 </semantic-form>
+
+[[!--
+{{#if nested}}
+  <mp-event-target-template-render id='{{viewId}}-nested-form' template='{{> template}}'>
+    <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
+                    on-event-source='OSMnested-select-api-resource-trigger' 
+                    on-event-type='apiResourceSelect'
+                    proxy-event-type='Component.TemplateUpdate' 
+                    proxy-targets='["{{viewId}}-nested-form"]'  
+                    additional-data='{"mode": "new", "selectedApiResource": "true"}'
+    ></mp-event-proxy>
+
+    <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
+                    on-event-source='OSMnested-select-api-resource-trigger' 
+                    on-event-type='apiResourceSelect'
+                    proxy-event-type='OverlayDialog.Close' 
+                    proxy-targets='["OSMnested-importResourceFromAPI-dialog"]'
+    ></mp-event-proxy>
+
+    <mp-overlay-dialog  id='OSMnested-importResourceFromAPI-dialog' 
+                        title="Import place from OpenStreetMap" 
+                        type="lightbox">
+
+      <mp-overlay-dialog-trigger>
+          <button class="btn btn-action btn-textAndIcon" style="margin-top: 15px; width: 100%;">
+              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+              <span>Import from OpenStreetMap</span>
+          </button>
+      </mp-overlay-dialog-trigger>
+      <mp-overlay-dialog-content>
+          <div class="page__section-container">
+              <h6 style="margin: 0px 0 7px;">Search on OpenStreetMap</h6>
+              <inline-template template-iri='[[resolvePrefix "rsp:ImportPlaceFromOSM"]]' 
+                                  options='{
+                                          "scheme": "{{collection}}", 
+                                          "viewId": "OSMnested"
+                                  }'>
+              </inline-template>
+          </div>
+      </mp-overlay-dialog-content>
+    </mp-overlay-dialog>
+  </mp-event-target-template-render>
+{{/if}}
+--]]

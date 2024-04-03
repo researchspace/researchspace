@@ -226,36 +226,36 @@
                   {{/case}}
 
                   {{#case "view" break=true}}
-                  <h2 class="resource-editView-formHeader-title">
-                    <div>
-                      <div class="link-draggable">
-                        <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
-                        <mp-draggable iri='{{iri}}'>
-                          <div>
-                            {{#if resourceLabelPattern}}
-                                <semantic-query query="SELECT ?label WHERE {
-                                                        BIND(<{{iri}}> as ?item) .
-                                                        {{resourceLabelPattern}}
-                                                      }"
-                                                template='{{> template}}'>
+                    <h2 class="resource-editView-formHeader-title">
+                      <div>
+                        <div class="link-draggable">
+                          <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
+                          <mp-draggable iri='{{iri}}'>
+                            <div>
+                              {{#if resourceLabelPattern}}
+                                  <semantic-query query="SELECT ?label WHERE {
+                                                          BIND(<{{iri}}> as ?item) .
+                                                          {{resourceLabelPattern}}
+                                                        }"
+                                                  template='{{> template}}'>
 
-                                  <template id='template'>
-                                      <div>{{bindings.0.label.value}}</div>
-                                  </template>
-                                </semantic-query>
-                              {{else}}
-                                <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                              {{/if}}
-                            </div>
-                        </mp-draggable>
-                      </div>
-                      {{#if resourceName}}
-                        <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
-                          {{resourceName}}
+                                    <template id='template'>
+                                        <div>{{bindings.0.label.value}}</div>
+                                    </template>
+                                  </semantic-query>
+                                {{else}}
+                                  <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                                {{/if}}
+                              </div>
+                          </mp-draggable>
                         </div>
-                      {{/if}}
-                    </div>
-                  </h2>
+                        {{#if resourceName}}
+                          <div class="text-type-subheader" style="margin-left: 22px; margin-top: 5px;">
+                            {{resourceName}}
+                          </div>
+                        {{/if}}
+                      </div>
+                    </h2>
                   {{/case}}
                 
                   {{#case "deleted" break=true}}
@@ -466,13 +466,6 @@
                           proxy-targets='["{{viewId}}-importResourceFromAPI-dialog"]'
           ></mp-event-proxy>
 
-          <mp-event-proxy id='{{viewId}}-closeModal-onSelect-APIResource-proxy'
-                          on-event-source='OSMnested-select-api-resource-trigger' 
-                          on-event-type='apiResourceSelect'
-                          proxy-event-type='OverlayDialog.Close' 
-                          proxy-targets='["OSMnested-importResourceFromAPI-dialog"]'
-          ></mp-event-proxy>
-
           <mp-event-proxy id='{{viewId}}-closeModal-onOpen-existing-place-proxy'
                           on-event-source='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
                           on-event-type='Dashboard.AddFrame'
@@ -485,14 +478,6 @@
                           on-event-type='apiResourceSelect'
                           proxy-event-type='Component.TemplateUpdate' 
                           proxy-targets='["{{viewId}}-term-forms"]'
-                          additional-data='{"mode": "new", "selectedApiResource": "true"}'
-          ></mp-event-proxy>
-
-          <mp-event-proxy id='{{viewId}}-refreshForm-onSelect-apiResource-proxy'
-                          on-event-source='OSMnested-select-api-resource-trigger' 
-                          on-event-type='apiResourceSelect'
-                          proxy-event-type='Component.TemplateUpdate' 
-                          proxy-targets='["{{viewId}}--nested-modal"]'  
                           additional-data='{"mode": "new", "selectedApiResource": "true"}'
           ></mp-event-proxy>
 

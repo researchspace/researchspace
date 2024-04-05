@@ -1,25 +1,51 @@
 
 <http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing/context> {
+  _:genid-141fed28f69c42dfa130dde2ac5fa62b-xnbtd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
+  	{ 
+      ?value crm:P1_is_identified_by ?appellation .
+      ?appellation a crm:E41_Appellation .
+      ?appellation crm:P2_has_type ?type . 
+      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+      ?appellation crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value crm:P102_has_title ?title . 
+      ?title a crm:E35_Title . 
+      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+      ?title crm:P190_has_symbolic_content ?label .
+	}
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
   <http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing>
     a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
       <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E4_Period>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-141fed28f69c42dfa130dde2ac5fa62b-ay9whm;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/period>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-myzgip;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-ak6w1;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-fc6vkj;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-3rx15q;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-g8gtg7;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-141fed28f69c42dfa130dde2ac5fa62b-a6j2pvi;
     <http://www.w3.org/2000/01/rdf-schema#label> "Took place on physical thing";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-141fed28f69c42dfa130dde2ac5fa62b-h13f4j;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E18_Physical_Thing>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-141fed28f69c42dfa130dde2ac5fa62b-y8j8fd;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-141fed28f69c42dfa130dde2ac5fa62b-xnbtd;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-02T16:04:39.415+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T15:29:08.191+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-ak6w1 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  _:genid-141fed28f69c42dfa130dde2ac5fa62b-ay9whm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P8_took_place_on_or_within $value . 
+    $value crm:P8i_witnessed $subject .
+} WHERE {}""" .
+  
+  _:genid-141fed28f69c42dfa130dde2ac5fa62b-a6j2pvi a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P8_took_place_on_or_within $value . 
       
     ?value a ?ontologyClass .
@@ -38,25 +64,7 @@
 	}
 }""" .
   
-  _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-myzgip a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-    ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
-  	{ 
-      ?value crm:P1_is_identified_by ?appellation .
-      ?appellation a crm:E41_Appellation .
-      ?appellation crm:P2_has_type ?type . 
-      ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
-      ?appellation crm:P190_has_symbolic_content ?label .
-	} UNION {
-      ?value crm:P102_has_title ?title . 
-      ?title a crm:E35_Title . 
-      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-      ?title crm:P190_has_symbolic_content ?label .
-	}
-} ORDER BY ASC(?label)""" .
-  
-  _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-fc6vkj a <http://spinrdf.org/sp#Query>;
+  _:genid-141fed28f69c42dfa130dde2ac5fa62b-h13f4j a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P8_took_place_on_or_within $value . 
     $value crm:P8i_witnessed $subject .
@@ -79,13 +87,7 @@
 	}
 }""" .
   
-  _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-g8gtg7 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P8_took_place_on_or_within $value . 
-    $value crm:P8i_witnessed $subject .
-} WHERE {}""" .
-  
-  _:genid-cc7a5f06e8b44bcb9ca58d0af9d5597c-3rx15q a <http://spinrdf.org/sp#Query>;
+  _:genid-141fed28f69c42dfa130dde2ac5fa62b-y8j8fd a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E18_Physical_Thing .
@@ -101,9 +103,7 @@
       ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
       ?title crm:P190_has_symbolic_content ?label .
 	}
-  FILTER REGEX(STR(?label), \"?token\")
-} ORDER BY ASC(?label) 
-  LIMIT 10 """ .
+} ORDER BY ASC(?label)""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing> .

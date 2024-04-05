@@ -4,20 +4,31 @@
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E4_Period>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/period>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-fi2ih;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-b6618238f31c45978f7ebeaf44dd1a50-mgo0lp;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b6618238f31c45978f7ebeaf44dd1a50-vt9js8;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b6618238f31c45978f7ebeaf44dd1a50-kfn9hu7;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b6618238f31c45978f7ebeaf44dd1a50-9jg3mm;
     <http://www.w3.org/2000/01/rdf-schema#label> "Forms part of period";
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-vbdmrk;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E4_Period>;
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-uql6g;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-hdvq28;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-swqwad;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-b6618238f31c45978f7ebeaf44dd1a50-09fzta;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-02T15:25:10.394+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T15:28:35.074+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-swqwad a <http://spinrdf.org/sp#Query>;
+  _:genid-b6618238f31c45978f7ebeaf44dd1a50-mgo0lp a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type ?type . 
+    ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(?label)""" .
+  
+  _:genid-b6618238f31c45978f7ebeaf44dd1a50-9jg3mm a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {   
   	$subject crm:P9i_forms_part_of $value . 
   	$value crm:P9_consists_of $subject .
@@ -34,8 +45,14 @@
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
-  _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-hdvq28 a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  _:genid-b6618238f31c45978f7ebeaf44dd1a50-vt9js8 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  	$subject crm:P9i_forms_part_of $value . 
+  	$value crm:P9_consists_of $subject .
+} WHERE {}""" .
+  
+  _:genid-b6618238f31c45978f7ebeaf44dd1a50-kfn9hu7 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   	$subject crm:P9i_forms_part_of $value . 
 
     ?value a ?ontologyClass .
@@ -47,24 +64,7 @@
     ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
-  _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-fi2ih a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  	$subject crm:P9i_forms_part_of $value . 
-  	$value crm:P9_consists_of $subject .
-} WHERE {}""" .
-  
-  _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-vbdmrk a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-    ?value a ?ontologyClass .
-    ?ontologyClass rdfs:subClassOf* crm:E4_Period .
-    ?value crm:P1_is_identified_by ?appellation .
-    ?appellation a crm:E41_Appellation .
-    ?appellation crm:P2_has_type ?type . 
-    ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
-    ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
-  
-  _:genid-eae9adb2e1ed41f1bff73d51eb13e6c2-uql6g a <http://spinrdf.org/sp#Query>;
+  _:genid-b6618238f31c45978f7ebeaf44dd1a50-09fzta a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
     ?value a ?ontologyClass .
     ?ontologyClass rdfs:subClassOf* crm:E4_Period .

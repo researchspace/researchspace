@@ -4,31 +4,35 @@
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.w3.org/2000/01/rdf-schema#label> "Employed material";
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E11_Modification>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-2ab6866a189b4c2bb2584324e1b43a29-atyaxq;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-b9ed4d8b810947e984d2957b8f8195c0-9etjhd;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/modification>;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-2ab6866a189b4c2bb2584324e1b43a29-yjh1l;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-b9ed4d8b810947e984d2957b8f8195c0-tyfdc2;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-2ab6866a189b4c2bb2584324e1b43a29-gkk3cp;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-b9ed4d8b810947e984d2957b8f8195c0-6v8thk;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-b9ed4d8b810947e984d2957b8f8195c0-x9b2cf;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-b9ed4d8b810947e984d2957b8f8195c0-wvjc3e;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E57_Material>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-2ab6866a189b4c2bb2584324e1b43a29-wg0m6k;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-29T12:54:51.956Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-04T15:29:03.881+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-2ab6866a189b4c2bb2584324e1b43a29-wg0m6k a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-  $subject crm:P126_employed $value . 
-  $value crm:P126i_was_employed_in $subject .
-} WHERE {}""" .
-  
-  _:genid-2ab6866a189b4c2bb2584324e1b43a29-yjh1l a <http://spinrdf.org/sp#Query>;
+  _:genid-b9ed4d8b810947e984d2957b8f8195c0-9etjhd a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a crm:E57_Material .
   ?value skos:prefLabel ?label .
-} ORDER BY ?label""" .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ?label
+  LIMIT 10""" .
   
-  _:genid-2ab6866a189b4c2bb2584324e1b43a29-gkk3cp a <http://spinrdf.org/sp#Query>;
+  _:genid-b9ed4d8b810947e984d2957b8f8195c0-tyfdc2 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P126_employed $value . 
+  $value a crm:E57_Material .
+  $value skos:prefLabel ?label .
+}""" .
+  
+  _:genid-b9ed4d8b810947e984d2957b8f8195c0-6v8thk a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
   $subject crm:P126_employed $value . 
   $value crm:P126i_was_employed_in $subject .
@@ -38,13 +42,17 @@
   $value a crm:E57_Material .
 }""" .
   
-  _:genid-2ab6866a189b4c2bb2584324e1b43a29-atyaxq a <http://spinrdf.org/sp#Query>;
+  _:genid-b9ed4d8b810947e984d2957b8f8195c0-x9b2cf a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E57_Material .
+  ?value skos:prefLabel ?label .
+} ORDER BY ?label""" .
+  
+  _:genid-b9ed4d8b810947e984d2957b8f8195c0-wvjc3e a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P126_employed $value . 
   $value crm:P126i_was_employed_in $subject .
-  $value a crm:E57_Material .
-  $value skos:prefLabel ?label .
-}""" .
+} WHERE {}""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/modification/employed_material> .

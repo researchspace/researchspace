@@ -1,13 +1,14 @@
 <semantic-form  id='{{viewId}}-vocab-form' 
                 post-action="event"
                 subject='{{node}}'
-                persistence='{"type": "sparql", "targetGraphIri": "{{scheme}}"}'
+                persistence='{"type": "sparql", "targetInsertGraphIri": "{{scheme}}"}'
                 new-subject-template='{{scheme}}/data/{{{{raw}}}}{{resource_name}}{{{{/raw}}}}'
                 fields='[[
                 fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                   resource_configuration_is_listed_in="http://www.researchspace.org/pattern/system/entity/is_listed_in"
-
+                  resource_configuration_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                  
                   resource_configuration_type_system="http://www.researchspace.org/pattern/system/resource_configuration/configuration_type"
                   
                   resource_name="http://www.researchspace.org/pattern/system/resource_configuration/resource_name"
@@ -43,25 +44,46 @@
                         template='{{> template}}'>
 
           <template id='template'>
-            <h2 class="resource-editView-formHeader-title">
-              {{#switch mode}}
-                {{#case "edit" break=true}}
-                  <span class="text-first-letter-uppercase">
-                    {{bindings.0.label.value}}
-                  </span>
-                {{/case}}
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h2 class="resource-editView-formHeader-title">
+                  {{#switch mode}}
+                    {{#case "edit" break=true}}
+                      <span class="text-first-letter-uppercase">
+                        {{bindings.0.label.value}}
+                      </span>
+                    {{/case}}
 
-                {{#case "view" break=true}}
-                  <span class="text-first-letter-uppercase">
-                    {{bindings.0.label.value}}
-                  </span>
-                {{/case}}
+                    {{#case "view" break=true}}
+                      <span class="text-first-letter-uppercase">
+                        {{bindings.0.label.value}}
+                      </span>
+                    {{/case}}
 
-                {{#default}}
-                  <div></div>
-                {{/default}}
-              {{/switch}}
-            </h2>
+                    {{#default}}
+                      <div></div>
+                    {{/default}}
+                  {{/switch}}
+                </h2>
+
+                {{#if node}}
+                  <semantic-if query='ASK { <{{node}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
+                              then='{{> then}}'>
+          
+                    <template id='then'>
+                      <mp-popover title="System resource configuration">
+                        <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
+                          <div class="badge badge--secondary">System</div>
+                        </mp-popover-trigger>
+                        <mp-popover-content>
+                          A system resource configuration can't be deleted; its ontology class and type can't be modified.
+                        </mp-popover-content>
+                      </mp-popover>
+                    </template>
+                  </semantic-if>
+                {{/if}}
+              </div>
+            </div>
           </template>
         </semantic-query>
       {{/ifCond}}
@@ -89,7 +111,7 @@
           </button>
         </mp-event-trigger>
 
-     [[!--   {{#if node}}
+     [[!--  
           <semantic-if query='ASK { <{{node}}> <http://www.researchspace.org/pattern/system/resource_configuration/resource_use_as_vocabulary_type> ?value . }'
                       then='{{> then}}'>
 
@@ -119,29 +141,16 @@
               </mp-popover>
             </template>
           </semantic-if>
+ --]]
 
-          <semantic-if query='ASK { <{{node}}> crm:P2_has_type <http://www.researchspace.org/pattern/system/resource_configuration/configuration_type/system> . }'
-                      then='{{> then}}'>
-
-            <template id='then'>
-              <mp-popover>
-                <mp-popover-trigger placement="bottom" trigger='["click","hover","focus"]'> 
-                  <div class="badge badge--secondary badge-inlineButton">System</div>
-                </mp-popover-trigger>
-                <mp-popover-content>
-                  System resource. It can't be edited or removed.
-                </mp-popover-content>
-              </mp-popover>
-            </template>
-          </semantic-if>
-        {{/if}}
-     --]]
       </div>
     </div>
 
     <rs-tabs id="{{viewId}}-form-tabs" class-name="form-tabs">
 
       <rs-tab event-key="detail" title="Resource details">
+
+        <semantic-form-hidden-input for="resource_configuration_has_type"></semantic-form-hidden-input>
 
         <div class="form-section-header">
         [[!--  <h4>Resource details</h4> --]]
@@ -157,41 +166,61 @@
 
           <semantic-form-text-input for="resource_description" multiline='true' label="Description" placeholder="Enter the resource description"> </semantic-form-text-input>
 
-          <semantic-form-tree-picker-input for="resource_ontology_class" 
-                                          label="Ontology class (CIDOC-CRM, Skos, etc.)"
-                                          placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)" 
-                                          close-dropdown-on-selection='true'
-                                          query-item-label='SELECT ?label WHERE {
-                                              ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
-                                              FILTER (lang(?label) = "en")
-                                            }'
-                                            
-          ></semantic-form-tree-picker-input>
+          {{#if system_resource_config}}
+            <div class="select-input-disabled-container">
+              <semantic-form-select-input for='resource_ontology_class' 
+                                          label="Ontology class (CIDOC-CRM, Skos, etc.)" 
+                                          placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)"  
+                                          readonly="true"> 
+              </semantic-form-select-input>
+            </div>
+          {{else}}
+            <semantic-form-tree-picker-input for="resource_ontology_class" 
+                                            label="Ontology class (CIDOC-CRM, Skos, etc.)"
+                                            placeholder="Select the ontology class (e.g. CIDOC-CRM Man-Made object, Place, etc.)" 
+                                            close-dropdown-on-selection='true'
+                                            query-item-label='SELECT ?label WHERE {
+                                                ?item ((crm:P1_is_identified_by/rdfs:label)|rs:displayLabel|rdfs:label|skos:prefLabel) ?label.
+                                                FILTER (lang(?label) = "en")
+                                              }'
+                                              
+            ></semantic-form-tree-picker-input>
+          {{/if}}
 
-          <semantic-form-tree-picker-input for='resource_type' 
-                                          label="Type"
+          {{#if system_resource_config}}
+            <div class="select-input-disabled-container">
+              <semantic-form-select-input for="resource_type" 
+                                          label="Type" 
                                           placeholder="Select an additional type to be associated to the resource" 
-                                          close-dropdown-on-selection='true'
-                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/resource_type>", 
-                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/resource_type>",
-                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                                          readonly="true">
+              </semantic-form-select-input>
+            </div>
+          {{else}}
+            <semantic-form-tree-picker-input for='resource_type' 
+                                            label="Type"
+                                            placeholder="Select an additional type to be associated to the resource" 
+                                            close-dropdown-on-selection='true'
+                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/resource_type>", 
+                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/resource_type>",
+                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
-                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                      "view": "vocabulary-content",
-                                                                      "scheme": "http://www.researchspace.org/resource/system/vocab/resource_type",
-                                                                      "tooltip": "Open list of resource types"
-                                                                    }'
+                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                        "view": "vocabulary-content",
+                                                                        "scheme": "http://www.researchspace.org/resource/system/vocab/resource_type",
+                                                                        "tooltip": "Open list of resource types"
+                                                                      }'
 
-                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                scheme="http://www.researchspace.org/resource/system/vocab/resource_type"
-                                                                entityType="resource type" }}{{{{/raw}}}}'
+                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                  scheme="http://www.researchspace.org/resource/system/vocab/resource_type"
+                                                                  entityType="resource type" }}{{{{/raw}}}}'
 
-                                          query-item-label='SELECT ?label WHERE {
-                                                              ?item skos:prefLabel ?label .
-                                                            }'
-                                            >
-          </semantic-form-tree-picker-input> 
-
+                                            query-item-label='SELECT ?label WHERE {
+                                                                ?item skos:prefLabel ?label .
+                                                              }'
+                                              >
+            </semantic-form-tree-picker-input> 
+          {{/if}}
+          
           <semantic-form-text-input for="resource_label_sparql_pattern" label="Label (SPARQL pattern)" placeholder="Enter a SPARQL pattern for the resource label" > </semantic-form-text-input>
           <semantic-form-text-input for="resource_restriction_sparql_pattern" label="Restriction (SPARQL pattern)" placeholder="Enter a SPARQL pattern to apply a restriction" > </semantic-form-text-input>
         </div>
@@ -249,7 +278,7 @@
           <div style="display: flex; flex-direction: column;">
             <div class="form-section-content page__section-container">
 
-              <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: -15px;">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: -20px;">
                 <div class="customFormHeader">Resource icon</div>
                 <div class="btn-inline-container">
                   <span class="badge badge-text-link" style="height: 26.5px;">
@@ -355,7 +384,6 @@
           </bs-tab-container>
         </div>
       </rs-tab>
-
 
       <rs-tab event-key="vocabulary" title="Vocabulary / Authority" tab-class-name="tab-right" disabled="{{#if node}}false{{else}}true{{/if}}">
         <div class="form-section-header">
@@ -673,8 +701,10 @@
     
     <semantic-form-errors></semantic-form-errors>
 
-    {{#ifCond mode "!==" "view"}}
+    {{#if system_resource_config}}
+      [[> rsp:FormDefaultActions formEntity='configuration' disableDelete=true]]
+    {{else}}
       [[> rsp:FormDefaultActions formEntity='configuration']] 
-    {{/ifCond}}
+    {{/if}}
 
 </semantic-form>

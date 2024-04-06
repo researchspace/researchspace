@@ -47,9 +47,9 @@
         <rs-tab event-key="detail" title="Details">
             <div class="form-2column-container">
               <div>
-                  {{#if wikidataResourceName}}
+                  {{#if apiResourceName}}
                     <div class="focused-input-container">
-                      <semantic-form-text-input for="group_appellation" label="Full name" placeholder="Enter group full name / known as" default-value="{{wikidataResourceName}}" force-defaults=true> </semantic-form-text-input>
+                      <semantic-form-text-input for="group_appellation" label="Full name" placeholder="Enter group full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
                     </div>
                   {{else}}
                       <semantic-form-text-input for="group_appellation" label="Full name" placeholder="Enter group full name / known as"> </semantic-form-text-input>
@@ -57,9 +57,9 @@
                   
                   <semantic-form-text-input for="group_alsoKnownAs" label="Also known as" placeholder="Enter group additional name / also known as"> </semantic-form-text-input>
                   
-                  {{#if wikidataResourceDescription}}
+                  {{#if apiResourceDescription}}
                     <div class="focused-input-container">
-                      <semantic-form-text-input for="group_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{wikidataResourceDescription}}"> </semantic-form-text-input>
+                      <semantic-form-text-input for="group_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
                     </div>
                   {{else}}
                       <semantic-form-text-input for="group_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
@@ -142,10 +142,10 @@
 
             <div class="form-media-column">
 
-                {{#if wikidataResourceURI}}
+                {{#if apiResourceURI}}
                   <div style="padding-top: 20px;">
                       <span>Imported from: </span>
-                      <a class="text-link-action" target="_blank" href="{{wikidataResourceURI}}" title="{{wikidataResourceURI}}">{{wikidataResourceURI}}</a>
+                      <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
                   </div>
                 {{else}}
                     {{#if node}}
@@ -230,11 +230,16 @@
                     <semantic-form-select-input for='contact_point_type' 
                                                 label="Contact point" 
                                                 render-header="false"
-                                                placeholder="Select type" 
-                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                scheme="http://www.researchspace.org/resource/vocab/contact_point_type"
-                                                                                                entityType="contact type" }}
-                                                                      {{{{/raw}}}}'> 
+                                                placeholder="Select contact type" 
+                                                nested-form-templates='[ 
+                                                  {
+                                                    "label": "Contact type",
+                                                    "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                    scheme=\"http://www.researchspace.org/resource/vocab/contact_point_type\"
+                                                                                    entityType=\"contact type\" }}
+                                                                    {{{{/raw}}}}"
+                                                  }
+                                                ]'>
                     </semantic-form-select-input>   
                   </div>
                   <div style="flex: 1;">
@@ -247,7 +252,7 @@
           <semantic-form-select-input for='group_residence' 
                                       label="Residence" 
                                       placeholder="Select place" 
-                                      nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                      nested-form-templates='[[> Platform:NestedFormTemplates_places]]'> 
           </semantic-form-select-input> 
         </rs-tab>
 
@@ -288,7 +293,14 @@
                                                 label="Group" 
                                                 render-header="false"
                                                 placeholder="Select group" 
-                                                nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                nested-form-templates='[ 
+                                                  {
+                                                    "label": "Group",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                      {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                  {{{{/raw}}}}"
+                                                  }
+                                                ]'> 
                         </semantic-form-select-input>
                       </div>
                       <div style="flex: 1;">
@@ -359,7 +371,14 @@
                             <semantic-form-select-input for='joining_joined_person' 
                                                         label="Person" 
                                                         placeholder="Select person" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Person nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[ 
+                                                          {
+                                                            "label": "Person",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                              {{> \"http://www.researchspace.org/resource/system/forms/Person\" nested=true editable=true mode=\"new\"}}
+                                                                          {{{{/raw}}}}"
+                                                          }
+                                                        ]'> 
                             </semantic-form-select-input>
                           </div>
                           <semantic-form-composite-input  for="joining_date" 
@@ -414,7 +433,14 @@
                             <semantic-form-select-input for='joining_joined_group' 
                                                         label="Group" 
                                                         placeholder="Select group" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[ 
+                                                          {
+                                                            "label": "Group",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                              {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                          {{{{/raw}}}}"
+                                                          }
+                                                        ]'> 
                             </semantic-form-select-input> 
                           </div>
                           <semantic-form-composite-input  for="joining_date" 
@@ -470,7 +496,14 @@
                             <semantic-form-select-input for='joining_joined_actor' 
                                                         label="Actor" 
                                                         placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[ 
+                                                          {
+                                                            "label": "Actor",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                              {{> \"http://www.researchspace.org/resource/system/forms/Actor\" nested=true editable=true mode=\"new\"}}
+                                                                          {{{{/raw}}}}"
+                                                          }
+                                                        ]'> 
                             </semantic-form-select-input> 
                           </div>
                           <semantic-form-composite-input  for="joining_date" 
@@ -551,7 +584,14 @@
                         <semantic-form-select-input for='leaving_separated_person' 
                                                     label="Person" 
                                                     placeholder="Select person" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Person nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                    nested-form-templates='[ 
+                                                      {
+                                                        "label": "Person",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                          {{> \"http://www.researchspace.org/resource/system/forms/Person\" nested=true editable=true mode=\"new\"}}
+                                                                      {{{{/raw}}}}"
+                                                      }
+                                                    ]'>
                         </semantic-form-select-input> 
                       </div>
                       <semantic-form-composite-input  for="leaving_date" 
@@ -605,7 +645,14 @@
                         <semantic-form-select-input for='leaving_separated_group' 
                                                     label="Group" 
                                                     placeholder="Select group" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                    nested-form-templates='[ 
+                                                      {
+                                                        "label": "Group",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                          {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                      {{{{/raw}}}}"
+                                                      }
+                                                    ]'>  
                         </semantic-form-select-input> 
                       </div>
                       <semantic-form-composite-input  for="leaving_date" 
@@ -659,7 +706,14 @@
                         <semantic-form-select-input for='leaving_separated_actor' 
                                                     label="Actor" 
                                                     placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                    nested-form-templates='[ 
+                                                      {
+                                                        "label": "Actor",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                          {{> \"http://www.researchspace.org/resource/system/forms/Actor\" nested=true editable=true mode=\"new\"}}
+                                                                      {{{{/raw}}}}"
+                                                      }
+                                                    ]'> 
                         </semantic-form-select-input> 
                       </div>
                       <semantic-form-composite-input  for="leaving_date" 
@@ -749,7 +803,14 @@
                         <semantic-form-select-input for='joining_range' 
                                                     label="Group name" 
                                                     placeholder="Select group" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                    nested-form-templates='[ 
+                                                      {
+                                                        "label": "Group",
+                                                        "nestedForm": "{{{{raw}}}}
+                                                                          {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                      {{{{/raw}}}}"
+                                                      }
+                                                    ]'> 
                         </semantic-form-select-input> 
                       </div>
                       <div style="flex: 1;">
@@ -820,7 +881,14 @@
                     <semantic-form-select-input for='leaving_separated_from_group' 
                                                 label="Group name" 
                                                 placeholder="Select group" 
-                                                nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                nested-form-templates='[ 
+                                                  {
+                                                    "label": "Group",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                      {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                  {{{{/raw}}}}"
+                                                  }
+                                                ]'> 
                     </semantic-form-select-input>
                   </div>
                   

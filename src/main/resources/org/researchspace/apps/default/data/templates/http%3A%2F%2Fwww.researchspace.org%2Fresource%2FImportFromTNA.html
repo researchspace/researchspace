@@ -1,185 +1,164 @@
-[!-- <semantic-search>
-  <semantic-search-query-keyword  domain='<{{domain}}>'
-                                  placeholder="Search {{label}}"
-                                  min-search-term-length=2
-                                  tokenize-lucene-query=false
-                                  escape-lucene-syntax=false
-                                  debounce=1000
-                                  debounce=500
-                                  query='PREFIX wikidataentity: <http://www.researchspace.org/resource/system/service/wikidataentity/>
-                                          SELECT ?subject WHERE { 
-                                            ?subject wikidataentity:search ?__token__ .
-                                            ?subject wikidataentity:language "en" .
-                                            ?subject wikidataentity:id ?wikidataId .
-                                            ?subject wikidataentity:concepturi ?concepturi .
-                                            ?subject wikidataentity:label ?wikidataEntityLabel .
-                                            ?subject wikidataentity:description ?description .
-                                          }'
-  ></semantic-search-query-keyword>
-
-  <semantic-search-result-holder>
-    <div style="margin-top: 25px;">
-      <semantic-search-result>
-        <div class="{{label}}ResultsTable">
-          <semantic-context repository='wikidata-entity'>
-            <semantic-table id='semantic-search-result-table'
-                            query='SELECT DISTINCT ?subject ?wikidataEntityLabel ?description ?wikidataId ?concepturi WHERE {
-                                    BIND(?subject as ?iri) .
-                                  } ORDER BY ?subject'
-
-                            options='{"showFilter":true, "resultsPerPage":10}' 
-                            column-configuration='[
-                                                    {"displayName": "Name", "variableName": "wikidataEntityLabel", "cellTemplate": "{{> resourceName}}" },
-                                                    {"displayName": "Description", "variableName": "description"},
-                                                    {"displayName": "Resource type", "cellTemplate": "{{> type}}"},
-                                                    {"displayName": "Image", "cellTemplate": "{{> images}}"},
-                                                    {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
-                                                  ]'   
-            >
-
-            <template id='resourceName'>
-              <div>
-                {{#if wikidataId.value}}
-                <a class="text-link-action" 
-                    target="_blank" 
-                    href="http://www.wikidata.org/entity/{{wikidataId.value}}"
-                    title="http://www.wikidata.org/entity/{{wikidataId.value}}">
-                  {{wikidataEntityLabel.value}}
-                </a>
-                {{else}}
-                  {{wikidataEntityLabel.value}}
-                {{/if}}
-              </div>
-            </template>
-
-              <template id='type'>
-                <div>
-                  {{#if wikidataId.value}} 
-                    <semantic-context repository='default'>
-                      <semantic-query query='
-                                        PREFIX wikibase: <http://wikiba.se/ontology#>
-                                        PREFIX bd: <http://www.bigdata.com/rdf#>
-                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                        PREFIX wd: <http://www.wikidata.org/entity/>
-                                        
-                                        SELECT ?typeLabel WHERE { 
-                                          BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?wikidataEntity) .
-                                          SERVICE <https://query.wikidata.org/sparql> {  
-                                            # is it a person
-                                            {{#if (eq domain "http://www.cidoc-crm.org/cidoc-crm/E21_Person")}}
-                                              ?wikidataEntity wdt:P31 ?type .
-                                            {{/if}}
-
-                                            SERVICE wikibase:label { 
-                                              bd:serviceParam wikibase:language "en".
-                                              ?type rdfs:label ?typeLabel .                                      
+<semantic-search>
+    <semantic-search-form-query query-template='{"queryString": "PREFIX tnadiscovery: <http://www.researchspace.org/resource/system/services/tnadiscovery/>
+                                                                SELECT ?subject WHERE {
+                                                                    BIND(CONCAT(\"\\\"\", ?query, \"\\\"\") AS ?q) .
+                                                                    SERVICE tnadiscovery:TNADiscoverySearchRecordService {
+                                                                    ?subject tnadiscovery:q ?q;
+                                                                    tnadiscovery:sps.catalogueLevels ?catalogueLevelInput;
+                                                                    tnadiscovery:sps.resultsPageSize 20;
+                                                                    tnadiscovery:sps.heldByCode \"TNA\";
+                                                                    tnadiscovery:sps.sortByOption \"REFERENCE_ASCENDING\";
+                                                                    tnadiscovery:hasReference ?reference;
+                                                                    tnadiscovery:hasId ?id;
+                                                                    tnadiscovery:hasDescription ?description;
+                                                                    tnadiscovery:hasCatalogueLevel ?catalogueLevel ;
+                                                                    tnadiscovery:hasScore ?score.
+                                                                    }
+                                                                }",
+                                                "arguments": {"query": {"type": "xsd:string"},
+                                                              "catalogueLevelInput": {"type": "xsd:string", "optional": true}
+                                                             }
+                                                }'
+                                fields='[
+                                            {
+                                                "id": "query",
+                                                "label": "Search for",
+                                                "xsdDatatype": "xsd:string",
+                                                "minOccurs": "1",
+                                                "maxOccurs": "1"
+                                            },
+                                            {
+                                                "id": "catalogueLevelInput",
+                                                "label": "Catalogue level",
+                                                "xsdDatatype": "xsd:string",
+                                                "minOccurs": "0",
+                                                "maxOccurs": "1",
+                                                "valueSetPattern": "SELECT ?value ?label { VALUES(?value ?label) { (\"Level3\" \"Series\") (\"Level6\" \"Piece\") (\"Level7\" \"Item\") } }"
                                             }
-                                          } 
-                                        }'
-                                      
-                          template='{{> template}}'
-                          no-result-template='{{> noResults}}'>
-
-                          <template id='template'>
-                              <strong>{{bindings.0.typeLabel.value}}</strong>
-                          </template>
-                          <template id='noResults'>
-                            <div></div>
-                          </template>
-                      </semantic-query>
-                    </semantic-context>
-                  {{/if}}
-                </div>
-              </template>
-
-              <template id='images'>
-                <div>
-                  {{#if wikidataId.value}}
-                    <semantic-context repository='default'>
-                      <semantic-query query='
-                                        PREFIX wikibase: <http://wikiba.se/ontology#>
-                                        PREFIX bd: <http://www.bigdata.com/rdf#>
-                                        PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                        PREFIX wd: <http://www.wikidata.org/entity/>
-                                        PREFIX schema: <http://schema.org/>
-
-                                        SELECT (SAMPLE(?_image) AS ?image) WHERE { 
-                                          SERVICE <https://query.wikidata.org/sparql> {  
-                                            BIND(IRI(CONCAT(STR(wd:), "{{wikidataId.value}}")) AS ?osmPlaceURI) .
-                                            ?osmPlaceURI wdt:P18 ?_image .
-                                          }
-                                        } LIMIT 1'
-
-                                        template='{{> placeImage}}'
-                                        >
-                                          <template id='placeImage'>
-                                            <div>
-                                              <a href="[[decodeUriComponent '{{bindings.0.image.value}}']]"
-                                                title="[[decodeUriComponent '{{bindings.0.image.value}}']]"
-                                                target="_blank">
-                                                
-                                                <img src="[[decodeUriComponent '{{bindings.0.image.value}}']]" 
-                                                    width="auto" height="180" style="max-width: 200px; object-fit: contain;">
-                                              </a>
-                                            </div>
-                                            
-                                        [[!--    <mp-resource-thumbnail iri='[[decodeUriComponent "{{bindings.0.image.value}}"]]' class=''>
-                                              <mp-resource-thumbnail-fallback>
-                                                  <div>No image available</div>
-                                              </mp-resource-thumbnail-fallback>
-                                          </mp-resource-thumbnail> --]]
-                                          </template>
-                                        </semantic-query>
-                    </semantic-context>
-                  {{/if}}
-                </div>
-              </template>
-              
-              <template id='actions'>
-                <div>
-                  {{#if wikidataId.value}} 
-                    <semantic-context repository='default'>
-                      <semantic-if query='PREFIX wikibase: <http://wikiba.se/ontology#>
-                                          PREFIX bd: <http://www.bigdata.com/rdf#>
-                                          PREFIX mwapi: <https://www.mediawiki.org/ontology#API/>
-                                          PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-                                          PREFIX wd: <http://www.wikidata.org/entity/>
-                      
-                                          ASK { 
-                                            SERVICE <https://query.wikidata.org/sparql> { 
-                                              <{{concepturi.value}}> wdt:P31 wd:Q5 
-                                            }
-                                          }'
-
-                                    then='{{> then}}'>
-
-                        <template id='then'>
-                          <mp-event-trigger id='{{viewId}}-select-wikidataResource-trigger' 
-                                            type='wikidataResourceSelect' 
-                                            data='{"wikidataResourceURI": "{{concepturi.value}}", 
-                                                    "wikidataResourceName": "{{wikidataEntityLabel.value}}", 
-                                                    "wikidataResourceDescription": "{{description.value}}"
-                                                  }' 
-                                      >
-                                      <button class="btn btn-action">Select {{label}}</button>
-                          </mp-event-trigger>
-                        </template>
-                      </semantic-if>
-
-                    </semantic-context>
-                  {{/if}}
-                </div>
-              </template>
-
-            </semantic-table>
-          </semantic-context>
+                                        ]'>
+        
+        <div style="display: flex; align-items: flex-start; gap: 10px; width: 100%; flex: 1;">
+            <div style="flex: 1;">
+                <semantic-form-text-input for="query" render-header="false" placeholder="Search by catalogue reference number or description"></semantic-form-text-input>
+            </div>
+            <div style="flex: 1;">
+                <semantic-form-select-input for="catalogueLevelInput" render-header="false" placeholder='Select catalogue level' show-link-resource-button="false" show-edit-button="false"></semantic-form-select-input>
+            </div>
+            <button type='button' name='submit' className='btn btn-action' style="height: 37px;">Search</button>
         </div>
-      </semantic-search-result>
-    </div>
-  </semantic-search-result-holder>
-  
-</semantic-search>
---]]
+    </semantic-search-form-query>
 
+    <div class='rs-result-holder' style="padding-top: 10px;">
+        <semantic-search-result-holder>
+            <semantic-search-result id='table'> 
+                <semantic-context repository='ephedra'>
+                    <div class="TNAapiResultsTable">
+                        <semantic-table id='semantic-search-result-table'
+                                        query='SELECT DISTINCT ?reference ?description ?catalogueLevel ?id
+                                                WHERE {
+                                                    FILTER(?catalogueLevel in (3, 6, 7)) .
+                                                } ORDER BY ?reference'
+
+                                        number-of-displayed-rows=20
+                                        options='{"showFilter":true}' 
+                                        column-configuration='[{"displayName": "Reference", "variableName": "reference", "cellTemplate": "{{> reference}}" },
+                                                                {"displayName": "Catalogue level", "variableName": "catalogueLevel", "cellTemplate": "{{> catalogueLevel}}" },
+                                                                {"displayName": "Description", "variableName": "description", "cellTemplate": "{{> description}}"},
+                                                                {"displayName": "Actions", "cellTemplate": "{{> actions}}" }
+                                                            ]'
+                                        >
+                        <template id='reference'>
+                            <div>
+                                <a  class="text-link-action" 
+                                    target="_blank" 
+                                    href="https://discovery.nationalarchives.gov.uk/details/r/{{id.value}}"
+                                    title="https://discovery.nationalarchives.gov.uk/details/r/{{id.value}}">
+                                    {{reference.value}}
+                                </a> 
+                            </div>
+                            
+                        </template>
+
+                        <template id='description'>
+                            <mp-text-truncate lines=3 expand='<div class="text-link">Expand</div>' collapse='<div class="text-link">Collapse</div>'>
+                                {{description.value}}
+                            </mp-text-truncate>
+                        </template>
+                        
+                        <template id='catalogueLevel'>
+                            {{#switch catalogueLevel.value}}
+                                {{#case "3" break=true}}
+                                    Series
+                                {{/case}}
+                                {{#case "6" break=true}}
+                                    Piece
+                                {{/case}}
+                                {{#case "7" break=true}}
+                                    Item
+                                {{/case}}
+                                {{#default}}
+                                    {{catalogueLevel.value}}
+                                {{/default}}
+                            {{/switch}}
+                        </template>
+
+                        <template id='actions'>
+                            <semantic-query query='SELECT DISTINCT ?TNAResourceURI ?existingRecord WHERE {
+                                                    BIND(IRI(CONCAT("https://discovery.nationalarchives.gov.uk/details/r/", STR("{{id.value}}"))) AS ?TNAResourceURI)
+
+                                                    OPTIONAL {
+                                                    ?existingRecord crm:P129i_is_subject_of ?entityFormRecord .
+                                                    ?entityFormRecord a crmdig:D1_Digital_Object .
+                                                    ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                    ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                    ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+                                                    ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                    ?importFromExternalSource a crmdig:D12_Data_Transfer_Event .
+                                                    ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                    ?importFromExternalSource crmdig:L14_transferred ?TNAResourceURI .
+                                                    ?TNAResourceURI a crmdig:D1_Digital_Object .
+                                                    ?TNAResourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                    }
+                                                }'
+                                            
+                                        template='{{> template}}'>
+                                
+                                <template id='template'>
+                                    <div>
+                                    {{#if bindings.0.existingRecord.value}}
+                                        <mp-event-trigger id='{{viewId}}-openExistingRecord-in-new-frame-trigger' 
+                                                        type='Dashboard.AddFrame'
+                                                        data='{"viewId":"entity-editor", 
+                                                                "resourceIri":"{{bindings.0.existingRecord.value}}",
+                                                                "entityTypeConfig": "{{domainConfig}}",
+                                                                "editable": true,
+                                                                "mode":"edit" }' 
+                                                        targets='["thinking-frames"]'>
+                                            <button class="btn btn-default" title="Open {{label}} record">Open record</button>
+                                        </mp-event-trigger>
+                                    {{else}}
+                                        <mp-event-trigger id='{{viewId}}-select-api-resource-trigger' 
+                                                        type='apiResourceSelect' 
+                                                        data='{"apiResourceURI": "{{bindings.0.TNAResourceURI.value}}", 
+                                                                "apiResourceName": "{{reference.value}}", 
+                                                                "apiResourceMuseumId": "{{reference.value}}", 
+                                                                "apiResourceMuseumIdType": "http://www.researchspace.org/resource/system/vocab/identifier/catalogue_reference_number", 
+                                                                "apiResourceSystemId": "{{id.value}}",
+                                                                "apiResourceDescription": "{{description.value}}"
+                                                              }' 
+                                                    >
+                                        <button class="btn btn-action" title="Import {{label}}">Import {{label}}</button>
+                                        </mp-event-trigger>
+                                    {{/if}}
+                                    </div>
+                                </template>
+                            </semantic-query> 
+                        </template>
+
+                        </semantic-table>
+                    </div>
+                </semantic-context>
+            </semantic-search-result>
+        </semantic-search-result-holder>
+    </div>
+</semantic-search>

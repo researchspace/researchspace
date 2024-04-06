@@ -1,0 +1,74 @@
+
+<http://www.researchspace.org/pattern/system/place/destination_of_move/context> {
+  <http://www.researchspace.org/pattern/system/place/destination_of_move> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-f0e159a60f64475196ac1eeeae23d771-nxhxfr;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-f0e159a60f64475196ac1eeeae23d771-u1ull;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E53_Place>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-f0e159a60f64475196ac1eeeae23d771-0uqlzk;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E9_Move>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Place destination of move";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-f0e159a60f64475196ac1eeeae23d771-i18w38;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/place>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-f0e159a60f64475196ac1eeeae23d771-t7tl9l;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-26T19:21:14.611Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-f0e159a60f64475196ac1eeeae23d771-nxhxfr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E9_Move .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/move_title> .  
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(?label)""" .
+  
+  _:genid-f0e159a60f64475196ac1eeeae23d771-u1ull a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E9_Move .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/move_title> .  
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-f0e159a60f64475196ac1eeeae23d771-t7tl9l a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {   
+  $subject crm:P26i_was_destination_of $value . 
+  $value crm:P26_moved_to $subject .
+}  WHERE {
+  $subject crm:P26i_was_destination_of $value . 
+  $value crm:P26_moved_to $subject .
+
+  ?value a crm:E9_Move .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/move_title> .  
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-f0e159a60f64475196ac1eeeae23d771-0uqlzk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  $subject crm:P26i_was_destination_of $value . 
+
+  ?value a crm:E9_Move .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/move_title> .  
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-f0e159a60f64475196ac1eeeae23d771-i18w38 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P26i_was_destination_of $value . 
+  $value crm:P26_moved_to $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/place/destination_of_move> .
+}

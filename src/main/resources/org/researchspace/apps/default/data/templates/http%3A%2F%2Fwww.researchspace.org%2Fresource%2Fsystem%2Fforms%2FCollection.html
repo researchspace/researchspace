@@ -11,13 +11,19 @@
                             collection_document="http://www.researchspace.org/pattern/system/entity/documents"
 
                             collection_title="http://www.researchspace.org/pattern/system/man-made_thing/title"
+                            
+                            collection_primary_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            collection_primary_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             collection_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            collection_id_min1="http://www.researchspace.org/pattern/system/entity/identifier_min1"
+
                             collection_description="http://www.researchspace.org/pattern/system/entity/description"
                             
                             collection_current_location="http://www.researchspace.org/pattern/system/physical_thing/location"
                             collection_curator="http://www.researchspace.org/pattern/system/collection/curator"
 
-                            collection_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of"
+                            collection_part_of="http://www.researchspace.org/pattern/system/physical_thing/part_of_physical_thing"
+                            collection_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of_physical_thing"
 
                             collection_right="http://www.researchspace.org/pattern/system/physical_thing/right"
                             collection_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
@@ -54,8 +60,14 @@
                             <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E35_Title"></semantic-form-hidden-input>
                             <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/primary_title'></semantic-form-hidden-input>
                                 
-                            <div style="margin-top: -15px;">
-                                <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
+                            <div style="margin-top: -20px;">
+                                {{#if apiResourceName}}
+                                    <div class="focused-input-container">
+                                        <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
+                                    </div>
+                                {{else}}
+                                    <semantic-form-text-input for="title_value" label="Title" placeholder="Enter title" languages='["en"]' require-language=true></semantic-form-text-input>
+                                {{/if}}
                             </div>
 
                             <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite" render-hidden=true>
@@ -118,42 +130,102 @@
                         </semantic-form-composite-input>
 
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="collection_id"
-                                                            label="Collection identifier"
-                                                            new-subject-template="/collection_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                            <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}collection_primary_id_min1{{else}}collection_primary_id{{/if}}"
+                                                            label="Collection identifier (preferred)"
+                                                            new-subject-template="/collection_id" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
                                                                     has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                                                                     
                                                                     identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                                    identifier_collection_id_type="http://www.researchspace.org/pattern/system/identifier/thing_id_type"
+                                                                    identifier_collection_id_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
                                                                 ]]'
                                                             >
                                         
                                 <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/collection_id'></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/collection_primary_id'></semantic-form-hidden-input>
                                     
-                                <div class="form-inline-inputs" style="row-gap:5px;">
+                                <div class="form-inline-inputs">
                                     <div>
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{#if apiResourceMuseumId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceMuseumId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_collection_id_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
-                                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                                scheme="http://www.researchspace.org/resource/vocab/thing_identifier"
-                                                                                                                entityType="identifier" }}{{{{/raw}}}}'> 
+                                                                    default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}"
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                        scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                        entityType=\"identifier\" }}
+                                                                                        {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'> 
                                         </semantic-form-select-input>
                                     </div>
                                 </div>
                             </semantic-form-composite-input>
                         </div>
 
-                        {{#if wikidataResourceDescription}}
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="{{#if apiResourceSystemId}}collection_id_min1{{else}}collection_id{{/if}}"
+                                                            label="Collection other identifier"
+                                                            new-subject-template="/collection_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                            fields='[[fieldDefinitions
+                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                                    has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                                    
+                                                                    identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                                    identifier_collection_id_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
+                                                                ]]'
+                                                            >
+                                        
+                                <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                                <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/collection_id'></semantic-form-hidden-input>
+                                    
+                                <div class="form-inline-inputs">
+                                    <div>
+                                        {{#if apiResourceSystemId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{/if}}
+                                    </div>
+                                    <div style="flex: 1;" class="{{#if apiResourceSystemId}}focused-input-container{{/if}}">
+                                        <semantic-form-select-input for='identifier_collection_id_type' 
+                                                                    label="Identifier type" 
+                                                                    render-header=false
+                                                                    placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/system/vocab/identifier/system_id{{/if}}" 
+                                                                    nested-form-templates='[ 
+                                                                        {
+                                                                        "label": "Identifier",
+                                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                        scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                        entityType=\"identifier\" }}
+                                                                                        {{{{/raw}}}}"
+                                                                        }
+                                                                    ]'>
+                                        </semantic-form-select-input>
+                                    </div>
+                                </div>
+                            </semantic-form-composite-input>
+                        </div>
+
+                        {{#if apiResourceDescription}}
                             <div class="focused-input-container">
-                                <semantic-form-text-input for="collection_description" label="Collection description" placeholder="Enter description/comment" multiline='true' default-value="{{wikidataResourceDescription}}"> </semantic-form-text-input>
+                                <semantic-form-text-input for="collection_description" label="Collection description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
                             </div>
                         {{else}}
                             <semantic-form-text-input for="collection_description" label="Collection description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
@@ -162,6 +234,42 @@
                     </div>
 
                     <div class="form-media-column">
+
+                        {{#if apiResourceURI}}
+                            <div style="padding-top: 20px;">
+                                <span>Imported from: </span>
+                                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
+                            </div>
+                        {{else}}
+                            {{#if node}}
+                                <semantic-query query='SELECT ?resource ?sourceURI WHERE {
+                                                        BIND(<{{node}}> AS ?resource)
+        
+                                                        ?resource crm:P129i_is_subject_of ?entityFormRecord .
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+        
+                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                        ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
+                                                        ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                    }'
+                                            template='{{> template}}'
+                                >
+                                    
+                                    <template id='template'>
+                                        <div>
+                                            <div style="padding-top: 20px;">
+                                                <span>Imported from: </span>
+                                                <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </semantic-query>
+                            {{/if}}
+                        {{/if}}
+                        
                         <div class="dragAndDrop-input-container">
                             <semantic-form-drag-and-drop-input for='collection_image_main_representation' label="Main image" 
                                                                 placeholder-item-template="<div class='placeholder-item'>
@@ -188,7 +296,7 @@
                                                                                                 <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
                                                                                                 <div>Drag document or click to upload</div>
                                                                                                 </div>"
-                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new" docType="http://www.researchspace.org/resource/vocab/document_type/exhibition_report" }}{{{{/raw}}}}'
+                                                                nested-form-template='{{{{raw}}}}{{> forms:Document nested=true editable=true mode="new"}}{{{{/raw}}}}'
                                                                                                 >
                             </semantic-form-drag-and-drop-input>
                         </div>
@@ -197,7 +305,7 @@
                 </div>
             </rs-tab>
 
-            <rs-tab event-key="part" title="Parts">
+            <rs-tab event-key="component" title="Components">
 
             </rs-tab>
 
@@ -218,12 +326,12 @@
                     <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E53_Place'> </semantic-form-hidden-input>
                     <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/collection_former_location'> </semantic-form-hidden-input>
                     
-                    <div class="form-inline-inputs first-input" style="row-gap:5px;">
+                    <div class="form-inline-inputs first-input">
                         <div style="flex: 1;">
                             <semantic-form-select-input for='location_falls_within_place' 
                                                         label="Place / Organisation" 
                                                         placeholder="Select location" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_places]]'> 
                             </semantic-form-select-input>     
                         </div>
 
@@ -240,8 +348,8 @@
 
                 <semantic-form-select-input for='collection_curator' 
                                             label="Curator (former or current)" 
-                                            placeholder="Select actor" 
-                                            nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                            placeholder="Select person/group/actor" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                 </semantic-form-select-input> 
 
             </rs-tab>
@@ -255,15 +363,15 @@
                         <div class="form-section">
                             <div class="form-section-first-input">
                                 <semantic-form-select-input for='collection_current_owner' 
-                                                        label="Current owner" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                            label="Current owner" 
+                                                            placeholder="Select person/group/actor" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-select-input>
                             </div>
                             <semantic-form-select-input for='collection_former_owner' 
-                                                    label="Former owner" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        label="Former owner" 
+                                                        placeholder="Select person/group/actor" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-select-input>
                         </div>
                     </div>
@@ -273,16 +381,16 @@
                         <div class="form-section">
                             <div class="form-section-first-input">
                                 <semantic-form-select-input for='collection_current_keeper' 
-                                                        label="Current keeper" 
-                                                        placeholder="Select actor" 
-                                                        nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                            label="Current keeper" 
+                                                            placeholder="Select person/group/actor" 
+                                                            nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-select-input>
                             </div>    
 
                             <semantic-form-select-input for='collection_former_keeper' 
-                                                    label="Former keeper" 
-                                                    placeholder="Select actor" 
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Actor nested=true editable=true mode="new" }}{{{{/raw}}}}'> 
+                                                        label="Former keeper" 
+                                                        placeholder="Select person/group/actor" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-select-input>
                         </div>
                     </div>

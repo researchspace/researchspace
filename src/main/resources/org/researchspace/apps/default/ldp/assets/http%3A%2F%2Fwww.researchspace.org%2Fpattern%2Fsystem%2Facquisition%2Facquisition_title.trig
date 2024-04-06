@@ -1,14 +1,33 @@
 
 <http://www.researchspace.org/pattern/system/acquisition/acquisition_title/context> {
-  _:genid-6ad7e17e264e44c5877fae6bd30fe7e0-aik2k a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  <http://www.researchspace.org/pattern/system/acquisition/acquisition_title> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-51a62571a35e41bc8b6186ace4e9ad1d-jmzo3n;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-51a62571a35e41bc8b6186ace4e9ad1d-t14po;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/acquisition>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-51a62571a35e41bc8b6186ace4e9ad1d-d41a08;
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Acquisition title";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-18T12:10:38.102Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-51a62571a35e41bc8b6186ace4e9ad1d-t14po a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {  
+   $appellation a crm:E41_Appellation .
    $subject crm:P1_is_identified_by $appellation .
-    $appellation a crm:E41_Appellation .
-   $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/activity_title> .
-  $appellation crm:P190_has_symbolic_content $value .   
+   $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> .
+  $appellation crm:P190_has_symbolic_content $value .      
+} WHERE { 
+   $subject crm:P1_is_identified_by $appellation .
+   $appellation a crm:E41_Appellation .
+   $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> .
+  $appellation crm:P190_has_symbolic_content $value .    
 }""" .
   
-  _:genid-6ad7e17e264e44c5877fae6bd30fe7e0-6x5yas a <http://spinrdf.org/sp#Query>;
+  _:genid-51a62571a35e41bc8b6186ace4e9ad1d-jmzo3n a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
    $subject crm:P1_is_identified_by $appellation .
    $appellation a crm:E41_Appellation .
@@ -18,31 +37,12 @@
   BIND(URI(concat(str($subject), \"/acquisition_title\") ) as $appellation)
 }""" .
   
-  <http://www.researchspace.org/pattern/system/acquisition/acquisition_title> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-6ad7e17e264e44c5877fae6bd30fe7e0-6x5yas;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-6ad7e17e264e44c5877fae6bd30fe7e0-3icn3r;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/acquisition>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-6ad7e17e264e44c5877fae6bd30fe7e0-aik2k;
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.w3.org/2000/01/rdf-schema#label> "Acquisition title";
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-03-01T10:37:47.428Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-6ad7e17e264e44c5877fae6bd30fe7e0-3icn3r a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE {  
-   $appellation a crm:E41_Appellation .
+  _:genid-51a62571a35e41bc8b6186ace4e9ad1d-d41a08 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
    $subject crm:P1_is_identified_by $appellation .
-   $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/activity_title> .
-  $appellation crm:P190_has_symbolic_content $value .      
-} WHERE { 
-   $subject crm:P1_is_identified_by $appellation .
-   $appellation a crm:E41_Appellation .
-   $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/activity_title> .
-  $appellation crm:P190_has_symbolic_content $value .    
+    $appellation a crm:E41_Appellation .
+   $appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> .
+  $appellation crm:P190_has_symbolic_content $value .   
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

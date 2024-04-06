@@ -19,7 +19,20 @@
       {{#ifCond mode "===" "edit"}}
         
         [[#if (hasPermission "services:*")]]
-          [[> deleteButton]]
+          [[#if disableDelete]]
+            
+            <mp-popover>
+              <mp-popover-trigger placement="top" trigger='["click","hover","focus"]'> 
+                <button class="btn btn-default" disabled>Delete</button>
+              </mp-popover-trigger>
+              <mp-popover-content>
+                System resource configuration can't be deleted.
+              </mp-popover-content>
+            </mp-popover>
+
+          [[else]]
+            [[> deleteButton]]
+          [[/if]]
           <button name="dry-run" class="btn btn-default">Debug</button>
         [[/if]]
        

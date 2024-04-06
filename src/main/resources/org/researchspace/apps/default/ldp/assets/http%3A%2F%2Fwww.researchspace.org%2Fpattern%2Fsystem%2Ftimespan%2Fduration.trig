@@ -6,30 +6,36 @@
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span>;
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-3eaf3ea66b344ddd869fad0a6329606a-wwb5if;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/timespan>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-efbc240a4a854fcfb445e8ff851c17c5-331ldp;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-efbc240a4a854fcfb445e8ff851c17c5-wq7yl7;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-3eaf3ea66b344ddd869fad0a6329606a-zp95bh;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-efbc240a4a854fcfb445e8ff851c17c5-dvqkp;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-3eaf3ea66b344ddd869fad0a6329606a-hfbqc;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E54_Dimension>;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-25T16:19:40.728Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-02T10:37:54.337+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-efbc240a4a854fcfb445e8ff851c17c5-dvqkp a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """DELETE { 
-  $subject crm:P191_had_duration $value .
-} WHERE {
-  $subject crm:P191_had_duration $value .
-}""" .
-  
-  _:genid-efbc240a4a854fcfb445e8ff851c17c5-wq7yl7 a <http://spinrdf.org/sp#Query>;
+  _:genid-3eaf3ea66b344ddd869fad0a6329606a-hfbqc a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
   $subject crm:P191_had_duration $value .
+  $value crm:P191i_was_duration_of $subject .
 } WHERE {}""" .
   
-  _:genid-efbc240a4a854fcfb445e8ff851c17c5-331ldp a <http://spinrdf.org/sp#Query>;
+  _:genid-3eaf3ea66b344ddd869fad0a6329606a-zp95bh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P191_had_duration $value .
+  $value crm:P191i_was_duration_of $subject .
+} WHERE {
+  $subject crm:P191_had_duration $value .
+  $value a crm:E54_Dimension .
+  $value crm:P2_has_type  <http://www.researchspace.org/resource/system/vocab/resource_type/timespan_duration> .
+}""" .
+  
+  _:genid-3eaf3ea66b344ddd869fad0a6329606a-wwb5if a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
   $subject crm:P191_had_duration $value .
+  $value a crm:E54_Dimension .
+  $value crm:P2_has_type  <http://www.researchspace.org/resource/system/vocab/resource_type/timespan_duration> .
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

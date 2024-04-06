@@ -1,42 +1,75 @@
 
 <http://www.researchspace.org/pattern/system/activity/used_specific_technique/context> {
-  _:genid-827ec49b7d854152beef91ec1698804e-3d3i9 a <http://spinrdf.org/sp#Query>;
+  <http://www.researchspace.org/pattern/system/activity/used_specific_technique> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-363a118aaae44553bc8df73872590f78-pxwnkj;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-363a118aaae44553bc8df73872590f78-ud9n3;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-363a118aaae44553bc8df73872590f78-qhn2m;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-363a118aaae44553bc8df73872590f78-k7fqg;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-363a118aaae44553bc8df73872590f78-7faxl;
+    <http://www.w3.org/2000/01/rdf-schema#comment> """Enter the specific documented plan (Design or Procedure) used to carry out the activity or parts of it. Typical examples would include instructions, intervention plans for conservation or the construction plans of a building.
+""";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Used specific technique (procedure)";
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T12:18:35.566+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-363a118aaae44553bc8df73872590f78-pxwnkj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P33_used_specific_technique $value . 
+    $value crm:P33i_was_used_by $subject .
+} WHERE {}""" .
+  
+  _:genid-363a118aaae44553bc8df73872590f78-qhn2m a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E29_Design_or_Procedure .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/design_or_procedure_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-363a118aaae44553bc8df73872590f78-k7fqg a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P33_used_specific_technique $value . 
     $value crm:P33i_was_used_by $subject .
 } WHERE {
 	$subject crm:P33_used_specific_technique $value . 
     $value crm:P33i_was_used_by $subject .
+      
+    ?value a crm:E29_Design_or_Procedure .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/design_or_procedure_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
-  <http://www.researchspace.org/pattern/system/activity/used_specific_technique> a <http://www.researchspace.org/resource/system/fields/Field>,
-      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-827ec49b7d854152beef91ec1698804e-qozkln;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-827ec49b7d854152beef91ec1698804e-3d3i9;
-    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.w3.org/2000/01/rdf-schema#comment> """Enter the specific documented plan (Design or Procedure) used to carry out the activity or parts of it. Typical examples would include instructions, intervention plans for conservation or the construction plans of a building.
-""";
-    <http://www.w3.org/2000/01/rdf-schema#label> "Used specific technique (procedure)";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-827ec49b7d854152beef91ec1698804e-wtajid;
-    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-27T15:21:18.539Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-  
-  _:genid-827ec49b7d854152beef91ec1698804e-wtajid a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
+  _:genid-363a118aaae44553bc8df73872590f78-ud9n3 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P33_used_specific_technique $value . 
-    $value crm:P33i_was_used_by $subject .
-} WHERE {}""" .
-  
-  _:genid-827ec49b7d854152beef91ec1698804e-qozkln a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-	$subject crm:P33_used_specific_technique $value . 
-    $value crm:P33i_was_used_by $subject .
+      
+    ?value a crm:E29_Design_or_Procedure .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/design_or_procedure_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
+  
+  _:genid-363a118aaae44553bc8df73872590f78-7faxl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E29_Design_or_Procedure .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/design_or_procedure_title> . 
+    ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(?label)""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/activity/used_specific_technique> .

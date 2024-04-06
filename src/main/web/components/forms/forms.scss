@@ -305,7 +305,7 @@ fieldset[disabled] .form-control {
 
   &__group-instance {
     position: relative;
-    padding: 15px;
+    padding: 20px;
     border: 1px solid $input-border-color;
     border-radius: $border-radius;
     background-color: $color-lighter;
@@ -474,6 +474,11 @@ fieldset[disabled] .form-control {
       background-color: $input-color-bg;
     }
   }
+
+  .dropdown.btn-group {
+    margin-top: 0;
+    margin-left: -1px;
+  }
 }
 
 .select-text-field {
@@ -522,6 +527,12 @@ fieldset[disabled] .form-control {
       background-color: $input-color-bg;
     }
   
+  }
+
+  .dropdown.btn-group {
+
+    margin-top: 0;
+    margin-left: -1px;
   }
 }
 
@@ -988,10 +999,15 @@ fieldset[disabled] .form-control {
 
 .form-section {
 
-  padding: 15px;
+  padding: 20px;
   border: 1px solid $input-border-color;
   border-radius: $border-radius;
   background-color: $color-lighter;
+
+  .cardinality-support__add-value-btn {
+
+    background-color: $color-off-white;
+  }
 
 }
 
@@ -1037,14 +1053,14 @@ fieldset[disabled] .form-control {
   flex-wrap: wrap;
 
   &.first-input {
-    margin-top: -15px;
+    margin-top: -20px;
   }
 }
 
 .composite-first-input,
 .form-section-first-input {
 
-  margin-top: -15px;
+  margin-top: -20px;
 }
 
 .form-inline {
@@ -1166,12 +1182,6 @@ fieldset[disabled] .form-control {
       border: none;
     }
   }
-
-  .tab-pane.form-tabs-subtabs-content {
-
-    padding: 7px 30px;
-    overflow: hidden;
-  }
 }
 
 .form-tabs-subtabs {
@@ -1185,6 +1195,12 @@ fieldset[disabled] .form-control {
   background-color: $pageSection-bg;
   border: 1px solid $input-border-color;
   padding: 5px 0;
+
+  &.form-asset-tabs {
+
+    margin: 10px -15px 10px 0;
+    height: calc(100% - 20px);
+  }
 
    & > .form-tabs {
 
@@ -1203,7 +1219,6 @@ fieldset[disabled] .form-control {
         .tab-content {
           flex: 1;
           overflow-y: auto;
-          padding: 0 15px 0 0;
         }
       }
     }
@@ -1304,45 +1319,46 @@ fieldset[disabled] .form-control {
 .form-tabs-subtabs-content,
 .tab-pane.form-tabs-subtabs-content {
 
-  display: flex;
-  flex-direction: column;
+ // display: flex;
+ // flex-direction: column;
   height: 100%;
   flex: 1;
-  overflow: hidden;
+ // overflow: hidden;
 
  // border-left: 1px solid $color-border;
-  padding: 7px 30px;
+  padding: 0 5px;
 
-  .objects-table-container,
-  .project-digital-ass-table-container {
+  .objects-table-container {
     overflow: auto;
     height: 100%;
   }
 
-  & > .api-import-container {
+  .form-tabs-subtabs-content--title {
 
-    flex: 1;
-    overflow: hidden;
-  }
-
-  & > .api-import-container,
-  & > .bulk-import-container {
     display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
+    align-items: end;
+    justify-content: space-between;
+    border-bottom: 1px solid $color-border;
+    position: relative;
+    padding: 8px 20px 6px 20px;
 
-    .search-container {
+    h4, ul {
+      margin: 0;
+    }
+
+    .form-tabs-subtabs-content--title-actions {
+      position: absolute; 
+      right: 110px; 
       display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
+      gap:3px;
+
+      i, span {
+         color: $color-secondary;
+         font-size: 20px;
+     }
     }
 
-    & > .form-group { 
-      height: initial;
-    }
-  } 
+  }
 
   & .form-tabs-subtabs-form-container {
 
@@ -1356,14 +1372,6 @@ fieldset[disabled] .form-control {
   & .semantic-form {
     flex: unset;
     overflow: unset;
-  }
-
-  .object-survey-form-container {
-
-    & .semantic-form {
-      height: 100%;
-      overflow: hidden;
-    }
   }
 
   & .rs-result-holder {
@@ -1390,19 +1398,11 @@ fieldset[disabled] .form-control {
     height: 100%;
     overflow: auto;
   }
-}
 
-.form-tabs-subtabs-content-overflowVisible {
+  .cardinality-support__add-value-btn {
 
-    height: 100%;
-    border-left: 1px solid $color-border;
-    padding: 0px 35px;
-
-  .semantic-form {
-
-    overflow: inherit;
+    background-color: $color-off-white;
   }
-
 }
 
 .form-media-column {
@@ -1464,6 +1464,7 @@ fieldset[disabled] .form-control {
     min-height: -webkit-fill-available;
     border-style: dashed;
     border-width: 2px;
+    border-color: $color-border;
 
     .placeholder-item {
       min-height: inherit;
@@ -1474,7 +1475,7 @@ fieldset[disabled] .form-control {
       width: 100%; 
       color:$input-placeholder-color; 
       padding: 40px 20px; 
-      align-self: center;
+      text-align: center;
 
       .material-icons-round,
       .fa-upload {
@@ -1602,6 +1603,68 @@ fieldset[disabled] .form-control {
     height: inherit;
     padding: 0 12px;
     border: 1px solid $color-border;
+  }
+
+}
+
+.select-input-disabled-container {
+
+  & .semantic-form-input-decorator.semantic-form-input-decorator--with-header:first-of-type .semantic-form-input-decorator__header {
+    margin-top: 20px;
+  }
+
+  .select-text-field__create-button,
+  .select-text-field__open-in-new-tab {
+    display: none;
+  }
+
+  .select-text-field .Select.is-disabled {
+
+  }
+
+  .Select.is-disabled > .Select-control {
+    cursor: not-allowed;
+  }
+
+  .has-value.is-clearable.Select--single > .Select-control .Select-value {
+    padding-left: 4px;
+  }
+
+  .has-value.Select--single > .Select-control .Select-value .Select-value-label {
+    background-color: var(--color-action, #396EFE);
+    height: 26px;
+    border: none;
+    border-radius: $border-radius;
+    color: $color-white !important;
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    padding: 0px 9px;
+    opacity: 0.8;
+  }
+}
+
+.form-assetView-tabs {
+
+  .btn.btn-icon {
+    padding: 4px;
+   // background-color: $color-lighter;
+    background-color: $color-white;
+    border-radius: $border-radius;
+    border: 1px solid $color-border;
+
+    i {
+      font-size: 20px;
+    }
+  }
+
+  .tab-pane {
+
+    padding: 0;
   }
 
 }

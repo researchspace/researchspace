@@ -1,0 +1,62 @@
+
+<http://www.researchspace.org/pattern/system/type_assignment/assigned/context> {
+  <http://www.researchspace.org/pattern/system/type_assignment/assigned> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/type_assignment>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-d378e0ae132f47089365238c2c760203-yugzff;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-d378e0ae132f47089365238c2c760203-2ev7ch;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-d378e0ae132f47089365238c2c760203-yf19mn;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Assigned type";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E17_Type_Assignment>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-d378e0ae132f47089365238c2c760203-eplbxa;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-d378e0ae132f47089365238c2c760203-euiqeb;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-05T18:11:09.743+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-d378e0ae132f47089365238c2c760203-yugzff a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    $subject crm:P42_assigned $value .
+      
+    ?value a crm:E55_Type .
+    ?value skos:prefLabel ?label .
+}""" .
+  
+  _:genid-d378e0ae132f47089365238c2c760203-2ev7ch a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E55_Type .
+    ?value skos:prefLabel ?label .
+} ORDER BY ASC(?label)""" .
+  
+  _:genid-d378e0ae132f47089365238c2c760203-yf19mn a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E55_Type .
+    ?value skos:prefLabel ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-d378e0ae132f47089365238c2c760203-euiqeb a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+    $subject crm:P42_assigned $value .
+    $value crm:P142i_was_used_in $subject .
+} WHERE {
+    $subject crm:P42_assigned $value .
+    $value crm:P142i_was_used_in $subject .
+      
+    ?value a crm:E55_Type .
+    ?value skos:prefLabel ?label .
+}""" .
+  
+  _:genid-d378e0ae132f47089365238c2c760203-eplbxa a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+    $subject crm:P42_assigned $value .
+    $value crm:P142i_was_used_in $subject .
+} WHERE {}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/type_assignment/assigned> .
+}

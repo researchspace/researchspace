@@ -362,15 +362,105 @@
                                             nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-autocomplete-input> 
 
-        [[> Platform:formSwitchCarriedOutActor  for_kp='activity_carried_out_by_domain'
-                                                subjectLabel='Carried out by'
-                                                carried_out_by_has_domain_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_domain_type/activity'
-        ]]
+        <div class="inline-composite-container">
+          <semantic-form-composite-input  for="activity_carried_out_by_domain" 
+                                          label="Carried out by"
+                                          new-subject-template="/PC14_carried_out_by/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                          fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                      
+                                                      carried_out_by_range="http://www.researchspace.org/pattern/system/carried_out_by/range"
+                                                      role="http://www.researchspace.org/pattern/system/carried_out_by/role"
+                                                  ]]'>
 
-        [[> Platform:formSwitchParticipantActor for_kp='event_had_participant'
-                                                subjectLabel='Participant'
-                                                had_participant_has_domain_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_domain_type/event'
-        ]]
+            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by'> </semantic-form-hidden-input>
+
+            <div class="form-inline-inputs">
+              <div style="flex: 1;">
+                <semantic-form-autocomplete-input for='carried_out_by_range'  
+                                                  render-header="false"
+                                                  placeholder="Select actor" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
+                </semantic-form-autocomplete-input> 
+              </div>
+              <div style="flex: 1;">
+                <semantic-form-tree-picker-input  for="role" 
+                                                  label="Role" 
+                                                  render-header="false"
+                                                  placeholder="Select role"
+                                                  close-dropdown-on-selection='true'
+                                                  tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                  "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                  "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                  scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                              "view": "vocabulary-content",
+                                                                              "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                              "tooltip": "Open list of roles"
+                                                                            }'
+                                                  
+                                                  nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                        scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                        entityType="role" }}{{{{/raw}}}}'
+
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item skos:prefLabel ?label .
+                                                                  }'>
+                </semantic-form-tree-picker-input>
+              </div>
+            </div>
+          </semantic-form-composite-input>
+        </div>
+        
+        <div class="inline-composite-container">
+          <semantic-form-composite-input  for="event_had_participant" 
+                                          label="Participant" 
+                                          new-subject-template="/PC11_had_participant/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                          fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                      
+                                                      participant_range="http://www.researchspace.org/pattern/system/participant/range"
+                                                      participant_role="http://www.researchspace.org/pattern/system/participant/role"
+                                                  ]]'>
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant'> </semantic-form-hidden-input>
+
+                <div class="form-inline-inputs">
+                  <div style="flex: 1;">
+                    <semantic-form-autocomplete-input for='participant_range'  
+                                                      render-header="false"
+                                                      placeholder="Select actor" 
+                                                      nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
+                    </semantic-form-autocomplete-input> 
+                  </div>
+                  <div style="flex: 1;">
+                    <semantic-form-tree-picker-input  for="participant_role" 
+                                                      label="Role" 
+                                                      render-header="false"
+                                                      placeholder="Select role"
+                                                      close-dropdown-on-selection='true'
+                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                      "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                  "view": "vocabulary-content",
+                                                                                  "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                                  "tooltip": "Open list of roles"
+                                                                                }'
+                                                      
+                                                      nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                            scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                            entityType="role" }}{{{{/raw}}}}'
+
+                                                      query-item-label='SELECT ?label WHERE {
+                                                                          ?item skos:prefLabel ?label .
+                                                      }'>
+                    </semantic-form-tree-picker-input>
+                  </div>
+                </div>
+          </semantic-form-composite-input>
+        </div>
 
         <semantic-form-autocomplete-input   for='event_occurred_in_the_presence_of_actor' 
                                             label="Occurred in the presence of" 
@@ -418,44 +508,44 @@
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='entity_attributed_by_attribute_assignment' 
-                                    label="Attributed by"
-                                    placeholder="Select what assigned attribute to the acquisition" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Attribute assignment",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='entity_attributed_by_attribute_assignment' 
+                                          label="Attributed by"
+                                          placeholder="Select what assigned attribute to the acquisition" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Attribute assignment",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='entity_assigned_by_attribute_assignment' 
-                                    label="Assigned by"
-                                    placeholder="Select what assigned the acquisition" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Attribute assignment",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='entity_assigned_by_attribute_assignment' 
+                                          label="Assigned by"
+                                          placeholder="Select what assigned the acquisition" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Attribute assignment",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='entity_measurement' 
-                                    label="Measured by"
-                                    placeholder="Select measurement" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Measurement",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='entity_measurement' 
+                                          label="Measured by"
+                                          placeholder="Select measurement" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Measurement",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
       </rs-tab>
 
       <rs-tab event-key="thing" title="Things">
@@ -664,7 +754,20 @@
         </semantic-form-tree-picker-input>
 
         <semantic-form-autocomplete-input for='activity_had_general_purpose_type' 
-                                          label="General purpose (type)" 
+                                          label="SELECT General purpose (type)" 
+                                          placeholder="Select type" 
+                                          nested-form-templates='[ 
+                                            {
+                                              "label": "Type",
+                                              "nestedForm": "{{{{raw}}}}
+                                                                {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                            }
+                                          ]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input for='activity_had_general_purpose_type' 
+                                          label="AUTO General purpose (type)" 
                                           placeholder="Select type" 
                                           nested-form-templates='[ 
                                             {

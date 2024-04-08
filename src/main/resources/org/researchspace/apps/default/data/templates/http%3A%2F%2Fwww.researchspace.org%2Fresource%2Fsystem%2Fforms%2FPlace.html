@@ -6,6 +6,7 @@
                 fields='[[
                         fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                        entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                         entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
 
@@ -16,23 +17,23 @@
 
                         place_name="http://www.researchspace.org/pattern/system/place/name"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
+                        place_type="http://www.researchspace.org/pattern/system/place/type"
                         place_address_line1="http://www.researchspace.org/pattern/system/place/address_line1"
                         place_address_line2="http://www.researchspace.org/pattern/system/place/address_line2"
                         place_city="http://www.researchspace.org/pattern/system/place/city"
                         place_county="http://www.researchspace.org/pattern/system/place/county"
                         place_country="http://www.researchspace.org/pattern/system/place/country"
                         place_postcode="http://www.researchspace.org/pattern/system/place/postcode" 
-
+                        place_overlaps_with_place="http://www.researchspace.org/pattern/system/place/overlaps_with_place"
+                        place_borders_with_place="http://www.researchspace.org/pattern/system/place/borders_with_place"
+                        
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                         entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
-                        entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                        place_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_geo_coordinates"
 
                         place_falls_within_place="http://www.researchspace.org/pattern/system/place/falls_within_place"
                         place_contains_place="http://www.researchspace.org/pattern/system/place/contains_place"
-                        place_overlaps_with_place="http://www.researchspace.org/pattern/system/place/overlaps_with_place"
-                        place_borders_with_place="http://www.researchspace.org/pattern/system/place/borders_with_place"
-                        place_geo_coordinates="http://www.researchspace.org/pattern/system/place/osm_geo_coordinates"
-
+                        
                         place_residence_of_actor="http://www.researchspace.org/pattern/system/place/residence_of_actor"
 
                         place_witnessed_period="http://www.researchspace.org/pattern/system/place/witnessed_period"
@@ -90,6 +91,29 @@
               <semantic-form-text-input for="entity_description" multiline="true" label="Place description" placeholder="Enter place description"></semantic-form-text-input>
             {{/if}}
 
+            <semantic-form-tree-picker-input for="place_type" 
+                                              label="Place type" 
+                                              placeholder="Select place type" 
+                                              close-dropdown-on-selection='true'
+                                              tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/place_type>", 
+                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/place_type>",
+                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                          "view": "vocabulary-content",
+                                                                          "scheme": "http://www.researchspace.org/resource/vocab/place_type",
+                                                                          "tooltip": "Open list of place types"
+                                                                        }'
+                                              
+                                              nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                    scheme="http://www.researchspace.org/resource/vocab/place_type"
+                                                                                    entityType="place type" }}{{{{/raw}}}}'
+
+                                              query-item-label='SELECT ?label WHERE {
+                                                                  ?item skos:prefLabel ?label .
+                                                                }'
+            ></semantic-form-tree-picker-input>
+            
             <semantic-form-text-input for="place_address_line1" label="Address line 1" placeholder="Enter address line 1"></semantic-form-text-input>
             <semantic-form-text-input for="place_address_line2" label="Address line 2" placeholder="Enter address line 2"></semantic-form-text-input>
 
@@ -135,6 +159,43 @@
                                                 }
                                               ]'>
             </semantic-form-autocomplete-input>
+
+            <div class="inline-composite-container">
+              <semantic-form-composite-input  for="entity_preferred_id"
+                                              label="Place preferred identifier"
+                                              new-subject-template="/entity_id" 
+                                              fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                  ]]'
+                                              >
+                          
+                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
+                      
+                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+
+              </semantic-form-composite-input>
+            </div>
+
+            <div class="inline-composite-container">
+                <semantic-form-composite-input  for="entity_id"
+                                                label="Place other identifier"
+                                                new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                        has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                        identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                    ]]'
+                                                >
+                            
+                    <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
+                        
+                    <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                </semantic-form-composite-input>
+            </div>
 
             {{#if apiResourceosmGeoCoordinates}}
               <div class="focused-input-container">
@@ -450,70 +511,70 @@
                                           nested-form-templates='[[> Platform:NestedFormTemplates_periods]]'>  
         </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='place_origin_of_move' 
-                                    label="Origin of move"
-                                    placeholder="Select move/movement that moved from the place" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Move",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='place_origin_of_move' 
+                                          label="Origin of move"
+                                          placeholder="Select move/movement that moved from the place" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Move",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='place_destination_of_move' 
-                                    label="Destination of move"
-                                    placeholder="Select move/movement that moved to the place" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Move",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='place_destination_of_move' 
+                                          label="Destination of move"
+                                          placeholder="Select move/movement that moved to the place" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Move",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Move\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='entity_attributed_by_attribute_assignment' 
-                                    label="Attributed by"
-                                    placeholder="Select what assigned attribute to the place" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Attribute assignment",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='entity_attributed_by_attribute_assignment' 
+                                          label="Attributed by"
+                                          placeholder="Select what assigned attribute to the place" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Attribute assignment",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='entity_assigned_by_attribute_assignment' 
-                                    label="Assigned by"
-                                    placeholder="Select what assigned the place" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Attribute assignment",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='entity_assigned_by_attribute_assignment' 
+                                          label="Assigned by"
+                                          placeholder="Select what assigned the place" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Attribute assignment",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
 
-        <semantic-form-select-input for='entity_measurement' 
-                                    label="Measured by"
-                                    placeholder="Select measurement" 
-                                    nested-form-templates='[ 
-                                        {
-                                            "label": "Measurement",
-                                            "nestedForm": "{{{{raw}}}}
-                                                            {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
-                                                        {{{{/raw}}}}"
-                                        }
-                                    ]'>  
-        </semantic-form-select-input>
+        <semantic-form-autocomplete-input for='entity_measurement' 
+                                          label="Measured by"
+                                          placeholder="Select measurement" 
+                                          nested-form-templates='[ 
+                                              {
+                                                  "label": "Measurement",
+                                                  "nestedForm": "{{{{raw}}}}
+                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                              {{{{/raw}}}}"
+                                              }
+                                          ]'>  
+        </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                             label="Influenced by"

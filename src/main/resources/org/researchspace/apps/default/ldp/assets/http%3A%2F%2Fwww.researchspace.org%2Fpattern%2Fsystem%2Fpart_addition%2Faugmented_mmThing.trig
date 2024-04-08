@@ -2,39 +2,76 @@
 <http://www.researchspace.org/pattern/system/part_addition/augmented_mmThing/context> {
   <http://www.researchspace.org/pattern/system/part_addition/augmented_mmThing> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-34e47a006e8f482e9cb06531ae242767-alq4vk;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E79_Part_Addition>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-34e47a006e8f482e9cb06531ae242767-q7xpp;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E24_Physical_Man-Made_Thing>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-34e47a006e8f482e9cb06531ae242767-htgahd;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-49b08675cdb945758a6730403295b1e0-yd5ro;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
     <http://www.w3.org/2000/01/rdf-schema#label> "Object/thing augmented";
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-49b08675cdb945758a6730403295b1e0-z7rye;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/part_addition>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-49b08675cdb945758a6730403295b1e0-k9e5vp;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-34e47a006e8f482e9cb06531ae242767-on9zo;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-34e47a006e8f482e9cb06531ae242767-qoqyrl;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-29T16:02:27.162Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-08T11:27:58.663+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-49b08675cdb945758a6730403295b1e0-z7rye a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """INSERT { 
-	$subject crm:P110_augmented $value . 
-    $value crm:P110i_was_augmented_by $subject .
-} WHERE {}""" .
-  
-  _:genid-49b08675cdb945758a6730403295b1e0-k9e5vp a <http://spinrdf.org/sp#Query>;
+  _:genid-34e47a006e8f482e9cb06531ae242767-on9zo a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P110_augmented $value . 
     $value crm:P110i_was_augmented_by $subject .
 } WHERE {
 	$subject crm:P110_augmented $value . 
     $value crm:P110i_was_augmented_by $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+    ?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
 }""" .
   
-  _:genid-49b08675cdb945758a6730403295b1e0-yd5ro a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  _:genid-34e47a006e8f482e9cb06531ae242767-alq4vk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+  ?value crm:P102_has_title ?title . 
+  ?title a crm:E35_Title . 
+  ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+  ?title crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-34e47a006e8f482e9cb06531ae242767-htgahd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+  ?value crm:P102_has_title ?title . 
+  ?title a crm:E35_Title . 
+  ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+  ?title crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(?label)""" .
+  
+  _:genid-34e47a006e8f482e9cb06531ae242767-qoqyrl a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+	$subject crm:P110_augmented $value . 
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E24_Physical_Man-Made_Thing .
+    ?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-34e47a006e8f482e9cb06531ae242767-q7xpp a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P110_augmented $value . 
     $value crm:P110i_was_augmented_by $subject .
-}""" .
+} WHERE {}""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/part_addition/augmented_mmThing> .

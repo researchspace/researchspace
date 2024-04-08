@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/dimension/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/persistent_item/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -10,26 +10,22 @@
                             entity_image="http://www.researchspace.org/pattern/system/entity/images"
                             entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                             entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
-
-                            dimension_name="http://www.researchspace.org/pattern/system/dimension/name"
-                            dimension_type="http://www.researchspace.org/pattern/system/dimension/type"
-                            dimension_value="http://www.researchspace.org/pattern/system/dimension/value"
-                            dimension_unit="http://www.researchspace.org/pattern/system/dimension/unit"
-                            entity_description="http://www.researchspace.org/pattern/system/entity/description"
-
+                            
+                            persistent_item_name="http://www.researchspace.org/pattern/system/persistent_item/persistent_item_name"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                            entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                            entity_description="http://www.researchspace.org/pattern/system/entity/description"
 
-                            dimension_duration_of_timespan="http://www.researchspace.org/pattern/system/dimension/duration_of_timespan"
-                            
-                            dimension_observed_in="http://www.researchspace.org/pattern/system/dimension/observed_in"
-                            entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
-                            entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
-                            entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                            persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
+                            persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
+                            persistent_item_taken_out_of_existence_by="http://www.researchspace.org/pattern/system/persistent_item/taken_out_of_existence_by"
                             entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
                             entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
-                            
-                            dimension_dimension_of_thing="http://www.researchspace.org/pattern/system/dimension/dimension_of_thing"
+                            entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
+                            entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                            entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
+
                             entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
                             entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                             entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
@@ -38,7 +34,7 @@
             >
 
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E54_Dimension'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E77_Persistent_Item'></semantic-form-hidden-input>
         
         {{#if scheme}}
             <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -48,51 +44,12 @@
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
-                        <semantic-form-text-input for="dimension_name" label="Dimension name" placeholder="Enter dimension name/appellation"></semantic-form-text-input>
-                    
-                        <semantic-form-select-input for='dimension_type' 
-                                                    label="Dimension type"
-                                                    placeholder="Select dimension type" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                        "label": "Dimension type",
-                                                        "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
-                                                                                        scheme=\"http://www.researchspace.org/resource/vocab/dimension_type\"
-                                                                                        entityType=\"dimension type\" }}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'> 
-                        </semantic-form-select-input>
-                
-                        <semantic-form-text-input for="dimension_value" label="Dimension value" placeholder="Enter measured value"></semantic-form-text-input>
-                    
-                        <semantic-form-tree-picker-input    for='dimension_unit' 
-                                                            label="Dimension unit"
-                                                            placeholder="Select dimension unit" 
-                                                            close-dropdown-on-selection='true'
-                                                            tree-patterns='{"scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
-                                                                            "schemePattern": "?item crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/dimension_unit> .",
-                                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                                            "labelPattern": "?item skos:prefLabel ?label"
-                                                                        }'
-
-                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                        "view": "vocabulary-content",
-                                                                        "scheme": "http://www.researchspace.org/resource/vocab/dimension_unit",
-                                                                        "tooltip": "Open list of dimension units"
-                                                                        }'
-                                            
-                                                            nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                                                scheme="http://www.researchspace.org/resource/vocab/dimension_unit"
-                                                                                                entityType="dimension unit" }}{{{{/raw}}}}'
-                                            >
-                        </semantic-form-tree-picker-input>
-                   
-                        <semantic-form-text-input for="entity_description" label="Dimension description/comment" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                        <semantic-form-text-input for="persistent_item_name" label="Persistent item name" placeholder="Enter persistent item name"> </semantic-form-text-input>
+                        <semantic-form-text-input for="entity_description" label="Persistent item description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
 
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="entity_preferred_id"
-                                                            label="Dimension preferred identifier"
+                                                            label="Persistent item preferred identifier"
                                                             new-subject-template="/entity_id" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -111,7 +68,7 @@
 
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="entity_id"
-                                                            label="Dimension other identifier"
+                                                            label="Persistent item other identifier"
                                                             new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                             fields='[[fieldDefinitions
                                                                     classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -160,52 +117,41 @@
                 </div>
             </rs-tab>
 
-            <rs-tab event-key="timespan" title="Timespan">
-                <semantic-form-autocomplete-input   for='dimension_duration_of_timespan' 
-                                                    label="Duration of timespan"
-                                                    placeholder="Select the timespan that this dimension is duration of" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Timespan",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Timespan\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
-                </semantic-form-autocomplete-input>
-            </rs-tab>
-
             <rs-tab event-key="event" title="Events">
 
-                <semantic-form-autocomplete-input   for='dimension_observed_in' 
-                                                    label="Observed in measurement"
-                                                    placeholder="Select measurement that observed the dimension" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Measurement",
-                                                            "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'>  
+                <semantic-form-autocomplete-input   for='persistent_item_present_at' 
+                                                    label="Present at" 
+                                                    placeholder="Select event where the persistent item had an active or passive presence" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
+                </semantic-form-autocomplete-input> 
+
+                <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
+                                                    label="Brought into existence by" 
+                                                    placeholder="Select event that brought the persistent item into existence" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
                 </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input for='entity_measurement' 
-                                                label="Measured by"
-                                                placeholder="Select measurement that measured the dimension" 
-                                                nested-form-templates='[ 
-                                                    {
-                                                        "label": "Measurement",
-                                                        "nestedForm": "{{{{raw}}}}
-                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
-                                                                    {{{{/raw}}}}"
-                                                    }
-                                                ]'>  
+                <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
+                                                    label="Taken out of existence by" 
+                                                    placeholder="Select event that took the persistent item out of existence" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                                    label="Influenced by"
+                                                    placeholder="Select activity influenced by the persistent item" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                                    label="Motivated by"
+                                                    placeholder="Select activity motivated by the persistent item" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                     label="Attributed by"
-                                                    placeholder="Select what assigned attribute to the dimension" 
+                                                    placeholder="Select what assigned attribute to the persistent item" 
                                                     nested-form-templates='[ 
                                                         {
                                                             "label": "Attribute assignment",
@@ -218,7 +164,7 @@
 
                 <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                     label="Assigned by"
-                                                    placeholder="Select what assigned the dimension" 
+                                                    placeholder="Select what assigned the persistent item" 
                                                     nested-form-templates='[ 
                                                         {
                                                             "label": "Attribute assignment",
@@ -229,44 +175,38 @@
                                                     ]'>  
                 </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                                    label="Influenced by"
-                                                    placeholder="Select activity influenced by the dimension" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+                <semantic-form-autocomplete-input   for='entity_measurement' 
+                                                    label="Measured by"
+                                                    placeholder="Select measurement" 
+                                                    nested-form-templates='[ 
+                                                        {
+                                                            "label": "Measurement",
+                                                            "nestedForm": "{{{{raw}}}}
+                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                        {{{{/raw}}}}"
+                                                        }
+                                                    ]'>  
                 </semantic-form-autocomplete-input>
-
-                <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                                    label="Motivated by"
-                                                    placeholder="Select activity motivated by the dimension" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-                </semantic-form-autocomplete-input>
-
             </rs-tab>
 
             <rs-tab event-key="thing" title="Things">
 
-                <semantic-form-autocomplete-input   for='dimension_dimension_of_thing' 
-                                                    label="Dimension of"
-                                                    placeholder="Select thing" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
-                </semantic-form-autocomplete-input>
-
                 <semantic-form-autocomplete-input   for='entity_depicted_by' 
                                                     label="Depicted by"
-                                                    placeholder="Select what depicts the dimension" 
+                                                    placeholder="Select what depicts the persistent item" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
                 </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input for='entity_subject_of' 
-                                            label="Subject of"
-                                            placeholder="Select what is about the dimension" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                <semantic-form-autocomplete-input   for='entity_subject_of' 
+                                                    label="Subject of"
+                                                    placeholder="Select what is about the persistent item" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
                 </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input for='entity_referred_to_by' 
-                                            label="Referred to by"
-                                            placeholder="Select what refers to the dimension" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+                <semantic-form-autocomplete-input   for='entity_referred_to_by' 
+                                                    label="Referred to by"
+                                                    placeholder="Select what refers to the persistent item" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
                 </semantic-form-autocomplete-input>
 
             </rs-tab>
@@ -280,7 +220,7 @@
     </div>
 
     <semantic-form-errors></semantic-form-errors>  
-    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}entity{{/if}}']] 
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}persistent item{{/if}}']] 
 
 </semantic-form>
 

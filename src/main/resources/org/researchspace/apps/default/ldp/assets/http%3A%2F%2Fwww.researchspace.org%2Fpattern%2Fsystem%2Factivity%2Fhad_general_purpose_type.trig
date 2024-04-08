@@ -4,30 +4,30 @@
       <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
       <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-1e1398d9f8b341d2b46f70bcb1184971-nnxgen;
-    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-1e1398d9f8b341d2b46f70bcb1184971-m6ss6k;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-a9de9135830c4c9b97535cbdac353835-xb2pz;
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
     <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-a9de9135830c4c9b97535cbdac353835-iblv5;
     <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
-    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-1e1398d9f8b341d2b46f70bcb1184971-isc98p;
     <http://www.w3.org/2000/01/rdf-schema#comment> """Enter an intentional relationship between the activity and some general goal or purpose (defined as Type).
 No occurrence of an event is implied as the purpose (in that case use Activity done in preparation of).""";
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-a9de9135830c4c9b97535cbdac353835-1iavp;
     <http://www.w3.org/2000/01/rdf-schema#label> "Had general purpose type";
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-1e1398d9f8b341d2b46f70bcb1184971-hhwyo;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E7_Activity>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/activity>;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1e1398d9f8b341d2b46f70bcb1184971-m3t5rp;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-a9de9135830c4c9b97535cbdac353835-jzyum6;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-a9de9135830c4c9b97535cbdac353835-j2qkv5yw;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-03T15:18:31.745+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-08T11:10:49.800+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-1e1398d9f8b341d2b46f70bcb1184971-m3t5rp a <http://spinrdf.org/sp#Query>;
+  _:genid-a9de9135830c4c9b97535cbdac353835-j2qkv5yw a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P21_had_general_purpose $value . 
     ?value a crm:E55_Type .
     ?value skos:prefLabel ?label .
 }""" .
   
-  _:genid-1e1398d9f8b341d2b46f70bcb1184971-hhwyo a <http://spinrdf.org/sp#Query>;
+  _:genid-a9de9135830c4c9b97535cbdac353835-jzyum6 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {
 	$subject crm:P21_had_general_purpose $value . 
     $value crm:P21i_was_purpose_of $subject .
@@ -36,25 +36,25 @@ No occurrence of an event is implied as the purpose (in that case use Activity d
     $value crm:P21i_was_purpose_of $subject .
 }""" .
   
-  _:genid-1e1398d9f8b341d2b46f70bcb1184971-m6ss6k a <http://spinrdf.org/sp#Query>;
+  _:genid-a9de9135830c4c9b97535cbdac353835-xb2pz a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a crm:E55_Type .
   ?value skos:prefLabel ?label .
-} ORDER BY ASC(?label)""" .
+  FILTER REGEX(lcase(STR(?label)), \"?token\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
   
-  _:genid-1e1398d9f8b341d2b46f70bcb1184971-nnxgen a <http://spinrdf.org/sp#Query>;
+  _:genid-a9de9135830c4c9b97535cbdac353835-iblv5 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E55_Type .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(lcase(?label))""" .
+  
+  _:genid-a9de9135830c4c9b97535cbdac353835-1iavp a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P21_had_general_purpose $value . 
     $value crm:P21i_was_purpose_of $subject .
 } WHERE {}""" .
-  
-  _:genid-1e1398d9f8b341d2b46f70bcb1184971-isc98p a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E55_Type .
-  ?value skos:prefLabel ?label .
-  FILTER REGEX(STR(?label), \"?token\")
-} ORDER BY ASC(?label)
-  LIMIT 10""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/activity/had_general_purpose_type> .

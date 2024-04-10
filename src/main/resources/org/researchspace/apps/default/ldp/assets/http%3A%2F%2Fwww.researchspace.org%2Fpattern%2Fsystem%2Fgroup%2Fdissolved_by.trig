@@ -1,0 +1,74 @@
+
+<http://www.researchspace.org/pattern/system/group/dissolved_by/context> {
+  <http://www.researchspace.org/pattern/system/group/dissolved_by> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-1b1c33ffc2904f8c8963734cd7c76d32-1fsqp;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E74_Group>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-1b1c33ffc2904f8c8963734cd7c76d32-5s1hle;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1b1c33ffc2904f8c8963734cd7c76d32-2je6g;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-1b1c33ffc2904f8c8963734cd7c76d32-b3iyd;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Dissolved by";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E68_Dissolution>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/group>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-1b1c33ffc2904f8c8963734cd7c76d32-rg44r;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T18:27:56.967+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-1b1c33ffc2904f8c8963734cd7c76d32-5s1hle a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+  $subject crm:P99i_was_dissolved_by $value . 
+  $value crm:P99_dissolved $subject .
+} WHERE {}""" .
+  
+  _:genid-1b1c33ffc2904f8c8963734cd7c76d32-2je6g a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+  $subject crm:P99i_was_dissolved_by $value . 
+
+  ?value a crm:E68_Dissolution .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/dissolution_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-1b1c33ffc2904f8c8963734cd7c76d32-rg44r a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E68_Dissolution .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/dissolution_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-1b1c33ffc2904f8c8963734cd7c76d32-b3iyd a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a crm:E68_Dissolution .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/dissolution_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(?label)""" .
+  
+  _:genid-1b1c33ffc2904f8c8963734cd7c76d32-1fsqp a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE { 
+  $subject crm:P99i_was_dissolved_by $value . 
+  $value crm:P99_dissolved $subject .
+}  WHERE {
+  $subject crm:P99i_was_dissolved_by $value . 
+  $value crm:P99_dissolved $subject .
+      
+  ?value a crm:E68_Dissolution .
+  ?value crm:P1_is_identified_by ?appellation . 
+  ?appellation a crm:E41_Appellation . 
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/dissolution_title> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/group/dissolved_by> .
+}

@@ -19,9 +19,15 @@
     <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-25T15:47:16.670Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
   _:genid-aa75f7a425bd46a0899ea5fdd49ff4ad-kmopdd a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   $subject crm:P7_took_place_at $value . 
-  $value crm:P7i_witnessed $subject . 
+  
+  ?value a crm:E53_Place .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type ?type . 
+  ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-aa75f7a425bd46a0899ea5fdd49ff4ad-82ka6g a <http://spinrdf.org/sp#Query>;
@@ -33,9 +39,10 @@
   _:genid-aa75f7a425bd46a0899ea5fdd49ff4ad-ojgzhh a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   ?value a crm:E53_Place .
-  ?value crm:P1_is_identified_by ?appellation . 
-  ?appellation a crm:E41_Appellation . 
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type ?type . 
+  ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
   ?appellation crm:P190_has_symbolic_content ?label .
 } ORDER BY ?label""" .
   
@@ -46,6 +53,13 @@
 }  WHERE {
   $subject crm:P7_took_place_at $value . 
   $value crm:P7i_witnessed $subject .
+
+  ?value a crm:E53_Place .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type ?type . 
+  ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+  ?appellation crm:P190_has_symbolic_content ?label .
   }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

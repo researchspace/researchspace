@@ -24,8 +24,6 @@
                             group_contact_point="http://www.researchspace.org/pattern/system/actor/contact_point"
                             group_residence="http://www.researchspace.org/pattern/system/actor/has_current_or_former_residence"
 
-                            group_performed_activity="http://www.researchspace.org/pattern/system/actor/performed_activity"
-
                             group_carried_out_by_range="http://www.researchspace.org/pattern/system/actor/PC14_carried_out_by_range"
                             group_participated_in_event="http://www.researchspace.org/pattern/system/actor/PC11_participated_in_event"
                             group_joined_with_range="http://www.researchspace.org/pattern/system/group/PC144_joined_with_range"
@@ -263,6 +261,54 @@
                                                     subjectLabel='Member'
                                                     has_member_has_domain_type_value='http://www.researchspace.org/resource/PC107_has_current_or_former_member/has_range_type/group'
             ]] 
+
+            <semantic-form-composite-input for="group_has_member_domain" 
+                                           label="Has member"
+                                    new-subject-template="/PC107_has_current_or_former_member/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                    fields='[[fieldDefinitions
+                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                
+                                                has_member_actor_range="http://www.researchspace.org/pattern/system/has_member/actor_range"
+                                                has_member_kind_of_member="http://www.researchspace.org/pattern/system/has_member/kind_of_member"
+                                            ]]'>
+
+                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC107_has_current_or_former_member'> </semantic-form-hidden-input>
+
+                <div class="form-inline-inputs">
+                  <div style="flex: 1;">
+                    <semantic-form-autocomplete-input for='has_member_actor_range' 
+                                                      render-header="false"
+                                                      placeholder="Select member" 
+                                                      nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
+                    </semantic-form-autocomplete-input>
+                  </div>
+                  <div style="flex: 1;">
+                    <semantic-form-tree-picker-input  for="has_member_kind_of_member" 
+                                                      label="kind of member" 
+                                                      render-header="false"
+                                                      placeholder="Select kind of member"
+                                                      close-dropdown-on-selection='true'
+                                                      tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                      "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                      "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                      scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                  "view": "vocabulary-content",
+                                                                                  "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                                  "tooltip": "Open list of roles"
+                                                                                }'
+                                                      
+                                                      nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                            scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                            entityType="role" }}{{{{/raw}}}}'
+
+                                                      query-item-label='SELECT ?label WHERE {
+                                                                          ?item skos:prefLabel ?label .
+                                                                      }'>
+                    </semantic-form-tree-picker-input>
+                  </div>
+                </div>
+            </semantic-form-composite-input>
 
             <div class="inline-composite-container">
               <semantic-form-composite-input for="group_is_member_range"
@@ -751,20 +797,11 @@
         <rs-tab event-key="event" title="Events">
          
           [[> Platform:formSwitchPerformedActivity  for_kp='group_carried_out_by_range'
-                                                    subjectLabel='Performed / carried out'
+                                                    subjectLabel='Carried out / performed'
                                                     carried_out_by_has_range_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_range_type/group'
           ]]
 
-            [[!-- <div class="dragAndDrop-input-container">
-                <semantic-form-drag-and-drop-input  for="group_performed_activity" 
-                                                    label="Carried out activity" 
-                                                    placeholder-item-template="<div class='placeholder-item'>
-                                                                                    <rs-icon icon-type='round' icon-name='calendar_month'></rs-icon>
-                                                                                    <div>Drag existing activity or click to create a new activity</div>
-                                                                                </div>"
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Activity nested=true editable=true mode="new" }}{{{{/raw}}}}'>
-                </semantic-form-drag-and-drop-input>
-            </div> --]]
+
 
             [[> Platform:formSwitchParticipatedInEvent  for_kp='group_participated_in_event'
                         subjectLabel='Participated in'

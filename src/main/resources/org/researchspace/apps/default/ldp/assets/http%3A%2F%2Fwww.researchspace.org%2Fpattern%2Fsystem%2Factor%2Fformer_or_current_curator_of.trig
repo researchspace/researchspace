@@ -1,0 +1,76 @@
+
+<http://www.researchspace.org/pattern/system/actor/former_or_current_curator_of/context> {
+  <http://www.researchspace.org/pattern/system/actor/former_or_current_curator_of> a
+      <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-e8dd71677cbf4eb28590880989673fb2-5iag3r;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/actor>;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-e8dd71677cbf4eb28590880989673fb2-xlsfan;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Former or current curator of";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-e8dd71677cbf4eb28590880989673fb2-ml1ig;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-e8dd71677cbf4eb28590880989673fb2-a7vg6;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-e8dd71677cbf4eb28590880989673fb2-6n7eua;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E78_Collection>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-10T11:35:12.233+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-e8dd71677cbf4eb28590880989673fb2-6n7eua a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P109i_is_current_or_former_curator_of $value . 
+    $value crm:P109_has_current_or_former_curator $subject .
+} WHERE {
+	$subject crm:P109i_is_current_or_former_curator_of $value . 
+    $value crm:P109_has_current_or_former_curator $subject .
+     
+    ?value a crm:E78_Collection .
+	?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-e8dd71677cbf4eb28590880989673fb2-ml1ig a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E78_Collection .
+	?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(STR(?label), \"?token\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-e8dd71677cbf4eb28590880989673fb2-5iag3r a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P109i_is_current_or_former_curator_of $value . 
+    $value crm:P109_has_current_or_former_curator $subject .
+} WHERE {}""" .
+  
+  _:genid-e8dd71677cbf4eb28590880989673fb2-a7vg6 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E78_Collection .
+	?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(?label)""" .
+  
+  _:genid-e8dd71677cbf4eb28590880989673fb2-xlsfan a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+	$subject crm:P109i_is_current_or_former_curator_of $value . 
+      
+    ?value a crm:E78_Collection .
+	?value crm:P102_has_title ?title . 
+    ?title a crm:E35_Title . 
+    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+    ?title crm:P190_has_symbolic_content ?label .
+
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/actor/former_or_current_curator_of> .
+}

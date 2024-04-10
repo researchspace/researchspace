@@ -13,6 +13,7 @@
 
                             actor_appellation="http://www.researchspace.org/pattern/system/actor/appellation"
                             actor_alsoKnownAs="http://www.researchspace.org/pattern/system/actor/alsoKnownAs"
+                            
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                             entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
@@ -23,14 +24,14 @@
 
                             actor_is_member_range="http://www.researchspace.org/pattern/system/actor/PC107_has_current_or_former_member_range"
                             
-                            actor_right="http://www.researchspace.org/pattern/system/actor/right"
-                            actor_member_of="http://www.researchspace.org/pattern/system/actor/is_current_or_former_member_of"
-                            actor_performed_activity="http://www.researchspace.org/pattern/system/actor/performed_activity"
-
                             actor_carried_out_by_range="http://www.researchspace.org/pattern/system/actor/PC14_carried_out_by_range"
                             actor_participated_in_event="http://www.researchspace.org/pattern/system/actor/PC11_participated_in_event"
+                            actor_acquired_title_through="http://www.researchspace.org/pattern/system/actor/acquired_title_through"
+                            actor_surrendered_title_through="http://www.researchspace.org/pattern/system/actor/surrendered_title_through"
+                            actor_received_custody_through="http://www.researchspace.org/pattern/system/actor/received_custody_through"
+                            actor_surrendered_custody_through="http://www.researchspace.org/pattern/system/actor/surrendered_custody_through"
                             actor_joined_by="http://www.researchspace.org/pattern/system/actor/joined_by"
-                            actor_leaving_group="http://www.researchspace.org/pattern/system/actor/leaving_group"
+                            actor_left_by="http://www.researchspace.org/pattern/system/actor/leaving_group"
                             persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                             persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
                             persistent_item_taken_out_of_existence_by="http://www.researchspace.org/pattern/system/persistent_item/taken_out_of_existence_by"
@@ -40,6 +41,14 @@
                             entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                             entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
+                            actor_former_or_current_owner_of="http://www.researchspace.org/pattern/system/actor/former_or_current_owner_of"
+                            actor_current_owner_of="http://www.researchspace.org/pattern/system/actor/current_owner_of"
+                            actor_possesses_right="http://www.researchspace.org/pattern/system/actor/possesses_right"
+                            actor_has_right_on="http://www.researchspace.org/pattern/system/actor/has_right_on"
+                            actor_former_or_current_keeper_of="http://www.researchspace.org/pattern/system/actor/former_or_current_keeper_of"
+                            actor_current_keeper_of="http://www.researchspace.org/pattern/system/actor/current_keeper_of"
+
+                            actor_former_or_current_curator_of="http://www.researchspace.org/pattern/system/actor/former_or_current_curator_of"
                             entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
                             entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
                             entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
@@ -59,24 +68,24 @@
               <div>
                 {{#if apiResourceName}}
                   <div class="focused-input-container">
-                    <semantic-form-text-input for="actor_appellation" label="Full name" placeholder="Enter actor full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
+                    <semantic-form-text-input for="actor_appellation" label="Actor full name" placeholder="Enter actor full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
                   </div>
                 {{else}}
-                    <semantic-form-text-input for="actor_appellation" label="Full name" placeholder="Enter actor full name / known as"> </semantic-form-text-input>
+                    <semantic-form-text-input for="actor_appellation" label="Actor full name" placeholder="Enter actor full name / known as"> </semantic-form-text-input>
                 {{/if}}
                 
-                <semantic-form-text-input for="actor_alsoKnownAs" label="Also known as" placeholder="Enter actor additional name / also known as"> </semantic-form-text-input>
+                <semantic-form-text-input for="actor_alsoKnownAs" label="Actor also known as" placeholder="Enter actor additional name / also known as"> </semantic-form-text-input>
                 
                 {{#if apiResourceDescription}}
                   <div class="focused-input-container">
-                    <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
+                    <semantic-form-text-input for="entity_description" label="Actor description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
                   </div>
                 {{else}}
-                    <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                    <semantic-form-text-input for="entity_description" label="Actor description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
                 {{/if}}
 
                 <semantic-form-tree-picker-input    for="actor_nationality" 
-                                                    label="Nationality"
+                                                    label="Actor nationality"
                                                     placeholder="Select nationality"
                                                     tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/nationality>", 
                                                                     "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/nationality>",
@@ -110,13 +119,13 @@
                                                   new-subject-template="/contact_point/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                   fields='[[fieldDefinitions
                                                               classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                              has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                              entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                                                               contact_point_type="http://www.researchspace.org/pattern/system/contact_point/type"
                                                               contact_point_text="http://www.researchspace.org/pattern/system/contact_point/text"
                                                       ]]'>
         
                       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E41_Appellation'> </semantic-form-hidden-input>
-                      <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/contact_point'> </semantic-form-hidden-input>
+                      <semantic-form-hidden-input for="entity_has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/contact_point'> </semantic-form-hidden-input>
                       
                       <div class="form-inline-inputs">
                           <div style="flex: 1;">
@@ -143,11 +152,11 @@
                   </semantic-form-composite-input>
                 </div>
 
-                <semantic-form-select-input for='actor_residence' 
-                                            label="Residence" 
-                                            placeholder="Select place" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>  
-                </semantic-form-select-input> 
+                <semantic-form-autocomplete-input for='actor_residence' 
+                                                  label="Residence" 
+                                                  placeholder="Select current or former residence" 
+                                                  nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>  
+                </semantic-form-autocomplete-input> 
 
                 <div class="inline-composite-container">
                   <semantic-form-composite-input  for="entity_preferred_id"
@@ -262,38 +271,27 @@
                                             new-subject-template="/PC107_has_current_or_former_member/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                               fields='[[fieldDefinitions
                                                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                          
-                                                          has_member_has_domain_type="http://www.researchspace.org/pattern/system/has_member/has_domain_type"
-                                                          has_member_has_range_type="http://www.researchspace.org/pattern/system/has_member/has_range_type"
+
                                                           has_member_group_domain="http://www.researchspace.org/pattern/system/has_member/group_domain"
                                                           has_member_kind_of_member="http://www.researchspace.org/pattern/system/has_member/kind_of_member"
                                                       ]]'>
 
                       <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC107_has_current_or_former_member'> </semantic-form-hidden-input>
-                    
-                      <semantic-form-hidden-input for="has_member_has_domain_type" 
-                                                  default-value='http://www.researchspace.org/resource/PC107_has_current_or_former_member/has_domain_type/group'> 
-                      </semantic-form-hidden-input>
-
-                      <semantic-form-hidden-input for="has_member_has_range_type" 
-                                                  default-value='http://www.researchspace.org/resource/PC107_has_current_or_former_member/has_range_type/actor'> 
-                      </semantic-form-hidden-input>
 
                       <div class="form-inline-inputs">
                         <div style="flex: 1;">
-                          <semantic-form-select-input for='has_member_group_domain' 
-                                                      label="Group" 
-                                                      render-header="false"
-                                                      placeholder="Select group"
-                                                      nested-form-templates='[ 
-                                                        {
-                                                          "label": "Group",
-                                                          "nestedForm": "{{{{raw}}}}
-                                                                            {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                      ]'> 
-                          </semantic-form-select-input>
+                          <semantic-form-autocomplete-input for='has_member_group_domain' 
+                                                            render-header="false"
+                                                            placeholder="Select group"
+                                                            nested-form-templates='[ 
+                                                              {
+                                                                "label": "Group",
+                                                                "nestedForm": "{{{{raw}}}}
+                                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                              {{{{/raw}}}}"
+                                                              }
+                                                            ]'> 
+                          </semantic-form-autocomplete-input>
                         </div>
                         <div style="flex: 1;">
                           <semantic-form-tree-picker-input  for="has_member_kind_of_member" 
@@ -326,166 +324,186 @@
       </rs-tab>
 
       <rs-tab event-key="event" title="Events">
-        
-        [[> Platform:formSwitchPerformedActivity  for_kp='actor_carried_out_by_range'
-                                                  subjectLabel='Performed / carried out'
-                                                  carried_out_by_has_range_type_value='http://www.researchspace.org/resource/PC14_carried_out_by/has_range_type/actor'
-        ]]
+    
+        <div class="inline-composite-container">
+          <semantic-form-composite-input  for="actor_carried_out_by_range" 
+                                          label="Carried out / performed"
+                                          new-subject-template="/PC14_carried_out_by/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                          fields='[[fieldDefinitions
+                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                              
+                                                    carried_out_by_activity_domain="http://www.researchspace.org/pattern/system/carried_out_by/activity_domain"
+                                                    role="http://www.researchspace.org/pattern/system/carried_out_by/role"
+                                                  ]]'>
 
-        [[> Platform:formSwitchParticipatedInEvent  for_kp='actor_participated_in_event'
-                                                    subjectLabel='Participated in'
-                                                    had_participant_has_range_type_value='http://www.researchspace.org/resource/PC11_had_participant/has_range_type/actor'
-        ]]
+          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC14_carried_out_by'> </semantic-form-hidden-input>
 
-        <h5 class="customFormHeader">Joined group</h5>
-        <semantic-form-composite-input for="actor_joined_by" 
-                                        render-header="false" 
-                                        new-subject-template="/joining_actor/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                        fields='[[fieldDefinitions
-                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+          <div class="form-inline-inputs">
+            <div style="flex: 1;">
+              <semantic-form-autocomplete-input for='carried_out_by_activity_domain' 
+                                                render-header="false"
+                                                placeholder="Select activity carried out by the actor" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>
+              </semantic-form-autocomplete-input>
+            </div>
+            <div style="flex: 1;">
+              <semantic-form-tree-picker-input  for="role" 
+                                                render-header="false"
+                                                placeholder="Select role"
+                                                close-dropdown-on-selection='true'
+                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
 
-                                                joining_domain="http://www.researchspace.org/pattern/system/joining/domain"
-                                                joining_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                                                joining_description="http://www.researchspace.org/pattern/system/entity/description"
-                                        ]]'>
+                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                            "view": "vocabulary-content",
+                                                                            "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                            "tooltip": "Open list of roles"
+                                                                          }'
+                                                
+                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                      scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                      entityType="role" }}{{{{/raw}}}}'
 
-            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
-            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/joining_group'></semantic-form-hidden-input>
-        
-            <semantic-form-composite-input for="joining_domain"
-                                          render-header="false"
-                                          new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                query-item-label='SELECT ?label WHERE {
+                                                                    ?item skos:prefLabel ?label .
+                                                                }'>
+                </semantic-form-tree-picker-input>
+            </div>
+          </div>
+          </semantic-form-composite-input>
+        </div>
+
+        <div class="inline-composite-container">
+          <semantic-form-composite-input  for="actor_participated_in_event" 
+                                          label="Participated in"
+                                          new-subject-template="/PC11_had_participant/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                           fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                      joining_with_role="http://www.researchspace.org/pattern/system/PC144_joined_with/P144.1_kind_of_member"
-                                                      joining_range="http://www.researchspace.org/pattern/system/PC144_joined_with/joining_range"
-                                              ]]'>
+                                                      
+                                                      participant_event="http://www.researchspace.org/pattern/system/participant/event"
+                                                      participant_role="http://www.researchspace.org/pattern/system/participant/role"
+                                                  ]]'>
 
-                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
-                
-                <div class="form-inline-inputs first-input" style="align-items:flex-end;">
-                  <div style="flex: 1;">
-                    <semantic-form-select-input for='joining_range' 
-                                                label="Group name" 
-                                                placeholder="Select group" 
-                                                nested-form-templates='[ 
-                                                  {
-                                                    "label": "Group",
-                                                    "nestedForm": "{{{{raw}}}}
-                                                                      {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
-                                                                  {{{{/raw}}}}"
-                                                  }
-                                                ]'> 
-                    </semantic-form-select-input>
+          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC11_had_participant'> </semantic-form-hidden-input>
 
-                  </div>
-                  <div style="flex: 1;">
-                    <semantic-form-tree-picker-input for='joining_with_role' 
-                                                    label="Joined with role" 
-                                                    placeholder="Select role" 
-                                                    close-dropdown-on-selection='false'
-                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
-                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
-                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-                                                                    
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                            scheme="http://www.researchspace.org/resource/vocab/actor_role"
-                                                                            entityType="role" }}{{{{/raw}}}}'
-
-                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
-                                                                                "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
-                                                                                "tooltip": "Open list of roles"
-                                                                              }'
-                                                    >
-                    </semantic-form-tree-picker-input>
-                  </div>
-                </div>
-            </semantic-form-composite-input> 
-
-            <semantic-form-composite-input  for="joining_date" 
-                                            render-header="false"
-                                            new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                            fields='[[fieldDefinitions
-                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                        timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
-                                                        timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
-                                                ]]'>   
-
-                <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
-
-                <div class="form-inline-inputs" style="align-items:flex-end;">
-                  <div style="flex: 1;">
-                    <semantic-form-datetime-input for="timespan_date" label="Joined date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
-                  </div>
-                  <div style="flex: 1;">
-                      <semantic-form-text-input for='timespan_text_value' label="Joined date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
-                  </div>
-                </div>
-            </semantic-form-composite-input>
-
-            <semantic-form-text-input for="joining_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
-        </semantic-form-composite-input>
-
-        <h5 class="customFormHeader">Left group</h5>
-        <semantic-form-composite-input for="actor_leaving_group" 
-                                        render-header="false" 
-                                        new-subject-template="/leaving/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                        fields='[[fieldDefinitions
-                                                classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                leaving_separated_from_group="http://www.researchspace.org/pattern/system/leaving/separated_from_group"
-                                                leaving_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                                                leaving_description="http://www.researchspace.org/pattern/system/entity/description"
-                                        ]]'>
-
-            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E86_Leaving'> </semantic-form-hidden-input>
-            <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/leaving_group'></semantic-form-hidden-input>
-        
-            <div class="form-inline-inputs first-input">
-              <div style="flex: 1;">
-                <semantic-form-select-input for='leaving_separated_from_group' 
-                                            label="Group name" 
-                                            placeholder="Select group" 
-                                            nested-form-templates='[ 
-                                              {
-                                                "label": "Group",
-                                                "nestedForm": "{{{{raw}}}}
-                                                                  {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
-                                                              {{{{/raw}}}}"
-                                              }
-                                            ]'> 
-                </semantic-form-select-input>
-              </div>
-
-              <semantic-form-composite-input  for="leaving_date" 
-                                              render-header="false"
-                                              new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                          timespan_date="http://www.researchspace.org/pattern/system/timespan/at_some_time_within"
-                                                          timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
-                                                  ]]'>   
-
-                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
-
-                  <div class="form-inline-inputs" style="align-items:flex-end; flex: 1" >
-                    <div style="flex: 1;">
-                      <semantic-form-datetime-input for="timespan_date" label="Leaving date (date value)"  placeholder="Enter date (date value)"></semantic-form-datetime-input>
-                    </div>
-                    <div style="flex: 1;">
-                        <semantic-form-text-input for='timespan_text_value' label="Leaving date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
-                    </div>
-                  </div>
-              </semantic-form-composite-input>
+          <div class="form-inline-inputs">
+            <div style="flex: 1;">
+              <semantic-form-autocomplete-input for='participant_event' 
+                                                render-header="false"
+                                                placeholder="Select event in which the actor participated" 
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>
+              </semantic-form-autocomplete-input>
             </div>
-            <semantic-form-text-input for="leaving_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
-        </semantic-form-composite-input>
+            <div style="flex: 1;">
+              <semantic-form-tree-picker-input  for="participant_role" 
+                                                render-header="false"
+                                                placeholder="Select role"
+                                                close-dropdown-on-selection='true'
+                                                tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+
+                                                scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                            "view": "vocabulary-content",
+                                                                            "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                            "tooltip": "Open list of roles"
+                                                                          }'
+                                                
+                                                nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                      scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                      entityType="role" }}{{{{/raw}}}}'
+
+                                                query-item-label='SELECT ?label WHERE {
+                                                                    ?item skos:prefLabel ?label .
+                                                }'>
+              </semantic-form-tree-picker-input>
+            </div>
+          </div>
+          </semantic-form-composite-input>
+        </div>
+
+        <semantic-form-autocomplete-input for="actor_acquired_title_through"
+                                          label="Acquired title through"
+                                          placeholder="Select acquisition that assigned legal ownership of an item/object to the actor" 
+                                          nested-form-templates='[ 
+                                            {
+                                              "label": "Acquisition",
+                                              "nestedForm": "{{{{raw}}}}
+                                                                {{> \"http://www.researchspace.org/resource/system/forms/Acquisition\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                            }
+                                          ]'>
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input for="actor_surrendered_title_through"
+                                          label="Surrendered title through"
+                                          placeholder="Select acquisition that resulted in surrendering legal ownership of an item/object by the actor" 
+                                          nested-form-templates='[ 
+                                            {
+                                              "label": "Acquisition",
+                                              "nestedForm": "{{{{raw}}}}
+                                                                {{> \"http://www.researchspace.org/resource/system/forms/Acquisition\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                            }
+                                          ]'>
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input for="actor_received_custody_through"
+                                          label="Received custody through"
+                                          placeholder="Select transfer that resulted in receiving custody of an item/object by the actor" 
+                                          nested-form-templates='[ 
+                                            {
+                                              "label": "Transfer of custody",
+                                              "nestedForm": "{{{{raw}}}}
+                                                                {{> \"http://www.researchspace.org/resource/system/forms/TransferOfCustody\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                            }
+                                          ]'>
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input for="actor_surrendered_custody_through"
+                                          label="Surrendered custody through"
+                                          placeholder="Select transfer that resulted in surrendering custody of an item/object by the actor" 
+                                          nested-form-templates='[ 
+                                            {
+                                              "label": "Transfer of custody",
+                                              "nestedForm": "{{{{raw}}}}
+                                                                {{> \"http://www.researchspace.org/resource/system/forms/TransferOfCustody\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                            }
+                                          ]'>
+        </semantic-form-autocomplete-input>
+        
+        <semantic-form-autocomplete-input for="actor_joined_by"
+                                          label="Joining / becoming member of"
+                                          placeholder="Select joining event that resulted in the actor to became member of a group" 
+                                          nested-form-templates='[ 
+                                            {
+                                              "label": "Joining",
+                                              "nestedForm": "{{{{raw}}}}
+                                                                {{> \"http://www.researchspace.org/resource/system/forms/Joining\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                            }
+                                          ]'>
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input for="actor_left_by"
+                                          label="Leaving / "
+                                          placeholder="Select leaving event in which the actor left a group" 
+                                          nested-form-templates='[ 
+                                            {
+                                              "label": "Leaving",
+                                              "nestedForm": "{{{{raw}}}}
+                                                                {{> \"http://www.researchspace.org/resource/system/forms/Leaving\" nested=true editable=true mode=\"new\"}}
+                                                            {{{{/raw}}}}"
+                                            }
+                                          ]'>
+        </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='persistent_item_present_at' 
                                             label="Present at" 
-                                            placeholder="Select event where the actor had an active or passive presence" 
+                                            placeholder="Select event in which the actor had an active or passive presence" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
         </semantic-form-autocomplete-input> 
 
@@ -502,13 +520,13 @@
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                            label="Influenced by"
+                                            label="Influenced"
                                             placeholder="Select activity influenced by the actor" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                            label="Motivated by"
+                                            label="Motivated"
                                             placeholder="Select activity motivated by the actor" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
@@ -555,6 +573,19 @@
 
       <rs-tab event-key="thing" title="Things">
 
+        <semantic-form-autocomplete-input   for="actor_former_or_current_curator_of"
+                                            label="Curator of collection" 
+                                            placeholder="Select collection of which the actor assumed or have assumed overall curatorial responsibility" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Collection",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Collection\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'> 
+        </semantic-form-autocomplete-input>
+
         <semantic-form-autocomplete-input   for='entity_depicted_by' 
                                             label="Depicted by"
                                             placeholder="Select what depicts the actor" 
@@ -573,6 +604,52 @@
                                             nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
         </semantic-form-autocomplete-input>
 
+      </rs-tab>
+
+      <rs-tab event-key="ownership" title="Ownership/Rights/Custody">
+
+        <semantic-form-autocomplete-input   for="actor_former_or_current_owner_of"
+                                            label="Former or current owner of" 
+                                            placeholder="Select thing/object of which the actor is or had been the legal owner" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for="actor_current_owner_of"
+                                            label="Current owner of" 
+                                            placeholder="Select thing/object of which the actor is legal owner" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for="actor_possesses_right"
+                                            label="Possesses right" 
+                                            placeholder="Select right over which the actor holds or has held a legal claim" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Right",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Right\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for="actor_has_right_on"
+                                            label="Has right on" 
+                                            placeholder="Select object of which the actor has right on" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_legalObjects]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for="actor_former_or_current_keeper_of"
+                                            label="Former or current keeper of" 
+                                            placeholder="Select thing/object of which the actor has or has had custody" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for="actor_current_keeper_of"
+                                            label="Current keeper of" 
+                                            placeholder="Select thing/object of which the actor has custody" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+        </semantic-form-autocomplete-input> 
       </rs-tab>
 
       [[> rsp:FormMetadataTab]]

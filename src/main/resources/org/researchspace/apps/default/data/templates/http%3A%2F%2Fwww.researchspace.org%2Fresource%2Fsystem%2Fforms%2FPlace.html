@@ -3,8 +3,7 @@
                 subject='{{node}}' 
                 persistence='{"type": "sparql", "targetInsertGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
                 new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/place/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
-                fields='[[
-                        fieldDefinitions
+                fields='[[fieldDefinitions
                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                         entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                         inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -321,7 +320,7 @@
         {{#if scheme}}
           <semantic-form-tree-picker-input  for="place_falls_within_place" 
                                             label="Falls within place" 
-                                            placeholder="Enter place name" 
+                                            placeholder="Select location that fully contains the place" 
                                             close-dropdown-on-selection='true'
                                             default-values='[{{#if broader}}"{{broader}}"{{/if}}]' 
 
@@ -347,7 +346,7 @@
 
           <semantic-form-tree-picker-input  for="place_contains_place" 
                                             label="Contains place" 
-                                            placeholder="Enter place name"
+                                            placeholder="Select location that falls wholly within the place"
                                             close-dropdown-on-selection='true'
                                             tree-patterns='{"scheme": "{{scheme}}",
                                                             "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
@@ -442,9 +441,8 @@
 
               <semantic-form-tree-picker-input  for="place_falls_within_place" 
                                                 label="Falls within place" 
-                                                placeholder="Select place" 
+                                                placeholder="Select location that fully contains the place" 
                                                 close-dropdown-on-selection='true'
-
                                                 tree-patterns='{"scheme": "crm:E53_Place",
                                                                 "schemePattern": "?item a crm:E53_Place",
                                                                 "relationPattern": "?item crm:P89_falls_within ?parent",
@@ -467,7 +465,7 @@
 
               <semantic-form-tree-picker-input  for="place_contains_place" 
                                                 label="Contains place" 
-                                                placeholder="Select place"
+                                                placeholder="Select location that falls wholly within the place"
                                                 close-dropdown-on-selection='true'
                                                 tree-patterns='{"scheme": "crm:E53_Place",
                                                                 "schemePattern": "?item a crm:E53_Place",
@@ -497,7 +495,7 @@
 
         <semantic-form-autocomplete-input for='place_residence_of_actor' 
                                           label="Residence of" 
-                                          placeholder="Select resident" 
+                                          placeholder="Select actor that reside in the place" 
                                           nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-autocomplete-input> 
 
@@ -535,6 +533,18 @@
                                                               {{{{/raw}}}}"
                                               }
                                           ]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                            label="Influenced"
+                                            placeholder="Select activity influenced by the place" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                            label="Motivated"
+                                            placeholder="Select activity motivated by the place" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
         </semantic-form-autocomplete-input>
 
         <semantic-form-autocomplete-input for='entity_attributed_by_attribute_assignment' 
@@ -576,31 +586,18 @@
                                           ]'>  
         </semantic-form-autocomplete-input>
 
-        <semantic-form-autocomplete-input   for='entity_influenced_activity' 
-                                            label="Influenced"
-                                            placeholder="Select activity influenced by the place" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-        </semantic-form-autocomplete-input>
-
-        <semantic-form-autocomplete-input   for='entity_motivated_activity' 
-                                            label="Motivated"
-                                            placeholder="Select activity motivated by the place" 
-                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
-        </semantic-form-autocomplete-input>
-
-
       </rs-tab>
 
       <rs-tab event-key="thing" title="Things">
 
         <semantic-form-autocomplete-input for='place_current_permanent_location_of' 
-                                          label="Current permanent location of object" 
+                                          label="Current permanent location of" 
                                           placeholder="Select object" 
                                           nested-form-templates='[[> Platform:NestedFormTemplates_physicalObjects]]'>
         </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input for='place_currently_holds' 
-                                          label="Currently holds object" 
+                                          label="Currently holds" 
                                           placeholder="Select object" 
                                           nested-form-templates='[[> Platform:NestedFormTemplates_physicalObjects]]'>
         </semantic-form-autocomplete-input> 
@@ -629,23 +626,23 @@
                                           nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
         </semantic-form-autocomplete-input> 
 
-          <semantic-form-autocomplete-input   for='entity_depicted_by' 
-                                              label="Depicted by"
-                                              placeholder="Select what depicts the place" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
-          </semantic-form-autocomplete-input>
+        <semantic-form-autocomplete-input   for='entity_depicted_by' 
+                                            label="Depicted by"
+                                            placeholder="Select what depicts the place" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
+        </semantic-form-autocomplete-input>
 
-          <semantic-form-autocomplete-input for='entity_subject_of' 
-                                      label="Subject of"
-                                      placeholder="Select what is about the place" 
-                                      nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-          </semantic-form-autocomplete-input>
+        <semantic-form-autocomplete-input for='entity_subject_of' 
+                                    label="Subject of"
+                                    placeholder="Select what is about the place" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+        </semantic-form-autocomplete-input>
 
-          <semantic-form-autocomplete-input for='entity_referred_to_by' 
-                                      label="Referred to by"
-                                      placeholder="Select what refers to the place" 
-                                      nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-          </semantic-form-autocomplete-input>
+        <semantic-form-autocomplete-input for='entity_referred_to_by' 
+                                    label="Referred to by"
+                                    placeholder="Select what refers to the place" 
+                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+        </semantic-form-autocomplete-input>
 
       </rs-tab>
 

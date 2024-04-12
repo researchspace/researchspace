@@ -12,13 +12,13 @@
                             actor_appellation="http://www.researchspace.org/pattern/system/actor/appellation"
                             user_email="http://www.researchspace.org/pattern/system/user/email"
                             user_type="http://www.researchspace.org/pattern/system/user/type"
-
-                            user_broader="http://www.researchspace.org/pattern/system/actor/is_current_or_former_member_of"
-                            user_narrower="http://www.researchspace.org/pattern/system/actor/has_current_or_former_member"
-
-                            user_joining_organisation_range="http://www.researchspace.org/pattern/system/group/PC144_joined_with_range"
-                            
                             entity_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                            user_broader="http://www.researchspace.org/pattern/system/user/is_current_or_former_member_of"
+                            user_narrower="http://www.researchspace.org/pattern/system/user/has_current_or_former_member"
+
+                            actor_joined_by="http://www.researchspace.org/pattern/system/actor/joined_by"   
+                            actor_joined_by_Min1Max1="http://www.researchspace.org/pattern/system/actor/joined_by_Min1Max1"
                 ]]'
 >
 
@@ -35,133 +35,113 @@
       <rs-tab event-key="detail" title="Details">
         <div class="form-2column-container">
           <div>
-            <semantic-form-text-input for="actor_appellation" label="Full name" placeholder="Enter full name"> </semantic-form-text-input>
+            <div class="form-inline-inputs"> 
+              <div style="flex: 1;">
+                <semantic-form-text-input for="actor_appellation" label="Full name" placeholder="Enter full name"> </semantic-form-text-input>
+              </div>
+              
+              <div style="flex: 1;">
+                {{#if node}}
+                  <semantic-form-text-input for="user_email" label="Email" placeholder="Enter email" readonly='true'></semantic-form-text-input>
+                {{else}}
+                  {{#if additional_data.email}}
+                    <semantic-form-text-input for="user_email" default-value="{{additional_data.email}}" label="Email" placeholder="Enter email" readonly='true'></semantic-form-text-input>
+                  {{else}}
+                    <semantic-form-text-input for="user_email" label="Email" placeholder="Enter email"> </semantic-form-text-input>
+                  {{/if}}
+                {{/if}}
+              </div>
+            </div>
+            <h5 class="customFormHeader">User type*</h5>
+            <div class="form-section" style="padding: 15px 10px 10px;">
+              <semantic-form-checklist-input for='user_type' label="User type" row="true" render-header="false"></semantic-form-checklist-input>
+            </div>
+            <semantic-form-text-input for="entity_description" multiline="true" label="Summary" placeholder="Enter summary"></semantic-form-text-input>
 
             {{#if node}}
-              <semantic-form-text-input for="user_email" label="Email" placeholder="Enter email" readonly='true'></semantic-form-text-input>
-            {{else}}
-              {{#if additional_data.email}}
-                <semantic-form-text-input for="user_email" default-value="{{additional_data.email}}" label="Email" placeholder="Enter email" readonly='true'></semantic-form-text-input>
-              {{else}}
-                <semantic-form-text-input for="user_email" label="Email" placeholder="Enter email"> </semantic-form-text-input>
+              {{#if (or (eq user_type "department") (eq user_type "team"))}}
+                <semantic-form-composite-input  for="actor_joined_by_Min1Max1"
+                                                render-header="false"
+                                                new-subject-template="/joining/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                            joining_title="http://www.researchspace.org/pattern/system/joining/joining_title"
+                                                            joining_joined_with="http://www.researchspace.org/pattern/system/joining/domain_PC144_Min1Max1"
+                                                    ]]'>
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+                    <semantic-form-hidden-input for="joining_title" default-value="test"></semantic-form-hidden-input>
+                    
+                    <div class="inline-composite-container">
+                      <semantic-form-composite-input  for="joining_joined_with"
+                                                      render-header="false"  
+                                                      new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                      fields='[[fieldDefinitions
+                                                                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                  joined_with_range="http://www.researchspace.org/pattern/system/PC144_joined_with/joining_range"
+                                                                  joined_with_role="http://www.researchspace.org/pattern/system/PC144_joined_with/P144.1_kind_of_member"
+                                                          ]]'>
+
+                          <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
+                          
+                          <div class="form-inline-inputs" style="align-items: flex-end;">
+                            <div style="flex: 1;">
+                                <semantic-form-autocomplete-input for='joined_with_range' 
+                                                                  label="Part of organisation/group" 
+                                                                  placeholder="Select organisation/group of which the {{user_type}} is part of" 
+                                                                  nested-form-templates='[ 
+                                                                      {
+                                                                        "label": "Group",
+                                                                        "nestedForm": "{{{{raw}}}}
+                                                                                        {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                                    {{{{/raw}}}}"
+                                                                      },
+                                                                      {
+                                                                          "label": "Organisation",
+                                                                          "nestedForm": "{{{{raw}}}}
+                                                                                          {{> \"http://www.researchspace.org/resource/system/forms/Organisation\" nested=true editable=true mode=\"new\"}}
+                                                                                      {{{{/raw}}}}"
+                                                                      }
+                                                                  ]'>  
+                                </semantic-form-autocomplete-input> 
+                            </div>
+                    
+                            <div style="flex: 1;">
+                              <semantic-form-tree-picker-input for='joined_with_role' 
+                                                              render-header="false"
+                                                              label="{{user_type}} role"
+                                                              placeholder="Select {{user_type}} role in the organisation/group" 
+                                                              close-dropdown-on-selection='false'
+                                                              tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                              "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                                                                              
+                                                              nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                      scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                      entityType="role" }}{{{{/raw}}}}'
+
+                                                              scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                          "view": "vocabulary-content",
+                                                                                          "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                                          "tooltip": "Open list of Job titles/roles"
+                                                                                      }'
+                                                              >
+                              </semantic-form-tree-picker-input>
+                            </div>
+                          </div>
+                      </semantic-form-composite-input> 
+                    </div>
+                </semantic-form-composite-input>
               {{/if}}
-            {{/if}}
-            
-            <semantic-form-checklist-input for='user_type' label="User type" row="true"></semantic-form-checklist-input>
-
-            {{#if node}}
-              {{#if (eq user_type "department")}}
-                  [[> narrowerUser 
-                      user_type_label='Department'
-                      narrower_type_label='team' 
-                      narrower_type='http://www.researchspace.org/resource/system/vocab/user_type/team'
-                  ]] 
-              {{else if (eq user_type "team")}}
-                  [[> broaderUser 
-                      user_type_label='Team'
-                      broader_type_label='department' 
-                      broader_type='http://www.researchspace.org/resource/system/vocab/user_type/department'
-                  ]]
-  
-                  [[> narrowerUser 
-                      user_type_label='Team'
-                      narrower_type_label='person' 
-                      narrower_type='http://www.researchspace.org/resource/system/vocab/user_type/person'
-                  ]]
-              {{else if (eq user_type "person")}}
-                <semantic-form-tree-picker-input  for="user_broader" 
-                                                  label="Person is member of" 
-                                                  placeholder="Select department or team" 
-                                                  close-dropdown-on-selection='false'
-                                                  tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.cidoc-crm.org/cidoc-crm/E39_Actor{{/if}}",
-                                                                  "schemePattern": "{{#if scheme}} ?item crm:P71i_is_listed_in <{{scheme}}> . {{/if}}
-                                                                                      ?item crm:P2_has_type ?broaderType .
-                                                                                      FILTER (?broaderType in (<http://www.researchspace.org/resource/system/vocab/user_type/department>,<http://www.researchspace.org/resource/system/vocab/user_type/team>))",
-                                                                  "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent . 
-                                                                                      ?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/user_type/team> .
-                                                                                      ?parent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/user_type/department>",
-                                                                  "labelPattern": "?item crm:P1_is_identified_by ?identifier .
-                                                                                      ?identifier a crm:E41_Appellation .
-                                                                                      ?identifier crm:P190_has_symbolic_content ?label .
-                                                                                      ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation>"}'
-                                                  
-                                                  query-item-label='SELECT ?label WHERE {
-                                                                      ?item crm:P1_is_identified_by ?identifier .
-                                                                      ?identifier a crm:E41_Appellation .
-                                                                      ?identifier crm:P190_has_symbolic_content ?label .
-                                                                      ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
-                                                                      }'
-                                      
-                                                  nested-form-template='{{#if scheme}}
-                                                                        {{else}}
-                                                                          {{{{raw}}}}{{> forms:User nested=true editable=true mode="new" entityType="user"}}{{{{/raw}}}}
-                                                                        {{/if}}'
-                                      
-                ></semantic-form-tree-picker-input>
-              {{else}} 
-                [[> broaderUser 
-                    user_type_label='User'
-                    broader_type_label='member' 
-                    broader_type='http://www.researchspace.org/resource/system/vocab/resource_type/user'
-                ]]
-
-                [[> narrowerUser 
-                    user_type_label='User'
-                    narrower_type_label='user' 
-                    narrower_type='http://www.researchspace.org/resource/system/vocab/resource_type/user'
-                ]]
-              {{/if}}
-            
-              <semantic-form-text-input for="entity_description" multiline="true" label="Summary" placeholder="Enter summary"></semantic-form-text-input>
-            {{/if}}
-
-            {{#if broader}}
-              [[> broaderUser 
-                  user_type_label='User'
-                  broader_type_label='member' 
-                  broader_type='http://www.researchspace.org/resource/system/vocab/resource_type/user'
-                  broader=true
-              ]]
-            {{/if}}
-
-            [[#*inline "broaderUser"]]
-              <semantic-form-tree-picker-input  for="user_broader" 
-                                                label="[[user_type_label]] is member of" 
-                                                placeholder="Select [[broader_type_label]]" 
-                                                default-value='[[#if broader]]{{broader}}[[/if]]' 
+              {{#if (eq user_type "department")}} 
+                <semantic-form-tree-picker-input for="user_narrower" 
+                                                label="Department members" 
+                                                placeholder="Select team/person that is current or former member of the department"
                                                 close-dropdown-on-selection='false'
-                                                tree-patterns='{ "scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.cidoc-crm.org/cidoc-crm/E39_Actor{{/if}}",
-                                                                  "schemePattern": "{{#if scheme}} ?item crm:P71i_is_listed_in <{{scheme}}> . {{/if}}
-                                                                                  ?item crm:P2_has_type <[[broader_type]]>",
-                                                                  "relationPattern": "{{#if scheme}}?item crm:P107i_is_current_or_former_member_of ?parent{{else}}{{/if}}",
-                                                                  "labelPattern": "?item crm:P1_is_identified_by ?identifier .
-                                                                                  ?identifier a crm:E41_Appellation .
-                                                                                  ?identifier crm:P190_has_symbolic_content ?label .
-                                                                                  ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation>"}'
-                                                
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    ?item crm:P1_is_identified_by ?identifier .
-                                                                    ?identifier a crm:E41_Appellation .
-                                                                    ?identifier crm:P190_has_symbolic_content ?label .
-                                                                    ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
-                                                                  }'
-                                                    
-                                                nested-form-template='{{#if scheme}}
-                                                                      {{else}}
-                                                                        {{{{raw}}}}{{> forms:User nested=true editable=true mode="new" entityType="user"}}{{{{/raw}}}}
-                                                                      {{/if}}'                                                   
-              ></semantic-form-tree-picker-input>
-            [[/inline]]
-
-            [[#*inline "narrowerUser"]]
-              <semantic-form-tree-picker-input for="user_narrower" 
-                                                label="[[user_type_label]] has member" 
-                                                placeholder="Select [[narrower_type_label]] as current or former member"
-                                                close-dropdown-on-selection='false'
-                                                tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}http://www.cidoc-crm.org/cidoc-crm/E39_Actor{{/if}}",
-                                                                "schemePattern": "{{#if scheme}} ?item crm:P71i_is_listed_in <{{scheme}}> . {{/if}}
-                                                                                ?item crm:P2_has_type <[[narrower_type]]>",
-                                                                "relationPattern": "{{#if scheme}}?item crm:P107i_is_current_or_former_member_of ?parent{{else}}{{/if}}",
+                                                tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
+                                                                "schemePattern": "?item crm:P2_has_type ?parentType .
+                                                                                FILTER (?parentType in (<http://www.researchspace.org/resource/system/vocab/user_type/team>,<http://www.researchspace.org/resource/system/vocab/user_type/person>))",
+                                                                "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent .",
                                                                 "labelPattern": "?item crm:P1_is_identified_by ?identifier .
                                                                                 ?identifier a crm:E41_Appellation .
                                                                                 ?identifier crm:P190_has_symbolic_content ?label .
@@ -173,14 +153,71 @@
                                                                     ?identifier crm:P190_has_symbolic_content ?label .
                                                                     ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
                                                                   }'
+                ></semantic-form-tree-picker-input>
+              {{else if (eq user_type "team")}}
+                <semantic-form-tree-picker-input  for="user_broader" 
+                                                  label="Part of department" 
+                                                  placeholder="Select department of which the team is part of" 
+                                                  default-value='[[#if broader]]{{broader}}[[/if]]' 
+                                                  close-dropdown-on-selection='false'
+                                                  tree-patterns='{ "scheme": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
+                                                                    "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/user_type/department>",
+                                                                    "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                    ?identifier a crm:E41_Appellation .
+                                                                                    ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                    ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation>"}'
                                                   
-                                                nested-form-template='{{#if scheme}}
-                                                                      {{else}}
-                                                                        {{{{raw}}}}{{> forms:User nested=true editable=true mode="new" entityType="user"}}{{{{/raw}}}}
-                                                                      {{/if}}'
-              ></semantic-form-tree-picker-input>
-            [[/inline]]
-            
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item crm:P1_is_identified_by ?identifier .
+                                                                      ?identifier a crm:E41_Appellation .
+                                                                      ?identifier crm:P190_has_symbolic_content ?label .
+                                                                      ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+                                                                    }'                            
+                ></semantic-form-tree-picker-input>
+  
+                <semantic-form-tree-picker-input for="user_narrower" 
+                                                  label="Team members" 
+                                                  placeholder="Select person that is current or former member of the team"
+                                                  close-dropdown-on-selection='false'
+                                                  tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
+                                                                  "schemePattern": "?item crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/user_type/person>",
+                                                                  "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                  ?identifier a crm:E41_Appellation .
+                                                                                  ?identifier crm:P190_has_symbolic_content ?label .
+                                                                                  ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation>"}'
+                                                  
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item crm:P1_is_identified_by ?identifier .
+                                                                      ?identifier a crm:E41_Appellation .
+                                                                      ?identifier crm:P190_has_symbolic_content ?label .
+                                                                      ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+                                                                    }'
+                ></semantic-form-tree-picker-input>
+              {{else if (eq user_type "person")}}
+                <semantic-form-tree-picker-input  for="user_broader" 
+                                                  label="Member of department/team" 
+                                                  placeholder="Select department or team of which the person is member of" 
+                                                  close-dropdown-on-selection='false'
+                                                  tree-patterns='{"scheme": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
+                                                                  "schemePattern": "?item crm:P2_has_type ?parentType .
+                                                                                      FILTER (?parentType in (<http://www.researchspace.org/resource/system/vocab/user_type/department>,<http://www.researchspace.org/resource/system/vocab/user_type/team>))",
+                                                                  "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent . 
+                                                                                      ?parent crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/user_type/department> .",
+                                                                  "labelPattern": "?item crm:P1_is_identified_by ?identifier .
+                                                                                  ?identifier a crm:E41_Appellation .
+                                                                                  ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+                                                                                  ?identifier crm:P190_has_symbolic_content ?label . "}'
+                                                  
+                                                  query-item-label='SELECT ?label WHERE {
+                                                                      ?item crm:P1_is_identified_by ?identifier .
+                                                                      ?identifier a crm:E41_Appellation .
+                                                                      ?identifier crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+                                                                      ?identifier crm:P190_has_symbolic_content ?label .
+                                                                    }'
+                ></semantic-form-tree-picker-input>
+              {{/if}}
+            {{/if}}
+
           </div>
 
           <div class="form-media-column">
@@ -214,167 +251,125 @@
       </rs-tab>
 
       {{#if (eq user_type "person")}}
-      <!-- WRONG MAPPING - person can't be domain of PC144_joined_with (only group can) -->
         <rs-tab event-key="personEmployment" title="Employment">
-          <h5 style="margin: 25px 0 5px 0px;">Employment details</h5>
-          <semantic-form-composite-input  for="user_joining_organisation_range"
-                                          label="Organisation"
-                                          render-header="false" 
-                                          new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+          <semantic-form-composite-input  for="actor_joined_by"
+                                          label="Employment details" 
+                                          new-subject-template="/joining/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                           fields='[[fieldDefinitions
                                                       classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                      actor_job_title="http://www.researchspace.org/pattern/system/PC144_joined_with/P144.1_kind_of_member"
-                                                      actor_joining_organisation_domain="http://www.researchspace.org/pattern/system/PC144_joined_with/joining_domain"
+                                                      joining_title="http://www.researchspace.org/pattern/system/joining/joining_title"
+                                                      joining_joined_with="http://www.researchspace.org/pattern/system/joining/domain_PC144_Min1Max1"
+                                                      joining_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
+                                                  
+                                                      joining_description="http://www.researchspace.org/pattern/system/entity/description"
+    
                                               ]]'>
 
-                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
-                  
-                  <div style="margin-top: -20px;">
-                    <semantic-form-tree-picker-input for='actor_job_title' label="Job title" placeholder="Select job title" close-dropdown-on-selection='false'
-                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/job_title>", 
-                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/job_title>",
-                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
-                                                                            scheme="http://www.researchspace.org/resource/system/vocab/job_title"
-                                                                            entityType="job title" }}{{{{/raw}}}}'
+              <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
+              <semantic-form-hidden-input for="joining_title" default-value="test"></semantic-form-hidden-input>
+              
+              <div class="form-inline-inputs" style="margin-top: -15px;">
+                <div class="inline-composite-container" style="flex: 1;">
+                  <semantic-form-composite-input  for="joining_joined_with"
+                                                  render-header="false"  
+                                                  new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                  fields='[[fieldDefinitions
+                                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                              joined_with_range="http://www.researchspace.org/pattern/system/PC144_joined_with/joining_range"
+                                                              joined_with_role="http://www.researchspace.org/pattern/system/PC144_joined_with/P144.1_kind_of_member"
+                                                      ]]'>
 
-                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
-                                                                                "scheme": "http://www.researchspace.org/resource/system/vocab/job_title",
-                                                                                "tooltip": "Open list of job titles"
-                                                                              }'
-                                                    >
-                    </semantic-form-tree-picker-input>
-                  </div>
-
-                  <semantic-form-composite-input for="actor_joining_organisation_domain" 
-                                          render-header="false" 
-                                          new-subject-template="/joining_organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                          fields='[[fieldDefinitions
-                                                  classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                  has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-
-                                                  joined_joined_organisation="http://www.researchspace.org/pattern/system/joining/joined_organisation"
-
-                                                  joining_date="http://www.researchspace.org/pattern/system/temporal_entity/composite_timespan"
-                                                  
-                                                  joining_description="http://www.researchspace.org/pattern/system/entity/description"
-                                          ]]'>
-
-                      <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
-                      <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/joining_organisation'></semantic-form-hidden-input>
-          
-                      <div class="form-inline-inputs" style="align-items:flex-end;">
+                      <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
+                      
+                      <div class="form-inline-inputs">
                         <div style="flex: 1;">
-                          <semantic-form-tree-picker-input for="joined_joined_organisation" 
-                                                            label="Organisation name" 
-                                                            placeholder="Select organisation name" 
-                                                            close-dropdown-on-selection='true'
-                                                            tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
-                                                                            "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
-                                                                            "labelPattern": "?item crm:P1_is_identified_by ?appellation .  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/address_type/name> . ?appellation crm:P190_has_symbolic_content ?label ."
-                                                                          }'
-                                                            nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true
-                                                                                                  scheme="http://www.researchspace.org/resource/system/vocab/organisation"
-                                                                                                  entityType="organisation" }}
-                                                                                  {{{{/raw}}}}'
+                          <semantic-form-tree-picker-input for='joined_with_role' 
+                                                          label="Job title/role"
+                                                          placeholder="Select job title" 
+                                                          close-dropdown-on-selection='false'
+                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/actor_role>", 
+                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/actor_role>",
+                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+                                                                          
+                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                  scheme="http://www.researchspace.org/resource/vocab/actor_role"
+                                                                                  entityType="role" }}{{{{/raw}}}}'
 
-                                                            scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                  "view": "vocabulary-content",
-                                                                                  "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
-                                                                                  "tooltip": "Open list of organisations"
-                                                                                }'
-                                                            >
-                          </semantic-form-tree-picker-input> 
-                        </div>
-                        <semantic-form-composite-input  for="joining_date" 
-                                                        render-header="false"
-                                                        new-subject-template="/E52_Time-Span/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                                        fields='[[fieldDefinitions
-                                                                    classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                                    timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
-                                                                    timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
-                                                                    timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
-                                                            ]]'>   
-
-                            <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
-
-                            <div class="form-inline-inputs" style="align-items:flex-end;">
-                                <div style="flex: 1;">
-                                    <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter start date"></semantic-form-datetime-input>
-                                </div>
-                                <div style="flex: 1;">
-                                    <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter end date"></semantic-form-datetime-input>
-                                </div>
-                                <div style="flex: 1;">
-                                    <semantic-form-text-input for='timespan_text_value' label="Date (text value)"  placeholder="Enter date (text value)"></semantic-form-text-input>
-                                </div>
-                            </div>
-                        </semantic-form-composite-input>
+                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                      "view": "vocabulary-content",
+                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/actor_role",
+                                                                                      "tooltip": "Open list of Job titles/roles"
+                                                                                  }'
+                                                          >
+                          </semantic-form-tree-picker-input>
                       </div>
-                      <semantic-form-text-input for="joining_description" multiline="true" label="Description" placeholder="Enter description"></semantic-form-text-input>
-                  </semantic-form-composite-input>
-          
+                        <div style="flex: 1;">
+                            <semantic-form-autocomplete-input for='joined_with_range' 
+                                                              label="Organisation/group" 
+                                                              placeholder="Select organisation/group name" 
+                                                              nested-form-templates='[ 
+                                                                  {
+                                                                    "label": "Group",
+                                                                    "nestedForm": "{{{{raw}}}}
+                                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Group\" nested=true editable=true mode=\"new\"}}
+                                                                                {{{{/raw}}}}"
+                                                                  },
+                                                                  {
+                                                                      "label": "Organisation",
+                                                                      "nestedForm": "{{{{raw}}}}
+                                                                                      {{> \"http://www.researchspace.org/resource/system/forms/Organisation\" nested=true editable=true mode=\"new\"}}
+                                                                                  {{{{/raw}}}}"
+                                                                  }
+                                                              ]'>  
+                            </semantic-form-autocomplete-input> 
+                        </div>
+                      </div>
+                  </semantic-form-composite-input> 
+                </div>
+                <semantic-form-composite-input  for="joining_date" 
+                                                render-header="false"
+                                                new-subject-template="/timespan/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                            classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                            timespan_text_value="http://www.researchspace.org/pattern/system/timespan/time_appellation"
+                                                            timespan_start_date="http://www.researchspace.org/pattern/system/timespan/begin_of_the_begin"
+                                                            timespan_end_date="http://www.researchspace.org/pattern/system/timespan/end_of_the_end"
+                                                            
+                                                    ]]'>   
+
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'></semantic-form-hidden-input>
+
+                    <div class="form-inline-inputs">
+                      <div style="flex: 1;">
+                        <semantic-form-text-input for='timespan_text_value' label="Date"  placeholder="Enter date"></semantic-form-text-input>
+                      </div>
+                      <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_start_date" label="Start date"  placeholder="Enter start date"></semantic-form-datetime-input>
+                      </div>
+                      <div style="flex: 1;">
+                        <semantic-form-datetime-input for="timespan_end_date" label="End date"  placeholder="Enter end date"></semantic-form-datetime-input>
+                      </div>
+                    </div>
+                </semantic-form-composite-input>
+              </div>
+              
+              <mp-collapsible-div expanded=false class-name="form-section-collapsible collapsible-in-composite" render-hidden=true>
+                <mp-collapsible-div-trigger expanded-class="expanded-trigger" collapsed-class="collapsed-trigger">
+                    <div class="trigger-content color-secondary">
+                        <span class="trigger-text">More</span>
+                        <span class="trigger-icon"></span>
+                    </div>
+                </mp-collapsible-div-trigger>
+                <mp-collapsible-div-content>
+                   <semantic-form-text-input for="joining_description" multiline="true" label="Job description" placeholder="Enter description"></semantic-form-text-input>
+                </mp-collapsible-div-content>
+              </mp-collapsible-div>
           </semantic-form-composite-input>
         </rs-tab>
       {{/if}}
 
-      {{#if (or (eq user_type "department") (eq user_type "team"))}}
-        <rs-tab event-key="groupDetail" title="Organisation">
-          <semantic-form-composite-input  for="user_joining_organisation_range"
-                                          label="{{user_type}} is part of organisation"
-                                          new-subject-template="/PC144_joined_with/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                          fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                      actor_joining_organisation_domain="http://www.researchspace.org/pattern/system/PC144_joined_with/joining_domain"
-                                              ]]'>
-
-                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC144_joined_with'> </semantic-form-hidden-input>
-
-                  <semantic-form-composite-input  for="actor_joining_organisation_domain" 
-                                                  render-header="false" 
-                                                  new-subject-template="/joining_organisation/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                                  fields='[[fieldDefinitions
-                                                          classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                                                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                          joined_joined_organisation="http://www.researchspace.org/pattern/system/joining/joined_organisation"
-                                                          
-                                                  ]]'>
-
-                  <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E85_Joining'> </semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/resource_type/joining_organisation'></semantic-form-hidden-input>
-                  
-                  <semantic-form-tree-picker-input  for="joined_joined_organisation" 
-                                                    label="Organisation name" 
-                                                    placeholder="Select organisation name" 
-                                                    close-dropdown-on-selection='true'
-                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/system/vocab/organisation>", 
-                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/system/vocab/organisation>",
-                                                                    "labelPattern": "?item crm:P1_is_identified_by ?appellation .  
-                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/vocab/address_type/name> . 
-                                                                                        ?appellation crm:P190_has_symbolic_content ?label ."
-                                                                    }'
-                                                    nested-form-template='{{{{raw}}}}{{> forms:Organisation nested=true editable=true mode="new" onlyDetails=true
-                                                                                      scheme="http://www.researchspace.org/resource/system/vocab/organisation"
-                                                                                      entityType="organisation" }}
-                                                                          {{{{/raw}}}}'
-                                                    
-                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
-                                                                                "view": "vocabulary-content",
-                                                                                "scheme": "http://www.researchspace.org/resource/system/vocab/organisation",
-                                                                                "tooltip": "Open list of organisations"
-                                                                                }'
-                                                    >
-                  </semantic-form-tree-picker-input> 
-
-                  </semantic-form-composite-input>
-          
-          </semantic-form-composite-input>
-        </rs-tab>
-      {{/if}} 
-
       {{#if node}}
-        <rs-tab event-key="project" title="Projects">
+        <rs-tab event-key="activity" title="Activities">
           <div style="margin: 25px 0 5px 0px;">
               <semantic-table id='project-table'
                           query='SELECT ?project ?projectTitle ?projectStatusLabel ?projectPriorityLabel ?dateStart ?dateEnd ?roleLabel (GROUP_CONCAT(?typeLabel;SEPARATOR=", ") AS ?projectTypeLabel) WHERE {
@@ -476,7 +471,7 @@
   
    <semantic-form-errors></semantic-form-errors>
 
-[[!--  allow user to edit only their user data, not other users --]]
+[[!--  allow user to edit only their user data, not other users 
 
   {{#if node}}
     {{#ifCond current_user_email '==' form_user_name}}
@@ -486,6 +481,6 @@
     {{/ifCond}}
   {{else}}
     [[> rsp:FormDefaultActions formEntity='user']]
-  {{/if}}
-
+  {{/if}}--]]
+  [[> rsp:FormDefaultActions formEntity='user']]
 </semantic-form>

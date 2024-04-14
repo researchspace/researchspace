@@ -257,7 +257,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
 
   private draw: Interaction;
   private snap: Interaction;
-  private defaultFeaturesColor = "rgba(200,80,20,0.3)";
+  private defaultFeaturesColor = "rgba(200,80,20,0.7)";
 
   private ol3d: OLCesium;
 
@@ -765,7 +765,7 @@ export class SemanticMap extends Component<SemanticMapProps, MapState> {
           color = group_color;
         } else {
           let color_rgba = group_color.rgb;
-          let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.3' + ')';
+          let rgba_string = 'rgba(' + color_rgba.r + ', ' + color_rgba.g + ', ' + color_rgba.b + ', ' + '0.7' + ')';
           color = rgba_string
         }
       }
@@ -1729,9 +1729,9 @@ function getFeatureStyle(geometry: Geometry, color: string | undefined) {
         width: 2,
       }),
     }),
-    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.5)' }),
+    fill: new Fill({ color: color || 'rgba(255, 255, 255, 0.8)' }),
     stroke: new Stroke({
-      color: color || 'rgba(202, 255, 36, .3)',
+      color: color || 'rgba(202, 255, 36, .5)',
       width: 1.25,
     }),
   });

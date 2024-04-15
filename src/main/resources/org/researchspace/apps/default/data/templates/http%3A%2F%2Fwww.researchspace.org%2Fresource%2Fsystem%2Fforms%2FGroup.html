@@ -83,14 +83,14 @@
                       <semantic-form-text-input for="group_appellation" label="Full name" placeholder="Enter group full name / known as"> </semantic-form-text-input>
                   {{/if}}
                 
-                  <semantic-form-text-input for="actor_alsoKnownAs" label="Group also known as" placeholder="Enter group additional name / also known as"> </semantic-form-text-input>
+                  <semantic-form-text-input for="actor_alsoKnownAs" label="Also known as" placeholder="Enter group additional name / also known as"> </semantic-form-text-input>
                 
                   {{#if apiResourceDescription}}
                     <div class="focused-input-container">
-                      <semantic-form-text-input for="entity_description" label="Group description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
+                      <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"> </semantic-form-text-input>
                     </div>
                   {{else}}
-                      <semantic-form-text-input for="entity_description" label="Group description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                      <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
                   {{/if}}
   
                   <semantic-form-tree-picker-input    for="actor_nationality" 
@@ -169,7 +169,7 @@
   
                   <div class="inline-composite-container">
                     <semantic-form-composite-input  for="entity_preferred_id"
-                                                    label="Group preferred identifier"
+                                                    label="Preferred identifier"
                                                     new-subject-template="/entity_id" 
                                                     fields='[[fieldDefinitions
                                                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -188,7 +188,7 @@
   
                   <div class="inline-composite-container">
                       <semantic-form-composite-input  for="entity_id"
-                                                      label="Group other identifier"
+                                                      label="Other identifier"
                                                       new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                       fields='[[fieldDefinitions
                                                               classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
@@ -774,19 +774,45 @@
   
         </rs-tab>
   
-        <rs-tab event-key="ownership" title="Ownership/Rights/Custody">
+        <rs-tab event-key="ownership" title="Ownership/Custody/Rights">
   
-          <semantic-form-autocomplete-input   for="actor_former_or_current_owner_of"
-                                              label="Former or current owner of" 
-                                              placeholder="Select thing/object of which the group is or had been the legal owner" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-          </semantic-form-autocomplete-input> 
+          <div class="form-section-flexContainer">
+            <div style="flex: 1;">
+                <h5 class="customFormHeader">Ownership</h5>
+                <div class="form-section">
+                    <div class="form-section-first-input">
+                      <semantic-form-autocomplete-input   for="actor_current_owner_of"
+                                                          label="Current owner of" 
+                                                          placeholder="Select thing/object of which the group is legal owner" 
+                                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                      </semantic-form-autocomplete-input> 
+                    </div>
+                    <semantic-form-autocomplete-input   for="actor_former_or_current_owner_of"
+                                                        label="Former or current owner of" 
+                                                        placeholder="Select thing/object of which the group is or had been the legal owner" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                    </semantic-form-autocomplete-input> 
+                </div>
+            </div>
   
-          <semantic-form-autocomplete-input   for="actor_current_owner_of"
-                                              label="Current owner of" 
-                                              placeholder="Select thing/object of which the group is legal owner" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-          </semantic-form-autocomplete-input> 
+            <div style="flex: 1;">
+                <h5 class="customFormHeader">Custody</h5>
+                <div class="form-section">
+                    <div class="form-section-first-input">
+                      <semantic-form-autocomplete-input   for="actor_current_keeper_of"
+                                                          label="Current keeper of" 
+                                                          placeholder="Select thing/object of which the group has custody" 
+                                                          nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                      </semantic-form-autocomplete-input> 
+                    </div>    
+                    <semantic-form-autocomplete-input   for="actor_former_or_current_keeper_of"
+                                                        label="Former or current keeper of" 
+                                                        placeholder="Select thing/object of which the group has or has had custody" 
+                                                        nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+                    </semantic-form-autocomplete-input> 
+                </div>
+            </div>
+          </div>
   
           <semantic-form-autocomplete-input   for="actor_possesses_right"
                                               label="Possesses right" 
@@ -805,18 +831,6 @@
                                               label="Has right on" 
                                               placeholder="Select object of which the group has right on" 
                                               nested-form-templates='[[> Platform:NestedFormTemplates_legalObjects]]'> 
-          </semantic-form-autocomplete-input> 
-  
-          <semantic-form-autocomplete-input   for="actor_former_or_current_keeper_of"
-                                              label="Former or current keeper of" 
-                                              placeholder="Select thing/object of which the group has or has had custody" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
-          </semantic-form-autocomplete-input> 
-  
-          <semantic-form-autocomplete-input   for="actor_current_keeper_of"
-                                              label="Current keeper of" 
-                                              placeholder="Select thing/object of which the group has custody" 
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
           </semantic-form-autocomplete-input> 
         </rs-tab>
   

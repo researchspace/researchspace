@@ -5,7 +5,7 @@
         <semantic-query 
                       query='SELECT DISTINCT ?config ?resourceFormIRI ?resourceRestrictionPattern ?resourceMembershipProperty WHERE {
                                 {
-                                  <{{iri}}> a/rdfs:subClassOf* ?resourceOntologyClass  .
+                                  <{{iri}}> a ?resourceOntologyClass  .
                                   ?config a <http://www.researchspace.org/resource/system/resource_configuration> ;
                                           <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> ?resourceOntologyClass  .
 
@@ -40,6 +40,13 @@
                                   OPTIONAL {
                                     ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI .
                                   }
+                                } UNION {
+                                    ?config rdf:type Platform:resource_configuration;
+                                      <http://www.researchspace.org/pattern/system/resource_configuration/resource_ontology_class> <http://www.cidoc-crm.org/cidoc-crm/E1_CRM_Entity>.
+                                    
+                                    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_restriction_sparql_pattern> ?resourceRestrictionPattern. }
+                                    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_membership_property> ?resourceMembershipProperty. }
+                                    OPTIONAL { ?config <http://www.researchspace.org/pattern/system/resource_configuration/resource_form> ?resourceFormIRI. }
                                 }
                               }'
         >

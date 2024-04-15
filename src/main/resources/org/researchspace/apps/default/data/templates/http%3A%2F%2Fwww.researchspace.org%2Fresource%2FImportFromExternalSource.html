@@ -150,30 +150,33 @@
             </template>
 
             <template id='http://www.cidoc-crm.org/cidoc-crm/E39_Actor'>
-                <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
-                                    title="Import from Wikidata" 
-                                    type="lightbox">
-                    <mp-overlay-dialog-trigger>
-                        <button class="btn btn-action btn-textAndIcon">
-                            <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                            <span>Import from Wikidata</span>
-                        </button>
-                    </mp-overlay-dialog-trigger>
-                    <mp-overlay-dialog-content>
-                        <div class="page__section-container">
-                            <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
-                            <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
-                                                options='{
-                                                        "scheme": "{{collection}}", 
-                                                        "viewId": "{{viewId}}",
-                                                        "domain": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
-                                                        "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor",
-                                                        "label": "actor"
-                                                }'>
-                            </inline-template>
-                        </div>
-                    </mp-overlay-dialog-content>
-                </mp-overlay-dialog> 
+                {{#if (eq resourceP2Type "http://www.researchspace.org/resource/system/vocab/resource_type/user")}}
+                {{else}}
+                    <mp-overlay-dialog  id='{{viewId}}-importResourceFromAPI-dialog' 
+                                        title="Import from Wikidata" 
+                                        type="lightbox">
+                        <mp-overlay-dialog-trigger>
+                            <button class="btn btn-action btn-textAndIcon">
+                                <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                <span>Import from Wikidata</span>
+                            </button>
+                        </mp-overlay-dialog-trigger>
+                        <mp-overlay-dialog-content>
+                            <div class="page__section-container">
+                                <h6 style="margin: 0px 0 7px;">Search in Wikidata</h6>
+                                <inline-template template-iri='[[resolvePrefix "rsp:ImportFromWikidata"]]' 
+                                                    options='{
+                                                            "scheme": "{{collection}}", 
+                                                            "viewId": "{{viewId}}",
+                                                            "domain": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
+                                                            "domainConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/Actor",
+                                                            "label": "actor"
+                                                    }'>
+                                </inline-template>
+                            </div>
+                        </mp-overlay-dialog-content>
+                    </mp-overlay-dialog> 
+                {{/if}}
             </template>
 
             <template id='http://www.cidoc-crm.org/cidoc-crm/E74_Group'>

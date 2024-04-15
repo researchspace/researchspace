@@ -979,10 +979,6 @@
                publication
             </semantic-link>
           </bs-menu-item>
-          
-        </bs-nav-dropdown>
-
-        <bs-nav-dropdown title="Testing4">
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
@@ -991,6 +987,16 @@
                 urlqueryparam-mode='new'
               >
             identifier
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+              urlqueryparam-view='entity-editor' 
+              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Research_question'
+              urlqueryparam-mode='new'
+            >
+               research question
             </semantic-link>
           </bs-menu-item>
 
@@ -1026,41 +1032,11 @@
 
           <bs-menu-item>
             <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
-                urlqueryparam-mode='new'
-              >
-            knowledge map
-            </semantic-link>
-          </bs-menu-item>
-
-           <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
               urlqueryparam-view='entity-editor' 
               urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Material'
               urlqueryparam-mode='new'
             >
               material
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-              urlqueryparam-view='entity-editor' 
-              urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Research_question'
-              urlqueryparam-mode='new'
-            >
-               research question
-            </semantic-link>
-          </bs-menu-item>
-
-          <bs-menu-item>
-            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
-                urlqueryparam-view='entity-editor' 
-                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
-                urlqueryparam-mode='new'
-              >
-            semantic narrative
             </semantic-link>
           </bs-menu-item>
 
@@ -1081,6 +1057,30 @@
                 urlqueryparam-mode='new'
               >
             type
+            </semantic-link>
+          </bs-menu-item>
+          
+        </bs-nav-dropdown>
+
+        <bs-nav-dropdown title="Testing4">
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='entity-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map'
+                urlqueryparam-mode='new'
+              >
+            knowledge map
+            </semantic-link>
+          </bs-menu-item>
+
+          <bs-menu-item>
+            <semantic-link iri="http://www.researchspace.org/resource/ThinkingFrames"
+                urlqueryparam-view='entity-editor' 
+                urlqueryparam-entity-type-config='http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative'
+                urlqueryparam-mode='new'
+              >
+            semantic narrative
             </semantic-link>
           </bs-menu-item>
 
@@ -1185,14 +1185,51 @@
                 </div>
               </bs-dropdown-toggle>
               <bs-dropdown-menu>
-                <semantic-query
-                  query='SELECT ?__useruri__ ?userName { BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userName) }'
-                  template='\{{> template}}'>
+                <semantic-query query='SELECT ?__useruri__ ?userEmail ?actor ?actorFullName { 
+                                        BIND(REPLACE(REPLACE(STR(?__useruri__), STR(User:), ""), "%40", "@") as ?userEmail) 
+                                        OPTIONAL {
+                                              ?actor a crm:E39_Actor .
+                                              ?actor crm:P1_is_identified_by ?actorAppellationEmail .
+                                              ?actorAppellationEmail a crm:E41_Appellation .
+                                              ?actorAppellationEmail crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/user_email> .
+                                              ?actorAppellationEmail crm:P190_has_symbolic_content ?userEmail .
+                                              
+                                              ?actor crm:P1_is_identified_by ?actorAppellationFullName .
+                                              ?actorAppellationFullName a crm:E41_Appellation .
+                                              ?actorAppellationFullName crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+                                              ?actorAppellationFullName crm:P190_has_symbolic_content ?actorFullName .
+                                        }
+                                      }'
+                                template='\{{> template}}'>
                   <template id='template'>
                     <semantic-link-container uri='\{{bindings.0.__useruri__.value}}'>
                       <bs-menu-item title='userPrincipal'>
                         <rs-icon icon-type="round" icon-name="account_box" class="icon-left"></rs-icon>
-                        <span>Profile</span>
+                          \{{#if bindings.0.actor.value}}
+                            <mp-event-trigger id='openEditUserForm-frame-trigger' 
+                                              type='Dashboard.AddFrame'
+                                              data='{"viewId":"entity-editor", 
+                                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
+                                                    "resourceIri":"{{bindings.0.actor.value}}",
+                                                    "editable": true,
+                                                    "mode":"edit"}' 
+                                              targets='["thinking-frames"]'>
+
+                                <span>Profile</span>  
+                            </mp-event-trigger>
+                          \{{else}}
+                            <mp-event-trigger id='openNewUserForm-frame-trigger' 
+                                              type='Dashboard.AddFrame'
+                                              data='{"viewId":"entity-editor", 
+                                                    "entityTypeConfig": "http://www.researchspace.org/resource/system/resource_configurations_container/data/User", 
+                                                    "editable": true,
+                                                    "resourceEditorLabel": "New user",
+                                                    "mode":"new"}' 
+                                              targets='["thinking-frames"]'>
+
+                                <span>Profile (not registered user)</span>  
+                            </mp-event-trigger>
+                          \{{/if}}
                       </bs-menu-item>
                     </semantic-link-container>
                   </template>

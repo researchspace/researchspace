@@ -299,7 +299,7 @@
                     {{/if}}
                     {{#if (or (eq mode "new") (eq mode "deleted") )}}
                     {{else}}
-                      <semantic-query query='SELECT * WHERE {
+                      <semantic-query query='SELECT ?item ?file ?fileName WHERE {
                                             BIND(<{{iri}}> as ?item) .
                                             ?item a crm:E31_Document .
                                             ?item crm:P1_is_identified_by ?file .
@@ -328,9 +328,12 @@
                           </template>
                       </semantic-query>
 
-                      <semantic-query query='SELECT * WHERE {
+                      <semantic-query query='SELECT ?item ?file ?fileName ?mediaType WHERE {
                                             BIND(<{{iri}}> as ?item) .
                                             ?item a rs:EX_Digital_Image .
+                                            ?item crm:P1_is_identified_by ?file .
+                                            ?file rs:PX_has_file_name ?fileName .
+                                            ?file rs:PX_has_media_type ?mediaType .
                                           }'
                                     template='{{> template}}'
                         >
@@ -344,7 +347,7 @@
                               </button>
                             </semantic-link-container>
 
-                          <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.item.value}}">
+                          <mp-file-download  download-url="/file?storage=images&fileName={{encodeUriComponent bindings.0.fileName.value}}">
                               <button type="button" name='download' class="btn btn-default btn-textAndIcon" title="Download image">
                                 <rs-icon icon-type="round" icon-name="download"></rs-icon>
                                 Download

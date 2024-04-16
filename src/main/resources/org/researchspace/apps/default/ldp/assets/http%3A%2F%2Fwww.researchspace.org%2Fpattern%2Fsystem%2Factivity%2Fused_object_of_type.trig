@@ -5,7 +5,7 @@
     ?value a crm:E55_Type .
     ?value crm:P71i_is_listed_in <http://www.researchspace.org/resource/vocab/object_type> .
     ?value skos:prefLabel ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } LIMIT 10""" .
   
   <http://www.researchspace.org/pattern/system/activity/used_object_of_type> a <http://www.researchspace.org/resource/system/fields/Field>,
@@ -41,7 +41,7 @@
 }""" .
   
   _:genid-ffcb42ee4311464cbe24730ad5254098-ub6myp a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P125_used_object_of_type $value . 
       
     ?value a crm:E55_Type .

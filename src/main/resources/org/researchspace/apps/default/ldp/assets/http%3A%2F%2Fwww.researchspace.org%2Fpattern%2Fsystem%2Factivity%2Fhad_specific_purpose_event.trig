@@ -9,7 +9,7 @@
     ?appellation crm:P2_has_type ?type . 
     ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   
@@ -78,7 +78,7 @@ The activity must have succeeded in achieving its aim. If it does not succeed on
     ?appellation crm:P2_has_type ?type . 
     ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
     ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/activity/had_specific_purpose_event> .

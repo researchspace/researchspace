@@ -33,7 +33,7 @@
       ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
       ?title crm:P190_has_symbolic_content ?label .
 	}
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
   
@@ -97,7 +97,7 @@
       ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
       ?title crm:P190_has_symbolic_content ?label .
 	}
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-3d9a87aae9a040e1b83667e617549f34-jcz279 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 

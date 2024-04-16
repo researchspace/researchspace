@@ -24,7 +24,7 @@
   ?appellation a crm:E41_Appellation . 
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> . 
   ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-eb17467034e843868ea54912f88b266d-gz41p6 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE { 
@@ -59,7 +59,7 @@
   ?appellation a crm:E41_Appellation . 
   ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/acquisition_title> . 
   ?appellation crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   

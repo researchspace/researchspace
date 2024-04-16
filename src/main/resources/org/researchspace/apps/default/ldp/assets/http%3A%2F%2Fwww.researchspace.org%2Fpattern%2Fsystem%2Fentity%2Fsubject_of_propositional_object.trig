@@ -48,7 +48,7 @@
     ?title a crm:E35_Title . 
     ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
     ?title crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   
@@ -72,7 +72,7 @@
     ?title a crm:E35_Title . 
     ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
     ?title crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object> .

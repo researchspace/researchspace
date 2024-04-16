@@ -40,7 +40,7 @@
       ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
       ?title crm:P190_has_symbolic_content ?label .
 	}
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label) 
   LIMIT 10 """ .
   
@@ -84,10 +84,10 @@
       ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
       ?title crm:P190_has_symbolic_content ?label .
 	}
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-a00047679ec94933878a0f4e2a9336b6-35ssyb a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P93_took_out_of_existence $value . 
       
    	?value a ?ontologyClass .

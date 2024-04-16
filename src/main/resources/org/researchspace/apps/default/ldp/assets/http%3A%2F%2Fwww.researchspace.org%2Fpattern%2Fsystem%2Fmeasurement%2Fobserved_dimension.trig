@@ -19,7 +19,7 @@
     ?appellation a crm:E41_Appellation .
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/dimension_name> .
     ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   <http://www.researchspace.org/pattern/system/measurement/observed_dimension> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
@@ -51,7 +51,7 @@
     ?appellation a crm:E41_Appellation .
     ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/dimension_name> .
     ?appellation crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   

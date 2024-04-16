@@ -26,7 +26,7 @@
   ?title a crm:E35_Title . 
   ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
   ?title crm:P190_has_symbolic_content ?label .
-} ORDER BY ASC(?label)""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-c5ff14d681a74bc3bb62e23da426db23-l30hsj a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
@@ -36,12 +36,12 @@
   ?title a crm:E35_Title . 
   ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
   ?title crm:P190_has_symbolic_content ?label .
-  FILTER REGEX(STR(?label), \"?token\")
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .
   
   _:genid-c5ff14d681a74bc3bb62e23da426db23-4ma2jq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   $subject crm:P31_has_modified $value . 
       
   ?value a ?ontologyClass .

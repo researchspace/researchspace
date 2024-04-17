@@ -20,8 +20,10 @@
   _:genid-c08b62e628a34b31b1f8ed45db3bf521-z0p5di a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P135_created_type $value . 
-    ?value a crm:E55_Type .
-    ?value skos:prefLabel ?label .
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
 }""" .
   
   _:genid-c08b62e628a34b31b1f8ed45db3bf521-gg1ldk a <http://spinrdf.org/sp#Query>;
@@ -31,11 +33,16 @@
 } WHERE {
 	$subject crm:P135_created_type $value . 
     $value crm:P135i_was_created_by $subject .
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
 }""" .
   
   _:genid-c08b62e628a34b31b1f8ed45db3bf521-f9z3uh a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E55_Type .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
   ?value skos:prefLabel ?label .
   FILTER REGEX(LCASE(STR(?label)), \"?token\")
 } ORDER BY ASC(?label)
@@ -43,14 +50,15 @@
   
   _:genid-c08b62e628a34b31b1f8ed45db3bf521-2ugn7k a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E55_Type .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
   ?value skos:prefLabel ?label .
 } ORDER BY ASC(LCASE(?label))""" .
   
   _:genid-c08b62e628a34b31b1f8ed45db3bf521-zer9wo a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
 	$subject crm:P135_created_type $value . 
-    $value crm:P135i_was_created_by $subject .
+  $value crm:P135i_was_created_by $subject .
 } WHERE {}""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

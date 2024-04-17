@@ -1,5 +1,5 @@
-
 <http://www.researchspace.org/pattern/system/type/related_type/context> {
+  
   <http://www.researchspace.org/pattern/system/type/related_type> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
@@ -23,10 +23,12 @@
 }""" .
   
   _:genid-eca2155afffe4f26bcc141c2834504ef-w8cg a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
     $subject skos:related ?value .
-    ?value skos:related $subject .
-    ?value a crm:E55_Type .
+    
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+    ?value skos:prefLabel ?label .
 }""" .
   
   _:genid-eca2155afffe4f26bcc141c2834504ef-3i2r9g a <http://spinrdf.org/sp#Query>;
@@ -36,14 +38,18 @@
 } WHERE {
     $subject skos:related ?value .
     ?value skos:related $subject .
-    ?value a crm:E55_Type .
+    
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+    ?value skos:prefLabel ?label .
 }""" .
   
   _:genid-eca2155afffe4f26bcc141c2834504ef-sum30q a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-    ?value a crm:E55_Type .
-	?value skos:prefLabel ?label .
-} ORDER BY ?label""" .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/type/related_type> .

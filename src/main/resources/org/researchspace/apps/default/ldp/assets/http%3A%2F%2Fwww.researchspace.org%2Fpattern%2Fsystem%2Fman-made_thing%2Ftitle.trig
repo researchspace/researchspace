@@ -2,39 +2,61 @@
 <http://www.researchspace.org/pattern/system/man-made_thing/title/context> {
   <http://www.researchspace.org/pattern/system/man-made_thing/title> a <http://www.researchspace.org/resource/system/fields/Field>,
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
-    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-94c44cd0cc1845cba0862178b46efe58-0bny;
-    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-94c44cd0cc1845cba0862178b46efe58-z4isq;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E71_Man-Made_Thing>;
-    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/object>;
-    <http://www.researchspace.org/resource/system/fields/minOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-2lbfr8;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
     <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E35_Title>;
-    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-94c44cd0cc1845cba0862178b46efe58-63xa2k;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-be63qk;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-lxwkj9;
     <http://www.w3.org/2000/01/rdf-schema#label> "Man-made thing title";
-    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#string>;
-    <http://www.researchspace.org/resource/system/fields/maxOccurs> "1";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-j5h23;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/man_made_thing>;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-utksrr;
     <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
-    <http://www.w3.org/ns/prov#generatedAtTime> "2024-02-20T16:56:49.165Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-17T11:47:49.024+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
   
-  _:genid-94c44cd0cc1845cba0862178b46efe58-63xa2k a <http://spinrdf.org/sp#Query>;
+  _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-2lbfr8 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """DELETE {  
-   $subject crm:P102_has_title ?value .    
+   $subject crm:P102_has_title ?value . 
+   ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/title> .
 } WHERE { 
    $subject crm:P102_has_title ?value .
+   ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/title> .
+      
    ?value a crm:E35_Title .
-   ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> .
+   ?value crm:P190_has_symbolic_content ?label .
 }""" .
   
-  _:genid-94c44cd0cc1845cba0862178b46efe58-0bny a <http://spinrdf.org/sp#Query>;
+  _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-utksrr a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+   ?value a crm:E35_Title .
+   ?value crm:P190_has_symbolic_content ?label .
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-j5h23 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+   $subject crm:P102_has_title ?value .
+   ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/title> .
+      
+   ?value a crm:E35_Title .
+   ?value crm:P190_has_symbolic_content ?label .
+}""" .
+  
+  _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-be63qk a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+   ?value a crm:E35_Title .
+   ?value crm:P190_has_symbolic_content ?label .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-dbcf7f4dc221464aa6ac3479701f7fdd-lxwkj9 a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """INSERT { 
    $subject crm:P102_has_title ?value .
+   ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/title> .
 } WHERE {
-}""" .
-  
-  _:genid-94c44cd0cc1845cba0862178b46efe58-z4isq a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
-   $subject crm:P102_has_title ?value .
-   ?value a crm:E35_Title .
-   ?value crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> .
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

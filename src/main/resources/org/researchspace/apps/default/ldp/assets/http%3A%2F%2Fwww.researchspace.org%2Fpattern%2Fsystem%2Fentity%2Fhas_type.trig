@@ -19,8 +19,9 @@
   
   _:genid-efa8001b3d7a4c16b08e9ef4e1f2f024-wvqoen a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
-  ?value a crm:E55_Type ;
-    skos:prefLabel ?label .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
 } ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-efa8001b3d7a4c16b08e9ef4e1f2f024-r6vno a <http://spinrdf.org/sp#Query>;
@@ -29,7 +30,11 @@
   $value crm:P2i_is_type_of $subject .
 } WHERE { 
   $subject crm:P2_has_type $value .
- # $value crm:P2i_is_type_of $subject .
+  $value crm:P2i_is_type_of $subject .
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
 }""" .
   
   _:genid-efa8001b3d7a4c16b08e9ef4e1f2f024-k659l a <http://spinrdf.org/sp#Query>;
@@ -41,13 +46,17 @@
   _:genid-efa8001b3d7a4c16b08e9ef4e1f2f024-8psz1f a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   $subject crm:P2_has_type $value .
-  $value skos:prefLabel ?label .
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
 }""" .
   
   _:genid-efa8001b3d7a4c16b08e9ef4e1f2f024-nvjnnm a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E55_Type ;
-    skos:prefLabel ?label .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)
   LIMIT 10""" .

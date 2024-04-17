@@ -38,19 +38,22 @@ No occurrence of an event is implied as the purpose (in that case use Activity d
   _:genid-e41ca0343ded43da99485cc947334def-d5bjue a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P21_had_general_purpose $value . 
-    ?value a crm:E55_Type .
-    ?value skos:prefLabel ?label .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+  ?value skos:prefLabel ?label .
 }""" .
   
   _:genid-e41ca0343ded43da99485cc947334def-ae4kzf a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E55_Type .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
   ?value skos:prefLabel ?label .
 } ORDER BY ASC(lcase(?label))""" .
   
   _:genid-e41ca0343ded43da99485cc947334def-1mqf1oo a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E55_Type .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
   ?value skos:prefLabel ?label .
   FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
 } ORDER BY ASC(?label)

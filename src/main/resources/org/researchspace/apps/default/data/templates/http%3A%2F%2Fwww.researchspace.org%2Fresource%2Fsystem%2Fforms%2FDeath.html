@@ -96,40 +96,79 @@
             </semantic-form-autocomplete-input>
 
             <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_preferred_id"
-                                              label="Death preferred identifier"
-                                              new-subject-template="/entity_id" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
-                      
-                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+                <semantic-form-composite-input  for="entity_preferred_id"
+                                                label="Preferred identifier"
+                                                new-subject-template="/entity_preferred_id" 
+                                                fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
 
-              </semantic-form-composite-input>
+                                                        identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                        identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
+                                                    ]]'
+                                                >
+                            
+                    <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                        
+                    <div class="form-inline-inputs">
+                        <div style="min-width: 40%;">
+                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-select-input for='identifier_type' 
+                                                        label="Identifier type" 
+                                                        render-header=false
+                                                        placeholder="Select identifier type" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Identifier",
+                                                                "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                entityType=\"identifier\" }}
+                                                                                {{{{/raw}}}}"
+                                                            }
+                                                        ]'>
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+                </semantic-form-composite-input>
             </div>
 
             <div class="inline-composite-container">
-              <semantic-form-composite-input  for="entity_id"
-                                              label="Death other identifier"
-                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
-                                              fields='[[fieldDefinitions
-                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
-                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
-                                                  ]]'
-                                              >
-                          
-                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
-                      
-                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
-              </semantic-form-composite-input>
+                <semantic-form-composite-input  for="entity_id"
+                                                label="Other identifier"
+                                                new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                                fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+
+                                                        identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                        identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
+                                                    ]]'
+                                                >
+                            
+                    <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                        
+                    <div class="form-inline-inputs">
+                        <div style="min-width: 40%;">
+                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                        </div>
+                        <div style="flex: 1;">
+                            <semantic-form-select-input for='identifier_type' 
+                                                        label="Identifier type" 
+                                                        render-header=false
+                                                        placeholder="Select identifier type" 
+                                                        nested-form-templates='[ 
+                                                            {
+                                                                "label": "Identifier",
+                                                                "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                entityType=\"identifier\" }}
+                                                                                {{{{/raw}}}}"
+                                                            }
+                                                        ]'>
+                            </semantic-form-select-input>
+                        </div>
+                    </div>
+                </semantic-form-composite-input>
             </div>
 
           </div>

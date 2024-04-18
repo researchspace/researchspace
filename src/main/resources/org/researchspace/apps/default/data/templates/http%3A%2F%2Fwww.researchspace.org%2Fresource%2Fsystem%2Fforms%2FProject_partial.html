@@ -13,7 +13,7 @@
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                           entity_data_folder="http://www.researchspace.org/pattern/system/entity/data_folder_link"
 
-                          project_title="http://www.researchspace.org/pattern/system/project/project_title"
+                          entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
                           activity_research_question="http://www.researchspace.org/pattern/system/activity/research_question"
                           project_type="http://www.researchspace.org/pattern/system/project/project_type"
@@ -71,7 +71,7 @@
 
         <div class="form-2column-container">
           <div>
-            <semantic-form-text-input for="project_title" label="Project title" placeholder="Enter project title"></semantic-form-text-input>
+            <semantic-form-text-input for="entity_primary_appellation" label="Project title" placeholder="Enter project title"></semantic-form-text-input>
 
             <semantic-form-text-input for="entity_description" multiline="true" label="Project description" placeholder="Enter project description"></semantic-form-text-input>
             
@@ -298,13 +298,13 @@
                                                               "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                               ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/project_title> .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                               ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                               query-item-label='SELECT ?label WHERE {
                                                                   ?item crm:P1_is_identified_by ?appellation .
                                                                   ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/project_title> .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                   ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'> 
           </semantic-form-tree-picker-input>   
@@ -317,13 +317,13 @@
                                                               "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                               ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/project_title> .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                               ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                               query-item-label='SELECT ?label WHERE {
                                                                   ?item crm:P1_is_identified_by ?appellation .
                                                                   ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/project_title> .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                   ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'>
           </semantic-form-tree-picker-input> 
@@ -371,8 +371,8 @@
                                                                     ?ontologyClass rdfs:subClassOf* crm:E4_Period .
                                                                     ?node crm:P1_is_identified_by ?appellation .
                                                                     ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type ?type . 
-                                                                    ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                     
                                                                     ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
                                                                 }'
                                                             template='{{> template}}'>
@@ -811,14 +811,7 @@
         <semantic-form-autocomplete-input for='activity_had_general_purpose_type' 
                                           label="General purpose (type)" 
                                           placeholder="Select type" 
-                                          nested-form-templates='[ 
-                                            {
-                                              "label": "Type",
-                                              "nestedForm": "{{{{raw}}}}
-                                                                {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
-                                                            {{{{/raw}}}}"
-                                            }
-                                          ]'> 
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
         </semantic-form-autocomplete-input> 
 
       </rs-tab>
@@ -883,7 +876,7 @@
                           ?exhibition crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/exhibition> .
 
                           ?exhibition crm:P1_is_identified_by ?appellation .
-                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> .
+                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                           ?appellation crm:P190_has_symbolic_content ?exhibitionTitle .  
 
                           OPTIONAL {
@@ -950,7 +943,7 @@
                                       ?organisation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/organisation> .
                                       ?organisation crm:P1_is_identified_by ?appellation .
                                       ?appellation a crm:E41_Appellation .
-                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/organisation_name> .
+                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                       ?appellation crm:P190_has_symbolic_content ?organisationLabel .
                                       
                                       } ORDER BY ASC(?organisationLabel)'

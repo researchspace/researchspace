@@ -14,7 +14,7 @@
                         entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                        place_name="http://www.researchspace.org/pattern/system/place/name"
+                        entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
                         place_type="http://www.researchspace.org/pattern/system/place/type"
                         place_address_line1="http://www.researchspace.org/pattern/system/place/address_line1"
@@ -70,15 +70,15 @@
           <div>
             {{#if apiResourceLabel}}
               <div class="focused-input-container">
-                <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{apiResourceLabel}}" force-defaults=true></semantic-form-text-input>
+                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceLabel}}" force-defaults=true></semantic-form-text-input>
               </div>
             {{else}}
               {{#if apiResourceName}}
                 <div class="focused-input-container">
-                  <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
+                  <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
                 </div>
               {{else}}
-                <semantic-form-text-input for="place_name" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
+                <semantic-form-text-input for="entity_primary_appellation" label="Place name" placeholder="Enter place name"></semantic-form-text-input>
               {{/if}}
             {{/if}}
           
@@ -290,7 +290,7 @@
 
                                         ?place crm:P1_is_identified_by ?appellation . 
                                         # ?appellation a crm:E41_Appellation . 
-                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                         ?appellation crm:P190_has_symbolic_content ?placeName .
                                       }'
                               template='{{> template}}'
@@ -302,7 +302,7 @@
                         <semantic-map query='SELECT ?wkt WHERE { 
                                                 <{{bindings.0.place.value}}> crm:P168_place_is_defined_by ?osm_geoCoordinates .
                                                 # ?osm_geoCoordinates a crm:E94_Space_Primitive .
-                                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/osm_geographic_coordinates> .
+                                                ?osm_geoCoordinates crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/osm_geographic_coordinates> .
                                                 ?osm_geoCoordinates crm:P190_has_symbolic_content ?wkt .
                                               }'
                                       tuple-template='<b style="color:#525156; padding-bottom:5px;">{{bindings.0.placeName.value}}</b>
@@ -368,7 +368,7 @@
                                                             "relationPattern": "?item crm:P89_falls_within ?parent",
                                                             "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                             ?appellation a crm:E41_Appellation . 
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
@@ -377,7 +377,7 @@
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 
                                                                 ?appellation a crm:E41_Appellation . 
-                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                 ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'
                                             >
@@ -392,7 +392,7 @@
                                                             "relationPattern": "?item crm:P89_falls_within ?parent",
                                                             "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                             ?appellation a crm:E41_Appellation . 
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                             ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                             nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
@@ -401,7 +401,7 @@
                                             query-item-label='SELECT ?label WHERE {
                                                                 ?item crm:P1_is_identified_by ?appellation . 
                                                                 ?appellation a crm:E41_Appellation . 
-                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                 ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'
                                             >
@@ -447,7 +447,7 @@
                                                           BIND (<{{node.value}}> as ?node)
                                                           ?node crm:P1_is_identified_by ?appellation . 
                                                           ?appellation a crm:E41_Appellation . 
-                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                          ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                           ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
                                                         }'
                                                   template='{{> template}}'>
@@ -487,7 +487,7 @@
                                                                 "relationPattern": "?item crm:P89_falls_within ?parent",
                                                                 "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                                 ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                 ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                                 nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
@@ -496,7 +496,7 @@
                                                 query-item-label='SELECT ?label WHERE {
                                                                     ?item crm:P1_is_identified_by ?appellation . 
                                                                     ?appellation a crm:E41_Appellation . 
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                     ?appellation crm:P190_has_symbolic_content ?label .
                                                                   }'
                                                 >
@@ -511,7 +511,7 @@
                                                                 "relationPattern": "?item crm:P89_falls_within ?parent",
                                                                 "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                                 ?appellation a crm:E41_Appellation . 
-                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                 ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                                 nested-form-template='{{{{raw}}}}{{> forms:Place nested=true editable=true mode="new" apiResourceURI=false 
@@ -520,7 +520,7 @@
                                                 query-item-label='SELECT ?label WHERE {
                                                                     ?item crm:P1_is_identified_by ?appellation . 
                                                                     ?appellation a crm:E41_Appellation . 
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/place_name> . 
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                     ?appellation crm:P190_has_symbolic_content ?label .
                                                                   }'
                                                 >

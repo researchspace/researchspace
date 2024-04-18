@@ -11,7 +11,7 @@
                             entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                             entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                            persistent_item_name="http://www.researchspace.org/pattern/system/persistent_item/persistent_item_name"
+                            entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                             entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
@@ -67,7 +67,7 @@
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
-                        <semantic-form-text-input for="persistent_item_name" label="Persistent item name" placeholder="Enter persistent item name"> </semantic-form-text-input>
+                        <semantic-form-text-input for="entity_primary_appellation" label="Physical thing name" placeholder="Enter physical thing name"> </semantic-form-text-input>
                         <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
 
                         <div class="inline-composite-container">
@@ -192,8 +192,8 @@
                                                                 "labelPattern": "{ 
                                                                                     ?item crm:P1_is_identified_by ?appellation .
                                                                                     ?appellation a crm:E41_Appellation .
-                                                                                    ?appellation crm:P2_has_type ?type . 
-                                                                                    ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                     
                                                                                     ?appellation crm:P190_has_symbolic_content ?label .
                                                                                 } UNION {
                                                                                     ?item crm:P102_has_title ?title . 
@@ -207,8 +207,8 @@
                                                                     { 
                                                                         ?item crm:P1_is_identified_by ?appellation .
                                                                         ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type ?type . 
-                                                                        ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                         
                                                                         ?appellation crm:P190_has_symbolic_content ?label .
                                                                     } UNION {
                                                                         ?item crm:P102_has_title ?title . 
@@ -228,8 +228,8 @@
                                                                         "labelPattern": "{ 
                                                                                             ?item crm:P1_is_identified_by ?appellation .
                                                                                             ?appellation a crm:E41_Appellation .
-                                                                                            ?appellation crm:P2_has_type ?type . 
-                                                                                            ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                             
                                                                                             ?appellation crm:P190_has_symbolic_content ?label .
                                                                                         } UNION {
                                                                                             ?item crm:P102_has_title ?title . 
@@ -243,8 +243,8 @@
                                                                             { 
                                                                                 ?item crm:P1_is_identified_by ?appellation .
                                                                                 ?appellation a crm:E41_Appellation .
-                                                                                ?appellation crm:P2_has_type ?type . 
-                                                                                ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                 
                                                                                 ?appellation crm:P190_has_symbolic_content ?label .
                                                                             } UNION {
                                                                                 ?item crm:P102_has_title ?title . 
@@ -297,8 +297,8 @@
                                                                                     { 
                                                                                         ?node crm:P1_is_identified_by ?appellation .
                                                                                         ?appellation a crm:E41_Appellation .
-                                                                                        ?appellation crm:P2_has_type ?type . 
-                                                                                        ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                         
                                                                                         ?appellation crm:P190_has_symbolic_content ?label .
                                                                                     } UNION {
                                                                                         ?node crm:P102_has_title ?title . 
@@ -382,13 +382,7 @@
                 <semantic-form-autocomplete-input   for='thing_general_use' 
                                                     label="Had as general use" 
                                                     placeholder="Select the type of use that the physical thing was actually employed for" 
-                                                    nested-form-templates='[ 
-                                                        {
-                                                            "label": "Type",
-                                                            "nestedForm": "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
-                                                                        {{{{/raw}}}}"
-                                                        }
-                                                    ]'> 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='thing_dimension' 

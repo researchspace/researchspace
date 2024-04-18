@@ -13,7 +13,7 @@
                             
                             person_signature="http://www.researchspace.org/pattern/system/person/signature_image"
 
-                            person_appellation="http://www.researchspace.org/pattern/system/person/appellation"
+                            entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                             actor_alsoKnownAs="http://www.researchspace.org/pattern/system/actor/alsoKnownAs"
                             person_name_native_language="http://www.researchspace.org/pattern/system/person/name_native_language"
                             person_family_name="http://www.researchspace.org/pattern/system/person/family_name"
@@ -81,14 +81,14 @@
                 <div>
                     {{#if apiResourceName}}
                         <div class="focused-input-container">
-                            <semantic-form-text-input for="person_appellation" label="Full name" placeholder="Enter person full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
+                            <semantic-form-text-input for="entity_primary_appellation" label="Full name" placeholder="Enter person full name / known as" default-value="{{apiResourceName}}" force-defaults=true> </semantic-form-text-input>
                          </div>
                     {{else}}
-                        <semantic-form-text-input for="person_appellation" label="Full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
+                        <semantic-form-text-input for="entity_primary_appellation" label="Full name" placeholder="Enter person full name / known as"> </semantic-form-text-input>
                     {{/if}}
 
                     <semantic-form-text-input for="actor_alsoKnownAs" label="Also known as" placeholder="Enter person additional name / also known as"> </semantic-form-text-input>
-                    <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language"> </semantic-form-text-input>
+                    <semantic-form-text-input for="person_name_native_language" label="Name in native language" placeholder="Enter person name in native language" languages='["ar","de","el","es","fr","ga","it","ja","ko","nl","zh","zh-CN","zh-TW"]' require-language=true> </semantic-form-text-input>
                     <semantic-form-text-input for="person_family_name" label="Family name" placeholder="Enter person family name"> </semantic-form-text-input>
                     
                     {{#if apiResourceDescription}}
@@ -108,7 +108,7 @@
                                                                         "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
                                                                         "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                                         ?appellation a crm:E41_Appellation . 
-                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> . 
+                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                         ?appellation crm:P190_has_symbolic_content ?label ." }'
                                                     
                                                         nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new"
@@ -124,7 +124,7 @@
                                                         query-item-label='SELECT ?label WHERE {
                                                                             ?item crm:P1_is_identified_by ?appellation . 
                                                                             ?appellation a crm:E41_Appellation . 
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> . 
+                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                             ?appellation crm:P190_has_symbolic_content ?label .
                                                                         }'
                     ></semantic-form-tree-picker-input>
@@ -151,7 +151,7 @@
                                                                         "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
                                                                         "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                                         ?appellation a crm:E41_Appellation . 
-                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> . 
+                                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                         ?appellation crm:P190_has_symbolic_content ?label ." }'
 
                                                         nested-form-template='{{{{raw}}}}{{> forms:Group nested=true editable=true mode="new"
@@ -167,7 +167,7 @@
                                                         query-item-label='SELECT ?label WHERE {
                                                                             ?item crm:P1_is_identified_by ?appellation . 
                                                                             ?appellation a crm:E41_Appellation . 
-                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> . 
+                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                             ?appellation crm:P190_has_symbolic_content ?label .
                                                                         }'
                     ></semantic-form-tree-picker-input> 
@@ -467,12 +467,13 @@
                                             ?subject rs:PX_is_bind_by ?relationship .
                                             ?relationship a rs:Relationship .
                                             ?relationship rs:PX_to ?person .
+                                            ?person a crm:E21_Person .
                                             ?relationship crm:P2_has_type ?relationshipType .
                                             ?relationshipType skos:prefLabel ?relationshipTypeLabel .
                                     
                                             ?person crm:P1_is_identified_by ?appellation .
                                             ?appellation a crm:E41_Appellation .
-                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/person_appellation> .
+                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                             ?appellation crm:P190_has_symbolic_content ?personName .
 
                                         } ORDER BY ?relationshipType ?personName'
@@ -515,13 +516,13 @@
                                                                                 "relationPattern": "?item crm:P107i_is_current_or_former_member_of ?parent",
                                                                                 "labelPattern": "?item crm:P1_is_identified_by ?appellation . 
                                                                                                 ?appellation a crm:E41_Appellation . 
-                                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> . 
+                                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
                                                                                                 ?appellation crm:P190_has_symbolic_content ?label ." }'
         
                                                     query-item-label='SELECT ?label WHERE {
                                                                         ?item crm:P1_is_identified_by ?appellation .
                                                                         ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/group_appellation> .
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                         ?appellation crm:P190_has_symbolic_content ?label .
                                                                     }'
                 ></semantic-form-tree-picker-input>

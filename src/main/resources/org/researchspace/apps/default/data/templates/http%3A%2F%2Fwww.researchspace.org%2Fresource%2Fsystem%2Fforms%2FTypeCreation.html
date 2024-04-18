@@ -12,7 +12,7 @@
                           entity_document="http://www.researchspace.org/pattern/system/entity/documents"
                           entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
-                          type_creation_title="http://www.researchspace.org/pattern/system/type_creation/type_creation_title"
+                          entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                           entity_description="http://www.researchspace.org/pattern/system/entity/description"
                           activity_research_question="http://www.researchspace.org/pattern/system/activity/research_question"
                           activity_status="http://www.researchspace.org/pattern/system/activity/current_status"
@@ -79,7 +79,7 @@
 
         <div class="form-2column-container">
           <div>
-            <semantic-form-text-input for="type_creation_title" label="Type creation title" placeholder="Enter type creation title"></semantic-form-text-input>
+            <semantic-form-text-input for="entity_primary_appellation" label="Type creation title" placeholder="Enter type creation title"></semantic-form-text-input>
 
             <semantic-form-text-input for="entity_description" multiline="true" label="Type creation description" placeholder="Enter type creation description"></semantic-form-text-input>
 
@@ -268,13 +268,13 @@
                                                               "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                               ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/type_creation_title> .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                               ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                               query-item-label='SELECT ?label WHERE {
                                                                   ?item crm:P1_is_identified_by ?appellation .
                                                                   ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/type_creation_title> .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                   ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'> 
           </semantic-form-tree-picker-input>   
@@ -287,13 +287,13 @@
                                                               "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                               "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                               ?appellation a crm:E41_Appellation .
-                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/type_creation_title> .
+                                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                               ?appellation crm:P190_has_symbolic_content ?label ."}'
 
                                               query-item-label='SELECT ?label WHERE {
                                                                   ?item crm:P1_is_identified_by ?appellation .
                                                                   ?appellation a crm:E41_Appellation .
-                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/type_creation_title> .
+                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                   ?appellation crm:P190_has_symbolic_content ?label .
                                                               }'>
           </semantic-form-tree-picker-input> 
@@ -341,8 +341,8 @@
                                                                     ?ontologyClass rdfs:subClassOf* crm:E4_Period .
                                                                     ?node crm:P1_is_identified_by ?appellation .
                                                                     ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type ?type . 
-                                                                    ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                     
                                                                     ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
                                                                 }'
                                                             template='{{> template}}'>
@@ -735,14 +735,7 @@
         <semantic-form-autocomplete-input for='type_creation_created_type' 
                                           label="Created type" 
                                           placeholder="Select type" 
-                                          nested-form-templates='[ 
-                                            {
-                                              "label": "Type",
-                                              "nestedForm": "{{{{raw}}}}
-                                                                {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
-                                                            {{{{/raw}}}}"
-                                            }
-                                          ]'> 
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
         </semantic-form-autocomplete-input> 
 
         <semantic-form-tree-picker-input  for='activity_used_general_technique_type' 
@@ -812,14 +805,7 @@
         <semantic-form-autocomplete-input for='activity_had_general_purpose_type' 
                                           label="General purpose (type)" 
                                           placeholder="Select type" 
-                                          nested-form-templates='[ 
-                                            {
-                                              "label": "Type",
-                                              "nestedForm": "{{{{raw}}}}
-                                                                {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
-                                                            {{{{/raw}}}}"
-                                            }
-                                          ]'> 
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
         </semantic-form-autocomplete-input> 
 
       </rs-tab>

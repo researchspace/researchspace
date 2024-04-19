@@ -58,7 +58,7 @@
                             thing_has_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of_range"
                             entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
                             entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
-                            entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
+                            entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
 
                             physical_man-made_thing_visual_item="http://www.researchspace.org/pattern/system/physical_man-made_thing/shows_visual_item"
                             physical_man-made_thing_depicts="http://www.researchspace.org/pattern/system/physical_man-made_thing/depicts"
@@ -305,44 +305,44 @@
             <rs-tab event-key="component" title="Components">
 
                 {{#if scheme}}
-                    <semantic-form-tree-picker-input  for='physical_thing_part_of' 
-                                                label="Part of" 
-                                                placeholder="Select the item of which the physical man-made thing is part of" 
-                                                default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
-                                                tree-patterns='{"scheme": "{{scheme}}",
-                                                                "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
-                                                                "relationPattern": "?item crm:P46i_forms_part_of ?parent",
-                                                                "labelPattern": "{ 
-                                                                                    ?item crm:P1_is_identified_by ?appellation .
-                                                                                    ?appellation a crm:E41_Appellation .
-                                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                                    ?appellation crm:P190_has_symbolic_content ?label .
-                                                                                } UNION {
-                                                                                    ?item crm:P102_has_title ?title . 
-                                                                                    ?title a crm:E35_Title . 
-                                                                                    ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                                    ?title crm:P190_has_symbolic_content ?label .
-                                                                                }"
-                                                                }'
+                    <semantic-form-tree-picker-input    for='physical_thing_part_of' 
+                                                        label="Part of" 
+                                                        placeholder="Select the item of which the physical man-made thing is part of" 
+                                                        default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
+                                                        tree-patterns='{"scheme": "{{scheme}}",
+                                                                        "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                                        "relationPattern": "?item crm:P46i_forms_part_of ?parent",
+                                                                        "labelPattern": "{ 
+                                                                                            ?item crm:P1_is_identified_by ?appellation .
+                                                                                            ?appellation a crm:E41_Appellation .
+                                                                                            ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                            ?appellation crm:P190_has_symbolic_content ?label .
+                                                                                        } UNION {
+                                                                                            ?item crm:P102_has_title ?title . 
+                                                                                            ?title a crm:E35_Title . 
+                                                                                            ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                                            ?title crm:P190_has_symbolic_content ?label .
+                                                                                        }"
+                                                                        }'
 
-                                                query-item-label='SELECT ?label WHERE {
-                                                                    { 
-                                                                        ?item crm:P1_is_identified_by ?appellation .
-                                                                        ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                        ?appellation crm:P190_has_symbolic_content ?label .
-                                                                    } UNION {
-                                                                        ?item crm:P102_has_title ?title . 
-                                                                        ?title a crm:E35_Title . 
-                                                                        ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
-                                                                        ?title crm:P190_has_symbolic_content ?label .
-                                                                    }
-                                                                }'> 
+                                                        query-item-label='SELECT ?label WHERE {
+                                                                            { 
+                                                                                ?item crm:P1_is_identified_by ?appellation .
+                                                                                ?appellation a crm:E41_Appellation .
+                                                                                ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                                ?appellation crm:P190_has_symbolic_content ?label .
+                                                                            } UNION {
+                                                                                ?item crm:P102_has_title ?title . 
+                                                                                ?title a crm:E35_Title . 
+                                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                                ?title crm:P190_has_symbolic_content ?label .
+                                                                            }
+                                                                        }'> 
                     </semantic-form-tree-picker-input>  
 
                     <semantic-form-tree-picker-input    for='physical_thing_component' 
-                                                        label="Part of" 
-                                                        placeholder="Select the item of which the physical man-made thing is part of" 
+                                                        label="Components" 
+                                                        placeholder="Select component of the physical man-made thing" 
                                                         tree-patterns='{"scheme": "{{scheme}}",
                                                                         "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                                         "relationPattern": "?item crm:P46i_forms_part_of ?parent",
@@ -613,19 +613,19 @@
 
                 <semantic-form-autocomplete-input   for='physical_thing_former_location' 
                                                     label="Former or current location" 
-                                                    placeholder="Select place as the former or current location of the physical man-made thing"
+                                                    placeholder="Select a place as the former or current location of the physical man-made thing"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='physical_thing_has_section' 
                                                     label="Has section" 
-                                                    placeholder="Select place as an area upon which the physical man-made thing is found"
+                                                    placeholder="Select a place as the area upon which the physical man-made thing is found"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='physical_thing_occupies' 
                                                     label="Occupies space" 
-                                                    placeholder="Select place as the volume that contains all the points which the physical man-made thing has covered at some time during its existence"
+                                                    placeholder="Select a place as the volume that contains all the points which the physical man-made thing has covered at some time during its existence"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
                 
@@ -967,11 +967,54 @@
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
                 </semantic-form-autocomplete-input>
 
-                <semantic-form-autocomplete-input   for='entity_referred_to_by' 
+                <div class="inline-composite-container">
+                    <semantic-form-composite-input  for="entity_refers_to_range" 
                                                     label="Referred to by"
-                                                    placeholder="Select what refers to the physical man-made thing" 
-                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-                </semantic-form-autocomplete-input>
+                                                    new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                                    fields='[[fieldDefinitions
+                                                              classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                        
+                                                              refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
+                                                              type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                            ]]'>
+          
+                    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+          
+                    <div class="form-inline-inputs">
+                      <div style="flex: 1;">
+                        <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
+                                                          render-header="false"
+                                                          placeholder="Select what refers to the entity" 
+                                                          nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                        </semantic-form-autocomplete-input>
+                      </div>
+                      <div style="flex: 1;">
+                        <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                          render-header="false"
+                                                          placeholder="Select type of reference"
+                                                          close-dropdown-on-selection='true'
+                                                          tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                          "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                          "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+          
+                                                          scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                      "view": "vocabulary-content",
+                                                                                      "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                                      "tooltip": "Open list of type of references"
+                                                                                    }'
+                                                          
+                                                          nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                                entityType="type of reference" }}{{{{/raw}}}}'
+          
+                                                          query-item-label='SELECT ?label WHERE {
+                                                                              ?item skos:prefLabel ?label .
+                                                                          }'>
+                          </semantic-form-tree-picker-input>
+                      </div>
+                    </div>
+                    </semantic-form-composite-input>
+                </div>
 
             </rs-tab>
 
@@ -992,7 +1035,6 @@
                 </semantic-form-autocomplete-input> 
                 
             </rs-tab>
-
 
             [[> rsp:FormMetadataTab]]
 

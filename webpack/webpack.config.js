@@ -146,7 +146,7 @@ module.exports = function(isProd) {
                                 sourceMap: true,
                                 modules: {
                                     exportLocalsConvention: 'camel-case',
-                                    localIdentName: '[name]__[local]__[hash:base64:5]',
+                                    localIdentName: '[name]--[local]',
                                 },
                                 importLoaders: 2,
                             }

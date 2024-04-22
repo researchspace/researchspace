@@ -27,6 +27,12 @@ module.exports = function() {
     config.mode = 'development';
     //config.plugins.push(new BundleAnalyzerPlugin());
 
+    // the default hotUpdateChunkFilename is [id].[fullhash].hot-update.js
+    // we don't want to use the fullhash in the filename, because it changes on every build
+    // and cause jetty reload on every js change.
+    // We don't have any browser caching in dev environment so hash is not needed anyway.
+    config.output.hotUpdateChunkFilename = '[id].hot-update.js';
+
     config.optimization = {
         minimize: true,
         minimizer: [

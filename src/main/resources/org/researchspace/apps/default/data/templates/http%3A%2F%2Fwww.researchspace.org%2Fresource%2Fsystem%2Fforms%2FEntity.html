@@ -1,44 +1,56 @@
-<semantic-switch 
-    query='SELECT ?typename {
-            BIND(<{{node}}> as ?node)
-            ?node a ?cidocType .
-            OPTIONAL {?cidocType rdfs:subClassOf* crm:E71_Man-Made_Thing . BIND("true" as ?isE71)
-                OPTIONAL {?cidocType rdfs:subClassOf* crm:E55_Type . BIND("true" as ?isE55)}                
-            }
-            OPTIONAL {?cidocType rdfs:subClassOf* crm:E52_Time-Span . BIND("true" as ?isE52)}
-            bind( if (BOUND(?isE52),
-                        "type timespan" ,
-                (if (bound(?isE55), 
-                            "type skos",
-                (if ( BOUND(?isE71),
-                                "type man-made thing",
-                        "type entity" )))))
-                    as ?typename )
-            }'
-    cases='{"type timespan": "{{> timespan}}", 
-            "type skos": "{{> skos}}", 
-            "type man-made thing": "{{> thing}}",
-            "type entity": "{{> entity}}"}'>
-    <template id='timespan'>
-        {{#> forms:Entity_partial node=node scheme=scheme}}
-            <semantic-form-text-input for="entity_timespan_label" label="Entity name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
-        {{/forms:Entity_partial}}     
-    </template>
-    <template id='skos'>
-        {{#> forms:Entity_partial node=node scheme=scheme}}
-            <semantic-form-text-input for="entity_type_label" label="Entity name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
-        {{/forms:Entity_partial}}     
-    </template>
-    <template id='thing'>
-        {{#> forms:Entity_partial node=node scheme=scheme}}
-            <semantic-form-text-input for="entity_man_made_thing_label" label="Entity name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
-        {{/forms:Entity_partial}}     
-    </template>
-    <template id='entity'>
-        {{#> forms:Entity_partial node=node scheme=scheme}}
-            <semantic-form-text-input for="entity_appellation" label="Entity name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
-        {{/forms:Entity_partial}}     
-    </template>
-</semantic-switch>
+{{#if node}}
+    <semantic-switch query='SELECT ?typename {
+                                BIND(<{{node}}> as ?node)
+
+                                ?node a ?cidocType .
+
+                                OPTIONAL {?cidocType rdfs:subClassOf* crm:E71_Man-Made_Thing . BIND("true" as ?isE71)
+                                    OPTIONAL {?cidocType rdfs:subClassOf* crm:E55_Type . BIND("true" as ?isE55)}                
+                                }
+
+                                OPTIONAL {?cidocType rdfs:subClassOf* crm:E52_Time-Span . BIND("true" as ?isE52)}
+                                
+                                BIND( if (BOUND(?isE52),
+                                            "timespan" ,
+                                    (if (bound(?isE55), 
+                                                "skos",
+                                    (if ( BOUND(?isE71),
+                                                    "thing",
+                                            "entity" )))))
+                                        as ?typename )
+                            }'
+        cases='{"timespan": "{{> timespan}}", 
+                "skos": "{{> skos}}", 
+                "thing": "{{> thing}}",
+                "entity": "{{> entity}}"}'>
+
+        <template id='timespan'>
+            {{#> forms:Entity_partial}}
+                <semantic-form-text-input for='timespan_text_value' label="Timespan (text value)"  placeholder="Enter timespan (text value)"></semantic-form-text-input>                            
+            {{/forms:Entity_partial}}     
+        </template>
+
+        <template id='skos'>
+            {{#> forms:Entity_partial}}
+                <semantic-form-text-input for="entity_prefLabel" label="Preferred name" placeholder="Enter preferred name"></semantic-form-text-input>                             
+            {{/forms:Entity_partial}}     
+        </template>
+
+        <template id='thing'>
+            {{#> forms:Entity_partial}}
+                <semantic-form-text-input for="man-made_thing_primary_title" label="Title/name" placeholder="Enter title/name"></semantic-form-text-input>                             
+            {{/forms:Entity_partial}}     
+        </template>
+
+        <template id='entity'>
+            {{#> forms:Entity_partial}}
+                <semantic-form-text-input for="entity_primary_appellation" label="Name/appellation" placeholder="Enter name/appellation"></semantic-form-text-input>                             
+            {{/forms:Entity_partial}}     
+        </template>
+
+    </semantic-switch>
+{{else}}
+    {{> forms:Entity_partial}}
+{{/if}}
 
 

@@ -5,6 +5,7 @@
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                             entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                            entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
                             
                             entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
                             entity_image="http://www.researchspace.org/pattern/system/entity/images"
@@ -13,26 +14,29 @@
 
                             entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                             entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                            entity_preferred_id_min1="http://www.researchspace.org/pattern/system/entity/preferred_identifier_min1"
                             entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
-                            entity_has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                            entity_id_min1="http://www.researchspace.org/pattern/system/entity/identifier_min1"
                             entity_description="http://www.researchspace.org/pattern/system/entity/description"
 
                             physical_thing_part_of="http://www.researchspace.org/pattern/system/physical_thing/part_of_physical_thing"
                             physical_thing_component="http://www.researchspace.org/pattern/system/physical_thing/composed_of_physical_thing"
                             physical_object_number_of_parts="http://www.researchspace.org/pattern/system/physical_object/number_of_parts"
 
+                            physical_object_type="http://www.researchspace.org/pattern/system/physical_object/type"
+                            physical_object_format="http://www.researchspace.org/pattern/system/physical_object/format"
                             thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
                             thing_dimension="http://www.researchspace.org/pattern/system/thing/dimension"
                             physical_thing_material="http://www.researchspace.org/pattern/system/physical_thing/material"
                             physical_thing_has_condition="http://www.researchspace.org/pattern/system/physical_thing/has_condition"
 
-                            legal_object_subject_to_right="http://www.researchspace.org/pattern/system/legal_object/subject_to_right"
-                            legal_object_right_held_by_actor="http://www.researchspace.org/pattern/system/legal_object/right_held_by"
                             physical_thing_current_owner="http://www.researchspace.org/pattern/system/physical_thing/current_owner"
                             physical_thing_former_owner="http://www.researchspace.org/pattern/system/physical_thing/former_owner"
                             physical_thing_current_keeper="http://www.researchspace.org/pattern/system/physical_thing/current_keeper"
                             physical_thing_former_keeper="http://www.researchspace.org/pattern/system/physical_thing/former_keeper"
-
+                            legal_object_subject_to_right="http://www.researchspace.org/pattern/system/legal_object/subject_to_right"
+                            legal_object_right_held_by_actor="http://www.researchspace.org/pattern/system/legal_object/right_held_by"
+                            
                             physical_object_current_permanent_location="http://www.researchspace.org/pattern/system/physical_object/current_permanent_location"
                             physical_object_current_location="http://www.researchspace.org/pattern/system/physical_object/current_location"
                             physical_thing_former_location="http://www.researchspace.org/pattern/system/physical_thing/location"
@@ -40,6 +44,7 @@
                             physical_thing_occupies="http://www.researchspace.org/pattern/system/physical_thing/occupies"
 
                             physical_object_moved_by="http://www.researchspace.org/pattern/system/physical_object/moved_by"
+                            physical_thing_modified_by="http://www.researchspace.org/pattern/system/physical_thing/modified_by"
                             thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
                             persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                             persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
@@ -72,11 +77,24 @@
             <rs-tab event-key="detail" title="Details">
                 <div class="form-2column-container">
                     <div>
-                        <semantic-form-text-input for="entity_primary_appellation" label="Physical object name" placeholder="Enter physical object name"> </semantic-form-text-input>
-                        <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                        {{#if apiResourceName}}
+                            <div class="focused-input-container">
+                                <semantic-form-text-input for="entity_primary_appellation" label="Physical object name" placeholder="Enter physical object name" default-value="{{apiResourceName}}" force-defaults=true></semantic-form-text-input>
+                            </div>
+                        {{else}}
+                            <semantic-form-text-input for="entity_primary_appellation" label="Physical object name" placeholder="Enter physical object name"> </semantic-form-text-input>
+                        {{/if}}
+                        
+                        {{#if apiResourceDescription}}
+                            <div class="focused-input-container">
+                                <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true' default-value="{{apiResourceDescription}}"></semantic-form-text-input>
+                            </div>
+                        {{else}}
+                            <semantic-form-text-input for="entity_description" label="Description" placeholder="Enter description/comment" multiline='true'> </semantic-form-text-input>
+                        {{/if}}
 
                         <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="entity_preferred_id"
+                            <semantic-form-composite-input  for="{{#if apiResourceMuseumId}}entity_preferred_id_min1{{else}}entity_preferred_id{{/if}}"
                                                             label="Preferred identifier"
                                                             new-subject-template="/entity_preferred_id" 
                                                             fields='[[fieldDefinitions
@@ -91,13 +109,20 @@
                                     
                                 <div class="form-inline-inputs">
                                     <div style="min-width: 40%;">
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+                                        {{#if apiResourceMuseumId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier" default-value="{{apiResourceMuseumId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+                                        {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceMuseumIdType}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceMuseumIdType}}{{apiResourceMuseumIdType}}{{/if}}"
                                                                     nested-form-templates='[ 
                                                                         {
                                                                             "label": "Identifier",
@@ -111,10 +136,10 @@
                                     </div>
                                 </div>
                             </semantic-form-composite-input>
-                          </div>
+                        </div>
               
-                          <div class="inline-composite-container">
-                            <semantic-form-composite-input  for="entity_id"
+                        <div class="inline-composite-container">
+                            <semantic-form-composite-input  for="{{#if apiResourceSystemId}}entity_id_min1{{else}}entity_id{{/if}}"
                                                             label="Other identifier"
                                                             new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                             fields='[[fieldDefinitions
@@ -129,13 +154,20 @@
                                     
                                 <div class="form-inline-inputs">
                                     <div style="min-width: 40%;">
-                                        <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{#if apiResourceSystemId}}
+                                            <div class="focused-input-container">
+                                                <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier" default-value="{{apiResourceSystemId}}" force-defaults=true></semantic-form-text-input>
+                                            </div>
+                                        {{else}}
+                                            <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                                        {{/if}}
                                     </div>
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1;" class="{{#if apiResourceSystemId}}focused-input-container{{/if}}">
                                         <semantic-form-select-input for='identifier_type' 
                                                                     label="Identifier type" 
                                                                     render-header=false
                                                                     placeholder="Select identifier type" 
+                                                                    default-value="{{#if apiResourceSystemId}}http://www.researchspace.org/resource/system/vocab/identifier/system_id{{/if}}" 
                                                                     nested-form-templates='[ 
                                                                         {
                                                                             "label": "Identifier",
@@ -149,11 +181,47 @@
                                     </div>
                                 </div>
                             </semantic-form-composite-input>
-                          </div>
+                        </div>
                         
                     </div>
 
                     <div class="form-media-column">
+
+                        {{#if apiResourceURI}}
+                            <div style="padding-top: 20px;">
+                                <span>Imported from: </span>
+                                <a class="text-link-action" target="_blank" href="{{apiResourceURI}}" title="{{apiResourceURI}}">{{apiResourceURI}}</a>
+                            </div>
+                        {{else}}
+                            {{#if node}}
+                                <semantic-query query='SELECT ?resource ?sourceURI WHERE {
+                                                        BIND(<{{node}}> AS ?resource)
+        
+                                                        ?resource crm:P129i_is_subject_of ?entityFormRecord .
+                                                        ?entityFormRecord crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record> . 
+                                                        ?entityFormRecord crmdig:L11i_was_output_of ?entityFormRecordCreation .
+                                                        ?entityFormRecordCreation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/entity_form_record_creation> .
+        
+                                                        ?entityFormRecordCreation crm:P134_continued ?importFromExternalSource .
+                                                        ?importFromExternalSource crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/import_from_external_source> .
+                                                        ?importFromExternalSource crmdig:L14_transferred ?sourceURI .
+                                                        ?sourceURI crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/digital_object_type/web_link> .
+                                                    }'
+                                            template='{{> template}}'
+                                >
+                                    
+                                    <template id='template'>
+                                        <div>
+                                            <div style="padding-top: 20px;">
+                                                <span>Imported from: </span>
+                                                <a class="text-link-action" target="_blank" href="{{bindings.0.sourceURI.value}}" title="{{bindings.0.sourceURI.value}}">{{bindings.0.sourceURI.value}}</a>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </semantic-query>
+                            {{/if}}
+                        {{/if}}
+
                         <div class="dragAndDrop-input-container">
                             <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
                                                                 placeholder-item-template="<div class='placeholder-item'>
@@ -367,7 +435,7 @@
 
             <rs-tab event-key="type" title="Type/Dimensions/Materials">
 
-             [[!--   <semantic-form-tree-picker-input    for="object_type" 
+                <semantic-form-tree-picker-input    for="physical_object_type" 
                                                     label="Object type" 
                                                     placeholder="Select object type" 
                                                     close-dropdown-on-selection='false'
@@ -375,7 +443,7 @@
                                                                     "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_type>",
                                                                     "relationPattern": "?item crm:P127_has_broader_term ?parent",
                                                                     "labelPattern": "?item skos:prefLabel ?label"
-                                                                   }'
+                                                                    }'
 
                                                     scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
                                                                                 "view": "vocabulary-content",
@@ -391,7 +459,32 @@
                                                                         ?item skos:prefLabel ?label .
                                                     }'>
                                             
-                </semantic-form-tree-picker-input> --]]
+                </semantic-form-tree-picker-input>
+
+                <semantic-form-tree-picker-input    for="physical_object_format" 
+                                                    label="Object format" 
+                                                    placeholder="Select object format" 
+                                                    close-dropdown-on-selection='false'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/object_format>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/object_format>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                    "labelPattern": "?item skos:prefLabel ?label"
+                                                                    }'
+
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/object_format",
+                                                                                "tooltip": "Open list of object format"
+                                                                                }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                                    scheme="http://www.researchspace.org/resource/vocab/object_format"
+                                                                                                    entityType="object format" }}{{{{/raw}}}}'
+
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                    }'>
+                </semantic-form-tree-picker-input>
 
                 <semantic-form-autocomplete-input   for='thing_general_use' 
                                                     label="Had as general use" 
@@ -546,6 +639,12 @@
                                                                         {{{{/raw}}}}"
                                                         }
                                                     ]'>  
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='physical_thing_modified_by' 
+                                                    label="Modified by" 
+                                                    placeholder="Select modification"
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_modifications]]'>
                 </semantic-form-autocomplete-input>
 
                 <div class="inline-composite-container">

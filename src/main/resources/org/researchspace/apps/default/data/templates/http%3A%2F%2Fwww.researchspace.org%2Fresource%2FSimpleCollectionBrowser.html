@@ -199,9 +199,11 @@
                           <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
                           <mp-draggable iri='{{iri}}'>
                             <div>
+                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
+                              [[!--
                               {{#if resourceLabelPattern}}
                                   <semantic-query query="SELECT ?label WHERE {
-                                                          BIND(<{{iri}}> as ?item) .
+                                                          BIND(<{{iri}}> as ?item) .                                                        
                                                           {{resourceLabelPattern}}
                                                         }"
                                                   template='{{> template}}'>
@@ -212,7 +214,7 @@
                                   </semantic-query>
                                 {{else}}
                                   <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                                {{/if}}
+                                {{/if}} --]]
                               </div>
                           </mp-draggable>
                         </div>
@@ -232,9 +234,10 @@
                           <rs-icon icon-type="round" icon-name="drag_indicator"></rs-icon>
                           <mp-draggable iri='{{iri}}'>
                             <div>
+                              <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
                               {{#if resourceLabelPattern}}
-                                  <semantic-query query="SELECT ?label WHERE {
-                                                          BIND(<{{iri}}> as ?item) .
+                                  <semantic-query query="SELECT ?label ?labelElse WHERE {
+                                                          BIND(<{{iri}}> as ?item) .                                                         
                                                           {{resourceLabelPattern}}
                                                         }"
                                                   template='{{> template}}'>
@@ -245,7 +248,7 @@
                                   </semantic-query>
                                 {{else}}
                                   <mp-label iri='{{iri}}' style="text-transform: capitalize;"></mp-label>
-                                {{/if}}
+                                {{/if}} --]]
                               </div>
                           </mp-draggable>
                         </div>
@@ -425,7 +428,7 @@
                   </semantic-query>
                 {{/if}}
 
-                {{#if mode}}
+                {{#if mode}}                 
                   <inline-template template-iri='{{resourceForm}}' 
                                     options='{
                                             {{#if collection}}"scheme": "{{collection}}",{{/if}}
@@ -434,7 +437,7 @@
                                             {{#if data.additional_data}}"additional-data":{{{stringify data.additional_data}}},{{/if}}
                                             "editable": {{editable}},
                                             "mode": "{{mode}}",
-                                            "viewId": "{{viewId}}",
+                                            "viewId": "{{viewId}}",                                           
                                             {{#if resourceLabelPattern}}"resourceLabelPattern": "{{resourceLabelPattern}}",{{/if}} 
                                             {{#if selectedApiResource}}
                                               {{#if apiResourceURI}}"apiResourceURI": "{{apiResourceURI}}",{{/if}}

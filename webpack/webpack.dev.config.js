@@ -18,22 +18,53 @@
  */
 
 const webpack = require('webpack');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const defaults = require('./defaults')();
 
 module.exports = function() {
     const config = require('./webpack.config.js')(false);
-    config.plugins.push(defaults.tsTypeCheck(false));
+    config.mode = 'development';
+    //config.plugins.push(new BundleAnalyzerPlugin());
+
+    config.optimization = {
+        minimize: true,
+        minimizer: [
+            new CssMinimizerPlugin(
+                {
+                    minimizerOptions: {
+                    preset: [
+                        "default",
+                        {
+                        discardComments: { removeAll: true },
+                        },
+                    ],
+                    },
+                }
+            ) // Updated for Webpack 5
+        ]
+    };
+
 
     config.output.pathinfo = false;
 
     config.output.publicPath = 'http://localhost:3000/assets/no_auth/';
     config.devServer = {
         port: 3000,
-        contentBase: './src/main/webapp',
+        static: {
+            directory: './src/main/webapp',
+        },
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-        }
+        },
+        client: {
+            overlay: {
+              errors: true,
+              warnings: false,
+              runtimeErrors: false,
+            },
+        },
     };
     return config;
 };

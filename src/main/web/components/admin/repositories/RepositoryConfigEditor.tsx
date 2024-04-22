@@ -145,7 +145,7 @@ export class RepositoryConfigEditor extends Component<Props, State> {
                   placeholder="Please specify a new and unique repository id."
                 />
                 {this.getNewRepositoryIDValidation() && (
-                  <Alert bsStyle='info'>Repository ID must be a unique, alphanumeric string of length >= 5 characters.</Alert>
+                  <Alert bsStyle='info'>Repository ID must be a unique, alphanumeric string of length &gt; 5 characters.</Alert>
                 )}
               </FormGroup>
             </Form>

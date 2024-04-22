@@ -197,22 +197,19 @@ gretty {
 
 // install npm dependencies in development mode
 task npmInstall(type: Exec) {
-    environment NODE_OPTIONS: "--openssl-legacy-provider"
     executable 'npm'
-    args 'i', '--no-audit', '--no-fund', '--loglevel=error', '--legacy-peer-deps'
+    args 'i', '--no-audit', '--no-fund', '--loglevel=error'
 }
 
 // we want to get clean node_modules when we are building on CI or production version locally
 // see https://docs.npmjs.com/cli/ci
 task npmInstallCi(type: Exec) {
-    environment NODE_OPTIONS: "--openssl-legacy-provider"
     executable 'npm'
-    args 'ci', '--no-audit', '--no-fund', '--loglevel=error', '--legacy-peer-deps'
+    args 'ci', '--no-audit', '--no-fund', '--loglevel=error'
 }
 
 // execute webpack in production mode with minifications, etc
 task runProdWebpack(type: Exec) {
-    environment NODE_OPTIONS: "--openssl-legacy-provider"
     executable 'npm'
     args 'run', 'prod'
 }
@@ -220,7 +217,6 @@ tasks.runProdWebpack.dependsOn npmInstallCi
 
 // task to execute webpack in watch mode, see ./webpack/package.json
 task startWebpack(type: com.github.psxpaul.task.ExecFork) {
-    environment NODE_OPTIONS: "--openssl-legacy-provider"
     executable = 'npm'
     args = [ 'run', 'dev' ]
     timeout = 1200
@@ -263,7 +259,6 @@ project.afterEvaluate {
 
 // execute frontend tests
 task testKarma(type: Exec) {
-    environment NODE_OPTIONS: "--openssl-legacy-provider"
     workingDir "$projectDir/webpack"
     executable 'npm'
     args 'run', 'test-ci'

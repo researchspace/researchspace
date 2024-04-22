@@ -23,8 +23,15 @@
 } WHERE {}""" .
 
   _:genid-fa739c1c0d5b40a09a699729dbb76a24-1n82tb a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
   $subject crm:P02_has_range ?value .
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+  ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-fa739c1c0d5b40a09a699729dbb76a24-fu3osq a <http://spinrdf.org/sp#Query>;
@@ -34,16 +41,24 @@
 } WHERE {
    $subject crm:P02_has_range $value .
    $value crm:P02i_is_range_of $subject .
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+  ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-fa739c1c0d5b40a09a699729dbb76a24-vqizp a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E39_Actor .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ?label""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
       <http://www.researchspace.org/pattern/system/carried_out_by/actor_range> .

@@ -22,20 +22,35 @@
 	$subject crm:P109_has_current_or_former_curator $value . 
 } WHERE {
 	$subject crm:P109_has_current_or_former_curator $value . 
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+  ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-5e4123cd1cfe47119dac75292b7558fd-6tqiur a <http://spinrdf.org/sp#Query>;
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
-  ?value a crm:E39_Actor .
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
   ?value crm:P1_is_identified_by ?appellation .
   ?appellation a crm:E41_Appellation .
-  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
   ?appellation crm:P190_has_symbolic_content ?label .
-} ORDER BY ?label""" .
+} ORDER BY ASC(LCASE(STR(?label)))""" .
   
   _:genid-5e4123cd1cfe47119dac75292b7558fd-qn3xvi a <http://spinrdf.org/sp#Query>;
-    <http://spinrdf.org/sp#text> """SELECT ?value WHERE {
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
 	$subject crm:P109_has_current_or_former_curator $value . 
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+  ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   _:genid-5e4123cd1cfe47119dac75292b7558fd-nipd1r a <http://spinrdf.org/sp#Query>;

@@ -1,0 +1,75 @@
+
+<http://www.researchspace.org/pattern/system/physical_man-made_thing/produced_by/context> {
+  <http://www.researchspace.org/pattern/system/physical_man-made_thing/produced_by>
+    a <http://www.researchspace.org/resource/system/fields/Field>, <http://www.w3.org/ns/prov#Entity>,
+      <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E12_Production>;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-320bb5cc0785431781571579fdac9691-n0mjpm;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/physical_man_made_thing>;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E24_Physical_Man-Made_Thing>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.w3.org/2000/01/rdf-schema#label> "Produced by";
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-320bb5cc0785431781571579fdac9691-84wj2o;
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-320bb5cc0785431781571579fdac9691-a48map;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-320bb5cc0785431781571579fdac9691-ywitbj;
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-320bb5cc0785431781571579fdac9691-bkr588;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-18T15:30:59.209+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-320bb5cc0785431781571579fdac9691-n0mjpm a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P108i_was_produced_by $value . 
+    $value crm:P108_has_produced $subject .
+} WHERE {}""" .
+  
+  _:genid-320bb5cc0785431781571579fdac9691-bkr588 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E12_Production .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label . 
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label)
+  LIMIT 10""" .
+  
+  _:genid-320bb5cc0785431781571579fdac9691-a48map a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P108i_was_produced_by $value . 
+    $value crm:P108_has_produced $subject .
+} WHERE {
+	$subject crm:P108i_was_produced_by $value . 
+    $value crm:P108_has_produced $subject .
+      
+    ?value a crm:E12_Production .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label . 
+}""" .
+  
+  _:genid-320bb5cc0785431781571579fdac9691-ywitbj a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+    ?value a crm:E12_Production .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label . 
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  _:genid-320bb5cc0785431781571579fdac9691-84wj2o a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+	$subject crm:P108i_was_produced_by $value .
+      
+    ?value a crm:E12_Production .
+    ?value crm:P1_is_identified_by ?appellation .
+    ?appellation a crm:E41_Appellation .
+    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+    ?appellation crm:P190_has_symbolic_content ?label . 
+}""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/physical_man-made_thing/produced_by> .
+}

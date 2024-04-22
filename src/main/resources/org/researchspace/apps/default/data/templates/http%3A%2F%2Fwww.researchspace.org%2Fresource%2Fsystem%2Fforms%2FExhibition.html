@@ -14,7 +14,7 @@
                         entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
                         entity_data_folder="http://www.researchspace.org/pattern/system/entity/data_folder_link"
                     
-                        exhibition_title="http://www.researchspace.org/pattern/system/exhibition/exhibition_title"
+                        entity_primary_appellation="http://www.researchspace.org/pattern/system/entity/primary_appellation"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
                         activity_research_question="http://www.researchspace.org/pattern/system/activity/research_question"
                         exhibition_type="http://www.researchspace.org/pattern/system/exhibition/exhibition_type"
@@ -49,7 +49,7 @@
                         period_took_place_on_physical_thing="http://www.researchspace.org/pattern/system/period/took_place_on_physical_thing"
                         entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
                         entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
-                        entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
+                        entity_refers_to_range="http://www.researchspace.org/pattern/system/entity/refers_to_range"
 
                         activity_used_general_technique_type="http://www.researchspace.org/pattern/system/activity/used_general_technique"
                         activity_had_general_purpose_type="http://www.researchspace.org/pattern/system/activity/had_general_purpose_type"
@@ -73,7 +73,7 @@
 
           <div class="form-2column-container">
             <div>
-                <semantic-form-text-input for="exhibition_title" label="Exhibition title" placeholder="Enter exhibition title"></semantic-form-text-input>
+                <semantic-form-text-input for="entity_primary_appellation" label="Exhibition title" placeholder="Enter exhibition title"></semantic-form-text-input>
                 
                 <semantic-form-text-input for="entity_description" multiline="true" label="Exhibition description" placeholder="Enter exhibition description"></semantic-form-text-input>
             
@@ -181,38 +181,77 @@
     
                 <div class="inline-composite-container">
                   <semantic-form-composite-input  for="entity_preferred_id"
-                                                  label="Exhibition preferred identifier"
-                                                  new-subject-template="/entity_id" 
+                                                  label="Preferred identifier"
+                                                  new-subject-template="/entity_preferred_id" 
                                                   fields='[[fieldDefinitions
                                                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
                                                           identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                          identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
                                                       ]]'
                                                   >
                               
                       <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
                           
-                      <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
-    
+                      <div class="form-inline-inputs">
+                          <div style="min-width: 40%;">
+                              <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+                          </div>
+                          <div style="flex: 1;">
+                              <semantic-form-select-input for='identifier_type' 
+                                                          label="Identifier type" 
+                                                          render-header=false
+                                                          placeholder="Select identifier type" 
+                                                          nested-form-templates='[ 
+                                                              {
+                                                                  "label": "Identifier",
+                                                                  "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                  scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                  entityType=\"identifier\" }}
+                                                                                  {{{{/raw}}}}"
+                                                              }
+                                                          ]'>
+                              </semantic-form-select-input>
+                          </div>
+                      </div>
                   </semantic-form-composite-input>
                 </div>
-    
+
                 <div class="inline-composite-container">
                   <semantic-form-composite-input  for="entity_id"
-                                                  label="Exhibition other identifier"
+                                                  label="Other identifier"
                                                   new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
                                                   fields='[[fieldDefinitions
                                                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
-                                                          has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+
                                                           identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                          identifier_type="http://www.researchspace.org/pattern/system/identifier/identifier_type"
                                                       ]]'
                                                   >
                               
                       <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
-                      <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
                           
-                      <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                      <div class="form-inline-inputs">
+                          <div style="min-width: 40%;">
+                              <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+                          </div>
+                          <div style="flex: 1;">
+                              <semantic-form-select-input for='identifier_type' 
+                                                          label="Identifier type" 
+                                                          render-header=false
+                                                          placeholder="Select identifier type" 
+                                                          nested-form-templates='[ 
+                                                              {
+                                                                  "label": "Identifier",
+                                                                  "nestedForm":   "{{{{raw}}}}{{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\" 
+                                                                                                  scheme=\"http://www.researchspace.org/resource/system/vocab/identifier\"
+                                                                                                  entityType=\"identifier\" }}
+                                                                                  {{{{/raw}}}}"
+                                                              }
+                                                          ]'>
+                              </semantic-form-select-input>
+                          </div>
+                      </div>
                   </semantic-form-composite-input>
                 </div>
               </div>
@@ -260,13 +299,13 @@
                                                                   "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                                   "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                                   ?appellation a crm:E41_Appellation .
-                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> .
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                                   ?appellation crm:P190_has_symbolic_content ?label ."}'
     
                                                   query-item-label='SELECT ?label WHERE {
                                                                       ?item crm:P1_is_identified_by ?appellation .
                                                                       ?appellation a crm:E41_Appellation .
-                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> .
+                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                       ?appellation crm:P190_has_symbolic_content ?label .
                                                                   }'> 
               </semantic-form-tree-picker-input>   
@@ -279,13 +318,13 @@
                                                                   "relationPattern": "?item crm:P9i_forms_part_of ?parent",
                                                                   "labelPattern": "?item crm:P1_is_identified_by ?appellation .
                                                                                   ?appellation a crm:E41_Appellation .
-                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> .
+                                                                                  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                                   ?appellation crm:P190_has_symbolic_content ?label ."}'
     
                                                   query-item-label='SELECT ?label WHERE {
                                                                       ?item crm:P1_is_identified_by ?appellation .
                                                                       ?appellation a crm:E41_Appellation .
-                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/exhibition_title> .
+                                                                      ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
                                                                       ?appellation crm:P190_has_symbolic_content ?label .
                                                                   }'>
               </semantic-form-tree-picker-input> 
@@ -333,8 +372,8 @@
                                                                         ?ontologyClass rdfs:subClassOf* crm:E4_Period .
                                                                         ?node crm:P1_is_identified_by ?appellation .
                                                                         ?appellation a crm:E41_Appellation .
-                                                                        ?appellation crm:P2_has_type ?type . 
-                                                                        ?type crm:P71i_is_listed_in <http://www.researchspace.org/resource/system/vocab/appellation> . 
+                                                                        ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                         
                                                                         ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
                                                                     }'
                                                                 template='{{> template}}'>
@@ -573,6 +612,7 @@
     
             <div class="inline-composite-container">
               <semantic-form-composite-input  for="activity_used_specific_object_domain" 
+                                              label="Used specific object"
                                               new-subject-template="/PC16_used_specific_object/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                               fields='[[fieldDefinitions
                                                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -622,7 +662,8 @@
             </div>
             
             <div class="inline-composite-container">
-              <semantic-form-composite-input  for="activity_was_intended_use_of_domain" 
+              <semantic-form-composite-input  for="activity_was_intended_use_of_domain"
+                                              label="Was intended use of" 
                                               new-subject-template="/PC19_was_intended_use_of/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
                                               fields='[[fieldDefinitions
                                                           classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -694,11 +735,54 @@
                                                 nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
             </semantic-form-autocomplete-input>
     
-            <semantic-form-autocomplete-input   for='entity_referred_to_by' 
-                                                label="Referred to by"
-                                                placeholder="Select what refers to the exhibition" 
-                                                nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
-            </semantic-form-autocomplete-input>
+            <div class="inline-composite-container">
+              <semantic-form-composite-input  for="entity_refers_to_range" 
+                                              label="Referred to by"
+                                              new-subject-template="/PC67_refers_to/{{{{raw}}}}{{UUID}}{{{{/raw}}}}"
+                                              fields='[[fieldDefinitions
+                                                        classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                                                                  
+                                                        refers_to_propObj_domain="http://www.researchspace.org/pattern/system/refers_to/domain"
+                                                        type_of_reference="http://www.researchspace.org/pattern/system/refers_to/type_of_reference"
+                                                      ]]'>
+    
+              <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/PC67_refers_to'> </semantic-form-hidden-input>
+    
+              <div class="form-inline-inputs">
+                <div style="flex: 1;">
+                  <semantic-form-autocomplete-input for='refers_to_propObj_domain' 
+                                                    render-header="false"
+                                                    placeholder="Select what refers to the entity" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'>
+                  </semantic-form-autocomplete-input>
+                </div>
+                <div style="flex: 1;">
+                  <semantic-form-tree-picker-input  for="type_of_reference" 
+                                                    render-header="false"
+                                                    placeholder="Select type of reference"
+                                                    close-dropdown-on-selection='true'
+                                                    tree-patterns='{"scheme": "<http://www.researchspace.org/resource/vocab/type_of_reference>", 
+                                                                    "schemePattern": "?item <http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in> <http://www.researchspace.org/resource/vocab/type_of_reference>",
+                                                                    "relationPattern": "?item crm:P127_has_broader_term ?parent"}'
+    
+                                                    scheme-page-button-config='{"iri": "http://www.researchspace.org/resource/ThinkingFrames",
+                                                                                "view": "vocabulary-content",
+                                                                                "scheme": "http://www.researchspace.org/resource/vocab/type_of_reference",
+                                                                                "tooltip": "Open list of type of references"
+                                                                              }'
+                                                    
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Type nested=true editable=true mode="new"
+                                                                                          scheme="http://www.researchspace.org/resource/vocab/type_of_reference"
+                                                                                          entityType="type of reference" }}{{{{/raw}}}}'
+    
+                                                    query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                                    }'>
+                    </semantic-form-tree-picker-input>
+                </div>
+              </div>
+              </semantic-form-composite-input>
+          </div>
     
           </rs-tab>
     
@@ -771,14 +855,7 @@
             <semantic-form-autocomplete-input for='activity_had_general_purpose_type' 
                                               label="General purpose (type)" 
                                               placeholder="Select type" 
-                                              nested-form-templates='[ 
-                                                {
-                                                  "label": "Type",
-                                                  "nestedForm": "{{{{raw}}}}
-                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Type\" nested=true editable=true mode=\"new\"}}
-                                                                {{{{/raw}}}}"
-                                                }
-                                              ]'> 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
             </semantic-form-autocomplete-input> 
     
           </rs-tab>

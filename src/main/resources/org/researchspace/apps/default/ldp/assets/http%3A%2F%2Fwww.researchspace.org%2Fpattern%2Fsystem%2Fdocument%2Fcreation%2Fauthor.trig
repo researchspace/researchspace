@@ -4,8 +4,7 @@
       <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
     <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-10bb9c2e79c14c64992491d2518d4cf3-eahx2a;
     <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E65_Creation>;
-    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E21_Person>,
-    <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E39_Actor>;
     <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/document> ;
      
     <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
@@ -21,9 +20,12 @@
     <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
  $subject crm:P14_carried_out_by $value . 
       
- $value crm:P1_is_identified_by ?appellation .
- ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/appellation/actor_appellation> .
- ?appellation crm:P190_has_symbolic_content ?label .    
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+  ?appellation crm:P190_has_symbolic_content ?label .   
 }""" .
   
   _:genid-10bb9c2e79c14c64992491d2518d4cf3-yvar8s a <http://spinrdf.org/sp#Query>;
@@ -38,6 +40,13 @@ WHERE {
   $subject crm:P14_carried_out_by $value . 
 } WHERE {
   $subject crm:P14_carried_out_by $value . 
+
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E39_Actor .
+  ?value crm:P1_is_identified_by ?appellation .
+  ?appellation a crm:E41_Appellation .
+  ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> .
+  ?appellation crm:P190_has_symbolic_content ?label .
 }""" .
   
   <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>

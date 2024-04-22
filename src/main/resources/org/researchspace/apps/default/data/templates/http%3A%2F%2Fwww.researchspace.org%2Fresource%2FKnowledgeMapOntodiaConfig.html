@@ -60,9 +60,6 @@ uses client-side templates:
     "
   }'>
 
-	
-		
-
 	<ontodia-field-configuration 
                             [[#if (hasPermission "forms:ldp:*")]]
                               authoring-mode=true
@@ -76,8 +73,6 @@ uses client-side templates:
                             default-subject-template='/{{{{raw}}}}{{FIELD_VALUE_LOCAL_NAME http://www.w3.org/1999/02/22-rdf-syntax-ns#type}}{{{{/raw}}}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}'
                             force-datatype-fields='["http://www.researchspace.org/ontology/PX_has_video"]'
 >
-
-    [[!-- <http://www.researchspace.org/category/generic/summary> --]]
 
     <rs-ontodia-metadata-from-fields
       fields-query='PREFIX field: <http://www.researchspace.org/resource/system/fields/>
@@ -95,19 +90,11 @@ uses client-side templates:
         }
     '>
   </rs-ontodia-metadata-from-fields>
-    
-   
-    <ontodia-entity-metadata entity-type-iri='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'
-          fields='["http://www.researchspace.org/pattern/system/timespan/time_appellationMin1","http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]'
-          type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-          label-iri='http://www.researchspace.org/pattern/system/timespan/time_appellationMin1'      
-    >
-    </ontodia-entity-metadata>     
-    <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/timespan/time_appellationMin1">
-      <semantic-form-text-input for="label"></semantic-form-text-input>
-    </ontodia-field-input-override>
-    
-
+  [[#> ontodia-entity-metadata ]][[/ontodia-entity-metadata]]
+      
+    <ontodia-field-input-override for-field="label">
+        <semantic-form-text-input></semantic-form-text-input>
+      </ontodia-field-input-override>
     <ontodia-field-input-override for-field="http://www.researchspace.org/pattern/system/entity/main_image">
     <semantic-form-autocomplete-input for='http://www.researchspace.org/pattern/system/entity/main_image' 
       nested-form-templates='[ 
@@ -123,26 +110,6 @@ uses client-side templates:
 
 </ontodia-field-configuration>
 
-
-
- <semantic-form 
-    		new-subject-template='http://www.researchspace.org/timespan/{{UUID}}'
-        fields='[[fieldDefinitions 
-        	label="http://www.researchspace.org/pattern/system/timespan/time_appellationMin1" 
-          type="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        ]]'>
-     		<ontodia-entity-metadata entity-type-iri='http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span'
-          type-iri='http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-          label-iri='http://www.researchspace.org/pattern/system/timespan/time_appellationMin1'>
-     		</ontodia-entity-metadata>
-
-     		<semantic-form-text-input for="label"></semantic-form-text-input>
-     		<semantic-form-hidden-input for="value"></semantic-form-hidden-input>
-     	
-     		<button name="reset" class="btn btn-sm btn-default">Reset</button>
-     		<button name="cancel" class="btn btn-sm btn-default pull-right">Cancel</button>
-        <button name="submit" class="btn btn-sm btn-action">Save</button>
-  </semantic-form>
 <template id="additionalTreeItemTemplate">
   <semantic-query template='{{> scopeNote}}' query='SELECT ?note WHERE { <{{iri}}> rdfs:comment ?note } LIMIT 1'
   >

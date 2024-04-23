@@ -1,30 +1,59 @@
 <semantic-form [[> rsp:FormDefaults]] 
                persistence='{"type": "sparql", "targetGraphIri": "{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{prefLabel}}{{{{/raw}}}}{{else}}/E55_Type/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
-               fields='[[
-                fieldDefinitions
+               new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{entity_prefLabel}}{{{{/raw}}}}{{else}}/type/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+               fields='[[fieldDefinitions
                   classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                   inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
                   entity_formRecord="http://www.researchspace.org/pattern/system/entity/formRecord"
+                  
+                  entity_image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
+                  entity_image="http://www.researchspace.org/pattern/system/entity/images"
+                  entity_document="http://www.researchspace.org/pattern/system/entity/documents"
+                  entity_has_representation="http://www.researchspace.org/pattern/system/entity/has_representation"
 
                   entity_prefLabel="http://www.researchspace.org/pattern/system/entity/skos_prefLabel"
-                  altLabel="http://www.researchspace.org/pattern/system/entity/skos_altLabel"
+                  entity_altLabel="http://www.researchspace.org/pattern/system/entity/skos_altLabel"
 
-                  broader="http://www.researchspace.org/pattern/system/type/broader"
-                  narrower="http://www.researchspace.org/pattern/system/type/narrower"
+                  entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
+                  entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
+                  entity_description="http://www.researchspace.org/pattern/system/entity/description"
 
-                  related_type="http://www.researchspace.org/pattern/system/type/related_type"
+                  type_is_type_of="http://www.researchspace.org/pattern/system/type/is_type_of"
+                  type_is_exemplified_by="http://www.researchspace.org/pattern/system/type/is_exemplified_by"
 
-                  description="http://www.researchspace.org/pattern/system/entity/description"
-                  scopeNote="http://www.researchspace.org/pattern/system/entity/skos_scopeNote"
+                  type_broader="http://www.researchspace.org/pattern/system/type/broader"
+                  type_narrower="http://www.researchspace.org/pattern/system/type/narrower"
+                  type_related_type="http://www.researchspace.org/pattern/system/type/related_type"
+
+                  type_typical_parts_of="http://www.researchspace.org/pattern/system/type/typical_parts_of"
+                  type_typical_wholes_for="http://www.researchspace.org/pattern/system/type/typical_wholes_for"
+
+                  type_was_purpose_of="http://www.researchspace.org/pattern/system/type/was_purpose_of"
+                  type_was_technique_of="http://www.researchspace.org/pattern/system/type/was_technique_of"
+                  type_was_type_of_object_used_in="http://www.researchspace.org/pattern/system/type/was_type_of_object_used_in"
                   
-                  image_main_representation="http://www.researchspace.org/pattern/system/entity/main_image"
-                  more_image="http://www.researchspace.org/pattern/system/entity/images"
+                  type_was_assigned_by="http://www.researchspace.org/pattern/system/type/was_assigned_by"
+                  type_was_created_by="http://www.researchspace.org/pattern/system/type/was_created_by"
+                  conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
+                  entity_influenced_activity="http://www.researchspace.org/pattern/system/entity/influenced_activity"
+                  entity_motivated_activity="http://www.researchspace.org/pattern/system/entity/motivated_activity"
+                  entity_attributed_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/attributed_by_attribute_assignment"
+                  entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
+                  entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
+
+                  type_was_intention_of="http://www.researchspace.org/pattern/system/type/was_intention_of"
+                  type_was_use_of="http://www.researchspace.org/pattern/system/type/was_use_of"
+                  entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
+                  entity_subject_of="http://www.researchspace.org/pattern/system/entity/subject_of_propositional_object"
+                  entity_referred_to_by="http://www.researchspace.org/pattern/system/entity/referred_to_by_propositional_object"
+
+                  
                ]]'
 >
 
   <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-    <semantic-form-hidden-input for="classtype" default-values='["http://www.cidoc-crm.org/cidoc-crm/E55_Type"]'></semantic-form-hidden-input>
+    <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E55_Type'></semantic-form-hidden-input>
+
     {{#if scheme}}
       <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
     {{/if}}
@@ -33,93 +62,456 @@
       <rs-tab event-key="detail" title="Details">
         <div class="form-2column-container">
           <div>
-            <semantic-form-text-input for="entity_prefLabel" label="Preferred {{#if entityType}}{{entityType}}{{/if}} name" 
-                                      placeholder="Enter preferred {{#if entityType}}{{entityType}}{{/if}} name"> 
-            </semantic-form-text-input>
-            <semantic-form-text-input for="altLabel" label="Alternative {{#if entityType}}{{entityType}}{{/if}} name" 
-                                      placeholder="Enter {{#if entityType}}{{entityType}}{{/if}} alternative name"> 
-            </semantic-form-text-input>
-
-            <semantic-form-tree-picker-input for="broader" 
-                                            label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                            placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                            close-dropdown-on-selection='false'
-                                            default-values='{{#if scheme}}[{{#if broader}}"{{broader}}"{{/if}}]{{else}}{{/if}}'
-
-                                            tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}crm:E55_Type{{/if}}",
-                                                            "schemePattern": "{{#if scheme}}?item crm:P71i_is_listed_in <{{scheme}}>{{else}}?item a crm:E55_Type{{/if}}",
-                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
-
-                                            nested-form-template='{{#if scheme}}
-                                                                    {{else}}
-                                                                      {{{{raw}}}}{{> forms:Type nested=true editable=true mode="new" }}{{{{/raw}}}}
-                                                                    {{/if}}'  
-
-                                            query-item-label='SELECT ?label WHERE {
-                                                                    ?item skos:prefLabel ?label .
-                                                              }'
-            ></semantic-form-tree-picker-input>
-
-            <semantic-form-tree-picker-input  for="narrower" 
-                                              label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                              placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
-                                              close-dropdown-on-selection='false'
-                                              
-                                              tree-patterns='{"scheme": "{{#if scheme}}{{scheme}}{{else}}crm:E55_Type{{/if}}",
-                                                            "schemePattern": "{{#if scheme}}?item crm:P71i_is_listed_in <{{scheme}}>{{else}}?item a crm:E55_Type{{/if}}",
-                                                            "relationPattern": "?item crm:P127_has_broader_term ?parent",
-                                                            "labelPattern": "?item skos:prefLabel ?label ."}'
-
-                                              nested-form-template='{{#if scheme}}
-                                                                      {{else}}
-                                                                        {{{{raw}}}}{{> forms:Type nested=true editable=true mode="new" }}{{{{/raw}}}}
-                                                                      {{/if}}'  
-
-                                              query-item-label='SELECT ?label WHERE {
-                                                                      ?item skos:prefLabel ?label .
-                                                                }'
-            ></semantic-form-tree-picker-input>
-
-            <semantic-form-select-input for='related_type' 
-                                        label="Related {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
-                                        placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
-                                        nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-            </semantic-form-select-input> 
+            <semantic-form-text-input for="entity_prefLabel" label="Preferred name" placeholder="Enter preferred name"></semantic-form-text-input>
             
-            <semantic-form-text-input for="description" multiline=true label="Description/comment" 
-                                      placeholder="Enter {{#if entityType}}{{entityType}}{{else}}type{{/if}} description"> 
-            </semantic-form-text-input>
+            <semantic-form-text-input for="entity_altLabel" label="Alternative name" placeholder="Enter alternative name"> </semantic-form-text-input>
 
-            <semantic-form-text-input for="scopeNote" multiline=true label="Scope note" 
-                                      placeholder="Enter {{#if entityType}}{{entityType}}{{else}}type{{/if}} scope note"> 
-            </semantic-form-text-input>
+            <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
+
+            {{#if scheme}}
+              <semantic-form-tree-picker-input  for="type_broader" 
+                                                label="Broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                                placeholder="Select broader {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                                close-dropdown-on-selection='false'
+                                                default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
+
+                                                tree-patterns='{"scheme": "{{scheme}}",
+                                                                "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                                "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                                "labelPattern": "?item skos:prefLabel ?label ."}'
+
+                                                query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                                  }'
+              ></semantic-form-tree-picker-input>
+
+              <semantic-form-tree-picker-input  for="type_narrower" 
+                                                label="Narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                                placeholder="Select narrower {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                                close-dropdown-on-selection='false'
+                                                
+                                                tree-patterns='{"scheme": "{{scheme}}",
+                                                              "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                              "relationPattern": "?item crm:P127_has_broader_term ?parent",
+                                                              "labelPattern": "?item skos:prefLabel ?label ."}' 
+
+                                                query-item-label='SELECT ?label WHERE {
+                                                                        ?item skos:prefLabel ?label .
+                                                                  }'
+              ></semantic-form-tree-picker-input>
+            {{/if}}
+
+            <semantic-form-autocomplete-input for='type_related_type' 
+                                              label="Related {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              placeholder="Enter related {{#if entityType}}{{entityType}}{{else}}type{{/if}}"
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+
+            <div class="inline-composite-container">
+              <semantic-form-composite-input  for="entity_preferred_id"
+                                              label="Preferred identifier"
+                                              new-subject-template="/entity_id" 
+                                              fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                  ]]'
+                                              >
+                          
+                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_preferred_id'></semantic-form-hidden-input>
+                      
+                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter preferred identifier"></semantic-form-text-input>
+
+              </semantic-form-composite-input>
+            </div>
+
+            <div class="inline-composite-container">
+              <semantic-form-composite-input  for="entity_id"
+                                              label="Other identifier"
+                                              new-subject-template="/entity_id/{{{{raw}}}}{{UUID}}{{{{/raw}}}}" 
+                                              fields='[[fieldDefinitions
+                                                      classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" 
+                                                      has_type="http://www.researchspace.org/pattern/system/entity/has_type"
+                                                      identifier_value="http://www.researchspace.org/pattern/system/identifier/value"
+                                                  ]]'
+                                              >
+                          
+                  <semantic-form-hidden-input for="classtype" default-value="http://www.cidoc-crm.org/cidoc-crm/E42_Identifier"></semantic-form-hidden-input>
+                  <semantic-form-hidden-input for="has_type" default-value='http://www.researchspace.org/resource/system/vocab/appellation/entity_id'></semantic-form-hidden-input>
+                      
+                  <semantic-form-text-input for="identifier_value" render-header=false placeholder="Enter identifier"></semantic-form-text-input>
+              </semantic-form-composite-input>
+            </div>
+            
           </div>
 
           <div class="form-media-column">
             <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='image_main_representation' label="Main image" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                              <div>Drag main image or click to upload</div>
-                                                                            </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
+                <semantic-form-drag-and-drop-input for='entity_image_main_representation' label="Main image" 
+                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                    <div>Drag main image from 
+                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                        or click to upload</div>
+                                                                                </div>"
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                </semantic-form-drag-and-drop-input>
             </div>
 
             <div class="dragAndDrop-input-container">
-              <semantic-form-drag-and-drop-input  for='more_image' label="More images" 
-                                                  placeholder-item-template="<div class='placeholder-item'>
-                                                                              <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
-                                                                              <div>Drag images or click to upload</div>
-                                                                            </div>"
-                                                  nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
-              </semantic-form-drag-and-drop-input>
+                <semantic-form-drag-and-drop-input  for='entity_image' label="More images" 
+                                                    placeholder-item-template="<div class='placeholder-item'>
+                                                                                    <rs-icon icon-type='round' icon-name='file_upload'></rs-icon>
+                                                                                    <div>Drag images from 
+                                                                                        <semantic-link iri='http://www.researchspace.org/resource/ThinkingFrames' 
+                                                                                        class='text-link-action' urlqueryparam-view='system-assets'>Image Library</semantic-link>
+                                                                                        or click to upload</div>
+                                                                                </div>"
+                                                    nested-form-template='{{{{raw}}}}{{> forms:Image nested=true editable=true mode="new"}}{{{{/raw}}}}'>
+                </semantic-form-drag-and-drop-input>
             </div>
           </div>
-        
+
         </div>
       </rs-tab>
+
+      <rs-tab event-key="typeOf" title="Is type of">
+
+        <semantic-form-autocomplete-input for='type_is_type_of' 
+                                          label="Is type of" 
+                                          placeholder="Select entity that has this type" 
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input for='type_is_exemplified_by' 
+                                          label="Is exemplified by" 
+                                          placeholder="Select entity that has been declared to be a particularly characteristic example of this type" 
+                                          nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
+        </semantic-form-autocomplete-input> 
+      </rs-tab>
+
+      {{#if scheme}}
+      {{else}}
+        <rs-tab event-key="hierarchy" title="Broader/narrower types">
+
+          <div class="hierarchyView-form-container">
+            <mp-event-target-template-render id='{{viewId}}-type-hierarchyView' template='{{> typeHierarchy}}'>
+              <template id='typeHierarchy'>
+                  <div class="page__section-container formHierarchyView-container">
+                      <div class="form-header-withButtons">
+                          <h4 style="margin: 0; align-self: end;">Types</h4>
+                          <div class="btn-form-actions"> 
+                          <mp-event-trigger id='{{viewId}}-type-componentsView-refresh-trigger' 
+                                              type='Component.TemplateUpdate' 
+                                              targets='["{{viewId}}-type-componentsView"]'
+                                              >
+                              <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                              <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                  Refresh
+                              </button>
+                          </mp-event-trigger>
+                          </div>
+                      </div>
+                      <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                          {{#if node}}
+                              {{#bind type=node }}
+                                  <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                          BIND(<{{node}}> as ?type)
+                                                          
+                                                          { ?type crm:P127i_has_narrower_term ?node . }
+                                                          UNION
+                                                          { ?type crm:P127_has_broader_term ?parent . }
+                                                          
+                                                          ?node crm:P127_has_broader_term ?parent .
+
+                                                          FILTER(ISIRI(?node))
+                                                      }
+                                                      ORDER BY (?node)' 
+
+                                                  tuple-template='{{> nodeTemplate}}'>
+                                                  
+                                      <template id='nodeTemplate'>
+                                          <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                  BIND (<{{node.value}}> as ?node)
+                                                                  ?node a ?ontologyClass .
+                                                                  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+                                                                  ?node skos:prefLabel ?nodeLabel .  
+                                                              }'
+                                                          template='{{> template}}'>
+                                              
+                                              <template id='template'>
+                                                  <div>
+                                                      {{#ifCond bindings.0.node.value "===" type}}
+                                                          <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                      {{else}}
+                                                          <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                          urlqueryparam-view='entity-editor' 
+                                                                          urlqueryparam-resource-iri='{{node.value}}'
+                                                                          >
+                                                              <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                          </semantic-link>
+                                                      {{/ifCond}}
+                                                  </div>
+                                              </template>
+                                          </semantic-query>
+                                      </template>  
+                                  </semantic-tree>
+                              {{/bind}}
+                          {{/if}}
+                      </div>
+                  </div>
+              </template>
+            </mp-event-target-template-render>
+
+            <div class="page__section-container formHierarchyInputs-container">
+              <semantic-form-autocomplete-input for='type_broader' 
+                                                label="Broader type" 
+                                                placeholder="Enter broader type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+              </semantic-form-autocomplete-input> 
+
+              <semantic-form-autocomplete-input for='type_narrower' 
+                                                label="Narrower type" 
+                                                placeholder="Enter narrower type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+              </semantic-form-autocomplete-input> 
+            </div>
+          </div>
+          
+        </rs-tab>
+      {{/if}}
+
+      <rs-tab event-key="component" title="Components">
+
+        <div class="hierarchyView-form-container">
+          <mp-event-target-template-render id='{{viewId}}-typeComponent-hierarchyView' template='{{> typeComponent}}'>
+            <template id='typeComponent'>
+                <div class="page__section-container formHierarchyView-container">
+                    <div class="form-header-withButtons">
+                        <h4 style="margin: 0; align-self: end;">Components</h4>
+                        <div class="btn-form-actions"> 
+                        <mp-event-trigger id='{{viewId}}-typeComponent-componentsView-refresh-trigger' 
+                                            type='Component.TemplateUpdate' 
+                                            targets='["{{viewId}}-typeComponent-componentsView"]'
+                                            >
+                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
+                            <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
+                                Refresh
+                            </button>
+                        </mp-event-trigger>
+                        </div>
+                    </div>
+                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                        {{#if node}}
+                            {{#bind type=node }}
+                                <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                        BIND(<{{node}}> as ?type)
+                                                        
+                                                        { ?type crm:P150i_defines_typical_wholes_for ?node . }
+                                                        UNION
+                                                        { ?type crm:P150_defines_typical_parts_of ?parent . }
+                                                        
+                                                        ?node crm:P150_defines_typical_parts_of ?parent .
+
+                                                        FILTER(ISIRI(?node))
+                                                    }
+                                                    ORDER BY (?node)' 
+
+                                                tuple-template='{{> nodeTemplate}}'>
+                                                
+                                    <template id='nodeTemplate'>
+                                        <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                BIND (<{{node.value}}> as ?node)
+                                                                ?node a ?ontologyClass .
+                                                                ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+                                                                ?node skos:prefLabel ?nodeLabel .  
+                                                            }'
+                                                        template='{{> template}}'>
+                                            
+                                            <template id='template'>
+                                                <div>
+                                                    {{#ifCond bindings.0.node.value "===" type}}
+                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                    {{else}}
+                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                        urlqueryparam-view='entity-editor' 
+                                                                        urlqueryparam-resource-iri='{{node.value}}'
+                                                                        >
+                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                        </semantic-link>
+                                                    {{/ifCond}}
+                                                </div>
+                                            </template>
+                                        </semantic-query>
+                                    </template>  
+                                </semantic-tree>
+                            {{/bind}}
+                        {{/if}}
+                    </div>
+                </div>
+            </template>
+          </mp-event-target-template-render>
+
+          <div class="page__section-container formHierarchyInputs-container">
+            <semantic-form-autocomplete-input for='type_typical_parts_of' 
+                                              label="Typical parts of" 
+                                              placeholder="Enter type that defines typical wholes for the type"
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+
+            <semantic-form-autocomplete-input for='type_typical_wholes_for' 
+                                              label="Typical wholes for" 
+                                              placeholder="Enter type that defines typical part of the type"
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+            </semantic-form-autocomplete-input> 
+          </div>
+        </div>
+          
+      </rs-tab>
+
+      <rs-tab event-key="event" title="Events">
+
+        <semantic-form-autocomplete-input   for='type_was_purpose_of' 
+                                            label="Was purpose of"
+                                            placeholder="Select activity that had the type as general purpose" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='type_was_technique_of' 
+                                            label="Was technique of"
+                                            placeholder="Select activity that used the type as general technique" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+        
+        <semantic-form-autocomplete-input   for='type_was_type_of_object_used_in' 
+                                            label="Was type of object used in"
+                                            placeholder="Select activity that used object of this type" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='type_was_assigned_by' 
+                                            label="Was assigned by"
+                                            placeholder="Select assignment that assign the type to a specific entity/item" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Type assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/TypeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='type_was_created_by' 
+                                            label="Created by"
+                                            placeholder="Select the creation event of the type" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Type creation",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/TypeCreation\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
+                                            label="Created by" 
+                                            placeholder="Select the event that created the type" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_creations]]'>  
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for='entity_influenced_activity' 
+                                            label="Influenced"
+                                            placeholder="Select activity influenced by the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='entity_motivated_activity' 
+                                            label="Motivated"
+                                            placeholder="Select activity motivated by the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
+                                            label="Attributed by"
+                                            placeholder="Select what assigned attribute to the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Attribute assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
+                                            label="Assigned by"
+                                            placeholder="Select what assigned the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Attribute assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/AttributeAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input>
+
+        <semantic-form-autocomplete-input   for='entity_measurement' 
+                                            label="Measured by"
+                                            placeholder="Select measurement" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Measurement",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/Measurement\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input>
+      </rs-tab>
+
+      <rs-tab event-key="thing" title="Things">
+
+          <semantic-form-autocomplete-input   for='type_was_intention_of' 
+                                              label="Was intention of"
+                                              placeholder="Select thing, physical or immaterial, that had this type as intended method or technique of use" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_manMadeThings]]'> 
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input   for='type_was_use_of' 
+                                              label="Was use of"
+                                              placeholder="Select thing, physical or immaterial, that had this type of use" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_things]]'> 
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input   for='entity_depicted_by' 
+                                              label="Depicted by"
+                                              placeholder="Select what depicts the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input   for='entity_subject_of' 
+                                              label="Subject of"
+                                              placeholder="Select what is about the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+          </semantic-form-autocomplete-input>
+
+          <semantic-form-autocomplete-input   for='entity_referred_to_by' 
+                                              label="Referred to by"
+                                              placeholder="Select what refers to the {{#if entityType}}{{entityType}}{{else}}type{{/if}}" 
+                                              nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
+          </semantic-form-autocomplete-input>
+
+      </rs-tab>
+
+
+
+    [[> rsp:FormAssetTab]]
     </rs-tabs>
   </div>
   

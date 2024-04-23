@@ -1,0 +1,95 @@
+
+<http://www.researchspace.org/pattern/system/type/was_intention_of/context> {
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-a4lnq a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+	$subject crm:P103i_was_intention_of $value .
+      
+   	?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
+  	{ 
+      ?value crm:P102_has_title ?title . 
+      ?title a crm:E35_Title . 
+      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+      ?title crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	}
+}""" .
+  
+  <http://www.researchspace.org/pattern/system/type/was_intention_of> a <http://www.researchspace.org/resource/system/fields/Field>,
+      <http://www.w3.org/ns/prov#Entity>, <http://www.w3.org/ns/ldp#Resource>;
+    <http://www.w3.org/2000/01/rdf-schema#comment> "It creates a relation between specific things, both physical and immaterial, to types of intended methods and techniques of use.";
+    <http://www.researchspace.org/resource/system/fields/autosuggestionPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-fw8onh;
+    <http://www.researchspace.org/resource/system/fields/insertPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-d8xn9;
+    <http://www.researchspace.org/resource/system/fields/domain> <http://www.cidoc-crm.org/cidoc-crm/E55_Type>;
+    <http://www.researchspace.org/resource/system/fields/maxOccurs> "unbound";
+    <http://www.researchspace.org/resource/system/fields/xsdDatatype> <http://www.w3.org/2001/XMLSchema#anyURI>;
+    <http://www.researchspace.org/resource/system/fields/category> <http://www.researchspace.org/resource/system/category/type>;
+    <http://www.researchspace.org/resource/system/fields/minOccurs> "0";
+    <http://www.researchspace.org/resource/system/fields/deletePattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-7fz45j;
+    <http://www.researchspace.org/resource/system/fields/valueSetPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-9cygt4;
+    <http://www.researchspace.org/resource/system/fields/selectPattern> _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-a4lnq;
+    <http://www.w3.org/2000/01/rdf-schema#label> "Type was intention of";
+    <http://www.researchspace.org/resource/system/fields/range> <http://www.cidoc-crm.org/cidoc-crm/E71_Man-Made_Thing>;
+    <http://www.w3.org/ns/prov#wasAttributedTo> <http://www.researchspace.org/resource/user/admin>;
+    <http://www.w3.org/ns/prov#generatedAtTime> "2024-04-23T18:15:36.848+01:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-fw8onh a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
+  	{ 
+      ?value crm:P102_has_title ?title . 
+      ?title a crm:E35_Title . 
+      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+      ?title crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	}
+  FILTER REGEX(LCASE(STR(?label)), \"?token\", \"i\")
+} ORDER BY ASC(?label) 
+  LIMIT 10 """ .
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-7fz45j a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """DELETE {
+	$subject crm:P103i_was_intention_of $value .
+    $value crm:P103_was_intended_for $subject .
+} WHERE {
+	$subject crm:P103i_was_intention_of $value .
+    $value crm:P103_was_intended_for $subject .
+      
+    ?value a ?ontologyClass .
+    ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
+  	{ 
+      ?value crm:P102_has_title ?title . 
+      ?title a crm:E35_Title . 
+      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+      ?title crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	}
+}""" .
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-d8xn9 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """INSERT { 
+	$subject crm:P103i_was_intention_of $value .
+    $value crm:P103_was_intended_for $subject .
+} WHERE {}""" .
+  
+  _:genid-1437bbfd0cf44d02901c14a82e8d3a5b-9cygt4 a <http://spinrdf.org/sp#Query>;
+    <http://spinrdf.org/sp#text> """SELECT DISTINCT ?value ?label WHERE {
+  ?value a ?ontologyClass .
+  ?ontologyClass rdfs:subClassOf* crm:E71_Man-Made_Thing .
+  	{ 
+      ?value crm:P102_has_title ?title . 
+      ?title a crm:E35_Title . 
+      ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+      ?title crm:P190_has_symbolic_content ?label .
+	} UNION {
+      ?value skos:prefLabel ?label .
+	}
+} ORDER BY ASC(LCASE(STR(?label)))""" .
+  
+  <http://www.researchspace.org/resource/system/fieldDefinitionContainer> <http://www.w3.org/ns/ldp#contains>
+      <http://www.researchspace.org/pattern/system/type/was_intention_of> .
+}

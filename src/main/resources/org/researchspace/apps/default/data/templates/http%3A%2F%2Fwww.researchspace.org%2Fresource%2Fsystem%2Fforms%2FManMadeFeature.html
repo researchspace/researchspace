@@ -1,6 +1,6 @@
 <semantic-form [[> rsp:FormDefaults]] 
                 persistence='{"type": "sparql","targetInsertGraphIri":"{{#if scheme}}{{scheme}}{{else}}http://www.researchspace.org/resource/g/data{{/if}}"}'
-                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/physical_man-made_thing/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
+                new-subject-template='{{#if scheme}}{{scheme}}/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{else}}/man-made_feature/{{{{raw}}}}{{UUID}}{{{{/raw}}}}{{/if}}'
                 fields='[[fieldDefinitions
                             classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                             inScheme="http://www.researchspace.org/pattern/system/entity/is_listed_in"
@@ -55,6 +55,7 @@
                             entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                             entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
+                            physical_feature_is_found_on="http://www.researchspace.org/pattern/system/physical_feature/is_found_on"
                             physical_thing_carries_symbolic_object="http://www.researchspace.org/pattern/system/physical_thing/carries_symbolic_object"
                             thing_shows_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of"
                             thing_has_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of_range"
@@ -69,7 +70,7 @@
             >
 
     <div class="form-scroll-area {{#if nested}}nested-form{{/if}}">
-        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E24_Physical_Man-Made_Thing'></semantic-form-hidden-input>
+        <semantic-form-hidden-input for="classtype" default-value='http://www.cidoc-crm.org/cidoc-crm/E25_Man-Made_Feature'></semantic-form-hidden-input>
         
         {{#if scheme}}
             <semantic-form-hidden-input for="inScheme" default-value="{{scheme}}"></semantic-form-hidden-input>  
@@ -81,7 +82,7 @@
                     <div>
                         <div class="inline-composite-container">
                             <semantic-form-composite-input  for="man-made_thing_primary_title" 
-                                                            label="Physical man-made thing name/title"
+                                                            label="Man-made feature name/title"
                                                             new-subject-template="/PC102_has_title/primary_title"
                                                             fields='[[fieldDefinitions
                                                                         classtype="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -365,7 +366,7 @@
                 {{#if scheme}}
                     <semantic-form-tree-picker-input    for='physical_thing_part_of' 
                                                         label="Part of" 
-                                                        placeholder="Select the item of which the physical man-made thing is part of" 
+                                                        placeholder="Select the item of which the man-made feature is part of" 
                                                         default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
                                                         tree-patterns='{"scheme": "{{scheme}}",
                                                                         "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
@@ -400,7 +401,7 @@
 
                     <semantic-form-tree-picker-input    for='physical_thing_component' 
                                                         label="Components" 
-                                                        placeholder="Select component of the physical man-made thing" 
+                                                        placeholder="Select component of the man-made feature" 
                                                         tree-patterns='{"scheme": "{{scheme}}",
                                                                         "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
                                                                         "relationPattern": "?item crm:P46i_forms_part_of ?parent",
@@ -512,13 +513,13 @@
                         <div class="page__section-container formHierarchyInputs-container">    
                             <semantic-form-autocomplete-input   for='physical_thing_part_of' 
                                                                 label="Part of" 
-                                                                placeholder="Select the item of which the physical man-made thing is part of" 
+                                                                placeholder="Select the item of which the man-made feature is part of" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
                             </semantic-form-autocomplete-input>
 
                             <semantic-form-autocomplete-input   for='physical_thing_component' 
                                                                 label="Components" 
-                                                                placeholder="Select component of the physical man-made thing" 
+                                                                placeholder="Select component of the man-made feature" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'>
                             </semantic-form-autocomplete-input>
                         </div>
@@ -531,13 +532,13 @@
 
                 <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
                                                     label="Was intended for" 
-                                                    placeholder="Select the type describing the intended usage of the physical man-made thing" 
+                                                    placeholder="Select the type describing the intended usage of the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='thing_general_use' 
                                                     label="Had as general use" 
-                                                    placeholder="Select the type of use that the physical man-made thing was actually employed for" 
+                                                    placeholder="Select the type of use that the man-made feature was actually employed for" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_types]]'>
                 </semantic-form-autocomplete-input>
 
@@ -555,7 +556,7 @@
 
                 <semantic-form-autocomplete-input   for='physical_thing_material' 
                                                     label="Material" 
-                                                    placeholder="Select material of which the physical man-made thing is composed" 
+                                                    placeholder="Select material of which the man-made feature is composed" 
                                                     nested-form-templates='[ 
                                                         {
                                                             "label": "Material",
@@ -567,7 +568,7 @@
 
                 <semantic-form-autocomplete-input   for='physical_thing_has_condition' 
                                                     label="Has condition" 
-                                                    placeholder="Select the condition state of the physical man-made thing" 
+                                                    placeholder="Select the condition state of the man-made feature" 
                                                     nested-form-templates='[ 
                                                         {
                                                             "label": "Condition state",
@@ -588,13 +589,13 @@
                             <div class="form-section-first-input">
                                 <semantic-form-autocomplete-input   for='physical_thing_current_owner'
                                                                     label="Current owner"
-                                                                    placeholder="Select current legal owner of the physical man-made thing at the time of validity of the record" 
+                                                                    placeholder="Select current legal owner of the man-made feature at the time of validity of the record" 
                                                                     nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-autocomplete-input>
                             </div>
                             <semantic-form-autocomplete-input   for='physical_thing_former_owner' 
                                                                 label="Former owner" 
-                                                                placeholder="Select actor that is or had been the legal owner of the physical man-made thing" 
+                                                                placeholder="Select actor that is or had been the legal owner of the man-made feature" 
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-autocomplete-input>
                         </div>
@@ -606,14 +607,14 @@
                             <div class="form-section-first-input">
                                 <semantic-form-autocomplete-input   for='physical_thing_current_keeper' 
                                                                     label="Current keeper" 
-                                                                    placeholder="Select actor that has custody of the physical man-made thing at the time of validity of the record"
+                                                                    placeholder="Select actor that has custody of the man-made feature at the time of validity of the record"
                                                                     nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                                 </semantic-form-autocomplete-input>
                             </div>    
 
                             <semantic-form-autocomplete-input   for='physical_thing_former_keeper' 
                                                                 label="Former keeper" 
-                                                                placeholder="Select actor that has or has had custody of the physical man-made thing"
+                                                                placeholder="Select actor that has or has had custody of the man-made feature"
                                                                 nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'>
                             </semantic-form-autocomplete-input>
                         </div>
@@ -635,7 +636,7 @@
 
                 <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                                     label="Right held by" 
-                                                    placeholder="Select actor who holds legal right on the physical man-made thing" 
+                                                    placeholder="Select actor who holds legal right on the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
                 </semantic-form-autocomplete-input> 
 
@@ -645,19 +646,19 @@
 
                 <semantic-form-autocomplete-input   for='physical_thing_former_location' 
                                                     label="Former or current location" 
-                                                    placeholder="Select a place as the former or current location of the physical man-made thing"
+                                                    placeholder="Select a place as the former or current location of the man-made feature"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='physical_thing_has_section' 
                                                     label="Has section" 
-                                                    placeholder="Select a place as the area upon which the physical man-made thing is found"
+                                                    placeholder="Select a place as the area upon which the man-made feature is found"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='physical_thing_occupies' 
                                                     label="Occupies space" 
-                                                    placeholder="Select a place as the volume that contains all the points which the physical man-made thing has covered at some time during its existence"
+                                                    placeholder="Select a place as the volume that contains all the points which the man-made feature has covered at some time during its existence"
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_places]]'>
                 </semantic-form-autocomplete-input>
                 
@@ -682,7 +683,7 @@
                         <div style="flex: 1;">
                           <semantic-form-autocomplete-input for='was_intended_use_of_activity_domain' 
                                                             render-header="false"
-                                                            placeholder="Select activity for which the physical man-made thing was made for" 
+                                                            placeholder="Select activity for which the man-made feature was made for" 
                                                             nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>
                           </semantic-form-autocomplete-input> 
                         </div>
@@ -733,7 +734,7 @@
                             <semantic-form-autocomplete-input for='used_specific_object_activity_domain' 
                                                               label="Used for" 
                                                               render-header="false"
-                                                              placeholder="Select activity in which the use of the physical man-made thing was essential to the performance or outcome" 
+                                                              placeholder="Select activity in which the use of the man-made feature was essential to the performance or outcome" 
                                                               nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'> 
                             </semantic-form-autocomplete-input> 
                           </div>
@@ -813,37 +814,37 @@
 
                 <semantic-form-autocomplete-input   for='persistent_item_present_at' 
                                                     label="Present at" 
-                                                    placeholder="Select event in which the physical man-made thing had an active or passive presence" 
+                                                    placeholder="Select event in which the man-made feature had an active or passive presence" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_events]]'>  
                 </semantic-form-autocomplete-input> 
 
                 <semantic-form-autocomplete-input   for='persistent_item_brought_into_existence_by' 
                                                     label="Brought into existence by" 
-                                                    placeholder="Select event that brought the physical man-made thing into existence" 
+                                                    placeholder="Select event that brought the man-made feature into existence" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_beginningOfExistences]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='persistent_item_taken_out_of_existence_by' 
                                                     label="Taken out of existence by" 
-                                                    placeholder="Select event that took the physical man-made thing out of existence" 
+                                                    placeholder="Select event that took the man-made feature out of existence" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_endOfExistences]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_influenced_activity' 
                                                     label="Influenced"
-                                                    placeholder="Select activity influenced by the physical man-made thing" 
+                                                    placeholder="Select activity influenced by the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_motivated_activity' 
                                                     label="Motivated"
-                                                    placeholder="Select activity motivated by the physical man-made thing" 
+                                                    placeholder="Select activity motivated by the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_activities]]'>  
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_attributed_by_attribute_assignment' 
                                                     label="Attributed by"
-                                                    placeholder="Select what assigned attribute to the physical man-made thing" 
+                                                    placeholder="Select what assigned attribute to the man-made feature" 
                                                     nested-form-templates='[ 
                                                         {
                                                             "label": "Attribute assignment",
@@ -856,7 +857,7 @@
 
                 <semantic-form-autocomplete-input   for='entity_assigned_by_attribute_assignment' 
                                                     label="Assigned by"
-                                                    placeholder="Select what assigned the physical man-made thing" 
+                                                    placeholder="Select what assigned the man-made feature" 
                                                     nested-form-templates='[ 
                                                         {
                                                             "label": "Attribute assignment",
@@ -883,9 +884,15 @@
 
             <rs-tab event-key="thing" title="Things">
 
+                <semantic-form-autocomplete-input   for='physical_feature_is_found_on' 
+                                                    label="Is found on" 
+                                                    placeholder="Select the object that bears the man-made feature" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_physicalObjects]]'>
+                </semantic-form-autocomplete-input> 
+
                 <semantic-form-autocomplete-input   for='physical_thing_carries_symbolic_object' 
                                                     label="Carries" 
-                                                    placeholder="Select item carried by the physical man-made thing" 
+                                                    placeholder="Select item carried by the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'> 
                 </semantic-form-autocomplete-input> 
 
@@ -989,13 +996,13 @@
 
                 <semantic-form-autocomplete-input   for='entity_depicted_by' 
                                                     label="Depicted by"
-                                                    placeholder="Select what depicts the physical man-made thing" 
+                                                    placeholder="Select what depicts the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_physicalManMadeThings]]'> 
                 </semantic-form-autocomplete-input>
 
                 <semantic-form-autocomplete-input   for='entity_subject_of' 
                                                     label="Subject of"
-                                                    placeholder="Select what is about the physical man-made thing" 
+                                                    placeholder="Select what is about the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_propositionalObjects]]'> 
                 </semantic-form-autocomplete-input>
 
@@ -1053,7 +1060,7 @@
             <rs-tab event-key="visualItem" title="Visual items">
                 <semantic-form-autocomplete-input   for='physical_man-made_thing_visual_item' 
                                                     label="Shows visual item" 
-                                                    placeholder="Select visual item shown by the physical man-made thing" 
+                                                    placeholder="Select visual item shown by the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_visualitems]]'> 
                 </semantic-form-autocomplete-input> 
             </rs-tab>
@@ -1062,7 +1069,7 @@
 
                 <semantic-form-autocomplete-input   for='physical_man-made_thing_depicts' 
                                                     label="Depicts" 
-                                                    placeholder="Select what is depicted by the physical man-made thing" 
+                                                    placeholder="Select what is depicted by the man-made feature" 
                                                     nested-form-templates='[[> Platform:NestedFormTemplates_allEntities]]'> 
                 </semantic-form-autocomplete-input> 
                 
@@ -1077,7 +1084,7 @@
     </div>
 
     <semantic-form-errors></semantic-form-errors>  
-    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}physical man-made thing{{/if}}']] 
+    [[> rsp:FormDefaultActions formEntity='{{#if entityType}}{{entityType}}{{else}}man-made feature{{/if}}']] 
 
 </semantic-form>
 

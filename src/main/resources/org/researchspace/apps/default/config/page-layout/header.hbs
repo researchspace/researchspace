@@ -130,6 +130,7 @@
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>)
                                                 FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set_item>)
+                                                FILTER(?resourceConfig != <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
                                               } ORDER BY ASC(?resourceName)'
 
                                         tuple-template='\{{> newResourceCard}}',
@@ -183,9 +184,9 @@
                                                   FILTER (EXISTS {?resourceOntologyClass rdfs:subClassOf crm:E1_CRM_Entity} || (?resourceOntologyClass = crm:E1_CRM_Entity)) 
 
                                               } ORDER BY ASC(?resourceName)'
-
                                         tuple-template='\{{> newResourceCard}}',
-                                        options='{"showFilter":true, "resultsPerPage":50}'
+                                        
+                                        options='{"showFilter":true, "resultsPerPage":300}'
                       >
                         <template id='newResourceCard'>
                           <mp-event-trigger id='openResourceForm-in-new-frame-trigger' 
@@ -283,7 +284,8 @@
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Set>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>,
                                                   <http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>,
-                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>)
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/KP_category>,
+                                                  <http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
                                                 )
 
                                                 FILTER EXISTS {?resourceOntologyClass rdfs:subClassOf* crm:E39_Actor} 
@@ -439,7 +441,6 @@
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Semantic_narrative>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Term>)
                                                   (<http://www.researchspace.org/resource/system/resource_configurations_container/data/Knowledge_map>)
-                                                  (<http://www.researchspace.org/resource/system/resource_configurations_container/data/User>)
                                                 }
 
                                                 ?resourceConfig <http://www.researchspace.org/pattern/system/resource_configuration/resource_name> ?resourceName .

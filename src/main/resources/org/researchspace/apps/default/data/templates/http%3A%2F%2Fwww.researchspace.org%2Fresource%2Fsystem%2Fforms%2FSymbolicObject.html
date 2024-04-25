@@ -13,9 +13,13 @@
 
                         man-made_thing_primary_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title_primary"
                         man-made_thing_title="http://www.researchspace.org/pattern/system/man-made_thing/PC102_has_title"
+                        symbolic_object_content="http://www.researchspace.org/pattern/system/symbolic_object/has_symbolic_content"
                         entity_preferred_id="http://www.researchspace.org/pattern/system/entity/preferred_identifier"
                         entity_id="http://www.researchspace.org/pattern/system/entity/identifier"
                         entity_description="http://www.researchspace.org/pattern/system/entity/description"
+
+                        symbolic_object_part_of="http://www.researchspace.org/pattern/system/symbolic_object/part_of"
+                        symbolic_object_composed_of="http://www.researchspace.org/pattern/system/symbolic_object/composed_of"
 
                         man-made_thing_was_intended_for="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_for"
                         thing_general_use="http://www.researchspace.org/pattern/system/thing/had_as_general_use"
@@ -24,9 +28,10 @@
                         legal_object_subject_to_right="http://www.researchspace.org/pattern/system/legal_object/subject_to_right"
                         legal_object_right_held_by_actor="http://www.researchspace.org/pattern/system/legal_object/right_held_by"
 
+                        symbolic_object_used_in="http://www.researchspace.org/pattern/system/symbolic_object/used_in"
+                        conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
                         man-made_thing_was_intended_use_of_range="http://www.researchspace.org/pattern/system/man-made_thing/was_intended_use_of_range"
                         thing_used_specific_object_range="http://www.researchspace.org/pattern/system/thing/used_specific_object_range"
-                        conceptual_object_created_by="http://www.researchspace.org/pattern/system/conceptual_object/created_by"
                         persistent_item_present_at="http://www.researchspace.org/pattern/system/persistent_item/present_at"
                         persistent_item_brought_into_existence_by="http://www.researchspace.org/pattern/system/persistent_item/brought_into_existence_by"
                         persistent_item_taken_out_of_existence_by="http://www.researchspace.org/pattern/system/persistent_item/taken_out_of_existence_by"
@@ -36,6 +41,8 @@
                         entity_assigned_by_attribute_assignment="http://www.researchspace.org/pattern/system/entity/assigned_by_attribute_assignment"
                         entity_measurement="http://www.researchspace.org/pattern/system/entity/measurement"
 
+                        symbolic_object_incorporated_in="http://www.researchspace.org/pattern/system/symbolic_object/incorporated_in"
+                        symbolic_object_carried_by="http://www.researchspace.org/pattern/system/symbolic_object/carried_by"
                         thing_shows_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of"
                         thing_has_features_of_thing="http://www.researchspace.org/pattern/system/thing/PC130_shows_features_of_range"
                         entity_depicted_by="http://www.researchspace.org/pattern/system/entity/depicted_by_manMadeThing"
@@ -112,7 +119,7 @@
                   </div>
                 </semantic-form-composite-input>
             </div>
-            
+
             <div class="inline-composite-container">
                 <semantic-form-composite-input  for="man-made_thing_title" 
                                                 label="Other title/name"
@@ -170,6 +177,8 @@
                 </semantic-form-composite-input>
             </div>
 
+            <semantic-form-text-input for="symbolic_object_content" multiline=true label="Content/value" placeholder="Enter the complete, identifying representation of its content"></semantic-form-text-input>
+            
             <semantic-form-text-input for="entity_description" multiline=true label="Description/comment" placeholder="Enter description/comment"></semantic-form-text-input>
 
             <div class="inline-composite-container">
@@ -242,6 +251,124 @@
         </div>
       </rs-tab>
 
+      <rs-tab event-key="component" title="Components">
+
+        {{#if scheme}}
+          <semantic-form-tree-picker-input  for='symbolic_object_part_of' 
+                                            label="Part of" 
+                                            placeholder="Select the item of which the symbolic object is part of" 
+                                            default-values='[{{#if broader}}"{{broader}}"{{/if}}]'
+                                            tree-patterns='{"scheme": "{{scheme}}",
+                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                            "relationPattern": "?item crm:P106i_forms_part_of ?parent",
+                                                            "labelPattern": "?item crm:P102_has_title ?title . 
+                                                                            ?title a crm:E35_Title . 
+                                                                            ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                            ?title crm:P190_has_symbolic_content ?label ."
+                                                            }'
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                ?item crm:P102_has_title ?title . 
+                                                                ?title a crm:E35_Title . 
+                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                ?title crm:P190_has_symbolic_content ?label .
+                                                            }'> 
+          </semantic-form-tree-picker-input>  
+
+          <semantic-form-tree-picker-input  for='symbolic_object_composed_of' 
+                                            label="Components" 
+                                            placeholder="Select component of the symbolic object" 
+                                            tree-patterns='{"scheme": "{{scheme}}",
+                                                            "schemePattern": "?item crm:P71i_is_listed_in <{{scheme}}>",
+                                                            "relationPattern": "?item crm:P106i_forms_part_of ?parent",
+                                                            "labelPattern": "?item crm:P102_has_title ?title . 
+                                                                            ?title a crm:E35_Title . 
+                                                                            ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                            ?title crm:P190_has_symbolic_content ?label ."
+                                                            }'
+
+                                            query-item-label='SELECT ?label WHERE {
+                                                                ?item crm:P102_has_title ?title . 
+                                                                ?title a crm:E35_Title . 
+                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                ?title crm:P190_has_symbolic_content ?label .
+                                                            }'> 
+          </semantic-form-tree-picker-input> 
+        {{else}}
+          <div class="hierarchyView-form-container">
+
+              <div class="page__section-container formHierarchyView-container">
+                <div class="form-header-withButtons">
+                    <h4>Components</h4>
+                </div>
+                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                    {{#if node}}
+                        {{#bind symbolicObject=node }}
+                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                    BIND(<{{node}}> as ?symbolicObject)
+                                                    
+                                                    { ?symbolicObject crm:P106_is_composed_of ?node . }
+                                                    UNION
+                                                    { ?symbolicObject crm:P106i_forms_part_of ?parent . }
+                                                    
+                                                    ?node crm:P106i_forms_part_of ?parent .
+
+                                                    FILTER(ISIRI(?node))
+                                                }
+                                                ORDER BY (?node)' 
+
+                                            tuple-template='{{> nodeTemplate}}'>
+                                            
+                                <template id='nodeTemplate'>
+                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                                BIND (<{{node.value}}> as ?node)
+                                                                ?node crm:P102_has_title ?title . 
+                                                                ?title a crm:E35_Title . 
+                                                                ?title crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_title> . 
+                                                                ?title crm:P190_has_symbolic_content ?label .
+                                                            }'
+                                                    template='{{> template}}'>
+                                        
+                                        <template id='template'>
+                                            <div>
+                                                {{#ifCond bindings.0.node.value "===" symbolicObject}}
+                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                {{else}}
+                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='entity-editor' 
+                                                                    urlqueryparam-resource-iri='{{node.value}}'
+                                                                    >
+                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                    </semantic-link>
+                                                {{/ifCond}}
+                                            </div>
+                                        </template>
+                                    </semantic-query>
+                                </template>  
+                            </semantic-tree>
+                        {{/bind}}
+                    {{/if}}
+                </div>
+              </div>
+
+              <div class="page__section-container formHierarchyInputs-container">    
+                <semantic-form-autocomplete-input   for='symbolic_object_part_of' 
+                                                    label="Part of" 
+                                                    placeholder="Select the item of which the symbolic object is part of" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'> 
+                </semantic-form-autocomplete-input>
+
+                <semantic-form-autocomplete-input   for='symbolic_object_composed_of' 
+                                                    label="Components" 
+                                                    placeholder="Select component of the symbolic object" 
+                                                    nested-form-templates='[[> Platform:NestedFormTemplates_symbolicObjects]]'>
+                </semantic-form-autocomplete-input>
+              </div>
+          </div>
+        {{/if}}
+
+      </rs-tab>
+
       <rs-tab event-key="type" title="Type/Dimensions">
     
         <semantic-form-autocomplete-input   for='man-made_thing_was_intended_for' 
@@ -287,13 +414,26 @@
 
         <semantic-form-autocomplete-input   for='legal_object_right_held_by_actor' 
                                             label="Right held by" 
-                                            placeholder="Select actor who holds legal right on the conceptual object" 
+                                            placeholder="Select actor who holds legal right on the symbolic object" 
                                             nested-form-templates='[[> Platform:NestedFormTemplates_actors]]'> 
         </semantic-form-autocomplete-input> 
 
     </rs-tab>
 
       <rs-tab event-key="event" title="Events">
+
+        <semantic-form-autocomplete-input   for='symbolic_object_used_in' 
+                                            label="Used in" 
+                                            placeholder="Select the assignment that used the symbolic object as constituent of an identifier" 
+                                            nested-form-templates='[ 
+                                                {
+                                                    "label": "Identifier assignment",
+                                                    "nestedForm": "{{{{raw}}}}
+                                                                    {{> \"http://www.researchspace.org/resource/system/forms/IdentifierAssignment\" nested=true editable=true mode=\"new\"}}
+                                                                {{{{/raw}}}}"
+                                                }
+                                            ]'>  
+        </semantic-form-autocomplete-input> 
 
         <semantic-form-autocomplete-input   for='conceptual_object_created_by' 
                                             label="Created by" 
@@ -473,6 +613,18 @@
       </rs-tab>
 
       <rs-tab event-key="thing" title="Things">
+
+        <semantic-form-autocomplete-input   for='symbolic_object_incorporated_in' 
+                                            label="Incorporated in" 
+                                            placeholder="Select what incorporates the symbolic object" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_informationObjects]]'> 
+        </semantic-form-autocomplete-input> 
+
+        <semantic-form-autocomplete-input   for='symbolic_object_carried_by' 
+                                            label="Carried by"
+                                            placeholder="Select what carries the symbolic object" 
+                                            nested-form-templates='[[> Platform:NestedFormTemplates_physicalThings]]'> 
+        </semantic-form-autocomplete-input>
 
         <div class="inline-composite-container">
             <semantic-form-composite-input  for="thing_shows_features_of_thing" 

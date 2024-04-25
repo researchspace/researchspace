@@ -238,73 +238,58 @@
         <rs-tab event-key="hierarchy" title="Broader/narrower types">
 
           <div class="hierarchyView-form-container">
-            <mp-event-target-template-render id='{{viewId}}-type-hierarchyView' template='{{> typeHierarchy}}'>
-              <template id='typeHierarchy'>
-                  <div class="page__section-container formHierarchyView-container">
-                      <div class="form-header-withButtons">
-                          <h4 style="margin: 0; align-self: end;">Types</h4>
-                          <div class="btn-form-actions"> 
-                          <mp-event-trigger id='{{viewId}}-type-componentsView-refresh-trigger' 
-                                              type='Component.TemplateUpdate' 
-                                              targets='["{{viewId}}-type-componentsView"]'
-                                              >
-                              <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                              <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                                  Refresh
-                              </button>
-                          </mp-event-trigger>
-                          </div>
-                      </div>
-                      <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                          {{#if node}}
-                              {{#bind type=node }}
-                                  <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                          BIND(<{{node}}> as ?type)
-                                                          
-                                                          { ?type crm:P127i_has_narrower_term ?node . }
-                                                          UNION
-                                                          { ?type crm:P127_has_broader_term ?parent . }
-                                                          
-                                                          ?node crm:P127_has_broader_term|^crm:P127i_has_narrower_term ?parent .
+            <div class="page__section-container formHierarchyView-container">
+                <div class="form-header-withButtons">
+                    <h4>Types</h4>
+                </div>
+                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                    {{#if node}}
+                        {{#bind type=node }}
+                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                    BIND(<{{node}}> as ?type)
+                                                    
+                                                    { ?type crm:P127i_has_narrower_term ?node . }
+                                                    UNION
+                                                    { ?type crm:P127_has_broader_term ?parent . }
+                                                    
+                                                    ?node crm:P127_has_broader_term|^crm:P127i_has_narrower_term ?parent .
 
-                                                          FILTER(ISIRI(?node))
-                                                      }
-                                                      ORDER BY (?node)' 
+                                                    FILTER(ISIRI(?node))
+                                                }
+                                                ORDER BY (?node)' 
 
-                                                  tuple-template='{{> nodeTemplate}}'>
-                                                  
-                                      <template id='nodeTemplate'>
-                                          <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                  BIND (<{{node.value}}> as ?node)
-                                                                  ?node a ?ontologyClass .
-                                                                  ?ontologyClass rdfs:subClassOf* crm:E55_Type .
-                                                                  ?node skos:prefLabel ?nodeLabel .  
-                                                              }'
-                                                          template='{{> template}}'>
-                                              
-                                              <template id='template'>
-                                                  <div>
-                                                      {{#ifCond bindings.0.node.value "===" type}}
-                                                          <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                      {{else}}
-                                                          <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                          urlqueryparam-view='entity-editor' 
-                                                                          urlqueryparam-resource-iri='{{node.value}}'
-                                                                          >
-                                                              <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                          </semantic-link>
-                                                      {{/ifCond}}
-                                                  </div>
-                                              </template>
-                                          </semantic-query>
-                                      </template>  
-                                  </semantic-tree>
-                              {{/bind}}
-                          {{/if}}
-                      </div>
-                  </div>
-              </template>
-            </mp-event-target-template-render>
+                                            tuple-template='{{> nodeTemplate}}'>
+                                            
+                                <template id='nodeTemplate'>
+                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                            BIND (<{{node.value}}> as ?node)
+                                                            ?node a ?ontologyClass .
+                                                            ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+                                                            ?node skos:prefLabel ?nodeLabel .  
+                                                        }'
+                                                    template='{{> template}}'>
+                                        
+                                        <template id='template'>
+                                            <div>
+                                                {{#ifCond bindings.0.node.value "===" type}}
+                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                {{else}}
+                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='entity-editor' 
+                                                                    urlqueryparam-resource-iri='{{node.value}}'
+                                                                    >
+                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                    </semantic-link>
+                                                {{/ifCond}}
+                                            </div>
+                                        </template>
+                                    </semantic-query>
+                                </template>  
+                            </semantic-tree>
+                        {{/bind}}
+                    {{/if}}
+                </div>
+            </div>
 
             <div class="page__section-container formHierarchyInputs-container">
               <semantic-form-autocomplete-input for='type_broader' 
@@ -327,87 +312,73 @@
       <rs-tab event-key="component" title="Components">
 
         <div class="hierarchyView-form-container">
-          <mp-event-target-template-render id='{{viewId}}-typeComponent-hierarchyView' template='{{> typeComponent}}'>
-            <template id='typeComponent'>
-                <div class="page__section-container formHierarchyView-container">
-                    <div class="form-header-withButtons">
-                        <h4 style="margin: 0; align-self: end;">Components</h4>
-                        <div class="btn-form-actions"> 
-                        <mp-event-trigger id='{{viewId}}-typeComponent-componentsView-refresh-trigger' 
-                                            type='Component.TemplateUpdate' 
-                                            targets='["{{viewId}}-typeComponent-componentsView"]'
-                                            >
-                            <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                            <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                                Refresh
-                            </button>
-                        </mp-event-trigger>
-                        </div>
-                    </div>
-                    <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                        {{#if node}}
-                            {{#bind type=node }}
-                                <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                        BIND(<{{node}}> as ?type)
-                                                        
-                                                        { ?type crm:P150i_defines_typical_wholes_for ?node . }
-                                                        UNION
-                                                        { ?type crm:P150_defines_typical_parts_of ?parent . }
-                                                        
-                                                        ?node crm:P150_defines_typical_parts_of ?parent .
 
-                                                        FILTER(ISIRI(?node))
-                                                    }
-                                                    ORDER BY (?node)' 
-
-                                                tuple-template='{{> nodeTemplate}}'>
-                                                
-                                    <template id='nodeTemplate'>
-                                        <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                BIND (<{{node.value}}> as ?node)
-                                                                ?node a ?ontologyClass .
-                                                                ?ontologyClass rdfs:subClassOf* crm:E55_Type .
-                                                                ?node skos:prefLabel ?nodeLabel .  
-                                                            }'
-                                                        template='{{> template}}'>
-                                            
-                                            <template id='template'>
-                                                <div>
-                                                    {{#ifCond bindings.0.node.value "===" type}}
-                                                        <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                    {{else}}
-                                                        <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                        urlqueryparam-view='entity-editor' 
-                                                                        urlqueryparam-resource-iri='{{node.value}}'
-                                                                        >
-                                                            <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                        </semantic-link>
-                                                    {{/ifCond}}
-                                                </div>
-                                            </template>
-                                        </semantic-query>
-                                    </template>  
-                                </semantic-tree>
-                            {{/bind}}
-                        {{/if}}
-                    </div>
+            <div class="page__section-container formHierarchyView-container">
+                <div class="form-header-withButtons">
+                    <h4>Components</h4>
                 </div>
-            </template>
-          </mp-event-target-template-render>
+                <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                    {{#if node}}
+                        {{#bind type=node }}
+                            <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                    BIND(<{{node}}> as ?type)
+                                                    
+                                                    { ?type crm:P150i_defines_typical_wholes_for ?node . }
+                                                    UNION
+                                                    { ?type crm:P150_defines_typical_parts_of ?parent . }
+                                                    
+                                                    ?node crm:P150_defines_typical_parts_of ?parent .
 
-          <div class="page__section-container formHierarchyInputs-container">
-            <semantic-form-autocomplete-input for='type_typical_parts_of' 
-                                              label="Typical parts of" 
-                                              placeholder="Enter type that defines typical wholes for the type"
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-            </semantic-form-autocomplete-input> 
+                                                    FILTER(ISIRI(?node))
+                                                }
+                                                ORDER BY (?node)' 
 
-            <semantic-form-autocomplete-input for='type_typical_wholes_for' 
-                                              label="Typical wholes for" 
-                                              placeholder="Enter type that defines typical part of the type"
-                                              nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
-            </semantic-form-autocomplete-input> 
-          </div>
+                                            tuple-template='{{> nodeTemplate}}'>
+                                            
+                                <template id='nodeTemplate'>
+                                    <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                            BIND (<{{node.value}}> as ?node)
+                                                            ?node a ?ontologyClass .
+                                                            ?ontologyClass rdfs:subClassOf* crm:E55_Type .
+                                                            ?node skos:prefLabel ?nodeLabel .  
+                                                        }'
+                                                    template='{{> template}}'>
+                                        
+                                        <template id='template'>
+                                            <div>
+                                                {{#ifCond bindings.0.node.value "===" type}}
+                                                    <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                {{else}}
+                                                    <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                    urlqueryparam-view='entity-editor' 
+                                                                    urlqueryparam-resource-iri='{{node.value}}'
+                                                                    >
+                                                        <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                    </semantic-link>
+                                                {{/ifCond}}
+                                            </div>
+                                        </template>
+                                    </semantic-query>
+                                </template>  
+                            </semantic-tree>
+                        {{/bind}}
+                    {{/if}}
+                </div>
+            </div>
+
+            <div class="page__section-container formHierarchyInputs-container">
+                <semantic-form-autocomplete-input for='type_typical_parts_of' 
+                                                label="Typical parts of" 
+                                                placeholder="Enter type that defines typical wholes for the type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+                </semantic-form-autocomplete-input> 
+
+                <semantic-form-autocomplete-input for='type_typical_wholes_for' 
+                                                label="Typical wholes for" 
+                                                placeholder="Enter type that defines typical part of the type"
+                                                nested-form-templates='[[> Platform:NestedFormTemplates_types]]'> 
+                </semantic-form-autocomplete-input> 
+            </div>
         </div>
           
       </rs-tab>

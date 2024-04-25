@@ -297,77 +297,62 @@
           </semantic-form-tree-picker-input> 
         {{else}}
           <div class="hierarchyView-form-container">
-              <mp-event-target-template-render id='{{viewId}}-period-componentsView' template='{{> periodComponents}}'>
-                <template id='periodComponents'>
-                    <div class="page__section-container formHierarchyView-container">
-                        <div class="form-header-withButtons">
-                            <h4 style="margin: 0; align-self: end;">Components view</h4>
-                            <div class="btn-form-actions"> 
-                            <mp-event-trigger id='{{viewId}}-period-componentsView-refresh-trigger' 
-                                                type='Component.TemplateUpdate' 
-                                                targets='["{{viewId}}-period-componentsView"]'
-                                                >
-                                <button class="btn btn-sm btn-default btn-textAndIcon" title="Refresh view">
-                                <rs-icon icon-type="round" icon-name="refresh"></rs-icon>
-                                    Refresh
-                                </button>
-                            </mp-event-trigger>
-                            </div>
-                        </div>
-                        <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
-                            {{#if node}}
-                                {{#bind activity=node }}
-                                    <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
-                                                            BIND(<{{node}}> as ?activity)
-                                                            
-                                                            { ?activity crm:P9_consists_of ?node . }
-                                                            UNION
-                                                            { ?activity crm:P9i_forms_part_of ?parent . }
-                                                            
-                                                            ?node crm:P9i_forms_part_of ?parent .
+              <div class="page__section-container formHierarchyView-container">
+                  <div class="form-header-withButtons">
+                      <h4>Components</h4>
+                  </div>
+                  <div style="flex: 1; padding: 18px 2px;" class="tree-tableView">
+                      {{#if node}}
+                          {{#bind activity=node }}
+                              <semantic-tree query='SELECT DISTINCT ?node ?parent WHERE {
+                                                      BIND(<{{node}}> as ?activity)
+                                                      
+                                                      { ?activity crm:P9_consists_of ?node . }
+                                                      UNION
+                                                      { ?activity crm:P9i_forms_part_of ?parent . }
+                                                      
+                                                      ?node crm:P9i_forms_part_of ?parent .
 
-                                                            FILTER(ISIRI(?node))
-                                                        }
-                                                        ORDER BY (?node)' 
+                                                      FILTER(ISIRI(?node))
+                                                  }
+                                                  ORDER BY (?node)' 
 
-                                                    tuple-template='{{> nodeTemplate}}'>
-                                                    
-                                        <template id='nodeTemplate'>
-                                            <semantic-query query='SELECT ?node ?nodeLabel WHERE {
-                                                                    BIND (<{{node.value}}> as ?node)
-                                                                    ?node a ?ontologyClass .
-                                                                    ?ontologyClass rdfs:subClassOf* crm:E4_Period .
-                                                                    ?node crm:P1_is_identified_by ?appellation .
-                                                                    ?appellation a crm:E41_Appellation .
-                                                                    ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
-                                                                     
-                                                                    ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
-                                                                }'
-                                                            template='{{> template}}'>
-                                                
-                                                <template id='template'>
-                                                    <div>
-                                                        {{#ifCond bindings.0.node.value "===" activity}}
-                                                            <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                        {{else}}
-                                                            <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
-                                                                            urlqueryparam-view='entity-editor' 
-                                                                            urlqueryparam-resource-iri='{{node.value}}'
-                                                                            >
-                                                                <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
-                                                            </semantic-link>
-                                                        {{/ifCond}}
-                                                    </div>
-                                                </template>
-                                            </semantic-query>
-                                        </template>  
-                                    </semantic-tree>
-                                {{/bind}}
-                            {{/if}}
-                        </div>
-                    </div>
-                </template>
-              </mp-event-target-template-render>
+                                              tuple-template='{{> nodeTemplate}}'>
+                                              
+                                  <template id='nodeTemplate'>
+                                      <semantic-query query='SELECT ?node ?nodeLabel WHERE {
+                                                              BIND (<{{node.value}}> as ?node)
+                                                              ?node a ?ontologyClass .
+                                                              ?ontologyClass rdfs:subClassOf* crm:E4_Period .
+                                                              ?node crm:P1_is_identified_by ?appellation .
+                                                              ?appellation a crm:E41_Appellation .
+                                                              ?appellation crm:P2_has_type <http://www.researchspace.org/resource/system/vocab/resource_type/primary_appellation> . 
+                                                                
+                                                              ?appellation crm:P190_has_symbolic_content ?nodeLabel .  
+                                                          }'
+                                                      template='{{> template}}'>
+                                          
+                                          <template id='template'>
+                                              <div>
+                                                  {{#ifCond bindings.0.node.value "===" activity}}
+                                                      <span class="Tree--itemLink active" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                  {{else}}
+                                                      <semantic-link  iri="http://www.researchspace.org/resource/ThinkingFrames"
+                                                                      urlqueryparam-view='entity-editor' 
+                                                                      urlqueryparam-resource-iri='{{node.value}}'
+                                                                      >
+                                                          <span class="Tree--itemLink" style="font-weight: 600;">{{bindings.0.nodeLabel.value}}</span>
+                                                      </semantic-link>
+                                                  {{/ifCond}}
+                                              </div>
+                                          </template>
+                                      </semantic-query>
+                                  </template>  
+                              </semantic-tree>
+                          {{/bind}}
+                      {{/if}}
+                  </div>
+              </div>
 
               <div class="page__section-container formHierarchyInputs-container">
                   <semantic-form-autocomplete-input   for='period_forms_part_of_event' 

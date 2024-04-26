@@ -97,7 +97,7 @@ export interface DashboardViewConfig {
   unique?: boolean;
 
   /**
-   * Define the view type that will be use to display it in the specific area of the dashboard layout (search, view, authoring areas, hidden)
+   * Define the view type that will be use to display it in the specific area of the dashboard layout (view, authoring, hidden)
    * * @default 'authoring'
    * */
   type?: string;
@@ -456,12 +456,14 @@ export class DashboardItem extends Component<DashboardItemProps, State> {
       return this.renderEmptySelectedComponent();
     }
     if (gridView) {
-      return this.renderGridViewDashboard();
+      if (homePageIri) {
+        return this.renderHomePage();
+      } else {
+          return this.renderGridViewDashboard();
+      }
     }
-    if (homePageIri) {
-      return this.renderHomePage();
-    }
-    return this.renderDefaultDashboard();
+     return this.renderDefaultDashboard();
+    // return this.renderGridViewDashboard();
   }
 }
 

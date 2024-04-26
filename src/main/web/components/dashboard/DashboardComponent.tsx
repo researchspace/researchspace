@@ -639,6 +639,7 @@ export class DashboardComponent extends Component<Props, State> {
           viewId={item.viewId}
           homePageIri={homePageIri}
           resourceIri={item.resourceIri}
+          gridView={true}
           data={item.data}
           linkedFrames={linkedFrames}
           onSelect={({ viewId, resourceIri }) =>

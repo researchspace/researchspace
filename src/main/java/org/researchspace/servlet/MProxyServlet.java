@@ -22,10 +22,12 @@ package org.researchspace.servlet;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.Base64;
-
+import java.util.Enumeration;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -48,6 +50,8 @@ import com.google.inject.Inject;
  * separate authentication. Transforms a request of the form [platform
  * URL]/proxy/[proxy ID]/path/to/resource into [targetUri]/path/to/resource and
  * adds the authentication header.
+ * 
+ * The proxy servlet supports http/htpps and websocket protocol (ws/wss).
  * 
  * The <b>targetUri</b> and the login credentials are passed via properties in
  * two ways:
@@ -81,6 +85,8 @@ public class MProxyServlet extends ProxyServlet {
 
     private static final Logger logger = LogManager.getLogger(MProxyServlet.class);
 
+    private WebSocketProxyServlet wsProxyServlet;
+
     private final String key;
 
     @Inject
@@ -104,6 +110,47 @@ public class MProxyServlet extends ProxyServlet {
     @Override
     protected CharSequence encodeUriQuery(CharSequence in, boolean encodePercent) {
         return in;
+    }
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        wsProxyServlet = new WebSocketProxyServlet();
+        wsProxyServlet.init(getServletConfig());
+    }
+
+    @Override
+    public void destroy() {
+        wsProxyServlet.destroy();
+        super.destroy();
+    }
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(new ServletConfig() {
+            ServletConfig c = config;
+
+            @Override
+            public String getServletName() {
+                return key;
+            }
+
+            @Override
+            public ServletContext getServletContext() {
+                return c.getServletContext();
+            }
+
+            @Override
+            public String getInitParameter(String name) {
+                return c.getInitParameter(name);
+            }
+
+            @Override
+            public Enumeration<String> getInitParameterNames() {
+                return c.getInitParameterNames();
+            }
+
+        });
     }
 
     @Override
@@ -154,6 +201,37 @@ public class MProxyServlet extends ProxyServlet {
         }
     }
 
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String wsKey = request.getHeader("Sec-WebSocket-Key");
+        if (wsKey != null) {
+            handleWebSocketRequest(request, response);
+        } else {
+            super.service(request, response);
+        }
+    }
+
+    private void handleWebSocketRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
+            throws ServletException, IOException {
+        // initialize request attributes from caches if unset by a subclass by this
+        // point
+        if (servletRequest.getAttribute(ATTR_TARGET_URI) == null) {
+            servletRequest.setAttribute(ATTR_TARGET_URI, targetUri);
+        }
+        if (servletRequest.getAttribute(ATTR_TARGET_HOST) == null) {
+            servletRequest.setAttribute(ATTR_TARGET_HOST, targetHost);
+        }
+
+        // Set the proxyRequestUri as a request attribute so it can be used in the
+        // websocket servlet
+        String proxyRequestUri = rewriteUrlFromRequest(servletRequest);
+        servletRequest.setAttribute("proxyRequestUri", proxyRequestUri);
+
+        // Delegate WebSocket requests to the WebSocketServlet
+        wsProxyServlet.service(servletRequest, servletResponse);
+    }
+
     protected HttpResponse createHttpError(String message, int statusCode) throws IOException {
         HttpResponse response = new DefaultHttpResponseFactory().newHttpResponse(HttpVersion.HTTP_1_1, statusCode,
                 null);
@@ -166,4 +244,5 @@ public class MProxyServlet extends ProxyServlet {
         proxyRequest.addHeader("X-Forwarded-Port", String.valueOf(servletRequest.getServerPort()));
         proxyRequest.addHeader("X-Forwarded-Proto", servletRequest.getScheme());
     }
+
 }
